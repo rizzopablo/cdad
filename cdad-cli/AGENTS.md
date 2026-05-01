@@ -1,111 +1,177 @@
-# CDAD-CLI: Memory Bank & Development Context
+# CDAD-CLI: Agent Memory Bank (CDAD §10.3)
 
-## Project Brief
+> **Última actualización**: 2026-05-01  
+> **Fase**: Phase 1 MVP completada  
+> **Versión**: 0.1.0
 
-**What**: A pure Python CLI that orchestrates Contract-Driven AI Development workflow without editor dependencies.
+---
 
-**Why**: CDAD requires disciplined, structured development with AI agents. Currently bound to OpenCode. We need a standalone orchestrator that can be developed using CDAD itself (self-hosting).
+## Tech Stack
 
-**Who**: Python developers, especially those in Odoo ecosystem who want to adopt CDAD discipline.
+| Capa | Tecnología | Versión |
+|---|---|---|
+| CLI | Typer (sobre Click) | 0.9.0 / <8.2 |
+| LLM | Anthropic SDK | ≥ 0.40.0 |
+| Modelos | claude-opus-4-7, claude-sonnet-4-6 | — |
+| Tests | pytest + pytest-cov | 7.4.0 / 4.1.0 |
+| Linting | black, ruff, mypy | 23.7.0 / 0.1.0 / 1.4.0 |
+| Config | PyYAML, python-frontmatter, toml | ≥ 6.0 / 1.0.0 / 0.10.2 |
+| Python | ≥ 3.9 | — |
 
-**When**: MVP (Phase 0) by end of week 1. Then iterate with CDAD itself (Phase 1+).
+## Comandos Importantes
 
-**Constraints**: 
-- Must be language-agnostic at orchestration level (work with any language's test frameworks, code structures)
-- No dependency on OpenCode or any IDE
-- Self-bootstrapping: cdad-cli v0.1 develops cdad-cli v0.2 using CDAD
-
-## Architecture Overview
-
-The CLI has these layers (see `docs/architecture.md` for detailed diagrams):
-
-1. **CLI Interface** (`src/cdad/cli/`) — Typer-based commands (init, discover, spec, red, green, review, merge, status)
-2. **Orchestrator** (`src/cdad/orchestrator/`) — Phase management and state tracking
-3. **Agents** (`src/cdad/agents/`) — Sub-agents (architect, test-writer, implementer, reviewer, scribe)
-4. **Validators** (`src/cdad/validators/`) — Contract validation (spec, test RED/GREEN, postconditions)
-5. **Project Model** (`src/cdad/project/`) — Project introspection and Memory Bank navigation
-6. **LLM Client** (`src/cdad/llm/`) — Wrapper around Anthropic SDK
-
-Session isolation is achieved via **context narrowing** (limiting visible files per agent role) not sandboxing.
-
-## Architecture Decision Records
-
-### ADR-001: Use Python as Implementation Language
-
-**Decision**: Implement cdad-cli in Python.
-
-**Rationale**: 
-- Target audience is Python/Odoo developers who already have Python environments
-- Native AST parsing for code analysis without external tools
-- Seamless pytest integration for test validation
-- Mature Anthropic SDK with excellent documentation
-- Tests written by agents are naturally compatible with validation
-
-**Alternatives Rejected**:
-- Go: Too much infrastructure for I/O-bound CLI; no native Python analysis
-- TypeScript: Good tooling but no Python AST parsing; distribution more complex for Python-centric users
-- Rust: Compilation overhead during iterative CDAD development; steep learning curve for agents
-- Bash: No abstractions; fragile for complex workflow orchestration
-
-### ADR-002: Use Typer for CLI Framework
-
-**Decision**: Use Typer over Click/argparse.
-
-**Rationale**: Cleaner API, automatic help generation, better type integration, native async support when needed.
-
-### ADR-003: Session Isolation via Context Narrowing
-
-**Decision**: Implement agent isolation by limiting accessible files, not OS-level sandboxing.
-
-**Rationale**: 
-- Simpler to implement without external tools
-- Leverages agent instruction following (epistemic isolation vs technical isolation)
-- More transparent to users (they can inspect what files each agent sees)
-- Mitigation against agent "cheating": contract validators catch violations
-
-## Current Phase
-
-**Status**: Phase 0 (Manual Bootstrap)
-
-**Timeline**:
-- Day 1-2: Project structure + foundational tests
-- Day 3-4: ProjectModel + MemoryBank navigation
-- Day 5: Validators (SpecValidator, TestValidator, ContractValidator)
-- Day 6: LLMClient + Agent base class
-- Day 7: CLI scaffolding + architect agent
-
-## Key Files & Responsibilities
-
-- `src/cdad/validators/spec_validator.py` — Validates specs have verifiable postconditions
-- `src/cdad/orchestrator/phase_manager.py` — Detects current phase, suggests next command
-- `src/cdad/project/model.py` — Reads project structure, detects framework (generic/odoo/django)
-- `src/cdad/llm/client.py` — Wraps Anthropic SDK, manages conversation history
-- `src/cdad/agents/base.py` — Base class for all agents (architect, test-writer, etc.)
-- `tests/test_spec_validator.py` — TDD tests for validators (RED → GREEN cycle)
-
-## Development Workflow (Phase 1+)
-
-Once MVP is working, development follows strict CDAD:
-
+### Instalación
 ```bash
-cdad discover --feature "Implement test-writer agent for Odoo"
-cdad spec
-cdad red
-cdad green
-cdad review
-cdad merge
-cdad status
+pip install -e ".[dev]"
+pre-commit install
 ```
 
-Each command invokes an isolated agent (no context leakage between test-writer and implementer).
+### Desarrollo
+```bash
+pytest                          # Ejecutar todos los tests
+pytest --cov=src/cdad           # Con coverage
+black src/ tests/               # Formatear código
+ruff check src/ tests/          # Linting
+mypy src/                       # Type checking
+```
 
-## Notes for Claude Code Initialization
+### CLI (comandos operativos)
+```bash
+cdad init --name my-project     # Inicializar proyecto CDAD
+cdad discover --feature "..."   # Discovery (ArchitectAgent)
+cdad spec --name feature-name   # Generar spec (ArchitectAgent + SpecValidator)
+cdad architect src/module.py    # Analizar código (ArchitectAgent)
+cdad test feature-name          # Generar tests (TestWriterAgent)
+cdad red                        # Validar specs + tests (scaffolding)
+cdad green                      # Verificar tests pasan (scaffolding)
+cdad status                     # Estado actual del proyecto
+```
 
-When starting Phase 0 development with Claude Code:
+### Variables de entorno
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...  # Requerida para comandos con LLM
+```
 
-1. Start with **test-first approach** — write tests before implementation
-2. Keep validators simple but strict — they're the guarantee that agents stay disciplined
-3. ProjectModel must understand Odoo, Django, and generic Python projects (used for code analysis)
-4. LLMClient should track conversation history per session (important for agent continuity)
-5. Each agent subclass documents its system prompt and access rules in docstrings
-6. All tests in `tests/` use pytest fixtures; make heavy use of `tmp_path` for file operations
+## Coding Standards
+
+### Estilo
+- **Line length**: 100 caracteres (black + ruff)
+- **Target Python**: 3.9+
+- **Imports**: ordenados — stdlib, third-party, local
+- **Nomenclatura**: `snake_case` para funciones/variables, `PascalCase` para clases
+
+### Type Hints
+- Obligatorio en firmas de funciones públicas
+- `typing.List`, `typing.Optional` preferidos sobre `list[]`, `X | None` (compatibilidad Python 3.9)
+- mypy con `warn_return_any = true`, `disallow_untyped_defs = false` (tolerante en código legacy)
+
+### Docstrings
+- Google style en todas las clases y métodos públicos
+- Incluir Args, Returns, Raises cuando aplique
+
+### Tests
+- pytest fixtures para setup compartido
+- `tmp_path` para operaciones de archivos (no mockear filesystem)
+- Monkey-patch `_make_llm_client()` para evitar llamadas reales a API
+- Tests unitarios para validadores y modelos; tests de integración para CLI (con CliRunner)
+
+### Commits
+- Mensajes en inglés (convención de código)
+- Formato: `type(scope): description`
+- Tipos: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
+- Ejemplo: `feat(agent): add ArchitectAgent.analyze() method`
+
+## Don't Touch
+
+### No modificar directamente
+- `src/cdad/agents/base.py` — interfaz abstracta, cambios requieren ADR
+- `src/cdad/config/defaults.py` — constantes de configuración centralizadas
+- `src/cdad/presets/__init__.py` — orden del registry afecta detección de frameworks
+- `pyproject.toml` version — seguir semver, actualizar solo en releases
+- `AGENTS.md` (este archivo) — actualizar solo en checkpoints de fase
+
+### No hacer
+- No hardcodear `ANTHROPIC_API_KEY` (usar variable de entorno)
+- No modificar validadores sin actualizar tests correspondientes
+- No saltar la fase RED (generar tests que pasan sin implementación)
+- No usar `print()` — usar `typer.echo()` para output de CLI
+- No llamar a LLM fuera de `LLMClient` (centralizado para logging/retry)
+
+## Boundaries Arquitectónicos
+
+```
+┌─────────────────────────────────────────────┐
+│  CLI Layer (src/cdad/cli/)                   │
+│  Typer commands → Orchestrator               │
+├─────────────────────────────────────────────┤
+│  Orchestrator (src/cdad/orchestrator/)       │
+│  PhaseManager → detect state, suggest next   │
+├─────────────────────────────────────────────┤
+│  Agents (src/cdad/agents/)                   │
+│  BaseAgent → ArchitectAgent, TestWriterAgent │
+│  (context narrowing via get_accessible_files)│
+├─────────────────────────────────────────────┤
+│  Validators (src/cdad/validators/)           │
+│  SpecValidator, TestValidator               │
+├─────────────────────────────────────────────┤
+│  Domain (src/cdad/project/, src/cdad/llm/)   │
+│  ProjectModel, LLMClient                     │
+├─────────────────────────────────────────────┤
+│  Presets (src/cdad/presets/)                 │
+│  generic, django, odoo (framework detection) │
+└─────────────────────────────────────────────┘
+```
+
+**Regla de flujo**: CLI → Orchestrator → Agent → LLMClient → ProjectModel → Validators → File I/O
+
+**Aislamiento**: cada agente solo accede a archivos definidos en `get_accessible_files()`. Los validadores verifican contratos independientemente del agente.
+
+## Workflow de Agentes
+
+### Flujo CDAD completo
+```
+discover → spec → test → red → green → review → merge
+   │          │        │       │        │        │
+   Architect  Architect  Test   Valid   Implem   Review
+   Agent      Agent     Writer  ators   ent      Agent
+                        Agent          Agent    + Scribe
+```
+
+### Agente actual: ArchitectAgent
+- **Ve**: README, docs/, specs existentes
+- **Hace**: discover(), draft_spec(), analyze(), recommend()
+- **Modelo**: claude-opus-4-7 (más potente para razonamiento arquitectónico)
+
+### Agente actual: TestWriterAgent
+- **Ve**: specs, tests existentes, pyproject.toml
+- **Hace**: write_tests() — genera pytest desde spec validada
+- **Modelo**: claude-sonnet-4-6
+- **Valida**: SpecValidator antes de generar tests
+
+### Agentes pendientes
+- **ImplementerAgent**: escribir código para pasar tests (GREEN)
+- **ReviewerAgent**: comparar implementación contra spec
+- **ScribeAgent**: actualizar Memory Bank después de merge
+
+## Convenciones de Commits
+
+| Prefix | Cuándo usar | Ejemplo |
+|---|---|---|
+| `feat` | Nueva funcionalidad | `feat(agent): add TestWriterAgent.write_tests()` |
+| `fix` | Corrección de bug | `fix(cli): handle missing ANTHROPIC_API_KEY gracefully` |
+| `docs` | Documentación | `docs: add ADR-003 for context narrowing` |
+| `refactor` | Cambio sin alterar comportamiento | `refactor(validator): extract postcondition parsing` |
+| `test` | Tests nuevos o correcciones | `test(cli): add integration tests for cdad spec` |
+| `chore` | Mantenimiento | `chore: bump pytest-cov to 4.1.0` |
+
+### Branch naming
+- `feat/agent-implementer` — nueva feature
+- `fix/spec-validator-regex` — corrección
+- `refactor/agent-base-abc` — refactor
+
+### Pull Request checklist
+- [ ] Tests pasan (`pytest`)
+- [ ] Coverage no baja significativamente
+- [ ] Linting limpio (`ruff check`, `black`, `mypy`)
+- [ ] ADR creado si cambia arquitectura
+- [ ] Memory Bank actualizado si cambia contexto
