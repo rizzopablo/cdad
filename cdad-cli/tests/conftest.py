@@ -138,3 +138,106 @@ def temp_generic_project(tmp_path):
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text('[project]\nname = "test-project"\n')
     return tmp_path
+
+
+@pytest.fixture
+def temp_discovery_project(temp_generic_project):
+    """Create a temporary project in discovery phase."""
+    (temp_generic_project / "docs" / "discovery.md").write_text("# Discovery\nFeature exploration")
+    return temp_generic_project
+
+
+@pytest.fixture
+def temp_spec_project(temp_generic_project):
+    """Create a temporary project in spec phase."""
+    (temp_generic_project / "docs" / "specs" / "feature.md").write_text("""---
+title: Test Spec
+---
+
+# Spec
+
+## Postconditions
+
+### Postcondition 1
+**Name**: Test
+**Description**: Test postcondition for feature
+**Verification**: test
+""")
+    return temp_generic_project
+
+
+@pytest.fixture
+def temp_red_project(temp_generic_project):
+    """Create a temporary project in red phase (failing tests)."""
+    (temp_generic_project / "docs" / "specs" / "feature.md").write_text("""---
+title: Test Spec
+---
+
+# Spec
+
+## Postconditions
+
+### Postcondition 1
+**Name**: Test
+**Description**: Test postcondition for feature
+**Verification**: test
+""")
+    # Create a failing test
+    (temp_generic_project / "tests" / "test_feature.py").write_text("""
+import pytest
+
+def test_feature():
+    assert False, "Test not implemented"
+""")
+    return temp_generic_project
+
+
+@pytest.fixture
+def temp_green_project(temp_generic_project):
+    """Create a temporary project in green phase (passing tests)."""
+    (temp_generic_project / "docs" / "specs" / "feature.md").write_text("""---
+title: Test Spec
+---
+
+# Spec
+
+## Postconditions
+
+### Postcondition 1
+**Name**: Test
+**Description**: Test postcondition for feature
+**Verification**: test
+""")
+    # Create a passing test
+    (temp_generic_project / "tests" / "test_feature.py").write_text("""
+def test_feature():
+    assert True
+""")
+    return temp_generic_project
+
+
+@pytest.fixture
+def temp_review_project(temp_generic_project):
+    """Create a temporary project in review phase."""
+    (temp_generic_project / "docs" / "specs" / "feature.md").write_text("""---
+title: Test Spec
+---
+
+# Spec
+
+## Postconditions
+
+### Postcondition 1
+**Name**: Test
+**Description**: Test postcondition for feature
+**Verification**: test
+""")
+    (temp_generic_project / ".cdad-review.md").write_text("# Review Report")
+    return temp_generic_project
+
+
+@pytest.fixture
+def temp_merge_project(temp_generic_project):
+    """Create a temporary project in merge phase."""
+    (temp_generic_project / ".cdad-merged").write_text("")
+    return temp_generic_project
