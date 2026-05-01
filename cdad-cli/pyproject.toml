@@ -36,7 +36,10 @@ dev = [
 cdad = "cdad.cli.main:app"
 
 [tool.setuptools]
-packages = ["cdad"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.black]
 line-length = 100
@@ -54,4 +57,4 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src/cdad --cov-report=term-only"
+addopts = "-v --cov=src/cdad --cov-report=term"
