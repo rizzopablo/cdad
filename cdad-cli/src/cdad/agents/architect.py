@@ -1,9 +1,13 @@
-"""ArchitectAgent - discovers requirements and drafts specs."""
+"""ArchitectAgent - discovers requirements, drafts specs, analyzes code."""
 
 from typing import List
 from pathlib import Path
 
 from cdad.agents.base import BaseAgent
+
+CODE_SUFFIXES = {".py", ".md", ".txt", ".toml", ".cfg", ".ini"}
+MAX_FILE_BYTES = 16_000
+MAX_FILES = 40
 
 
 class ArchitectAgent(BaseAgent):
@@ -68,6 +72,82 @@ Provide a structured discovery with:
 4. Suggested postconditions"""
 
         return self.invoke(prompt)
+
+    def analyze(self, code_path: Path) -> str:
+        """Analyze an existing code path and produce a structured assessment.
+
+        Args:
+            code_path: File or directory to analyze.
+
+        Returns:
+            Markdown analysis covering responsibilities, coupling, gaps, risks.
+
+        Raises:
+            FileNotFoundError: If code_path does not exist.
+        """
+        code_path = Path(code_path)
+        if not code_path.exists():
+            raise FileNotFoundError(f"Code path not found: {code_path}")
+
+        snippets = self._collect_code_snippets(code_path)
+        prompt = f"""Analyze the code at: {code_path}
+
+Project context:
+{self.get_context()}
+
+Code under review:
+{snippets}
+
+Produce a markdown analysis with these sections:
+## Summary
+## Responsibilities
+## Coupling & Dependencies
+## Test Coverage Gaps
+## Risks
+Be specific. Reference file names. Avoid vague language."""
+        return self.invoke(prompt)
+
+    def recommend(self, analysis: str) -> str:
+        """Turn an analysis into prioritized, actionable recommendations.
+
+        Args:
+            analysis: Markdown analysis output from `analyze`.
+
+        Returns:
+            Markdown recommendations grouped by priority and category.
+        """
+        prompt = f"""Given this code analysis:
+{analysis}
+
+Produce prioritized, actionable recommendations as markdown.
+Group by priority (## High, ## Medium, ## Low).
+For each item include:
+- **Category**: refactor | extract | add-test | contract-gap
+- **Action**: concrete change to make
+- **Rationale**: why it matters
+Be specific and testable. No vague advice."""
+        return self.invoke(prompt)
+
+    def _collect_code_snippets(self, code_path: Path) -> str:
+        """Read up to MAX_FILES files under code_path into a single context blob."""
+        if code_path.is_file():
+            files = [code_path]
+        else:
+            files = sorted(
+                f for f in code_path.rglob("*") if f.is_file() and f.suffix in CODE_SUFFIXES
+            )[:MAX_FILES]
+
+        parts = []
+        for f in files:
+            try:
+                content = f.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            if len(content) > MAX_FILE_BYTES:
+                content = content[:MAX_FILE_BYTES] + "\n... [truncated]"
+            rel = f.relative_to(code_path) if code_path.is_dir() else f.name
+            parts.append(f"### File: {rel}\n```\n{content}\n```\n")
+        return "\n".join(parts) if parts else "(no readable files found)"
 
     def draft_spec(self, discovery: str) -> str:
         """Draft a specification from discovery output.

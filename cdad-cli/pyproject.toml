@@ -13,10 +13,10 @@ authors = [{name = "CDAD Contributors"}]
 
 dependencies = [
     "typer[all]==0.9.0",
-    "anthropic==0.25.0",
-    "pydantic==2.0.0",
-    "pydantic-settings==2.0.0",
-    "PyYAML==6.0",
+    "click<8.2",
+    "anthropic>=0.40.0",
+    "pydantic>=2.0.0",
+    "PyYAML>=6.0",
     "markdown-it-py==3.0.0",
     "python-frontmatter==1.0.0",
     "toml==0.10.2",
@@ -59,3 +59,4 @@ disallow_untyped_defs = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --cov=src/cdad --cov-report=term"
+pythonpath = ["src"]
