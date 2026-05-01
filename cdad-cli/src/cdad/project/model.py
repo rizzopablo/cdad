@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List, Optional
 import toml
 
-from cdad.config import FRAMEWORK_DETECTION, MEMORY_BANK_FILE
+from cdad.config import MEMORY_BANK_FILE
+from cdad.presets import REGISTRY
 
 
 class ProjectModel:
@@ -28,26 +29,14 @@ class ProjectModel:
         self.name = self._read_project_name()
 
     def detect_framework(self) -> str:
-        """Detect the project framework.
+        """Detect the project framework via the preset registry.
 
         Returns:
             Framework type: "odoo", "django", "generic", or "unknown".
         """
-        # Check for Odoo
-        for marker_file in FRAMEWORK_DETECTION["odoo"]:
-            if (self.root_path / marker_file).exists():
-                return "odoo"
-
-        # Check for Django
-        for marker_file in FRAMEWORK_DETECTION["django"]:
-            if (self.root_path / marker_file).exists():
-                return "django"
-
-        # Check for generic Python
-        for marker_file in FRAMEWORK_DETECTION["generic"]:
-            if (self.root_path / marker_file).exists():
-                return "generic"
-
+        for preset in REGISTRY:
+            if preset.matches(self.root_path):
+                return preset.name
         return "unknown"
 
     def list_spec_files(self) -> List[Path]:
