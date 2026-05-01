@@ -1,7 +1,6 @@
 """Tests for PhaseManager - orchestrator of CDAD phases."""
 
 
-
 class TestPhaseManager:
     """Placeholder for PhaseManager tests.
 
