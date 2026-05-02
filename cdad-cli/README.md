@@ -2,7 +2,7 @@
 
 A pure Python CLI that orchestrates the CDAD workflow without any editor or IDE dependency.
 
-**Status**: MVP (Phase 0 - Bootstrap)
+**Status**: MVP (Phase 1 - Core agents + CLI)
 
 ## What is CDAD-CLI?
 
@@ -15,17 +15,47 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
-## Usage
+## MVP Commands
+
+The four core commands for Contract-Driven Development:
 
 ```bash
-cdad init --name my-feature
+# 1. Initialize a CDAD project
+cdad init --name my-project
+
+# 2. Generate a spec from a feature description
 cdad discover --feature "Add user authentication"
-cdad spec
+cdad spec --name user-auth
+
+# 3. Analyze existing code and get recommendations
+cdad architect src/auth.py
+
+# 4. Generate failing tests from a spec
+cdad test user-auth
+```
+
+## Full Workflow
+
+```bash
+# Discovery & Spec phases
+cdad discover --feature "Feature description"
+cdad spec --name feature-name
+
+# RED phase: Write/generate failing tests
+cdad test feature-name
 cdad red
+
+# GREEN phase: Implement to make tests pass
+# (edit implementation files)
 cdad green
+
+# Architecture review (optional)
+cdad architect src/module.py
+
+# Status & management
+cdad status
 cdad review
 cdad merge
-cdad status
 ```
 
 ## Development
