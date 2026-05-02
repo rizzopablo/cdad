@@ -20,6 +20,13 @@ class ContractValidator:
     def validate(self, spec: SpecValidationResult, test_results: dict) -> ContractValidationResult:
         """Validate that postconditions are satisfied.
 
+        Phase 1 (MVP) scope: this is a deliberately trivial mapping —
+        if the project's test suite passes, every postcondition is reported
+        as satisfied; otherwise all are reported as unsatisfied. Real
+        per-postcondition contract verification (parameterized property-based
+        checks against multiple implementations) is Phase 2 work and will
+        replace this body without changing the public signature.
+
         Args:
             spec: SpecValidationResult with postconditions.
             test_results: Dictionary with test pass/fail status.
