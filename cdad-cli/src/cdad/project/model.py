@@ -93,62 +93,52 @@ class ProjectModel:
 
         return memory_bank.read_text(encoding="utf-8")
 
+    # Per-agent file-access policy. Each entry declares whether that agent
+    # may see specs, existing tests, and the implementation source tree.
+    # CDAD Principle 3: the test_writer MUST NOT see implementation source —
+    # otherwise it aligns tests to existing code instead of to the contract.
+    _AGENT_ACCESS_POLICY = {
+        "architect":   {"specs": True,  "tests": False, "src": False, "discovery": True},
+        "test_writer": {"specs": True,  "tests": True,  "src": False, "discovery": False},
+        "implementer": {"specs": True,  "tests": True,  "src": True,  "discovery": False},
+        "reviewer":    {"specs": True,  "tests": True,  "src": True,  "discovery": False},
+    }
+
     def get_accessible_files(self, agent_type: str) -> List[Path]:
         """Get list of files accessible to an agent.
+
+        Note: each agent class owns its own ``get_accessible_files()``; this
+        method is a thin façade used by the CLI and tests when only the agent
+        type string is available. Policy lives in ``_AGENT_ACCESS_POLICY``.
 
         Args:
             agent_type: Type of agent (e.g., "architect", "test_writer").
 
         Returns:
-            List of accessible file paths.
+            List of accessible file paths, deduplicated and sorted.
         """
-        accessible = []
+        accessible: List[Path] = []
 
-        # All agents can see README and docs/
+        # All agents see README and docs/
         if (self.root_path / "README.md").exists():
             accessible.append(self.root_path / "README.md")
-
         docs_dir = self.root_path / "docs"
         if docs_dir.exists():
             accessible.extend(sorted(docs_dir.rglob("*.md")))
 
-        # Agent-specific access
-        if agent_type == "architect":
-            # Architect sees specs and discovery
+        policy = self._AGENT_ACCESS_POLICY.get(agent_type, {})
+        if policy.get("specs"):
             accessible.extend(self.list_spec_files())
-            if (self.root_path / "docs" / "discovery.md").exists():
-                accessible.append(self.root_path / "docs" / "discovery.md")
-
-        elif agent_type == "test_writer":
-            # Test writer sees specs and existing tests
-            accessible.extend(self.list_spec_files())
+        if policy.get("tests"):
             accessible.extend(self.list_test_files())
-            if (self.root_path / "src").exists():
-                accessible.extend(sorted((self.root_path / "src").rglob("*.py")))
+        if policy.get("src") and (self.root_path / "src").exists():
+            accessible.extend(sorted((self.root_path / "src").rglob("*.py")))
+        if policy.get("discovery"):
+            discovery = self.root_path / "docs" / "discovery.md"
+            if discovery.exists():
+                accessible.append(discovery)
 
-        elif agent_type == "implementer":
-            # Implementer sees specs and test files
-            accessible.extend(self.list_spec_files())
-            accessible.extend(self.list_test_files())
-            if (self.root_path / "src").exists():
-                accessible.extend(sorted((self.root_path / "src").rglob("*.py")))
-
-        elif agent_type == "reviewer":
-            # Reviewer sees specs, tests, and implementation
-            accessible.extend(self.list_spec_files())
-            accessible.extend(self.list_test_files())
-            if (self.root_path / "src").exists():
-                accessible.extend(sorted((self.root_path / "src").rglob("*.py")))
-
-        # Remove duplicates while preserving order
-        seen = set()
-        result = []
-        for path in accessible:
-            if path not in seen:
-                seen.add(path)
-                result.append(path)
-
-        return sorted(result)
+        return sorted(set(accessible))
 
     def _read_project_name(self) -> str:
         """Read project name from configuration.
