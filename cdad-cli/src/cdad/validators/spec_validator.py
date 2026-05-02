@@ -67,6 +67,13 @@ class SpecValidator:
         postconditions, extraction_errors = self._extract_postconditions(postconditions_section)
         errors.extend(extraction_errors)
 
+        # Ensure at least one postcondition was parsed
+        if len(postconditions) == 0 and len(extraction_errors) == 0:
+            errors.append(
+                "No postconditions found in '## Postconditions' section. "
+                "Must define at least one '### Postcondition ...' block"
+            )
+
         is_valid = len(errors) == 0
         return SpecValidationResult(is_valid=is_valid, postconditions=postconditions, errors=errors)
 

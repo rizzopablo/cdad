@@ -17,11 +17,12 @@ class TestResult:
 class TestValidator:
     """Validates test status for a project."""
 
-    def validate(self, test_dir: Path) -> TestResult:
+    def validate(self, test_dir: Path, project_root: Path = None) -> TestResult:
         """Run tests and return results.
 
         Args:
             test_dir: Directory containing tests.
+            project_root: Project root directory (for cwd when running pytest).
 
         Returns:
             TestResult with pass/fail counts.
@@ -29,12 +30,18 @@ class TestValidator:
         if not test_dir.exists():
             return TestResult(passed=0, failed=0, errors=["Test directory not found"])
 
+        # Use project_root as cwd, or test_dir parent if not specified
+        cwd = project_root or test_dir.parent
+        if not cwd.exists():
+            cwd = Path.cwd()
+
         try:
             result = subprocess.run(
                 ["python", "-m", "pytest", str(test_dir), "-v", "--tb=no"],
                 capture_output=True,
                 timeout=30,
                 text=True,
+                cwd=cwd,
             )
 
             # Parse output to count passes/failures
