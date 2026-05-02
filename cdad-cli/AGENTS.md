@@ -1,8 +1,8 @@
 # CDAD-CLI: Agent Memory Bank (CDAD §10.3)
 
-> **Última actualización**: 2026-05-01  
-> **Fase**: Phase 1 MVP completada  
-> **Versión**: 0.1.0
+> **Última actualización**: 2026-05-02  
+> **Fase**: Phase 1 MVP completada + Correcciones de Principio 3 y OCP  
+> **Versión**: 0.1.1
 
 ---
 
@@ -88,14 +88,16 @@ export ANTHROPIC_API_KEY=sk-ant-...  # Requerida para comandos con LLM
 - `src/cdad/config/defaults.py` — constantes de configuración centralizadas
 - `src/cdad/presets/__init__.py` — orden del registry afecta detección de frameworks
 - `pyproject.toml` version — seguir semver, actualizar solo en releases
-- `AGENTS.md` (este archivo) — actualizar solo en checkpoints de fase
+- `AGENTS.md` (este archivo) — actualizar en checkpoints de fase o cuando cambia contexto de agentes
+- `ProjectModel._AGENT_ACCESS_POLICY` — tabla de acceso por agente, cambios requieren actualizar tests de Principio 3
 
 ### No hacer
 - No hardcodear `ANTHROPIC_API_KEY` (usar variable de entorno)
-- No modificar validadores sin actualizar tests correspondientes
+- No modificar validadores sin actualizar tests correspondientes (cobertura mínima >80%)
 - No saltar la fase RED (generar tests que pasan sin implementación)
 - No usar `print()` — usar `typer.echo()` para output de CLI
 - No llamar a LLM fuera de `LLMClient` (centralizado para logging/retry)
+- No dar acceso a `src/` al TestWriterAgent (viola CDAD Principio 3)
 
 ## Boundaries Arquitectónicos
 
@@ -126,6 +128,8 @@ export ANTHROPIC_API_KEY=sk-ant-...  # Requerida para comandos con LLM
 
 **Aislamiento**: cada agente solo accede a archivos definidos en `get_accessible_files()`. Los validadores verifican contratos independientemente del agente.
 
+**CDAD Principio 3 (aislamiento con ceguera contextual)**: TestWriterAgent NO accede a `src/` para evitar que los tests se alineen con el código existente en lugar de con el contrato. Esta restricción es estructural y se implementa via `ProjectModel._AGENT_ACCESS_POLICY`.
+
 ## Workflow de Agentes
 
 ### Flujo CDAD completo
@@ -143,10 +147,28 @@ discover → spec → test → red → green → review → merge
 - **Modelo**: claude-opus-4-7 (más potente para razonamiento arquitectónico)
 
 ### Agente actual: TestWriterAgent
-- **Ve**: specs, tests existentes, pyproject.toml
+- **Ve**: specs, tests existentes, pyproject.toml (NO ve `src/` por CDAD Principio 3)
 - **Hace**: write_tests() — genera pytest desde spec validada
 - **Modelo**: claude-sonnet-4-6
 - **Valida**: SpecValidator antes de generar tests
+- **Nota**: acceso restringido a `src/` es deliberado. Para verificar: `ProjectModel.get_accessible_files("test_writer")` excluye archivos bajo `src/`
+
+### Validadores Fase 1
+
+**SpecValidator** (src/cdad/validators/spec_validator.py)
+- Valida que specs cumplan formato CDAD (frontmatter + postcondiciones)
+- Usa regex para extraer secciones (tech-debt: migrar a markdown-it-py en Fase 2)
+- Detecta keywords vagos (assert, check, verify sin especificidad)
+
+**TestValidator** (src/cdad/validators/test_validator.py)
+- Ejecuta pytest en `tests/` y captura counts de PASSED/FAILED
+- Maneja timeouts y errores de ejecución (OSError, SubprocessError)
+- Devuelve TestResult con counts y error list
+
+**ContractValidator** (src/cdad/validators/contract_validator.py)
+- Fase 1 MVP: validación trivial. Si tests pasan → todas postcondiciones satisfied; si fallan → unsatisfied
+- Fase 2: será reemplazado por validación parametrizada + property-based testing contra múltiples solvers
+- API pública no cambiará; cambio será interno
 
 ### Agentes pendientes
 - **ImplementerAgent**: escribir código para pasar tests (GREEN)

@@ -56,5 +56,5 @@ class TestValidator:
             return TestResult(passed=passed, failed=failed, errors=errors)
         except subprocess.TimeoutExpired:
             return TestResult(passed=0, failed=0, errors=["Test run timed out"])
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             return TestResult(passed=0, failed=0, errors=[str(e)])
