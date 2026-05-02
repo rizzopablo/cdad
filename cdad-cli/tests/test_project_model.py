@@ -123,6 +123,41 @@ class TestProjectModel:
         # Test writer should see the spec
         assert isinstance(accessible, list)
 
+    def test_test_writer_cannot_see_src_files(self, temp_generic_project):
+        """CDAD Principle 3: test_writer must NOT see implementation source."""
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        impl_file = src_dir / "implementation.py"
+        impl_file.write_text("def add(a, b): return a + b\n")
+
+        model = ProjectModel(temp_generic_project)
+        accessible = model.get_accessible_files("test_writer")
+
+        assert impl_file not in accessible
+        assert not any(p.is_relative_to(src_dir) for p in accessible)
+
+    def test_implementer_can_see_src_files(self, temp_generic_project):
+        """Implementer must see src/ to write code."""
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        impl_file = src_dir / "implementation.py"
+        impl_file.write_text("# impl\n")
+
+        model = ProjectModel(temp_generic_project)
+        accessible = model.get_accessible_files("implementer")
+
+        assert impl_file in accessible
+
+    def test_unknown_agent_type_returns_only_common_files(self, temp_generic_project):
+        """Unknown agent_type falls back to README + docs only."""
+        (temp_generic_project / "src").mkdir(exist_ok=True)
+        (temp_generic_project / "src" / "secret.py").write_text("x = 1")
+
+        model = ProjectModel(temp_generic_project)
+        accessible = model.get_accessible_files("nonexistent_role")
+
+        assert all("src" not in p.parts for p in accessible)
+
     def test_initialize_with_nonexistent_path(self, tmp_path):
         """ProjectModel raises error when initialized with nonexistent path."""
         nonexistent = tmp_path / "nonexistent"

@@ -124,6 +124,6 @@ class PhaseManager:
                 timeout=30,
             )
             return result.returncode == 0
-        except Exception:
+        except (OSError, subprocess.SubprocessError):
             # If pytest fails to run, assume tests don't pass
             return False
