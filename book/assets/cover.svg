@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2400" viewBox="0 0 1600 2400">
+  <rect width="1600" height="2400" fill="#f4f0e6"/>
+  <rect x="120" y="120" width="1360" height="2160" fill="none" stroke="#111" stroke-width="6"/>
+  <text x="800" y="320" font-size="64" text-anchor="middle" font-family="Georgia" fill="#111">Contract-Driven AI Development</text>
+  <text x="800" y="390" font-size="36" text-anchor="middle" font-family="Georgia" fill="#111">CDAD</text>
+  <text x="800" y="460" font-size="30" text-anchor="middle" font-family="Georgia" fill="#111">Una metodología disciplinada para construir software con agentes de IA</text>
+
+  <g transform="translate(300,730) scale(1.05)">
+    <ellipse cx="500" cy="520" rx="360" ry="190" fill="none" stroke="#111" stroke-width="5"/>
+    <path d="M180 520 C220 420, 340 360, 500 350 C660 360, 780 420, 820 520" fill="none" stroke="#111" stroke-width="5"/>
+    <path d="M220 520 C260 460, 340 430, 500 420 C660 430, 740 460, 780 520" fill="none" stroke="#111" stroke-width="3"/>
+    <path d="M500 350 L500 710" stroke="#111" stroke-width="3"/>
+    <path d="M390 370 L390 700" stroke="#111" stroke-width="2"/>
+    <path d="M610 370 L610 700" stroke="#111" stroke-width="2"/>
+    <circle cx="800" cy="500" r="10" fill="#111"/>
+    <path d="M840 520 C900 540, 940 580, 970 620" fill="none" stroke="#111" stroke-width="4"/>
+    <path d="M260 680 L220 780" stroke="#111" stroke-width="6"/>
+    <path d="M380 700 L350 810" stroke="#111" stroke-width="6"/>
+    <path d="M620 700 L650 810" stroke="#111" stroke-width="6"/>
+    <path d="M740 680 L780 780" stroke="#111" stroke-width="6"/>
+  </g>
+
+  <text x="800" y="2080" font-size="42" text-anchor="middle" font-family="Georgia" fill="#111">Pablo Manuel Rizzo</text>
+  <text x="800" y="2140" font-size="24" text-anchor="middle" font-family="Georgia" fill="#111">Edición técnica profesional</text>
+</svg>
