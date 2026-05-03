@@ -1,2 +1,3 @@
 .qwen/settings.json.orig
 book
+skills/*.skill

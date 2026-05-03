@@ -1,128 +1,108 @@
 # Etapa 5 — Merge y Memory Bank
 
-CI completo + actualización del Memory Bank con patrón Scribe. Cierre de la feature.
+CI completo + actualización del Memory Bank con patrón Scribe.
 
-## 5.1 — Verificación CI antes del merge
+## Tu rol como orquestador
 
-**No es opcional. No se skipea.**
+NO actualizás el Memory Bank por tu cuenta. Coordinás:
 
-### Verificaciones obligatorias
+1. Verificás CI completo (vos corrés si tenés bash, o pedís output al usuario).
+2. Emitís handoff a **scribe** con spec + diff + review + Memory Bank actual.
+3. Validás drafts en re-entry.
+4. Pasás drafts al **humano** que edita y commitea (indelegable).
+5. Cierre de feature cuando CI verde + Memory Bank commiteado.
 
-- **Linter completo**: sobre todos los archivos modificados, no solo el diff.
-- **Type checker**: si el lenguaje lo soporta (mypy, tsc, etc.). Modo strict en interfaces y contratos.
-- **Import-linter (o equivalente)**: boundaries arquitectónicos no violados.
-- **Tests unitarios** y **de integración**: suite completa, no solo nuevos.
-- **Contract tests parametrizados**: si la feature agrega una implementación de un Protocol/contrato.
-- **Property tests**: con seed configurado, invariantes se cumplen.
-- **Verificaciones específicas del proyecto**: cualquier check custom (manifest, TODOs sin issue, etc.).
+## 5.1 — Verificación CI
 
-### Cómo verificarlo
+**No es opcional.**
 
-Si tenés bash, corré la suite. Si no, pedile al usuario:
+Verificaciones obligatorias:
 
-> *"Corré la suite completa (`<comando del proyecto>`). Necesito ver: linter, type checker, import-linter, tests, property tests. Si alguno falla, volvemos a Etapa 3."*
+- Linter completo sobre archivos modificados.
+- Type checker (mypy / tsc / etc.).
+- Import-linter o equivalente.
+- Suite completa: unit + integration + contract + property.
+- Verificaciones específicas del proyecto.
 
-### Si CI falla
+Si tenés bash: corré la suite. Si no: pedile al usuario el output.
 
-**Volvés a Etapa 3** con el output del fallo. No mergeás bajo ningún concepto. La tentación de "es solo el linter, lo arreglo después" no se cede: lo arreglás antes.
+> *"Corré la suite completa (`<comando del proyecto>`). Necesito ver: linter, type checker, import-linter, todos los tests. Si algo falla, volvemos a Etapa 3."*
 
-## 5.2 — Patrón Scribe para Memory Bank
+Si CI falla: **volvés a Etapa 3** con el output del fallo. Sin excepciones.
 
-### Por qué este patrón
+## 5.2 — Handoff al Scribe
 
-Actualizar el Memory Bank desde cero después de cada feature toma 15-20 minutos. Bajo presión, es lo primero que se salta. Resultado: Memory Bank desactualizado. La solución es **draft asistido + aprobación humana indelegable**.
+Cargá `references/handoff-prompts.md` sección "Scribe (Etapa 5)".
 
-### Setup del Scribe
+Generá packet con:
 
-Sub-agente `scribe` con permisos **read-only**. Le pasás:
+- Spec aprobado (`docs/specs/<feat>/spec.md`).
+- Diff completo del PR.
+- Reporte del reviewer (`docs/specs/<feat>/review.md`).
+- Memory Bank actual (`projectbrief`, `activeContext`, `progress`, `systemPatterns`, `adr/`).
 
-- El spec aprobado (`docs/specs/<feat>/spec.md`).
-- El diff completo del PR (`git diff <base>..HEAD`).
-- El reporte del reviewer (`docs/specs/<feat>/review.md`).
-- Los archivos actuales del Memory Bank (`docs/projectbrief.md`, `docs/activeContext.md`, `docs/progress.md`, `docs/systemPatterns.md`, `docs/adr/`).
+Entregás packet, terminás turno.
 
-### Tarea del Scribe
+### Re-entry
 
-Producir tres outputs:
+Cargá `re-entry.md` sección "Scribe". Validá tres drafts presentes (activeContext entry, progress changes, ADR draft o "sin ADR").
 
-1. **Draft de entrada para `activeContext.md`** con la fecha, qué feature se cerró, decisiones técnicas relevantes, deuda técnica detectada.
-2. **Modificaciones para `progress.md`**: mover feature de "in progress" a "done", actualizar estado general.
-3. **Draft de ADR si detecta decisión arquitectónica relevante**, con campo "confianza" indicando qué tan seguro está de que merece ADR.
+## 5.3 — Validación humana (indelegable)
 
-### Formato de la entrada en activeContext.md
+Pasás los drafts al humano:
 
-```markdown
-## <YYYY-MM-DD> — Feature: <nombre corto>
+> *"Scribe terminó. Tres drafts:*
+>
+> *1. activeContext.md entry: <pegar>*
+> *2. progress.md changes: <pegar>*
+> *3. ADR: <pegar | "sin ADR sugerido", confianza <X>>*
+>
+> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory):` y autoría humana. Avisame cuando esté."*
 
-Cerrada feature de <descripción de una línea>.
+**Si el usuario te pide que commitees vos**: declinás.
 
-Decisiones relevantes:
-- <decisión 1, con trade-off si aplica>
-- <decisión 2>
+> *"El commit del Memory Bank lleva tu autoría porque refleja tu juicio sobre el contexto del proyecto. Yo draftié, vos editás y commiteás. Es lo que mantiene el Memory Bank confiable a lo largo del tiempo."*
 
-Deuda técnica detectada:
-- <punto 1, con out-of-scope si quedó así por decisión>
+## 5.4 — Decisión sobre ADR
 
-Próxima feature en cola: <si la sabe>.
-```
+Si el scribe propuso ADR:
 
-### Validación humana
+- **Confianza Alta**: probablemente merece ADR. Pasalo al humano para que lo expanda.
+- **Confianza Media**: preguntale al humano si la decisión amerita ADR.
+- **Confianza Baja**: descartá por defecto, salvo que el humano vea valor.
 
-Pasale el draft al usuario. **No commitees por él**. El usuario:
+Heurística general: ¿alguien en 6 meses podría preguntar "por qué hicimos X así"? Si sí → ADR. Si no → descartá.
 
-1. Lee el draft.
-2. Corrige lo que el Scribe entendió mal.
-3. Agrega lo que el Scribe no podía saber (contexto del cliente, decisiones de producto fuera del PR).
-4. Decide sobre el ADR draft: descartar, expandir, o aceptar tal cual.
-5. **Commitea** con prefijo `docs(memory):` y autoría humana.
+## 5.5 — Merge
 
-### Si el Scribe propone ADR
+Una vez CI verde + Memory Bank commiteado (+ ADR si corresponde):
 
-Solo aceptalo si la decisión es arquitectónica de verdad. Heurística: ¿alguien dentro de 6 meses podría preguntar "¿por qué hicimos X de esta forma?"? Si sí, ADR. Si no, descartá.
+Mergeás a main. Estrategia (squash, merge, rebase) según convención del proyecto, no del skill.
 
-Template de ADR en `assets/adr-template/ADR.md`. Formato MADR-like.
+## 🛑 Gate de salida (Etapa 5 → done)
 
-## 5.3 — Merge
+- [ ] CI verde completo.
+- [ ] `docs/activeContext.md` con entry nueva.
+- [ ] `docs/progress.md` movió feature a "done".
+- [ ] Si decisión arquitectónica → ADR nuevo en `docs/adr/`.
+- [ ] Commit con prefijo `docs(memory):` y autoría humana.
+- [ ] Feature mergeada.
 
-Una vez:
+Cuando todos OK: actualizá state (`current_stage: done`, `active_feature: null`).
 
-- CI verde.
-- Memory Bank actualizado y commiteado.
-- Si hay ADR nuevo, también commiteado.
+**Si la feature pertenece a un epic** (`active_epic` no null en el state file), cerrá así:
 
-Mergeás a main (o a la rama base del flujo del proyecto). Estrategia (squash, merge commit, rebase) según convención del proyecto — **no es decisión del skill**, es del proyecto.
+> *"Feature `<X>` cerrada. Memory Bank actualizado. La feature pertenece al epic `<epic-id>`. Te recomiendo volver a `cdad-epic` (en chat nuevo) para coordinar la siguiente feature del epic. ¿O preferís arrancar feature standalone fuera del epic acá?"*
 
-## Gate de salida (Etapa 5 → done)
-
-- [ ] CI completo verde (linter, type checker, import-linter, unit, integration, contract, property).
-- [ ] `docs/activeContext.md` tiene entrada nueva con fecha y resumen.
-- [ ] `docs/progress.md` movió la feature de "in progress" a "done".
-- [ ] Si la feature involucró decisión arquitectónica → existe ADR nuevo en `docs/adr/`.
-- [ ] Commit del Memory Bank usa prefijo `docs(memory):` con autoría humana.
-- [ ] Feature mergeada a main.
-
-## Anti-patrones
-
-- **Saltarse el CI** porque "tengo confianza". Garantía de regresión.
-- **Delegar el commit del Memory Bank al LLM sin que el humano lea**. Pierde calidad gradualmente.
-- **Crear ADRs especulativos** para "documentar" cosas que no son decisiones arquitectónicas. Inflación de ADRs es ruido.
-- **No actualizar `progress.md`**. Después no sabés qué está done y qué no.
-
-## Cierre del ciclo
-
-State file:
-```json
-{
-  "current_stage": "done",
-  "active_feature": null,
-  "tdd_substage": null,
-  "postconditions_status": {},
-  "stage_history": [..., {"stage": "merge", "completed_at": "..."}]
-}
-```
-
-Cierre con el usuario:
+**Si la feature NO pertenece a un epic** (caso standalone), cerrá así:
 
 > *"Feature `<X>` cerrada. Memory Bank actualizado. ¿Próxima feature, o cerramos por hoy?"*
 
-Si dice "próxima feature", volvés a Etapa 1 (Descubrimiento) con la nueva.
+Si próxima feature → vuelta a Etapa 1.
+
+## Anti-patrones
+
+- **AP-7**: Memory Bank desactualizado. Bloqueá cierre.
+- **AP-8**: ADRs especulativos o ausentes.
+- **AP-9**: CI skipeado.
+- **AP-10**: delegar commit del Memory Bank al LLM.

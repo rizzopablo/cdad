@@ -1,114 +1,79 @@
 # Etapa 1 — Descubrimiento
 
-Destruir las suposiciones del LLM sobre el sistema antes de codear. Sin esto, el agente inventa APIs, métodos y convenciones que no existen.
+Destruir suposiciones del LLM sobre el sistema antes de codear.
 
-## Dos modalidades
+## Tu rol como orquestador en esta etapa
 
-- **Descubrimiento inicial** del proyecto completo: una vez al arrancar el proyecto. Output: `docs/landscape.md`.
-- **Descubrimiento por feature**: mini-fase antes de cada spec. Output: sección "Contexto técnico" del spec.
+NO descubrís vos. Coordinás:
+
+1. Detectás si falta `docs/landscape.md` (descubrimiento inicial) o si la feature requiere descubrimiento puntual.
+2. Si descubrimiento inicial: el **humano** lo hace manualmente (no delegás al architect; el humano necesita ganar conocimiento de primera mano para evaluar después). Vos lo guiás con preguntas estructuradoras y armás el documento con sus respuestas.
+3. Si descubrimiento por feature: emitís handoff packet al **architect** (read-only) que mapea APIs/hooks/módulos relevantes.
+4. Validás resultado en re-entry.
 
 ## Modalidad A — Descubrimiento inicial
 
-Solo aplica si `docs/landscape.md` no existe **y** es la primera feature del proyecto. Si ya existe, saltá a Modalidad B.
+Aplica solo si `docs/landscape.md` no existe Y es la primera feature.
 
-### Pasos
+### Tu trabajo
 
-1. **Confirmá con el usuario que va a invertir tiempo en esto**. No es pereza saltarlo: si el sistema es muy chico o conocido, alcanza con `landscape.md` mínimo. Para frameworks grandes (Odoo, Django, Rails, Spring), vale la inversión.
+Hacé preguntas al humano (una a tres por turno) para que cubra:
 
-2. **El usuario hace el descubrimiento manualmente**, no vos. Razón: la idea es que el humano gane conocimiento de primera mano para después poder criticar lo que el LLM proponga. Si delegás esto, perdés la base de evaluación.
+- Entidades/modelos centrales del sistema.
+- Hooks o puntos de extensión del framework.
+- Convenciones de naming, organización, layering.
+- Diferencias entre la versión usada y la documentada.
+- Patrones recomendados / desaconsejados.
 
-3. **Tu rol es estructurador**. Hacé preguntas para que el usuario cubra los aspectos relevantes:
-   - ¿Qué entidades/modelos centrales existen en el sistema?
-   - ¿Qué hooks o puntos de extensión tiene el framework?
-   - ¿Qué convenciones de naming, organización de carpetas, layering aplican?
-   - ¿Hay diferencias entre la versión que están usando y la documentada que conviene anotar?
-   - ¿Qué patrones recomendados / desaconsejados hay en este framework?
+Estructurás las respuestas en `docs/landscape.md` con secciones claras. Devolvés draft, el humano edita y confirma.
 
-4. **El usuario te pasa notas crudas** y vos las estructurás en `docs/landscape.md` con secciones claras. Devolvé el draft, el usuario lo edita y lo confirma.
+**No emitís handoff a un rol acá.** Esta modalidad es vos + humano directamente.
 
-### Estructura típica de `landscape.md`
+### Estructura típica
 
 ```markdown
-# Landscape — <nombre del proyecto>
+# Landscape — <proyecto>
 
 ## Contexto del sistema
-<framework, versión, propósito>
-
 ## Entidades y modelos centrales
-<lista con qué hace cada uno>
-
 ## Puntos de extensión
-<hooks, herencias, mecanismos del framework>
-
 ## Convenciones del proyecto
-<naming, layering, organización>
-
 ## Diferencias con documentación oficial
-<gotchas específicos de la versión>
-
 ## Lo que NO usamos
-<patrones del framework que el proyecto evita>
 ```
 
 ## Modalidad B — Descubrimiento por feature
 
-Esta es la modalidad habitual, aplicada antes de cada feature.
+Modalidad habitual antes de cada feature.
 
-### Objetivo
+### Tu trabajo
 
-Verificar que las suposiciones del LLM sobre la API que va a tocar son correctas. No exhaustivo: lo justo para escribir el spec sin volver a buscar al código.
+1. Pedile al usuario qué partes del sistema toca la feature (módulos, modelos, endpoints, capas).
+2. Cargá `references/handoff-prompts.md` sección "Architect (Etapa 1 — Descubrimiento por feature)".
+3. Generá el handoff packet con:
+   - La descripción funcional preliminar (una frase).
+   - La lista de archivos relevantes que el usuario te dio.
+   - El contenido de `docs/landscape.md`, `docs/projectbrief.md`, `docs/systemPatterns.md`.
+4. **Entregá el packet y terminá el turno.**
 
-### Pasos
+### Re-entry
 
-1. **Identificá qué partes del sistema toca la feature**. Pedile al usuario que las nombre: módulos, modelos, endpoints, capas.
+Cuando el usuario vuelve con el output del architect, cargá `references/re-entry.md` sección "Architect — descubrimiento por feature" y validá.
 
-2. **Mapeo en sesión read-only**. Si el entorno soporta sub-agentes, abrí una sesión `architect` con permisos de **solo lectura**. Si no, hacelo vos en el flujo principal pero declarando "ahora estoy explorando, sin escribir nada". El mapeo cubre:
-   - Firmas de los métodos/funciones que la feature va a tocar o extender.
-   - Hooks del ciclo de vida disponibles para inyectar comportamiento.
-   - Convenciones de tests del proyecto (qué fixture usar, cómo se levanta el entorno).
-   - Imports/dependencias permitidos según `import-linter` o equivalente.
+Si pasa: el output va a la sección "Contexto técnico" del spec en Etapa 2.
 
-3. **Validá las suposiciones contra código real**. Cualquier "yo creo que X" se verifica abriendo el archivo. Si no podés ejecutar bash/lectura de código, pedí al usuario que abra el archivo y te confirme.
+## 🛑 Gate de salida (Etapa 1 → Etapa 2)
 
-4. **Documentá lo aprendido**. Va a la sección "Contexto técnico" del spec en Etapa 2. Mantené durante esta etapa un draft mental o en archivo temporal.
+- [ ] Si primera feature: `docs/landscape.md` con contenido real (no placeholders).
+- [ ] Para esta feature: el usuario puede explicar qué APIs/hooks va a tocar sin abrir el código.
+- [ ] No quedan suposiciones tipo "yo creo que existe X" pendientes.
 
-### Spike opcional
+Si todos OK: actualizá state file (`current_stage: specification`), anunciá transición, y emití handoff a architect modo brainstorm para Etapa 2.
 
-Si la API es poco conocida o riesgosa, vale un **spike**: rama temporal donde escribís código exploratorio que vas a tirar. La regla: el código del spike no se merge; lo que se merge es el conocimiento aprendido, vuelto al landscape o al spec.
-
-Si arrancás un spike, avisale al usuario explícitamente:
-
-> *"Esto es un spike — voy a escribir código para aprender, lo vamos a tirar al final. ¿OK?"*
-
-## Gate de salida (Etapa 1 → Etapa 2)
-
-No avances sin verificar **todos**:
-
-- [ ] Si es la primera feature: `docs/landscape.md` existe con contenido real (no solo placeholders).
-- [ ] Para esta feature: el usuario puede explicarte qué APIs/hooks va a tocar sin abrir el código. Validalo preguntando: *"contame en una frase cómo va a interactuar la feature con el sistema actual"*.
-- [ ] No quedan suposiciones del tipo "yo creo que existe el método X" pendientes de verificación.
-- [ ] El usuario aprueba pasar a Especificación.
-
-Si alguno falla, identificá qué falta y volvé a iterar.
+Si falta algo: identificá qué específicamente y volvé al usuario / al architect.
 
 ## Anti-patrones
 
-- **Saltar al spec sin descubrimiento**, asumiendo que el LLM "ya sabe" cómo es el framework. Garantía de inventos en Etapa 3.
-- **Hacer descubrimiento exhaustivo** mapeando el proyecto entero. Es modalidad A, no B; consume tiempo sin ROI por feature.
-- **Dejar el descubrimiento solo en cabeza**. Si no se documenta (en landscape o spec), se pierde y la próxima feature lo redescubre.
-
-## Cómo cerrar la etapa
-
-Cuando todos los items del gate están OK, actualizá el state file:
-
-```json
-{
-  "current_stage": "specification",
-  "stage_history": [
-    ..., 
-    {"stage": "discovery", "completed_at": "<timestamp>"}
-  ]
-}
-```
-
-Y avisale al usuario: *"Discovery cerrado. Pasamos a Especificación."* Cargá `references/stage-2-specification.md`.
+- **Saltar al spec sin descubrimiento** → garantía de inventos en Etapa 3.
+- **Descubrimiento exhaustivo** mapeando proyecto entero (modalidad A para cada feature) → consume tiempo sin ROI.
+- **Vos haciendo el descubrimiento** en lugar de coordinarlo → perdés el oráculo independiente del architect y, peor, el humano pierde la oportunidad de aprender de primera mano.

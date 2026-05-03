@@ -1,172 +1,86 @@
 # Etapa 2 — Especificación
 
-Convertir una idea funcional en un documento técnico implementable sin ambigüedad. Output: `docs/specs/<NNN-feature-id>/spec.md` aprobado por humano.
+Convertir idea funcional en spec implementable sin ambigüedad.
 
-## Tres pasos
+## Tu rol como orquestador
 
-1. Brainstorm socrático
-2. Redacción del spec
-3. Aprobación humana
+NO escribís el spec. Coordinás:
 
-## Paso 1 — Brainstorm socrático
+1. Emitís handoff a **architect modo brainstorm** (preguntas socráticas).
+2. Validás cierre del brainstorm en re-entry.
+3. Emitís handoff a **architect modo redacción de spec**.
+4. Validás draft del spec en re-entry.
+5. Pasás el spec al **humano para aprobación** (indelegable).
+6. Cuando humano aprueba, cerrás la etapa.
 
-### Tu rol
+## Sub-fase 2.1 — Brainstorm socrático
 
-Sos el **agente que pregunta**. El usuario tiene la idea funcional pero probablemente con ambigüedades; tu trabajo es exponerlas haciéndolas explícitas.
+Cargá `references/handoff-prompts.md` sección "Architect (Etapa 2 — Brainstorm socrático)". Generá el packet con:
 
-### Cómo arrancar
+- Descripción funcional preliminar (de Etapa 1).
+- `docs/landscape.md` y output de descubrimiento por feature (sección "Contexto técnico" en draft).
+- `docs/systemPatterns.md`.
 
-Abrí con:
+Entregás packet y terminás turno.
 
-> *"Vamos a diseñar el spec de `<feature>`. Antes de proponer nada, te hago las preguntas que necesito para entender exactamente qué querés. Avisame si alguna no aplica."*
+### Re-entry
 
-Después hacé preguntas. **No le pidas al usuario que te pase un spec ya escrito** — el valor del brainstorm es justamente extraer lo que está implícito.
+Cuando el architect cierra brainstorm con resumen de decisiones, validá (ver `re-entry.md` sección "Architect — brainstorm"). Si pasa, emití handoff a redacción.
 
-### Qué preguntar (adaptá según el dominio)
+## Sub-fase 2.2 — Redacción del spec
 
-Categorías típicas:
+Handoff packet del architect modo redacción con:
 
-- **Inputs**: ¿qué tipos? ¿qué pasa con `null`/vacío/inválido? ¿qué validaciones?
-- **Outputs**: ¿qué retorna? ¿qué formato? ¿qué pasa cuando no hay resultado?
-- **Errores**: ¿excepciones tipadas? ¿mensajes específicos? ¿logs?
-- **Casos de borde**: límites, casos extremos, concurrencia, idempotencia.
-- **No-funcionales**: performance esperada, consumo de memoria, thread-safety si aplica.
-- **Permisos / autorización**: quién puede invocar, en qué contexto.
-- **Persistencia**: ¿hay side effects? ¿transacciones? ¿qué pasa si falla a mitad?
-- **Out of scope**: explícitamente, qué NO hace.
+- Resumen del brainstorm (del re-entry anterior).
+- Contenido de `assets/spec-template/spec.md`.
+- `docs/systemPatterns.md`.
 
-### Cuándo cortar
+Entregás packet, terminás turno.
 
-Cuando las preguntas que te quedan son **detalles de implementación** (cómo escribir un loop, qué algoritmo elegir) y no decisiones de comportamiento, ya está. El spec captura el **qué**, no el **cómo**.
+### Re-entry
 
-Si el usuario se cansa antes de tiempo y querés cortar, mencionalo:
+Validá draft del spec (ver `re-entry.md` sección "Architect — draft de spec").
 
-> *"Hay tres preguntas más que importan para el spec. Si querés las respondés ahora; si preferís, las marco como `<TODO>` en el spec y las resolvemos antes de aprobarlo."*
+Si pasa: pasás al humano para aprobación.
 
-## Paso 2 — Redacción del spec
+## Sub-fase 2.3 — Aprobación humana (indelegable)
 
-### Estructura mínima (cuatro secciones)
+Decile al usuario:
 
-Copiá `assets/spec-template/spec.md` y rellenalo. La estructura:
+> *"Spec en `docs/specs/<NNN>/spec.md`. Revisalo: (a) cada postcondición es lo que querés, (b) criterios de aceptación medibles, (c) out of scope completo. Si está OK, agregá la marca de aprobación al final del archivo (`Status: Approved by <vos> on <fecha>`) o en frontmatter (`approved_by: <vos>`, `approved_at: <fecha>`). Avisame cuando esté."*
 
-```markdown
-# Spec: <nombre de la feature>
+**Si el usuario te pide aprobar vos**: declinás amablemente.
 
-## Descripción funcional
-<qué hace, en lenguaje cercano al usuario final>
+> *"La aprobación del spec requiere tu juicio sobre dominio, cliente, y producto. Yo puedo proponerte cambios si querés, pero la marca de aprobado va con tu nombre."*
 
-## Contrato (firma e invariantes)
-<firma formal con tipos, postcondiciones numeradas y verificables>
+**Si el usuario quiere saltarse la aprobación**:
 
-## Invariantes verificables
-<propiedades que se cumplen para todo input válido — base de property tests>
+> *"La aprobación es lo que define si el spec captura lo que necesitás. Sin esa marca, en Etapa 4 no vamos a saber contra qué versión validar el código. Tres minutos de leer y aprobar te ahorran retrabajo en Etapa 3 o 4."*
 
-## Criterios de aceptación
-<medibles, no adjetivos vagos>
+## Variantes según tamaño
 
-## Out of scope
-<qué NO hace, para evitar scope creep>
+- **Trivial** (fix puntual): spec puede ser un párrafo + un test que falla. Igual brainstorm + aprobación, pero más cortos.
+- **Mediana** (mayoría): formato estándar.
+- **Compleja** (múltiples componentes): dividir en `spec.md`, `plan.md`, `tasks.md`.
 
-## Notas de implementación (opcional)
-<decisiones técnicas tomadas en el brainstorm>
-```
+Decidilo con el usuario al inicio de la etapa.
 
-### Reglas para postcondiciones
-
-Cada postcondición debe ser:
-
-- **Numerada** (1, 2, 3...): para que se pueda referenciar desde el state file y los tests.
-- **Verificable**: un test puede determinar pass/fail.
-- **Sobre comportamiento observable**, no implementación: "retorna `DateTime` con timezone UTC explícito" sí; "usa `fromisoformat`" no.
-
-Ejemplo:
-
-```
-1. Si `s` es ISO 8601 válido, retorna DateTime correspondiente con timezone explícito.
-2. Si `s` no tiene timezone offset, DateTime resultante es UTC explícito (no naive).
-3. Si `s` no es válido, lanza InvalidDateError con mensaje incluyendo el input recibido.
-```
-
-### Reglas para criterios de aceptación
-
-Medibles:
-
-- ✅ "Cobertura de líneas en `src/parser.py` ≥ 95%"
-- ✅ "Property test con 1000 strings random pasa"
-- ❌ "El código es performante" (¿cuánto?)
-- ❌ "Bien testeado" (¿qué métrica?)
-
-### Variantes según tamaño
-
-- **Trivial** (un fix, un campo nuevo): un párrafo + un test que falla. La estructura entera es overkill.
-- **Mediana** (la mayoría): la estructura de cuatro secciones funciona.
-- **Compleja** (múltiples componentes): dividir en `spec.md` (qué), `plan.md` (cómo y orden), `tasks.md` (lista con dependencias).
-
-Decidilo con el usuario. Cuando dudes, optá por la versión más simple que captura el valor.
-
-### Quién escribe el draft
-
-Vos podés draftear el spec basándote en el brainstorm. El usuario edita y aprueba. **Nunca apruebes vos el spec**. La aprobación es indelegable.
-
-## Paso 3 — Aprobación humana
-
-### Cómo se materializa
-
-Una marca inequívoca, una de:
-
-1. Línea al final del spec: `Status: Approved by <nombre> on <YYYY-MM-DD>`
-2. Frontmatter YAML al inicio:
-   ```yaml
-   ---
-   approved_by: <nombre>
-   approved_at: <YYYY-MM-DD>
-   ---
-   ```
-3. Confirmación explícita en este turno (si el entorno lo permite). En este caso, **vos** registrás la aprobación en el state file:
-   ```json
-   "stage_history": [
-     ...,
-     {"stage": "specification", "completed_at": "...", "approved_by": "<nombre>"}
-   ]
-   ```
-
-### Antes de marcar aprobado, validá con el usuario
-
-Pasá el spec en pantalla y preguntá:
-
-> *"Antes de aprobar: revisá que (a) cada postcondición es lo que querés, (b) los criterios de aceptación son medibles, (c) no falta nada en out of scope. Si está OK, lo apruebo agregando la marca al final."*
-
-Si el usuario marca dudas, volvé al brainstorm en esa parte específica.
-
-### Si el usuario quiere saltar la aprobación
-
-Es la trampa principal de esta etapa. Resistí amablemente:
-
-> *"La aprobación es lo que define si el spec captura lo que necesitás. Sin esa marca, en Etapa 4 no vamos a poder verificar si el código diverge del spec porque no vamos a saber cuándo fue el spec 'oficial'. Tres minutos de leer y aprobar te ahorran un retrabajo en Etapa 3 o 4."*
-
-## Gate de salida (Etapa 2 → Etapa 3)
+## 🛑 Gate de salida (Etapa 2 → Etapa 3)
 
 - [ ] `docs/specs/<NNN-feature-id>/spec.md` existe.
-- [ ] Las cuatro secciones mínimas están presentes y no son placeholders.
-- [ ] Cada postcondición es numerada y verificable.
-- [ ] Cada criterio de aceptación es medible.
-- [ ] Hay marca de aprobación humana inequívoca.
+- [ ] Cuatro secciones mínimas presentes y no son placeholders.
+- [ ] Postcondiciones numeradas y verificables.
+- [ ] Criterios de aceptación medibles.
+- [ ] Marca de aprobación humana inequívoca.
 
-## Si surge algo no contemplado durante implementación
+Cuando todos OK: actualizá state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, registrá `approved_by` en `stage_history`). Anunciá transición. Emití handoff a test-writer (RED) para postcondición 1.
 
-Regla: **no agregues silenciosamente al código**. Volvés al spec, lo actualizás, commiteás el cambio del spec (`docs: update spec — add postcondition X`), y recién entonces implementás. El spec es la fuente de verdad.
+## Si surge algo no contemplado en spec durante implementación
 
-## Cómo cerrar la etapa
+Regla: NO se agrega silenciosamente al código. Volvés a Etapa 2: actualizar spec, commitear el cambio (`docs: update spec — add postcondition X`), reaprobar. Recién entonces el implementer puede tocar el caso.
 
-Actualizá state file:
+## Anti-patrones
 
-```json
-{
-  "current_stage": "tdd",
-  "tdd_substage": "red",
-  "active_feature": "<NNN-feature-id>",
-  "stage_history": [..., {"stage": "specification", "completed_at": "...", "approved_by": "..."}]
-}
-```
-
-Cargá `references/stage-3-tdd.md`.
+- **AP-5**: saltar el spec porque "es simple". Mínimo: un párrafo + test que falla, con aprobación.
+- **AP-6**: spec aprobado en silencio sin marca explícita. Sin marca, no avanzás.
+- **AP-10**: delegar la aprobación al LLM. Indelegable.
