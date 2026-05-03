@@ -88,6 +88,14 @@ Your role is to:
             files[filepath] = code
         return files
 
+    def _has_tests_path(self, files: dict[str, str]) -> str | None:
+        """Check if any file path is under tests/. Return the offending path or None."""
+        for filepath in files:
+            normalized = filepath.replace("\\", "/")
+            if normalized.startswith("tests/") or normalized.startswith("tests\\"):
+                return filepath
+        return None
+
     def _write_files(self, files: dict[str, str]) -> list[Path]:
         """Write files to project root. Create dirs if needed."""
         written = []
@@ -208,11 +216,35 @@ Return your code changes using this format:
             # b) Parse response
             files_to_write = self._parse_llm_response(llm_response)
 
-            # c) Write files
+            # c) Validate: reject ALL if any path is under tests/
+            forbidden_path = self._has_tests_path(files_to_write)
+            if forbidden_path is not None:
+                error_msg = f"test_modification_forbidden:{forbidden_path}"
+                log_entry = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "iteration": i,
+                    "pytest_passed": 0,
+                    "pytest_failed": 0,
+                    "files_modified": [],
+                    "provider_call_duration_s": round(call_duration, 3),
+                    "notes": f"test_modification_forbidden:{forbidden_path}",
+                }
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(log_entry) + "\n")
+
+                return ImplementResult(
+                    success=False,
+                    iterations_used=i,
+                    files_modified=[],
+                    final_test_output="",
+                    error=error_msg,
+                )
+
+            # d) Write files
             written = self._write_files(files_to_write)
             files_modified.extend(written)
 
-            # d) Run pytest
+            # e) Run pytest
             test_result = self._run_tests()
             passed, failed = self._parse_pytest_output(test_result.stdout)
 

@@ -671,3 +671,200 @@ def magic():
             or "failed" in output.lower()
             or "error" in output.lower()
         ), f"Expected pytest output in final_test_output, got: {output[:200]}"
+
+
+# ===========================================================================
+# PC-003-4: No modification of tests/ directory
+# ===========================================================================
+
+
+class TestPC003_4_NoTestModification:
+    """PC-003-4: Si el agente intenta escribir un path bajo `tests/`,
+    NO aplica el cambio y retorna success=False con
+    error="test_modification_forbidden:<path>" y registra en implement.log.
+
+    Este es un invariante crítico — el agente NUNCA modifica tests/.
+    """
+
+    def _create_spec_with_mock_attempting_tests_write(self, project_root, spec_dir, llm_mock):
+        """Helper: Create spec, mock LLM returns code for tests/ path."""
+        spec_path = spec_dir / "feature.md"
+        spec_path.write_text("""---
+title: Feature with LLM attempting tests/
+---
+
+# Spec
+
+## Postconditions
+
+### PC-001
+**Name**: Add function
+**Description**: add(1, 1) returns 2
+**Verification**: test
+""")
+
+        tests_dir = project_root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        # Use a separate failing file so we don't overwrite test_feature.py
+        # that the test itself may create. Must fail so agent enters the loop.
+        (tests_dir / "test_initial_check.py").write_text("def test_placeholder(): assert False\n")
+
+        # Mock LLM returns code for both src/ AND tests/ (attempt to modify tests)
+        llm_mock.send_message.return_value = """### file: src/calculator.py
+def add(a, b):
+    return a + b
+
+### file: tests/test_feature.py
+def test_add():
+    from src.calculator import add
+    assert add(1, 1) == 2
+    # LLM tried to add this comment - should be rejected!
+"""
+
+        return spec_path
+
+    def test_rejects_tests_modification_returns_success_false(self, temp_generic_project):
+        """PC-003-4: Cuando LLM intenta modificar tests/, success=False."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_mock_attempting_tests_write(
+            temp_generic_project, spec_dir, llm
+        )
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert isinstance(result, ImplementResult)
+        assert result.success is False, (
+            f"Expected success=False when LLM attempts tests/ modification, got {result.success}"
+        )
+
+    def test_error_contains_test_modification_forbidden(self, temp_generic_project):
+        """PC-003-4: error contiene 'test_modification_forbidden:<path>'."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_mock_attempting_tests_write(
+            temp_generic_project, spec_dir, llm
+        )
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert result.error is not None, "Expected error to be set"
+        assert "test_modification_forbidden" in result.error, (
+            f"Expected 'test_modification_forbidden' in error, got: {result.error}"
+        )
+        # Should include the path that was attempted
+        assert "tests/" in result.error, f"Expected tests/ path in error, got: {result.error}"
+
+    def test_does_not_modify_file_under_tests(self, temp_generic_project):
+        """PC-003-4: El archivo bajo tests/ NO es modificado."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        # Create original test file
+        tests_dir = temp_generic_project / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        original_test_content = "def test_add(): pass\n"
+        test_file = tests_dir / "test_feature.py"
+        test_file.write_text(original_test_content)
+
+        spec_path = self._create_spec_with_mock_attempting_tests_write(
+            temp_generic_project, spec_dir, llm
+        )
+
+        agent.implement(spec_path=spec_path, max_iterations=5)
+
+        # Verify test file was NOT modified
+        current_content = test_file.read_text()
+        assert current_content == original_test_content, (
+            f"Test file was modified! Expected:\n{original_test_content}\nGot:\n{current_content}"
+        )
+
+    def test_logs_attempted_test_modification(self, temp_generic_project):
+        """PC-003-4: El intento se registra en implement.log."""
+        import json
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs" / "test-forbid-feature"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_mock_attempting_tests_write(
+            temp_generic_project, spec_dir, llm
+        )
+
+        agent.implement(spec_path=spec_path, max_iterations=5)
+
+        log_path = spec_dir / "implement.log"
+        assert log_path.exists(), "Expected implement.log to exist"
+
+        # Check log contains the forbidden attempt
+        log_content = log_path.read_text()
+        lines = log_content.strip().split("\n")
+
+        found_forbidden_log = False
+        for line in lines:
+            entry = json.loads(line)
+            # Look for note mentioning the forbidden attempt
+            notes = entry.get("notes", "")
+            if "test_modification_forbidden" in notes or "tests/" in notes:
+                found_forbidden_log = True
+                break
+
+        assert found_forbidden_log, (
+            f"Expected log entry about test_modification_forbidden. Log:\n{log_content}"
+        )
+
+    def test_rejects_all_changes_if_any_tests_path_present(self, temp_generic_project):
+        """PC-003-4: Si hay intento tests/, se rechaza TODO (no aplica parcial)."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        # Also create a src file that would be modified
+        src_file = src_dir / "calculator.py"
+        src_file.write_text("# placeholder")
+
+        spec_path = self._create_spec_with_mock_attempting_tests_write(
+            temp_generic_project, spec_dir, llm
+        )
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        # Both src/ and tests/ changes should be rejected
+        # because tests/ modification was attempted
+        assert result.success is False
+
+        # Verify src file was NOT modified either (rejected all)
+        current_src_content = src_file.read_text()
+        assert current_src_content == "# placeholder", (
+            "Src file was modified despite tests/ attempt - should reject ALL"
+        )
