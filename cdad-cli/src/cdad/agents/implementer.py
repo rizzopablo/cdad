@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List
 
 from cdad.agents.base import BaseAgent
+from cdad.llm.provider import ProviderError
 
 
 class SpecNotFoundError(FileNotFoundError):
@@ -69,7 +70,7 @@ Your role is to:
     def _run_tests(self) -> subprocess.CompletedProcess:
         """Run pytest from project root."""
         return subprocess.run(
-            ["python", "-m", "pytest", "tests/", "-q"],
+            ["python", "-m", "pytest", "tests/", "-v", "--tb=short"],
             cwd=self.project.root_path,
             capture_output=True,
             text=True,
@@ -129,6 +130,42 @@ Your role is to:
                 count += 1
         return count
 
+    def _scan_for_obsolete_references(
+        self, test_output: str, active_feature: str = "003"
+    ) -> list[ObsolescenceSuspicion]:
+        """Heuristic: scan pytest output for references to closed specs (PC-NNN where NNN != active).
+
+        Looks for patterns like PC-NNN, pc_NNN in test output, test names, error messages.
+        """
+        suspicions = []
+        # Find all PC-NNN or pc_NNN references
+        pattern = r"(?:PC[-_]|pc[_-])(\d{3})"
+        found = re.findall(pattern, test_output, re.IGNORECASE)
+
+        # Also scan test file names that may have been in the output
+        test_file_pattern = r"test.*pc[_-](\d{3})"
+        found += re.findall(test_file_pattern, test_output, re.IGNORECASE)
+
+        for nnn in found:
+            if nnn != active_feature:
+                # Try to find the test file path from output
+                # pytest -q outputs like: tests/test_file.py::test_name - error
+                test_path_match = re.search(r"(tests/\S+\.py)", test_output)
+                test_path = (
+                    Path(test_path_match.group(1)) if test_path_match else Path("tests/unknown.py")
+                )
+
+                evidence = f"PC-{nnn}"
+                suspicions.append(
+                    ObsolescenceSuspicion(
+                        test_path=test_path,
+                        reason="references_closed_spec",
+                        evidence=evidence,
+                    )
+                )
+
+        return suspicions
+
     def implement(
         self,
         spec_path: Path,
@@ -171,7 +208,18 @@ Your role is to:
         test_result = self._run_tests()
 
         if test_result.returncode == 0:
-            # Suite already green — no iterations needed
+            # Suite already green — scan for obsolescence before returning
+            combined_output = test_result.stdout + test_result.stderr
+            suspicions = self._scan_for_obsolete_references(combined_output)
+            if suspicions:
+                return ImplementResult(
+                    success=False,
+                    iterations_used=0,
+                    files_modified=[],
+                    final_test_output=combined_output,
+                    error="test_obsolescence_suspected",
+                    obsolescence_suspicions=suspicions,
+                )
             return ImplementResult(
                 success=True,
                 iterations_used=0,
@@ -210,7 +258,31 @@ Return your code changes using this format:
 <code here>
 """
             call_start = time.monotonic()
-            llm_response = self.llm_client.send_message(prompt)
+            try:
+                llm_response = self.llm_client.send_message(prompt)
+            except ProviderError as exc:
+                call_duration = time.monotonic() - call_start
+                error_msg = f"provider_error: {exc}"
+                log_entry = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "iteration": i,
+                    "pytest_passed": 0,
+                    "pytest_failed": 0,
+                    "files_modified": [],
+                    "provider_call_duration_s": round(call_duration, 3),
+                    "notes": error_msg,
+                }
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(log_entry) + "\n")
+
+                return ImplementResult(
+                    success=False,
+                    iterations_used=i - 1,
+                    files_modified=files_modified,
+                    final_test_output=test_result.stdout + test_result.stderr,
+                    error=error_msg,
+                    obsolescence_suspicions=[],
+                )
             call_duration = time.monotonic() - call_start
 
             # b) Parse response
@@ -248,7 +320,34 @@ Return your code changes using this format:
             test_result = self._run_tests()
             passed, failed = self._parse_pytest_output(test_result.stdout)
 
-            # e) Check if green
+            # f) Check for obsolescence heuristic
+            combined_output = test_result.stdout + test_result.stderr
+            suspicions = self._scan_for_obsolete_references(combined_output)
+            if suspicions:
+                log_entry = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "iteration": i,
+                    "pytest_passed": passed,
+                    "pytest_failed": failed,
+                    "files_modified": [str(p) for p in written],
+                    "provider_call_duration_s": round(call_duration, 3),
+                    "notes": f"test_obsolescence_suspected: {len(suspicions)} detection(s)",
+                }
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(log_entry) + "\n")
+
+                print(f"[Iteration {i}] Obsolescence suspected — {len(suspicions)} detection(s)")
+
+                return ImplementResult(
+                    success=False,
+                    iterations_used=i,
+                    files_modified=files_modified,
+                    final_test_output=combined_output,
+                    error="test_obsolescence_suspected",
+                    obsolescence_suspicions=suspicions,
+                )
+
+            # g) Check if green
             if test_result.returncode == 0:
                 # Write final log entry
                 log_entry = {
