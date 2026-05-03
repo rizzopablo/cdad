@@ -366,6 +366,7 @@ class TestPC002_4_ExceptionMapping:
         pytest.importorskip("cdad.llm.providers.anthropic")
         pytest.importorskip("anthropic")
         from anthropic import AuthenticationError
+
         from cdad.llm.provider import ProviderAuthError
         from cdad.llm.providers.anthropic import AnthropicProvider
 
@@ -383,9 +384,10 @@ class TestPC002_4_ExceptionMapping:
         """OpenAI AuthenticationError -> ProviderAuthError."""
         pytest.importorskip("cdad.llm.providers.openai")
         pytest.importorskip("openai")
+        from openai import AuthenticationError
+
         from cdad.llm.provider import ProviderAuthError
         from cdad.llm.providers.openai import OpenAIProvider
-        from openai import AuthenticationError
 
         provider = OpenAIProvider(api_key="invalid-key")
         with patch.object(provider.client.chat.completions, "create") as mock_create:
@@ -398,18 +400,20 @@ class TestPC002_4_ExceptionMapping:
                 )
 
     def test_acp_auth_error_maps_to_provider_auth_error(self):
-        """ACP AuthenticationError -> ProviderAuthError."""
+        """ACP RequestError con mensaje de auth -> ProviderAuthError."""
         pytest.importorskip("cdad.llm.providers.acp")
-        pytest.importorskip("acp_sdk")
-        from acp_sdk import AuthenticationError
+        pytest.importorskip("acp")
+        import acp
+
         from cdad.llm.provider import ProviderAuthError
         from cdad.llm.providers.acp import ACPProvider
 
         provider = ACPProvider(agent_command=["npx", "-y", "@zed-industries/claude-agent-acp"])
-        with patch("acp_sdk.Client") as mock_acp_client:
-            mock_client = MagicMock()
-            mock_acp_client.return_value = mock_client
-            mock_client.initialize.side_effect = AuthenticationError("Auth failed")
+        # El provider mapea RequestError con "auth" en el mensaje a ProviderAuthError
+        with patch.object(provider, "_async_send") as mock_async_send:
+            mock_async_send.side_effect = acp.RequestError(
+                401, "Authentication failed: invalid token"
+            )
             with pytest.raises(ProviderAuthError):
                 provider.send_message(
                     system_prompt="test", history=[], model="claude", max_tokens=2048
@@ -668,14 +672,14 @@ class TestPC002_10_EquivalentFunctionality:
 
 class TestPC002_11_LazyImport:
     """PC-002-11: importing cdad.llm.registry or cdad.cli.main does NOT
-    import anthropic, openai, or acp_sdk. SDKs are only imported when
+    import anthropic, openai, or acp. SDKs are only imported when
     the corresponding provider is instantiated.
     """
 
     def test_registry_module_does_not_import_anthropic_directly(self):
         before_anthropic = "anthropic" in sys.modules
         before_openai = "openai" in sys.modules
-        before_acp = "acp_sdk" in sys.modules
+        before_acp = "acp" in sys.modules
 
         try:
             import cdad.llm.registry  # noqa: F401
@@ -684,7 +688,7 @@ class TestPC002_11_LazyImport:
 
         after_anthropic = "anthropic" in sys.modules
         after_openai = "openai" in sys.modules
-        after_acp = "acp_sdk" in sys.modules
+        after_acp = "acp" in sys.modules
 
         assert not after_anthropic or before_anthropic, (
             "anthropic SDK should not be imported by registry module"
@@ -692,7 +696,7 @@ class TestPC002_11_LazyImport:
         assert not after_openai or before_openai, (
             "openai SDK should not be imported by registry module"
         )
-        assert not after_acp or before_acp, "acp_sdk should not be imported by registry module"
+        assert not after_acp or before_acp, "acp should not be imported by registry module"
 
     def test_cli_main_does_not_import_anthropic_on_startup(self):
         before_anthropic = "anthropic" in sys.modules

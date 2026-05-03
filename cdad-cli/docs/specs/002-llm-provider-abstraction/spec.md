@@ -23,7 +23,7 @@ La spec original asumía que los CLIs tienen un flag nativo `--acp`. La investig
 - `claude` tiene modo programático (`-p --output-format stream-json`) pero **no es ACP** — es JSON línea a línea simplificado.
 - **Qwen sí soporta ACP** — confirmado por uso real en Zed (configuración funcional), aunque no esté documentado oficialmente en el registry de Zed.
 
-**Decisión de diseño**: `ACPProvider` usa `acp-sdk` (Python SDK oficial del protocolo ACP). Esto implica **elevar el mínimo de Python a 3.11** (de 3.9). Se documenta en ADR-005. Los comandos de los agents apuntan directamente al binario/package que implementa ACP por stdio.
+**Decisión de diseño**: `ACPProvider` usa `agent-client-protocol` (SDK Python oficial del protocolo ACP, `pip install agent-client-protocol`). Esto implica **elevar el mínimo de Python a 3.11** (de 3.9). Se documenta en ADR-005. Los comandos de los agents apuntan directamente al binario/package que implementa ACP por stdio.
 
 **Para los agents disponibles en Zed**, los comandos de spawn eo son:
 - **claude-acp**: `npx -y @zed-industries/claude-agent-acp` (o ruta al binario instalado)
@@ -164,19 +164,19 @@ Resolución (precedencia): CLI flag → env var `CDAD_AGENT_<ROLE>` → `./cdad.
 
 **Agentes ilimitados**: no hay límite en la cantidad de agentes configurables. Cada agente de CDAD (architect, test_writer, implementer, reviewer, scribe) puede usar cualquiera de los 3 providers. El usuario puede además definir roles custom si lo necesita.
 
-### ACP Provider — implementación con `acp-sdk`
+### ACP Provider — implementación con `agent-client-protocol`
 
-`ACPProvider` usa el SDK oficial de Python (`acp-sdk`, requiere Python ≥ 3.11):
+`ACPProvider` usa el SDK oficial de Python (`agent-client-protocol`, `pip install agent-client-protocol`, requiere Python ≥ 3.11):
 
-1. Instala el SDK: `pip install acp-sdk`
-2. Usa el cliente asíncrono del SDK para comunicar con el agente subprocess
+1. Instala el SDK: `pip install agent-client-protocol`
+2. Usa el módulo `acp` para comunicar con el agente subprocess
 3. El comando del agente se configura por alias (ej. `acp/claude` → `npx -y @zed-industries/claude-agent-acp`)
 4. El SDK maneja: spawn del subprocess, handshake `initialize`, gestión de sesiones, envío de prompts, recepción de responses via JSON-RPC sobre stdio
 
 El flujo interno es:
 - `ACPProvider.__init__(agent_command, env)` — configura el comando de spawn eo y variables de entorno
-- `send_message()` — usa el SDK para: initialize → session/new → session/prompt → leer response → session/close
-- Las excepciones del SDK se mapean a las tipadas del Protocol (`ProviderTransportError`, etc.)
+- `send_message()` — usa `acp.Agent` para: initialize → new_session → prompt → leer response → close_session
+- Las excepciones del SDK (`acp.RequestError`) se mapean a las tipadas del Protocol (`ProviderTransportError`, etc.)
 
 ## Invariantes verificables (property test material)
 
@@ -202,7 +202,7 @@ El flujo interno es:
 - [ ] `pyproject.toml` expone extras opcionales: `cdad[anthropic]`, `cdad[openai]`, `cdad[acp]`. La instalación base no requiere SDKs de proveedor innecesarios.
 - [ ] Mensajes de error de configuración inválida son accionables: incluyen el nombre del provider/agente afectado y el campo faltante.
 - [ ] ADR-004 documenta la decisión de diseño: Protocol + registry, findings de descubrimiento sobre flags `--acp`.
-- [ ] **ADR-005**: documenta la decisión de usar `acp-sdk` y elevar Python mínimo a 3.11.
+- [ ] **ADR-005**: documenta la decisión de usar `agent-client-protocol` y elevar Python mínimo a 3.11.
 
 ## Out of scope
 

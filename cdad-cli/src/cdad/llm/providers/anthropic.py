@@ -17,6 +17,13 @@ class AnthropicProvider:
 
         self.client = anthropic.Anthropic(api_key=api_key)
         self.anthropic_lib = anthropic
+        self._model_id: str = ""
+
+    @property
+    def name(self) -> str:
+        if self._model_id:
+            return f"anthropic/{self._model_id}"
+        return "anthropic"
 
     def __str__(self):
         return f"<AnthropicProvider model_id={getattr(self, '_model_id', '')}>"
