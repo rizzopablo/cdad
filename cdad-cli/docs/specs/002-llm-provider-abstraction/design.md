@@ -84,17 +84,19 @@ ACP (https://agentclientprotocol.com) es un protocolo JSON-RPC sobre stdio donde
 
 Estrategia:
 
-1. **Inicialización perezosa**: el subproceso se lanza al primer `send_message`. Comando configurable: `command = ["claude", "--acp"]`.
-2. **Sesión persistente**: tras `initialize`, se llama `session/new` una vez. El `session_id` queda guardado en `self._session_id`.
-3. **Por turno**: se envía `session/prompt` con el último mensaje de usuario. El system prompt se inyecta:
-   - Si la implementación ACP soporta `meta.system`, se usa esa vía.
-   - Si no, se prepone como primer turno de usuario en la sesión inicial (degradación documentada).
-4. **Recolección**: stream de notificaciones `session/update` se acumula en buffer hasta `stop_reason`. Texto plano concatenado se devuelve.
-5. **Cierre**: el subproceso se cierra al destruir el `LLMClient` (registrado vía `atexit` o context manager opcional).
+1. **Instalación perezosa**: el subproceso se lanza al primer `send_message`. Comando configurable.
+2. **Usar `acp-sdk`**: el SDK oficial de Python maneja el protocolo ACP (JSON-RPC 2.0 sobre stdio), handshake `initialize`, gestión de sesiones (`session/new`, `session/prompt`), y recepción de responses.
+3. **Requiere Python ≥ 3.11** (constraint de `acp-sdk`).
+4. **El system prompt** se transmite en el payload de `session/prompt` como parte del contexto de la sesión.
+5. **Recolección**: el SDK maneja el stream de notificaciones `session/update`; texto plano concatenado se devuelve.
 
 Limitación conocida: ACP es naturalmente streaming/multi-turn con tool-use. Esta primera iteración expone una vista *blocking & text-only* sobre el protocolo. Streaming/tool-use → spec futura.
 
-Errores: subproceso muerto → `ProviderTransportError`; respuesta JSON-RPC con `error` → `ProviderResponseError`; método inicial fallido → `ProviderAuthError` (incluye trust/permissions).
+Errores del SDK: `acp_sdk.exceptions.*` se mapean a las tipadas del Protocol:
+- `AuthenticationError` → `ProviderAuthError`
+- `RateLimitError` → `ProviderRateLimitError`
+- `TransportError`, timeout, subprocess muerto → `ProviderTransportError`
+- `ProtocolError`, `ResponseError` → `ProviderResponseError`
 
 ## 4. Registry y resolución
 
@@ -112,17 +114,16 @@ def list_builtin_acp_agents() -> dict[str, str]: ...  # devuelve {alias: comando
 
 Registro al import en `providers/__init__.py`. Importaciones de SDK son lazy dentro de cada factory (los extras no instalados no rompen el import).
 
-### Preconfiguraciones ACP builtin
-
-En `providers/__init__.py`, se registran cuatro aliases ACP con comandos por defecto:
+# Preconfiguraciones ACP builtin
+En `providers/__init__.py`, se registran aliases ACP con comandos por defecto:
 
 ```python
 # Preconfiguraciones ACP builtin
 _BUILTIN_ACP_AGENTS = {
-    "claude": ["claude", "--acp"],      # DEFAULT para todos los agentes
-    "gemini": ["gemini-cli", "--acp"],
-    "qwen": ["qwen-agent", "--acp"],
-    "opencode": ["opencode", "--acp"],
+    "claude": ["npx", "-y", "@zed-industries/claude-agent-acp"],
+    "gemini": ["npx", "-y", "@google/gemini-cli"],
+    "codex": ["npx", "-y", "codex-acp"],
+    "qwen": ["qwen-agent"],  # confirmado: Qwen implementa ACP en Zed
 }
 
 for alias, cmd in _BUILTIN_ACP_AGENTS.items():
@@ -133,11 +134,11 @@ for alias, cmd in _BUILTIN_ACP_AGENTS.items():
 En `config/defaults.py`:
 ```python
 DEFAULT_AGENT_MODELS = {
-    "architect": "acp/claude",
-    "test_writer": "acp/claude",
+    "architect": "anthropic/claude-opus-4-7",
+    "test_writer": "anthropic/claude-sonnet-4-6",
     "implementer": "acp/claude",
-    "reviewer": "acp/claude",
-    "scribe": "acp/claude",
+    "reviewer": "openai/gpt-4o",
+    "scribe": "acp/qwen",
 }
 ```
 
@@ -175,7 +176,7 @@ Precedencia (la más específica gana):
 2. Env var `CDAD_AGENT_<ROLE>` (e.g. `CDAD_AGENT_ARCHITECT=openai/gpt-4o`).
 3. `./cdad.toml` (cwd).
 4. `~/.config/cdad/cdad.toml`.
-5. `defaults.py` → `DEFAULT_AGENT_MODELS` (todos los roles → `acp/claude`).
+5. `defaults.py` → `DEFAULT_AGENT_MODELS` (valores por defecto mixtos: architect/test_writer Anthropic, implementer/reviewer/scribe con ACP/OpenAI).
 
 API keys SIEMPRE vienen de env vars; `cdad.toml` sólo declara el *nombre* de la env var (`api_key_env`). Nunca se persisten secretos en archivos de proyecto.
 

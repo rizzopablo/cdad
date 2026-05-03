@@ -1,8 +1,8 @@
 # Postconditions 002: Abstracción de Proveedor LLM/Agente
 
-**Versión**: 2 (actualizada 2026-05-02, post-Etapa 1 Descubrimiento)
-**Reconciliada con**: `spec.md` (updated 2026-05-02)
-**Cambios respecto a v1**: Eliminadas PC sobre OpenAI (fuera de scope); eliminados aliases qwen/opencode (sin ACP documentado); corregidos comandos ACP a npx wrappers; corregidos defaults a Anthropic.
+**Versión**: 3 (actualizada 2026-05-02, reconciliada con spec.md actualizado)
+**Reconciliada con**: `spec.md` (updated 2026-05-02, OpenAI incluido, Qwen confirmado con ACP)
+**Cambios respecto a v2**: Agregadas PC sobre OpenAI (incluido en scope); agregado alias qwen ACP (confirmado funcional en Zed); agregado provider OpenAI-compatible; defaults actualizados a configuración mixta.
 
 Material directo para `TestWriterAgent`. Cada postcondición se traduce a uno o más tests. La numeración se reutiliza como `PC-002-<n>` en los nombres de tests. Las PC eliminadas se marcan como ~~strikethrough~~ para preservar referencia histórica.
 
@@ -14,18 +14,19 @@ Para todo `history: list[Message]` de longitud N pasado a `LLMClient.send_messag
 - en el mismo orden,
 - con los mismos `role` y `content` que el input.
 
-**Test**: parametrizado sobre **ambos** providers (Anthropic, ACP) con `history` de longitudes 0, 1, 5; capturar el call al mock e inspeccionar argumentos.
+**Test**: parametrizado sobre los **tres** providers (Anthropic, OpenAI, ACP) con `history` de longitudes 0, 1, 5; capturar el call al mock e inspeccionar argumentos.
 
 ## PC-002-2 — System prompt por canal de sistema
 
 Para cada provider, `system_prompt` se transmite a través del canal de sistema nativo:
 
 - **Anthropic**: argumento `system=` de `messages.create`.
-- **ACP**: se transmite en el payload de `session/prompt` como parte del prompt (el agente ACP recibe el system prompt en el contexto de la sesión).
+- **OpenAI**: primer mensaje en `messages` con `role="system"`.
+- **ACP**: se transmite en el payload de `session/prompt` como parte del contexto de la sesión.
 
 `system_prompt` NO aparece duplicado como turno `user`/`assistant` en `messages`/`history`.
 
-**Test**: por provider, llamar con `system_prompt="X"` y verificar que aparece en el canal correcto y NO en la lista de mensajes regulares.
+**Test**: por provider (los **tres**), llamar con `system_prompt="X"` y verificar que aparece en el canal correcto y NO en la lista de mensajes regulares.
 
 ## PC-002-3 — Inmutabilidad del input
 
@@ -44,15 +45,15 @@ assert client.history == snapshot
 
 Cada provider mapea errores nativos a la jerarquía `ProviderError`:
 
-| Causa | Excepción esperada |
-|---|---|
-| Credencial inválida (HTTP 401/403, ACP `auth_required`/`unauthenticated`) | `ProviderAuthError` |
-| Rate limit (HTTP 429, ACP rate-limited) | `ProviderRateLimitError` |
-| Red, timeout, subproceso muerto | `ProviderTransportError` |
-| Respuesta con shape inesperado / JSON-RPC error | `ProviderResponseError` |
-| Config inválida (provider no registrado, env var faltante) | `ConfigurationError` |
+| Causa | Excepción esperada | Anthropic | OpenAI | ACP (acp-sdk) |
+|---|---|---|---|---|
+| Credencial inválida (HTTP 401/403) | `ProviderAuthError` | `AuthenticationError` | `AuthenticationError` | `AuthenticationError` |
+| Rate limit (HTTP 429) | `ProviderRateLimitError` | `RateLimitError` | `RateLimitError` | `RateLimitError` |
+| Red, timeout, subprocess muerto | `ProviderTransportError` | `APIConnectionError` | `APIConnectionError`, timeout | `TransportError`, subprocess |
+| Respuesta con shape inesperado | `ProviderResponseError` | `APIStatusError` shape | `APIError` shape | `ProtocolError`, `ResponseError` |
+| Config inválida (provider no registrado, env var faltante) | `ConfigurationError` | — | — | — |
 
-**Test**: por provider, simular cada condición y `pytest.raises` la subclase específica (no sólo `ProviderError`).
+**Test**: por provider (los **tres**), simular cada condición y `pytest.raises` la subclase específica (no sólo `ProviderError`).
 
 ## PC-002-5 — Aislamiento preservado
 
@@ -106,15 +107,15 @@ Inspección estática: el loader rechaza cualquier clave `api_key` (sin `_env`) 
 
 ## PC-002-10 — Equivalencia funcional ante el agente
 
-Para **ambos** providers, dado un mismo `(system_prompt, history)` y un mismo string mockeado de respuesta, `ArchitectAgent.draft_spec(...)` y `TestWriterAgent.write_tests(...)` producen la misma salida observable (mismo string devuelto, mismas escrituras a disco).
+Para **todos** los providers (Anthropic, OpenAI, ACP), dado un mismo `(system_prompt, history)` y un mismo string mockeado de respuesta, `ArchitectAgent.draft_spec(...)` y `TestWriterAgent.write_tests(...)` producen la misma salida observable (mismo string devuelto, mismas escrituras a disco).
 
-**Test**: parametrizado sobre providers con respuesta mockeada constante; comparar artefactos de salida.
+**Test**: parametrizado sobre **tres** providers con respuesta mockeada constante; comparar artefactos de salida.
 
 ## PC-002-11 — Lazy import de SDKs
 
-Importar `cdad.llm.registry` o `cdad.cli.main` NO importa `anthropic` ni `acp_sdk` ni lanza ningún subproceso. Los SDKs se importan sólo al construir el provider correspondiente.
+Importar `cdad.llm.registry` o `cdad.cli.main` NO importa `anthropic`, `openai`, ni `acp_sdk` ni lanza ningún subproceso. Los SDKs se importan sólo al construir el provider correspondiente.
 
-**Test**: usar `sys.modules` antes/después de importar `cdad.cli.main`; assert que `anthropic` no esté presente hasta resolver explícitamente un provider Anthropic.
+**Test**: usar `sys.modules` antes/después de importar `cdad.cli.main`; assert que ninguno de los tres SDKs esté presente hasta resolver explícitamente un provider.
 
 ## PC-002-12 — Registro extensible
 
@@ -135,16 +136,17 @@ assert registry.resolve("fake", {}).send_message("", [], model="x", max_tokens=1
 
 ## PC-002-13 — Preconfiguraciones ACP builtin
 
-Para cada alias builtin ACP (`claude`, `gemini`, `codex`):
+Para cada alias builtin ACP (`claude`, `gemini`, `codex`, `qwen`):
 
 - `registry.resolve("acp/<alias>", {})` devuelve un `ACPProvider` configurado con el comando por defecto.
-- El comando por defecto usa **npx wrappers** de Zed:
+- El comando por defecto usa **npx wrappers** de Zed (excepto qwen que usa comando nativo):
 
 | Alias | Comando builtin |
 |---|---|
 | `acp/claude` | `["npx", "-y", "@zed-industries/claude-agent-acp"]` |
 | `acp/gemini` | `["npx", "-y", "@google/gemini-cli"]` |
 | `acp/codex` | `["npx", "-y", "codex-acp"]` |
+| `acp/qwen` | `["qwen-agent"]` (confirmado: Qwen ACP funcional en Zed) |
 
 - El usuario puede sobrescribir con `cdad.toml`:
   ```toml
@@ -154,7 +156,7 @@ Para cada alias builtin ACP (`claude`, `gemini`, `codex`):
   y `registry.resolve("acp/claude", custom_config)` usa el custom en lugar del builtin.
 - Si el comando builtin no existe en `PATH` (npx no disponible), `ACPProvider` lanza `ProviderTransportError` con sugerencia clara del paquete a instalar.
 
-**Test**: tabla parametrizada con los tres aliases; verificar que sin `cdad.toml` se usan defaults, y que `cdad.toml` sobrescribe. Test de fallback: simular que el comando no existe y capturar el mensaje de error de ayuda.
+**Test**: tabla parametrizada con los **cuatro** aliases; verificar que sin `cdad.toml` se usan defaults, y que `cdad.toml` sobrescribe. Test de fallback: simular que el comando no existe y capturar el mensaje de error de ayuda.
 
 ## ~~PC-002-14 — Default `acp/claude` sin configuración~~ ~~ELIMINADA~~
 
@@ -162,17 +164,17 @@ Para cada alias builtin ACP (`claude`, `gemini`, `codex`):
 
 ## PC-002-14 — Defaults de agentes sin configuración
 
-Sin `cdad.toml`, sin env vars, sin flags CLI, los defaults son:
+Sin `cdad.toml`, sin env vars, sin flags CLI, los defaults son mixtos:
 
 | Rol | Default |
 |---|---|
 | `architect` | `anthropic/claude-opus-4-7` |
 | `test_writer` | `anthropic/claude-sonnet-4-6` |
-| `implementer` | `anthropic/claude-sonnet-4-6` |
-| `reviewer` | `anthropic/claude-sonnet-4-6` |
-| `scribe` | `anthropic/claude-sonnet-4-6` |
+| `implementer` | `acp/claude` |
+| `reviewer` | `openai/gpt-4o` |
+| `scribe` | `acp/qwen` |
 
-**Test**: sin config externa, llamar `resolve("architect")` y verificar `("anthropic", "claude-opus-4-7")`. Ídem para cada rol.
+**Test**: sin config externa, llamar `resolve("architect")` y verificar `("anthropic", "claude-opus-4-7")`. Ídem para cada rol con su default correspondiente.
 
 ## PC-002-15 — Precedencia: env var sobrescribe default
 
