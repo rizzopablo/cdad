@@ -1,5 +1,18 @@
 # Progress — CDAD-CLI
 
+## Completed (Feature 003 — 2026-05-03)
+
+| Feature | Estado | Notas |
+|---|---|---|
+| `ImplementerAgent` | ✅ | Bucle TDD iterativo con `implement()` |
+| Comando `cdad green` | ✅ | Con `--spec`, `--max-iterations`, `--provider`, exit codes 0/1/2 |
+| Protección de tests/ (2 capas) | ✅ | `_has_tests_path` + `_write_files` defense-in-depth |
+| Detección de obsolescencia | ✅ | Heurística PC-NNN cruzada |
+| Logging NDJSON | ✅ | `implement.log` por iteración |
+| Property test (no toca tests/) | ✅ | Con Hypothesis, 100+ inputs |
+| Integration test E2E | ✅ | Con `qwen --acp` real |
+| Default implementer → `acp/qwen` | ✅ | Registry updated con override support |
+
 ## Completed (Feature 002 — 2026-05-03)
 
 | Feature | Estado | Notas |

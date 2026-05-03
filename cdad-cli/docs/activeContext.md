@@ -1,5 +1,47 @@
 # Active Context — CDAD-CLI
 
+## 2026-05-03 — Feature 003: ImplementerAgent + comando `cdad green`
+
+Cerrada feature que completa el ciclo RED→GREEN del flujo CDAD: el `ImplementerAgent` itera entre test output y generación de código hasta alcanzar GREEN, sin modificar tests/.
+
+### Qué se implementó
+
+| Componente | Descripción |
+|---|---|
+| `ImplementerAgent.implement()` | Bucle TDD iterativo con spec + pytest output + provider LLM |
+| `cdad green` command | CLI con `--spec`, `--max-iterations`, `--provider` y exit codes (0, 1, 2) |
+| Protección de tests/ | Rechazo de writes bajo `tests/` con defensa en 2 capas (validación + filesystem) |
+| Detección de obsolescencia | Heurística que detecta tests referenciando specs cerrados (`PC-NNN` donde `NNN ≠ active_feature`) |
+| Logging NDJSON | `implement.log` con una línea JSON por iteración |
+| `acp/qwen` como default implementer | Provider ACP local sin API keys (qwen v0.12.3+ con `--acp`) |
+
+### Métricas
+
+- Tests: **45 unitarios** + **1 property test** + **1 integration E2E**
+- Cobertura: **implementer.py 90%**, **global 84%**
+- Postcondiciones: **13/13 verificadas**
+- Bloqueantes de review: **2/2 resueltos** (error string + active_feature hardcodeado)
+- Bug crítico encontrado: **path traversal en `_has_tests_path`** (corregido en property test)
+
+### Decisiones relevantes
+
+- Default implementer cambiado a `acp/qwen` — elimina dependencia de API keys para el agente más invocado
+- Defensa en 2 capas para protección de `tests/`: validación de paths + verificación post-resolución
+- Property test con Hypothesis detectó vulnerabilidad real que tests unitarios no cubrían
+
+### Deuda técnica detectada
+
+- Búsqueda de spec por `active_feature` en CLI puede fallar con estructura de directorios (hallazgo review, diferido)
+- Exception handling genérico en `ACPProvider.close_session()` (diferido)
+- Output duplicado entre agente y CLI (diferido)
+- 5 tests de feature 002 failing por mock de API key (pre-existente)
+
+### Próxima feature en cola
+
+Implementar los 3 opcionales de review pendientes y/o `ReviewerAgent` (feature 004).
+
+---
+
 ## Feature 002: LLM Provider Abstraction (2026-05-03)
 
 **Completada.** Abstracción de proveedores LLM para cdad-cli usando Protocol + Registry pattern.
