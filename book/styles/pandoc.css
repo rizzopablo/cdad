@@ -1,0 +1,4 @@
+body { font-family: "Georgia", serif; line-height: 1.5; max-width: 880px; margin: auto; }
+h1,h2,h3 { font-family: "Helvetica Neue", Arial, sans-serif; }
+blockquote { border-left: 4px solid #444; margin-left: 0; padding-left: 1rem; color: #333; }
+code, pre { font-family: "Fira Code", monospace; }
