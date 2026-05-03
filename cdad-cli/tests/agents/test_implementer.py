@@ -543,3 +543,131 @@ def test_add():
         assert (
             "file" in stdout.lower() or "src/" in stdout.lower() or "calculator" in stdout.lower()
         ), f"Expected files modified in stdout, got: {stdout[:200]}"
+
+
+# ===========================================================================
+# PC-003-3: Max iterations reached without achieving GREEN
+# ===========================================================================
+
+
+class TestPC003_3_MaxIterationsReached:
+    """PC-003-3: Si tras max_iterations iteraciones la suite sigue RED,
+    retorna success=False con error != None y final_test_output contiene
+    output del último pytest.
+    """
+
+    def _create_failing_test_with_broken_llm(self, project_root, spec_dir, llm_mock):
+        """Helper: Create a spec with failing test, mock LLM returns code that doesn't fix it."""
+        spec_path = spec_dir / "feature.md"
+        spec_path.write_text("""---
+title: Broken Feature
+---
+
+# Spec
+
+## Postconditions
+
+### PC-001
+**Name**: Magic function works
+**Description**: magic() returns 42
+**Verification**: test
+""")
+
+        tests_dir = project_root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        (tests_dir / "test_broken.py").write_text("""
+def test_magic():
+    from src.magic import magic
+    assert magic() == 42
+""")
+
+        # Mock LLM returns code that does NOT fix the test (wrong return value)
+        llm_mock.send_message.return_value = """### file: src/magic.py
+def magic():
+    return 0  # Wrong! Should be 42
+"""
+
+        return spec_path
+
+    def test_returns_success_false_when_max_iterations_reached(self, temp_generic_project):
+        """PC-003-3: Cuando se agotan iteraciones sin alcanzar GREEN, success=False."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_with_broken_llm(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=1)
+
+        assert isinstance(result, ImplementResult)
+        assert result.success is False, (
+            f"Expected success=False when max_iterations reached, got {result.success}"
+        )
+
+    def test_error_is_not_none_when_max_iterations_reached(self, temp_generic_project):
+        """PC-003-3: El campo error NO es None cuando se agotan iteraciones."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_with_broken_llm(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=1)
+
+        assert result.error is not None, "Expected error != None when max_iterations reached"
+        assert len(result.error) > 0, "Expected non-empty error message"
+
+    def test_iterations_used_equals_max_iterations(self, temp_generic_project):
+        """PC-003-3: iterations_used debe ser igual a max_iterations cuando se agotan."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_with_broken_llm(temp_generic_project, spec_dir, llm)
+
+        max_iter = 2
+        result = agent.implement(spec_path=spec_path, max_iterations=max_iter)
+
+        assert result.iterations_used == max_iter, (
+            f"Expected iterations_used={max_iter}, got {result.iterations_used}"
+        )
+
+    def test_final_test_output_contains_pytest_output(self, temp_generic_project):
+        """PC-003-3: final_test_output contiene output del último pytest."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_with_broken_llm(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=1)
+
+        # final_test_output debe contener info de pytest (test name, assertion error, etc.)
+        output = result.final_test_output
+        assert len(output) > 0, "Expected non-empty final_test_output"
+        assert (
+            "test" in output.lower()
+            or "assert" in output.lower()
+            or "failed" in output.lower()
+            or "error" in output.lower()
+        ), f"Expected pytest output in final_test_output, got: {output[:200]}"
