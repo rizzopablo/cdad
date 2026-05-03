@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "active_feature": "003-implementer-agent",
-  "current_stage": "review",
+  "active_feature": null,
+  "current_stage": "done",
   "tdd_substage": null,
   "stage_history": [
     {
@@ -127,11 +127,10 @@
       "notes": "all postconditions green, coverage 90%/84%"
     },
     {
-      "stage": "review",
+      "stage": "merge",
       "feature": "003-implementer-agent",
-      "completed_at": "2026-05-03T13:00:00Z",
-      "blocking_fixes": 2,
-      "notes": "2 blocking (error string + hardcoded feature), 3 optional deferred"
+      "completed_at": "2026-05-03T13:29:00Z",
+      "merged_to": "feature/003-implementer-agent"
     }
   ],
   "postconditions_status": {
@@ -149,5 +148,5 @@
     "PC-003-12": "green",
     "PC-003-13": "green"
   },
-  "last_updated": "2026-05-03T13:29:00Z"
+  "last_updated": "2026-05-03T13:30:00Z"
 }
