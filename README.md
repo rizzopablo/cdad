@@ -52,6 +52,16 @@ CI automatizado valida. Actualizás el Memory Bank con decisiones, aprendizajes,
 
 ---
 
+## Documentación Completa
+
+- 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Documento completo con 13 capítulos
+- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Recursos para facilitar el estudio de CDAD
+- 🎯 **[docs/specs/](./docs/specs/)** — Estructura de especificaciones
+- 🏗️ **[docs/adr/](./docs/adr/)** — Architecture Decision Records
+- 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Brief del proyecto
+
+---
+
 ## ¿Cuándo Vale la Pena CDAD?
 
 CDAD tiene un costo operativo. No es para todo. Vale la pena cuando se cumplen al menos **dos de estas condiciones**:
@@ -185,16 +195,6 @@ CDAD no excluye DDD. Se pueden combinar perfectamente. CDAD se enfoca en *cómo*
 3. **Configura tu Memory Bank** con los documentos estructurales
 4. **Establece sub-agentes** con permisos granulares
 5. **Aplica la disciplina:** specs antes de código, siempre
-
----
-
-## Documentación Completa
-
-- 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Documento completo con 13 capítulos
-- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Recursos para facilitar el estudio de CDAD
-- 🎯 **[docs/specs/](./docs/specs/)** — Estructura de especificaciones
-- 🏗️ **[docs/adr/](./docs/adr/)** — Architecture Decision Records
-- 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Brief del proyecto
 
 ---
 
