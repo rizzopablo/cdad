@@ -17,6 +17,13 @@ class OpenAIProvider:
 
         self.client = openai.OpenAI(api_key=api_key, base_url=base_url)
         self.openai_lib = openai
+        self._model_id: str = ""
+
+    @property
+    def name(self) -> str:
+        if self._model_id:
+            return f"openai/{self._model_id}"
+        return "openai"
 
     def __str__(self):
         return f"<OpenAIProvider model_id={getattr(self, '_model_id', '')}>"

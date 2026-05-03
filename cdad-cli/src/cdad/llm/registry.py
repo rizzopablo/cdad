@@ -62,9 +62,13 @@ def _acp_factory(config: dict, model_id: str) -> LLMProvider:
         command = cfg["agents"][model_id]
     else:
         command = get_builtin_acp_command(model_id)
-        if not command:
-            # Fallback or invalid builtin
-            pass
+
+    if not command:
+        raise ConfigurationError(
+            f"Unknown ACP agent alias '{model_id}'. "
+            f"Supported builtins: claude, gemini, codex, qwen. "
+            f"Or configure in [providers.acp.agents]."
+        )
     return ACPProvider(agent_command=command)
 
 
