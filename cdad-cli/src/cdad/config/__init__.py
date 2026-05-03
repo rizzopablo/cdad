@@ -1,7 +1,6 @@
 """Configuration module for CDAD CLI."""
 
 from cdad.config.defaults import (
-    DEFAULT_LLM_MODELS,
     SUPPORTED_FRAMEWORKS,
     PHASES,
     ALLOWED_VERIFICATION_METHODS,
@@ -16,7 +15,6 @@ from cdad.config.defaults import (
 )
 
 __all__ = [
-    "DEFAULT_LLM_MODELS",
     "SUPPORTED_FRAMEWORKS",
     "PHASES",
     "ALLOWED_VERIFICATION_METHODS",

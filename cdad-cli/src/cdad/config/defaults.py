@@ -1,14 +1,5 @@
 """Default configuration and constants for CDAD CLI."""
 
-# LLM Model Configuration
-DEFAULT_LLM_MODELS = {
-    "architect": "claude-opus-4-7",
-    "test_writer": "claude-sonnet-4-6",
-    "implementer": "claude-sonnet-4-6",
-    "reviewer": "claude-sonnet-4-6",
-    "scribe": "claude-sonnet-4-6",
-}
-
 # Supported Frameworks
 SUPPORTED_FRAMEWORKS = ["generic", "odoo", "django"]
 
