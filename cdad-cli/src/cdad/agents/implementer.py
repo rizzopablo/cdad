@@ -158,6 +158,27 @@ Your role is to:
                 count += 1
         return count
 
+    def _extract_active_feature(self, spec_path: Path, content: str) -> str:
+        """Extract the active feature ID from spec content or path.
+
+        Priority: frontmatter ``feature_id`` → parent directory name → fallback "003".
+        """
+        # 1. Try frontmatter feature_id (e.g. "003-current-feature")
+        fm_match = re.search(r"^feature_id:\s*(.+)$", content, re.MULTILINE)
+        if fm_match:
+            fid = fm_match.group(1).strip()
+            num_match = re.search(r"(\d{3})", fid)
+            if num_match:
+                return num_match.group(1)
+
+        # 2. Try parent directory name (e.g. "003-implementer-agent")
+        parent_name = spec_path.parent.name
+        num_match = re.search(r"(\d{3})", parent_name)
+        if num_match:
+            return num_match.group(1)
+
+        return "003"  # fallback
+
     def _scan_for_obsolete_references(
         self, test_output: str, active_feature: str = "003"
     ) -> list[ObsolescenceSuspicion]:
@@ -222,6 +243,7 @@ Your role is to:
 
         # Validate: spec must contain ## Postconditions as a real heading
         content = spec_path.read_text(encoding="utf-8")
+        active_feature = self._extract_active_feature(spec_path, content)
         postconditions_match = re.search(
             r"(?:^|\n)## Postconditions\s*(.*?)(?=\n## |\Z)", content, re.DOTALL
         )
@@ -238,7 +260,9 @@ Your role is to:
         if test_result.returncode == 0:
             # Suite already green — scan for obsolescence before returning
             combined_output = test_result.stdout + test_result.stderr
-            suspicions = self._scan_for_obsolete_references(combined_output)
+            suspicions = self._scan_for_obsolete_references(
+                combined_output, active_feature=active_feature
+            )
             if suspicions:
                 return ImplementResult(
                     success=False,
@@ -350,7 +374,9 @@ Return your code changes using this format:
 
             # f) Check for obsolescence heuristic
             combined_output = test_result.stdout + test_result.stderr
-            suspicions = self._scan_for_obsolete_references(combined_output)
+            suspicions = self._scan_for_obsolete_references(
+                combined_output, active_feature=active_feature
+            )
             if suspicions:
                 log_entry = {
                     "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -423,5 +449,5 @@ Return your code changes using this format:
             iterations_used=iterations_used,
             files_modified=files_modified,
             final_test_output=test_result.stdout + test_result.stderr,
-            error=f"Failed to reach GREEN after {max_iterations} iterations",
+            error="max_iterations_reached",
         )
