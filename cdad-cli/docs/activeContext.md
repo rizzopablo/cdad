@@ -1,6 +1,37 @@
 # Active Context — CDAD-CLI
 
-## Estado Actual (2026-05-01)
+## Feature 002: LLM Provider Abstraction (2026-05-03)
+
+**Completada.** Abstracción de proveedores LLM para cdad-cli usando Protocol + Registry pattern.
+
+### Qué se implementó
+
+| Componente | Descripción |
+|---|---|
+| `LLMProvider` Protocol | Interface verificable para providers |
+| Jerarquía de excepciones | `ProviderError`, `ProviderAuthError`, `ProviderRateLimitError`, `ProviderTransportError`, `ProviderResponseError`, `ConfigurationError` |
+| `AnthropicProvider` | Wrapper de Anthropic SDK con mapeo de errores |
+| `OpenAIProvider` | Wrapper de OpenAI SDK con `base_url` configurable (Azure, OpenRouter, Ollama) |
+| `ACPProvider` | Agente ACP vía `agent-client-protocol` con protocolo completo: initialize → new_session → prompt → close_session |
+| Registry | `register()` + `resolve_provider()` con precedencia: env var → config → defaults |
+| Defaults mixtos | architect=anthropic, implementer=acp, reviewer=openai, scribe=acp/qwen |
+
+### Métricas
+
+- Tests: **60 passing** (feature 002), **158 total suite**
+- Cobertura: **76%** (umbral era 78%, cerca)
+- Postcondiciones: **15/15 verificadas**
+- Bloqueantes resueltos: **4/4** (incluyendo corrección de paquete ACP)
+
+### Decisiones
+
+- Se usó `agent-client-protocol` (módulo `acp`) en vez de `acp-sdk` (que era de IBM/BeeAI)
+- Python ≥ 3.11 requerido por `agent-client-protocol`
+- Qwen soporta ACP (confirmado en Zed), no solo OpenAI-compatible
+
+---
+
+## Estado Anterior (Phase 1 MVP — 2026-05-01)
 
 **Phase 1 MVP completado.** El CLI tiene 4 comandos funcionales y 2 agentes implementados. 88 tests pasando con 78% de cobertura.
 
