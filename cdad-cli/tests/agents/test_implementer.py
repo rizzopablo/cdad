@@ -27,6 +27,40 @@ try:
         SpecNotFoundError,
     )
 except ImportError:
+    from dataclasses import dataclass
+
+    class SpecNotFoundError(FileNotFoundError):
+        """Stub for SpecNotFoundError."""
+
+        pass
+
+    class InvalidSpecError(ValueError):
+        """Stub for InvalidSpecError."""
+
+        pass
+
+    @dataclass
+    class ObsolescenceSuspicion:
+        """Stub for ObsolescenceSuspicion."""
+
+        test_path: Path
+        reason: str
+        evidence: str
+
+    @dataclass
+    class ImplementResult:
+        """Stub for ImplementResult."""
+
+        success: bool
+        iterations_used: int
+        files_modified: list
+        final_test_output: str = ""
+        error: str | None = None
+        obsolescence_suspicions: list = None
+
+        def __post_init__(self):
+            if self.obsolescence_suspicions is None:
+                self.obsolescence_suspicions = []
 
     class ImplementerAgent:
         """Stub for ImplementerAgent."""
@@ -868,3 +902,382 @@ def test_add():
         assert current_src_content == "# placeholder", (
             "Src file was modified despite tests/ attempt - should reject ALL"
         )
+
+
+# ===========================================================================
+# PC-003-5: Obsolescence detection heuristic
+# ===========================================================================
+
+
+class TestPC003_5_ObsolescenceDetection:
+    """PC-003-5: Si el agente detecta heurísticamente un test que referencia
+    postcondiciones de spec CERRADO (formato PC-NNN-X donde NNN ≠ active_feature_number),
+    agrega entrada a obsolescence_suspicions y retorna success=False con
+    error="test_obsolescence_suspected".
+
+    Esta es una heurística basada en patrones de texto en el output de pytest.
+    """
+
+    def _create_spec_with_obsolete_reference(self, project_root, spec_dir, llm_mock):
+        """Helper: Create spec and test with obsolete PC reference."""
+        spec_path = spec_dir / "feature.md"
+        spec_path.write_text("""---
+title: Current Feature
+feature_id: 003-current-feature
+---
+
+# Spec
+
+## Postconditions
+
+### PC-003-1
+**Name**: Current feature works
+**Description**: Something works in current feature
+**Verification**: test
+""")
+
+        tests_dir = project_root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create a test that references a CLOSED spec (001 != 003)
+        # The test name and content contain PC-001 references
+        (tests_dir / "test_obsolete_ref.py").write_text("""
+def test_feature_from_pc_001_should_still_work():
+    # This test references an old spec that's closed
+    from src.old_module import old_func
+    assert old_func() == "old_value"
+    # This test is likely obsolete since PC-001 is from a closed spec
+""")
+
+        # Mock LLM returns code that doesn't fix anything (suite stays RED)
+        llm_mock.send_message.return_value = """### file: src/current.py
+def current_func():
+    return "current"
+"""
+
+        return spec_path
+
+    def test_detects_obsolete_pc_references_and_sets_success_false(self, temp_generic_project):
+        """PC-003-5: Detecta referencias a specs cerrados y retorna success=False."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(
+            spec_path=spec_path, max_iterations=5
+        )  # Higher iterations to ensure it's not iteration exhaustion
+
+        assert isinstance(result, ImplementResult)
+        # Should detect obsolete reference and return False due to obsolescence, not iteration exhaustion
+        assert result.success is False, (
+            f"Expected success=False when obsolete PC refs detected, got {result.success}"
+        )
+        # Verify it's not due to max iterations reached
+        assert result.error != "Failed to reach GREEN after 5 iterations", (
+            "Success was False due to iteration exhaustion, not obsolescence detection"
+        )
+
+    def test_error_is_test_obsolescence_suspected(self, temp_generic_project):
+        """PC-003-5: error es 'test_obsolescence_suspected'."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=2)
+
+        assert result.error == "test_obsolescence_suspected", (
+            f"Expected error='test_obsolescence_suspected', got {result.error}"
+        )
+
+    def test_adds_suspicion_entry_to_obsolescence_suspicions(self, temp_generic_project):
+        """PC-003-5: Agrega entradas a obsolescence_suspicions."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=2)
+
+        assert len(result.obsolescence_suspicions) > 0, (
+            f"Expected obsolescence_suspicions to have entries, got {result.obsolescence_suspicions}"
+        )
+
+    def test_suspicion_entry_has_correct_fields(self, temp_generic_project):
+        """PC-003-5: Cada entrada tiene test_path, reason, evidence."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=2)
+
+        assert len(result.obsolescence_suspicions) > 0
+        suspicion = result.obsolescence_suspicions[0]
+
+        # Check required fields exist
+        assert hasattr(suspicion, "test_path"), "Missing test_path field"
+        assert hasattr(suspicion, "reason"), "Missing reason field"
+        assert hasattr(suspicion, "evidence"), "Missing evidence field"
+
+        # Verify types
+        assert isinstance(suspicion.test_path, Path), (
+            f"test_path should be Path, got {type(suspicion.test_path)}"
+        )
+        assert isinstance(suspicion.reason, str), (
+            f"reason should be str, got {type(suspicion.reason)}"
+        )
+        assert isinstance(suspicion.evidence, str), (
+            f"evidence should be str, got {type(suspicion.evidence)}"
+        )
+
+    def test_suspicion_reason_is_references_closed_spec(self, temp_generic_project):
+        """PC-003-5: reason es 'references_closed_spec'."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=2)
+
+        assert len(result.obsolescence_suspicions) > 0
+        suspicion = result.obsolescence_suspicions[0]
+
+        assert suspicion.reason == "references_closed_spec", (
+            f"Expected reason='references_closed_spec', got {suspicion.reason}"
+        )
+
+    def test_evidence_contains_obsolete_pc_reference(self, temp_generic_project):
+        """PC-003-5: evidence contiene la referencia PC-XXX encontrada."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_spec_with_obsolete_reference(temp_generic_project, spec_dir, llm)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=2)
+
+        assert len(result.obsolescence_suspicions) > 0
+        suspicion = result.obsolescence_suspicions[0]
+
+        # Evidence should contain the obsolete reference
+        assert "PC-001" in suspicion.evidence or "pc_001" in suspicion.evidence.lower(), (
+            f"Expected evidence to contain obsolete PC ref, got: {suspicion.evidence}"
+        )
+
+
+# ===========================================================================
+# PC-003-7: ProviderError handling during iteration
+# ===========================================================================
+
+
+class TestPC003_7_ProviderErrorHandling:
+    """PC-003-7: Si el provider falla con ProviderError, el agente captura
+    la excepción, retorna success=False con error="provider_error: <message>"
+    e iterations_used reflejando los intentos previos exitosos.
+    """
+
+    def _create_spec_with_failing_test(self, project_root, spec_dir):
+        """Helper: Create spec with failing test that needs LLM iteration."""
+        spec_path = spec_dir / "feature.md"
+        spec_path.write_text("""---
+title: Feature with Provider Error
+---
+
+# Spec
+
+## Postconditions
+
+### PC-001
+**Name**: Function works
+**Description**: do_something() returns "done"
+**Verification**: test
+""")
+
+        tests_dir = project_root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        (tests_dir / "test_feature.py").write_text("""
+def test_do_something():
+    from src.module import do_something
+    assert do_something() == "done"
+""")
+
+        src_dir = project_root / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+        # Intentionally NOT creating module.py - test will fail
+
+        return spec_path
+
+    def test_catches_provider_error_on_first_iteration(self, temp_generic_project):
+        """PC-003-7: ProviderError en iteración 1 - captura y retorna resultado."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        # Mock LLM to raise ProviderError on first call
+        llm.send_message.side_effect = ProviderError("API key invalid")
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert isinstance(result, ImplementResult)
+        assert result.success is False, (
+            f"Expected success=False after ProviderError, got {result.success}"
+        )
+
+    def test_error_has_provider_error_prefix(self, temp_generic_project):
+        """PC-003-7: error contiene 'provider_error: <message>'."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        error_msg = "Rate limit exceeded"
+        llm.send_message.side_effect = ProviderError(error_msg)
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert result.error is not None, "Expected error to be set"
+        assert result.error.startswith("provider_error:"), (
+            f"Expected error to start with 'provider_error:', got: {result.error}"
+        )
+        assert error_msg in result.error, (
+            f"Expected original error message in error, got: {result.error}"
+        )
+
+    def test_iterations_used_is_zero_on_first_iteration_error(self, temp_generic_project):
+        """PC-003-7: Si falla en primera iteración, iterations_used=0."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        llm.send_message.side_effect = ProviderError("Network timeout")
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert result.iterations_used == 0, (
+            f"Expected iterations_used=0 when error on first iteration, got {result.iterations_used}"
+        )
+
+    def test_catches_provider_error_after_successful_iterations(self, temp_generic_project):
+        """PC-003-7: ProviderError en iteración 2+ - captura e iterations_used > 0."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        # First call succeeds, second call raises ProviderError
+        llm.send_message.side_effect = [
+            """### file: src/module.py
+def do_something():
+    return "not done"  # Still wrong, will cause RED
+""",
+            ProviderError("Service unavailable"),
+        ]
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert isinstance(result, ImplementResult)
+        assert result.success is False
+        assert result.error is not None
+        assert "provider_error" in result.error
+
+    def test_iterations_used_reflects_completed_iterations(self, temp_generic_project):
+        """PC-003-7: iterations_used refleja iteraciones completadas antes del error."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        # First call succeeds, second call raises ProviderError
+        llm.send_message.side_effect = [
+            """### file: src/module.py
+def do_something():
+    return "not done"
+""",
+            ProviderError("Service unavailable"),
+        ]
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert result.iterations_used == 1, (
+            f"Expected iterations_used=1 (one successful iteration before error), got {result.iterations_used}"
+        )
+
+    def test_provider_error_not_propagated(self, temp_generic_project):
+        """PC-003-7: ProviderError NO se propaga - es capturado y manejado."""
+        from cdad.llm.provider import ProviderError
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        spec_path = self._create_spec_with_failing_test(temp_generic_project, spec_dir)
+
+        llm.send_message.side_effect = ProviderError("Critical failure")
+
+        # Should NOT raise - should return ImplementResult
+        try:
+            result = agent.implement(spec_path=spec_path, max_iterations=5)
+            assert isinstance(result, ImplementResult), "Expected ImplementResult to be returned"
+        except ProviderError:
+            pytest.fail("ProviderError should be caught, not propagated")
