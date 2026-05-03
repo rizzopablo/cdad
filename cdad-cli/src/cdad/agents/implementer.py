@@ -90,18 +90,46 @@ Your role is to:
         return files
 
     def _has_tests_path(self, files: dict[str, str]) -> str | None:
-        """Check if any file path is under tests/. Return the offending path or None."""
+        """Check if any file path resolves under tests/. Return the offending path or None.
+
+        Uses filesystem-level resolution so tricks like ``src/../tests/foo.py``,
+        ``./tests/foo.py``, or ``src/./../tests/foo.py`` are correctly caught.
+        """
+        tests_root = (self.project.root_path / "tests").resolve()
         for filepath in files:
-            normalized = filepath.replace("\\", "/")
-            if normalized.startswith("tests/") or normalized.startswith("tests\\"):
+            full_path = (self.project.root_path / filepath).resolve()
+            try:
+                full_path.relative_to(tests_root)
                 return filepath
+            except ValueError:
+                pass  # not under tests/
         return None
 
     def _write_files(self, files: dict[str, str]) -> list[Path]:
-        """Write files to project root. Create dirs if needed."""
+        """Write files to project root. Create dirs if needed.
+
+        Safety: refuses to write absolute paths or anything that resolves
+        outside the project root or under ``tests/``.
+        """
+        project_root = self.project.root_path.resolve()
+        tests_root = (project_root / "tests").resolve()
         written = []
         for filepath, code in files.items():
-            full_path = self.project.root_path / filepath
+            # Reject absolute paths from the LLM
+            if Path(filepath).is_absolute():
+                continue
+            full_path = (project_root / filepath).resolve()
+            # Reject paths that escape the project root
+            try:
+                full_path.relative_to(project_root)
+            except ValueError:
+                continue
+            # Reject paths under tests/ (defence-in-depth)
+            try:
+                full_path.relative_to(tests_root)
+                continue
+            except ValueError:
+                pass
             full_path.parent.mkdir(parents=True, exist_ok=True)
             full_path.write_text(code, encoding="utf-8")
             written.append(full_path)

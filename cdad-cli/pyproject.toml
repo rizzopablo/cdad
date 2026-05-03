@@ -58,5 +58,8 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src/cdad --cov-report=term"
+addopts = "-v --cov=src/cdad --cov-report=term -m 'not integration'"
 pythonpath = ["src"]
+markers = [
+    "integration: integration tests that require external dependencies (opt-in with -m integration)",
+]
