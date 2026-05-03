@@ -17,7 +17,7 @@ from cdad.agents.implementer import (
     SpecNotFoundError,
 )
 from cdad.agents.test_writer import TestWriterAgent
-from cdad.config.defaults import DISCOVERY_FILE, MEMORY_BANK_FILE
+from cdad.config.defaults import MEMORY_BANK_FILE
 from cdad.llm.client import LLMClient
 from cdad.llm.provider import ConfigurationError
 from cdad.llm.registry import resolve_provider
