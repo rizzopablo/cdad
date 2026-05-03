@@ -311,3 +311,235 @@ title: Test Feature
         agent.implement(spec_path=valid_spec)
 
         llm.send_message.assert_not_called()
+
+
+# ===========================================================================
+# PC-003-2, PC-003-8, PC-003-9: Iterative loop with logging and stdout
+# ===========================================================================
+
+
+class TestPC003_2_8_9_IterativeLoop:
+    """CICLO 4: Tests for iterative TDD loop, NDJSON logging, and stdout progress.
+
+    - PC-003-2: After one or more iterations reaching GREEN, returns success=True
+      with iterations_used > 0 and files_modified listing paths under src/.
+    - PC-003-8: implement.log in NDJSON format with required fields.
+    - PC-003-9: Progress printed to stdout in real-time.
+    """
+
+    def _create_failing_test_and_mock_llm(
+        self, project_root, spec_dir, llm_mock, passing_code: str
+    ):
+        """Helper: Create a spec with a failing test, mock LLM to return code that fixes it."""
+        # Create valid spec
+        spec_path = spec_dir / "feature.md"
+        spec_path.write_text("""---
+title: Calculator Feature
+---
+
+# Spec
+
+## Postconditions
+
+### PC-001
+**Name**: Add function works
+**Description**: add(2, 3) returns 5
+**Verification**: test
+""")
+
+        # Create a failing test
+        tests_dir = project_root / "tests"
+        tests_dir.mkdir(parents=True, exist_ok=True)
+        (tests_dir / "test_calculator.py").write_text("""
+def test_add():
+    from src.calculator import add
+    assert add(2, 3) == 5
+""")
+
+        # Mock LLM to return code that makes test pass
+        llm_mock.send_message.return_value = f"""### file: src/calculator.py
+{passing_code}
+"""
+
+        return spec_path
+
+    def test_returns_success_with_iterations_used_greater_than_zero(
+        self, temp_generic_project, capsys
+    ):
+        """PC-003-2: Si alcanza GREEN tras iterar, success=True con iterations_used > 0."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create src directory
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        result = agent.implement(spec_path=spec_path, max_iterations=5)
+
+        assert isinstance(result, ImplementResult)
+        assert result.success is True, f"Expected success=True, got {result.success}"
+        assert result.iterations_used > 0, (
+            f"Expected iterations_used > 0, got {result.iterations_used}"
+        )
+
+    def test_returns_files_modified_under_src(self, temp_generic_project):
+        """PC-003-2: files_modified lista paths bajo src/ creados/modificados."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        result = agent.implement(spec_path=spec_path)
+
+        assert isinstance(result, ImplementResult)
+        assert len(result.files_modified) > 0, "Expected at least one file modified"
+        for path in result.files_modified:
+            assert "src/" in str(path) or path.name == "calculator.py", (
+                f"Expected path under src/, got {path}"
+            )
+
+    def test_implement_log_created_in_ndjson_format(self, temp_generic_project):
+        """PC-003-8: implement.log se genera en docs/specs/<feature-id>/implement.log."""
+        import json
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs" / "calc-feature"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        agent.implement(spec_path=spec_path)
+
+        log_path = spec_dir / "implement.log"
+        assert log_path.exists(), f"Expected implement.log at {log_path}"
+
+        # Verify NDJSON format: each line must be valid JSON
+        lines = log_path.read_text().strip().split("\n")
+        assert len(lines) > 0, "Log should have at least one line"
+        for line in lines:
+            entry = json.loads(line)  # NDJSON: each line is JSON
+            # Required fields per spec
+            assert "timestamp" in entry, "Missing timestamp field"
+            assert "iteration" in entry, "Missing iteration field"
+            assert "pytest_passed" in entry, "Missing pytest_passed field"
+            assert "pytest_failed" in entry, "Missing pytest_failed field"
+            assert "files_modified" in entry, "Missing files_modified field"
+            assert "provider_call_duration_s" in entry, "Missing provider_call_duration_s field"
+            assert "notes" in entry, "Missing notes field"
+
+    def test_log_iteration_field_is_integer(self, temp_generic_project):
+        """PC-003-8: El campo iteration es entero y comienza en 1."""
+        import json
+
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs" / "test-feature"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        agent.implement(spec_path=spec_path)
+
+        log_path = spec_dir / "implement.log"
+        lines = log_path.read_text().strip().split("\n")
+
+        iterations = [json.loads(line)["iteration"] for line in lines]
+        assert all(isinstance(i, int) for i in iterations), "iteration must be int"
+        assert iterations[0] == 1, f"First iteration should be 1, got {iterations[0]}"
+
+    def test_stdout_shows_iteration_start(self, temp_generic_project, capsys):
+        """PC-003-9: Imprime inicio de iteración a stdout."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        agent.implement(spec_path=spec_path)
+
+        captured = capsys.readouterr()
+        stdout = captured.out
+        assert "iterat" in stdout.lower() or "iteration" in stdout.lower(), (
+            f"Expected 'iteration' in stdout, got: {stdout[:200]}"
+        )
+
+    def test_stdout_shows_pytest_result(self, temp_generic_project, capsys):
+        """PC-003-9: Imprime resultado de pytest resumido a stdout."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        agent.implement(spec_path=spec_path)
+
+        captured = capsys.readouterr()
+        stdout = captured.out
+        assert "pass" in stdout.lower() or "fail" in stdout.lower() or "pytest" in stdout.lower(), (
+            f"Expected pytest result in stdout, got: {stdout[:200]}"
+        )
+
+    def test_stdout_shows_files_modified(self, temp_generic_project, capsys):
+        """PC-003-9: Imprime archivos modificados a stdout."""
+        agent, llm = _make_agent(temp_generic_project)
+
+        spec_dir = temp_generic_project / "docs" / "specs"
+        spec_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dir = temp_generic_project / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "__init__.py").write_text("")
+
+        spec_path = self._create_failing_test_and_mock_llm(
+            temp_generic_project, spec_dir, llm, passing_code="def add(a, b): return a + b"
+        )
+
+        agent.implement(spec_path=spec_path)
+
+        captured = capsys.readouterr()
+        stdout = captured.out
+        assert (
+            "file" in stdout.lower() or "src/" in stdout.lower() or "calculator" in stdout.lower()
+        ), f"Expected files modified in stdout, got: {stdout[:200]}"
