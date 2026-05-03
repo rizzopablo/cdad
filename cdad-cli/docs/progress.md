@@ -1,5 +1,18 @@
 # Progress — CDAD-CLI
 
+## Completed (Feature 002 — 2026-05-03)
+
+| Feature | Estado | Notas |
+|---|---|---|
+| `LLMProvider` Protocol | ✅ | `src/cdad/llm/provider.py` |
+| Jerarquía de excepciones tipadas | ✅ | 6 clases en `provider.py` |
+| `AnthropicProvider` | ✅ | Con mapeo de errores nativos |
+| `OpenAIProvider` | ✅ | Con `base_url` configurable |
+| `ACPProvider` | ✅ | Con protocolo completo (initialize→session→prompt→close) |
+| Registry + resolución | ✅ | `src/cdad/llm/registry.py` |
+| Defaults mixtos (3 providers) | ✅ | `registry.DEFAULT_AGENT_MODELS` |
+| 60 tests para feature 002 | ✅ | 15 postcondiciones verificadas |
+
 ## Completed (Phase 1 MVP — 2026-05-01)
 
 | Feature | Estado | Notas |
@@ -25,20 +38,15 @@
 
 | Feature | Estado | Notas |
 |---|---|---|
-| CLI commands (review, merge) | 🚧 | Placeholders implementados, sin lógica real |
-| Memory Bank files (CDAD spec §2.5) | 🚧 | Generando documentation completa |
+| Memory Bank files | 🚧 | Documentación de feature 002 completada |
 
 ## Planned (Phase 1+)
 
 | Feature | Prioridad | Notas |
 |---|---|---|
-| ImplementerAgent | Alta | Agente que implementa código para pasar tests (GREEN phase) |
-| ReviewerAgent | Alta | Compara implementación contra spec |
-| ScribeAgent | Media | Actualiza Memory Bank después de merge |
-| `cdad status` | Media | Ya implementado pero puede mejorarse |
-| `cdad red` completo | Media | Integración con ImplementerAgent |
-| `cdad green` completo | Media | Validación automática de GREEN phase |
-| Dogfooding | Alta | Usar cdad-cli para desarrollar cdad-cli v0.2 |
+| Dogfooding | Alta | **Iniciado con feature 002** — usar cdad-cli para desarrollar cdad-cli v0.2 |
+| ReviewerAgent | Alta | Review de feature 002 fue exitoso; automatizar como agente |
+| ScribeAgent | Media | Actualizar Memory Bank automáticamente después de merge |
 | Soporte async | Baja | Typer soporta async; podría paralelizar agentes |
 | Presets adicionales | Baja | FastAPI, Flask, otros frameworks Python |
 
