@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from cdad.llm.provider import LLMProvider, Message, ProviderError
+from cdad.llm.provider import Message, ProviderError
 
 # For backward compatibility with tests that mock Anthropic directly
 try:

@@ -22,6 +22,16 @@ Si existe, leelo. La estructura mínima es:
 
 Esa es la fuente de verdad. **Pero igual hacé un sanity check** contra los archivos reales del paso 2: si el state file dice `current_stage: tdd` pero no hay tests en el repo, está desactualizado y avisás al usuario.
 
+**Detección de epic activo**: si el state file tiene campo `active_epic` no null, la feature actual pertenece a un epic. Esto NO cambia el flujo de `cdad-cycle` (la feature se ejecuta igual), pero sí cambia tres cosas:
+
+1. **El ID de la feature suele tener prefijo del epic**: `<epic-num>-<feat-num>-<slug>` (ej. `001-002-generar-xml`). Tratá ese formato como válido.
+2. **Hay contexto adicional en `docs/epics/<epic-id>/plan.md`** que conviene leer en Etapa 1 (descubrimiento por feature). Específicamente: la sección "Contratos cross-feature" del plan puede tener interfaces que la feature actual debe respetar.
+3. **El cierre de feature debe sugerir volver al coordinador del epic** (ver `references/stage-5-merge.md`, sección final).
+
+Si detectás `active_epic` activo, comunicalo al usuario en la frase inicial:
+
+> *"Estás en feature `001-002-generar-xml` (parte del epic `001-facturacion-afip`), etapa **<X>**. <próximo paso>. ¿Avanzamos?"*
+
 ### Paso 2: Si no existe state file, inferir desde archivos
 
 Aplicá los siguientes checks en orden:

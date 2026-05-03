@@ -1,7 +1,7 @@
 import inspect
 import os
 import re
-from typing import Any, Callable, Dict, Tuple
+from typing import Callable, Dict
 
 from cdad.llm.provider import ConfigurationError, LLMProvider
 
@@ -10,7 +10,7 @@ _REGISTRY: Dict[str, Callable] = {}
 DEFAULT_AGENT_MODELS = {
     "architect": "anthropic/claude-opus-4-7",
     "test_writer": "anthropic/claude-sonnet-4-6",
-    "implementer": "acp/claude",
+    "implementer": "acp/qwen",
     "reviewer": "openai/gpt-4o",
     "scribe": "acp/qwen",
 }
@@ -25,7 +25,7 @@ def get_builtin_acp_command(alias: str) -> list[str]:
         "claude": ["npx", "-y", "@zed-industries/claude-agent-acp"],
         "gemini": ["npx", "-y", "@google/gemini-cli"],
         "codex": ["npx", "-y", "codex-acp"],
-        "qwen": ["qwen-agent"],
+        "qwen": ["qwen", "--acp"],
     }
     return builtins.get(alias)
 
@@ -78,13 +78,15 @@ register("openai", _openai_factory)
 register("acp", _acp_factory)
 
 
-def resolve_provider(name: str, config: dict = None) -> LLMProvider:
+def resolve_provider(name: str, config: dict = None, override: str | None = None) -> LLMProvider:
     if config is None:
         config = {}
 
     provider_string = None
 
-    if name not in ["architect", "test_writer", "implementer", "reviewer", "scribe"]:
+    if override:
+        provider_string = override
+    elif name not in ["architect", "test_writer", "implementer", "reviewer", "scribe"]:
         provider_string = name
     else:
         env_var_name = f"CDAD_AGENT_{name.upper()}"

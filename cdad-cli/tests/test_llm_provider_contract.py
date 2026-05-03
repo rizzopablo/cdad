@@ -116,7 +116,7 @@ except ImportError:
             "claude": ["npx", "-y", "@zed-industries/claude-agent-acp"],
             "gemini": ["npx", "-y", "@google/gemini-cli"],
             "codex": ["npx", "-y", "codex-acp"],
-            "qwen": ["qwen-agent"],
+            "qwen": ["qwen", "--acp"],
         }
         return builtins.get(alias)
 
@@ -770,7 +770,7 @@ class TestPC002_13_ACPBuiltins:
             ("claude", ["npx", "-y", "@zed-industries/claude-agent-acp"]),
             ("gemini", ["npx", "-y", "@google/gemini-cli"]),
             ("codex", ["npx", "-y", "codex-acp"]),
-            ("qwen", ["qwen-agent"]),
+            ("qwen", ["qwen", "--acp"]),
         ],
     )
     def test_acp_builtin_aliases_have_correct_default_commands(self, alias, expected_command):
@@ -813,7 +813,7 @@ class TestPC002_14_DefaultModels:
     Without any config:
       architect   → anthropic/claude-opus-4-7
       test_writer → anthropic/claude-sonnet-4-6
-      implementer → acp/claude
+      implementer → acp/qwen
       reviewer    → openai/gpt-4o
       scribe      → acp/qwen
     """
@@ -826,7 +826,7 @@ class TestPC002_14_DefaultModels:
         [
             ("architect", "anthropic/claude-opus-4-7"),
             ("test_writer", "anthropic/claude-sonnet-4-6"),
-            ("implementer", "acp/claude"),
+            ("implementer", "acp/qwen"),
             ("reviewer", "openai/gpt-4o"),
             ("scribe", "acp/qwen"),
         ],
