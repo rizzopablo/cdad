@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "active_feature": "003-implementer-agent",
+  "current_stage": "tdd",
+  "tdd_substage": "red",
+  "stage_history": [
+    {"stage": "discovery", "feature": "002-llm-provider-abstraction", "completed_at": "2026-05-02T00:00:00Z"},
+    {"stage": "specification", "feature": "002-llm-provider-abstraction", "completed_at": "2026-05-02T00:00:00Z", "approved_by": "rizzopablo"},
+    {"stage": "tdd", "feature": "002-llm-provider-abstraction", "completed_at": "2026-05-03T00:00:00Z"},
+    {"stage": "review", "feature": "002-llm-provider-abstraction", "completed_at": "2026-05-03T00:00:00Z", "passes": 2},
+    {"stage": "merge", "feature": "002-llm-provider-abstraction", "completed_at": "2026-05-03T00:00:00Z", "merged_to": "add-llm-providers"},
+    {"stage": "discovery", "feature": "003-implementer-agent", "completed_at": "2026-05-03T03:00:00Z"},
+    {"stage": "specification", "feature": "003-implementer-agent", "completed_at": "2026-05-03T03:30:00Z", "approved_by": "rizzopablo"}
+  ],
+  "postconditions_status": {
+    "PC-003-1": "pending", "PC-003-2": "pending", "PC-003-3": "pending",
+    "PC-003-4": "pending", "PC-003-5": "pending", "PC-003-6": "pending",
+    "PC-003-7": "pending", "PC-003-8": "pending", "PC-003-9": "pending",
+    "PC-003-10": "pending", "PC-003-11": "pending", "PC-003-12": "pending",
+    "PC-003-13": "pending", "PC-003-14": "pending"
+  },
+  "last_updated": "2026-05-03T03:30:00Z"
+}
