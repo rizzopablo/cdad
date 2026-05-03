@@ -83,7 +83,6 @@ cdad green [--spec PATH] [--max-iterations N] [--provider STR]
 11. El builtin `qwen` en `get_builtin_acp_command` retorna `["qwen", "--acp"]` (verificado contra `qwen` v0.12.3+ que expone el flag `--acp` nativamente).
 12. La función `resolve_provider` acepta un parámetro adicional `override: str | None = None`. Si se pasa, tiene precedencia sobre env, config y defaults.
 13. El comando `cdad green` retorna exit code `0` si `success=True`, `1` si `success=False` por `max_iterations_reached` o `test_obsolescence_suspected`, `2` si error de configuración (provider no resoluble, spec no encontrado, API key faltante, `--spec` omitido y `.cdad-state.json` ausente o sin `active_feature`).
-14. El campo `requires-python` en `pyproject.toml` se actualiza a `">=3.11"` (ya requerido por feature 002 vía ACP SDK pero pendiente de reconciliar).
 
 ## Invariantes verificables
 
@@ -94,7 +93,7 @@ cdad green [--spec PATH] [--max-iterations N] [--provider STR]
 
 ## Criterios de aceptación
 
-- [ ] Test unitario para cada una de las 14 postcondiciones pasa.
+- [ ] Test unitario para cada una de las 13 postcondiciones pasa.
 - [ ] Property test con 100 secuencias random de respuestas del `FakeACPProvider` verifica el invariante "no toca tests/".
 - [ ] Cobertura de líneas en `src/cdad/agents/implementer.py` ≥ 90%.
 - [ ] Cobertura global de la suite ≥ 80%.
@@ -110,7 +109,7 @@ cdad green [--spec PATH] [--max-iterations N] [--provider STR]
 - **Paralelismo / concurrencia**: el agente es estrictamente secuencial. Una sola invocación al provider a la vez.
 - **Métricas de calidad del código**: complejidad ciclomática, duplicación, etc. Out of scope.
 - **Auto-corrección de tests obsoletos**. El agente solo reporta sospechas; el humano decide.
-- **Modificación de archivos fuera de `src/`**: no toca `pyproject.toml` (excepto la actualización puntual de PC 14), `docs/`, `.cdad-state.json`, ni nada fuera de `src/`.
+- **Modificación de archivos fuera de `src/`**: no toca `pyproject.toml`, `docs/`, `.cdad-state.json`, ni nada fuera de `src/`. (El upgrade de `requires-python` fue una decisión infra realizada fuera de scope de la feature.)
 
 ## Notas de implementación
 
@@ -159,7 +158,6 @@ Si `--spec` se omite y `docs/.cdad-state.json` no existe, o existe pero `active_
 - **Modifica**:
   - `src/cdad/llm/registry.py` — cambia default `implementer`, builtin `qwen`, agrega parámetro `override` a `resolve_provider`.
   - `src/cdad/cli/__init__.py` (o `main.py`) — registra comando `green`.
-  - `pyproject.toml` — `requires-python = ">=3.11"`.
 
 ### Dependencias del runtime
 
