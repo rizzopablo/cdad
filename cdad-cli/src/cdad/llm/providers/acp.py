@@ -110,4 +110,9 @@ class ACPProvider:
                     raise ProviderResponseError("ACP provider returned empty or invalid response")
                 return content
             finally:
-                await conn.close_session(session_id)
+                try:
+                    await conn.close_session(session_id)
+                except Exception:
+                    # Some ACP agents (e.g. qwen) don't support the session/close method.
+                    # Swallow the error so it doesn't mask the actual response.
+                    pass

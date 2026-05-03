@@ -1,16 +1,26 @@
 """CDAD CLI main entry point."""
 
+import json
 import os
 import re
+import shutil
 from pathlib import Path
 from typing import Optional
 
 import typer
 
 from cdad.agents.architect import ArchitectAgent
+from cdad.agents.implementer import (
+    ImplementerAgent,
+    ImplementResult,
+    InvalidSpecError,
+    SpecNotFoundError,
+)
 from cdad.agents.test_writer import TestWriterAgent
-from cdad.config.defaults import DISCOVERY_FILE, MEMORY_BANK_FILE
+from cdad.config.defaults import MEMORY_BANK_FILE
 from cdad.llm.client import LLMClient
+from cdad.llm.provider import ConfigurationError
+from cdad.llm.registry import resolve_provider
 from cdad.orchestrator.phase_manager import PhaseManager
 from cdad.project.model import ProjectModel
 from cdad.validators.spec_validator import (
@@ -193,7 +203,9 @@ def spec(
         attempts = 0
         while not result.is_valid and attempts < retry:
             attempts += 1
-            typer.echo(f"⚠ Validation failed (attempt {attempts}/{retry}); asking architect to fix.")
+            typer.echo(
+                f"⚠ Validation failed (attempt {attempts}/{retry}); asking architect to fix."
+            )
             fix_msg = (
                 "The spec you produced has these validation errors:\n"
                 + "\n".join(f"- {e}" for e in result.errors)
@@ -244,7 +256,9 @@ def architect(
 
         out_dir = project_root / "docs" / "architecture"
         out_dir.mkdir(parents=True, exist_ok=True)
-        slug = _slugify(str(target.relative_to(project_root)) if target.is_absolute() else str(target))
+        slug = _slugify(
+            str(target.relative_to(project_root)) if target.is_absolute() else str(target)
+        )
         out_file = out_dir / f"{slug}.md"
         out_file.write_text(
             f"# Architecture review: {target}\n\n"
@@ -348,34 +362,128 @@ def red(path: Optional[Path] = typer.Option(None, help="Project path")) -> None:
 
 
 @app.command()
-def green(path: Optional[Path] = typer.Option(None, help="Project path")) -> None:
-    """Run tests and check status (GREEN phase)."""
+def green(
+    spec: Optional[Path] = typer.Option(None, help="Path to spec file"),
+    max_iterations: int = typer.Option(5, help="Max TDD iterations"),
+    provider: Optional[str] = typer.Option(None, help="Provider override (e.g. acp/qwen)"),
+    path: Optional[Path] = typer.Option(None, help="Project path"),
+) -> None:
+    """Run ImplementerAgent to close the GREEN phase."""
     project_root = path or Path.cwd()
 
+    # --- Step 1: Resolve spec path ---
+    spec_path: Optional[Path] = None
+    if spec is not None:
+        spec_path = Path(spec)
+        if not spec_path.exists():
+            typer.echo(f"Error: Spec not found: {spec_path}")
+            raise typer.Exit(2)
+    else:
+        state_file = project_root / "docs" / ".cdad-state.json"
+        if state_file.exists():
+            try:
+                state = json.loads(state_file.read_text(encoding="utf-8"))
+                active_feature = state.get("active_feature")
+                if active_feature:
+                    spec_path = project_root / "docs" / "specs" / f"{active_feature}.md"
+                    if not spec_path.exists():
+                        typer.echo(f"Error: Spec not found: {spec_path}")
+                        raise typer.Exit(2)
+            except (json.JSONDecodeError, OSError) as exc:
+                typer.echo(f"Error: Cannot read state file: {exc}")
+                raise typer.Exit(2)
+
+        # Fallback: no --spec and no active_feature in state file
+        if spec_path is None:
+            specs_dir = project_root / "docs" / "specs"
+            if specs_dir.exists():
+                specs = sorted(specs_dir.glob("*.md"))
+                if specs:
+                    spec_path = specs[0]
+
+        if spec_path is None:
+            typer.echo("No active feature. Pass --spec PATH or initialize a feature first.")
+            raise typer.Exit(2)
+
+    # --- Step 2: Check test files exist ---
+    test_dir = project_root / "tests"
+    if test_dir.exists():
+        test_files = sorted(test_dir.glob("test_*.py"))
+    else:
+        test_files = []
+    if not test_files:
+        typer.echo("No active feature. Pass --spec PATH or initialize a feature first.")
+        raise typer.Exit(2)
+
+    # --- Step 3: Load config ---
+    config: dict = {}
+    cdad_toml = project_root / "cdad.toml"
+    if cdad_toml.exists():
+        try:
+            import toml as _toml
+
+            config = _toml.load(cdad_toml)
+        except Exception:
+            pass
+
+    # --- Step 4: Resolve provider ---
+    try:
+        provider_instance = resolve_provider("implementer", config, override=provider)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider not resolvable: {exc}")
+        raise typer.Exit(2)
+
+    # --- Step 5: Validate provider ---
+    if hasattr(provider_instance, "command") and provider_instance.command:
+        if not shutil.which(provider_instance.command[0]):
+            cmd_name = provider_instance.command[0]
+            typer.echo(f"Error: Provider command '{cmd_name}' not found in PATH")
+            raise typer.Exit(2)
+
+    # --- Step 6: Create LLMClient wrapping the provider ---
+    model_id = getattr(provider_instance, "_model_id", "") or "qwen"
+    llm_client = LLMClient(provider=provider_instance, model=model_id)
+
+    # --- Step 7: Create project and agent ---
     project = _load_project(project_root)
     if project is None:
-        return
+        raise typer.Exit(2)
 
-    test_dir = project_root / "tests"
-    if not test_dir.exists():
-        typer.echo("No tests directory found.")
-        return
+    agent = ImplementerAgent(role="implementer", project=project, llm_client=llm_client)
 
-    typer.echo("🧪 Running tests...")
-    validator = TestValidator()
-    result = validator.validate(test_dir)
+    # --- Step 8: Run implement() ---
+    try:
+        result: ImplementResult = agent.implement(
+            spec_path,
+            max_iterations=max_iterations,
+            provider_override=provider,
+        )
+    except (SpecNotFoundError, InvalidSpecError) as exc:
+        typer.echo(f"Error: {exc}")
+        raise typer.Exit(2)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider configuration failed: {exc}")
+        raise typer.Exit(2)
 
-    typer.echo(f"   Passed: {result.passed}")
-    typer.echo(f"   Failed: {result.failed}")
-    for error in result.errors:
-        typer.echo(f"   Error: {error}")
+    # --- Step 9: Print ImplementResult ---
+    status_str = "GREEN" if result.success else "RED"
+    typer.echo(f"\nSuite {status_str} — iterations_used: {result.iterations_used}")
+    typer.echo(f"success: {result.success}")
+    typer.echo(f"iterations_used: {result.iterations_used}")
+    modified_str = (
+        ", ".join(str(p) for p in result.files_modified) if result.files_modified else "(none)"
+    )
+    typer.echo(f"files_modified: {modified_str}")
+    if result.error:
+        typer.echo(f"error: {result.error}")
+    if result.obsolescence_suspicions:
+        typer.echo(f"obsolescence_suspicions: {len(result.obsolescence_suspicions)} detected")
 
-    if result.failed == 0 and result.passed > 0:
-        typer.echo("\n✓ GREEN phase: All tests pass!")
-    elif result.failed > 0:
-        typer.echo(f"\n⚠ {result.failed} test(s) still failing.")
-    else:
-        typer.echo("\n⚠ No tests found. Write tests first (RED phase).")
+    # --- Step 10: Map result to exit code (PC-003-13) ---
+    if result.success:
+        raise typer.Exit(0)
+    # All agent-loop failures (max_iterations, obsolescence, provider_error, etc.) → exit 1
+    raise typer.Exit(1)
 
 
 @app.command()

@@ -7,7 +7,7 @@ name = "cdad-cli"
 version = "0.1.0"
 description = "Contract-Driven AI Development CLI - Agnostic orchestrator for CDAD workflow"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "CDAD Contributors"}]
 
@@ -58,5 +58,8 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src/cdad --cov-report=term"
+addopts = "-v --cov=src/cdad --cov-report=term -m 'not integration'"
 pythonpath = ["src"]
+markers = [
+    "integration: integration tests that require external dependencies (opt-in with -m integration)",
+]

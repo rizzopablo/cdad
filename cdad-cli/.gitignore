@@ -62,5 +62,4 @@ venv.bak/
 Thumbs.db
 
 # Project specific
-.cdad-state.json
 *.tmp
