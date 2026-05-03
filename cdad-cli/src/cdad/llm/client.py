@@ -1,64 +1,58 @@
-"""LLMClient - wrapper around Anthropic SDK for Claude interactions."""
+"""LLMClient - wrapper around LLMProvider."""
 
-from typing import List, Dict
-from anthropic import Anthropic
+from __future__ import annotations
+
+from typing import Dict, List
+
+from cdad.llm.provider import LLMProvider, Message, ProviderError
 
 
 class LLMClient:
-    """Wrapper around Anthropic SDK for LLM interactions."""
+    """Wrapper around LLMProvider for agent interactions."""
 
-    def __init__(self, api_key: str, model: str = "claude-opus-4-7"):
+    def __init__(self, provider: LLMProvider, model: str, *, max_tokens: int = 2048):
         """Initialize LLMClient.
 
         Args:
-            api_key: Anthropic API key.
-            model: Model to use (default: claude-opus-4-7).
+            provider: LLMProvider to use.
+            model: Model to use.
+            max_tokens: Maximum tokens for response.
         """
-        self.api_key = api_key
+        self.provider = provider
         self.model = model
-        self.client = Anthropic(api_key=api_key)
-        self.history: List[Dict[str, str]] = []
+        self.max_tokens = max_tokens
+        self.history: list[Message] = []
 
     def send_message(self, message: str, system_prompt: str = "") -> str:
-        """Send message to Claude and get response.
+        """Send message and get response.
 
         Args:
             message: User message to send.
             system_prompt: Optional system prompt for the message.
 
         Returns:
-            Response text from Claude.
+            Response text.
         """
-        # Add user message to history
+        history_snapshot = list(self.history)
         self.history.append({"role": "user", "content": message})
 
-        # Build messages for API call
-        messages = self.history.copy()
+        try:
+            response_text = self.provider.send_message(
+                system_prompt,
+                list(self.history),
+                model=self.model,
+                max_tokens=self.max_tokens,
+            )
+        except ProviderError:
+            self.history = history_snapshot
+            raise
 
-        # Call Claude API
-        system = system_prompt if system_prompt else None
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=2048,
-            system=system,
-            messages=messages,
-        )
-
-        # Extract response text
-        response_text = response.content[0].text
-
-        # Add assistant response to history
         self.history.append({"role": "assistant", "content": response_text})
-
         return response_text
 
-    def get_history(self) -> List[Dict[str, str]]:
-        """Get conversation history.
-
-        Returns:
-            List of message dictionaries with role and content.
-        """
-        return self.history.copy()
+    def get_history(self) -> list[Message]:
+        """Get conversation history."""
+        return list(self.history)
 
     def clear_history(self) -> None:
         """Clear conversation history."""
