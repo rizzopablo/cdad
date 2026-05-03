@@ -191,6 +191,7 @@ CDAD no excluye DDD. Se pueden combinar perfectamente. CDAD se enfoca en *cómo*
 ## Documentación Completa
 
 - 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Documento completo con 13 capítulos
+- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Recursos para facilitar el estudio de CDAD
 - 🎯 **[docs/specs/](./docs/specs/)** — Estructura de especificaciones
 - 🏗️ **[docs/adr/](./docs/adr/)** — Architecture Decision Records
 - 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Brief del proyecto
