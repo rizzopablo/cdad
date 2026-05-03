@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "active_feature": null,
+  "current_stage": "discovery",
+  "tdd_substage": null,
+  "postconditions_status": {},
+  "stage_history": [],
+  "approver": "<TODO: nombre del aprobador de specs>",
+  "last_updated": "<YYYY-MM-DDTHH:MM:SSZ>"
+}
