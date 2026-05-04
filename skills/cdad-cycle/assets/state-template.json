@@ -3,6 +3,7 @@
   "active_feature": null,
   "current_stage": "discovery",
   "tdd_substage": null,
+  "audit_status": null,
   "postconditions_status": {},
   "stage_history": [],
   "approver": "<TODO: nombre del aprobador de specs>",

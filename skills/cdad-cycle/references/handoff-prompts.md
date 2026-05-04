@@ -5,6 +5,8 @@ Cómo el orquestador genera el prompt que el usuario pega en chat nuevo (o en su
 ## Formato del handoff packet
 
 Siempre entregás al usuario **un bloque copiable** con estructura fija:
+Siempre incluyes referencia al skill para que el sub-agente se encuadre en la metodología correctamente.
+
 
 ```
 🛑 HANDOFF: <rol> — <tarea atómica>
@@ -13,7 +15,7 @@ Siempre entregás al usuario **un bloque copiable** con estructura fija:
 PROMPT PARA CHAT NUEVO (copiar y pegar):
 ──────────────────────────────────────────
 
-Sos un sub-agente <rol> en CDAD.
+Sos un sub-agente <rol> en CDAD. <cdad-cycle/skill.md>
 
 Tarea: <tarea específica, una sola>
 
@@ -48,6 +50,48 @@ El packet **es el último output** del orquestador en ese turno. Después esper�
 ---
 
 ## Templates por rol
+
+### Test-writer (Etapa 3 — AUDIT)
+
+```
+Sos un sub-agente test-writer en CDAD modo AUDIT.
+
+Tarea: auditar la suite de tests existente ANTES de escribir tests nuevos para la feature. Producir Test Audit Report que documente qué tests se modificarán, cuáles se mantienen intactos, y qué tests nuevos se escribirán.
+
+Contexto:
+1. Spec aprobado (pegar contenido completo de docs/specs/<feat>/spec.md)
+2. Tests existentes relevantes (listar archivos en tests/ que tocan el módulo/aggregate de la feature)
+3. Template de test-audit.md: assets/spec-template/test-audit.md
+
+Reglas estrictas:
+- Permisos: read-only en codebase. NO editás nada todavía.
+- Releé la spec con ojos críticos: ¿qué comportamiento viejo cambia?
+- Para cada test existente que podría verse afectado, determiná:
+  - ¿Valida comportamiento que CAMBIA? → Marcar para modificación
+  - ¿Valida comportamiento que SE MANTIENE? → Marcar como untouched
+  - ¿No relacionado? → Ignorar
+- Cada test modificado DEBE tener justificación explícita en la spec (línea/sección)
+- Listar tests untouched EXPLÍCITAMENTE (no implícitamente)
+- Identificar regression risks: comportamiento nuevo sin cobertura de test
+
+Output esperado: archivo `docs/specs/<feat>/test-audit.md` completo con:
+- Resumen de comportamiento que cambia
+- Tests modificados (con justificación y spec ref)
+- Tests nuevos a escribir
+- Tests untouched (lista explícita)
+- Regression risk assessment
+- Gate de Test Audit checklist
+
+Cuando termines:
+
+"LISTO. Test Audit Report en docs/specs/<feat>/test-audit.md. Resumen:
+- Tests a modificar: N
+- Tests untouched: M
+- Tests nuevos: P
+- Regression risks: [sí/no, detalle]
+
+Pendiente: aprobación humana del audit antes de pasar a RED."
+```
 
 ### Architect (Etapa 1 — Descubrimiento por feature)
 
@@ -122,6 +166,24 @@ Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando 
 ```
 
 ### Test-writer (Etapa 3 — RED)
+
+#### Pre-RED: Test Audit Checklist (antes de cualquier test nuevo)
+
+Antes de tocar un archivo de tests, ejecutá:
+
+1. **Releer spec nueva completa** con enfoque en: ¿qué comportamiento viejo cambia?
+2. **Recorrer codebase**: importá módulos/modelos que toca la feature. ¿Qué tests existentes tocan eso?
+3. **Crear `test-audit.md`** (template en assets) con:
+   - Qué comportamiento cambia (párrafo)
+   - Qué tests se modifican + justificación de cada uno
+   - Qué tests nuevos se escriben
+   - Qué tests se mantienen sin cambios (EXPLICITAR)
+   - Regression risks
+4. **Humano aprueba Test Audit** antes de empezar RED.
+
+Si no podés responder con confianza "cada test modificado está en spec", **no avances**. Preguntar es más barato que arreglar después.
+
+---
 
 ```
 Sos un sub-agente test-writer en CDAD.

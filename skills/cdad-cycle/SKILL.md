@@ -103,6 +103,18 @@ Etapa 1: Descubrimiento     → references/stage-1-discovery.md
 Etapa 2: Especificación      → references/stage-2-specification.md
    ↓ (gate: spec.md aprobado por humano)
 Etapa 3: TDD anti-trampa     → references/stage-3-tdd.md
+   ├─ 3.0 AUDIT: Test-Writer audita suite existente
+   │  └─ Gate: Test Audit aprobado por humano
+   ├─ 3.1 RED: Test-Writer escribe tests nuevos
+   │  └─ Gate: Tests rojos que fallan por AssertionError
+   ├─ 3.2 GREEN: Implementer código mínimo
+   │  └─ Gate: Suite completa verde
+   ├─ 3.3 REFACTOR: (opcional)
+   │  └─ Gate: Suite verde
+   ├─ 3.4 PROPERTIES: (opcional)
+   │  └─ Gate: Properties verdes
+   ├─ 3.5 E2E: (opcional)
+   │  └─ Gate: E2E verdes
    ↓ (gate: suite verde, cobertura ≥ umbral)
 Etapa 4: Review two-layer    → references/stage-4-review.md
    ↓ (gate: bloqueantes resueltos)
@@ -120,6 +132,7 @@ Etapa 5: Merge + Memory Bank → references/stage-5-merge.md
 | Rol | Etapa | Responsabilidad | Permisos |
 |-----|-------|-----------------|----------|
 | **architect** | 1, 2 | Descubrimiento, brainstorm socrático, draft de spec | read-only |
+| **test-writer (pre-RED)** | 3 (AUDIT) | Test Audit: audita suite existente, documenta cambios justificados en spec | read tests/, read spec.md, write test-audit.md |
 | **test-writer** | 3 (RED, properties, E2E) | Tests que verifican spec, fallan inicialmente | edit `tests/`, no ve código de implementación |
 | **implementer** | 3 (GREEN) | Código mínimo que hace pasar test | edit código, NO `tests/` |
 | **refactorer** | 3 (REFACTOR) | Limpia código manteniendo suite verde | edit código, NO `tests/` |
@@ -148,6 +161,8 @@ Etapa 5: Merge + Memory Bank → references/stage-5-merge.md
 
 ### Gate 3→4 — TDD → Review
 
+- [ ] Test Audit completado y aprobado (existe `test-audit.md` con beneficio de duda resuelto, si aplica).
+- [ ] Cada test modificado tiene justificación explícita en spec.md.
 - [ ] Toda postcondición del spec tiene al menos un test.
 - [ ] Suite verde (verificado empíricamente, no asumido).
 - [ ] Si spec marca invariantes → property tests verdes.
