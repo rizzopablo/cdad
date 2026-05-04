@@ -1,8 +1,25 @@
 # CDAD-CLI: Agent Memory Bank (CDAD §10.3)
 
-> **Última actualización**: 2026-05-02  
-> **Fase**: Phase 1 MVP completada + Correcciones de Principio 3 y OCP  
-> **Versión**: 0.1.1
+> **Última actualización**: 2026-05-04
+> **Fase**: Feature 004 completada — Provider-Aware CLI + Memory Bank actualizado
+> **Versión**: 0.2.0
+
+---
+
+## ⚠️ Contexto para Agentes (LEER PRIMERO)
+
+Este proyecto sigue **Contract-Driven AI Development (CDAD)**. Antes de continuar, asegurate de entender:
+
+- Las 5 etapas del ciclo CDAD: Descubrimiento → Especificación → TDD → Review → Merge
+- Tu rol actual y sus permisos (read-only vs edit-only vs full-access)
+- Los gates de validación obligatorios entre etapas
+- El patrón de handoffs: cada rol corre en sesión aislada, no continues trabajo de otro rol
+
+**Referencia**: `docs/CDAD_metodologia.md` o skill `cdad-cycle`.
+
+> **Regla estricta**: Si te asignan una tarea (ej. "implementar postcondición X"),
+> verificá en qué etapa del ciclo estás. No escribas código de implementación
+> si estás en etapa RED (tests primero). No edites tests si estás en GREEN.
 
 ---
 
@@ -22,18 +39,34 @@
 
 ### Instalación
 ```bash
+# Crear y activar entorno virtual (obligatorio para desarrollo)
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# o .venv\Scripts\activate  # Windows
+
 pip install -e ".[dev]"
 pre-commit install
 ```
 
 ### Desarrollo
 ```bash
+# ⚠️ Siempre correr tests dentro del venv activado
 pytest                          # Ejecutar todos los tests
 pytest --cov=src/cdad           # Con coverage
+pytest -x                       # Parar en primer fallo (útil en TDD RED)
+
 black src/ tests/               # Formatear código
 ruff check src/ tests/          # Linting
 mypy src/                       # Type checking
 ```
+
+> **Nota sobre entorno**: Los tests deben ejecutarse dentro del venv para garantizar:
+> - Consistencia de dependencias (pytest, pytest-cov, typer, anthropic, etc.)
+> - Aislamiento del sistema Python global
+> - Reproducibilidad de resultados entre desarrolladores y CI/CD
+>
+> Si ves errores de `ModuleNotFoundError` o versiones incompatibles, verificá
+> que el venv esté activado con `which python` (debería apuntar a `.venv/bin/python`).
 
 ### CLI (comandos operativos)
 ```bash

@@ -21,11 +21,66 @@ NO escribís tests, NO implementás, NO refactorizás. Coordinás:
 
 | Sub-fase | Rol | Cuándo |
 |----------|-----|--------|
+| AUDIT | test-writer | Antes de RED, cuando feature modifica comportamiento existente |
 | RED | test-writer | Postcondición pendiente |
 | GREEN | implementer | Tras RED válido |
 | REFACTOR | refactorer | Opcional, si hay fricción |
 | PROPERTIES | test-writer modo properties | Spec marca invariantes |
 | INTEGRATION/E2E | test-writer modo E2E | Spec marca criterios E2E |
+
+## Sub-fase 3.0 — AUDIT (Test Audit)
+
+### Cuándo aplica
+
+Obligatorio cuando la nueva feature **modifica comportamiento de features existentes**. Opcional pero recomendado para features que extienden comportamiento sin cambiar el existente.
+
+### Propósito
+
+Antes de escribir un solo test nuevo, el Test Writer audita la suite existente para:
+1. Identificar qué comportamiento cambia vs. qué se mantiene.
+2. Determinar qué tests existentes requieren actualización.
+3. Documentar explícitamente los tests que NO deben tocarse.
+4. Detectar riesgos de regresión (cambios sin cobertura de test).
+
+### Proceso
+
+**Paso 1: Identificar qué comportamiento cambia**
+- Releer la spec con ojos críticos: ¿qué dice que es diferente?
+- Documentar explícitamente (lista corta) qué comportamiento viejo se mantiene, cambia, o es nuevo.
+
+**Paso 2: Auditar tests existentes contra la spec NUEVA**
+- Para cada test que PODRÍA verse afectado (same module, same aggregate, etc.):
+  - ¿Valida comportamiento que CAMBIA? → Requiere actualización
+  - ¿Valida comportamiento que SE MANTIENE? → Sin cambios
+  - ¿No relacionado? → Sin cambios
+
+**Paso 3: Documentar Test Audit Report**
+- Path: `docs/specs/<feature-id>/test-audit.md`
+- Usar template en `assets/spec-template/test-audit.md`
+- Estructura:
+  - Tests Modified: qué cambia, justificación en spec, línea en spec.md
+  - Tests Created: tests nuevos a escribir
+  - Tests Untouched: tests que se mantienen intactos (lista explícita, no implícita)
+  - Regression Risk Assessment: ¿hay cambios donde NO hay tests?
+
+**Paso 4: Validar contra gate de etapa**
+- ¿Cada test modificado tiene justificación explícita en la spec?
+- ¿No hay test modificado sin referencia a spec?
+- ¿Humano aprobó el audit?
+
+### Gate 3.0 → 3.1
+
+- [ ] Existe `docs/specs/<feature-id>/test-audit.md` con estructura completa.
+- [ ] Cada test modificado tiene referencia explícita a línea/sección del spec.
+- [ ] Tests untouched están listados explícitamente.
+- [ ] Regression risk assessment completado.
+- [ ] Humano aprobó el Test Audit Report.
+
+### Handoff
+
+Cargá `references/handoff-prompts.md` sección "Test-writer (Etapa 3 — AUDIT)".
+
+---
 
 ## Sub-fase 3.1 — RED
 
@@ -107,6 +162,8 @@ Si modalidad B y E2E rojo: problema de ensamblaje. Handoff a implementer.
 
 ## Loop entre postcondiciones
 
+**IMPORTANTE**: El Test Audit se hace **UNA SOLA VEZ** al inicio de etapa 3, antes de cualquier RED. No se repite por postcondición. El mismo audit cubre toda la feature.
+
 Cada vez que cierra GREEN (+ REFACTOR opcional) de una postcondición, decidís:
 
 - ¿Quedan postcondiciones pendientes? → handoff a test-writer (RED) con la siguiente.
@@ -116,6 +173,8 @@ Cada vez que cierra GREEN (+ REFACTOR opcional) de una postcondición, decidís:
 
 ## 🛑 Gate de salida (Etapa 3 → Etapa 4)
 
+- [ ] Test Audit completado y aprobado (si feature modifica comportamiento existente, existe `test-audit.md` con beneficio de duda resuelto).
+- [ ] Cada test modificado tiene justificación explícita en spec.md con referencia a línea/sección.
 - [ ] Toda postcondición del spec tiene al menos un test que la verifica.
 - [ ] Suite verde (verificado empíricamente con output del run pegado por usuario).
 - [ ] Si spec marca invariantes → property tests verdes.
@@ -132,5 +191,7 @@ Cuando todos OK: actualizá state (`current_stage: review`, `tdd_substage: null`
 - **AP-4**: implementer modifica tests.
 - **AP-11**: refactor que rompe tests.
 - **AP-12**: property tests con seed aleatorio.
+- **AP-13**: Test Audit skipped.
+- **AP-14**: Test modification sin referencia en spec.
 
 Cargá `references/anti-patterns.md` si detectás señales.

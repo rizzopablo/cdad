@@ -12,19 +12,82 @@ from cdad.llm.provider import (
 
 
 class _CollectingClient:
-    """Client stub that captures session_update text from the agent."""
+    """Client stub that captures session_update text from the agent.
+
+    Implementa los métodos del protocolo Client que el agente puede llamar.
+    Los métodos de filesystem retornan error ya que CDAD no expone filesystem al agente.
+    """
 
     def __init__(self):
         self.text_parts: list[str] = []
+        self._done = asyncio.Event()
 
     def on_connect(self, conn):
         pass
 
     async def session_update(self, session_id: str, update, **kwargs):
-        # AgentMessageChunk / AgentThoughtChunk have a .text attribute
-        text = getattr(update, "text", None)
+        # Extraer texto según el tipo de update
+        # AgentMessageChunk tiene content.text (TextContentBlock)
+        # AgentThoughtChunk tiene text directamente
+        text = None
+
+        if hasattr(update, "content"):
+            # AgentMessageChunk: update.content es un ContentBlock (ej: TextContentBlock)
+            content = update.content
+            if hasattr(content, "text"):
+                text = content.text
+        elif hasattr(update, "text"):
+            # AgentThoughtChunk: tiene text directamente
+            text = update.text
+
         if text:
             self.text_parts.append(text)
+            # Señalar que llegó contenido
+            self._done.set()
+
+    # Métodos del filesystem - CDAD no expone filesystem al agente
+    async def read_text_file(self, path: str, session_id: str, **kwargs):
+        """El agente solicita leer un archivo. CDAD no soporta esta operación."""
+        raise NotImplementedError("Filesystem access not supported in CDAD")
+
+    async def write_text_file(self, content: str, path: str, session_id: str, **kwargs):
+        """El agente solicita escribir un archivo. CDAD no soporta esta operación."""
+        raise NotImplementedError("Filesystem access not supported in CDAD")
+
+    # Métodos de terminal - CDAD no expone terminal al agente
+    async def create_terminal(self, command: str, session_id: str, **kwargs):
+        """El agente solicita crear un terminal. CDAD no soporta esta operación."""
+        raise NotImplementedError("Terminal access not supported in CDAD")
+
+    async def kill_terminal(self, session_id: str, terminal_id: str, **kwargs):
+        """El agente solicita matar un terminal. CDAD no soporta esta operación."""
+        raise NotImplementedError("Terminal access not supported in CDAD")
+
+    async def release_terminal(self, session_id: str, terminal_id: str, **kwargs):
+        """El agente solicita liberar un terminal. CDAD no soporta esta operación."""
+        raise NotImplementedError("Terminal access not supported in CDAD")
+
+    async def terminal_output(self, session_id: str, terminal_id: str, **kwargs):
+        """El agente solicita output de terminal. CDAD no soporta esta operación."""
+        raise NotImplementedError("Terminal access not supported in CDAD")
+
+    async def wait_for_terminal_exit(self, session_id: str, terminal_id: str, **kwargs):
+        """El agente espera que un terminal termine. CDAD no soporta esta operación."""
+        raise NotImplementedError("Terminal access not supported in CDAD")
+
+    # Métodos de permisos - CDAD no implementa permissions interactivas
+    async def request_permission(self, options, session_id: str, tool_call, **kwargs):
+        """El agente solicita permiso para una operación. CDAD no soporta esta operación."""
+        raise NotImplementedError("Interactive permissions not supported in CDAD")
+
+    # Métodos de extensión - no soportados
+    async def ext_method(self, method: str, params: dict, **kwargs):
+        """Método de extensión no soportado."""
+        raise NotImplementedError(f"Extension method '{method}' not supported")
+
+    async def ext_notification(self, method: str, params: dict, **kwargs):
+        """Notificación de extensión - ignorada silenciosamente."""
+        pass
 
 
 class ACPProvider:
@@ -103,10 +166,18 @@ class ACPProvider:
                     session_id=session_id,
                 )
 
+                # Esperar respuesta con timeout de 120s (los agentes pueden tardar)
+                try:
+                    await asyncio.wait_for(collector._done.wait(), timeout=120.0)
+                except asyncio.TimeoutError:
+                    raise ProviderResponseError(
+                        f"ACP provider timed out after 120s. Command: {' '.join(self.command)}"
+                    )
+
                 # The agent sends response text via session_update callbacks,
                 # which the _CollectingClient accumulates in collector.text_parts
                 content = "".join(collector.text_parts)
-                if not content:
+                if not content.strip():
                     raise ProviderResponseError("ACP provider returned empty or invalid response")
                 return content
             finally:

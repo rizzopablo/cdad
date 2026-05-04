@@ -508,18 +508,16 @@ class TestPC002_7_FailFastConfiguration:
             resolve_provider("architect", config=config)
 
     def test_missing_api_key_env_raises_configuration_error(self):
-        # Ensure the env var is NOT set
-        env_backup = os.environ.pop("TEST_MISSING_KEY", None)
+        # We ensure no env var overrides
+        env_backup = os.environ.pop("CDAD_AGENT_ARCHITECT", None)
         try:
-            config = {
-                "agents": {"architect": "anthropic/claude-opus-4-7"},
-                "providers": {"anthropic": {"api_key_env": "TEST_MISSING_KEY"}},
-            }
-            with pytest.raises(ConfigurationError):
+            config = {}
+            with pytest.raises(ConfigurationError) as exc_info:
                 resolve_provider("architect", config=config)
+            assert "default fallback configured" in str(exc_info.value)
         finally:
             if env_backup is not None:
-                os.environ["TEST_MISSING_KEY"] = env_backup
+                os.environ["CDAD_AGENT_ARCHITECT"] = env_backup
 
     def test_invalid_format_raises_configuration_error(self):
         config = {
@@ -531,11 +529,12 @@ class TestPC002_7_FailFastConfiguration:
 
     def test_unknown_role_raises_configuration_error(self):
         config = {
-            "agents": {"unknown_role_xyz": "anthropic/claude-opus-4-7"},
-            "providers": {"anthropic": {"api_key_env": "ANTHROPIC_API_KEY"}},
+            "agents": {},
+            "providers": {},
         }
-        with pytest.raises(ConfigurationError):
+        with pytest.raises(ConfigurationError) as exc_info:
             resolve_provider("unknown_role_xyz", config=config)
+        assert "Unknown role 'unknown_role_xyz'" in str(exc_info.value)
 
 
 # ===========================================================================
@@ -545,51 +544,69 @@ class TestPC002_7_FailFastConfiguration:
 
 class TestPC002_8_ConfigurationPrecedence:
     """PC-002-8: strict precedence order (most specific wins):
-    1. CDAD_AGENT_<ROLE> env var
-    2. ./cdad.toml (cwd)
-    3. ~/.config/cdad/cdad.toml
-    4. DEFAULT_AGENT_MODELS (code defaults)
+    1. override parameter
+    2. CDAD_AGENT_<ROLE> env var
+    3. config[agents][role]
+    4. config[agents][default]
+    5. ConfigurationError (no fallback)
     """
 
-    def test_env_var_takes_precedence(self):
-        """When env var is set, it should win over all other config layers."""
-        with patch.dict(
-            os.environ,
-            {"CDAD_AGENT_ARCHITECT": "anthropic/claude-opus-4-7", "ANTHROPIC_API_KEY": "sk-test"},
-            clear=False,
-        ):
-            result = resolve_provider("architect", config={})
-            assert result is not None, "Resolution should succeed with env var"
+    def test_override_takes_precedence_over_all(self, monkeypatch):
+        """override parameter wins over env var and config."""
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test-key")
+        monkeypatch.setenv("CDAD_AGENT_ARCHITECT", "anthropic/claude-opus-4-7")
 
-    def test_local_config_when_no_env_var(self):
-        """When only local config is set, it should be used."""
         config = {
-            "agents": {"architect": "anthropic/claude-sonnet-4-6"},
-            "providers": {"anthropic": {"api_key_env": "ANTHROPIC_API_KEY"}},
-        }
-        result = resolve_provider("architect", config=config)
-        assert result is not None
-
-    def test_default_when_nothing_configured(self):
-        """When nothing is configured, defaults from code should be used."""
-        assert DEFAULT_AGENT_MODELS, "DEFAULT_AGENT_MODELS should be defined"
-        result = resolve_provider("architect", config={})
-        assert result is not None
-
-    def test_all_layers_defined_env_wins(self):
-        """When all layers are defined, env var must win over file config."""
-        config = {
-            "agents": {"architect": "anthropic/claude-sonnet-4-6"},
-            "providers": {"anthropic": {"api_key_env": "ANTHROPIC_API_KEY"}},
+            "agents": {"architect": "acp/claude"},
+            "providers": {},
         }
 
-        with patch.dict(
-            os.environ,
-            {"CDAD_AGENT_ARCHITECT": "anthropic/claude-opus-4-7", "ANTHROPIC_API_KEY": "sk-test"},
-            clear=False,
-        ):
-            result = resolve_provider("architect", config=config)
-            assert result is not None
+        result = resolve_provider("architect", config=config, override="openai/gpt-4o")
+        assert result.__class__.__name__ == "OpenAIProvider", (
+            f"override should select OpenAI, got {result.__class__.__name__}"
+        )
+
+    def test_env_var_beats_config_role(self, monkeypatch):
+        """Env var CDAD_AGENT_<ROLE> beats config[agents][role]."""
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test-key")
+        monkeypatch.setenv("CDAD_AGENT_ARCHITECT", "openai/gpt-4o")
+
+        config = {"agents": {"architect": "acp/claude", "default": "anthropic/claude-3"}}
+
+        result = resolve_provider("architect", config=config, override=None)
+        assert result.__class__.__name__ == "OpenAIProvider", (
+            f"env var should select OpenAI, got {result.__class__.__name__}"
+        )
+
+    def test_config_role_beats_config_default(self, monkeypatch):
+        """config[agents][role] beats config[agents][default]."""
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test-key")
+        monkeypatch.delenv("CDAD_AGENT_ARCHITECT", raising=False)
+
+        config = {
+            "agents": {
+                "architect": "openai/gpt-4-turbo",
+                "default": "anthropic/claude-3-sonnet",
+            }
+        }
+
+        result = resolve_provider("architect", config=config, override=None)
+        assert result.__class__.__name__ == "OpenAIProvider", (
+            f"config[role] should select OpenAI, got {result.__class__.__name__}"
+        )
+
+    def test_config_default_used_when_nothing_else(self, monkeypatch):
+        """config[agents][default] used when no override, env var, nor role."""
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
+        monkeypatch.delenv("CDAD_AGENT_REVIEWER", raising=False)
+
+        config = {"agents": {"default": "anthropic/claude-opus-4-7"}}
+
+        result = resolve_provider("reviewer", config=config, override=None)
+        assert result is not None, "should resolve using config[default]"
 
 
 # ===========================================================================
@@ -750,7 +767,8 @@ class TestPC002_12_ExtensibleRegistry:
                 return "custom response"
 
         register("custom", lambda cfg: CustomProvider())
-        provider = resolve_provider("custom/test-model", config={})
+        config = {"agents": {"custom_role": "custom/test-model"}}
+        provider = resolve_provider("custom_role", config=config)
         assert provider.name == "custom"
 
 

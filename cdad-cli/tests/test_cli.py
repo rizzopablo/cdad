@@ -15,12 +15,25 @@ runner = CliRunner()
 
 @pytest.fixture
 def patched_llm(monkeypatch):
-    """Replace LLMClient factory and force ANTHROPIC_API_KEY."""
-    fake = MagicMock(spec=LLMClient)
-    fake.send_message.return_value = "stubbed LLM output"
-    monkeypatch.setattr(cli_main, "_make_llm_client", lambda api_key: fake)
+    """Replace resolve_provider to return mock provider for LLMClient."""
+    fake_provider = MagicMock()
+    fake_provider._model_id = "claude-opus-4-7"
+    fake_provider.send_message.return_value = "stubbed LLM output"
+    fake_provider.name = "anthropic"
+
+    # Mock LLMClient to use our fake provider
+    fake_client = MagicMock(spec=LLMClient)
+    fake_client.send_message.return_value = "stubbed LLM output"
+
+    # Patch resolve_provider to return fake provider
+    monkeypatch.setattr(
+        cli_main,
+        "resolve_provider",
+        lambda name, config=None, override=None: fake_provider,
+    )
+    monkeypatch.setattr(cli_main, "LLMClient", lambda **kw: fake_client)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    return fake
+    return fake_client
 
 
 @pytest.fixture
@@ -85,15 +98,34 @@ class TestArchitectCommand:
         assert "## Analysis" in body
         assert "## Recommendations" in body
 
-    def test_requires_api_key(self, temp_generic_project, no_api_key):
-        target = temp_generic_project / "src"
+    def test_requires_api_key(self, tmp_path, no_api_key):
+        """Without cdad.toml, command aborts with exit code 2 and config help message."""
+        # Create a project WITHOUT cdad.toml to test PC-004-06
+        project = tmp_path / "no_config_project"
+        project.mkdir()
+        (project / "docs" / "specs").mkdir(parents=True)
+        (project / "tests").mkdir(exist_ok=True)
+        (project / "src").mkdir(exist_ok=True)
+        (project / "pyproject.toml").write_text('[project]\nname = "test-project"\n')
+
+        target = project / "src"
         target.mkdir(exist_ok=True)
         (target / "foo.py").write_text("x = 1\n")
+
         result = runner.invoke(
             cli_main.app,
-            ["architect", str(target), "--path", str(temp_generic_project)],
+            ["architect", str(target), "--path", str(project)],
         )
-        assert "ANTHROPIC_API_KEY" in result.output
+        # PC-004-06: Without config file, exit code 2 with config help
+        assert result.exit_code == 2, (
+            f"Expected exit code 2 without config, got {result.exit_code}. Output: {result.output}"
+        )
+        assert "cdad config auto" in result.output, (
+            f"Expected 'cdad config auto' in output, got: {result.output}"
+        )
+        assert "cdad config set" in result.output, (
+            f"Expected 'cdad config set' in output, got: {result.output}"
+        )
 
 
 class TestTestCommand:

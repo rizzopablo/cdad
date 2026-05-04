@@ -5,6 +5,8 @@ Cómo el orquestador genera el prompt que el usuario pega en chat nuevo (o en su
 ## Formato del handoff packet
 
 Siempre entregás al usuario **un bloque copiable** con estructura fija:
+Siempre incluyes referencia al skill para que el sub-agente se encuadre en la metodología correctamente.
+
 
 ```
 🛑 HANDOFF: <rol> — <tarea atómica>
@@ -13,7 +15,7 @@ Siempre entregás al usuario **un bloque copiable** con estructura fija:
 PROMPT PARA CHAT NUEVO (copiar y pegar):
 ──────────────────────────────────────────
 
-Sos un sub-agente <rol> en CDAD.
+Sos un sub-agente <rol> en CDAD. <cdad-cycle/skill.md>
 
 Tarea: <tarea específica, una sola>
 
@@ -48,6 +50,48 @@ El packet **es el último output** del orquestador en ese turno. Después esper�
 ---
 
 ## Templates por rol
+
+### Test-writer (Etapa 3 — AUDIT)
+
+```
+Sos un sub-agente test-writer en CDAD modo AUDIT.
+
+Tarea: auditar la suite de tests existente ANTES de escribir tests nuevos para la feature. Producir Test Audit Report que documente qué tests se modificarán, cuáles se mantienen intactos, y qué tests nuevos se escribirán.
+
+Contexto:
+1. Spec aprobado (pegar contenido completo de docs/specs/<feat>/spec.md)
+2. Tests existentes relevantes (listar archivos en tests/ que tocan el módulo/aggregate de la feature)
+3. Template de test-audit.md: assets/spec-template/test-audit.md
+
+Reglas estrictas:
+- Permisos: read-only en codebase. NO editás nada todavía.
+- Releé la spec con ojos críticos: ¿qué comportamiento viejo cambia?
+- Para cada test existente que podría verse afectado, determiná:
+  - ¿Valida comportamiento que CAMBIA? → Marcar para modificación
+  - ¿Valida comportamiento que SE MANTIENE? → Marcar como untouched
+  - ¿No relacionado? → Ignorar
+- Cada test modificado DEBE tener justificación explícita en la spec (línea/sección)
+- Listar tests untouched EXPLÍCITAMENTE (no implícitamente)
+- Identificar regression risks: comportamiento nuevo sin cobertura de test
+
+Output esperado: archivo `docs/specs/<feat>/test-audit.md` completo con:
+- Resumen de comportamiento que cambia
+- Tests modificados (con justificación y spec ref)
+- Tests nuevos a escribir
+- Tests untouched (lista explícita)
+- Regression risk assessment
+- Gate de Test Audit checklist
+
+Cuando termines:
+
+"LISTO. Test Audit Report en docs/specs/<feat>/test-audit.md. Resumen:
+- Tests a modificar: N
+- Tests untouched: M
+- Tests nuevos: P
+- Regression risks: [sí/no, detalle]
+
+Pendiente: aprobación humana del audit antes de pasar a RED."
+```
 
 ### Architect (Etapa 1 — Descubrimiento por feature)
 
@@ -121,12 +165,130 @@ Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando 
 "LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación humana."
 ```
 
+### Test-writer (Etapa 3 — POST-AUDIT: Actualizar suite existente)
+
+```
+Sos un sub-agente test-writer en CDAD fase post-audit.
+
+Tarea: actualizar la suite de tests existente según el Test Audit Report aprobado. Luego, escribir tests nuevos en RED. Esta es una sesión combinada de dos subfases: POST-AUDIT + RED.
+
+Contexto:
+1. Test Audit Report aprobado (pegar contenido de docs/specs/<feat>/test-audit.md)
+2. Spec aprobado (pegar docs/specs/<feat>/spec.md)
+3. Suite de tests actual (archivos o ruta)
+4. Convenciones de testing: docs/systemPatterns.md
+
+Reglas estrictas:
+- Permisos: edit SOLO en tests/. NO mirás código de implementación.
+- Esta sesión tiene TRES partes claramente separadas (importante para que no se mezclen):
+
+#### PARTE 1: Actualizar tests auditados
+
+Para CADA test listado en la sección "Tests modified" del test-audit.md:
+- Abrí el test actual en el repo.
+- Cambiá el test para validar el NUEVO comportamiento según spec.
+  - Si la nueva postcondición es "este comportamiento ya no existe": **ELIMINÁ el test**.
+  - Si el comportamiento cambió: actualizá la lógica del test para reflejar la nueva expectativa.
+  - Si solo cambió la interface/nombre: renombrá y actualizá.
+- Ejecutá SOLO ese test actualizado.
+  - ¿Falla? **Correcto.** El implementer aún no tocó el código. Eso es lo esperado.
+  - ¿Pasa inesperadamente? Raro, pero posible si el cambio es cosmético. Reportá en output.
+- Comiteá el cambio: `git commit -m "test: update <test-name> for spec change <ref-en-spec>"`
+
+#### PARTE 2: Verificar tests sin cambios
+
+Para CADA test listado en la sección "Tests untouched" del test-audit.md:
+- Ejecutá ese test AHORA, antes de tocar nada más.
+  - ¿Pasa? Perfecto. Continuá.
+  - ¿Falla? ALTO. Esto significa que el cambio de spec/código rompió un test que NO debería haber sido afectado. Reportá como "Regression detectada" y STOP.
+
+#### PARTE 3: Escribir tests nuevos (RED)
+
+Para CADA postcondición nueva del spec (no tocada por las anteriores):
+- Escribí UN test que verifica esa postcondición.
+- El test debe FALLAR al ejecutarse (porque el código no está implementado).
+- Fallar por la razón correcta: AssertionError, no ImportError.
+- Nombre descriptivo: test_postcondition_<N>_<descripción>.
+- Comiteá: `git commit -m "test: add failing test for postcondition <N>"`
+
+#### Flujo de ejecución esperado
+
+1. Actualizar tests → comitear (pueden estar rojos, es correcto)
+2. Verificar untouched → todos deben pasar
+3. Escribir tests nuevos → comitear (deben estar rojos)
+4. Run final de TODA la suite:
+   - Tests actualizados: ROJO esperado (comportamiento nuevo, código sin implementar)
+   - Tests untouched: VERDE esperado (comportamiento sin cambios)
+   - Tests nuevos: ROJO esperado (nuevas postcondiciones, sin implementación)
+
+Output esperado:
+
+Después de terminar todo (3 partes), respondé:
+
+"LISTO. Suite actualizada post-audit + tests nuevos en RED.
+
+**PARTE 1 — Tests auditados actualizados:**
+- <test-name-1>: [eliminado | actualizado para <cambio>]
+- <test-name-2>: [actualizado para <cambio>]
+
+**PARTE 2 — Tests sin cambios verificados:**
+- Todos pasando (lista con <N> tests)
+
+**PARTE 3 — Tests nuevos en RED:**
+- <test-name-new-1>
+- <test-name-new-2>
+
+Output del run final de suite:
+
+<pegar output pytest/jest/etc mostrando:
+  - Tests rojos de nuevas postcondiciones
+  - Tests rojos de actualizados
+  - Tests verdes de untouched
+>
+
+Commits:
+<listar hashes de:
+  - Updated tests
+  - New RED tests
+>"
+```
+
+**Notas para el orquestador**:
+- Tests actualizados pueden estar **rojos** post-sesión (es correcto, esperado).
+- Tests untouched deben estar **verdes** (gate de regresión).
+- Tests nuevos deben estar **rojos** (RED estándar).
+- NUNCA digas "tests migrados deben pasar". Es incorrecto.
+
+---
+
 ### Test-writer (Etapa 3 — RED)
+
+#### Pre-RED: Test Audit Checklist (antes de cualquier test nuevo)
+
+Antes de tocar un archivo de tests, ejecutá:
+
+1. **Releer spec nueva completa** con enfoque en: ¿qué comportamiento viejo cambia?
+2. **Recorrer codebase**: importá módulos/modelos que toca la feature. ¿Qué tests existentes tocan eso?
+3. **Crear `test-audit.md`** (template en assets) con:
+   - Qué comportamiento cambia (párrafo)
+   - Qué tests se modifican + justificación de cada uno
+   - Qué tests nuevos se escriben
+   - Qué tests se mantienen sin cambios (EXPLICITAR)
+   - Regression risks
+4. **Humano aprueba Test Audit** antes de empezar RED.
+
+Si no podés responder con confianza "cada test modificado está en spec", **no avances**. Preguntar es más barato que arreglar después.
+
+**Si ya completaste POST-AUDIT**: usá la sección anterior (Test-writer POST-AUDIT) que combina actualización de tests auditados + escritura de tests nuevos en una sola sesión. La sección de abajo es para casos donde POST-AUDIT no aplica (feature sin tests previos afectados).
+
+---
 
 ```
 Sos un sub-agente test-writer en CDAD.
 
-Tarea: escribir UN test que verifica la postcondición <N> del spec. El test debe FALLAR al ejecutarse, porque no hay implementación todavía. Debe fallar por la razón correcta (assertion falla, no ImportError ni syntax error).
+Tarea: escribir UN test que verifica una postcondición NUEVA (no tocada por audit) del spec. El test debe FALLAR al ejecutarse, porque no hay implementación todavía. Debe fallar por la razón correcta (assertion falla, no ImportError ni syntax error).
+
+IMPORTANTE: Esto ocurre DESPUÉS del POST-AUDIT. Si aún no completaste POST-AUDIT (actualizar tests auditados + verificar untouched), hacelo primero en esa sesión o en otra.
 
 Contexto:
 1. Spec aprobado (pegar contenido completo de docs/specs/<feat>/spec.md)

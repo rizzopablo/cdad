@@ -1,5 +1,23 @@
 # Progress — CDAD-CLI
 
+## Completed (Feature 004 — 2026-05-04)
+
+| Feature | Estado | Notas |
+|---|---|---|
+| Provider-aware commands | ✅ | `discover`, `spec`, `architect`, `test` usan `resolve_provider` |
+| Eliminación de legacy | ✅ | Removidos `_require_api_key`, `_make_llm_client`, `api_key` en `LLMClient` |
+| Comando `cdad config auto` | ✅ | Con `--global`/`--local`, validación funcional, backup |
+| Comando `cdad config set` | ✅ | Con `--global`/`--local`, preservación de entradas |
+| Rol `default` en registry | ✅ | Fallback chain con 5 niveles de precedencia |
+| `_resolve_config()` | ✅ | Resolución local → global → defaults |
+| `get_available_providers()` | ✅ | Detección sin hardcodear env vars |
+| ACP provider fixes | ✅ | Race condition, extracción de texto, stubs de protocolo |
+| Migración de tests legacy | ✅ | 17 tests de features 002/003 migrados |
+| Tests E2E (acp/qwen real) | ✅ | 4 tests de integración |
+| Spec v2 (28 postcondiciones) | ✅ | Con scope global/local |
+| Review: 6 bloqueantes | ✅ | Todos resueltos |
+| Review fixes: 3 fixes ACP | ✅ | Todos verificados |
+
 ## Completed (Feature 003 — 2026-05-03)
 
 | Feature | Estado | Notas |
