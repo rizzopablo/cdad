@@ -1,7 +1,7 @@
 """Tests for `cdad green` command — PC-003-13 exit codes.
 
 RED phase: tests verify exit codes per spec:
-- Exit code 0: success=True (GREEN suite)
+- Exit code 0: success=True (suite GREEN)
 - Exit code 1: success=False by max_iterations_reached or test_obsolescence_suspected
 - Exit code 2: configuration errors (missing spec, no state file, unresolved provider)
 
@@ -26,9 +26,24 @@ except ImportError:
     cli_main = None
 
 
+@pytest.fixture(autouse=True)
+def mock_valid_provider(monkeypatch):
+    """Mock resolve_provider to return a valid provider instead of a MagicMock."""
+    if cli_main is None:
+        return
+
+    class DummyProvider:
+        name = "dummy"
+
+        def send_message(self, *args, **kwargs):
+            return "ok"
+
+    monkeypatch.setattr(cli_main, "resolve_provider", lambda *args, **kwargs: DummyProvider())
+
+
 @pytest.fixture
 def temp_project_with_spec(tmp_path):
-    """Create a temporary CDAD project with a valid spec."""
+    """Create a temporary CDAD project with a valid spec and cdad.toml config."""
     project_root = tmp_path / "test_project"
     project_root.mkdir()
 
@@ -57,6 +72,11 @@ title: Test Feature
     (project_root / "pyproject.toml").write_text("""[project]
 name = "test-project"
 version = "0.1.0"
+""")
+
+    # Create cdad.toml with default config (required for provider-aware CLI)
+    (project_root / "cdad.toml").write_text("""[agents]
+default = "anthropic/claude-opus-4-7"
 """)
 
     return project_root

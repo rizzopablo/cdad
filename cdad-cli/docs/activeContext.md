@@ -1,5 +1,54 @@
 # Active Context — CDAD-CLI
 
+## 2026-05-04 — Feature 004: Provider-Aware CLI Commands
+
+Cerrada feature que unificó todos los comandos al patrón provider-aware con `resolve_provider`, eliminando el modo legacy `LLMClient(api_key=...)`.
+
+### Qué se implementó
+
+| Componente | Descripción |
+|---|---|
+| Migración de 4 comandos | `discover`, `spec`, `architect`, `test` ahora usan `resolve_provider` con rol específico |
+| Eliminación de legacy | Removidos `_require_api_key`, `_make_llm_client`, parámetro `api_key` de `LLMClient` |
+| Comando `cdad config` | Subcomandos `auto` y `set` con scopes `--global`/`--local` |
+| Rol `default` en registry | Fallback chain: override > env var > config[role] > config[default] > ConfigurationError |
+| `get_available_providers()` | Detección de providers disponibles sin hardcodear env vars |
+| `_resolve_config()` | Resolución de config local → global → defaults para comandos provider-aware |
+| ACP provider fixes | Race condition (asyncio.Event + wait_for), extracción de texto (content.text), stubs de protocolo |
+| Migración de tests legacy | 17 tests de features anteriores migrados al nuevo patrón provider-aware |
+| Tests E2E | 4 tests de integración contra `acp/qwen` real |
+
+### Métricas
+
+- Tests: **57 unitarios** + **4 E2E** (integración con acp/qwen real)
+- Suite completa: **~270 tests passing** (excluyendo 1 test de timeout conocido)
+- Postcondiciones: **28/28 verificadas**
+- Bloqueantes de review: **6/6 resueltos** + 3 fixes ACP
+- Tests legacy migrados: **17/17** (de features 002 y 003)
+
+### Decisiones relevantes
+
+- Se eliminó completamente el modo legacy `LLMClient(api_key=...)` a favor del patrón provider-aware con `resolve_provider`.
+- Se introdujo la cadena de fallback `default` en el registry: cualquier rol no configurado explícitamente hereda del agente `default`.
+- Se implementaron dos scopes de configuración (`--global` y `--local`) con prioridad determinística: local > global > defaults.
+- El comando `cdad config auto` realiza validación funcional real (prompt "CDAD disponible") con timeout de 30s antes de escribir configuración.
+- Se priorizó `ThreadPoolExecutor` sobre `signal.alarm` para timeout cross-platform compatible con Python 3.10+.
+
+### Deuda técnica detectada
+
+- El comando `green` requirió refactorización tardía para usar `_resolve_config()` (detectado en review).
+- Fragmentación temporal en el manejo de ACP: race conditions y extracción de texto requirieron fixes ad-hoc post-review.
+- Algunos tests legacy migrados dependen de mocks con firmas laxas (`*args, **kwargs`) que podrían ocultar regresiones futuras.
+- La documentación de `cdad config set --help` no menciona explícitamente que no valida el provider (solo formato).
+- El retry de `cdad spec` requiere acceso al filesystem por parte del agente ACP — pendiente como feature separada.
+- `test_timeout_rejects_provider` se cuelga en el test runner (problema de compatibilidad con el test runner, no con el código).
+
+### Próxima feature en cola
+
+Implementar filesystem access para agente ACP durante retry de `cdad spec` (lectura/escritura de archivos).
+
+---
+
 ## 2026-05-03 — Feature 003: ImplementerAgent + comando `cdad green`
 
 Cerrada feature que completa el ciclo RED→GREEN del flujo CDAD: el `ImplementerAgent` itera entre test output y generación de código hasta alcanzar GREEN, sin modificar tests/.

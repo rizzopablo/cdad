@@ -21,7 +21,7 @@ from cdad.llm.client import LLMClient
 from cdad.llm.provider import ConfigurationError
 from cdad.llm.registry import resolve_provider
 
-runner = CliRunner()
+runner = CliRunner(mix_stderr=False)
 
 # ---------------------------------------------------------------------------
 # Helpers / Fixtures
@@ -534,7 +534,7 @@ class TestCommandsAbortWithoutConfig:
             f"discover sin cdad.toml debe abortar con exit code 2, got {result.exit_code}. "
             f"Output: {result.output}"
         )
-        combined_output = result.output + (result.stderr if hasattr(result, "stderr") else "")
+        combined_output = result.output + result.stderr
         assert "cdad config auto" in combined_output, (
             f"Output debe mencionar 'cdad config auto', got: {combined_output}"
         )
@@ -559,7 +559,7 @@ class TestCommandsAbortWithoutConfig:
             f"spec sin cdad.toml debe abortar con exit code 2, got {result.exit_code}. "
             f"Output: {result.output}"
         )
-        combined_output = result.output + (result.stderr if hasattr(result, "stderr") else "")
+        combined_output = result.output + result.stderr
         assert "cdad config auto" in combined_output, (
             f"Output debe mencionar 'cdad config auto', got: {combined_output}"
         )
@@ -585,7 +585,7 @@ class TestCommandsAbortWithoutConfig:
             f"architect sin cdad.toml debe abortar con exit code 2, got {result.exit_code}. "
             f"Output: {result.output}"
         )
-        combined_output = result.output + (result.stderr if hasattr(result, "stderr") else "")
+        combined_output = result.output + result.stderr
         assert "cdad config auto" in combined_output, (
             f"Output debe mencionar 'cdad config auto', got: {combined_output}"
         )
@@ -623,7 +623,7 @@ title: My Feature
             f"test sin cdad.toml debe abortar con exit code 2, got {result.exit_code}. "
             f"Output: {result.output}"
         )
-        combined_output = result.output + (result.stderr if hasattr(result, "stderr") else "")
+        combined_output = result.output + result.stderr
         assert "cdad config auto" in combined_output, (
             f"Output debe mencionar 'cdad config auto', got: {combined_output}"
         )
