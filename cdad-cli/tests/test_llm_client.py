@@ -1,91 +1,77 @@
-"""Tests for LLMClient - wrapper around Anthropic SDK."""
+"""Tests for LLMClient - wrapper around LLM providers."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 from cdad.llm.client import LLMClient
 
 
 class TestLLMClientClass:
-    """Test LLMClient integration with Anthropic API."""
+    """Test LLMClient integration with LLM providers."""
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_initializes_with_api_key(self, mock_anthropic_class):
-        """LLMClient initializes with API key."""
-        mock_anthropic_class.return_value = MagicMock()
-        client = LLMClient(api_key="test-key")
-        assert client.api_key == "test-key"
+    def test_initializes_with_provider(self):
+        """LLMClient initializes with provider instance."""
+        fake_provider = MagicMock()
+        client = LLMClient(provider=fake_provider, model="claude-opus-4-7")
+        assert client.provider == fake_provider
         assert client.model == "claude-opus-4-7"
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_initializes_with_custom_model(self, mock_anthropic_class):
+    def test_initializes_with_custom_model(self):
         """LLMClient accepts custom model."""
-        mock_anthropic_class.return_value = MagicMock()
-        client = LLMClient(api_key="test-key", model="claude-sonnet-4-6")
+        fake_provider = MagicMock()
+        client = LLMClient(provider=fake_provider, model="claude-sonnet-4-6")
         assert client.model == "claude-sonnet-4-6"
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_sends_message_and_receives_response(self, mock_anthropic_class):
-        """LLMClient sends message and receives response."""
-        # Mock the Anthropic client
-        mock_client = MagicMock()
-        mock_anthropic_class.return_value = mock_client
+    def test_sends_message_and_receives_response(self):
+        """LLMClient sends message and receives response via provider."""
+        fake_provider = MagicMock()
+        fake_provider.send_message.return_value = "Response text"
 
-        # Mock the message response
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Response text")]
-        mock_client.messages.create.return_value = mock_response
-
-        client = LLMClient(api_key="test-key")
+        client = LLMClient(provider=fake_provider, model="claude-opus-4-7")
         result = client.send_message("Test message")
 
         assert result == "Response text"
+        # Verify provider.send_message was called with correct args
+        fake_provider.send_message.assert_called_once()
+        call_args = fake_provider.send_message.call_args
+        assert call_args.kwargs.get("model") == "claude-opus-4-7"
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_maintains_conversation_history(self, mock_anthropic_class):
+    def test_maintains_conversation_history(self):
         """LLMClient maintains conversation history."""
-        mock_client = MagicMock()
-        mock_anthropic_class.return_value = mock_client
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Response")]
-        mock_client.messages.create.return_value = mock_response
+        fake_provider = MagicMock()
+        fake_provider.send_message.return_value = "Response"
 
-        client = LLMClient(api_key="test-key")
+        client = LLMClient(provider=fake_provider, model="claude-opus-4-7")
         client.send_message("First message")
         client.send_message("Second message")
 
         history = client.get_history()
         assert len(history) >= 2
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_clear_history(self, mock_anthropic_class):
+    def test_clear_history(self):
         """LLMClient can clear conversation history."""
-        mock_anthropic_class.return_value = MagicMock()
-        client = LLMClient(api_key="test-key")
+        fake_provider = MagicMock()
+        client = LLMClient(provider=fake_provider, model="claude-opus-4-7")
         client.history = [{"role": "user", "content": "test"}]
 
         client.clear_history()
         assert client.get_history() == []
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_uses_correct_model(self, mock_anthropic_class):
+    def test_uses_correct_model(self):
         """LLMClient uses specified model in API calls."""
-        mock_client = MagicMock()
-        mock_anthropic_class.return_value = mock_client
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Response")]
-        mock_client.messages.create.return_value = mock_response
+        fake_provider = MagicMock()
+        fake_provider.send_message.return_value = "Response"
 
-        client = LLMClient(api_key="test-key", model="custom-model")
+        client = LLMClient(provider=fake_provider, model="custom-model")
         client.send_message("Test")
 
-        # Verify the model was passed to the API call
-        call_args = mock_client.messages.create.call_args
+        # Verify the model was passed to the provider call
+        call_args = fake_provider.send_message.call_args
         assert call_args.kwargs["model"] == "custom-model"
 
-    @patch("cdad.llm.client.Anthropic")
-    def test_get_history_returns_messages(self, mock_anthropic_class):
+    def test_get_history_returns_messages(self):
         """LLMClient returns conversation history."""
-        mock_anthropic_class.return_value = MagicMock()
-        client = LLMClient(api_key="test-key")
+        fake_provider = MagicMock()
+        client = LLMClient(provider=fake_provider, model="claude-opus-4-7")
         client.history = [
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi"},

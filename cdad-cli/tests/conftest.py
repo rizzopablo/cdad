@@ -130,13 +130,16 @@ def temp_django_project(tmp_path):
 
 @pytest.fixture
 def temp_generic_project(tmp_path):
-    """Create a temporary generic Python project."""
+    """Create a temporary generic Python project with cdad.toml config."""
     (tmp_path / "docs" / "specs").mkdir(parents=True)
     (tmp_path / "tests").mkdir(parents=True, exist_ok=True)
     (tmp_path / "src").mkdir(parents=True, exist_ok=True)
     # Create pyproject.toml to identify as generic Python project
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text('[project]\nname = "test-project"\n')
+    # Create cdad.toml with default config (required for provider-aware CLI)
+    cdad_toml = tmp_path / "cdad.toml"
+    cdad_toml.write_text('[agents]\ndefault = "anthropic/claude-opus-4-7"\n')
     return tmp_path
 
 

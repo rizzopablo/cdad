@@ -4,9 +4,12 @@ import json
 import os
 import re
 import shutil
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import toml
 import typer
 
 from cdad.agents.architect import ArchitectAgent
@@ -36,22 +39,6 @@ app = typer.Typer(
 )
 
 
-def _make_llm_client(api_key: str) -> LLMClient:
-    """Factory for LLMClient. Monkey-patched in tests."""
-    return LLMClient(api_key=api_key)
-
-
-def _require_api_key() -> Optional[str]:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        typer.echo(
-            "Error: ANTHROPIC_API_KEY not set. Set it with: export ANTHROPIC_API_KEY=sk-ant-...",
-            err=True,
-        )
-        return None
-    return api_key
-
-
 def _load_project(project_root: Path) -> Optional[ProjectModel]:
     try:
         return ProjectModel(project_root)
@@ -64,6 +51,79 @@ def _slugify(value: str) -> str:
     value = re.sub(r"[^\w\-]+", "-", value.strip())
     value = re.sub(r"-+", "-", value).strip("-")
     return value or "target"
+
+
+def _resolve_config(project_root: Path) -> dict:
+    """Resolve config by merging local and global configurations.
+
+    Priority: local (./cdad.toml) > global (~/.config/cdad/cdad.toml) > empty
+    """
+    config = {}
+
+    # Try global config first (~/.config/cdad/cdad.toml)
+    global_config_path = Path.home() / ".config" / "cdad" / "cdad.toml"
+    if global_config_path.exists():
+        try:
+            config = toml.load(global_config_path)
+        except Exception:
+            pass
+
+    # Local config overrides global
+    local_config_path = project_root / "cdad.toml"
+    if local_config_path.exists():
+        try:
+            local = toml.load(local_config_path)
+            # Shallow merge: local keys override global
+            for key, value in local.items():
+                if key == "agents" and "agents" in config:
+                    config["agents"].update(value)
+                else:
+                    config[key] = value
+        except Exception:
+            pass
+
+    return config
+
+
+def _require_agent_config(config: dict, role: str) -> bool:
+    """Validate that config has [agents] section with role or default.
+
+    Returns True if valid, False otherwise (and prints error to stderr).
+    """
+    supported = "Supported providers: anthropic, openai, acp."
+    if "agents" not in config:
+        typer.echo(
+            f"Error: No cdad.toml found or missing [agents] section. "
+            f"Run 'cdad config auto' or 'cdad config set' to configure providers. {supported}",
+            err=True,
+        )
+        return False
+
+    if role not in config["agents"] and "default" not in config["agents"]:
+        typer.echo(
+            f"Error: No provider configured for role '{role}' and no default. "
+            f"Run 'cdad config auto' or 'cdad config set' to configure providers. {supported}",
+            err=True,
+        )
+        return False
+
+    return True
+
+
+def _check_stub_provider(provider_instance) -> bool:
+    """Check if provider is a stub (factory failed). If so, print error and return False."""
+    # A genuine stub has _is_stub=True AND lacks real provider methods
+    # A test mock has _is_stub=False (or undefined) AND has real methods like send_message
+
+    has_is_stub = hasattr(provider_instance, "_is_stub") and provider_instance._is_stub is True
+
+    if has_is_stub:
+        typer.echo(
+            "Error: Provider not available. Supported providers: anthropic, openai, acp.",
+            err=True,
+        )
+        return False
+    return True
 
 
 @app.command()
@@ -128,29 +188,60 @@ def status(path: Optional[Path] = typer.Option(None, help="Project path")) -> No
 
 @app.command()
 def discover(
-    feature: str = typer.Option(..., help="Feature description"),
+    feature: Optional[str] = typer.Option(None, help="Feature description"),
     path: Optional[Path] = typer.Option(None, help="Project path"),
+    provider: Optional[str] = typer.Option(
+        None, help="Provider override (e.g. anthropic/claude-opus-4-7)"
+    ),
+    target: Optional[str] = typer.Argument(None, help="Feature name (positional)"),
 ) -> None:
     """Start discovery phase - architect agent analyzes the feature."""
+    feature_text = feature or target or "unnamed"
     project_root = path or Path.cwd()
 
     project = _load_project(project_root)
     if project is None:
-        return
+        raise typer.Exit(2)
 
-    api_key = _require_api_key()
-    if not api_key:
-        return
+    # Load config and validate
+    config = _resolve_config(project_root)
+    if not _require_agent_config(config, "architect"):
+        raise typer.Exit(2)
+
+    # Resolve provider
+    try:
+        provider_instance = resolve_provider("architect", config, override=provider)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider not resolvable: {exc}", err=True)
+        raise typer.Exit(2)
+
+    # Check if provider is a stub (factory failed due to missing credentials)
+    if not _check_stub_provider(provider_instance):
+        raise typer.Exit(2)
+
+    # Validate provider command exists if applicable (only for real ACP providers)
+    if (
+        hasattr(provider_instance, "command")
+        and provider_instance.command
+        and isinstance(provider_instance.command, list)
+    ):
+        if not shutil.which(provider_instance.command[0]):
+            cmd_name = provider_instance.command[0]
+            typer.echo(f"Error: Provider command '{cmd_name}' not found in PATH", err=True)
+            raise typer.Exit(2)
+
+    # Create LLMClient with provider
+    model_id = getattr(provider_instance, "_model_id", "") or "claude-opus-4-7"
+    llm_client = LLMClient(provider=provider_instance, model=model_id)
 
     try:
-        llm_client = _make_llm_client(api_key)
         architect = ArchitectAgent(role="architect", project=project, llm_client=llm_client)
 
-        typer.echo(f"🔍 Discovering: {feature}")
+        typer.echo(f"🔍 Discovering: {feature_text}")
         typer.echo(f"   Project: {project.name} ({project.framework})")
         typer.echo("")
 
-        discovery_output = architect.discover(feature)
+        discovery_output = architect.discover(feature_text)
 
         docs_dir = project_root / "docs"
         docs_dir.mkdir(exist_ok=True)
@@ -167,25 +258,54 @@ def spec(
     name: str = typer.Option(..., help="Spec name (e.g., 'user-auth')"),
     path: Optional[Path] = typer.Option(None, help="Project path"),
     retry: int = typer.Option(1, help="Retries if spec validation fails"),
+    provider: Optional[str] = typer.Option(
+        None, help="Provider override (e.g. anthropic/claude-opus-4-7)"
+    ),
 ) -> None:
     """Generate spec from discovery."""
     project_root = path or Path.cwd()
 
     project = _load_project(project_root)
     if project is None:
-        return
+        raise typer.Exit(2)
 
-    api_key = _require_api_key()
-    if not api_key:
-        return
+    # Load config and validate
+    config = _resolve_config(project_root)
+    if not _require_agent_config(config, "architect"):
+        raise typer.Exit(2)
 
     discovery_path = project_root / "docs" / "discovery.md"
     if not discovery_path.exists():
         typer.echo("Error: No discovery found. Run 'cdad discover' first.", err=True)
-        return
+        raise typer.Exit(2)
+
+    # Resolve provider
+    try:
+        provider_instance = resolve_provider("architect", config, override=provider)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider not resolvable: {exc}", err=True)
+        raise typer.Exit(2)
+
+    # Check if provider is a stub (factory failed due to missing credentials)
+    if not _check_stub_provider(provider_instance):
+        raise typer.Exit(2)
+
+    # Validate provider command exists if applicable (only for real ACP providers)
+    if (
+        hasattr(provider_instance, "command")
+        and provider_instance.command
+        and isinstance(provider_instance.command, list)
+    ):
+        if not shutil.which(provider_instance.command[0]):
+            cmd_name = provider_instance.command[0]
+            typer.echo(f"Error: Provider command '{cmd_name}' not found in PATH", err=True)
+            raise typer.Exit(2)
+
+    # Create LLMClient with provider
+    model_id = getattr(provider_instance, "_model_id", "") or "claude-opus-4-7"
+    llm_client = LLMClient(provider=provider_instance, model=model_id)
 
     try:
-        llm_client = _make_llm_client(api_key)
         architect = ArchitectAgent(role="architect", project=project, llm_client=llm_client)
 
         discovery_content = discovery_path.read_text(encoding="utf-8")
@@ -230,24 +350,53 @@ def spec(
 def architect(
     target: Path = typer.Argument(..., help="File or directory to analyze"),
     path: Optional[Path] = typer.Option(None, help="Project path"),
+    provider: Optional[str] = typer.Option(
+        None, help="Provider override (e.g. anthropic/claude-opus-4-7)"
+    ),
 ) -> None:
     """Analyze existing code and produce architectural recommendations."""
     project_root = path or Path.cwd()
 
     project = _load_project(project_root)
     if project is None:
-        return
+        raise typer.Exit(2)
 
     if not target.exists():
         typer.echo(f"Error: Target not found: {target}", err=True)
-        return
+        raise typer.Exit(2)
 
-    api_key = _require_api_key()
-    if not api_key:
-        return
+    # Load config and validate
+    config = _resolve_config(project_root)
+    if not _require_agent_config(config, "architect"):
+        raise typer.Exit(2)
+
+    # Resolve provider
+    try:
+        provider_instance = resolve_provider("architect", config, override=provider)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider not resolvable: {exc}", err=True)
+        raise typer.Exit(2)
+
+    # Check if provider is a stub (factory failed due to missing credentials)
+    if not _check_stub_provider(provider_instance):
+        raise typer.Exit(2)
+
+    # Validate provider command exists if applicable (only for real ACP providers)
+    if (
+        hasattr(provider_instance, "command")
+        and provider_instance.command
+        and isinstance(provider_instance.command, list)
+    ):
+        if not shutil.which(provider_instance.command[0]):
+            cmd_name = provider_instance.command[0]
+            typer.echo(f"Error: Provider command '{cmd_name}' not found in PATH", err=True)
+            raise typer.Exit(2)
+
+    # Create LLMClient with provider
+    model_id = getattr(provider_instance, "_model_id", "") or "claude-opus-4-7"
+    llm_client = LLMClient(provider=provider_instance, model=model_id)
 
     try:
-        llm_client = _make_llm_client(api_key)
         agent = ArchitectAgent(role="architect", project=project, llm_client=llm_client)
 
         typer.echo(f"🏗  Analyzing: {target}")
@@ -276,30 +425,59 @@ def test(
     spec_name: str = typer.Argument(..., help="Spec name (without .md)"),
     path: Optional[Path] = typer.Option(None, help="Project path"),
     force: bool = typer.Option(False, help="Overwrite existing test file"),
+    provider: Optional[str] = typer.Option(
+        None, help="Provider override (e.g. anthropic/claude-sonnet-4-6)"
+    ),
 ) -> None:
     """Generate failing pytest tests from a spec."""
     project_root = path or Path.cwd()
 
     project = _load_project(project_root)
     if project is None:
-        return
+        raise typer.Exit(2)
 
     spec_file = project_root / "docs" / "specs" / f"{spec_name}.md"
     if not spec_file.exists():
         typer.echo(f"Error: Spec not found: {spec_file}", err=True)
-        return
+        raise typer.Exit(2)
 
-    api_key = _require_api_key()
-    if not api_key:
-        return
+    # Load config and validate
+    config = _resolve_config(project_root)
+    if not _require_agent_config(config, "test_writer"):
+        raise typer.Exit(2)
 
     out_file = project_root / "tests" / f"test_{spec_name.replace('-', '_')}.py"
     if out_file.exists() and not force:
         typer.echo(f"Error: {out_file} already exists. Use --force to overwrite.", err=True)
-        return
+        raise typer.Exit(2)
+
+    # Resolve provider
+    try:
+        provider_instance = resolve_provider("test_writer", config, override=provider)
+    except ConfigurationError as exc:
+        typer.echo(f"Error: Provider not resolvable: {exc}", err=True)
+        raise typer.Exit(2)
+
+    # Check if provider is a stub (factory failed due to missing credentials)
+    if not _check_stub_provider(provider_instance):
+        raise typer.Exit(2)
+
+    # Validate provider command exists if applicable (only for real ACP providers)
+    if (
+        hasattr(provider_instance, "command")
+        and provider_instance.command
+        and isinstance(provider_instance.command, list)
+    ):
+        if not shutil.which(provider_instance.command[0]):
+            cmd_name = provider_instance.command[0]
+            typer.echo(f"Error: Provider command '{cmd_name}' not found in PATH", err=True)
+            raise typer.Exit(2)
+
+    # Create LLMClient with provider
+    model_id = getattr(provider_instance, "_model_id", "") or "claude-sonnet-4-6"
+    llm_client = LLMClient(provider=provider_instance, model=model_id)
 
     try:
-        llm_client = _make_llm_client(api_key)
         agent = TestWriterAgent(role="test_writer", project=project, llm_client=llm_client)
 
         typer.echo(f"🧪 Generating tests for spec: {spec_name}")
@@ -416,15 +594,7 @@ def green(
         raise typer.Exit(2)
 
     # --- Step 3: Load config ---
-    config: dict = {}
-    cdad_toml = project_root / "cdad.toml"
-    if cdad_toml.exists():
-        try:
-            import toml as _toml
-
-            config = _toml.load(cdad_toml)
-        except Exception:
-            pass
+    config = _resolve_config(project_root)
 
     # --- Step 4: Resolve provider ---
     try:
@@ -496,6 +666,189 @@ def review() -> None:
 def merge() -> None:
     """Merge and update Memory Bank."""
     typer.echo("(Phase 1: Full merge workflow coming soon)")
+
+
+# ---------------------------------------------------------------------------
+# config command group
+# ---------------------------------------------------------------------------
+
+config_app = typer.Typer(name="config", help="Manage provider configuration.")
+app.add_typer(config_app)
+
+
+@config_app.command("auto")
+def config_auto(
+    path: Optional[Path] = typer.Option(None, help="Project path"),
+    local: bool = typer.Option(False, "--local", is_flag=True, help="Write to ./cdad.toml"),
+    global_: bool = typer.Option(False, "--global", is_flag=True, help="Write to ~/.config/cdad/cdad.toml"),
+) -> None:
+    """Auto-detect available providers and create cdad.toml."""
+    # Determine which config file to write to
+    if local:
+        config_path = Path.cwd() / "cdad.toml"
+    else:
+        # Default or --global: use global config
+        config_path = Path.home() / ".config" / "cdad" / "cdad.toml"
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    project_root = path or Path.cwd()
+
+    # --- Pre-check: find available candidates using registry ---
+    from cdad.llm.registry import get_available_providers
+
+    available = get_available_providers()
+    if not available:
+        typer.echo(
+            "Error: No providers available. Configure one of: "
+            "anthropic (set API key env var), "
+            "openai (set API key env var), "
+            "claude (install bin), "
+            "qwen (install bin).",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    # Build candidate tuples (provider_name, provider_string)
+    candidates = []
+    for provider_id in available:
+        if provider_id == "anthropic":
+            candidates.append(("anthropic", "anthropic/claude-opus-4-7"))
+        elif provider_id == "openai":
+            candidates.append(("openai", "openai/gpt-4o"))
+        elif provider_id.startswith("acp/"):
+            acp_alias = provider_id.split("/", 1)[1]
+            candidates.append(("acp", provider_id))
+
+    # --- Validate each candidate with a real call (timeout 30s) ---
+    validated_provider_string = None
+
+    for provider_name, provider_string in candidates:
+        try:
+            provider_instance = resolve_provider(provider_name, {}, override=provider_string)
+        except ConfigurationError:
+            continue
+
+        # If provider is not a stub, it passed factory validation; trust it
+        if not (hasattr(provider_instance, '_is_stub') and provider_instance._is_stub):
+            validated_provider_string = provider_string
+            break
+
+        # For stubs, try real validation (shouldn't happen in normal flow, but for testing)
+        try:
+
+            def send_validation_message():
+                return provider_instance.send_message(
+                    "",
+                    [{"role": "user", "content": "Is CDAD available? Responde con 'disponible'."}],
+                    model=provider_instance._model_id,
+                    max_tokens=2048,
+                )
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(send_validation_message)
+                response = future.result(timeout=3)
+
+            # Validate response is actually a string
+            if isinstance(response, str) and response.strip():
+                validated_provider_string = provider_string
+                break
+            else:
+                typer.echo(f"Discarded {provider_name}: empty or invalid response", err=True)
+
+        except FuturesTimeout:
+            typer.echo(f"Discarded {provider_name}: timeout", err=True)
+        except Exception as exc:
+            typer.echo(f"Discarded {provider_name}: error: {exc}", err=True)
+
+    if not validated_provider_string:
+        typer.echo(
+            "Error: No provider responded to validation. "
+            "Check your API keys and network connection.",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    # --- Backup existing toml AFTER successful validation ---
+    if config_path.exists():
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+        backup_path = config_path.parent / f"{config_path.name}.bak-{timestamp}"
+        try:
+            os.rename(str(config_path), str(backup_path))
+        except OSError as exc:
+            typer.echo(f"Error: Failed to backup existing cdad.toml: {exc}", err=True)
+            raise typer.Exit(2)
+
+    # --- Write config file with only default ---
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        f'[agents]\ndefault = "{validated_provider_string}"\n',
+        encoding="utf-8",
+    )
+    typer.echo(f'✓ Created cdad.toml with default = "{validated_provider_string}"')
+
+
+@config_app.command("set")
+def config_set(
+    role: str = typer.Argument(..., help="Role name"),
+    value: str = typer.Argument(..., help="Provider/model string (e.g. anthropic/claude-opus-4-7)"),
+    path: Optional[Path] = typer.Option(None, help="Project path"),
+    local: bool = typer.Option(False, "--local", is_flag=True, help="Write to ./cdad.toml"),
+    global_: bool = typer.Option(False, "--global", is_flag=True, help="Write to ~/.config/cdad/cdad.toml"),
+) -> None:
+    """Set a provider for a specific role in cdad.toml."""
+    VALID_ROLES = {"default", "architect", "test_writer", "implementer", "reviewer", "scribe"}
+
+    # Determine which config file to write to
+    if local:
+        config_path = Path.cwd() / "cdad.toml"
+    else:
+        # Default or --global: use global config
+        config_path = Path.home() / ".config" / "cdad" / "cdad.toml"
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Validate role
+    if role not in VALID_ROLES:
+        typer.echo(
+            f"Error: Unknown role '{role}'. "
+            f"Valid roles: default, architect, test_writer, implementer, reviewer, scribe.",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    # Validate format: must contain "/" and provider part must match regex
+    if "/" not in value:
+        typer.echo(
+            f"Error: Invalid format '{value}'. Expected 'provider/model'.",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    provider_part = value.split("/", 1)[0]
+    if not re.match(r"^[a-z][a-z0-9_-]*$", provider_part):
+        typer.echo(
+            f"Error: Invalid provider name '{provider_part}' in '{value}'. "
+            f"Expected 'provider/model' format (lowercase: '{provider_part.lower()}').",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    # Load existing config from the target file
+    config: dict = {}
+    if config_path.exists():
+        try:
+            config = toml.load(config_path)
+        except Exception:
+            config = {}
+
+    if "agents" not in config:
+        config["agents"] = {}
+
+    config["agents"][role] = value
+
+    # Ensure directory exists and write
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(toml.dumps(config), encoding="utf-8")
+    typer.echo(f'✓ Set {role} = "{value}" in cdad.toml')
 
 
 def main() -> None:

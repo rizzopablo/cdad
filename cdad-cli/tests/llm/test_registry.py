@@ -129,7 +129,7 @@ class TestPC003_12_ResolveProviderOverride:
         )
 
     def test_resolve_without_override_uses_normal_chain(self, monkeypatch):
-        """Sin override (None), la cadena env > config > defaults funciona como antes."""
+        """Sin override (None), la cadena env > config[role] > config[default] > defaults."""
         monkeypatch.setenv("OPENAI_API_KEY", "sk-dummy-openai")
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-dummy-anthropic")
 
@@ -138,7 +138,7 @@ class TestPC003_12_ResolveProviderOverride:
         provider = resolve_provider("implementer", override=None)
         assert provider.__class__.__name__ == "AnthropicProvider"
 
-        # Caso 2: config gana cuando no hay env var
+        # Caso 2: config[agents][role] gana cuando no hay env var
         monkeypatch.delenv("CDAD_AGENT_IMPLEMENTER", raising=False)
         config = {
             "agents": {"implementer": "openai/gpt-4o"},
@@ -147,8 +147,19 @@ class TestPC003_12_ResolveProviderOverride:
         provider = resolve_provider("implementer", config=config, override=None)
         assert provider.__class__.__name__ == "OpenAIProvider"
 
-        # Caso 3: default gana cuando no hay env var ni config
-        # Nota: cuando PC-003-10 esté GREEN, el default será acp/qwen
-        # Por ahora el default es acp/claude, así que probamos con ACP
-        provider = resolve_provider("implementer", config={}, override=None)
+        # Caso 3: config[agents][default] gana cuando no hay env var ni config[role]
+        config_with_default = {
+            "agents": {"default": "openai/gpt-4o"},
+            "providers": {},
+        }
+        provider = resolve_provider("reviewer", config=config_with_default, override=None)
+        assert provider.__class__.__name__ == "OpenAIProvider"
+
+        # Caso 4: defaults gana cuando no hay env var ni config[role]
+        # pero SÍ hay config[agents][default] configurado
+        config_only_default = {
+            "agents": {"default": "acp/claude"},
+            "providers": {},
+        }
+        provider = resolve_provider("unknown_role", config=config_only_default, override=None)
         assert provider.__class__.__name__ == "ACPProvider"

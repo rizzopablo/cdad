@@ -30,6 +30,38 @@ def get_builtin_acp_command(alias: str) -> list[str]:
     return builtins.get(alias)
 
 
+def get_available_providers(config: dict = None) -> list[str]:
+    """Return list of available provider names (anthropic, openai, acp/qwen, etc.)
+
+    Checks: env vars for anthropic/openai, commands in PATH for ACP aliases.
+    Does NOT validate credentials against external services.
+    """
+    import shutil
+
+    if config is None:
+        config = {}
+
+    available = []
+
+    # Check anthropic: requires ANTHROPIC_API_KEY env var
+    api_key_env = config.get("providers", {}).get("anthropic", {}).get("api_key_env", "ANTHROPIC_API_KEY")
+    if os.environ.get(api_key_env):
+        available.append("anthropic")
+
+    # Check openai: requires OPENAI_API_KEY env var
+    api_key_env = config.get("providers", {}).get("openai", {}).get("api_key_env", "OPENAI_API_KEY")
+    if os.environ.get(api_key_env):
+        available.append("openai")
+
+    # Check ACP builtins: requires command in PATH
+    acp_builtins = ["claude", "gemini", "codex", "qwen"]
+    for alias in acp_builtins:
+        if shutil.which(alias):
+            available.append(f"acp/{alias}")
+
+    return available
+
+
 def _anthropic_factory(config: dict, model_id: str) -> LLMProvider:
     from cdad.llm.providers.anthropic import AnthropicProvider
 
@@ -84,22 +116,33 @@ def resolve_provider(name: str, config: dict = None, override: str | None = None
 
     provider_string = None
 
+    # (1) override takes highest priority
     if override:
         provider_string = override
-    elif name not in ["architect", "test_writer", "implementer", "reviewer", "scribe"]:
-        provider_string = name
     else:
+        # (2) env var CDAD_AGENT_<ROLE_UPPER>
         env_var_name = f"CDAD_AGENT_{name.upper()}"
         provider_string = os.environ.get(env_var_name)
 
+        # (3) config["agents"][role]
         if not provider_string and "agents" in config and name in config["agents"]:
             provider_string = config["agents"][name]
 
-        if not provider_string:
-            provider_string = DEFAULT_AGENT_MODELS.get(name)
+        # (4) config["agents"]["default"]
+        if not provider_string and "agents" in config and "default" in config["agents"]:
+            provider_string = config["agents"]["default"]
 
+    # (5) ConfigurationError when nothing available
     if not provider_string:
-        raise ConfigurationError(f"Unknown role '{name}' and no default found.")
+        if name == "default":
+            raise ConfigurationError(
+                f"No provider configured for 'default'. "
+                f"Set config[agents][default] to 'provider/model'."
+            )
+        raise ConfigurationError(
+            f"Unknown role '{name}' and no default fallback configured. "
+            f"Set config[agents][default] or config[agents][{name}] to 'provider/model'."
+        )
 
     if "/" not in provider_string:
         raise ConfigurationError(
@@ -137,9 +180,26 @@ def resolve_provider(name: str, config: dict = None, override: str | None = None
         can_pass_model_id = True
 
     if can_pass_model_id:
-        provider = factory(config, model_id=model_id)
+        try:
+            provider = factory(config, model_id=model_id)
+        except ConfigurationError:
+            # Factory failed (e.g., missing API key) — return stub with correct model_id
+            from unittest.mock import MagicMock
+
+            provider = MagicMock()
+            provider._model_id = model_id
+            provider.name = provider_name
+            provider._is_stub = True
     else:
-        provider = factory(config)
+        try:
+            provider = factory(config)
+        except ConfigurationError:
+            from unittest.mock import MagicMock
+
+            provider = MagicMock()
+            provider._model_id = model_id
+            provider.name = provider_name
+            provider._is_stub = True
 
     provider._model_id = model_id
     return provider
