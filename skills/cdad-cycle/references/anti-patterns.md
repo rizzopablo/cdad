@@ -115,6 +115,30 @@ No avances de fase con "yo creo que pasa".
 
 **Corrección**: configurá seed fijo para property tests en CI. Hypothesis, fast-check y libs similares lo soportan. El seed se commitea junto con el test.
 
+## AP-13 — Test Audit skipped
+
+**Señal**: Feature nueva que cambia comportamiento, pero Test-Writer empezó RED sin auditar suite existente.
+
+**Por qué es problema**: Tests existentes se vuelven "dead code" o se modifican sin justificación, se pierde trazabilidad del cambio.
+
+**Cómo prevenirlo**: Gate obligatorio: Test Audit completado antes de RED.
+
+**Cómo remediar**: Volver a stage 3.0 (pre-RED), completar audit, re-revisar spec. Sincronizar auditoría con lo que implementer ya tocó.
+
+---
+
+## AP-14 — Test modification sin referencia en spec
+
+**Señal**: PR con test modificado, pero spec.md no explica por qué ese test debería cambiar.
+
+**Por qué es problema**: Abre puerta a cambios "cosmético" de tests que son en realidad cambios de comportamiento silenciosos.
+
+**Cómo prevenirlo**: Gate 3→4 requiere que CADA test modificado tenga línea explícita en spec.md justificando el cambio.
+
+**Cómo remediar**: Test-Writer vuelve, agrega referencia de spec a test-audit.md, humano reaprueba.
+
+---
+
 ## Cómo usar este archivo
 
 Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues preventivamente; es ruido si todo va bien. Cuando intervenís contra un anti-patrón, citá el código (AP-N) en tu mensaje al usuario para que pueda buscarlo:
