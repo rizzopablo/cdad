@@ -1,3 +1,7 @@
 .qwen/settings.json.orig
 book
 skills/*.skill
+*.toml.bak*
+.coverage
+cdad.toml
+cdad-cli/test_debug*.py
