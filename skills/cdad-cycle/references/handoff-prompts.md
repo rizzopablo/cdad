@@ -15,7 +15,7 @@ Siempre incluyes referencia al skill para que el sub-agente se encuadre en la me
 PROMPT PARA CHAT NUEVO (copiar y pegar):
 ──────────────────────────────────────────
 
-Sos un sub-agente <rol> en CDAD. <cdad-cycle/skill.md>
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `<rol>` con la siguiente tarea:
 
 Tarea: <tarea específica, una sola>
 
@@ -54,7 +54,7 @@ El packet **es el último output** del orquestador en ese turno. Después esper�
 ### Test-writer (Etapa 3 — AUDIT)
 
 ```
-Sos un sub-agente test-writer en CDAD modo AUDIT.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
 
 Tarea: auditar la suite de tests existente ANTES de escribir tests nuevos para la feature. Producir Test Audit Report que documente qué tests se modificarán, cuáles se mantienen intactos, y qué tests nuevos se escribirán.
 
@@ -96,7 +96,7 @@ Pendiente: aprobación humana del audit antes de pasar a RED."
 ### Architect (Etapa 1 — Descubrimiento por feature)
 
 ```
-Sos un sub-agente architect en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
 
 Tarea: mapear qué APIs, hooks, métodos y campos del sistema toca la feature "<feature-name>". Output va a la sección "Contexto técnico" del spec.
 
@@ -121,7 +121,7 @@ Output esperado: un bloque markdown con secciones "Modelos/entidades tocadas", "
 Brainstorm:
 
 ```
-Sos un sub-agente architect en CDAD modo brainstorm socrático.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
 
 Tarea: ayudar al humano a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
 
@@ -145,7 +145,7 @@ Output esperado: ronda de preguntas. Cuando consideres cerrado el brainstorm, re
 Draft:
 
 ```
-Sos un sub-agente architect en CDAD modo redacción de spec.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
 
 Tarea: producir el draft de spec para "<feature-name>" basado en el brainstorm.
 
@@ -168,7 +168,7 @@ Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando 
 ### Test-writer (Etapa 3 — POST-AUDIT: Actualizar suite existente)
 
 ```
-Sos un sub-agente test-writer en CDAD fase post-audit.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
 
 Tarea: actualizar la suite de tests existente según el Test Audit Report aprobado. Luego, escribir tests nuevos en RED. Esta es una sesión combinada de dos subfases: POST-AUDIT + RED.
 
@@ -284,7 +284,7 @@ Si no podés responder con confianza "cada test modificado está en spec", **no 
 ---
 
 ```
-Sos un sub-agente test-writer en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
 
 Tarea: escribir UN test que verifica una postcondición NUEVA (no tocada por audit) del spec. El test debe FALLAR al ejecutarse, porque no hay implementación todavía. Debe fallar por la razón correcta (assertion falla, no ImportError ni syntax error).
 
@@ -314,7 +314,7 @@ Commit: <hash>"
 ### Implementer (Etapa 3 — GREEN)
 
 ```
-Sos un sub-agente implementer en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `implementer` con la siguiente tarea:
 
 Tarea: hacer pasar el test recién escrito con código mínimo. NADA de features extra.
 
@@ -342,7 +342,7 @@ Commit: <hash>"
 ### Refactorer (Etapa 3 — REFACTOR opcional)
 
 ```
-Sos un sub-agente refactorer en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `refactorer` con la siguiente tarea:
 
 Tarea: mejorar legibilidad/simplicidad del código sin cambiar comportamiento observable.
 
@@ -368,7 +368,7 @@ Commit: <hash>"
 ### Test-writer (Etapa 3 — Properties)
 
 ```
-Sos un sub-agente test-writer en CDAD modo property tests.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
 
 Tarea: escribir property tests que verifican las invariantes del spec con inputs aleatorios.
 
@@ -396,7 +396,7 @@ Commit: <hash>"
 ### Test-writer (Etapa 3 — Integración / E2E)
 
 ```
-Sos un sub-agente test-writer en CDAD modo E2E.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
 
 Tarea: traducir los criterios de aceptación del spec a tests E2E que verifican el flujo cross-componente.
 
@@ -423,7 +423,7 @@ Commit: <hash>"
 ### Reviewer (Etapa 4)
 
 ```
-Sos un sub-agente reviewer en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `reviewer` con la siguiente tarea:
 
 Tarea: revisar el diff completo de la feature contra el spec aprobado y producir un reporte priorizado.
 
@@ -461,7 +461,7 @@ Cuando termines:
 ### Scribe (Etapa 5)
 
 ```
-Sos un sub-agente scribe en CDAD.
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `scribe` con la siguiente tarea:
 
 Tarea: producir tres drafts para la actualización del Memory Bank después del cierre de la feature.
 
