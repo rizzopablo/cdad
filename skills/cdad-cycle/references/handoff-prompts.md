@@ -2,6 +2,22 @@
 
 Cómo el orquestador genera el prompt que el usuario pega en chat nuevo (o en sub-agente nativo) para arrancar un rol específico.
 
+## Invocación con sub-agentes nativos en OpenCode
+
+Si el entorno tiene sub-agentes `cdad-*` instalados (ver
+`references/opencode-delegation.md`), NO entregues packet: invocá el rol vía
+`task` con `subagent_type: cdad-<rol>`. El prompt del Task usa el MISMO
+contenido del template de rol de abajo (tarea, contexto, reglas, output), con
+estas adaptaciones:
+
+- Arrancá el prompt con: "Buscá y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender tu rol dentro del ciclo. Actuá como `<rol>` con la siguiente tarea:"
+- Agregá la línea: "Además, leé `docs/.cdad-state.json` y `docs/specs/<feature-id>/` según corresponda a tu rol."
+- NO incluyas instrucciones de "pegá en chat nuevo" — el Task ya aísla sesión.
+- Mantené las reglas estrictas, el contexto y el output esperado del template.
+
+Los templates por rol de abajo siguen siendo la fuente de contenido; la
+diferencia es SOLO el mecanismo de entrega (Task vs chat nuevo).
+
 ## Formato del handoff packet
 
 Siempre entregás al usuario **un bloque copiable** con estructura fija:

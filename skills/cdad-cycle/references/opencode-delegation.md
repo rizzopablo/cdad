@@ -1,0 +1,67 @@
+# OpenCode delegation — materializar sesiones aisladas con sub-agentes nativos
+
+Cuando el entorno es OpenCode y existen sub-agentes `cdad-*` instalados
+(`~/.config/opencode/agents/cdad-*.md`, instalados via `install.sh` del repo),
+el orquestador puede delegar el rol vía la herramienta `task` con
+`subagent_type: cdad-<rol>` en lugar de entregar un handoff packet al humano.
+
+## Regla de decisión
+
+1. ¿El entorno expone sub-agentes `cdad-*` como `subagent_type` disponibles en `task`?
+   - SÍ → delegá via Task (flujo de abajo).
+   - NO / dudás → handoff packet (portable a cualquier runtime).
+2. ¿El rol es de Etapa 3 con sub-fases (AUDIT / RED / properties / E2E)?
+   - Cada invocación Task es UNA tarea atómica (una postcondición, un test,
+     un diff). NO agrupes sub-fases en una sola invocación, salvo que el spec
+     marque postcondiciones ortogonales explícitas.
+
+## Mapeo rol → subagent_type
+
+| Rol CDAD | subagent_type | Modelo (bailian) | Etapa |
+|----------|---------------|-------------------|-------|
+| architect | `cdad-architect` | deepseek-v4-pro | 1, 2 |
+| test-writer (AUDIT/RED/properties/E2E) | `cdad-test-writer` | glm-5.2 | 3 |
+| implementer (GREEN, refactor sub-modo) | `cdad-implementer` | deepseek-v4-flash | 3 |
+| reviewer | `cdad-reviewer` | qwen3.7-plus | 4 |
+| scribe | `cdad-scribe` | deepseek-v4-pro | 5 |
+
+El `subagent_type` es el rol. El modelo lo define la config del sub-agente
+(no se pasa como argumento). Reviewer usa familia distinta al implementer
+(regla CDAD no-negociable contra confirmation bias).
+
+## Mecanismo de state passing
+
+Los sub-agentes Task reciben contexto FRESCO (no ven el contexto del
+orquestador). Por eso:
+
+1. El orquestador construye el prompt del Task con el contenido del handoff
+   packet: tarea atómica, contexto relevante (spec inline o ruta, interface,
+   reglas estrictas del rol, output esperado).
+2. El sub-agente además LEE por sí mismo `docs/.cdad-state.json` (para
+   `tdd_substage` y estado) y `docs/specs/<feature-id>/` según el rol.
+3. El orquestador NO asume que el sub-agente recuerda nada de la sesión
+   anterior. Todo el contexto necesario va en el prompt del Task.
+
+## Fallback ante rate limit (429)
+
+Si el Task falla con error de rate limit (429) o provisión:
+
+1. Reintentá 1 vez con backoff corto.
+2. Si persiste, SURFACE al usuario: decile qué rol quedó bloqueado y por qué.
+3. Ofrecé re-invocar el mismo Task apuntando el modelo del sub-agente a la
+   vía `localhost` (omniroute) aceptando el trade-off de determinismo
+   (rotación de modelos), o esperar a que el límite se resetee.
+
+## Cuándo Task vs handoff packet
+
+| Criterio | Task (OpenCode) | Handoff packet |
+|----------|-----------------|----------------|
+| Aislamiento de sesión | Sí (sub-agente fresco) | Sí (chat nuevo) |
+| Modelo distinto por rol | Sí (config por agente) | Manual (el humano elige chat/modelo) |
+| Automatización | Total (sin copiar/pegar) | Manual |
+| Portabilidad | Solo OpenCode | Cualquier runtime |
+| Overhead de contexto | Bajo (prompt acotado) | Alto (pegado manual) |
+| Fallback | Localhost/omniroute | Ninguno necesario |
+
+Preferencia: Task cuando el entorno lo soporta; handoff packet como fallback
+universal. El skill sigue siendo portable.

@@ -79,11 +79,19 @@ No vuelques teoría de CDAD. El usuario quiere progresar.
 
 Si el usuario reporta que cerró una sub-fase o etapa, verificá los criterios del gate correspondiente (lista en sección "Gates" más abajo). Si falla algún criterio, decile específicamente qué falta. No avances.
 
-### Paso 4 — Generar handoff packet o cerrar etapa
+### Paso 4 — Delegar rol o cerrar etapa
 
-Si el siguiente paso requiere un rol → cargá `references/handoff-prompts.md`, generá el packet con el prompt listo. Entregalo al usuario como artifact pegable.
+Si el siguiente paso requiere un rol → decidí el mecanismo según el entorno:
 
-Si la etapa cierra (todos los gates OK) → actualizá state file, anunciá la transición, y generá el handoff de la siguiente etapa.
+1. **OpenCode con sub-agentes `cdad-*` instalados**: delegá vía `task` con
+   `subagent_type: cdad-<rol>` (ver `references/opencode-delegation.md`).
+   El prompt del Task = el contenido del handoff packet. El sub-agente lee
+   `docs/.cdad-state.json` y `docs/specs/` por sí mismo.
+2. **Cualquier otro entorno**: cargá `references/handoff-prompts.md`, generá
+   el packet con el prompt listo, entregalo al usuario como artifact pegable.
+
+Si la etapa cierra (todos los gates OK) → actualizá state file, anunciá la
+transición, y delegá/generá el handoff de la siguiente etapa.
 
 ### Paso 5 — Esperar
 
@@ -241,6 +249,7 @@ Actualizalo cuando: cambia de etapa, cambia de sub-fase, cambia status de postco
 | `stage-1-discovery.md` ... `stage-5-merge.md` | Cuando estás en esa etapa |
 | `bootstrap.md` | Proyecto sin Memory Bank |
 | `sub-agent-strategies.md` | Si el entorno tiene sub-agentes nativos y querés sugerir alternativa al chat nuevo |
+| `opencode-delegation.md` | Entorno OpenCode con sub-agentes `cdad-*` instalados; delegar rol vía Task |
 | `anti-patterns.md` | Si detectás señales de drift |
 
 Cargá una a la vez. No mantengas todo el árbol en contexto.
@@ -273,7 +282,8 @@ Cuando crees archivos, copiá desde templates y rellená.
 
 El skill funciona en cualquier LLM con soporte de skills markdown. Estrategia universal: **roles corren en chats nuevos** (máxima portabilidad).
 
-- **OpenCode / Claude Code**: alternativa con sub-agentes nativos (ver `sub-agent-strategies.md`).
+- **OpenCode con sub-agentes cdad-* instalados**: delegación nativa vía Task (ver `references/opencode-delegation.md`).
+- **OpenCode / Claude Code sin sub-agentes cdad-***: alternativa con sub-agentes nativos genéricos (ver `references/sub-agent-strategies.md`).
 - **Zed**: threads con perfiles (ver `sub-agent-strategies.md`).
 - **Cualquier otro entorno**: chat nuevo con prompt de handoff. Funciona siempre.
 
