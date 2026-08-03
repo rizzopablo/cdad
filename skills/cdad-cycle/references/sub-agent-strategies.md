@@ -10,7 +10,7 @@ Si un mismo agente escribe el test y la implementación en la misma sesión, va 
 
 ### OpenCode
 
-**Soporte nativo completo**. Definí sub-agentes en `.opencode/agent/<name>.md`:
+**Soporte nativo completo**. Los agentes CDAD viven versionados en el repo en `agents/` (formato OpenCode, runtime de referencia) y se instalan a `~/.config/opencode/agents/` vía `install.sh` — el repo es la fuente única de verdad y la copia instalada se regenera desde ahí, no se edita a mano. Definición de ejemplo de un sub-agente:
 
 ```yaml
 ---
