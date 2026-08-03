@@ -2,6 +2,26 @@
 
 La etapa más larga. La trampa principal: que un solo agente escriba test e implementación en la misma sesión. Tu rol como orquestador es justamente prevenir eso emitiendo handoffs separados.
 
+## Convención de tests: contrato, no implementación
+
+Los tests de feature verifican **postcondiciones de comportamiento (el contrato)**, no detalles de implementación. La etapa GREEN necesita libertad de diseño real: el *cómo* se implementa lo decide el implementer; el *qué* se cumple lo define el test. Esta convención rige el packet de RED y el criterio de aceptación de toda la etapa.
+
+**Prohibido en RED**: tests que dependan de estructura interna — orden de llamadas de middleware, nombres de funciones internas, mocks sobre plumbing. Un mock sobre un detalle interno congela una decisión de implementación antes de que exista implementación: invierte el flujo (el test-writer "implementa mentalmente" y el implementer solo traduce), que es exactamente lo que las sesiones aisladas buscan evitar.
+
+**Permitido en RED**: tests que verifican el contrato observable — mensajes wire, resultados de commands, eventos emitidos, auth rechazada, o en general cualquier efecto que cruza un límite que un consumidor externo del sistema (otro proceso, otro servicio, el usuario) puede ver. Un evento interno de coordinación entre dos módulos que nunca sale del sistema **no** es observable a este efecto, aunque técnicamente sea "un evento emitido" — es plumbing disfrazado de contrato. Si dudás si algo es observable, preguntá: *¿un consumidor externo del sistema lo percibiría si cambiara?*
+
+**La cobertura exhaustiva, property tests, load/perf y edge cases no pertenecen al ciclo de feature.** Es responsabilidad de una etapa/epic de hardening separada, posterior. Mezclar ambas preguntas en el mismo gate hace que la más fácil de medir (coverage %) devore el tiempo de la más difícil de razonar (¿es correcto el contrato?).
+
+**Criterio de aceptación de una feature**: su postcondición verificada por tests de comportamiento, no un porcentaje de coverage.
+
+**Relevancia de los tests**: cada test escrito debe mapear a una postcondición del spec. No se escriben tests por completitud ni por coverage; se escriben porque verifican un objetivo declarado. Si un test no mapea a una postcondición, sobra — regístralo en un audit de trazabilidad test↔postcondición (ver "Auditoría de relevancia" más abajo).
+
+**Contrapartida obligatoria**: como no hay tests exhaustivos, la carga de precisión se mueve al spec, no desaparece. Los objetivos funcionales, especificaciones y requerimientos deben estar **máximamente claros** — postcondiciones numeradas y testeables — antes de abrir RED (ver Etapa 2). Un spec ambiguo produce tests ambiguos y una implementación incorrecta que igual pasa la suite (AP-13, Garbage Cascade).
+
+### Auditoría de relevancia (evitar auto-servicio)
+
+El mapeo test→postcondición (`test-audit.md` o equivalente) **no lo audita la misma sesión que escribió los tests**. Si el test-writer certifica su propia relevancia, el criterio "si un test no mapea, sobra" queda auto-servido. Usá una tercera sesión aislada (o el reviewer de Etapa 4) para esa auditoría, igual que test-writer e implementer están aislados entre sí.
+
 ## Tu rol como orquestador
 
 NO escribís tests, NO implementás, NO refactorizás. Coordinás:
@@ -21,66 +41,11 @@ NO escribís tests, NO implementás, NO refactorizás. Coordinás:
 
 | Sub-fase | Rol | Cuándo |
 |----------|-----|--------|
-| AUDIT | test-writer | Antes de RED, cuando feature modifica comportamiento existente |
 | RED | test-writer | Postcondición pendiente |
 | GREEN | implementer | Tras RED válido |
 | REFACTOR | refactorer | Opcional, si hay fricción |
 | PROPERTIES | test-writer modo properties | Spec marca invariantes |
 | INTEGRATION/E2E | test-writer modo E2E | Spec marca criterios E2E |
-
-## Sub-fase 3.0 — AUDIT (Test Audit)
-
-### Cuándo aplica
-
-Obligatorio cuando la nueva feature **modifica comportamiento de features existentes**. Opcional pero recomendado para features que extienden comportamiento sin cambiar el existente.
-
-### Propósito
-
-Antes de escribir un solo test nuevo, el Test Writer audita la suite existente para:
-1. Identificar qué comportamiento cambia vs. qué se mantiene.
-2. Determinar qué tests existentes requieren actualización.
-3. Documentar explícitamente los tests que NO deben tocarse.
-4. Detectar riesgos de regresión (cambios sin cobertura de test).
-
-### Proceso
-
-**Paso 1: Identificar qué comportamiento cambia**
-- Releer la spec con ojos críticos: ¿qué dice que es diferente?
-- Documentar explícitamente (lista corta) qué comportamiento viejo se mantiene, cambia, o es nuevo.
-
-**Paso 2: Auditar tests existentes contra la spec NUEVA**
-- Para cada test que PODRÍA verse afectado (same module, same aggregate, etc.):
-  - ¿Valida comportamiento que CAMBIA? → Requiere actualización
-  - ¿Valida comportamiento que SE MANTIENE? → Sin cambios
-  - ¿No relacionado? → Sin cambios
-
-**Paso 3: Documentar Test Audit Report**
-- Path: `docs/specs/<feature-id>/test-audit.md`
-- Usar template en `assets/spec-template/test-audit.md`
-- Estructura:
-  - Tests Modified: qué cambia, justificación en spec, línea en spec.md
-  - Tests Created: tests nuevos a escribir
-  - Tests Untouched: tests que se mantienen intactos (lista explícita, no implícita)
-  - Regression Risk Assessment: ¿hay cambios donde NO hay tests?
-
-**Paso 4: Validar contra gate de etapa**
-- ¿Cada test modificado tiene justificación explícita en la spec?
-- ¿No hay test modificado sin referencia a spec?
-- ¿Humano aprobó el audit?
-
-### Gate 3.0 → 3.1
-
-- [ ] Existe `docs/specs/<feature-id>/test-audit.md` con estructura completa.
-- [ ] Cada test modificado tiene referencia explícita a línea/sección del spec.
-- [ ] Tests untouched están listados explícitamente.
-- [ ] Regression risk assessment completado.
-- [ ] Humano aprobó el Test Audit Report.
-
-### Handoff
-
-Cargá `references/handoff-prompts.md` sección "Test-writer (Etapa 3 — AUDIT)".
-
----
 
 ## Sub-fase 3.1 — RED
 
@@ -96,15 +61,19 @@ Generá packet con:
 - Interface / firma del módulo.
 - Convenciones de testing (`docs/systemPatterns.md`).
 - Postcondición específica a verificar.
+- Recordatorio explícito: test de contrato observable, no de estructura interna — sin mocks sobre plumbing (ver "Convención de tests" arriba).
 
 Entregás packet, terminás turno.
 
 ### Re-entry
 
-Cargá `references/re-entry.md` sección "Test-writer — RED". Verificación crítica: el test falla por **AssertionError**, no por ImportError ni syntax error.
+Cargá `references/re-entry.md` sección "Test-writer — RED". Verificaciones críticas:
+
+- El test falla por **AssertionError**, no por ImportError ni syntax error.
+- El test verifica contrato observable, no estructura interna (sin mocks sobre plumbing, sin asserts sobre orden de llamadas o nombres de funciones internas).
 
 Si pasa: actualizá state, emití handoff a implementer.
-Si falla por razón equivocada: handoff de vuelta al test-writer con info del fallo.
+Si falla por razón equivocada, o si viola la convención de contrato: handoff de vuelta al test-writer con info del motivo.
 
 ## Sub-fase 3.2 — GREEN
 
@@ -162,8 +131,6 @@ Si modalidad B y E2E rojo: problema de ensamblaje. Handoff a implementer.
 
 ## Loop entre postcondiciones
 
-**IMPORTANTE**: El Test Audit se hace **UNA SOLA VEZ** al inicio de etapa 3, antes de cualquier RED. No se repite por postcondición. El mismo audit cubre toda la feature.
-
 Cada vez que cierra GREEN (+ REFACTOR opcional) de una postcondición, decidís:
 
 - ¿Quedan postcondiciones pendientes? → handoff a test-writer (RED) con la siguiente.
@@ -173,9 +140,10 @@ Cada vez que cierra GREEN (+ REFACTOR opcional) de una postcondición, decidís:
 
 ## 🛑 Gate de salida (Etapa 3 → Etapa 4)
 
-- [ ] Test Audit completado y aprobado (si feature modifica comportamiento existente, existe `test-audit.md` con beneficio de duda resuelto).
-- [ ] Cada test modificado tiene justificación explícita en spec.md con referencia a línea/sección.
 - [ ] Toda postcondición del spec tiene al menos un test que la verifica.
+- [ ] Todo test escrito mapea a una postcondición (sin tests "por completitud").
+- [ ] Ningún test depende de estructura interna (sin mocks sobre plumbing).
+- [ ] Mapeo test↔postcondición auditado por una sesión distinta a la que escribió los tests.
 - [ ] Suite verde (verificado empíricamente con output del run pegado por usuario).
 - [ ] Si spec marca invariantes → property tests verdes.
 - [ ] Si spec marca criterios E2E → tests E2E verdes.
@@ -191,7 +159,7 @@ Cuando todos OK: actualizá state (`current_stage: review`, `tdd_substage: null`
 - **AP-4**: implementer modifica tests.
 - **AP-11**: refactor que rompe tests.
 - **AP-12**: property tests con seed aleatorio.
-- **AP-13**: Test Audit skipped.
-- **AP-14**: Test modification sin referencia en spec.
+- **AP-13**: Garbage Cascade — spec ambiguo + tests no exhaustivos = implementación incorrecta que pasa la suite.
+- **AP-14**: mock sobre plumbing — test acoplado a estructura interna en vez de contrato observable.
 
 Cargá `references/anti-patterns.md` si detectás señales.

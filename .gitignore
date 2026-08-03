@@ -4,4 +4,4 @@ skills/*.skill
 *.toml.bak*
 .coverage
 cdad.toml
-cdad-cli/test_debug*.py
+cdad-cli

@@ -8,7 +8,7 @@ NO hacés review. Coordinás:
 
 1. Emitís handoff a **reviewer** (capa 1) con diff + spec + boundaries + convenciones.
 2. Validás reporte en re-entry.
-3. Pasás reporte al **humano para validar priorización** (capa 2, indelegable).
+3. Pasás reporte al **humano para validar priorización** (capa 2, por defecto indelegable; ver excepción más abajo si el usuario pidió explícitamente delegarla a un agente para esta feature).
 4. Si hay bloqueantes a aplicar: handoff de vuelta a implementer.
 5. Cierre de etapa cuando todos los bloqueantes resueltos o desestimados.
 
@@ -23,6 +23,7 @@ Generá packet con:
 - Interface / contrato.
 - `.importlinter` o equivalente.
 - Convenciones (`AGENTS.md`, `CONTRIBUTING.md`, `docs/systemPatterns.md`).
+- Pedido explícito de auditoría test↔postcondición: cada test del diff debe mapear a una postcondición del spec (marcar sobrantes) y ninguno debe depender de estructura interna (marcar mocks sobre plumbing, ver AP-14 en `anti-patterns.md`). Esta auditoría la hace el reviewer precisamente porque es una sesión distinta a la que escribió los tests — no delegar de vuelta al test-writer.
 
 **Recomendación al usuario antes del packet**: *"Idealmente el reviewer corre con un modelo distinto al implementer. Si tu entorno te lo permite (cambiar modelo en chat nuevo), aprovechalo. Si no, igual sirve."*
 
@@ -34,11 +35,19 @@ Cargá `re-entry.md` sección "Reviewer". Validá estructura del reporte.
 
 Si pasa: pasás al humano para capa 2.
 
-## Capa 2 — Validación humana (indelegable)
+## Capa 2 — Validación (humana por defecto; delegable solo bajo pedido explícito)
 
-Decile al usuario:
+**Regla general: la priorización la valida el humano.** Decile al usuario:
 
 > *"Reporte en `docs/specs/<feat>/review.md`: <X> bloqueantes, <Y> opcionales. Tu trabajo: leé el reporte (no el diff completo) y validá la priorización. Para cada bloqueante: ¿genuinamente bloqueante o hay contexto que el reviewer no tiene? Para cada opcional: ¿aplicar o descartar? Cuando termines, pasame las decisiones."*
+
+### Excepción: delegación explícita a agente experto
+
+Igual que en Etapa 2 (ver `stage-2-specification.md`, "Excepción: delegación explícita a agente experto"), esto solo aplica si el usuario, **para esta feature o etapa puntual**, pidió explícitamente que un agente valide la priorización en su lugar. No se asume, no se activa por defecto, no la iniciás vos.
+
+Con el pedido explícito, antes de validar corré la autoevaluación: ¿tenés contexto de cliente/producto que te falta para juzgar si un bloqueante es genuino? ¿hay algo en el reporte que prefirís que vea un humano (seguridad, breaking change, algo que afecta a un cliente final)? Notá que la matriz de severidad de abajo ya trata **riesgo de seguridad y bug funcional como bloqueante sin excepciones** — eso no lo cambia la delegación; la delegación te da autoridad para *priorizar*, no para bajar la severidad de algo que la matriz marca como innegociable.
+
+Si tenés dudas: no validás vos, pedís al humano igual. Si validás: marcá en `review.md` y en `stage_history` que la priorización fue agente-delegada, con quién la pidió y cuándo — mismo estándar de trazabilidad que en Etapa 2.
 
 ### Cuando el humano vuelve con priorización
 

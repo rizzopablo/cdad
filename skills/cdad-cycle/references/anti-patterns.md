@@ -91,13 +91,23 @@ No avances de fase con "yo creo que pasa".
 
 ## AP-10 — "Pasa por mí"
 
-**Síntoma**: el usuario empieza a delegar al LLM cosas que son indelegables (aprobación de spec, priorización del review, contenido del Memory Bank update).
+**Síntoma**: el usuario empieza a delegar al LLM, en el momento y sin pedido explícito previo, cosas que son indelegables por defecto (aprobación de spec, priorización del review, contenido del Memory Bank update).
 
 **Por qué es malo**: erosiona el principio de aprobación humana en momentos clave. La calidad sostenible viene de la combinación humano + LLM, no del LLM solo.
 
 **Corrección**: señalá la indelegabilidad amablemente.
 
 > *"Esto requiere tu juicio sobre <dominio/cliente/producto>. Yo puedo draftearlo o darte opciones, pero la decisión es tuya. ¿Te paso un draft para que lo edites?"*
+
+**Excepción — no confundir con delegación legítima**: aprobación de spec (Etapa 2) y priorización de review (Etapa 4) admiten delegación a un agente experto **solo si el usuario lo pidió explícitamente para esa feature o etapa puntual**, no como default del proyecto. Ver "Excepción: delegación explícita a agente experto" en `stage-2-specification.md` y `stage-4-review.md`. Un pedido casual dentro de la conversación ("aprobalo vos, dale") sin ese contexto previo sigue siendo AP-10 — la diferencia es que el pedido explícito tiene que preceder al momento de aprobar, no coincidir con él.
+
+## AP-15 — Autoaprobación no solicitada
+
+**Síntoma**: el orquestador (u otro agente) asume por su cuenta que puede aprobar spec o priorizar review porque "se siente con suficiente contexto", sin que el usuario lo haya pedido explícitamente para esa feature.
+
+**Por qué es malo**: la delegación de aprobación existe para casos donde el usuario, con su propio juicio, decide que confía el criterio a un agente. Si el agente se autootorga esa autoridad, no hay ninguna decisión humana detrás — es AP-10 con un paso extra de justificación.
+
+**Corrección**: si no hubo pedido explícito previo, aprobación humana por defecto, sin excepciones. Si el orquestador está tentado a aprobar porque "esto es obvio" o "no vale la pena molestar al usuario", esa tentación es la señal de que hay que pasarlo al humano, no la justificación para saltearlo.
 
 ## AP-11 — Refactor que rompe tests
 
@@ -115,29 +125,21 @@ No avances de fase con "yo creo que pasa".
 
 **Corrección**: configurá seed fijo para property tests en CI. Hypothesis, fast-check y libs similares lo soportan. El seed se commitea junto con el test.
 
-## AP-13 — Test Audit skipped
+## AP-13 — Garbage Cascade (spec ambiguo con tests no exhaustivos)
 
-**Señal**: Feature nueva que cambia comportamiento, pero Test-Writer empezó RED sin auditar suite existente.
+**Síntoma**: la etapa de feature no usa cobertura exhaustiva (por diseño — ver "Convención de tests" en `stage-3-tdd.md`), pero el spec tiene postcondiciones vagas o sin numerar.
 
-**Por qué es problema**: Tests existentes se vuelven "dead code" o se modifican sin justificación, se pierde trazabilidad del cambio.
+**Por qué es malo**: sin exhaustividad de tests, toda la carga de precisión recae en el spec. Un spec ambiguo produce tests de contrato que verifican una interpretación posible pero no la correcta, y una implementación que pasa la suite sin ser lo que el usuario necesitaba. El error se propaga en cascada desde Etapa 2 sin que nada en Etapa 3 lo detecte.
 
-**Cómo prevenirlo**: Gate obligatorio: Test Audit completado antes de RED.
+**Corrección**: no se abre RED con postcondiciones no numeradas o no testeables. Si aparece ambigüedad durante RED o GREEN, no se resuelve "a criterio" del test-writer o implementer — se vuelve a Etapa 2 a precisar el spec y se reaprueba.
 
-**Cómo remediar**: Volver a stage 3.0 (pre-RED), completar audit, re-revisar spec. Sincronizar auditoría con lo que implementer ya tocó.
+## AP-14 — Mock sobre plumbing
 
----
+**Síntoma**: el test-writer verifica orden de llamadas de middleware, nombres de funciones internas, o mockea colaboradores internos en vez de verificar el efecto observable.
 
-## AP-14 — Test modification sin referencia en spec
+**Por qué es malo**: fija una decisión de implementación en la etapa RED, antes de que exista implementación. Le quita al implementer la libertad de diseño que GREEN necesita, y acopla el test a una estructura interna que puede cambiar sin que el comportamiento cambie — el test se vuelve frágil y deja de ser un oráculo confiable del contrato.
 
-**Señal**: PR con test modificado, pero spec.md no explica por qué ese test debería cambiar.
-
-**Por qué es problema**: Abre puerta a cambios "cosmético" de tests que son en realidad cambios de comportamiento silenciosos.
-
-**Cómo prevenirlo**: Gate 3→4 requiere que CADA test modificado tenga línea explícita en spec.md justificando el cambio.
-
-**Cómo remediar**: Test-Writer vuelve, agrega referencia de spec a test-audit.md, humano reaprueba.
-
----
+**Corrección**: revertí el test. Reescribilo verificando el efecto que un consumidor externo del sistema (otro proceso, otro servicio, el usuario) puede observar — mensaje wire, resultado de command, evento emitido hacia afuera, auth rechazada. Si el efecto que querés verificar es puramente interno entre módulos, probablemente no corresponde a una postcondición del spec; revisá si el spec necesita precisión.
 
 ## Cómo usar este archivo
 
