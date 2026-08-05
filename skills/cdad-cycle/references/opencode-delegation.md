@@ -42,6 +42,26 @@ orquestador). Por eso:
 3. El orquestador NO asume que el sub-agente recuerda nada de la sesión
    anterior. Todo el contexto necesario va en el prompt del Task.
 
+## ⚠️ task vs delegate — distinción por permisos del sub-agente
+
+opencode distingue DOS herramientas de delegación, según los permisos del
+sub-agente (verificado 05 Ago 2026, opencode 1.18.4):
+
+| Herramienta | Para sub-agentes | Detalle |
+|-------------|------------------|---------|
+| `task` | con `write` habilitado (edit/write permitidos) | El sub-agente puede mutar archivos y devuelve resultado síncrono |
+| `delegate` | read-only (`write: deny`, `edit: deny`, bash restringido) | Ejecución ASYNC en background; el orquestador debe esperar el evento de completado; el resultado puede venir como texto O como efecto (archivo escrito por el propio orquestador)
+
+**Regla:** Si el rol CDAD es read-only por diseño (reviewer, scribe), NO usar
+`task` — opencode lo rechaza con: `Agent 'X' is read-only... Use delegate for
+read-only sub-agents. Use task for write-capable sub-agents.`
+
+**Consecuencia para artefactos de roles read-only** (ej: review.md): el
+delegate NO puede escribir el artefacto (write deny). Opciones:
+a. Scoped write: permitir write SOLO al path del artefacto (ej:
+   `docs/specs/*/artifacts/review.md`) en la config del agente.
+b. El orquestador materializa el artefacto desde el output del delegate.
+
 ## Fallback ante rate limit (429)
 
 Si el Task falla con error de rate limit (429) o provisión:
