@@ -10,6 +10,18 @@ permission:
     "*": deny
   bash:
     "*": deny
+    "go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "go run*": allow
+    "gofmt *": allow
+    "ls *": allow
+    "cat *": allow
+    "wc *": allow
+    "find *": allow
+    "head *": allow
+    "tail *": allow
+    "pwd": allow
     "rg *": allow
     "git log*": allow
     "git diff*": allow
@@ -24,6 +36,11 @@ permission:
     "python -m pytest*": allow
   task: allow
   delegate: allow
+  external_directory:
+    "/path/to/src/odoo/19/**": allow
+    "/path/to/.config/opencode/skills/**": allow
+    "/path/to/.agents/skills/**": allow
+    "/tmp/opencode/*": allow
 ---
 
 # CDAD Orchestrator Agent

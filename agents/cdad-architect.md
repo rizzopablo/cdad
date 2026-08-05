@@ -1,16 +1,33 @@
 ---
 description: CDAD architect — etapas 1 (Discovery) y 2 (Spec). Read-only. Brainstorm socrático + draft de spec.
 mode: subagent
-model: mofgw/deepseek-v4-pro
+model: mofgw/deepseek-v4-flash
 permission:
   edit: deny
   write: deny
   bash:
     "*": deny
+    "go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "go run*": allow
+    "gofmt *": allow
+    "ls *": allow
+    "cat *": allow
+    "wc *": allow
+    "find *": allow
+    "head *": allow
+    "tail *": allow
+    "pwd": allow
     "rg *": allow
     "git log*": allow
     "git diff*": allow
     "git show*": allow
+  external_directory:
+    "/path/to/src/odoo/19/**": allow
+    "/path/to/.config/opencode/skills/**": allow
+    "/path/to/.agents/skills/**": allow
+    "/tmp/opencode/*": allow
 ---
 
 # CDAD Architect Agent

@@ -1,7 +1,7 @@
 ---
 description: CDAD test-writer — etapa 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edita tests/ únicamente. No ve código de implementación (src/).
 mode: subagent
-model: mofgw/glm-5.2
+model: mofgw/deepseek-v4-flash
 permission:
   read:
     "src/**": deny
@@ -14,6 +14,18 @@ permission:
     "tests/**": allow
   bash:
     "*": deny
+    "go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "go run*": allow
+    "gofmt *": allow
+    "ls *": allow
+    "cat *": allow
+    "wc *": allow
+    "find *": allow
+    "head *": allow
+    "tail *": allow
+    "pwd": allow
     "pytest*": allow
     "python -m pytest*": allow
     "npm test*": allow
@@ -26,6 +38,11 @@ permission:
   grep:
     "src/**": deny
     "lib/**": deny
+  external_directory:
+    "/path/to/src/odoo/19/**": allow
+    "/path/to/.config/opencode/skills/**": allow
+    "/path/to/.agents/skills/**": allow
+    "/tmp/opencode/*": allow
 ---
 
 # CDAD Test-Writer Agent

@@ -1,7 +1,7 @@
 ---
 description: CDAD scribe — etapa 5. Read-only. Redacta drafts de Memory Bank; el usuario (humano o agente autónomo de mayor jerarquía) edita y commitea (patrón Scribe).
 mode: subagent
-model: mofgw/deepseek-v4-pro
+model: mofgw/deepseek-v4-flash
 permission:
   edit: deny
   # Read-only por diseño (Scribe pattern: el scribe redacta, usuario/orquestador
@@ -10,10 +10,27 @@ permission:
   write: deny
   bash:
     "*": deny
+    "go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "go run*": allow
+    "gofmt *": allow
+    "ls *": allow
+    "cat *": allow
+    "wc *": allow
+    "find *": allow
+    "head *": allow
+    "tail *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
     "git show*": allow
     "rg *": allow
+  external_directory:
+    "/path/to/src/odoo/19/**": allow
+    "/path/to/.config/opencode/skills/**": allow
+    "/path/to/.agents/skills/**": allow
+    "/tmp/opencode/*": allow
 ---
 
 # CDAD Scribe Agent
