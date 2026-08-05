@@ -56,10 +56,10 @@ sección "Gates"). Detalle por etapa en `references/stage-N-*.md`.
 | Rol | Etapa | Hace | Puede leer | Puede editar | NO puede tocar | Artefacto | Familia modelo |
 |-----|-------|------|------------|--------------|-----------------|-----------|----------------|
 | architect | 1, 2 | mapeo técnico + brainstorm socrático + draft de spec | todo | nada | no aprueba spec (humano) | `docs/specs/<id>/spec.md` (draft) | deepseek-v4-pro |
-| test-writer (AUDIT) | 3.0 | audita suite existente, registra mapeo test↔postcondición | `tests/`, spec, systemPatterns | `test-audit.md` | no ve código de implementación nueva | `test-audit.md` | glm-5.2 |
+| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audita suite existente, registra mapeo test↔postcondición | `tests/`, spec, systemPatterns | `tests/**` | no ve código de implementación nueva | `test-audit.md` (materializado por el orquestador) | glm-5.2 |
 | test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests que verifican el contrato, fallan inicialmente | spec, interface, systemPatterns | `tests/**` | **NO ve `src/` ni código de implementación** | tests en `tests/` | glm-5.2 |
 | implementer | 3.2 | código mínimo que hace pasar el test | spec, tests, interface | código de implementación | **NO `tests/**`** | diff/commits | deepseek-v4-flash |
-| refactorer | 3.3 | limpia código manteniendo suite verde | suite completa | código de implementación | **NO `tests/**`**, suite siempre verde | diff | deepseek-v4-flash |
+| refactorer | 3.3 | limpia código manteniendo suite verde (corre como cdad-implementer sub-modo REFACTOR) | suite completa | código de implementación | **NO `tests/**`**, suite siempre verde | diff | deepseek-v4-flash |
 | reviewer | 4 | reporte de hallazgos contra spec | todo (read-only) | nada | no toca código ni tests | `review.md` | qwen3.7-plus (**familia DISTINTA** al implementer) |
 | scribe | 5 | draft de Memory Bank update | spec, diff, review, Memory Bank | nada (draft) | no commitea (humano indelegable) | `memory-bank.md` (draft) | deepseek-v4-pro |
 
@@ -131,6 +131,7 @@ orquestador escribe el artefacto desde el output del rol:
 - reviewer → el orquestador materializa `review.md` desde el reporte del delegate.
 - scribe → el orquestador materializa el draft de Memory Bank; el HUMANO
   edita y commitea (indelegable).
+- test-writer (AUDIT) → el orquestador materializa `test-audit.md` desde el reporte del AUDIT (el agente solo tiene write en `tests/**`).
 
 Roles write-capable escriben su propio artefacto (tests, código).
 
@@ -235,7 +236,7 @@ Etapa 3: TDD anti-trampa     → references/stage-3-tdd.md
    │  └─ Gate: Properties verdes
    ├─ 3.5 E2E: (opcional)
    │  └─ Gate: E2E verdes
-   ↓ (gate: suite verde, cobertura ≥ umbral)
+   ↓ (gate: suite verde, toda postcondición con test)
 Etapa 4: Review two-layer    → references/stage-4-review.md
    ↓ (gate: bloqueantes resueltos)
 Etapa 5: Merge + Memory Bank → references/stage-5-merge.md
