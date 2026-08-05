@@ -1,7 +1,7 @@
 ---
 description: CDAD implementer — stage 3 GREEN (+ optional REFACTOR sub-mode). Edits implementation src/, reads tests/ but cannot edit them.
 mode: subagent
-model: bailian/deepseek-v4-flash
+model: mofgw/deepseek-v4-flash
 permission:
   read:
     "tests/**": allow

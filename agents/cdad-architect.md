@@ -1,7 +1,7 @@
 ---
 description: CDAD architect — stages 1 (Discovery) and 2 (Spec). Read-only. Socratic brainstorm + spec draft.
 mode: subagent
-model: bailian/deepseek-v4-pro
+model: mofgw/deepseek-v4-pro
 permission:
   edit: deny
   write: deny

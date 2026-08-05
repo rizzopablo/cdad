@@ -17,7 +17,7 @@ el orquestador puede delegar el rol vía la herramienta `task` con
 
 ## Mapeo rol → subagent_type
 
-| Rol CDAD | subagent_type | Modelo (bailian) | Etapa |
+| Rol CDAD | subagent_type | Modelo (mofgw) | Etapa |
 |----------|---------------|-------------------|-------|
 | architect | `cdad-architect` | deepseek-v4-pro | 1, 2 |
 | test-writer (AUDIT/RED/properties/E2E) | `cdad-test-writer` | glm-5.2 | 3 |

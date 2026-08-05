@@ -1,7 +1,7 @@
 ---
 description: CDAD test-writer — stage 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edits tests/ only. Cannot read implementation src/.
 mode: subagent
-model: bailian/glm-5.2
+model: mofgw/glm-5.2
 permission:
   read:
     "src/**": deny

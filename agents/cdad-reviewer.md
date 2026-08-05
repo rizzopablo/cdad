@@ -1,7 +1,7 @@
 ---
 description: CDAD reviewer — stage 4. Read-only. Model differs from implementer (anti-confirmation-bias).
 mode: subagent
-model: bailian/qwen3.7-plus
+model: mofgw/qwen3.7-plus
 temperature: 0.1
 permission:
   edit: deny
@@ -47,7 +47,7 @@ Deliver the review as your FINAL TEXT output with this structure (the orchestrat
 
 # Review — <feature>
 
-Reviewer model: <declaración de modelo, ej: bailian/qwen3.7-plus>
+Reviewer model: <declaración de modelo, ej: mofgw/qwen3.7-plus>
 
 ## Bloqueantes
 ### 1. <título>

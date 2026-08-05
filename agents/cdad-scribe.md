@@ -1,7 +1,7 @@
 ---
 description: CDAD scribe — stage 5. Read-only. Drafts Memory Bank updates; the user (human or higher-hierarchy autonomous agent) edits and commits (Scribe pattern).
 mode: subagent
-model: bailian/deepseek-v4-pro
+model: mofgw/deepseek-v4-pro
 permission:
   edit: deny
   # Read-only por diseño (Scribe pattern: el scribe redacta, usuario/orquestador
