@@ -15,12 +15,18 @@ Ciclo CDAD real con sub-agentes nativos opencode (delegación end-to-end):
 2. **task vs delegate:** read-only → `delegate` (async, background); write-capable → `task`. opencode rechaza `task` con agentes read-only. Documentado en `references/opencode-delegation.md`.
 3. **Reviewer prompt alineado:** entrega review como texto final (no "Write review.md"); el orquestador materializa `review.md`.
 
-### Deuda técnica detectada (5 opcionales del reviewer)
-1. Spec §3.3 define `patch -p1 --dry-run` para validar impl.diff, pero el validator usa `git apply --check --reverse` (más robusto: distingue "ya aplicado"). Alinear spec/T4.
-2. `set -u` sin `-e`/`pipefail` vs `install.sh` que usa `set -euo pipefail`.
-3. Condición redundante `! -x` en validación de install.sh (bash no requiere +x).
-4. `fail()` escribe a stdout, no stderr (T2 depende de stdout — ajustar si se cambia).
-5. Spec §6 menciona "frontmatter + byte-compare" pero Etapa 1 solo verifica existencia; frontmatter se cubre indirectamente por install.sh --check.
+### Deuda técnica detectada (5 opcionales del reviewer) — TODOS RESUELTOS ✅
+1. ✅ Spec §3.3/T4 alineados al criterio `git apply --check --reverse` (divergencia documentada en spec §3.3 y review.md) — aplicado en el propio spike.
+2. ✅ `set -euo pipefail` alineado con install.sh:12 — manejo de errores manual convertido a if-forms (compatible con -e).
+3. ✅ Condición redundante `! -x` eliminada — solo `-f` (bash no requiere +x).
+4. ✅ `fail()` escribe a stderr (`>&2`) — T2 sigue PASS (mergea 2>&1).
+5. ✅ Frontmatter validado en Etapa 1 (`description:` presente por agente) + narrativa §6 corregida (frontmatter en Etapa 1, byte-compare en Etapa 2).
+
+### 2026-08-05 — Iteración: reviewer findings #2-#5 aplicados
+- Fixes aplicados a `scripts/validate-subagents.sh` (4 cambios): set -euo pipefail, simplificación ! -x, fail() → stderr, frontmatter check en Etapa 1.
+- Spec §6 narrativa corregida (frontmatter + byte-compare: dónde se cubre cada uno).
+- impl.diff regenerado contra base 6a5cf9a (estado actual de la implementación).
+- Verificación: `validate-subagents.sh` PASS 5/5 etapas + `tests/run_all.sh` 5/5 PASS (T1-T5, idempotencia incluida).
 
 ### Próxima feature en cola
 - Phase 4 task pendiente: "Ajustar prompts/permisos/modelos según empiria" (los 5 opcionales del reviewer son los candidatos).

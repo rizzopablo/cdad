@@ -18,7 +18,11 @@
 #
 # Exit: 0 si y solo si TODAS las verificaciones pasan; != 0 ante cualquier
 # falla, imprimiendo qué falló. Read-only: idempotente por diseño.
-set -u
+# Convención del repo: set -euo pipefail (alineado con install.sh:12).
+# El manejo de errores manual (FAIL + if-forms) es compatible con -e: las
+# operaciones cuyo fallo es esperado se capturan en condiciones if, nunca
+# como statements sueltos (reviewer cdad-001 finding #2).
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -29,7 +33,8 @@ INSTALL_SH="$REPO_ROOT/install.sh"
 AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer)
 
 FAIL=0
-fail() { echo "❌ $1"; FAIL=1; }
+# Diagnósticos a stderr: no contaminan stdout verificable (reviewer finding #4).
+fail() { echo "❌ $1" >&2; FAIL=1; }
 ok()   { echo "✅ $1"; }
 
 echo "== cdad-001 validate-subagents =="
@@ -46,17 +51,27 @@ fi
 for a in "${AGENTS[@]}"; do
   if [ ! -f "$RUNTIME_DIR/$a.md" ]; then
     fail "falta agente runtime: $a.md"
+  elif ! grep -q '^description:' "$RUNTIME_DIR/$a.md"; then
+    # Frontmatter mínimo: cubre la claim de §6 ("config estática (frontmatter
+    # + byte-compare)") — el byte-compare lo hace install.sh --check (Etapa 2),
+    # el frontmatter lo valida esta Etapa 1 (reviewer finding #5).
+    fail "frontmatter sin description: $a.md"
   fi
 done
-[ "$FAIL" -eq 0 ] && ok "5/5 agentes runtime presentes"
+if [ "$FAIL" -eq 0 ]; then ok "5/5 agentes runtime presentes (frontmatter OK)"; fi
 
 # --- Etapa 2: cross-check contra repo (reusa install.sh --check) ------------
 echo "[repo] cross-check: install.sh --check"
-if [ ! -x "$INSTALL_SH" ] && [ ! -f "$INSTALL_SH" ]; then
+# La invocación se hace con `bash`, así que solo importa la existencia del
+# archivo, no el bit +x (reviewer finding #3). Captura en if-form por set -e.
+if [ ! -f "$INSTALL_SH" ]; then
   fail "install.sh no encontrado en $INSTALL_SH"
 else
-  CHECK_OUT=$(bash "$INSTALL_SH" --check 2>&1)
-  CHECK_RC=$?
+  if CHECK_OUT=$(bash "$INSTALL_SH" --check 2>&1); then
+    CHECK_RC=0
+  else
+    CHECK_RC=$?
+  fi
   echo "$CHECK_OUT" | tail -3
   if [ "$CHECK_RC" -ne 0 ]; then
     fail "install.sh --check falló (rc=$CHECK_RC)"

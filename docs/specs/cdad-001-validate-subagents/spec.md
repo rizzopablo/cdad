@@ -115,7 +115,7 @@ cd docs/specs/cdad-001-validate-subagents && bash tests/run_all.sh
 
 | Riesgo | Mitigación |
 |--------|-----------|
-| opencode server no disponible al correr el ciclo | validate-subagents.sh valida config estática (frontmatter + byte-compare), no requiere server vivo para T1-T5 |
+| opencode server no disponible al correr el ciclo | validate-subagents.sh valida config estática (frontmatter en Etapa 1 + byte-compare vía `install.sh --check` en Etapa 2), no requiere server vivo para T1-T5 |
 | Paths runtime varían por máquina | `$HOME/.config/opencode/agents/` con fallback a `$(dirname install.sh)/agents/` |
 | El ciclo CDAD real (task 4) depende de modelos bailian | Los tests T1-T5 son offline; la dependencia de red queda solo en el ciclo de build |
 
