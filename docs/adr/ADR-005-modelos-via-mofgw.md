@@ -69,9 +69,9 @@ provider-agnóstica (nombres sin provider).
 ## Verificación (realizada 2026-08-05)
 
 El dueño del proyecto confirmó que mofgw preserva la identidad del modelo en
-failover (no sustituye silenciosamente por otro modelo). El invariante CDAD
-reviewer ≠ implementer (ADR-001) se mantiene: `qwen3.7-plus` y
-`deepseek-v4-flash` llegan como tales.
+failover (no sustituye silenciosamente por otro modelo). Por lo tanto, el
+invariante CDAD reviewer ≠ implementer (ADR-001) se mantiene: `qwen3.7-plus`
+(reviewer) y `deepseek-v4-flash` (implementer) no se intercambian.
 
 ## Notas
 

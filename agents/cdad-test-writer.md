@@ -61,8 +61,15 @@ Leé el campo `tdd_substage` de `docs/.cdad-state.json` para determinar qué sub
 - Cada test modificado DEBE tener justificación explícita en el spec (línea/sección).
 - Listá los tests untouched EXPLÍCITAMENTE (no implícitamente).
 - Identificá riesgos de regresión: comportamiento nuevo sin cobertura de tests.
-- Output: `docs/specs/<feat>/test-audit.md` completo con: resumen del comportamiento que cambia, tests modificados (con justificación y ref al spec), tests nuevos a escribir, tests untouched (lista explícita), evaluación de riesgo de regresión, gate checklist.
-- Cuando termines: "LISTO. Test Audit Report en docs/specs/<feat>/test-audit.md. Resumen: - Tests a modificar: N - Tests untouched: M - Tests nuevos: P - Regression risks: [sí/no, detalle]"
+- Output: el Test Audit Report como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/test-audit.md` desde ese texto — Contrato de roles §5): resumen del comportamiento que cambia, tests modificados (con justificación y ref al spec), tests nuevos a escribir, tests untouched (lista explícita), evaluación de riesgo de regresión, gate checklist.
+- Cuando termines, cerrá con el texto exacto del template:
+  > "LISTO. Test Audit Report. Resumen:
+  > - Tests a modificar: N
+  > - Tests untouched: M
+  > - Tests nuevos: P
+  > - Regression risks: [sí/no, detalle]
+  >
+  > Pendiente: aprobación del usuario del audit antes de pasar a RED."
 
 ## Procedimiento RED (tests nuevos)
 

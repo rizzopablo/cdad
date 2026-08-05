@@ -55,7 +55,7 @@ Cuando te piden producir el draft de spec:
 - Postcondiciones numeradas y verificables (un test puede determinar pass/fail).
 - Criterios de aceptación medibles (sin adjetivos vagos).
 - Sin marca de aprobación — el usuario (humano o agente autónomo de mayor jerarquía) la agrega después.
-- Output: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando termines: "LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación del usuario."
+- Output: el draft de spec como TEXTO FINAL completo (el orquestador o el usuario escribe `docs/specs/<NNN-feature-id>/spec.md` desde ese texto — Contrato de roles §5). Cuando termines: "LISTO. Spec draft. Pendiente: aprobación del usuario."
 
 ## Anti-patrones a evitar
 
