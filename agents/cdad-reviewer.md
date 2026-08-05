@@ -5,7 +5,12 @@ model: bailian/qwen3.7-plus
 temperature: 0.1
 permission:
   edit: deny
-  write: deny
+  # Scoped write (F1 fix 05 Ago): el reviewer DEBE materializar review.md en
+  # artifacts/ (artefacto de la etapa 4). Write limitado a ese dir — nunca a
+  # código fuente. opencode 1.18.4: write con lista = allowlist de globs.
+  write:
+    - "docs/specs/*/artifacts/*.md"
+    - "docs/specs/*/artifacts/**/*.md"
   bash:
     "*": deny
     "git diff*": allow
