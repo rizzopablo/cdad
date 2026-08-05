@@ -23,7 +23,7 @@ OPENCODE_SKILLS_DIR="${HOME:-}/.config/opencode/skills"
 AGENTS_SKILLS_DIR="${HOME:-}/.agents/skills"
 
 SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test)
-EXPECTED_CDAD_AGENTS=5
+EXPECTED_CDAD_AGENTS=6
 
 # ---------------------------------------------------------------------------
 # State
