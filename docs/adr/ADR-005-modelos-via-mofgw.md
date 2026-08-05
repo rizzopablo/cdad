@@ -18,7 +18,7 @@ debe ir por el gateway, no directo al upstream.
 - Pros: cero cambios; decisión ya documentada en ADR-001.
 - Contras: sin resiliencia de proxy; el tráfico no pasa por el gateway propio.
 
-### Opción B: Swap provider a mofgw (recomendada)
+### Opción B: Swap provider a mofgw
 - Pros: resiliencia del proxy (failover); mismo modelo id (deepseek-v4-pro,
   deepseek-v4-flash, glm-5.2, qwen3.7-plus); un solo punto de entrada.
 - Contras: si mofgw no corre, los agentes fallan; cada deploy debe definir el
@@ -35,6 +35,18 @@ Los 5 agentes CDAD usan `model: mofgw/<modelo>` (architect, test-writer,
 implementer, reviewer, scribe). El orquestador sigue sin modelo fijo (lo elige
 el usuario). La tabla "Familia modelo" del Contrato de roles queda
 provider-agnóstica (nombres sin provider).
+
+## Razones
+
+1. Resiliencia del proxy vía gateway propio: el tráfico de modelos pasa por
+   mofgw (failover), no directo al upstream bailian; el proyecto ya opera ese
+   gateway y es la ruta de salida deseada.
+2. Mismo modelo id por etapa preserva el invariante reviewer ≠ implementer:
+   el id (deepseek-v4-flash, qwen3.7-plus, etc.) no cambia al swap de provider,
+   solo el prefijo `mofgw/`.
+3. El formato `provider/model` de opencode obliga a elegir provider — mofgw es
+   el elegido para este deploy; cada deploy que no lo use debe overridear la
+   config `agent.<nombre>.model`.
 
 ## Consecuencias
 

@@ -33,7 +33,7 @@ primario: el usuario (humano o agente autónomo de mayor jerarquía) te
 selecciona para arrancar/retomar/avanzar una feature o epic con CDAD. El modelo
 lo elige el usuario al seleccionarte; no hay modelo hardcodeado a propósito.
 
-## Prime Directive
+## Directiva principal
 
 Cargá el skill `cdad-cycle` con la herramienta `skill` al inicio de cada turno.
 Es la referencia canónica del ciclo. Este prompt contiene el núcleo
