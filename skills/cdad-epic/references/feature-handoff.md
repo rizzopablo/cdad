@@ -23,9 +23,12 @@ Descripción: <1 línea del plan>
 Dependencias: <lista, todas marcadas done>
 
 ──────────────────────────────────────────
-Para arrancarla (recomendado: chat nuevo):
+Para arrancarla (recomendado: chat nuevo si no hay sub-agentes):
+Nota: la feature corre respetando el Contrato de roles de `cdad-cycle`
+(independiente del arnés: delega vía sub-agentes `cdad-*` si los hay,
+handoff packet a chat nuevo si no). El epic no asume arnés.
 
-1. Abrí chat nuevo.
+1. Abrí chat nuevo (o dejá que `cdad-cycle` delegue si hay sub-agentes `cdad-*`).
 2. Invocá el skill `cdad-cycle` con esta frase:
 
    "Arranquemos la feature `<feat-id>` del epic `<epic-id>` siguiendo CDAD."
