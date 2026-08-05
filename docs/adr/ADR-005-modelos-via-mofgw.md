@@ -53,7 +53,7 @@ provider-agnóstica (nombres sin provider).
 **Positivas:**
 - Resiliencia del gateway (failover de proxy).
 - Modelo id preservado por etapa; el invariante reviewer ≠ implementer
-  (ADR-001) se mantiene (sujeto a la verificación pendiente).
+  (ADR-001) se mantiene (verificación realizada 2026-08-05).
 - Un solo punto de entrada para el tráfico de modelos.
 
 **Negativas / trade-offs:**
@@ -66,13 +66,12 @@ provider-agnóstica (nombres sin provider).
 - La identidad por etapa se mantiene igual: mismos modelos, mismo mapeo rol →
   modelo; solo cambia el provider en el campo `model:`.
 
-## Verificación pendiente
+## Verificación (realizada 2026-08-05)
 
-Confirmar que mofgw preserva la identidad del modelo en failover (no sustituye
-silenciosamente por otro modelo), porque el invariante CDAD reviewer ≠
-implementer (ADR-001) depende de que `qwen3.7-plus` y `deepseek-v4-flash`
-lleguen como tales. Si mofgw rotara modelos como omniroute, ese invariante se
-rompería.
+El dueño del proyecto confirmó que mofgw preserva la identidad del modelo en
+failover (no sustituye silenciosamente por otro modelo). El invariante CDAD
+reviewer ≠ implementer (ADR-001) se mantiene: `qwen3.7-plus` y
+`deepseek-v4-flash` llegan como tales.
 
 ## Notas
 

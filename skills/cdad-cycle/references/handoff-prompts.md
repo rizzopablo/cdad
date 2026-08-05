@@ -90,7 +90,7 @@ Reglas estrictas:
 - Listar tests untouched EXPLÍCITAMENTE (no implícitamente)
 - Identificar regression risks: comportamiento nuevo sin cobertura de test
 
-Output esperado: archivo `docs/specs/<feat>/test-audit.md` completo con:
+Output esperado: el Test Audit Report como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/test-audit.md` desde ese texto — Contrato de roles §5):
 - Resumen de comportamiento que cambia
 - Tests modificados (con justificación y spec ref)
 - Tests nuevos a escribir
@@ -100,7 +100,7 @@ Output esperado: archivo `docs/specs/<feat>/test-audit.md` completo con:
 
 Cuando termines:
 
-"LISTO. Test Audit Report en docs/specs/<feat>/test-audit.md. Resumen:
+"LISTO. Test Audit Report. Resumen:
 - Tests a modificar: N
 - Tests untouched: M
 - Tests nuevos: P
@@ -176,9 +176,9 @@ Reglas estrictas:
 - Criterios de aceptación medibles (no adjetivos vagos).
 - Sin marca de aprobación: el usuario la agrega después.
 
-Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando termines:
+Output esperado: el draft de spec como TEXTO FINAL completo (el orquestador o el usuario escribe `docs/specs/<NNN-feature-id>/spec.md` desde ese texto — Contrato de roles §5). Cuando termines:
 
-"LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación del usuario."
+"LISTO. Spec draft. Pendiente: aprobación del usuario."
 ```
 
 ### Test-writer (Etapa 3 — POST-AUDIT: Actualizar suite existente)
@@ -456,9 +456,11 @@ Reglas estrictas:
 - Categorías obligatorias: Divergencias del spec, Violaciones de boundaries, Riesgos de seguridad, Inconsistencias de estilo, Sugerencias de simplificación.
 - Cada hallazgo: ubicación (archivo:líneas), problema, sugerencia, severidad (Bloqueante / Opcional).
 
-Output esperado: archivo `docs/specs/<feat>/review.md` con estructura:
+Output esperado: la review como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/review.md` desde ese texto — Contrato de roles §5):
 
 # Review — <feature>
+
+Reviewer model: <declaración de modelo, ej: mofgw/qwen3.7-plus>
 
 ## Bloqueantes
 ### 1. <título>
@@ -471,7 +473,7 @@ Sugerencia: <...>
 
 Cuando termines:
 
-"LISTO. Review en docs/specs/<feat>/review.md. Resumen: <X> bloqueantes, <Y> opcionales."
+"LISTO. Resumen: <X> bloqueantes, <Y> opcionales."
 ```
 
 ### Scribe (Etapa 5)

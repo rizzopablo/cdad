@@ -68,7 +68,7 @@ Leé el campo `tdd_substage` de `docs/.cdad-state.json` para determinar qué sub
 
 - Para CADA postcondición nueva: escribí UN test que la verifique.
 - El test DEBE FALLAR al correr (todavía no hay implementación) — fallar por la razón correcta (AssertionError, no ImportError).
-- Nombre descriptivo: test_postcondition_<N>_<description>.
+- Nombre descriptivo: test_postcondition_<N>_<descripción>.
 - Un test por sesión salvo que las postcondiciones sean ortogonales (caminos independientes).
 - Después del test, corré la suite y verificá que falle por la razón correcta.
 - Commit: "test: add failing test for postcondition <N>"
@@ -93,7 +93,7 @@ Tres partes claramente separadas:
 
 ## Procedimiento E2E
 
-- Traducí los criterios de aceptación a tests E2E que verifiquen el flujo cross-component.
+- Traducí los criterios de aceptación a tests E2E que verifiquen el flujo cross-componente.
 - Setup con fixtures completas, no mocks puntuales.
 - Llamá vía API pública, no internals.
 - Asserts derivados de los criterios de aceptación, uno por uno.
