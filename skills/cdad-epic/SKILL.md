@@ -22,7 +22,7 @@ NO hacés:
 - Discovery de feature individual (eso es `cdad-cycle`).
 - Specs de feature (eso es `cdad-cycle`).
 - Tests de feature, implementación, review individual (todo eso es `cdad-cycle`).
-- Aprobar plan del epic, decidir alcance, priorizar features (humano indelegable).
+- Aprobar plan del epic, decidir alcance, priorizar features (usuario indelegable: humano o agente autónomo de mayor jerarquía).
 
 ## Filosofía: light por defecto
 
@@ -31,7 +31,7 @@ Optaste por planning light. Eso significa:
 - **Plan corto**: 1-3 páginas máximo. Lista de features con orden y dependencias, contratos cross-feature, criterios de aceptación del epic completo.
 - **Sin ADRs especulativos**: los ADRs grandes surgen feature por feature. Si una decisión arquitectónica es claramente del epic (p.ej. "vamos a usar PostgreSQL" antes de cualquier feature), se documenta cuando aparece, no especulativamente al inicio.
 - **Sin descomposición exhaustiva**: la decomposición inicial puede ser incompleta. A medida que avanzan las features, se descubren features nuevas o se reordenan. El plan se actualiza.
-- **Sin teatro de gobernanza**: no hay "comité de aprobación" ni RFC formal. Aprobación humana sí, pero ágil.
+- **Sin teatro de gobernanza**: no hay "comité de aprobación" ni RFC formal. Aprobación del usuario sí, pero ágil.
 
 ## Dos modos de invocación
 
@@ -105,7 +105,7 @@ E4: Closure del epic              → references/epic-closure.md
 
 - [ ] Existe `docs/epics/<epic-id>/plan.md`.
 - [ ] El plan tiene: descripción, lista de features con orden y dependencias, contratos cross-feature (qué interfaces se comparten), criterios de aceptación del epic.
-- [ ] Marca de aprobación humana inequívoca: línea final `Status: Approved by <X> on <fecha>` o frontmatter.
+- [ ] Marca de aprobación del usuario inequívoca: línea final `Status: Approved by <X> on <fecha>` o frontmatter.
 
 ### Gate Features → E3 — Loop de features → Integración
 
@@ -125,7 +125,7 @@ E4: Closure del epic              → references/epic-closure.md
 - [ ] `docs/activeContext.md` con entry de cierre del epic.
 - [ ] `docs/progress.md` movió epic a "done".
 - [ ] Si el epic generó decisiones arquitectónicas que aún no están documentadas → ADR(s) creados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría humana.
+- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría del usuario.
 
 ---
 
@@ -135,7 +135,7 @@ E4: Closure del epic              → references/epic-closure.md
 docs/
 ├── epics/
 │   └── 001-facturacion-afip/
-│       ├── plan.md             ← creado en E2, aprobado por humano
+│       ├── plan.md             ← creado en E2, aprobado por el usuario
 │       ├── decomposition.md    ← opcional, si la lista de features es larga
 │       ├── integration.md      ← creado en E3, describe tests cross-feature
 │       └── closure.md          ← creado en E4
@@ -237,7 +237,7 @@ El usuario vuelve diciendo *"Listo, feature 001-002 done"* o equivalente. Vos:
 
   > *"El plan acá es ligero. Si una sección requiere mucho detalle, eso probablemente es trabajo de la feature correspondiente, no del plan del epic. ¿Lo movemos a notas para cuando arranquemos esa feature?"*
 
-- **Aprobación humana del plan**: indelegable, igual que en `cdad-cycle` para specs.
+- **Aprobación del plan**: indelegable del orquestador; la hace el **usuario** (humano o agente autónomo de mayor jerarquía dueño del proceso — ver definición en `cdad-cycle`).
 - **Fin de turno explícito** después de cada handoff.
 
 ---

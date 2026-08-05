@@ -4,7 +4,7 @@ Mapear el dominio del epic completo. Es light: identificar qué áreas funcional
 
 ## Tu rol
 
-Coordinás. No hacés el descubrimiento vos, ni emitís handoff a un rol específico. Esta etapa es **vos + humano** directamente, igual que el descubrimiento inicial del proyecto en `cdad-cycle`.
+Coordinás. No hacés el descubrimiento vos, ni emitís handoff a un rol específico. Esta etapa es **vos + usuario (humano o agente dueño del proceso)** directamente, igual que el descubrimiento inicial del proyecto en `cdad-cycle`.
 
 ## Por qué es light
 

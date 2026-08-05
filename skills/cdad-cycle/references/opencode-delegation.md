@@ -3,7 +3,7 @@
 Cuando el entorno es OpenCode y existen sub-agentes `cdad-*` instalados
 (`~/.config/opencode/agents/cdad-*.md`, instalados via `install.sh` del repo),
 el orquestador puede delegar el rol vía la herramienta `task` con
-`subagent_type: cdad-<rol>` en lugar de entregar un handoff packet al humano.
+`subagent_type: cdad-<rol>` en lugar de entregar un handoff packet al usuario.
 
 ## Regla de decisión
 
@@ -17,7 +17,7 @@ el orquestador puede delegar el rol vía la herramienta `task` con
 
 ## Mapeo rol → subagent_type
 
-| Rol CDAD | subagent_type | Modelo (bailian) | Etapa |
+| Rol CDAD | subagent_type | Modelo (mofgw) | Etapa |
 |----------|---------------|-------------------|-------|
 | architect | `cdad-architect` | deepseek-v4-pro | 1, 2 |
 | test-writer (AUDIT/RED/properties/E2E) | `cdad-test-writer` | glm-5.2 | 3 |
@@ -77,7 +77,7 @@ Si el Task falla con error de rate limit (429) o provisión:
 | Criterio | Task (OpenCode) | Handoff packet |
 |----------|-----------------|----------------|
 | Aislamiento de sesión | Sí (sub-agente fresco) | Sí (chat nuevo) |
-| Modelo distinto por rol | Sí (config por agente) | Manual (el humano elige chat/modelo) |
+| Modelo distinto por rol | Sí (config por agente) | Manual (el usuario elige chat/modelo) |
 | Automatización | Total (sin copiar/pegar) | Manual |
 | Portabilidad | Solo OpenCode | Cualquier runtime |
 | Overhead de contexto | Bajo (prompt acotado) | Alto (pegado manual) |

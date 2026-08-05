@@ -76,4 +76,4 @@ Lista de tests que no existían y esta feature requiere:
 - [ ] No hay test modificado sin justificación documentada
 - [ ] Tests untouched están listados (confirma que se conocen las implicaciones)
 - [ ] Regression risk assessment completado
-- [ ] Humano aprobó este report antes de pasar a RED
+- [ ] El usuario (humano o agente de mayor jerarquía) aprobó este report antes de pasar a RED

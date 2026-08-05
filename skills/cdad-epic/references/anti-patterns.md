@@ -46,7 +46,7 @@ Específicos de coordinación de epics. Son aditivos a los anti-patrones de feat
 
 - Crear feature standalone para hacerla después del epic actual.
 - Crear epic siguiente con esa funcionalidad como base.
-- Si es realmente urgente y bloquea el epic actual: actualizar plan con reaprobación humana, agregar la funcionalidad como feature explícita.
+- Si es realmente urgente y bloquea el epic actual: actualizar plan con reaprobación del usuario, agregar la funcionalidad como feature explícita.
 
 NO la metas silenciosamente. Es la principal causa de epics que tardan el doble de lo previsto.
 

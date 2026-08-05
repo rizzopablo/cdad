@@ -4,6 +4,8 @@
 - **Date**: 2026-08-03
 - **Deciders**: Pablo Rizzo + Ofap
 
+> Nota (2026-08-05): la elección de provider directo a bailian fue superseded por ADR-005 — los modelos ahora corren vía mofgw.
+
 ## Contexto
 
 CDAD recomienda explícitamente que cada etapa corra con perfil cognitivo adecuado y que el reviewer use un modelo distinto al implementer (anti-confirmation-bias). Con opencode/chamber el flujo funcionaba, pero todo pasaba por el agente `coder` con un solo modelo: no se podía asignar modelo por etapa. El TDD anti-trampa perdía fuerza (el mismo agente/modelo escribe test e implementación). Se necesitaban agentes especializados por etapa con `model` override por agente.
