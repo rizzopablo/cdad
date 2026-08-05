@@ -4,7 +4,7 @@ Cierre del epic: consolidación del Memory Bank, retrospectiva breve, ADRs pendi
 
 ## Tu rol
 
-Coordinás. Emitís handoff a **scribe modo epic** para drafts. Humano edita y commitea.
+Coordinás. Emitís handoff a **scribe modo epic** para drafts. El usuario (humano o agente autónomo de mayor jerarquía) edita y commitea.
 
 ## Pasos
 
@@ -41,7 +41,7 @@ Contexto:
 
 Reglas estrictas:
 - Permisos: read-only.
-- NO commiteás. Generás drafts; el humano edita y commitea.
+- NO commiteás. Generás drafts; el usuario edita y commitea.
 - Para ADRs nuevos: solo si la decisión es claramente del epic (transversal a 
   varias features) y aún no está documentada. Marcá confianza Alta/Media/Baja.
 
@@ -59,9 +59,9 @@ Entregás packet, terminás turno.
 
 ### Paso 2 — Re-entry
 
-Validá los cuatro drafts presentes. Pasá al humano para edición y commit.
+Validá los cuatro drafts presentes. Pasá al usuario para edición y commit.
 
-### Paso 3 — Validación humana (indelegable)
+### Paso 3 — Validación del usuario (indelegable)
 
 Decile al usuario:
 
@@ -72,14 +72,14 @@ Decile al usuario:
 > *3. ADRs nuevos: <pegar | 'sin ADRs', con confianza>*
 > *4. closure.md: <pegar>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory): close epic <id>` y autoría humana. Avisame cuando esté."*
+> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory): close epic <id>` y autoría del usuario. Avisame cuando esté."*
 
 ### Paso 4 — Decisión sobre ADRs nuevos
 
 Si el scribe propuso ADRs nuevos:
 
-- **Confianza Alta**: típicamente merece ADR si es transversal al epic. Pasá al humano para que lo expanda.
-- **Confianza Media**: preguntale al humano si vale.
+- **Confianza Alta**: típicamente merece ADR si es transversal al epic. Pasá al usuario para que lo expanda.
+- **Confianza Media**: preguntale al usuario si vale.
 - **Confianza Baja**: descartar por defecto.
 
 Heurística: ¿la decisión afectó cómo se diseñaron varias features? ¿alguien dentro de 6-12 meses podría preguntar "por qué este epic se hizo así"? Si sí → ADR. Si no → descartar.
@@ -103,7 +103,7 @@ Mergeás el branch del epic a main (o lo que el flujo del proyecto indique). Est
 - [ ] `docs/activeContext.md` con entry de cierre del epic.
 - [ ] `docs/progress.md` movió epic a "done".
 - [ ] ADRs nuevos del epic (si los hay) commiteados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría humana.
+- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría del usuario.
 - [ ] Epic mergeado.
 
 Cuando todos OK: actualizá state file:

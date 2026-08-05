@@ -54,8 +54,8 @@ When tasked with producing the spec draft:
 - Four mandatory sections: Descripción funcional, Contrato (firma + postcondiciones numeradas), Invariantes verificables, Criterios de aceptación.
 - Numbered, verifiable postconditions (a test can determine pass/fail).
 - Measurable acceptance criteria (no vague adjectives).
-- No approval mark — the human adds it later.
-- Output: file `docs/specs/<NNN-feature-id>/spec.md` complete. When done: "LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación humana."
+- No approval mark — the user (human or higher-hierarchy autonomous agent) adds it later.
+- Output: file `docs/specs/<NNN-feature-id>/spec.md` complete. When done: "LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación del usuario."
 
 ## Anti-patterns to avoid
 

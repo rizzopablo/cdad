@@ -9,7 +9,7 @@ NO actualizás el Memory Bank por tu cuenta. Coordinás:
 1. Verificás CI completo (vos corrés si tenés bash, o pedís output al usuario).
 2. Emitís handoff a **scribe** con spec + diff + review + Memory Bank actual.
 3. Validás drafts en re-entry.
-4. Pasás drafts al **humano** que edita y commitea (indelegable).
+4. Pasás drafts al **usuario** que edita y commitea (humano o agente autónomo de mayor jerarquía; indelegable).
 5. Cierre de feature cuando CI verde + Memory Bank commiteado.
 
 ## 5.1 — Verificación CI
@@ -47,9 +47,9 @@ Entregás packet, terminás turno.
 
 Cargá `re-entry.md` sección "Scribe". Validá tres drafts presentes (activeContext entry, progress changes, ADR draft o "sin ADR").
 
-## 5.3 — Validación humana (indelegable)
+## 5.3 — Validación del usuario (indelegable)
 
-Pasás los drafts al humano:
+Pasás los drafts al usuario:
 
 > *"Scribe terminó. Tres drafts:*
 >
@@ -57,7 +57,7 @@ Pasás los drafts al humano:
 > *2. progress.md changes: <pegar>*
 > *3. ADR: <pegar | "sin ADR sugerido", confianza <X>>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory):` y autoría humana. Avisame cuando esté."*
+> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory):` y autoría del usuario. Avisame cuando esté."*
 
 **Si el usuario te pide que commitees vos**: declinás.
 
@@ -67,9 +67,9 @@ Pasás los drafts al humano:
 
 Si el scribe propuso ADR:
 
-- **Confianza Alta**: probablemente merece ADR. Pasalo al humano para que lo expanda.
-- **Confianza Media**: preguntale al humano si la decisión amerita ADR.
-- **Confianza Baja**: descartá por defecto, salvo que el humano vea valor.
+- **Confianza Alta**: probablemente merece ADR. Pasalo al usuario para que lo expanda.
+- **Confianza Media**: preguntale al usuario si la decisión amerita ADR.
+- **Confianza Baja**: descartá por defecto, salvo que el usuario vea valor.
 
 Heurística general: ¿alguien en 6 meses podría preguntar "por qué hicimos X así"? Si sí → ADR. Si no → descartá.
 
@@ -85,7 +85,7 @@ Mergeás a main. Estrategia (squash, merge, rebase) según convención del proye
 - [ ] `docs/activeContext.md` con entry nueva.
 - [ ] `docs/progress.md` movió feature a "done".
 - [ ] Si decisión arquitectónica → ADR nuevo en `docs/adr/`.
-- [ ] Commit con prefijo `docs(memory):` y autoría humana.
+- [ ] Commit con prefijo `docs(memory):` y autoría del usuario.
 - [ ] Feature mergeada.
 
 Cuando todos OK: actualizá state (`current_stage: done`, `active_feature: null`).

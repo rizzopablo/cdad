@@ -1,6 +1,6 @@
 # Etapa 4 — Review en dos capas
 
-Capa 1: reviewer hace pasada exhaustiva con spec en contexto. Capa 2: humano valida priorización.
+Capa 1: reviewer hace pasada exhaustiva con spec en contexto. Capa 2: el usuario (humano o agente autónomo de mayor jerarquía) valida priorización.
 
 ## Tu rol como orquestador
 
@@ -8,7 +8,7 @@ NO hacés review. Coordinás:
 
 1. Emitís handoff a **reviewer** (capa 1) con diff + spec + boundaries + convenciones.
 2. Validás reporte en re-entry.
-3. Pasás reporte al **humano para validar priorización** (capa 2, por defecto indelegable; ver excepción más abajo si el usuario pidió explícitamente delegarla a un agente para esta feature).
+3. Pasás reporte al **usuario para validar priorización** (capa 2, por defecto indelegable; ver excepción más abajo si el usuario pidió explícitamente delegarla a un agente para esta feature).
 4. Si hay bloqueantes a aplicar: handoff de vuelta a implementer.
 5. Cierre de etapa cuando todos los bloqueantes resueltos o desestimados.
 
@@ -33,23 +33,32 @@ Entregás packet, terminás turno.
 
 Cargá `re-entry.md` sección "Reviewer". Validá estructura del reporte.
 
-Si pasa: pasás al humano para capa 2.
+Si pasa: pasás al usuario para capa 2.
 
-## Capa 2 — Validación (humana por defecto; delegable solo bajo pedido explícito)
+## Capa 2 — Validación (del usuario por defecto; delegable solo bajo pedido explícito)
 
-**Regla general: la priorización la valida el humano.** Decile al usuario:
+**Regla general: la priorización la valida el usuario** (humano o agente autónomo de mayor jerarquía dueño del proceso). Decile al usuario:
 
 > *"Reporte en `docs/specs/<feat>/review.md`: <X> bloqueantes, <Y> opcionales. Tu trabajo: leé el reporte (no el diff completo) y validá la priorización. Para cada bloqueante: ¿genuinamente bloqueante o hay contexto que el reviewer no tiene? Para cada opcional: ¿aplicar o descartar? Cuando termines, pasame las decisiones."*
+
+**Cuando el usuario ES un agente autónomo de mayor jerarquía** (dueño del
+proceso que orquesta este ciclo, p.ej. desde el heartbeat), valida
+directamente — no hay ceremonia de delegación explícita que cumplir: es el
+dueño. PERO la matriz de severidad de abajo es innegociable: **riesgo de
+seguridad y bug funcional son bloqueantes sin excepciones**, aunque el que
+valida sea un agente — la delegación da autoridad para *priorizar*, no para
+bajar la severidad de lo que la matriz marca como innegociable. Y ante la
+duda, se pide al usuario igual (no se baja severidad por ser agente).
 
 ### Excepción: delegación explícita a agente experto
 
 Igual que en Etapa 2 (ver `stage-2-specification.md`, "Excepción: delegación explícita a agente experto"), esto solo aplica si el usuario, **para esta feature o etapa puntual**, pidió explícitamente que un agente valide la priorización en su lugar. No se asume, no se activa por defecto, no la iniciás vos.
 
-Con el pedido explícito, antes de validar corré la autoevaluación: ¿tenés contexto de cliente/producto que te falta para juzgar si un bloqueante es genuino? ¿hay algo en el reporte que prefirís que vea un humano (seguridad, breaking change, algo que afecta a un cliente final)? Notá que la matriz de severidad de abajo ya trata **riesgo de seguridad y bug funcional como bloqueante sin excepciones** — eso no lo cambia la delegación; la delegación te da autoridad para *priorizar*, no para bajar la severidad de algo que la matriz marca como innegociable.
+Con el pedido explícito, antes de validar corré la autoevaluación: ¿tenés contexto de cliente/producto que te falta para juzgar si un bloqueante es genuino? ¿hay algo en el reporte que preferís que vea el usuario (seguridad, breaking change, algo que afecta a un cliente final)? Notá que la matriz de severidad de abajo ya trata **riesgo de seguridad y bug funcional como bloqueante sin excepciones** — eso no lo cambia la delegación; la delegación te da autoridad para *priorizar*, no para bajar la severidad de algo que la matriz marca como innegociable.
 
-Si tenés dudas: no validás vos, pedís al humano igual. Si validás: marcá en `review.md` y en `stage_history` que la priorización fue agente-delegada, con quién la pidió y cuándo — mismo estándar de trazabilidad que en Etapa 2.
+Si tenés dudas: no validás vos, pedís al usuario igual. Si validás: marcá en `review.md` y en `stage_history` que la priorización fue agente-delegada, con quién la pidió y cuándo — mismo estándar de trazabilidad que en Etapa 2.
 
-### Cuando el humano vuelve con priorización
+### Cuando el usuario vuelve con priorización
 
 Aplicá la matriz de severidad por defecto para sanity-check:
 
@@ -63,9 +72,9 @@ Aplicá la matriz de severidad por defecto para sanity-check:
 | Simplificación | Opcional | Bloqueante si complejidad problemática |
 | Feature adicional sugerida | Descartar | — |
 
-Si el humano marcó como "no bloqueante" algo que la matriz dice bloqueante (ej. divergencia del spec), preguntale el motivo y registralo en `review.md` como nota.
+Si el usuario marcó como "no bloqueante" algo que la matriz dice bloqueante (ej. divergencia del spec), preguntale el motivo y registralo en `review.md` como nota.
 
-Si detectás sesgo (humano queriendo cerrar rápido, marcando bloqueantes como opcionales sistemáticamente):
+Si detectás sesgo (usuario queriendo cerrar rápido, marcando bloqueantes como opcionales sistemáticamente):
 
 > *"Si dudás de si un bloqueante es genuino, errate del lado de tratarlo como bloqueante. El costo de una iteración extra es bajo; el costo de mergear un bug es alto."*
 

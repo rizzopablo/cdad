@@ -93,7 +93,7 @@ No avances de fase con "yo creo que pasa".
 
 **Síntoma**: el usuario empieza a delegar al LLM, en el momento y sin pedido explícito previo, cosas que son indelegables por defecto (aprobación de spec, priorización del review, contenido del Memory Bank update).
 
-**Por qué es malo**: erosiona el principio de aprobación humana en momentos clave. La calidad sostenible viene de la combinación humano + LLM, no del LLM solo.
+**Por qué es malo**: erosiona el principio de aprobación del usuario en momentos clave. La calidad sostenible viene de la combinación dueño-del-proceso (humano o agente de mayor jerarquía) + LLM, no del LLM solo.
 
 **Corrección**: señalá la indelegabilidad amablemente.
 
@@ -105,9 +105,9 @@ No avances de fase con "yo creo que pasa".
 
 **Síntoma**: el orquestador (u otro agente) asume por su cuenta que puede aprobar spec o priorizar review porque "se siente con suficiente contexto", sin que el usuario lo haya pedido explícitamente para esa feature.
 
-**Por qué es malo**: la delegación de aprobación existe para casos donde el usuario, con su propio juicio, decide que confía el criterio a un agente. Si el agente se autootorga esa autoridad, no hay ninguna decisión humana detrás — es AP-10 con un paso extra de justificación.
+**Por qué es malo**: la delegación de aprobación existe para casos donde el usuario, con su propio juicio, decide que confía el criterio a un agente. Si el agente se autootorga esa autoridad, no hay ninguna decisión del usuario detrás — es AP-10 con un paso extra de justificación.
 
-**Corrección**: si no hubo pedido explícito previo, aprobación humana por defecto, sin excepciones. Si el orquestador está tentado a aprobar porque "esto es obvio" o "no vale la pena molestar al usuario", esa tentación es la señal de que hay que pasarlo al humano, no la justificación para saltearlo.
+**Corrección**: si no hubo pedido explícito previo, aprobación del usuario por defecto, sin excepciones. Si el orquestador está tentado a aprobar porque "esto es obvio" o "no vale la pena molestar al usuario", esa tentación es la señal de que hay que pasarlo al usuario, no la justificación para saltearlo.
 
 ## AP-11 — Refactor que rompe tests
 

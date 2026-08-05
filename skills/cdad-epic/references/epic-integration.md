@@ -104,7 +104,7 @@ done para que jueguen bien juntas, etc.>
 para futuros epics o features standalone.>
 ```
 
-Pasale el draft al humano para aprobación final del archivo (no es indelegable, pero conviene que el humano lo revise antes de commitear).
+Pasale el draft al usuario para aprobación final del archivo (no es indelegable, pero conviene que el usuario (humano o agente de mayor jerarquía) lo revise antes de commitear).
 
 ## 🛑 Gate de salida (E3 → E4)
 

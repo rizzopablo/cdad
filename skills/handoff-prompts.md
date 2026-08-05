@@ -29,12 +29,12 @@ Reglas estrictas:
 Output esperado:
 - <archivo concreto / commit / formato de respuesta>
 
-Cuando termines, respondé al humano con:
+Cuando termines, respondé al usuario con:
 "LISTO. <output específico esperado>"
 
 ──────────────────────────────────────────
 
-Tu trabajo (humano):
+Tu trabajo (usuario):
 1. Abrí chat nuevo (Zed thread, OpenCode session, ChatGPT new chat, etc.).
 2. Pegá el prompt de arriba.
 3. Adjuntá / pegá los archivos del contexto: <lista>.
@@ -79,7 +79,7 @@ Brainstorm:
 ```
 Sos un sub-agente architect en CDAD modo brainstorm socrático.
 
-Tarea: ayudar al humano a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
+Tarea: ayudar al usuario a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
 
 Contexto:
 1. Descripción funcional preliminar: <una a tres líneas>
@@ -114,11 +114,11 @@ Reglas estrictas:
 - Cuatro secciones obligatorias: Descripción funcional, Contrato (firma + postcondiciones numeradas), Invariantes verificables, Criterios de aceptación.
 - Postcondiciones numeradas y verificables (un test puede determinar pass/fail).
 - Criterios de aceptación medibles (no adjetivos vagos).
-- Sin marca de aprobación: el humano la agrega después.
+- Sin marca de aprobación: el usuario la agrega después.
 
 Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando termines:
 
-"LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación humana."
+"LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación del usuario."
 ```
 
 ### Test-writer (Etapa 3 — RED)
@@ -310,7 +310,7 @@ Contexto:
 4. Estado actual del Memory Bank: docs/projectbrief.md, docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/
 
 Reglas estrictas:
-- Permisos: read-only. NO commiteás. Generás drafts; el humano edita y commitea.
+- Permisos: read-only. NO commiteás. Generás drafts; el usuario edita y commitea (humano o agente de mayor jerarquía).
 
 Output esperado, tres bloques:
 

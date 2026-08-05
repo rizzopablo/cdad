@@ -47,12 +47,12 @@ Reglas estrictas:
 Output esperado:
 - <archivo concreto / commit / formato de respuesta>
 
-Cuando termines, respondé al humano con:
+Cuando termines, respondé al usuario con:
 "LISTO. <output específico esperado>"
 
 ──────────────────────────────────────────
 
-Tu trabajo (humano):
+Tu trabajo (usuario):
 1. Abrí chat nuevo (Zed thread, OpenCode session, ChatGPT new chat, etc.).
 2. Pegá el prompt de arriba.
 3. Adjuntá / pegá los archivos del contexto: <lista>.
@@ -106,7 +106,7 @@ Cuando termines:
 - Tests nuevos: P
 - Regression risks: [sí/no, detalle]
 
-Pendiente: aprobación humana del audit antes de pasar a RED."
+Pendiente: aprobación del usuario del audit antes de pasar a RED."
 ```
 
 ### Architect (Etapa 1 — Descubrimiento por feature)
@@ -139,7 +139,7 @@ Brainstorm:
 ```
 Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
 
-Tarea: ayudar al humano a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
+Tarea: ayudar al usuario a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
 
 Contexto:
 1. Descripción funcional preliminar: <una a tres líneas>
@@ -174,11 +174,11 @@ Reglas estrictas:
 - Cuatro secciones obligatorias: Descripción funcional, Contrato (firma + postcondiciones numeradas), Invariantes verificables, Criterios de aceptación.
 - Postcondiciones numeradas y verificables (un test puede determinar pass/fail).
 - Criterios de aceptación medibles (no adjetivos vagos).
-- Sin marca de aprobación: el humano la agrega después.
+- Sin marca de aprobación: el usuario la agrega después.
 
 Output esperado: archivo `docs/specs/<NNN-feature-id>/spec.md` completo. Cuando termines:
 
-"LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación humana."
+"LISTO. Spec draft en docs/specs/<NNN>/spec.md. Pendiente: aprobación del usuario."
 ```
 
 ### Test-writer (Etapa 3 — POST-AUDIT: Actualizar suite existente)
@@ -291,7 +291,7 @@ Antes de tocar un archivo de tests, ejecutá:
    - Qué tests nuevos se escriben
    - Qué tests se mantienen sin cambios (EXPLICITAR)
    - Regression risks
-4. **Humano aprueba Test Audit** antes de empezar RED.
+4. **El usuario aprueba Test Audit** antes de empezar RED.
 
 Si no podés responder con confianza "cada test modificado está en spec", **no avances**. Preguntar es más barato que arreglar después.
 
@@ -488,7 +488,7 @@ Contexto:
 4. Estado actual del Memory Bank: docs/projectbrief.md, docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/
 
 Reglas estrictas:
-- Permisos: read-only. NO commiteás. Generás drafts; el humano edita y commitea.
+- Permisos: read-only. NO commiteás. Generás drafts; el usuario edita y commitea (humano o agente de mayor jerarquía).
 
 Output esperado, tres bloques:
 

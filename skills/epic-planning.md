@@ -1,10 +1,10 @@
 # Etapa E2 — Planning del epic (light)
 
-Producir un `plan.md` corto con la decomposición en features, contratos cross-feature, y criterios de aceptación del epic. Output aprobado por humano.
+Producir un `plan.md` corto con la decomposición en features, contratos cross-feature, y criterios de aceptación del epic. Output aprobado por el usuario (humano o agente autónomo de mayor jerarquía).
 
 ## Tu rol
 
-Coordinás. Hacés draft del plan basado en el discovery + tus preguntas, el humano edita y aprueba.
+Coordinás. Hacés draft del plan basado en el discovery + tus preguntas, el usuario (humano o agente autónomo de mayor jerarquía) edita y aprueba.
 
 ## Filosofía light (recordatorio)
 
@@ -20,7 +20,7 @@ Si el plan supera 3 páginas y no es porque el epic es genuinamente grande (10+ 
 
 ### Paso 1 — Decomposición en features
 
-Conversación con el usuario. No emitís handoff a un rol; lo hacés vos + humano directamente, similar al brainstorm socrático en `cdad-cycle`.
+Conversación con el usuario. No emitís handoff a un rol; lo hacés vos + usuario (humano o agente dueño del proceso) directamente, similar al brainstorm socrático en `cdad-cycle`.
 
 Hacé preguntas:
 
@@ -104,7 +104,7 @@ Cargá `assets/epic-plan-template.md` y rellenalo con lo trabajado. Estructura m
 Status: <Pending approval | Approved by <X> on <YYYY-MM-DD>>
 ```
 
-### Paso 6 — Aprobación humana (indelegable)
+### Paso 6 — Aprobación del usuario (indelegable)
 
 > *"Plan en `docs/epics/<id>/plan.md`. Revisalo: (a) decomposición correcta y completa, (b) orden y dependencias bien definidos, (c) criterios de aceptación medibles. Si está OK, agregá la marca de aprobación al final. Avisame cuando esté."*
 
@@ -116,7 +116,7 @@ Status: <Pending approval | Approved by <X> on <YYYY-MM-DD>>
 
 - [ ] Existe `docs/epics/<epic-id>/plan.md`.
 - [ ] Plan contiene: scope, decomposición con orden y dependencias, criterios de aceptación medibles.
-- [ ] Marca de aprobación humana inequívoca.
+- [ ] Marca de aprobación del usuario inequívoca.
 - [ ] State file actualizado con `epic_features` (lista derivada de la decomposición).
 
 Cuando todos OK: actualizá state (`epic_stage: features-loop`, populá `epic_features` desde el plan). Anunciá transición. Cargá `references/feature-handoff.md` para preparar el delegado a `cdad-cycle` para la primera feature.
@@ -140,4 +140,4 @@ Motivo: durante implementación se detectó que enviar-ws tiene
 dos responsabilidades distintas que conviene separar.
 ```
 
-NO requiere reaprobación formal salvo que el cambio modifique scope o criterios de aceptación del epic. Si lo hace, sí: reaprobación humana.
+NO requiere reaprobación formal salvo que el cambio modifique scope o criterios de aceptación del epic. Si lo hace, sí: reaprobación del usuario.

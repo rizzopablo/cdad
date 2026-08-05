@@ -45,7 +45,7 @@ Verificá:
 
 Si falla: handoff de vuelta al architect con la sección que falta.
 
-Si pasa: pasás el spec al humano para aprobación. **NO aprobás vos**. Decile:
+Si pasa: pasás el spec al usuario (humano o agente autónomo de mayor jerarquía) para aprobación. **NO aprobás vos**. Decile:
 
 > *"Spec en `docs/specs/<NNN>/spec.md`. Antes de avanzar a Etapa 3: revisalo y agregá la marca de aprobación al final (`Status: Approved by <vos> on <fecha>`) o en frontmatter (`approved_by` + `approved_at`). Cuando esté aprobado, avisame."*
 
@@ -128,11 +128,11 @@ Verificá:
 - [ ] Estructura: secciones "Bloqueantes" y "Opcionales", cada hallazgo con ubicación + problema + sugerencia.
 - [ ] Cada hallazgo tiene severidad explícita.
 
-Si pasa: pasás el reporte al humano para validar priorización.
+Si pasa: pasás el reporte al usuario para validar priorización.
 
 > *"Reporte en docs/specs/<feat>/review.md: <X> bloqueantes, <Y> opcionales. Tu trabajo (capa 2): leé el reporte (no el diff completo) y validá si la priorización es correcta. Para cada bloqueante: ¿genuinamente bloqueante o hay contexto que el reviewer no tiene? Para cada opcional: ¿aplicar ahora o descartar?"*
 
-Cuando el humano vuelve con su priorización:
+Cuando el usuario vuelve con su priorización:
 - Registrá las decisiones en el review.md (notas con motivo de cada desestimación).
 - Si hay bloqueantes a aplicar: handoff a implementer con la lista de fixes.
 - Si todos bloqueantes resueltos / desestimados: actualizá state file → `current_stage: merge` y emití handoff a scribe.
@@ -144,7 +144,7 @@ Verificá:
 - [ ] Drafts NO están commiteados (correcto).
 - [ ] El draft de ADR (si existe) tiene "Confianza" declarada.
 
-Si pasa: pasás los drafts al humano.
+Si pasa: pasás los drafts al usuario.
 
 > *"Scribe terminó. Tres drafts para tu revisión:*
 >
