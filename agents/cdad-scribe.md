@@ -4,6 +4,9 @@ mode: subagent
 model: bailian/deepseek-v4-pro
 permission:
   edit: deny
+  # Read-only por diseño (Scribe pattern: el scribe redacta, human/orquestador
+  # commitea). Igual que reviewer: entrega el memory-bank entry como texto final
+  # del delegate; el orquestador materializa el artefacto.
   write: deny
   bash:
     "*": deny
@@ -47,4 +50,4 @@ If not: "Sin ADR sugerido".
 
 ## Output format
 
-Close with "LISTO. Drafts: [Draft 1: activeContext.md entry] <...> [Draft 2: progress.md changes] <...> [Draft 3: ADR | Sin ADR sugerido] <...>"
+Deliver the three drafts as your FINAL TEXT output (the orchestrator materializes them into the Memory Bank files). Close with "LISTO. Drafts: [Draft 1: activeContext.md entry] <...> [Draft 2: progress.md changes] <...> [Draft 3: ADR | Sin ADR sugerido] <...>"
