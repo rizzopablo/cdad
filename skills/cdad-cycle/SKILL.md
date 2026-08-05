@@ -114,6 +114,16 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 
 ### 4. Regla de decisión de delegación (única, explícita)
 
+> ⚠️ **GUARDIA DE SPAWN (anti-loop):** Si estás corriendo como SUBAGENTE
+> (runtime=subagent, ej: spawnado por un ciclo heartbeat en OpenClaw),
+> **`sessions_spawn` está PROHIBIDO — no podés spawnear sub-subagentes.**
+> Es una limitación de diseño del runtime (anti-recursión). NUNCA lo
+> intentes: el runtime te lo va a rechazar y reintentar 2000+ veces en
+> loop quema tokens y bloquea el scheduler (incidente 05 Ago 2026 —
+> cdad-architect FEAT-003 <project>, 2153 intentos, heartbeat frenado 2h).
+> Si necesitás delegar desde un subagente → devolvé el control al
+> orquestador con un handoff packet (regla 2) y que ÉL decida el spawn.
+
 Para cada tarea de rol, decidí el mecanismo en este orden:
 
 1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
