@@ -65,9 +65,7 @@ fi
 T4_OK=0
 if [ -f "$ART_DIR/spec.md" ] && grep -q "^## 2\. Postcondición" "$ART_DIR/spec.md"; then T4_OK=$((T4_OK+1)); fi
 if [ -d "$ART_DIR/tests" ] && [ -n "$(ls -A "$ART_DIR/tests" 2>/dev/null)" ]; then T4_OK=$((T4_OK+1)); fi
-if [ -f "$ART_DIR/impl.diff" ] && { \
-    (cd "$REPO_ROOT" && git apply --check --reverse "$ART_DIR/impl.diff" >/dev/null 2>&1) || \
-    (cd "$REPO_ROOT" && git apply --check "$ART_DIR/impl.diff" >/dev/null 2>&1); }; then T4_OK=$((T4_OK+1)); fi
+if [ -f "$ART_DIR/impl.diff" ] && patch -p1 --dry-run -d "$REPO_ROOT" < "$ART_DIR/impl.diff" >/dev/null 2>&1; then T4_OK=$((T4_OK+1)); fi
 if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.md"; then T4_OK=$((T4_OK+1)); fi
 if [ -f "$ART_DIR/memory-bank.md" ] && grep -qE "^##? .*2026|^[0-9]{4}-[0-9]{2}-[0-9]{2}" "$ART_DIR/memory-bank.md"; then T4_OK=$((T4_OK+1)); fi
 report 4 "$([ $T4_OK -eq 5 ] && echo 0 || echo 1)" "artefactos OK=$T4_OK/5"

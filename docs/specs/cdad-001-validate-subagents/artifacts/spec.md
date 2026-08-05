@@ -61,8 +61,7 @@ DEBE:
 
 ### 3.3 `impl.diff`
 - Formato unified diff (`diff -u` o `git diff`)
-- Debe ser aplicable: `git apply --check --reverse` (ya aplicado) o `git apply --check` (aún aplicable) exit 0
-- **Nota (05 Ago, review cdad-001):** divergencia documentada con el criterio literal `patch -p1 --dry-run`: `patch --dry-run` falla con diffs de creación ya aplicados (el archivo ya existe en el working tree), mientras `git apply --check --reverse` distingue correctamente "ya aplicado" de "aún aplicable". T4 usa el criterio robusto de `git apply` para ser consistente con el validator.
+- Debe ser aplicable: `patch -p1 --dry-run` exit 0
 
 ### 3.4 `review.md`
 - DEBE contener la línea exacta:

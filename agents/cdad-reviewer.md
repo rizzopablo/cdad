@@ -47,7 +47,7 @@ Deliver the review as your FINAL TEXT output with this structure (the orchestrat
 
 # Review — <feature>
 
-**Reviewer model:** <declaración de modelo, ej: bailian/qwen3.7-plus>
+Reviewer model: <declaración de modelo, ej: bailian/qwen3.7-plus>
 
 ## Bloqueantes
 ### 1. <título>
