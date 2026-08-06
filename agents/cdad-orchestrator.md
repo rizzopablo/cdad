@@ -107,6 +107,8 @@ sección "Gates"). Detalle por etapa en `references/stage-N-*.md`.
 | reviewer | 4 | reporte de hallazgos contra spec | todo (read-only) | nada | no toca código ni tests | `review.md` | qwen3.7-plus (**familia DISTINTA** al implementer) |
 | scribe | 5 | draft de Memory Bank update | spec, diff, review, Memory Bank | nada (draft) | no commitea (usuario indelegable: humano o agente autónomo de mayor jerarquía) | `memory-bank.md` (draft) | deepseek-v4-pro |
 
+Modelos del diseño (perfil optimus). Perfiles alternativos (economical/premium): scripts/cdad-models.sh — switch: install.sh --economical|--premium.
+
 **Invariantes anti-bias (no negociables):** reviewer usa familia de modelo
 distinta al implementer. test-writer nunca ve código de implementación (si
 estás mirando `src/` como test-writer, te equivocaste de rol). El mapeo

@@ -15,9 +15,10 @@
 #      `install.sh --check` (no se duplica lógica de comparación).
 #   3. artefactos — enumera y verifica los 5 artefactos por etapa del ciclo
 #      CDAD en docs/specs/cdad-001-validate-subagents/artifacts/.
-#   4. modelos — cada agente cdad-* declara el modelo esperado (mapa
-#      ADR-001/005) en su frontmatter; cdad-orchestrator NO declara model:
-#      (el modelo lo elige el usuario).
+#   4. modelos — cada agente cdad-* declara el modelo del PERFIL ACTIVO en su
+#      frontmatter (mapa scripts/cdad-models.sh; perfil activo = env
+#      CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus);
+#      cdad-orchestrator NO declara model: (el modelo lo elige el usuario).
 #
 # Exit: 0 si y solo si TODAS las verificaciones pasan; != 0 ante cualquier
 # falla, imprimiendo qué falló. Read-only: idempotente por diseño.
@@ -32,6 +33,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SPEC_DIR="$REPO_ROOT/docs/specs/cdad-001-validate-subagents"
 ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="${HOME:-}/.config/opencode/agents"
+RUNTIME_INSTALL_DIR="$RUNTIME_DIR"
 INSTALL_SH="$REPO_ROOT/install.sh"
 AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer)
 
@@ -104,20 +106,42 @@ if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.m
 if [ -f "$ART_DIR/memory-bank.md" ] && grep -qE "^##? .*2026|^[0-9]{4}-[0-9]{2}-[0-9]{2}" "$ART_DIR/memory-bank.md"; then
   stage scribe "memory-bank.md" 0; else stage scribe "memory-bank.md" 1; fi
 
-# --- Etapa 4: modelos por agente (mapa ADR-001/005) ---------------------------
+# --- Etapa 4: modelos por agente (profile-aware; fuente única del mapa) ------
 echo "[modelos] modelo esperado por agente"
-# El mapa duplica la tabla "Familia modelo" del Contrato de roles (ADR-001) y
-# la decisión de provider de ADR-005 — guard de validación intencional: si el
-# repo o el runtime drift de la decisión, esta etapa lo detecta. Se corre al
-# final (después de los artefactos) para no romper el contexto del impl.diff
-# de cdad-001, que cubre solo hasta la Etapa 2.
-declare -A MODEL_EXPECTED=(
-  [cdad-architect]=mofgw/deepseek-v4-pro
-  [cdad-test-writer]=mofgw/glm-5.2
-  [cdad-implementer]=mofgw/deepseek-v4-flash
-  [cdad-reviewer]=mofgw/qwen3.7-plus
-  [cdad-scribe]=mofgw/deepseek-v4-pro
-)
+# El mapa vive en scripts/cdad-models.sh (fuente única: duplica ADR-001/005 y
+# la tabla §2 del Contrato de roles para el perfil optimus). Con perfil optimus
+# (default/diseño) da EXACTAMENTE el mapa histórico — guard de validación
+# intencional: si el repo o el runtime drift de la decisión, esta etapa lo
+# detecta. Se corre al final (después de los artefactos) para no romper el
+# contexto del impl.diff de cdad-001, que cubre solo hasta la Etapa 2.
+MODELS_SH="$REPO_ROOT/scripts/cdad-models.sh"
+MODELS_LOADED=0
+if [ ! -f "$MODELS_SH" ]; then
+  fail "scripts/cdad-models.sh no encontrado (fuente única del mapa de modelos)"
+else
+  # shellcheck source=cdad-models.sh
+  source "$MODELS_SH"
+  MODELS_LOADED=1
+fi
+
+# Perfil activo: env CDAD_MODEL_PROFILE > marker del runtime > optimus.
+ACTIVE_PROFILE="${CDAD_MODEL_PROFILE:-}"
+if [ -z "$ACTIVE_PROFILE" ] && [ -f "$RUNTIME_INSTALL_DIR/.cdad-models-profile" ]; then
+  ACTIVE_PROFILE="$(cat "$RUNTIME_INSTALL_DIR/.cdad-models-profile")"
+fi
+ACTIVE_PROFILE="${ACTIVE_PROFILE:-optimus}"
+if [ "$MODELS_LOADED" -eq 1 ] && ! cdad_valid_profile "$ACTIVE_PROFILE"; then
+  fail "perfil de modelos inválido: '$ACTIVE_PROFILE' (esperado: economical | optimus | premium)"
+  ACTIVE_PROFILE="optimus"
+fi
+echo "[modelos] perfil activo: $ACTIVE_PROFILE"
+
+declare -A MODEL_EXPECTED
+if [ "$MODELS_LOADED" -eq 1 ]; then
+  for a in "${AGENTS[@]}"; do
+    MODEL_EXPECTED["$a"]="$(cdad_model "$ACTIVE_PROFILE" "${a#cdad-}")"
+  done
+fi
 # cdad-orchestrator NO declara model: — el modelo lo elige el usuario al
 # seleccionarlo (ADR-001/005: el orquestador sigue sin modelo fijo).
 for a in "${AGENTS[@]}"; do
@@ -133,7 +157,7 @@ done
 if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
   fail "cdad-orchestrator.md no debe declarar model: (el modelo lo elige el usuario)"
 fi
-if [ "$FAIL" -eq 0 ]; then ok "modelos OK (5/5 según ADR-001/005; orquestador sin model:)"; fi
+if [ "$FAIL" -eq 0 ]; then ok "modelos OK (5/5 según perfil $ACTIVE_PROFILE; orquestador sin model:)"; fi
 
 # --- Veredicto -----------------------------------------------------------------
 if [ "$FAIL" -eq 0 ]; then
