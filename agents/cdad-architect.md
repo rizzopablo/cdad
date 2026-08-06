@@ -23,11 +23,6 @@ permission:
     "git log*": allow
     "git diff*": allow
     "git show*": allow
-  external_directory:
-    "/path/to/src/odoo/19/**": allow
-    "/path/to/.config/opencode/skills/**": allow
-    "/path/to/.agents/skills/**": allow
-    "/tmp/opencode/*": allow
 ---
 
 # CDAD Architect Agent

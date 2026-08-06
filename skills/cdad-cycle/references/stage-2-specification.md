@@ -54,7 +54,7 @@ Si pasa: pasás al usuario para aprobación.
 > *"La aprobación del spec requiere tu juicio sobre dominio, cliente, y producto. Yo puedo proponerte cambios si querés, pero la marca de aprobado va con tu nombre — a menos que quieras delegarla explícitamente a un agente para esta feature."*
 
 **Cuando el usuario ES un agente autónomo de mayor jerarquía** (dueño del
-proceso que orquesta este ciclo, p.ej. desde el heartbeat), aprueba
+proceso que orquesta este ciclo, p.ej. desde un proceso orquestador externo), aprueba
 directamente — no hay ceremonia de delegación explícita que cumplir: es el
 dueño. Aplica los mismos criterios que un humano: corre la autoevaluación de
 abajo antes de aprobar y no baja la severidad por ser agente.

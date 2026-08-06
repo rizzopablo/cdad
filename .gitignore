@@ -5,3 +5,4 @@ skills/*.skill
 .coverage
 cdad.toml
 cdad-cli
+logs/

@@ -69,7 +69,7 @@ Si el Task falla con error de rate limit (429) o provisión:
 1. Reintentá 1 vez con backoff corto.
 2. Si persiste, SURFACE al usuario: decile qué rol quedó bloqueado y por qué.
 3. Ofrecé re-invocar el mismo Task apuntando el modelo del sub-agente a la
-   vía `localhost` (omniroute) aceptando el trade-off de determinismo
+   vía el gateway local (proxy router) aceptando el trade-off de determinismo
    (rotación de modelos), o esperar a que el límite se resetee.
 
 ## Cuándo Task vs handoff packet
@@ -81,7 +81,7 @@ Si el Task falla con error de rate limit (429) o provisión:
 | Automatización | Total (sin copiar/pegar) | Manual |
 | Portabilidad | Solo OpenCode | Cualquier runtime |
 | Overhead de contexto | Bajo (prompt acotado) | Alto (pegado manual) |
-| Fallback | Localhost/omniroute | Ninguno necesario |
+| Fallback | Gateway local (proxy router) | Ninguno necesario |
 
 Preferencia: Task cuando el entorno lo soporta; handoff packet como fallback
 universal. El skill sigue siendo portable.

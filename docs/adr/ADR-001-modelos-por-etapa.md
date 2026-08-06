@@ -32,7 +32,7 @@ Crear 5 sub-agentes OpenCode nativos (`cdad-architect`, `cdad-test-writer`, `cda
 
 1. Data empírica de Pablo: deepseek codea bien ("en general en todo"); lo más difícil es hacer buenos tests (→ rigor: glm-5.2 para test-writer).
 2. Regla no-negociable CDAD: reviewer ≠ implementer en familia de modelo. Implementer = deepseek-v4-flash, reviewer = qwen3.7-plus (familias distintas).
-3. Provider `bailian` directo (no omniroute): omniroute rota modelos y rompería el override. Verificado: los 4 modelos existen en bailian directo.
+3. Provider `bailian` directo (sin proxy router): el proxy router rota modelos y rompería el override. Verificado: los 4 modelos existen en bailian directo.
 4. Asignación: architect+scribe = deepseek-v4-pro (razonador fuerte), test-writer = glm-5.2 (rigor), implementer = deepseek-v4-flash (productivo barato), reviewer = qwen3.7-plus.
 
 ## Consecuencias
@@ -53,4 +53,4 @@ Crear 5 sub-agentes OpenCode nativos (`cdad-architect`, `cdad-test-writer`, `cda
 
 ## Notas
 
-Research base: `projects/project-tracker/cdad-mof-orchestrator-research-plan.md` (phase-4-complete). Verdict 4.1: "TDD anti-trampa NO efectivo (mismo agente/modelo)".
+Research base: research plan (phase-4-complete). Verdict 4.1: "TDD anti-trampa NO efectivo (mismo agente/modelo)".

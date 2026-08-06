@@ -24,25 +24,25 @@ postcondition: Cómo sé que esto está terminado (frase única)
 verification: Lista de verificación, un test por línea
 ```
 
-### Ejemplo — Setup de instancia de proyecto:
+### Ejemplo — Setup de instancia de desarrollo:
 
 ```yaml
-context: Configurar acceso de desarrollo a example.saas.ar
-resolution: Tener acceso SSH + Odoo + GitHub para I+D
-postcondition: Puedo hacer login a Odoo y clonar repos desde la instancia
+context: Configurar acceso de desarrollo a dev.example.com
+resolution: Tener acceso SSH + app + GitHub para I+D
+postcondition: Puedo hacer login a la app y clonar repos desde la instancia
 verification:
   - ssh dev@localhost whoami → "dev"
-  - curl http://127.0.0.1:8070/xmlrpc/2/common → versión Odoo
-  - ssh -T git@github.com 2>&1 | grep "Hi ofapsaas"
-  - test -d ~/src/virtualmin-opo → existe
-  - test -d ~/.opo/src/custom-dev → existe
+  - curl http://localhost:PUERTO/xmlrpc/2/common → versión de la app
+  - ssh -T git@github.com 2>&1 | grep "Hi <usuario>"
+  - test -d ~/src/<proyecto> → existe
+  - test -d ~/.<herramienta>/src/custom-dev → existe
 ```
 
-### Ejemplo — Módulo Odoo:
+### Ejemplo — Módulo de la app:
 
 ```yaml
 context: Módulo de health check para el dominio del deploy
-resolution: Que Odoo reporte su estado (DB, workers, espacio) vía API
+resolution: Que la app reporte su estado (DB, workers, espacio) vía API
 postcondition: GET /health retorna JSON con db_status, worker_count, disk_usage
 verification:
   - curl /health → HTTP 200, JSON con los 3 campos

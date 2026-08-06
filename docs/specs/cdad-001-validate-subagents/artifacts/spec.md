@@ -20,7 +20,7 @@ cargados. `install.sh --check` 11/11 PASS. Byte-compare 5/5 agentes IDENTICAL.
 Después de ejecutar el ciclo CDAD para esta mini-feature, DEBE existir:
 
 ```text
-projects/cdad/cdad/scripts/validate-subagents.sh
+scripts/validate-subagents.sh
 ```
 
 Y al ejecutar:
@@ -120,5 +120,5 @@ cd docs/specs/cdad-001-validate-subagents && bash tests/run_all.sh
 
 ## 7. Decisión
 
-- **Apuesta:** BET (Phase 4 del repo, appetite ~2-3 ciclos heartbeat).
+- **Apuesta:** BET (Phase 4 del repo, appetite ~2-3 ciclos del orquestador).
 - **Status:** spec bootstrap ✅ — esperando ciclo CDAD (task 4).

@@ -5,7 +5,7 @@
 set -u
 
 SPEC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$SPEC_DIR/../../.." && pwd)"          # projects/cdad/cdad
+REPO_ROOT="$(cd "$SPEC_DIR/../../.." && pwd)"          # repo root
 SCRIPT="$REPO_ROOT/scripts/validate-subagents.sh"
 ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="${HOME}/.config/opencode/agents"
