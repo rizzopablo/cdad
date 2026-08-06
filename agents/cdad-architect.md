@@ -1,7 +1,7 @@
 ---
 description: CDAD architect — etapas 1 (Discovery) y 2 (Spec). Read-only. Brainstorm socrático + draft de spec.
 mode: subagent
-model: mofgw/deepseek-v4-flash
+model: mofgw/deepseek-v4-pro
 permission:
   edit: deny
   write: deny

@@ -31,8 +31,8 @@ permission:
     "npm run*": allow
     "git status": allow
     "git diff*": allow
-    "git add src/*": allow
-    "git add lib/*": allow
+    "git add src/**": allow
+    "git add lib/**": allow
     "git commit*": allow
   external_directory:
     "/path/to/src/odoo/19/**": allow

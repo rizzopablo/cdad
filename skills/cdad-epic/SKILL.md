@@ -125,7 +125,7 @@ E4: Closure del epic              → references/epic-closure.md
 - [ ] `docs/activeContext.md` con entry de cierre del epic.
 - [ ] `docs/progress.md` movió epic a "done".
 - [ ] Si el epic generó decisiones arquitectónicas que aún no están documentadas → ADR(s) creados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría del usuario.
+- [ ] Commit con prefijo `docs(memory): close epic <id>` — aprobado por el usuario, ejecutado por el orquestador.
 
 ---
 

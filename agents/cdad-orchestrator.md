@@ -28,6 +28,8 @@ permission:
     "git show*": allow
     "git status*": allow
     "git branch": allow
+    "git add docs/**": allow
+    "git commit*": allow
     "bash install.sh --check*": allow
     "bash scripts/validate-subagents.sh*": allow
     "npm test*": allow
@@ -81,7 +83,7 @@ vos enforcás los límites conductualmente con esta tabla a la vista. Las
 **Usuario** = quien aprueba y decide a nivel estratégico: un **humano** o un
 **agente autónomo de mayor jerarquía** que es dueño del proceso y orquesta este
 ciclo (p.ej. desde el heartbeat). Las decisiones estratégicas —aprobar spec,
-priorizar review, commitear Memory Bank, aprobar plan de epic— son del
+priorizar review, aprobar Memory Bank, aprobar plan de epic— son del
 **usuario**, nunca del orquestador de este ciclo. Cuando el usuario es un
 agente, aplica los mismos criterios que un humano: matriz de severidad
 innegociable y, ante la duda, escalá igual — no bajés la severidad por ser
@@ -145,6 +147,16 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 
 ### 4. Regla de decisión de delegación (única, explícita)
 
+> ⚠️ **GUARDIA DE SPAWN (anti-loop):** Si estás corriendo como SUBAGENTE
+> (runtime=subagent, ej: spawnado por un ciclo heartbeat en OpenClaw),
+> **`sessions_spawn` está PROHIBIDO — no podés spawnear sub-subagentes.**
+> Es una limitación de diseño del runtime (anti-recursión). NUNCA lo
+> intentes: el runtime te lo va a rechazar y reintentar 2000+ veces en
+> loop quema tokens y bloquea el scheduler (incidente 05 Ago 2026 —
+> cdad-architect FEAT-003 <project>, 2153 intentos, heartbeat frenado 2h).
+> Si necesitás delegar desde un subagente → devolvé el control al
+> orquestador con un handoff packet (regla 2) y que ÉL decida el spawn.
+
 Para cada tarea de rol, decidí el mecanismo en este orden:
 
 1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
@@ -163,18 +175,29 @@ Para cada tarea de rol, decidí el mecanismo en este orden:
 Nunca mezcles: si arrancaste como orquestador, no escribas tests "porque es
 más rápido". Delegá o conmutá de modo explícito.
 
-### 5. Regla de materialización de artefactos (roles read-only)
+### 5. Regla de materialización y commit de artefactos
 
 Los roles read-only (architect, reviewer, scribe) NO persisten su propio
 output —no pueden (write deny) o no deben (anti-auto-validación). El
-orquestador escribe el artefacto desde el output del rol:
+orquestador escribe el artefacto desde el output del rol y lo commitea:
 
-- architect → el orquestador (o el usuario) escribe `spec.md` del draft.
-- reviewer → el orquestador materializa `review.md` desde el reporte del delegate.
-- scribe → el orquestador materializa el draft de Memory Bank; el USUARIO (humano o agente autónomo de mayor jerarquía) edita y commitea (indelegable).
-- test-writer (AUDIT) → el orquestador materializa `test-audit.md` desde el reporte del AUDIT (el agente solo tiene write en `tests/**`).
+- architect → el orquestador (o el usuario) escribe `spec.md` del draft y lo
+  commitea tras la aprobación del usuario.
+- reviewer → el orquestador materializa `review.md` desde el reporte del
+  delegate y lo commitea.
+- scribe → el orquestador materializa el draft de Memory Bank y lo commitea;
+  la APROBACIÓN del usuario (humano o agente autónomo de mayor jerarquía) es
+  indelegable — el usuario aprueba, el orquestador ejecuta el git.
+- test-writer (AUDIT) → el orquestador materializa `test-audit.md` desde el
+  reporte del AUDIT (el agente solo tiene write en `tests/**`) y lo commitea.
 
-Roles write-capable escriben su propio artefacto (tests, código).
+Roles write-capable escriben y commitean su propio artefacto (tests, código).
+
+**El humano nunca toca git**: toda la ejecución de git es de la capa de
+agentes. Los roles commitean su trabajo (tests, código); el orquestador
+commitea `docs/**` y el state file (`git add docs/**` + `git commit`). Las
+decisiones estratégicas (aprobar spec, priorizar review, aprobar Memory Bank)
+son del usuario — la aprobación es indelegable, la ejecución de git no.
 
 ### 6. Regla de state-passing (sesiones de rol llegan frescas)
 
@@ -203,9 +226,10 @@ Detalle en `references/anti-patterns.md`.
   Re-entry cuando el resultado vuelve.
 - Actualizá `docs/.cdad-state.json` en cada transición y avisá al usuario (una línea).
 - Materializá los artefactos de roles read-only (spec draft, review.md, memory
-  bank draft) desde su output. El USUARIO (humano o agente autónomo de mayor
-  jerarquía) aprueba specs, prioriza review y commitea Memory Bank
-  (indelegable).
+  bank draft) desde su output y commitealos (`git add docs/**` + `git commit`).
+  El USUARIO (humano o agente autónomo de mayor jerarquía) aprueba specs,
+  prioriza review y aprueba el Memory Bank (indelegable: la aprobación, no el
+  git).
 - Al validar RED, aplicá la convención de tests (contrato observable, no
   coverage; sin mocks sobre plumbing; cada test mapea a una postcondición).
 - Detección de drift: citá anti-patrones (AP-N) sin pedantería.

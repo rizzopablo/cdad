@@ -1,7 +1,7 @@
 ---
 description: CDAD test-writer — etapa 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edita tests/ únicamente. No ve código de implementación (src/).
 mode: subagent
-model: mofgw/deepseek-v4-flash
+model: mofgw/glm-5.2
 permission:
   read:
     "src/**": deny
@@ -33,7 +33,7 @@ permission:
     "jest*": allow
     "git status": allow
     "git diff*": allow
-    "git add tests/*": allow
+    "git add tests/**": allow
     "git commit*": allow
   grep:
     "src/**": deny

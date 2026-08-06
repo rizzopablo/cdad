@@ -4,7 +4,7 @@ Cierre del epic: consolidación del Memory Bank, retrospectiva breve, ADRs pendi
 
 ## Tu rol
 
-Coordinás. Emitís handoff a **scribe modo epic** para drafts. El usuario (humano o agente autónomo de mayor jerarquía) edita y commitea.
+Coordinás. Emitís handoff a **scribe modo epic** para drafts. El usuario (humano o agente autónomo de mayor jerarquía) aprueba; el orquestador commitea.
 
 ## Pasos
 
@@ -41,7 +41,7 @@ Contexto:
 
 Reglas estrictas:
 - Permisos: read-only.
-- NO commiteás. Generás drafts; el usuario edita y commitea.
+- NO commiteás. Generás drafts; el usuario aprueba; el orquestador commitea.
 - Para ADRs nuevos: solo si la decisión es claramente del epic (transversal a 
   varias features) y aún no está documentada. Marcá confianza Alta/Media/Baja.
 
@@ -59,7 +59,7 @@ Entregás packet, terminás turno.
 
 ### Paso 2 — Re-entry
 
-Validá los cuatro drafts presentes. Pasá al usuario para edición y commit.
+Validá los cuatro drafts presentes. Pasá al usuario para aprobación; vos commiteás tras la aprobación.
 
 ### Paso 3 — Validación del usuario (indelegable)
 
@@ -72,7 +72,7 @@ Decile al usuario:
 > *3. ADRs nuevos: <pegar | 'sin ADRs', con confianza>*
 > *4. closure.md: <pegar>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory): close epic <id>` y autoría del usuario. Avisame cuando esté."*
+> *Editá lo que el scribe entendió mal. Cuando estés conforme, aprobá; el orquestador commitea con prefijo `docs(memory): close epic <id>`. Avisame cuando esté."*
 
 ### Paso 4 — Decisión sobre ADRs nuevos
 
@@ -91,7 +91,7 @@ ADRs surgidos durante features individuales **ya deberían estar** en `docs/adr/
 Una vez:
 
 - CI verde completo.
-- Cuatro drafts editados y commiteados.
+- Cuatro drafts aprobados por el usuario y commiteados por el orquestador.
 - ADRs (si los hay) commiteados.
 
 Mergeás el branch del epic a main (o lo que el flujo del proyecto indique). Estrategia según convención del proyecto.
@@ -103,7 +103,7 @@ Mergeás el branch del epic a main (o lo que el flujo del proyecto indique). Est
 - [ ] `docs/activeContext.md` con entry de cierre del epic.
 - [ ] `docs/progress.md` movió epic a "done".
 - [ ] ADRs nuevos del epic (si los hay) commiteados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` y autoría del usuario.
+- [ ] Commit con prefijo `docs(memory): close epic <id>` — aprobado por el usuario, ejecutado por el orquestador.
 - [ ] Epic mergeado.
 
 Cuando todos OK: actualizá state file:

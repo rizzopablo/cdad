@@ -490,7 +490,7 @@ Contexto:
 4. Estado actual del Memory Bank: docs/projectbrief.md, docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/
 
 Reglas estrictas:
-- Permisos: read-only. NO commiteás. Generás drafts; el usuario edita y commitea (humano o agente de mayor jerarquía).
+- Permisos: read-only. NO commiteás. Generás drafts; el usuario los APRUEBA; el orquestador los commitea.
 
 Output esperado, tres bloques:
 

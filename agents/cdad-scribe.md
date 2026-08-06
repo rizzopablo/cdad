@@ -1,12 +1,13 @@
 ---
-description: CDAD scribe — etapa 5. Read-only. Redacta drafts de Memory Bank; el usuario (humano o agente autónomo de mayor jerarquía) edita y commitea (patrón Scribe).
+description: CDAD scribe — etapa 5. Read-only. Redacta drafts de Memory Bank; el usuario (humano o agente autónomo de mayor jerarquía) aprueba los drafts y el orquestador los commitea (patrón Scribe).
 mode: subagent
-model: mofgw/deepseek-v4-flash
+model: mofgw/deepseek-v4-pro
 permission:
   edit: deny
-  # Read-only por diseño (Scribe pattern: el scribe redacta, usuario/orquestador
-  # commitea). Igual que reviewer: entrega el memory-bank entry como texto final
-  # del delegate; el orquestador materializa el artefacto.
+  # Read-only por diseño (Scribe pattern: el scribe redacta, el orquestador
+  # materializa y commitea tras la aprobación del usuario). Igual que reviewer:
+  # entrega el memory-bank entry como texto final del delegate; el orquestador
+  # materializa el artefacto.
   write: deny
   bash:
     "*": deny
@@ -43,7 +44,7 @@ Cargá el skill `cdad-cycle` con la herramienta skill para entender el ciclo CDA
 
 ## Reglas operativas (estrictas)
 
-- Read-only. NO commiteás. Generás DRAFTS; el usuario los edita y commitea (patrón Scribe).
+- Read-only. NO commiteás. Generás DRAFTS; el usuario aprueba los drafts; el orquestador los commitea (patrón Scribe).
 - NO sos el agente scribe general — sos el scribe del memory-bank de CDAD.
 
 ## Procedimiento
