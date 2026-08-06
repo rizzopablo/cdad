@@ -8,6 +8,8 @@
 # top-level skills/*.md files (re-entry.md, feature-handoff.md,
 # handoff-prompts.md, epic-planning.md) are reference docs, NOT valid runtime
 # skill dirs (bare .md != skill dir), and are intentionally never installed.
+# When CDAD_SKILL_EXTRA_DIRS is set (colon-separated), the 3 skills are also
+# installed into each extra dir (e.g. the OpenClaw skills dir).
 
 set -euo pipefail
 
@@ -24,6 +26,11 @@ AGENTS_SKILLS_DIR="${HOME:-}/.agents/skills"
 
 SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test)
 EXPECTED_CDAD_AGENTS=6
+
+# Extra skill target dirs (colon-separated) via CDAD_SKILL_EXTRA_DIRS, e.g. the
+# OpenClaw skills dir. Empty by default: only the default runtimes are used.
+# Not hardcoded here: this repo is public, each deployer sets their own value.
+EXTRA_SKILLS_DIRS="${CDAD_SKILL_EXTRA_DIRS:-}"
 
 # ---------------------------------------------------------------------------
 # State
@@ -121,6 +128,23 @@ count_manifest_agents_installed() {  # dir -> how many repo-manifest agent names
   printf '%s' "$count"
 }
 
+# extra_skills_dirs — prints each configured extra skill target dir on its own
+# line (safe to iterate with `while read`). Empty output when CDAD_SKILL_EXTRA_DIRS
+# is unset, so every caller keeps the default behavior untouched.
+extra_skills_dirs() {
+  local dir
+  local -a dirs=()
+  if [ -z "$EXTRA_SKILLS_DIRS" ]; then
+    return 0
+  fi
+  IFS=: read -r -a dirs <<< "$EXTRA_SKILLS_DIRS" || true
+  for dir in "${dirs[@]}"; do
+    if [ -n "$dir" ]; then
+      printf '%s\n' "$dir"
+    fi
+  done
+}
+
 # ---------------------------------------------------------------------------
 # Usage
 # ---------------------------------------------------------------------------
@@ -171,11 +195,17 @@ opencode.jsonc):
   CDAD_PREMIUM_MODEL_SCRIBE       top-tier scribe (default mofgw/qwen3.7-max)
   Ejemplo: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 \
            bash install.sh --premium
+  CDAD_SKILL_EXTRA_DIRS  colon-separated list of ADDITIONAL directories where
+               the 3 cdad skills are also installed (e.g. the OpenClaw skills
+               dir). Empty by default: only the default runtimes are used.
+               Applied to install, --check, --uninstall and --dry-run.
 
 What gets installed:
   skills/cdad-{cycle,epic,spec-and-test}/
       -> ~/.config/opencode/skills/<skill>/   (rsync -a, NEVER --delete; or cp -rp)
       -> ~/.agents/skills/<skill>/            (rsync -a, NEVER --delete; or cp -rp)
+      -> <dir>/<skill>/ for each dir in $CDAD_SKILL_EXTRA_DIRS when set
+                                           (rsync -a, NEVER --delete; or cp -rp)
   agents/cdad-*.md
       -> ~/.config/opencode/agents/           (cp -p, NEVER --delete)
 
@@ -349,6 +379,19 @@ install_skills() {
   done
 }
 
+# install_skills_extra — mirrors the skills into each CDAD_SKILL_EXTRA_DIRS
+# target using the exact same sync_skill_to semantics (never --delete, honors
+# --dry-run). No-op when the env var is unset.
+install_skills_extra() {
+  local d s
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    for s in "${SKILLS[@]}"; do
+      sync_skill_to "$s" "$d"
+    done
+  done < <(extra_skills_dirs)
+}
+
 install_agents() {
   local f
   for f in "$SOURCE_AGENTS_DIR"/cdad-*.md; do
@@ -371,11 +414,17 @@ uninstall_items() {
     base=$(basename "$f")
     printf '%s\n' "$OPENCODE_AGENTS_DIR/$base"
   done
-  local s
+  local s d
   for s in "${SKILLS[@]}"; do
     printf '%s\n' "$OPENCODE_SKILLS_DIR/$s"
     printf '%s\n' "$AGENTS_SKILLS_DIR/$s"
   done
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    for s in "${SKILLS[@]}"; do
+      printf '%s\n' "$d/$s"
+    done
+  done < <(extra_skills_dirs)
 }
 
 confirm_uninstall() {  # lists the exact removals and asks y/N; 0 = proceed, 1 = abort
@@ -411,11 +460,17 @@ uninstall_cdad() {
     done
     do_run "UNINSTALL $PROFILE_MARKER" rm -f -- "$PROFILE_MARKER"
   fi
-  local s
+  local s d
   for s in "${SKILLS[@]}"; do
     do_run "UNINSTALL skills/$s -> $OPENCODE_SKILLS_DIR/$s" rm -rf -- "$OPENCODE_SKILLS_DIR/$s"
     do_run "UNINSTALL skills/$s -> $AGENTS_SKILLS_DIR/$s" rm -rf -- "$AGENTS_SKILLS_DIR/$s"
   done
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    for s in "${SKILLS[@]}"; do
+      do_run "UNINSTALL skills/$s -> $d/$s" rm -rf -- "$d/$s"
+    done
+  done < <(extra_skills_dirs)
 }
 
 # ---------------------------------------------------------------------------
@@ -481,6 +536,7 @@ check_skill_tree() {  # src_dir dst_dir — cmps every source file vs dst; 0 = i
 check_installed() {  # exit 0 if all installed artifacts match the repo (agents profile-aware), 1 on drift
   local f base s role want_model
   local total=0 expected_total=0 drifted=0
+  local extra_total=0 extra_expected=0
   local -a drifted_paths=()
   expected_total=$(( $(count_flat_files "$SOURCE_AGENTS_DIR" 'cdad-*.md') + ${#SKILLS[@]} * 2 ))
   for f in "$SOURCE_AGENTS_DIR"/cdad-*.md; do
@@ -509,8 +565,28 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
       drifted=1
     fi
   done
+  # Extra skill target dirs: validated ONLY when CDAD_SKILL_EXTRA_DIRS is set.
+  # When unset, extra_skills_dirs emits nothing and the default behavior (and
+  # its PASS message) stays byte-identical.
+  local d
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    extra_expected=$((extra_expected + ${#SKILLS[@]}))
+    for s in "${SKILLS[@]}"; do
+      if check_skill_tree "$SOURCE_SKILLS_DIR/$s" "$d/$s"; then
+        extra_total=$((extra_total + 1))
+      else
+        drifted_paths+=("$d/$s")
+        drifted=1
+      fi
+    done
+  done < <(extra_skills_dirs)
   if [ "$drifted" -eq 0 ]; then
-    log "Check: PASS ($total/$expected_total in sync, perfil $MODEL_PROFILE)"
+    if [ "$extra_expected" -gt 0 ]; then
+      log "Check: PASS ($total/$expected_total in sync + $extra_total/$extra_expected extra dirs, perfil $MODEL_PROFILE)"
+    else
+      log "Check: PASS ($total/$expected_total in sync, perfil $MODEL_PROFILE)"
+    fi
     return 0
   fi
   log "Check: FAIL — ${drifted_paths[*]} (perfil $MODEL_PROFILE)"
@@ -526,10 +602,16 @@ print_summary() {  # mode: install | uninstall
   log "=== Summary ($mode) ==="
   log "Agents: $cdad_agents of $EXPECTED_CDAD_AGENTS repo cdad-*.md present in $OPENCODE_AGENTS_DIR"
   log "Agents dir: $non_cdad unmanaged .md files present (untouched)"
-  local s
+  local s d
   for s in "${SKILLS[@]}"; do
     log "  $s: $(count_tree_files "$OPENCODE_SKILLS_DIR/$s") files @ config, $(count_tree_files "$AGENTS_SKILLS_DIR/$s") files @ agents"
   done
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    for s in "${SKILLS[@]}"; do
+      log "  $s: $(count_tree_files "$d/$s") files @ extra: $d"
+    done
+  done < <(extra_skills_dirs)
   if [ "$mode" = "install" ] && [ "$DRY_RUN" -eq 0 ] && [ "$cdad_agents" -ne "$EXPECTED_CDAD_AGENTS" ]; then
     log "Verify: FAIL — expected $EXPECTED_CDAD_AGENTS cdad agents, found $cdad_agents"
     return 1
@@ -541,8 +623,13 @@ print_summary() {  # mode: install | uninstall
 
 print_dry_run_summary() {
   if [ "$UNINSTALL" -eq 1 ]; then
+    local extra_count=0 d
+    while IFS= read -r d; do
+      [ -n "$d" ] || continue
+      extra_count=$((extra_count + 1))
+    done < <(extra_skills_dirs)
     log "=== Summary (dry-run uninstall) ==="
-    log "Would remove $(count_flat_files "$SOURCE_AGENTS_DIR" 'cdad-*.md') cdad agents + ${#SKILLS[@]} skills x 2 runtimes (see DRY-RUN lines above)"
+    log "Would remove $(count_flat_files "$SOURCE_AGENTS_DIR" 'cdad-*.md') cdad agents + ${#SKILLS[@]} skills x 2 runtimes + ${#SKILLS[@]} x $extra_count extra dir(s) (see DRY-RUN lines above)"
     return 0
   fi
   local src_agents cur_agents
@@ -569,6 +656,11 @@ print_dry_run_summary() {
   for s in "${SKILLS[@]}"; do
     log "  $s: source has $(count_tree_files "$SOURCE_SKILLS_DIR/$s") files; would mirror to both runtimes"
   done
+  local d
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    log "  + extra dir $d: would install ${#SKILLS[@]} skills"
+  done < <(extra_skills_dirs)
 }
 
 # ---------------------------------------------------------------------------
@@ -611,6 +703,7 @@ main() {
   resolve_profile 0
   validate_profile
   install_skills
+  install_skills_extra
   install_agents
   write_profile_marker
   if [ "$DRY_RUN" -eq 1 ]; then
