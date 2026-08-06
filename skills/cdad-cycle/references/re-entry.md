@@ -144,7 +144,7 @@ Verificá:
 - [ ] Drafts NO están commiteados (correcto).
 - [ ] El draft de ADR (si existe) tiene "Confianza" declarada.
 
-Si pasa: pasás los drafts al usuario.
+Si pasa: pasás los drafts al usuario para aprobación.
 
 > *"Scribe terminó. Tres drafts para tu revisión:*
 >
@@ -152,9 +152,9 @@ Si pasa: pasás los drafts al usuario.
 > *2. progress.md changes: <pegar>*
 > *3. ADR: <pegar o "sin ADR sugerido", confianza <X>>*
 >
-> *Editá lo que el scribe entendió mal o no podía saber. Cuando estés conforme, commiteá vos con prefijo `docs(memory):`. Avisame cuando esté commiteado."*
+> *Editá lo que el scribe entendió mal o no podía saber. Cuando estés conforme, aprobá; el orquestador commitea con prefijo `docs(memory):`. Avisame cuando esté commiteado."*
 
-Cuando el usuario confirma commit: validá CI completo (gate 5→done). Si CI verde y Memory Bank actualizado, cerrá feature.
+Cuando el usuario aprueba y vos commiteás: validá CI completo (gate 5→done). Si CI verde y Memory Bank actualizado, cerrá feature.
 
 ---
 

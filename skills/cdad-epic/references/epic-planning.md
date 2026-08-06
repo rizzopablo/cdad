@@ -4,7 +4,7 @@ Producir un `plan.md` corto con la decomposición en features, contratos cross-f
 
 ## Tu rol
 
-Coordinás. Hacés draft del plan basado en el discovery + tus preguntas, el usuario (humano o agente autónomo de mayor jerarquía) edita y aprueba.
+Coordinás. Hacés draft del plan basado en el discovery + tus preguntas; el usuario (humano o agente autónomo de mayor jerarquía) aprueba; el orquestador commitea el plan.
 
 ## Filosofía light (recordatorio)
 

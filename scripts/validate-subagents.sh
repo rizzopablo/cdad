@@ -15,6 +15,9 @@
 #      `install.sh --check` (no se duplica lógica de comparación).
 #   3. artefactos — enumera y verifica los 5 artefactos por etapa del ciclo
 #      CDAD en docs/specs/cdad-001-validate-subagents/artifacts/.
+#   4. modelos — cada agente cdad-* declara el modelo esperado (mapa
+#      ADR-001/005) en su frontmatter; cdad-orchestrator NO declara model:
+#      (el modelo lo elige el usuario).
 #
 # Exit: 0 si y solo si TODAS las verificaciones pasan; != 0 ante cualquier
 # falla, imprimiendo qué falló. Read-only: idempotente por diseño.
@@ -100,6 +103,37 @@ if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.m
   stage reviewer "review.md" 0; else stage reviewer "review.md" 1; fi
 if [ -f "$ART_DIR/memory-bank.md" ] && grep -qE "^##? .*2026|^[0-9]{4}-[0-9]{2}-[0-9]{2}" "$ART_DIR/memory-bank.md"; then
   stage scribe "memory-bank.md" 0; else stage scribe "memory-bank.md" 1; fi
+
+# --- Etapa 4: modelos por agente (mapa ADR-001/005) ---------------------------
+echo "[modelos] modelo esperado por agente"
+# El mapa duplica la tabla "Familia modelo" del Contrato de roles (ADR-001) y
+# la decisión de provider de ADR-005 — guard de validación intencional: si el
+# repo o el runtime drift de la decisión, esta etapa lo detecta. Se corre al
+# final (después de los artefactos) para no romper el contexto del impl.diff
+# de cdad-001, que cubre solo hasta la Etapa 2.
+declare -A MODEL_EXPECTED=(
+  [cdad-architect]=mofgw/deepseek-v4-pro
+  [cdad-test-writer]=mofgw/glm-5.2
+  [cdad-implementer]=mofgw/deepseek-v4-flash
+  [cdad-reviewer]=mofgw/qwen3.7-plus
+  [cdad-scribe]=mofgw/deepseek-v4-pro
+)
+# cdad-orchestrator NO declara model: — el modelo lo elige el usuario al
+# seleccionarlo (ADR-001/005: el orquestador sigue sin modelo fijo).
+for a in "${AGENTS[@]}"; do
+  expected="${MODEL_EXPECTED[$a]:-}"
+  [ -z "$expected" ] && continue
+  actual="$(sed -n 's/^model:[[:space:]]*//p' "$RUNTIME_DIR/$a.md" 2>/dev/null | head -1)"
+  if [ -z "$actual" ]; then
+    fail "modelo ausente en $a.md (esperado: $expected)"
+  elif [ "$actual" != "$expected" ]; then
+    fail "modelo incorrecto en $a.md: '$actual' (esperado: '$expected')"
+  fi
+done
+if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
+  fail "cdad-orchestrator.md no debe declarar model: (el modelo lo elige el usuario)"
+fi
+if [ "$FAIL" -eq 0 ]; then ok "modelos OK (5/5 según ADR-001/005; orquestador sin model:)"; fi
 
 # --- Veredicto -----------------------------------------------------------------
 if [ "$FAIL" -eq 0 ]; then

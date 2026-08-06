@@ -9,7 +9,7 @@ NO actualizás el Memory Bank por tu cuenta. Coordinás:
 1. Verificás CI completo (vos corrés si tenés bash, o pedís output al usuario).
 2. Emitís handoff a **scribe** con spec + diff + review + Memory Bank actual.
 3. Validás drafts en re-entry.
-4. Pasás drafts al **usuario** que edita y commitea (humano o agente autónomo de mayor jerarquía; indelegable).
+4. Pasás drafts al **usuario** para APROBACIÓN (indelegable); vos los commiteás tras la aprobación.
 5. Cierre de feature cuando CI verde + Memory Bank commiteado.
 
 ## 5.1 — Verificación CI
@@ -49,7 +49,7 @@ Cargá `re-entry.md` sección "Scribe". Validá tres drafts presentes (activeCon
 
 ## 5.3 — Validación del usuario (indelegable)
 
-Pasás los drafts al usuario:
+Pasás los drafts al usuario para aprobación:
 
 > *"Scribe terminó. Tres drafts:*
 >
@@ -57,11 +57,11 @@ Pasás los drafts al usuario:
 > *2. progress.md changes: <pegar>*
 > *3. ADR: <pegar | "sin ADR sugerido", confianza <X>>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, commiteá vos con prefijo `docs(memory):` y autoría del usuario. Avisame cuando esté."*
+> *Editá lo que el scribe entendió mal. Cuando estés conforme, aprobá; el orquestador commitea con prefijo `docs(memory):`. Avisame cuando esté."*
 
-**Si el usuario te pide que commitees vos**: declinás.
-
-> *"El commit del Memory Bank lleva tu autoría porque refleja tu juicio sobre el contexto del proyecto. Yo draftié, vos editás y commiteás. Es lo que mantiene el Memory Bank confiable a lo largo del tiempo."*
+**La aprobación es del usuario (indelegable); la ejecución del git es del
+orquestador.** Si el usuario aprueba los drafts, vos los commiteás con `git add
+docs/**` + `git commit` (prefijo `docs(memory):`).
 
 ## 5.4 — Decisión sobre ADR
 
@@ -85,7 +85,7 @@ Mergeás a main. Estrategia (squash, merge, rebase) según convención del proye
 - [ ] `docs/activeContext.md` con entry nueva.
 - [ ] `docs/progress.md` movió feature a "done".
 - [ ] Si decisión arquitectónica → ADR nuevo en `docs/adr/`.
-- [ ] Commit con prefijo `docs(memory):` y autoría del usuario.
+- [ ] Commit con prefijo `docs(memory):` — aprobado por el usuario, ejecutado por el orquestador.
 - [ ] Feature mergeada.
 
 Cuando todos OK: actualizá state (`current_stage: done`, `active_feature: null`).
@@ -105,4 +105,4 @@ Si próxima feature → vuelta a Etapa 1.
 - **AP-7**: Memory Bank desactualizado. Bloqueá cierre.
 - **AP-8**: ADRs especulativos o ausentes.
 - **AP-9**: CI skipeado.
-- **AP-10**: delegar commit del Memory Bank al LLM.
+- **AP-10**: delegar la APROBACIÓN del Memory Bank al LLM. La ejecución del commit es del orquestador; la decisión de aprobar es del usuario (indelegable).

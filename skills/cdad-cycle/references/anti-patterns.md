@@ -70,7 +70,7 @@ No avances de fase con "yo creo que pasa".
 
 **Por qué es malo**: la próxima sesión arranca sin contexto de lo que se acaba de hacer. El LLM no sabe que ya tenemos parser de fechas, propone reimplementarlo desde cero.
 
-**Corrección**: bloqueá el cierre de Etapa 5. Aplicá patrón Scribe (drafteás vos, el usuario edita y commitea). 5 minutos, no se negocia.
+**Corrección**: bloqueá el cierre de Etapa 5. Aplicá patrón Scribe (drafteás vos, el usuario aprueba y el orquestador commitea). 5 minutos, no se negocia.
 
 ## AP-8 — ADRs especulativos o ausentes
 
