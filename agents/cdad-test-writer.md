@@ -38,11 +38,6 @@ permission:
   grep:
     "src/**": deny
     "lib/**": deny
-  external_directory:
-    "/path/to/src/odoo/19/**": allow
-    "/path/to/.config/opencode/skills/**": allow
-    "/path/to/.agents/skills/**": allow
-    "/tmp/opencode/*": allow
 ---
 
 # CDAD Test-Writer Agent

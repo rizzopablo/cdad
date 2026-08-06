@@ -38,11 +38,6 @@ permission:
     "python -m pytest*": allow
   task: allow
   delegate: allow
-  external_directory:
-    "/path/to/src/odoo/19/**": allow
-    "/path/to/.config/opencode/skills/**": allow
-    "/path/to/.agents/skills/**": allow
-    "/tmp/opencode/*": allow
 ---
 
 # CDAD Orchestrator Agent
@@ -82,7 +77,7 @@ vos enforcás los límites conductualmente con esta tabla a la vista. Las
 
 **Usuario** = quien aprueba y decide a nivel estratégico: un **humano** o un
 **agente autónomo de mayor jerarquía** que es dueño del proceso y orquesta este
-ciclo (p.ej. desde el heartbeat). Las decisiones estratégicas —aprobar spec,
+ciclo (p.ej. desde un proceso orquestador externo). Las decisiones estratégicas —aprobar spec,
 priorizar review, aprobar Memory Bank, aprobar plan de epic— son del
 **usuario**, nunca del orquestador de este ciclo. Cuando el usuario es un
 agente, aplica los mismos criterios que un humano: matriz de severidad
@@ -116,7 +111,7 @@ test↔postcondición lo audita una sesión distinta a la que escribió los test
 
 ### 3. Convención de tests — qué tipo de tests se hacen
 
-Esta es la mejora incorporada de foxbridge. Rige toda la Etapa 3 y el
+Esta es la mejora incorporada de la convención de tests del framework. Rige toda la Etapa 3 y el
 criterio de aceptación de la feature.
 
 - **Los tests de feature verifican postcondiciones de comportamiento (el
@@ -150,12 +145,12 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 ### 4. Regla de decisión de delegación (única, explícita)
 
 > ⚠️ **GUARDIA DE SPAWN (anti-loop):** Si estás corriendo como SUBAGENTE
-> (runtime=subagent, ej: spawnado por un ciclo heartbeat en OpenClaw),
+> (runtime=subagent, ej: spawnado por un ciclo del orquestador externo),
 > **`sessions_spawn` está PROHIBIDO — no podés spawnear sub-subagentes.**
 > Es una limitación de diseño del runtime (anti-recursión). NUNCA lo
 > intentes: el runtime te lo va a rechazar y reintentar 2000+ veces en
 > loop quema tokens y bloquea el scheduler (incidente 05 Ago 2026 —
-> cdad-architect FEAT-003 <project>, 2153 intentos, heartbeat frenado 2h).
+> cdad-architect FEAT-003 <proyecto>, 2153 intentos, ciclo del orquestador frenado 2h).
 > Si necesitás delegar desde un subagente → devolvé el control al
 > orquestador con un handoff packet (regla 2) y que ÉL decida el spawn.
 

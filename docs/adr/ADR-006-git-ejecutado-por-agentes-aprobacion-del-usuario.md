@@ -29,7 +29,7 @@ allowlist de git del orquestador sobre docs.
 ### Opción A: Mantener el usuario como ejecutor del git (status quo)
 - Pros: cero cambios de texto; el patrón Scribe original no se toca.
 - Contras: contradice el principio "el humano nunca toca git"; en el modo
-  autónomo (heartbeat) no hay humano que ejecute el commit → el Memory Bank
+  autónomo (proceso orquestador externo) no hay humano que ejecute el commit → el Memory Bank
   queda sin commiteo o se delega informalmente a un agente sin definir quién.
 
 ### Opción B: La capa de agentes ejecuta todo el git; el usuario solo aprueba

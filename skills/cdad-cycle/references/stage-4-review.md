@@ -42,7 +42,7 @@ Si pasa: pasás al usuario para capa 2.
 > *"Reporte en `docs/specs/<feat>/review.md`: <X> bloqueantes, <Y> opcionales. Tu trabajo: leé el reporte (no el diff completo) y validá la priorización. Para cada bloqueante: ¿genuinamente bloqueante o hay contexto que el reviewer no tiene? Para cada opcional: ¿aplicar o descartar? Cuando termines, pasame las decisiones."*
 
 **Cuando el usuario ES un agente autónomo de mayor jerarquía** (dueño del
-proceso que orquesta este ciclo, p.ej. desde el heartbeat), valida
+proceso que orquesta este ciclo, p.ej. desde un proceso orquestador externo), valida
 directamente — no hay ceremonia de delegación explícita que cumplir: es el
 dueño. PERO la matriz de severidad de abajo es innegociable: **riesgo de
 seguridad y bug funcional son bloqueantes sin excepciones**, aunque el que

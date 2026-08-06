@@ -9,7 +9,7 @@
 El framework decía "aprobación humana indelegable": aprobar spec, priorizar
 review, commitear Memory Bank, aprobar plan de epic, editar drafts. Pero la
 metodología también se usa para orquestar otros agentes en forma completamente
-autónoma (p.ej. desde el heartbeat), donde el dueño del proceso es un agente de
+autónoma (p.ej. desde un proceso orquestador externo), donde el dueño del proceso es un agente de
 mayor jerarquía, no un humano. Decir "humano" excluía ese modo de uso y
 obligaba a reinterpretar cada ocurrencia ("where CDAD says 'human approval',
 read 'validación del usuario'"). El insight ya estaba en MEMORY.md: la
@@ -20,7 +20,7 @@ aprobación es async y non-blocking cuando la hace un agente dueño del proceso.
 ### Opción A: Mantener "humano" y reinterpretar en cada uso
 - Pros: cero cambios de texto.
 - Contras: ambigüedad permanente; cada lector re-deriva la regla; el modo
-  autónomo (heartbeat orquestando agentes) queda como excepción tácita.
+  autónomo (proceso orquestador externo orquestando agentes) queda como excepción tácita.
 
 ### Opción B: Renombrar el rol a "usuario" con definición canónica
 - Pros: una definición única y visible; el modo autónomo queda explícito; el
@@ -38,7 +38,7 @@ aprobación es async y non-blocking cuando la hace un agente dueño del proceso.
 ## Decisión
 
 "usuario" = un humano O un agente autónomo de mayor jerarquía que es dueño del
-proceso y orquesta este ciclo (p.ej. desde el heartbeat). Las decisiones
+proceso y orquesta este ciclo (p.ej. desde un proceso orquestador externo). Las decisiones
 estratégicas —aprobar spec, priorizar review, commitear Memory Bank, aprobar
 plan de epic— son del **usuario**, nunca del orquestador del ciclo. Cuando el
 usuario es un agente, aplica los mismos criterios que un humano: guardrails
@@ -73,7 +73,7 @@ idiomáticas/no-autoridad (ej. "error humano").
 
 **Negativas / trade-offs:**
 - El criterio "quién es el usuario" queda a cargo del entorno que invoca el
-  ciclo: quien lo orquesta desde afuera (heartbeat, humano) define si el
+  ciclo: quien lo orquesta desde afuera (proceso orquestador externo, humano) define si el
   dueño es un humano o un agente de mayor jerarquía.
 
 **Neutrales:**

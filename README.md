@@ -198,6 +198,37 @@ CDAD no excluye DDD. Se pueden combinar perfectamente. CDAD se enfoca en *cómo*
 
 ---
 
+## Configuración por deploy
+
+Los agentes `agents/cdad-*.md` son agnósticos de la máquina en la que corren:
+no declaran `permission.external_directory` en el repo. El acceso a directorios
+externos al workspace (por ejemplo, los directorios de skills del runtime) es
+**configuración de cada deployment** y se declara en el `opencode.jsonc` del
+runtime bajo `agent.<nombre>.permission.external_directory`:
+
+```jsonc
+{
+  "agent": {
+    "cdad-architect": {
+      "permission": {
+        "external_directory": {
+          "<abs path al dir de skills del runtime>/**": "allow",
+          "<otro dir externo>/**": "allow",
+          "/tmp/opencode/*": "allow"
+        }
+      }
+    }
+  }
+}
+```
+
+Cada deployment agrega su propio `external_directory` (rutas reales de esa
+máquina) vía `opencode.jsonc`; esa capa de config local no se versiona en el
+repo. Nota: opencode **no expande** `${HOME}` ni variables de entorno en los
+patrones de `external_directory` — usá rutas absolutas.
+
+---
+
 ## Licencia
 
 Este repositorio contiene documentación y metodología abierta para construir software con agentes de IA.

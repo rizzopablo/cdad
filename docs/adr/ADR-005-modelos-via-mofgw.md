@@ -6,10 +6,10 @@
 
 ## Contexto
 
-ADR-001 eligió provider `bailian` directo ("no omniroute") para preservar el
-override de modelo por etapa: omniroute rota modelos y rompería el invariante
+ADR-001 eligió provider `bailian` directo ("sin proxy router") para preservar el
+override de modelo por etapa: el proxy router rota modelos y rompería el invariante
 reviewer ≠ implementer. El proyecto opera un gateway propio (mofgw,
-`http://localhost:3369/v1`) que da resiliencia de proxy (failover). El tráfico
+`http://<GATEWAY_URL>/v1`) que da resiliencia de proxy (failover). El tráfico
 debe ir por el gateway, no directo al upstream.
 
 ## Opciones consideradas
