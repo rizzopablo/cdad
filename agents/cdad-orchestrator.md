@@ -150,7 +150,7 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 > Es una limitación de diseño del runtime (anti-recursión). NUNCA lo
 > intentes: el runtime te lo va a rechazar y reintentar 2000+ veces en
 > loop quema tokens y bloquea el scheduler (incidente 05 Ago 2026 —
-> cdad-architect FEAT-003 <project>, 2153 intentos, ciclo del orquestador frenado 2h).
+> cdad-architect FEAT-003 <proyecto>, 2153 intentos, ciclo del orquestador frenado 2h).
 > Si necesitás delegar desde un subagente → devolvé el control al
 > orquestador con un handoff packet (regla 2) y que ÉL decida el spawn.
 
