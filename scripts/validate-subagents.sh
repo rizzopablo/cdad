@@ -19,6 +19,8 @@
 #      frontmatter (mapa scripts/cdad-models.sh; perfil activo = env
 #      CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus);
 #      cdad-orchestrator NO declara model: (el modelo lo elige el usuario).
+#      Guard anti-bias en los 3 perfiles: reviewer ≠ implementer (comparación
+#      de strings exacta) — cubre envs mal configuradas (CDAD_PREMIUM_MODEL_*).
 #
 # Exit: 0 si y solo si TODAS las verificaciones pasan; != 0 ante cualquier
 # falla, imprimiendo qué falló. Read-only: idempotente por diseño.
@@ -154,6 +156,15 @@ for a in "${AGENTS[@]}"; do
     fail "modelo incorrecto en $a.md: '$actual' (esperado: '$expected')"
   fi
 done
+# Guard anti-bias (todos los perfiles): reviewer e implementer deben correr en
+# modelos DISTINTOS. Comparación de strings exacta — detecta envs mal
+# configuradas (p.ej. CDAD_PREMIUM_MODEL_REVIEWER == CDAD_PREMIUM_MODEL_IMPLEMENTER)
+# sin necesidad de inferir familia de modelo.
+REVIEWER_MODEL="${MODEL_EXPECTED[cdad-reviewer]:-}"
+IMPLEMENTER_MODEL="${MODEL_EXPECTED[cdad-implementer]:-}"
+if [ -n "$REVIEWER_MODEL" ] && [ -n "$IMPLEMENTER_MODEL" ] && [ "$REVIEWER_MODEL" = "$IMPLEMENTER_MODEL" ]; then
+  fail "reviewer e implementer comparten modelo ($REVIEWER_MODEL) — viola el invariante anti-bias; revisá CDAD_PREMIUM_MODEL_REVIEWER/IMPLEMENTER"
+fi
 if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
   fail "cdad-orchestrator.md no debe declarar model: (el modelo lo elige el usuario)"
 fi

@@ -50,8 +50,18 @@ Crear `scripts/cdad-models.sh` como fuente única del mapa de perfiles
   `deepseek-v4-pro`, test-writer `glm-5.2`, implementer `deepseek-v4-flash`,
   reviewer `qwen3.7-plus`. Espeja la tabla §2 del Contrato de roles y
   ADR-001/005.
-- **premium** — máxima calidad: architect/reviewer `qwen3.7-max`,
-  implementer/scribe `deepseek-v4-pro`, test-writer `glm-5.2`.
+- **premium** — top-tier **configurable por env**: cada rol es overrideable vía
+  `CDAD_PREMIUM_MODEL_<ROL>` (architect/test-writer/implementer/reviewer/
+  scribe) en formato `provider/model` de CUALQUIER provider (p.ej.
+  `anthropic/claude-opus-4-5`, `openai/gpt-5.2-codex`); sin env, usa el
+  default top-tier de los providers configurados (mofgw): architect/reviewer/
+  scribe `qwen3.7-max`, test-writer `glm-5.2`, implementer `deepseek-v4-pro`.
+  Requisito para el override: el provider de destino debe estar configurado en
+  el runtime (p.ej. añadir anthropic/openai a `opencode.jsonc`).
+
+Premium es multi-provider por diseño: los valores de env NO llevan prefijo
+`mofgw` forzado — el override se usa tal cual. Los perfiles economical y
+optimus quedan fijos (mofgw, este deploy).
 
 El switch es vía CLI de `install.sh`: `bash install.sh --economical | --optimus
 | --premium` (mutuamente excluyentes; default optimus). Al instalar, el perfil
@@ -65,10 +75,13 @@ como flag/env `CDAD_MODEL_PROFILE` > marker `.cdad-models-profile` > optimus.
 1. El repo es la fuente de verdad de diseño (ADR-002): los agentes del repo
    quedan siempre con optimus; la elección de perfil es responsabilidad del
    deploy (opt-in), no del diseño.
-2. El antebias no-negociable se preserva: en los 3 perfiles el reviewer corre
-   en una familia de modelo distinta a la del implementer (qwen3.7-plus/max vs
-   deepseek/glm). El orquestador sigue sin `model:` (el modelo lo elige el
-   usuario al seleccionarlo, ADR-001/005).
+2. El antebias no-negociable se preserva y se VALIDA: en los 3 perfiles el
+   reviewer corre en un modelo distinto al implementer (defaults: qwen3.7-plus/
+   max vs deepseek/glm) y `validate-subagents.sh` aplica el guard de
+   desigualdad reviewer≠implementer (comparación de strings exacta) en todos
+   los perfiles — cubre envs mal configuradas sin inferir familia de modelo.
+   El orquestador sigue sin `model:` (el modelo lo elige el usuario al
+   seleccionarlo, ADR-001/005).
 3. El check y el validator siguen siendo guards de drift: el byte-compare del
    resto del contenido es estricto; la única desviación legítima del repo es
    la línea `model:` y se valida contra el perfil activo.
@@ -78,6 +91,10 @@ como flag/env `CDAD_MODEL_PROFILE` > marker `.cdad-models-profile` > optimus.
 **Positivas:**
 - El deploy elige el perfil sin tocar el repo: `install.sh --economical` baja
   el costo de corrida; `--premium` sube calidad; optimus es el default.
+- Premium es top-tier multi-provider configurable: con
+  `CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 bash install.sh
+  --premium` el deploy usa el top-tier de anthropic sin tocar el repo ni el
+  mapa de modelos.
 - El repo siempre muestra el diseño (optimus); el runtime puede desviarse
   intencionalmente del repo SOLO en la línea `model:` (el check lo sabe).
 - El perfil activo queda persistido y verificable (marker + validator).
@@ -88,6 +105,12 @@ como flag/env `CDAD_MODEL_PROFILE` > marker `.cdad-models-profile` > optimus.
   verdad operativa (install/check/validator lo leen, no duplican el mapa).
 - El check ya no es byte-compare puro para agentes: ignora `^model:` en la
   comparación y valida esa línea semánticamente contra el perfil activo.
+- Un override de env mal configurado (reviewer == implementer) rompe el
+  invariante anti-bias → el validator lo detecta y FALLA con mensaje
+  descriptivo (guard reviewer≠implementer).
+- El override premium exige que el provider de destino esté configurado en el
+  runtime (p.ej. anthropic/openai en `opencode.jsonc`); si no, el modelo
+  elegido no está disponible y el runtime falla al seleccionarlo.
 
 **Neutrales:**
 - Con perfil optimus (default) el resultado de `install.sh --check` y de
@@ -105,3 +128,18 @@ PASS → `--premium` → `--check` PASS → validator PASS → `--optimus` final
 (runtime en diseño) → `--check` PASS → validator PASS → tests cdad-001 PASS.
 La identidad del bloque §2 (SKILL ↔ orquestador) con la nota de perfiles se
 verificó byte-idéntica.
+
+### Verificación del override premium (realizada 2026-08-06)
+
+- `--premium` sin envs → defaults premium instalados (architect/reviewer/scribe
+  `qwen3.7-max`, test-writer `glm-5.2`, implementer `deepseek-v4-pro`);
+  `--check` PASS; validator PASS.
+- Env override: `CDAD_PREMIUM_MODEL_ARCHITECT=anthropic/claude-opus-4-5
+  CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 bash install.sh
+  --premium` → architect y reviewer en anthropic/...; `--check` con las mismas
+  envs PASS; validator PASS (guard anti-bias: reviewer≠implementer).
+- Guard anti-bias: `CDAD_PREMIUM_MODEL_REVIEWER=mofgw/deepseek-v4-pro
+  CDAD_PREMIUM_MODEL_IMPLEMENTER=mofgw/deepseek-v4-pro bash install.sh
+  --premium` → el validator FALLA con "reviewer e implementer comparten modelo"
+  (después se reinstaló `--premium` sin envs).
+- Final: runtime restaurado a optimus (perfil de diseño).

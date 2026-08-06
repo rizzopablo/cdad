@@ -149,14 +149,28 @@ Options:
   --optimus    Install the optimus profile (design default): architect/scribe
                deepseek-v4-pro, test-writer glm-5.2, implementer flash,
                reviewer qwen3.7-plus. Balanced cost/quality.
-  --premium    Install the premium profile (architect/reviewer qwen3.7-max,
-               implementer deepseek-v4-pro, test-writer glm-5.2). Highest
-               quality, highest cost.
+  --premium    Install the premium profile (top-tier configurable por env):
+               por default architect/reviewer/scribe qwen3.7-max, implementer
+               deepseek-v4-pro, test-writer glm-5.2. Cada rol es overrideable
+               con una env CDAD_PREMIUM_MODEL_<ROL> en formato provider/model
+               de CUALQUIER provider (p.ej. anthropic/openai); el provider de
+               destino debe estar configurado en el runtime.
                The profile flags are mutually exclusive; --optimus is the
                default when none is given.
   --help       Show this help and exit.
 
 No flags = install (safe default).
+
+Environment — premium overrides (top-tier multi-provider; sin prefijo mofgw
+forzado; el provider de destino debe estar configurado en el runtime, p.ej.
+opencode.jsonc):
+  CDAD_PREMIUM_MODEL_ARCHITECT    top-tier architect (default mofgw/qwen3.7-max)
+  CDAD_PREMIUM_MODEL_TEST_WRITER  top-tier test-writer (default mofgw/glm-5.2)
+  CDAD_PREMIUM_MODEL_IMPLEMENTER  top-tier implementer (default mofgw/deepseek-v4-pro)
+  CDAD_PREMIUM_MODEL_REVIEWER     top-tier reviewer (default mofgw/qwen3.7-max)
+  CDAD_PREMIUM_MODEL_SCRIBE       top-tier scribe (default mofgw/qwen3.7-max)
+  Ejemplo: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 \
+           bash install.sh --premium
 
 What gets installed:
   skills/cdad-{cycle,epic,spec-and-test}/

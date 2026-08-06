@@ -7,9 +7,25 @@
 # Uso: bash install.sh --economical | --optimus | --premium
 
 # Perfiles: economical | optimus | premium
-# (antebias innegociable en los 3: reviewer en familia distinta al implementer)
+# (antebias innegociable en los 3: reviewer en modelo distinto al implementer)
+#
+# Premium — top-tier configurable por env (multi-provider por diseño). Cada rol
+# es overrideable con una env; sin env, usa el default top-tier de los providers
+# configurados (mofgw). El valor de env acepta CUALQUIER formato provider/model
+# (p.ej. anthropic/claude-opus-4-5, openai/gpt-5.2-codex) y NO lleva prefijo
+# mofgw forzado. Requisito para el override: el provider de destino debe estar
+# configurado en el runtime (p.ej. opencode.jsonc).
+#
+#   CDAD_PREMIUM_MODEL_ARCHITECT    default mofgw/qwen3.7-max
+#   CDAD_PREMIUM_MODEL_TEST_WRITER  default mofgw/glm-5.2
+#   CDAD_PREMIUM_MODEL_IMPLEMENTER  default mofgw/deepseek-v4-pro
+#   CDAD_PREMIUM_MODEL_REVIEWER     default mofgw/qwen3.7-max
+#   CDAD_PREMIUM_MODEL_SCRIBE       default mofgw/qwen3.7-max
+#
+# Ejemplo: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5
+#   (requiere tener el provider anthropic configurado en el runtime).
 
-# cdad_model <perfil> <rol> → imprime "mofgw/<modelo>" (rol sin match → vacío).
+# cdad_model <perfil> <rol> → imprime "provider/modelo" (rol sin match → vacío).
 # El orquestador NUNCA lleva model: → cdad_model devuelve vacío para ese rol.
 # Ojo: en patrones case, "|" es OR — el separador literal perfil|rol se escapa
 # como "\|" (cada alternativa es un (perfil, rol) explícito).
@@ -31,17 +47,24 @@ cdad_model() {
     optimus\|implementer)
       echo "mofgw/deepseek-v4-flash";;
 
-    # --- premium: máxima calidad — architect+reviewer qwen3.7-max,
-    # implementer+scribe deepseek-v4-pro, test-writer glm-5.2.
-    premium\|architect|premium\|reviewer)
-      echo "mofgw/qwen3.7-max";;
-    premium\|implementer|premium\|scribe)
-      echo "mofgw/deepseek-v4-pro";;
+    # --- premium: top-tier configurable por env — cada rol es overrideable
+    # vía CDAD_PREMIUM_MODEL_<ROL> (cualquier provider/model, p.ej.
+    # anthropic/openai); sin env, usa el default top-tier de los providers
+    # configurados (mofgw).
+    premium\|architect)
+      echo "${CDAD_PREMIUM_MODEL_ARCHITECT:-mofgw/qwen3.7-max}";;
     premium\|test-writer)
-      echo "mofgw/glm-5.2";;
+      echo "${CDAD_PREMIUM_MODEL_TEST_WRITER:-mofgw/glm-5.2}";;
+    premium\|implementer)
+      echo "${CDAD_PREMIUM_MODEL_IMPLEMENTER:-mofgw/deepseek-v4-pro}";;
+    premium\|reviewer)
+      echo "${CDAD_PREMIUM_MODEL_REVIEWER:-mofgw/qwen3.7-max}";;
+    premium\|scribe)
+      echo "${CDAD_PREMIUM_MODEL_SCRIBE:-mofgw/qwen3.7-max}";;
 
-    # --- default del reviewer: qwen3.7-plus en cualquier perfil (familia
-    # siempre distinta a la del implementer de ese perfil).
+    # --- default del reviewer: qwen3.7-plus en cualquier perfil (modelo
+    # distinto al del implementer de ese perfil; un override de env que lo
+    # iguale lo rechaza el guard anti-bias del validator).
     *\|reviewer)
       echo "mofgw/qwen3.7-plus";;
   esac
