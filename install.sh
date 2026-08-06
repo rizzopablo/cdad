@@ -179,11 +179,17 @@ Options:
                con una env CDAD_PREMIUM_MODEL_<ROL> en formato provider/model
                de CUALQUIER provider (p.ej. anthropic/openai); el provider de
                destino debe estar configurado en el runtime.
-               The profile flags are mutually exclusive; --optimus is the
-               default when none is given.
+               The profile flags are mutually exclusive.
   --help       Show this help and exit.
 
-No flags = install (safe default).
+No flags = install (safe default). The profile is STATEFUL: the last profile
+installed persists via .cdad-models-profile, so a later install without flag
+or env reuses it instead of falling back to optimus. Precedence is the same
+everywhere (install, --check, --dry-run):
+    flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
+Fresh installs (no marker yet) default to optimus (the repo's design default);
+switch profiles at any time with `install.sh --<perfil>` — the new choice is
+installed AND persisted as the marker.
 
 Environment — premium overrides (top-tier multi-provider; sin prefijo mofgw
 forzado; el provider de destino debe estar configurado en el runtime, p.ej.
@@ -294,17 +300,18 @@ guard_sources() {
 # ---------------------------------------------------------------------------
 # Profile resolution (fail fast on invalid profile)
 # ---------------------------------------------------------------------------
-# resolve_profile check_mode — asigna MODEL_PROFILE (perfil activo).
-# Install/uninstall (check_mode=0): flag > env CDAD_MODEL_PROFILE > optimus.
-# Check (check_mode=1):           flag > env > marker .cdad-models-profile >
-#                                 optimus (el deploy puede persistir su perfil).
+# resolve_profile — asigna MODEL_PROFILE (perfil activo). Precedencia
+# consistente en install, --check y --dry-run:
+#     flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
+# El marker hace STATEFUL la instalación: el último perfil instalado persiste
+# (un install sin flag ni env lo respeta); un install fresco sin marker usa
+# optimus (diseño del repo). --check ya leía el marker; ahora install también.
 resolve_profile() {
-  local check_mode="$1"
   if [ -n "$PROFILE_FLAG" ]; then
     MODEL_PROFILE="$PROFILE_FLAG"
   elif [ -n "${CDAD_MODEL_PROFILE:-}" ]; then
     MODEL_PROFILE="$CDAD_MODEL_PROFILE"
-  elif [ "$check_mode" -eq 1 ] && [ -f "$PROFILE_MARKER" ]; then
+  elif [ -f "$PROFILE_MARKER" ]; then
     MODEL_PROFILE="$(cat "$PROFILE_MARKER")"
   else
     MODEL_PROFILE="optimus"
@@ -672,7 +679,7 @@ main() {
 
   if [ "$CHECK" -eq 1 ]; then
     guard_sources
-    resolve_profile 1
+    resolve_profile
     validate_profile
     if check_installed; then
       return 0
@@ -700,7 +707,7 @@ main() {
   fi
 
   guard_sources
-  resolve_profile 0
+  resolve_profile
   validate_profile
   install_skills
   install_skills_extra

@@ -66,9 +66,16 @@ optimus quedan fijos (mofgw, este deploy).
 El switch es vía CLI de `install.sh`: `bash install.sh --economical | --optimus
 | --premium` (mutuamente excluyentes; default optimus). Al instalar, el perfil
 aplicado se persiste en `~/.config/opencode/agents/.cdad-models-profile`
-(una línea: el nombre del perfil; el uninstall lo borra). `install.sh --check`
-y `scripts/validate-subagents.sh` son profile-aware: resuelven el perfil activo
-como flag/env `CDAD_MODEL_PROFILE` > marker `.cdad-models-profile` > optimus.
+(una línea: el nombre del perfil; el uninstall lo borra). `install.sh` (modos
+install, `--check` y `--dry-run`) y `scripts/validate-subagents.sh` son
+profile-aware: resuelven el perfil activo como flag/env `CDAD_MODEL_PROFILE` >
+marker `.cdad-models-profile` > optimus.
+
+**Nota (stateful, 2026-08-06):** el último perfil instalado persiste vía
+`.cdad-models-profile`; un `install.sh` posterior sin flag ni env respeta el
+marker en vez de volver a optimus. Para cambiar de perfil usá
+`install.sh --<perfil>` (instala Y persiste el nuevo). El default del repo para
+installs frescos (sin marker) sigue siendo optimus.
 
 ## Razones
 
