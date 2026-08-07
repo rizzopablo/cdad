@@ -477,6 +477,27 @@ Si NO hay epic activo, el flujo es exactamente el actual sin modificaciones.
 > Mecanismo anti-skip estructural (addyosmani §1.1): cuando el agente (o el usuario) proponga
 > saltarse un paso, la refutación ya está escrita. No se negocia con la excusa; se aplica la refutación.
 
+## Validación externa del modelo (addyosmani `/build auto`)
+
+> Fuente: https://github.com/addyosmani/agent-skills (07 Ago 2026) — README, sección `/build auto`.
+
+El comando `/build auto` de addyosmani implementa exactamente el modelo CDAD:
+
+> "generates the plan and implements every task in a single approved pass — you
+> approve the plan **once**, then it runs autonomously. It removes the human
+> stepping *between* tasks, not the verification: every task is still test-driven
+> and committed individually, and it pauses on failures or risky steps."
+
+Traducción al vocabulario CDAD: el humano (o agente de jerarquía mayor) aprueba
+el **spec** (Etapa 2) una sola vez; la ejecución (Etapas 3-5) es autónoma con
+TDD por tarea, commits individuales y pausa en fallos. El autor lo dice explícito:
+"it removes the human stepping between tasks, **not the verification**" — la
+verificación sigue siendo por tarea, lo que se elimina es la aprobación por paso.
+
+**Implicación para este skill:** si alguien propone "aprobar el plan y dejar de
+validar cada etapa", la refutación ya está escrita arriba (addyosmani la llama
+exactamente igual: quitar la aprobación intermedia ≠ quitar la verificación).
+
 | Excusa típica | Refutación documentada |
 |---|---|
 | "Esto es chico, no hace falta spec" | El tamaño del cambio no predice el riesgo del contrato. Un fix de 3 líneas puede romper un invariante que nadie testeaba. Spec mínimo (postcondiciones numeradas) siempre. |
