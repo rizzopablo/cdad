@@ -447,6 +447,53 @@ Si NO hay epic activo, el flujo es exactamente el actual sin modificaciones.
 
 ---
 
+## Verification — evidencia requerida (no negociable)
+
+> Fuente del patrón: addyosmani/agent-skills (anatomía SKILL.md, sección Verification — 07 Ago 2026).
+> **Regla de Oro:** "seems right" nunca es suficiente. Cada gate se cierra con EVIDENCIA, no con confianza.
+
+**Evidencia mínima por etapa** (la que el orquestador exige al cerrar un gate):
+
+| Etapa / sub-fase | Evidencia requerida (verificada empíricamente, no asumida) |
+|---|---|
+| 1 → 2 (Descubrimiento) | `docs/landscape.md` con contenido real; cero suposiciones pendientes del tipo "yo creo que existe X" |
+| 2 → 3 (Spec) | `spec.md` con las 4 secciones mínimas + postcondiciones numeradas + marca de aprobación inequívoca del usuario |
+| 3.1 RED | Output de la suite con tests ROJOS que fallan por `AssertionError` (no por error de compilación/import) |
+| 3.2 GREEN | Output de la suite COMPLETA en verde (línea de resumen final incluida) |
+| 3.3-3.5 | Suite verde tras cada sub-fase; properties/E2E verdes si el spec los marca |
+| 4 (Review) | `review.md` con hallazgos contra el spec; bloqueantes resueltos o desestimados con motivo escrito |
+| 5 (Merge) | CI completo verde (linter, type checker, unit, integración, contrato, property); Memory Bank con entry nueva |
+
+**Reglas de evidencia:**
+
+1. **El output es la prueba.** Si tu entorno no permite ejecutar, pedí al usuario el output exacto (últimas 20 líneas del run + línea de resumen). Nunca avances con "yo creo que pasa".
+2. **Sin evidencia, no hay gate.** Un gate cerrado sin la evidencia de la tabla es un gate inventado: se reabre en la próxima revisión.
+3. **La evidencia se pega o se cita, no se describe.** "La suite está verde" ≠ "acá está el output".
+4. **Cobertura ≠ contrato.** El criterio de aceptación es postcondición verificada por test de comportamiento; si un número de coverage aparece como excusa para saltar un gate, es red flag (ver tabla abajo).
+5. **Deuda documentada ≠ deuda oculta.** Si algo no se puede verificar hoy, se registra como desviación explícita en el artefacto de la etapa — nunca se omite en silencio.
+
+## Anti-rationalization table — excusas típicas y sus refutaciones
+
+> Mecanismo anti-skip estructural (addyosmani §1.1): cuando el agente (o el usuario) proponga
+> saltarse un paso, la refutación ya está escrita. No se negocia con la excusa; se aplica la refutación.
+
+| Excusa típica | Refutación documentada |
+|---|---|
+| "Esto es chico, no hace falta spec" | El tamaño del cambio no predice el riesgo del contrato. Un fix de 3 líneas puede romper un invariante que nadie testeaba. Spec mínimo (postcondiciones numeradas) siempre. |
+| "Ya lo agrego tests después" | El test escrito después del código verifica lo que el código HACE, no lo que el spec PIDE (AP-2). Test primero, sí o sí. |
+| "Los tests pasan, lo vi con mis ojos" (sin correr la suite) | Ver AP-3: la confianza no es evidencia. Corré la suite y pegá el output. |
+| "El test estaba mal, lo ajusté para que pase" | El implementer no toca tests (AP-4). Si el test está mal, vuelve al test-writer en sesión aislada. |
+| "El coverage ya está alto, no hace falta más tests" | Coverage ≠ contrato. La postcondición sin test es una postcondición no verificada, aunque el coverage sea 99%. |
+| "Es más rápido hacerlo inline que delegar" | El aislamiento de sesión ES la garantía (test-writer no ve `src/`, reviewer ≠ implementer en familia). Inline = garantía perdida. Delegá o conmutá de modo explícito con el trade-off avisado. |
+| "El reviewer va a decir lo mismo, lo salteo" | Review independiente es el único anti-confirmation-bias. Si "va a decir lo mismo", la revisión lo confirma barato; si no, acaba de evitar un bug. |
+| "No hay tiempo, aprobamos y seguimos" | La fatiga de aprobación humana es medible y empeora con el tiempo (scalex.dev: precisión media 66.3%, degrada bajo presión). Las barreras estructurales existen exactamente para que la calidad no dependa del estado de ánimo del que aprueba. |
+| "El usuario ya aprobó, ¿para qué el gate?" | Aprobación del usuario ≠ evidencia del gate. El gate valida hechos (output de suite, artefacto presente); la aprobación valida intención. Son ortogonales. |
+| "Nadie va a notar esta desviación" | Toda desviación se documenta en el artefacto de la etapa (Verification §5). Lo que no se documenta, se descubre en la próxima feature — pagando el doble. |
+
+**Red flags que disparan esta tabla:** "no hace falta", "es rápido", "confío en que", "ya lo hice antes", "después lo vemos", "el coverage está bien", "lo probé mentalmente".
+
+---
+
 ## Recordatorio final
 
 Mantené la disciplina del proceso. Las barreras estructurales (spec aprobado, tests rojos primero, sesiones aisladas, review independiente, gates) son lo que sostiene la calidad. Cuando dudes entre velocidad y rigor → rigor.
