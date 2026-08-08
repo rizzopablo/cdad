@@ -22,6 +22,14 @@ Los tests de feature verifican **postcondiciones de comportamiento (el contrato)
 
 El mapeo test→postcondición (`test-audit.md` o equivalente) **no lo audita la misma sesión que escribió los tests**. Si el test-writer certifica su propia relevancia, el criterio "si un test no mapea, sobra" queda auto-servido. Usá una tercera sesión aislada (o el reviewer de Etapa 4) para esa auditoría, igual que test-writer e implementer están aislados entre sí.
 
+## Ancla conceptual: el loop TDD es inducción, no abducción
+
+Referencia: "Position: LLMs Can't Jump" (Zahavy, https://tomzahavy.com/files/llms-cant-jump.pdf). El propio paper usa como ejemplo de **Inducción** "generar una función que satisfaga unit tests" — es decir, el loop RED→GREEN de CDAD es inducción guiada por señal de error. Implicaciones para este ciclo:
+
+- **La separación architect (spec) vs implementer (tests) no es burocracia**: la especificación con postcondiciones numeradas es la axiomatización previa; los tests son la señal de error que dirige la búsqueda inductiva. Sin spec clara, el implementer no tiene gradiente (AP-13, Garbage Cascade).
+- **Lo que CDAD NO hace es abducción**: generar hipótesis/axiomas nuevos (el "salto" del paper) no emerge del loop de tests — emerge en Etapa 1-2 (Discovery/Planning) o en review externo. Si una feature requiere un salto conceptual, el ciclo no lo va a producir por más GREEN que esté; hay que señalarlo explícitamente al orquestador.
+- **El gate de salida mide inducción, no juicio**: suite verde valida consistencia con el contrato, no que el contrato sea el correcto. La corrección del contrato se audita en Etapa 4 (reviewer) y en la validación externa.
+
 ## Tu rol como orquestador
 
 NO escribís tests, NO implementás, NO refactorizás. Coordinás:
