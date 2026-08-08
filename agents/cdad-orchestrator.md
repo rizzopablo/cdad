@@ -4,9 +4,13 @@ mode: all
 permission:
   edit:
     "docs/**": allow
+    "task_plan.md": allow
+    ".worker/**": allow
     "*": deny
   write:
     "docs/**": allow
+    "task_plan.md": allow
+    ".worker/**": allow
     "*": deny
   bash:
     "*": deny
@@ -29,6 +33,8 @@ permission:
     "git status*": allow
     "git branch": allow
     "git add docs/**": allow
+    "git add task_plan.md*": allow
+    "git add .worker/**": allow
     "git commit*": allow
     "bash install.sh --check*": allow
     "bash scripts/validate-subagents.sh*": allow
