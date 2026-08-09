@@ -33,6 +33,9 @@ permission:
     "git diff*": allow
     "git add src/**": allow
     "git add lib/**": allow
+    "git add internal/**": allow
+    "git add cmd/**": allow
+    "git add go.mod*": allow
     "git commit*": allow
 ---
 
