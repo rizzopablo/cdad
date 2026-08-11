@@ -31,9 +31,9 @@ permission:
     "npm test*": allow
     "yarn test*": allow
     "jest*": allow
-    "git status": allow
+    "git status*": allow
     "git diff*": allow
-    "git add tests/**": allow
+    "git add*": allow
     "git commit*": allow
   grep:
     "src/**": deny

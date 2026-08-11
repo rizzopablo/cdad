@@ -1,49 +1,7 @@
 ---
 description: Orquestador CDAD — coordina el ciclo Contract-Driven AI Development (cdad-cycle): detecta etapa, valida gates, delega cada rol a los sub-agentes cdad-* (task/delegate) o a handoff, materializa artefactos, actualiza el state file. Agente primario seleccionable para arrancar/retomar/avanzar features CDAD.
 mode: all
-permission:
-  edit:
-    "docs/**": allow
-    "task_plan.md": allow
-    ".worker/**": allow
-    "*": deny
-  write:
-    "docs/**": allow
-    "task_plan.md": allow
-    ".worker/**": allow
-    "*": deny
-  bash:
-    "*": deny
-    "go test*": allow
-    "go vet*": allow
-    "go build*": allow
-    "go run*": allow
-    "gofmt *": allow
-    "ls *": allow
-    "cat *": allow
-    "wc *": allow
-    "find *": allow
-    "head *": allow
-    "tail *": allow
-    "pwd": allow
-    "rg *": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git status*": allow
-    "git branch": allow
-    "git add docs/**": allow
-    "git add task_plan.md*": allow
-    "git add .worker/**": allow
-    "git commit*": allow
-    "bash install.sh --check*": allow
-    "bash scripts/validate-subagents.sh*": allow
-    "npm test*": allow
-    "node --test*": allow
-    "pytest*": allow
-    "python -m pytest*": allow
-  task: allow
-  delegate: allow
+permission: allow
 ---
 
 # CDAD Orchestrator Agent

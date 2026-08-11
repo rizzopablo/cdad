@@ -3,8 +3,6 @@ description: CDAD implementer — etapa 3 GREEN (+ sub-modo REFACTOR opcional). 
 mode: subagent
 model: mofgw/deepseek-v4-flash
 permission:
-  read:
-    "tests/**": allow
   edit:
     "tests/**": deny
   write:
@@ -29,13 +27,9 @@ permission:
     "yarn test*": allow
     "jest*": allow
     "npm run*": allow
-    "git status": allow
+    "git status*": allow
     "git diff*": allow
-    "git add src/**": allow
-    "git add lib/**": allow
-    "git add internal/**": allow
-    "git add cmd/**": allow
-    "git add go.mod*": allow
+    "git add*": allow
     "git commit*": allow
 ---
 
