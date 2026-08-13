@@ -24,8 +24,15 @@ OPENCODE_AGENTS_DIR="${HOME:-}/.config/opencode/agents"
 OPENCODE_SKILLS_DIR="${HOME:-}/.config/opencode/skills"
 AGENTS_SKILLS_DIR="${HOME:-}/.agents/skills"
 
+CLAUDE_CODE_AGENTS_DIR="${HOME:-}/.claude/agents"
+CLAUDE_CODE_SKILLS_DIR="${HOME:-}/.claude/skills"
+CLAUDE_CODE_SCRIPTS_DIR="${HOME:-}/.claude/cdad-scripts"
+
 SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test)
 EXPECTED_CDAD_AGENTS=6
+# NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code has the same 5 roles
+# in agents/claude-code/ subdirectory; install_claude_code_agents() handles that separately.
+EXPECTED_CDAD_AGENTS_CLAUDE_CODE=5
 
 # Extra skill target dirs (colon-separated) via CDAD_SKILL_EXTRA_DIRS, e.g. the
 # OpenClaw skills dir. Empty by default: only the default runtimes are used.
@@ -210,16 +217,21 @@ What gets installed:
   skills/cdad-{cycle,epic,spec-and-test}/
       -> ~/.config/opencode/skills/<skill>/   (rsync -a, NEVER --delete; or cp -rp)
       -> ~/.agents/skills/<skill>/            (rsync -a, NEVER --delete; or cp -rp)
+      -> ~/.claude/skills/<skill>/            (rsync -a, NEVER --delete; or cp -rp) [Claude Code]
       -> <dir>/<skill>/ for each dir in $CDAD_SKILL_EXTRA_DIRS when set
                                            (rsync -a, NEVER --delete; or cp -rp)
-  agents/cdad-*.md
+  agents/cdad-*.md (OpenCode format)
       -> ~/.config/opencode/agents/           (cp -p, NEVER --delete)
+  agents/claude-code/cdad-*.md (Claude Code format)
+      -> ~/.claude/agents/                    (cp -p, NEVER --delete)
+  scripts/claude-code-path-guard.sh
+      -> ~/.claude/cdad-scripts/path-guard.sh (cp -p, chmod +x)
 
 Note: the 4 loose top-level skills/*.md files (re-entry.md, feature-handoff.md,
 handoff-prompts.md, epic-planning.md) are reference docs, not valid skill dirs
 (bare .md != skill dir), and are intentionally NOT installed.
 
-Never touched: non-cdad agents in ~/.config/opencode/agents,
+Never touched: non-cdad agents in ~/.config/opencode/agents or ~/.claude/agents,
 ~/.agents/.skill-lock.json, or anything outside the cdad paths above.
 EOF
 }
@@ -407,6 +419,62 @@ install_agents() {
   done
 }
 
+install_guard_script() {
+  local src="$SCRIPT_DIR/scripts/claude-code-path-guard.sh"
+  local dst="$CLAUDE_CODE_SCRIPTS_DIR/path-guard.sh"
+  if [ ! -f "$src" ]; then
+    log "WARN: Guard script not found: $src (Claude Code agents may fail to enforce path-scoping)"
+    return 0
+  fi
+  ensure_dir "$CLAUDE_CODE_SCRIPTS_DIR"
+  do_run "COPY scripts/claude-code-path-guard.sh -> $dst" cp -p "$src" "$dst"
+  if [ "$DRY_RUN" -eq 0 ] && [ -f "$dst" ]; then
+    do_run "CHMOD +x $dst" chmod +x "$dst"
+  fi
+}
+
+install_claude_code_agents() {
+  local f src dst role model
+  local cc_agents_subdir="$SOURCE_AGENTS_DIR/claude-code"
+  if [ ! -d "$cc_agents_subdir" ]; then
+    log "Claude Code agents subdirectory not found: $cc_agents_subdir (skipping)"
+    return 0
+  fi
+  ensure_dir "$CLAUDE_CODE_AGENTS_DIR"
+  for f in "$cc_agents_subdir"/cdad-*.md; do
+    [ -e "$f" ] || continue
+    src="$f"
+    dst="$CLAUDE_CODE_AGENTS_DIR/$(basename "$f")"
+    role=$(basename "$f")
+    role=${role#cdad-}
+    role=${role%.md}
+    # Claude Code agents use cdad_model_claude (from extended cdad-models.sh)
+    model=$(cdad_model_claude "$MODEL_PROFILE" "$role")
+    do_run "COPY agents/claude-code/$(basename "$f") -> $dst" cp -p "$src" "$dst"
+    if [ "$DRY_RUN" -eq 1 ]; then
+      if [ -n "$model" ]; then
+        log "DRY-RUN PROFILE $(basename "$f"): model: $model (perfil $MODEL_PROFILE)"
+      fi
+      continue
+    fi
+    # Apply profile's model to the copied agent (if the function exists and model is set)
+    if [ -n "$model" ] && [ -f "$dst" ]; then
+      # Only modify if model line is different (idempotent)
+      if ! grep -q "^model:[[:space:]]*$model" "$dst"; then
+        log "PROFILE $(basename "$f"): model: -> $model"
+        sed -i "s|^model:.*|model: $model|" "$dst"
+      fi
+    fi
+  done
+}
+
+install_claude_code_skills() {
+  local s
+  for s in "${SKILLS[@]}"; do
+    sync_skill_to "$s" "$CLAUDE_CODE_SKILLS_DIR"
+  done
+}
+
 # ---------------------------------------------------------------------------
 # Uninstall operations (cdad-owned paths only)
 # ---------------------------------------------------------------------------
@@ -458,6 +526,7 @@ confirm_uninstall() {  # lists the exact removals and asks y/N; 0 = proceed, 1 =
 
 uninstall_cdad() {
   log "Uninstalling cdad artifacts (non-cdad files are never touched)"
+  # OpenCode agents
   if [ -d "$OPENCODE_AGENTS_DIR" ]; then
     local f base
     for f in "$SOURCE_AGENTS_DIR"/cdad-*.md; do
@@ -467,10 +536,23 @@ uninstall_cdad() {
     done
     do_run "UNINSTALL $PROFILE_MARKER" rm -f -- "$PROFILE_MARKER"
   fi
+  # Claude Code agents
+  if [ -d "$CLAUDE_CODE_AGENTS_DIR" ]; then
+    local f base
+    for f in "$SOURCE_AGENTS_DIR"/claude-code/cdad-*.md; do
+      [ -e "$f" ] || continue
+      base=$(basename "$f")
+      do_run "UNINSTALL $CLAUDE_CODE_AGENTS_DIR/$base" rm -f -- "$CLAUDE_CODE_AGENTS_DIR/$base"
+    done
+  fi
+  # Guard script
+  do_run "UNINSTALL $CLAUDE_CODE_SCRIPTS_DIR/path-guard.sh" rm -f -- "$CLAUDE_CODE_SCRIPTS_DIR/path-guard.sh"
+  # Skills (both runtimes)
   local s d
   for s in "${SKILLS[@]}"; do
     do_run "UNINSTALL skills/$s -> $OPENCODE_SKILLS_DIR/$s" rm -rf -- "$OPENCODE_SKILLS_DIR/$s"
     do_run "UNINSTALL skills/$s -> $AGENTS_SKILLS_DIR/$s" rm -rf -- "$AGENTS_SKILLS_DIR/$s"
+    do_run "UNINSTALL skills/$s -> $CLAUDE_CODE_SKILLS_DIR/$s" rm -rf -- "$CLAUDE_CODE_SKILLS_DIR/$s"
   done
   while IFS= read -r d; do
     [ -n "$d" ] || continue
@@ -712,6 +794,10 @@ main() {
   install_skills
   install_skills_extra
   install_agents
+  # Claude Code targets (new in ADR-008)
+  install_guard_script
+  install_claude_code_agents
+  install_claude_code_skills
   write_profile_marker
   if [ "$DRY_RUN" -eq 1 ]; then
     print_dry_run_summary
