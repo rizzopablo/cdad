@@ -70,6 +70,42 @@ cdad_model() {
   esac
 }
 
+# cdad_model_claude <perfil> <rol> → imprime "alias o model-id" para Claude Code.
+# Claude Code no tiene mofgw gateway (solo Anthropic-native models), así que
+# devolvemos alias (haiku/sonnet/opus/fable).
+# Invariante: reviewer ≠ implementer (debilitado respecto a OpenCode pero
+# igualmente exigido).
+cdad_model_claude() {
+  local perfil="$1" rol="$2"
+  case "$perfil|$rol" in
+    # --- economical: haiku para todo salvo reviewer (que sube a opus para
+    # family diversity). NOTA: en Claude Code, economical|reviewer=haiku rompe
+    # el invariante "familia distinta" si lo combinamos con economical|implementer=haiku
+    # (ambos son modelo Anthropic). ADR-008 documenta esto como limitación aceptada.
+    economical\|architect|economical\|test-writer|economical\|implementer|economical\|scribe)
+      echo "haiku";;
+
+    # --- optimus (perfil de diseño para Claude Code): sonnet architect/scribe
+    # (análogo a deepseek-v4-pro de costo-balance), sonnet test-writer (análogo
+    # a glm-5.2 specialized), haiku implementer (fast/cheap), opus reviewer
+    # (distinta familia, análogo a qwen3.7-plus).
+    optimus\|architect|optimus\|scribe|optimus\|test-writer)
+      echo "sonnet";;
+    optimus\|implementer)
+      echo "haiku";;
+
+    # --- premium: opus architect/scribe/reviewer, sonnet test-writer, opus implementer.
+    premium\|architect|premium\|scribe|premium\|reviewer|premium\|implementer)
+      echo "opus";;
+    premium\|test-writer)
+      echo "opus";;  # mejora respecto a optimus
+
+    # --- default del reviewer: opus (distinto a implementer en cualquier perfil).
+    *\|reviewer)
+      echo "opus";;
+  esac
+}
+
 # cdad_valid_profile <perfil> → 0 si es soportado, 1 si no (fail fast en el
 # borde: flag/env/marker). No imprime; el caller da el mensaje descriptivo.
 cdad_valid_profile() {

@@ -43,9 +43,16 @@ Invocación: `@nombre-agente` o desde un comando slash con `subtask: true`.
 
 ### Claude Code
 
-**Soporte nativo via sub-agents**. Definilos en `.claude/agents/<name>.md` con frontmatter similar a OpenCode. La directiva clave es `tools` y permisos de lectura/escritura.
+**Soporte nativo via sub-agents** (desde ADR-008, 2026-08-13). Definilos en `.claude/agents/<name>.md` con frontmatter Claude Code (NO OpenCode — las sintaxis son diferentes).
 
-Invocación desde el agente principal con la herramienta Task. La sub-sesión NO ve el contexto del agente padre.
+**Diferencias clave con OpenCode:**
+- Claude Code frontmatter NO tiene `permission` con globs (ej: `edit: {"tests/**": deny}`). En cambio, usa `tools:` como allowlist plano (nombres de herramientas: `Read`, `Grep`, `Edit`, `Write`, `Bash`, `Skill`, etc.).
+- Path-scoping se reconstruye vía `hooks.PreToolUse` que corre un script guard (`~/.claude/cdad-scripts/path-guard.sh <rol>`) antes de cada `Edit`/`Write`/`Read`/`Grep`.
+- Modelo: `model:` acepta alias (`haiku`, `sonnet`, `opus`, `fable`) o model ID completo — no hay gateway `mofgw`.
+
+Invocación desde el orquestador con la herramienta `Agent` (equivalente a OpenCode's `task`/`delegate`). La sub-sesión NO ve el contexto del agente padre.
+
+**Detalle completo:** ver `references/claude-code-delegation.md`.
 
 ### Zed
 

@@ -129,10 +129,14 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 Para cada tarea de rol, decidí el mecanismo en este orden:
 
 1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
-   al sub-agente del rol. Roles read-only (architect, reviewer, scribe) vía
-   `delegate`; roles write-capable (test-writer, implementer, refactorer) vía
-   `task`. Pasá contexto completo (ver regla 6). **Preferido: te da
-   aislamiento de sesión real + routing de modelo por agente.**
+   al sub-agente del rol. 
+   - En OpenCode: roles read-only (architect, reviewer, scribe) vía `delegate`; 
+     roles write-capable (test-writer, implementer, refactorer) vía `task`.
+   - En Claude Code: roles read-only vía `Agent` tool; roles write-capable 
+     vía `Agent` tool (con hooks PreToolUse para path-scoping).
+   
+   Pasá contexto completo (ver regla 6). **Preferido: te da aislamiento de sesión real + routing de modelo por agente.** Ver `references/opencode-delegation.md` (OpenCode) y `references/claude-code-delegation.md` (Claude Code).
+
 2. **¿No hay sub-agentes pero el usuario quiere correr el rol en chat nuevo?**
    → generá handoff packet (`references/handoff-prompts.md`). Aislamiento
    real vía sesión separada, manual.
@@ -423,8 +427,9 @@ Cuando crees archivos, copiá desde templates y rellená.
 
 El skill es **independiente del arnés**: el orquestador ejecuta el ciclo con o sin sub-agentes nativos (ver **Contrato de roles §4**). El mecanismo de delegación se decide por entorno, en este orden de preferencia:
 
-- **(a) OpenCode con sub-agentes `cdad-*`**: delegación nativa vía `task`/`delegate` con `subagent_type: cdad-<rol>` (preferido — aislamiento de sesión real + routing de modelo por rol; ver `references/opencode-delegation.md`).
-- **(b) Sin sub-agentes `cdad-*` (Claude Code, cualquier LLM)**: handoff packet pegable a chat nuevo (universal; ver `references/handoff-prompts.md`). Alternativa con sub-agentes nativos genéricos en `references/sub-agent-strategies.md`.
+- **(a1) OpenCode con sub-agentes `cdad-*`**: delegación nativa vía `task`/`delegate` con `subagent_type: cdad-<rol>` (preferido — aislamiento de sesión real + routing de modelo por rol; ver `references/opencode-delegation.md`).
+- **(a2) Claude Code con sub-agentes `cdad-*`**: delegación vía herramienta `Agent` con `subagent_type: cdad-<rol>` (aislamiento de sesión real + routing de modelo por rol via frontmatter; ver `references/claude-code-delegation.md`). Soportado desde ADR-008 (2026-08-13).
+- **(b) Sin sub-agentes `cdad-*` (cualquier LLM)**: handoff packet pegable a chat nuevo (universal; ver `references/handoff-prompts.md`). Alternativa con sub-agentes nativos genéricos en `references/sub-agent-strategies.md`.
 - **(c) Zed**: threads con perfiles (ver `sub-agent-strategies.md`).
 
 El skill no asume bash, git, ni tooling específico. Cuando una verificación requiere ejecución, te pide al usuario que la corra y pegue el output, salvo que tu entorno te permita ejecutarla.
