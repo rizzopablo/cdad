@@ -43,8 +43,8 @@ A new public function `Add(a int, b int) -> int` that returns the sum of two int
 ### Codebase Landscape
 
 **Target language:** Go (existing CDAD test project in this repo uses Go).  
-**Package location:** `pkg/calc/` (new package).  
-**Test location:** `pkg/calc/calc_test.go` (new).  
+**Package location:** `src/calc/calc.go` (new package — under the guarded `src/` path so AP-7 "test-writer never reads impl" is enforceable).  
+**Test location:** `tests/calc/calc_test.go` (new — under the guarded `tests/` path so implementer can't write tests).  
 
 **Existing code:**
 - Already has Go test framework (Go built-in).
@@ -57,9 +57,9 @@ A new public function `Add(a int, b int) -> int` that returns the sum of two int
 
 | ID | Postcondition | Observable |
 |----|---|---|
-| P1 | `Add` function exists in `pkg/calc` | `go test ./pkg/calc -run TestAdd` passes |
+| P1 | `Add` function exists in `src/calc` | `go test ./tests/calc -run TestAdd` passes |
 | P2 | `Add(2, 3)` returns `5` | Test `TestAdd_basic` passes |
-| P3 | `Add` is a public function (capitalized) | `pkg/calc.Add` is callable from outside the package |
+| P3 | `Add` is a public function (capitalized) | `src/calc.Add` is callable from outside the package |
 | P4 | No panics on valid inputs (2 integers) | Test `TestAdd_no_panic` passes |
 
 **No coverage requirements.** No performance benchmarks. No edge-case tests for this spike (that's hardening, a separate phase). Just the postconditions above.
@@ -197,7 +197,7 @@ Once CDAD-002 completes:
 
 **Stage 1 (Discovery):**
 - [ ] Invoke `cdad-cycle` skill (in Claude Code session)
-- [ ] Detect no existing `pkg/calc/` (fresh feature)
+- [ ] Detect no existing `src/calc/` (fresh feature)
 - [ ] Spawn `cdad-architect` subagent with Discovery prompt
 - [ ] Architect produces brainstorm + spec draft
 - [ ] User approves spec (simulated: "looks good")
@@ -208,7 +208,7 @@ Once CDAD-002 completes:
 
 **Stage 3.0 (TDD AUDIT):**
 - [ ] Spawn `cdad-test-writer` with AUDIT substage prompt
-- [ ] Test-writer audits `pkg/calc/` (expects zero `Add`-related tests)
+- [ ] Test-writer audits `src/calc/` (expects zero `Add`-related tests)
 - [ ] Test-writer produces test-audit.md
 
 **Stage 3.1 (TDD RED):**

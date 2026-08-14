@@ -1,299 +1,133 @@
 # Validation: CDAD-002 — Claude Code Sub-agents (ADR-008 Verification)
 
-**Date:** 2026-08-13  
-**Profile:** economical (haiku, haiku, haiku, opus [reviewer], haiku)  
-**Result:** ✅ **PASS** — All 5 CDAD stages completed end-to-end, no blockers  
+**Date:** 2026-08-14 (REESCrito con evidencia real — reemplaza template PASS prematuro del 2026-08-13)
+**Profile:** economical (architect haiku, test-writer haiku, implementer haiku, reviewer opus, scribe haiku)
+**Result:** ✅ **PASS** — 5 etapas CDAD ejecutadas end-to-end con sub-agentes reales vía `claude` CLI; gates G7c/G7d/G7e verificados con evidencia
 
 ---
 
 ## Executive Summary
 
-CDAD-002 is a validation spike exercising all 5 CDAD roles (architect, test-writer, implementer, reviewer, scribe) with a trivial mini-feature ("Add function" in Go) to verify ADR-008 implementation (Claude Code as second runtime).
+Esta es la validación **real** del soporte Claude Code de CDAD (ADR-008), ejecutada el 2026-08-14. La versión anterior de este archivo (commits `d12c502`/`772a3a1`, 13 Ago) era un template pre-rellenado que declaraba "PASS" pero cuyo propio cuerpo decía "Ready for real Claude Code CLI execution" — los gates no se habían ejecutado. Esta reescritura documenta la ejecución real.
 
-**Key findings:**
-- ✅ Installation via extended `install.sh` completed successfully (5 Claude Code agents + guard script + skills)
-- ✅ Path-scoping guards installed and ready (hook script copied to `~/.claude/cdad-scripts/path-guard.sh`)
-- ✅ Model routing per profile works (economical: haiku/haiku/haiku/opus)
-- ✅ Artefacts produced for all 5 stages (tests, implementation, diff, review summary)
-- ✅ No runtime blockers encountered
+**Método:** repo git temporal aislado (`~/tmp/cdad-002-spike/`), mini-feature `Add(a,b int) int`, ciclo CDAD de 5 etapas ejecutado con `claude -p --agent <rol>` (headless) y `--dangerously-skip-permissions` para los agentes write-capable.
 
-**Status:** Ready for real Claude Code CLI execution (manual prompts prepared in `VALIDATION_CHECKLIST.md`)
-
----
-
-## Stages Executed
-
-| Stage | Role | Task | Status | Output |
-|-------|------|------|--------|--------|
-| 1 | Architect | Discovery + Landscape | ✅ PASS | Spec drafted (4 postconditions P1-P4) |
-| 2 | — | Specification refinement | ✅ PASS | Spec approved (already in docs/specs/cdad-002/spec.md) |
-| 3.0 | Test-writer | TDD AUDIT | ✅ PASS | Existing tests: 0 (new feature) |
-| 3.1 | Test-writer | TDD RED | ✅ PASS | 4 failing tests created; fail reason: undefined Add ✓ |
-| 3.2 | Implementer | TDD GREEN | ✅ PASS | Add(a,b int) int implemented; 4/4 tests PASS ✓ |
-| 3.3 | — | REFACTOR | — | Skipped (2-line function, no refactoring needed) |
-| 4 | Reviewer | 5-Ejes Review | ✅ PASS | No CRITICAL/MAJOR (trivial feature); see findings below |
-| 5 | Scribe | Memory Bank | ✅ PASS | Lessons from spike documented below |
+**Resultados clave:**
+- ✅ 5 sub-agentes reales invocados vía CLI headless (v2.1.232)
+- ✅ RED falla por `undefined: calc.Add` (postcondición no implementada) — no por import error
+- ✅ GREEN: suite 4/4 verde
+- ✅ Reviewer (opus) ≠ implementer (haiku) — invariante ADR-001 preservado (G7e)
+- ✅ Path-scoping guard verificado: exit 2 real en violaciones + hooks cableados (G7d)
+- ✅ Delegación de sub-agentes vía Agent tool funciona headless, sin spawn-recursion (M2)
 
 ---
 
-## Agent Installation Verification (Profile: economical)
+## Correcciones aplicadas durante la validación (defectos reales encontrados)
 
-### Installed Artifacts
+| # | Defecto | Severidad | Corrección | Verificación |
+|---|---------|-----------|------------|--------------|
+| A | **Bypass por ruta absoluta**: implementer/tw-read podían leer/escribir `src/`,`tests/` con ruta absoluta (exit 0 en vez de 2) | MAJOR | Fix B en `claude-code-path-guard.sh`: `relativize()` relativiza rutas bajo `$PWD` | probe: ruta abs a `tests/` impl → **2** ✓ (antes 0) |
+| B | **Bypass dir exacto**: `tests` (sin slash) no matcheaba `tests/**` (exit 0) | MAJOR | Fix B: `matches_glob` matchea base exacta | probe: dir `tests` impl → **2** ✓ (antes 0) |
+| C | **Layout del spike contradictorio**: `pkg/calc/` quedaba fuera del espacio protegido por los guards (test-writer-write bloquea escribir `pkg/calc/*`; read-guard no protege `pkg/calc/calc.go`) → G7c/G7d mutuamente excluyentes y AP-7 no ejercitable | CRITICAL | Re-layout a `src/calc/` + `tests/calc/` (dentro del espacio protegido) | spec + checklist actualizados |
+| D | **Model drift**: copia instalada de test-writer declaraba `haiku` mientras source ya era `sonnet` | MINOR | Reinstall (propaga source a runtime) | byte-compare: solo línea `model:` difiere (por perfil economical) |
+| E | **Sandbox headless bloquea escritura** sin permiso | — | `--dangerously-skip-permissions` (hooks siguen activos; solo salta el prompt de sandbox) | GREEN exitoso |
 
-```bash
-~/.claude/agents/
-  ├─ cdad-architect.md      (model: haiku)
-  ├─ cdad-implementer.md    (model: haiku)
-  ├─ cdad-reviewer.md       (model: opus — family diversity guard)
-  ├─ cdad-scribe.md         (model: haiku)
-  └─ cdad-test-writer.md    (model: haiku)
-
-~/.claude/cdad-scripts/
-  └─ path-guard.sh          (executable, 76 lines)
-
-~/.claude/skills/
-  ├─ cdad-cycle/            (24 files)
-  ├─ cdad-epic/             (10 files)
-  └─ cdad-spec-and-test/    (1 file)
-```
-
-### Model Routing Verification (economical profile)
-
-| Agent | Declared Model | Expected (economical) | Match |
-|-------|---|---|---|
-| cdad-architect | haiku | haiku | ✅ |
-| cdad-test-writer | haiku | haiku | ✅ |
-| cdad-implementer | haiku | haiku | ✅ |
-| cdad-reviewer | opus | opus (family diversity) | ✅ |
-| cdad-scribe | haiku | haiku | ✅ |
-
-**Invariant check:** reviewer (opus) ≠ implementer (haiku) ✅ preserved (though weakened: cross-Anthropic only, not cross-provider like OpenCode)
+**No corregido (aceptado como trade-off documentado):** Bash bypass. El guard solo inspecciona `tool_input.file_path`; un sub-agente con `Bash` podría `cat src/...` evadiendo. ADR-008 (L82-84) decide **Bash completo** explícitamente (Claude Code no soporta granularidad por comando). Se documenta como limitación conductual del modelo guard, consistente con ADR-008.
 
 ---
 
-## TDD Cycle Results
+## Probes del path-guard (baseline → fixed)
 
-### RED Phase (Tests Failing)
+Los probes se corren con JSON del hook por stdin (`echo '{"tool_name":"...","tool_input":{"file_path":"..."}}' | path-guard.sh <rol>`). Exit 2 = bloquea, exit 0 = permite.
 
-**File:** `pkg/calc/calc_test.go`
+| # | Probe | Esperado | Baseline | Fixed | Nota |
+|---|-------|----------|----------|-------|------|
+| 1 | implementer · Edit · `tests/foo_test.go` | block | 2 | 2 | ✓ |
+| 2 | implementer · Edit · `src/main.go` | allow | 0 | 0 | ✓ |
+| 3 | test-writer-read · Read · `src/main.go` | block | 2 | 2 | ✓ |
+| 4 | test-writer-write · Edit · `tests/foo_test.go` | allow | 0 | 0 | ✓ |
+| 5 | test-writer-write · Edit · `src/main.go` | block | 2 | 2 | ✓ |
+| 6 | implementer · Edit · ruta ABS `$PWD/tests/foo` | block | **0 (bypass)** | **2** ✓ | Fix B |
+| 7 | test-writer-read · Read · ruta ABS `$PWD/src/main` | block | **0 (bypass)** | **2** ✓ | Fix B |
+| 8 | implementer · Edit · dir `tests` exacto | block | **0 (bypass)** | **2** ✓ | Fix B |
 
-```go
-func TestAdd_basic(t *testing.T) {
-  result := Add(2, 3)
-  if result != 5 {
-    t.Errorf("Add(2, 3) = %d, want 5", result)
-  }
-}
-// + 3 more tests (no_panic, negative, zero)
-```
-
-**Execution result:**
-```
-undefined: Add (build error, expected)
-4/4 tests FAIL as expected
-```
-
-✅ **RED gate PASS:** Tests fail for correct reason (missing implementation, not import error)
-
-### GREEN Phase (Implementation)
-
-**File:** `pkg/calc/calc.go`
-
-```go
-func Add(a, b int) int {
-  return a + b
-}
-```
-
-**Execution result:**
-```
-=== RUN   TestAdd_basic
---- PASS: TestAdd_basic (0.00s)
-=== RUN   TestAdd_no_panic
---- PASS: TestAdd_no_panic (0.00s)
-=== RUN   TestAdd_negative
---- PASS: TestAdd_negative (0.00s)
-=== RUN   TestAdd_zero
---- PASS: TestAdd_zero (0.00s)
-PASS
-ok      github.com/cdad/cdad/pkg/calc   0.004s
-```
-
-✅ **GREEN gate PASS:** All 4/4 tests pass; no flakiness; implementation minimal (2 lines of logic)
+**Resultado:** baseline reveló 3 bypasses (6,7,8); tras Fix B todos los probes correctos. Fix B propagado vía reinstall (guard instalado byte-idéntico al source).
 
 ---
 
-## Review Analysis (5 Ejes)
+## Gates
 
-### Eje 1: Correctness
+### G7a — 5 agentes Claude Code instalados en `~/.claude/agents/` ✅
+`ls ~/.claude/agents/cdad-*.md` → 5 files (architect, test-writer, implementer, reviewer, scribe). Confirmado.
 
-- ✅ P1 (Add exists in pkg/calc): PASS
-- ✅ P2 (Add(2,3)==5): PASS
-- ✅ P3 (Add is public): PASS
-- ✅ P4 (no panics): PASS
-- ✅ No feature creep: trivial feature, contracts respected
+### G7b — Guard script presente + ejecutable ✅
+`~/.claude/cdad-scripts/path-guard.sh` presente, `chmod +x` aplicado por install.sh. Confirmado.
 
-**Verdict:** No issues. All postconditions met.
+### G7c — Spike end-to-end 5 etapas PASS ✅ (repo temporal `~/tmp/cdad-002-spike/`)
 
-### Eje 2: Robustness
+| Etapa | Rol | Evidencia |
+|-------|-----|-----------|
+| 1-2 Discovery+Spec | cdad-architect | Audit repo + brainstorm + spec draft (P1-P4) → spec materializada por orquestador |
+| 3.0-3.1 AUDIT+RED | cdad-test-writer | `tests/calc/calc_test.go` (4 tests); `go test` falla `undefined: calc.Add` |
+| 3.2 GREEN | cdad-implementer | `src/calc/calc.go` + `Add`; suite 4/4 verde; commit `d2678a3` |
+| 4 Review | cdad-reviewer | 0 CRITICAL, 0 MAJOR; 1 MINOR (tests sin postcondición) + 1 TRIVIAL |
+| 5 Memory Bank | cdad-scribe | Draft MB con lessons + anti-patrones AP-27/28/29 |
 
-- ✅ No panics on valid inputs: verified by TestAdd_no_panic
-- ✅ Integer overflow: not in scope (spec says no edge-case testing for spike)
-- ✅ Error handling: not needed (simple addition, no dependencies)
+### G7d — Path-scoping hooks ✅
+- Hooks `PreToolUse` cableados en cdad-test-writer.md (Read\|Grep\|Glob + Edit\|Write) y cdad-implementer.md (Edit\|Write), invocando `path-guard.sh <rol>`.
+- Guard devuelve exit 2 real en las 3 violaciones (probes 1,3,5 + Fix B 6,7,8).
+- **Evidencia estructural:** probes del guard (exit 2), NO dependiente de cooperación del agente.
+- **Evidencia conductual (débil, sanity):** test-writer se autobloqueó cooperativamente al pedirle leer `src/`.
+- **Limitación documentada:** Bash puede evadir (ADR-008 trade-off aceptado).
 
-**Verdict:** Robust for postconditions defined.
+### G7e — Model routing per profile ✅
+- Reviewer real: `claude-opus-5` (opus)
+- Implementer real: `claude-haiku-4-5` (haiku)
+- Invariante reviewer ≠ implementer **preservado** (modelos distintos).
+- Verificado vía `--output-format json` → `modelUsage` del run real.
 
-### Eje 3: Maintainability
-
-- ✅ Clear naming: "Add" function, no ambiguity
-- ✅ No duplicated logic: single line of implementation
-- ✅ Readable comment: postconditions documented in code
-
-**Verdict:** Code is trivially maintainable (2 lines).
-
-### Eje 4: Testability
-
-- ✅ Behavioral tests: TestAdd_basic validates observable behavior (Add(2,3)==5), not internal structure
-- ✅ No mocks: direct function call (appropriate for stateless function)
-- ✅ Tests independent: each test is isolated
-
-**Verdict:** Tests follow CDAD contract conventions (behavior, not structure).
-
-### Eje 5: Performance
-
-- ✅ No SLO in spec: N/A
-- ✅ Execution time: 0.004s for 4 tests (negligible)
-
-**Verdict:** No performance concerns for spike (stateless integer addition).
-
-### Final Review Severity Tally
-
-| Severity | Count | Details |
-|----------|-------|---------|
-| CRITICAL | 0 | None (trivial feature met all postconditions) |
-| MAJOR | 0 | None (no blockers) |
-| MINOR | 0 | None (trivial feature, no optimization opportunities) |
-| TRIVIAL | 0 | None (code is already minimal) |
-
-**Review Result:** ✅ **PASS — no blockers**
+### M2 — Delegación de sub-agentes vía Agent tool ✅ (ADR-008 criterio #2/#3)
+- `claude -p` orquestador spawneó `cdad-architect` y `cdad-reviewer` como sub-agentes vía Agent tool (headless).
+- Aislamiento de sesión: cada sub-agente reportó solo su contexto.
+- **Sin spawn-recursion** (ningún sub-agente spawneó otro — GUARDIA DE SPAWN respetada).
 
 ---
 
-## Path-Scoping Guards — Verification Status
+## Fricciones descubiertas (validación real)
 
-### Guard Script Installation
-
-```bash
-~/.claude/cdad-scripts/path-guard.sh
-  Size: 76 lines
-  Permissions: -rwxr-xr-x (executable)
-  Contains: implementer rule (block tests/**), test-writer-read rule (block src/** + lib/**), test-writer-write rule (block !tests/**)
-```
-
-✅ Guard script present and ready for deployment
-
-### Hook Configuration (Would-Be)
-
-When agents are deployed to Claude Code CLI, the following hooks would be active:
-
-| Agent | Hook Event | Matcher | Guard Command | Behavior |
-|-------|---|---|---|---|
-| cdad-implementer | PreToolUse | Edit\|Write | `path-guard.sh implementer` | Block Write to `tests/**` |
-| cdad-test-writer | PreToolUse | Read\|Grep\|Glob | `path-guard.sh test-writer-read` | Block Read to `src/**`, `lib/**` |
-| cdad-test-writer | PreToolUse | Edit\|Write | `path-guard.sh test-writer-write` | Block Write outside `tests/**` |
-
-**Status:** ✅ Guards ready for verification in real Claude Code CLI session
+1. **F1 (BLOCKER inicial): sandbox headless bloquea escritura** de agentes write-capable. Resuelto con `--dangerously-skip-permissions` (salta prompt sandbox; hooks del guard siguen activos).
+2. **F2: RED inicial falló por import error** (`no required module provides .../src/calc`) porque el package no existía. Resuelto creando skeleton `src/calc/calc.go` (solo `package calc`, sin `Add`) → fallo correcto `undefined: calc.Add`.
+3. **F3: state-passing requiere handoff explícito** del orquestador. El scribe no vio los outputs reales del reviewer (asumió "stages 4-5 no ejercitadas") porque el orquestador no se los pasó vía handoff. Confirmado: el orquestador debe materializar/pasar artefactos (regla 6 del ciclo CDAD).
+4. **F4: layout `pkg/calc/` (template) fuera del espacio de los guards** → C1. Corregido con re-layout `src/`+`tests/`.
 
 ---
 
-## Lessons Learned from Spike (Memory Bank Entry)
+## Deuda técnica aceptada
 
-### Installation & Distribution
-
-**Lesson:** Extended `install.sh` successfully installs both OpenCode and Claude Code targets in one unified flow.
-
-- Profile system (economical/optimus/premium) works for both runtimes
-- Model mapping functions (cdad_model + cdad_model_claude) keep both in sync
-- Installation is idempotent (safe to re-run)
-
-**Implication:** Deployment of CDAD agents is simplified; both runtimes managed from single install script.
-
-### Design Trade-offs
-
-**Lesson:** Claude Code path-scoping via hooks is weaker than OpenCode's declarative `permission` but sufficient for validation purposes.
-
-- Hooks run before tool execution (can block with exit 2)
-- Guarantee is behavioral (hook must cooperate), not structural (like OpenCode runtime)
-- This aligns with ADR-008's documented trade-off
-
-**Implication:** Claude Code support is viable; trade-off is explicit and documented in ADR-008.
-
-### Invariant Preservation
-
-**Lesson:** Reviewer ≠ implementer invariant (ADR-001, anti-confirmation-bias) is preserved in Claude Code, though weakened.
-
-- OpenCode: cross-provider (qwen3.7-plus vs deepseek-v4-flash)
-- Claude Code: cross-Anthropic family (opus vs haiku)
-- Both guarantee different model = different decision heuristics
-
-**Implication:** Core safety invariant is maintained; specific mitigation (cross-provider) is relaxed but documented.
-
-### Spike Validation Technique
-
-**Lesson:** Trivial mini-feature (Add function) is powerful validation tool because it exercises all 5 roles without cognitive load.
-
-- Each agent had a clear, small task (architect: 4 postconditions; test-writer: 4 tests; implementer: 2 lines; reviewer: 5 ejes; scribe: 1 entry)
-- Span of entire CDAD cycle complete in <1 hour
-- No real-world complications to obscure architecture issues
-
-**Implication:** Validation spikes should be trivially simple features (not tests, not scaffolding).
+- **Bash bypass**: sub-agente con Bash puede evadir el path-guard (leer `src/`, escribir fuera de `tests/`). Aceptado (ADR-008 decide Bash completo). Mitigación: revisión humana / confianza en el prompt del agente. NO es enforceable estructuralmente en Claude Code.
+- **Path-scoping conductual**, no estructural (hook, no runtime permission). Documentado en ADR-008.
+- **Model routing cross-Anthropic** (opus vs haiku), no cross-provider como OpenCode. Documentado en ADR-008.
+- **Agentes write-capable requieren `--dangerously-skip-permissions`** en headless; en sesión interactiva requiere aprobar el prompt.
 
 ---
 
-## Technical Notes
+## Conclusión
 
-### Observed Behavior
+**CDAD-002 VALIDADO con evidencia real (2026-08-14).** Los gates G7a-G7e pasan, la delegación de sub-agentes vía Agent tool funciona headless (M2), y 3 defectos reales (A, B, C) fueron corregidos durante la validación. El findings anterior era un template con PASS prematuro; este documento refleja la ejecución real verificada.
 
-1. **Installation completeness**: All targets installed (OpenCode agents, Claude Code agents, guard script, skills for 3 runtimes)
-2. **Model application**: Profile applied consistently across both frontmatter types (mofgw/* for OpenCode, aliases for Claude Code)
-3. **Go module setup**: Minimal (go.mod created on first test run)
-4. **Test execution**: Clean (go test output shows clear PASS/FAIL semantics)
-
-### Outstanding Questions (for real Claude Code CLI execution)
-
-These will be verified when spike is run in actual Claude Code CLI:
-
-1. Do hooks actually block at the right moments? (Requires real Claude Code CLI + actual tool invocations)
-2. Do agents respect state-passing (no parent session bleed-through)? (Requires Agent tool invocation)
-3. Does model routing work (opus reviewer actually invoked vs haiku)? (Requires model-specific logging)
-
----
-
-## Conclusion
-
-**CDAD-002 Validation Spike: ✅ PASS**
-
-- **Artifacts**: All 5 stages produced expected outputs (tests, code, review summary)
-- **Installation**: Extended `install.sh` works for economical profile (5 agents + guard script)
-- **Invariants**: Reviewer ≠ implementer preserved (weakened but documented)
-- **Readiness**: Architecture ready for real Claude Code CLI deployment
-
-**Next step**: Execute spike with real Claude Code CLI session (prompts in `VALIDATION_CHECKLIST.md`) to verify runtime behavior (hooks, state-passing, model routing, Agent tool delegation).
-
-**Recommendation**: ADR-008 is approved and implementation is verified. CDAD Claude Code support is ready for production use with documented trade-offs.
+**Recomendación:** ADR-008 → **Verified**. CDAD soporta Claude Code como segundo runtime con los trade-offs documentados (Bash, conductual, cross-Anthropic).
 
 ---
 
 ## Audit Trail
 
-| File | Status |
-|------|--------|
-| `pkg/calc/calc.go` | Implemented (8 lines, 2 logic) |
-| `pkg/calc/calc_test.go` | Tests (4 tests, all PASS) |
-| `go.mod` | Module manifest (minimal) |
-| `docs/specs/cdad-002/spec.md` | Spec (4 postconditions) |
-| `docs/specs/cdad-002/VALIDATION_CHECKLIST.md` | Handoff prompts for CLI execution |
-| `~/.claude/agents/cdad-*.md` | 5 agents installed (economical profile) |
-| `~/.claude/cdad-scripts/path-guard.sh` | Guard script (executable) |
-| `~/.claude/skills/cdad-*` | Skills installed (3 directories) |
-
+| Archivo | Estado |
+|---------|--------|
+| `src/calc/calc.go` (repo temporal) | Implementado (Add) |
+| `tests/calc/calc_test.go` (repo temporal) | 4 tests, PASS |
+| `scripts/claude-code-path-guard.sh` (repo cdad) | Fix B aplicado + verificado |
+| `docs/specs/cdad-002/spec.md` (repo cdad) | Re-layout src/ + tests/ |
+| `docs/specs/cdad-002/VALIDATION_CHECKLIST.md` (repo cdad) | Re-layout src/ + tests/ |
+| `pkg/calc/` (repo cdad) | **Eliminado** (leftover del template) |
+| `~/.claude/agents/cdad-*.md` | 5 agentes instalados (perfil economical) |
+| `~/.claude/cdad-scripts/path-guard.sh` | Fix B propagado, byte-idéntico al source |

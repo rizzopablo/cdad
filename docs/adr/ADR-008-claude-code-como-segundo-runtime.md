@@ -1,7 +1,7 @@
 # ADR-008 — Claude Code como segundo runtime objetivo para CDAD
 
 **Fecha:** 2026-08-13  
-**Status:** Approved (Fase 1 implementación 13 Aug 2026, pending validation spike `cdad-002`)  
+**Status:** **Verified** (2026-08-14 — validation spike `cdad-002` ejecutado end-to-end con sub-agentes reales vía CLI; gates G7a-G7e PASS; delegación Agent tool verificada; Fix B path-guard aplicado)  
 **Contexto:** Expansión de CDAD más allá de OpenCode (runtime de referencia desde ADR-002) para incluir Claude Code como runtime con soporte completo de sub-agentes.
 
 ---

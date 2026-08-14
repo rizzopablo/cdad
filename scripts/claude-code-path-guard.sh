@@ -25,13 +25,40 @@ if [[ -z "$FILE_PATH" ]]; then
   exit 0
 fi
 
-# Normaliza file_path: elimina ./ si existe, expande a absoluto si es posible
-FILE_PATH="${FILE_PATH#./}"
+# Normaliza file_path a RELATIVO al proyecto (PWD) para que los globs relativos
+# (tests/**, src/**, lib/**) matcheen tanto rutas relativas como absolutas.
+# Fix B: sin esto, un sub-agente podía pasar una ruta absoluta (/abs/.../tests/x)
+# y evadir el guard (la ruta absoluta no matchea el glob relativo).
+relativize() {
+  local p="$1"
+  # expande ~/ si viene
+  p="${p/#\~\//$HOME\/}"
+  # si es absoluta bajo $PWD, la relativiza
+  if [[ "$p" == "$PWD"* ]]; then
+    p="${p#$PWD}"
+    p="${p#/}"
+  else
+    # absoluta fuera del proyecto: quita el root para comparación relativa
+    p="${p#/}"
+  fi
+  # quita ./, duplicados /, y trailing /
+  p="${p#./}"
+  p="${p//\/\//\/}"
+  p="${p%/}"
+  printf '%s' "$p"
+}
+FILE_PATH="$(relativize "$FILE_PATH")"
 
 # Función helper: ¿matchea un glob?
 matches_glob() {
   local path="$1"
   local glob="$2"
+
+  # Base exacta (tests, tests/) también matchea tests/** — evita bypass por dir sin contenido
+  local base="${glob%/**}"
+  if [[ "$path" == "$base" || "$path" == "$base/" ]]; then
+    return 0
+  fi
 
   # Sustituye ** por un patrón regex que matchea cualquier profundidad
   local pattern="${glob//\*\*/.+}"

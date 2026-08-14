@@ -87,10 +87,10 @@ Prompt:
 ---
 You are the architect in CDAD. Spike CDAD-002 is a validation of Claude Code sub-agents.
 
-Feature: "Calculator add function" — a new public func Add(a int, b int) -> int in pkg/calc.
+Feature: "Calculator add function" — a new public func Add(a int, b int) -> int in src/calc.
 
 Discovery task:
-1. Audit the repo landscape: does pkg/calc/ exist? Any existing Add-related tests?
+1. Audit the repo landscape: does src/calc/ exist? Any existing Add-related tests?
 2. Brainstorm implementation options (trivial: just return a + b).
 3. Draft the spec with postconditions P1-P4 (defined in spec.md).
 
@@ -132,16 +132,16 @@ Prompt:
 ---
 You are the test-writer in CDAD. Stage 3.0 (AUDIT).
 
-Feature: "Calculator add function" in pkg/calc (new package).
+Feature: "Calculator add function" in src/calc (new package).
 
-Audit task: Read the existing test suite (if any) for pkg/calc/.
+Audit task: Read the existing test suite (if any) for src/calc/.
 - List any existing tests related to Add.
 - For each: mark as "to modify" or "untouched".
 - Identify new tests needed for spec postconditions P1-P4.
 
 Spec reference: docs/specs/cdad-002/spec.md
 Repository: Go project, Makefile with "make test"
-Existing test location: pkg/calc/calc_test.go (create if missing)
+Existing test location: tests/calc/calc_test.go (create if missing)
 
 Output: Produce a Test Audit Report (see cdad-cycle skill for format).
 ---
@@ -172,7 +172,7 @@ Prompt:
 ---
 You are the test-writer in CDAD. Stage 3.1 (RED).
 
-Feature: "Calculator add function" in pkg/calc.
+Feature: "Calculator add function" in src/calc.
 
 Red task: Write tests that verify spec postconditions P1-P4.
 - TestAdd_basic: Add(2, 3) == 5
@@ -182,7 +182,7 @@ Each test MUST fail initially (we haven't implemented Add yet).
 Failure reason: undefined reference to Add, or assertion failure.
 
 Spec: docs/specs/cdad-002/spec.md
-Test location: pkg/calc/calc_test.go
+Test location: tests/calc/calc_test.go
 Run: make test
 
 After writing, run the suite and paste the FAIL output.
@@ -209,16 +209,16 @@ Prompt:
 ---
 You are the implementer in CDAD. Stage 3.2 (GREEN).
 
-Feature: "Calculator add function" in pkg/calc.
+Feature: "Calculator add function" in src/calc.
 
 Green task: Write the simplest code that makes the RED tests pass.
 - Implement func Add(a, b int) int { return a + b }
-- Location: pkg/calc/calc.go (create if missing)
+- Location: src/calc/calc.go (create if missing)
 
 Tests must pass. Run the full suite:
   make test
 
-Output: LISTO. Implementation in pkg/calc/calc.go. Suite: GREEN. Commit: <hash>
+Output: LISTO. Implementation in src/calc/calc.go. Suite: GREEN. Commit: <hash>
 ```
 
 **Verify suite is ALL GREEN.**
@@ -241,7 +241,7 @@ Prompt:
 ---
 You are the reviewer in CDAD. Stage 4 (Review).
 
-Feature: "Calculator add function" in pkg/calc.
+Feature: "Calculator add function" in src/calc.
 
 Review task: Audit the diff (implementation + tests) against spec.
 5 ejes: Correctness, Robustness, Maintainability, Testability, Performance.
@@ -341,7 +341,7 @@ Create a validation findings file:
 ### Implementer (Edit/Write Restrictions)
 
 - [ ] Attempted to write to `tests/` — hook BLOCKED (exit 2) ✓
-- [ ] Allowed to write to `pkg/calc/calc.go` ✓
+- [ ] Allowed to write to `src/calc/calc.go` ✓
 
 ## Model Routing Verification
 
