@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-05
-- **Deciders**: Pablo (dueño del proyecto) + Ofap
+- **Deciders**: el usuario (dueño del proyecto) + el orquestador
 
 ## Contexto
 

@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-05
-- **Deciders**: Ofap (build orchestrator) + sub-agentes CDAD
+- **Deciders**: el orquestador + sub-agentes CDAD
 - **Confianza**: Alta
 
 ## Contexto

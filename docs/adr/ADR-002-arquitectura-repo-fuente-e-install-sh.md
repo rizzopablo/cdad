@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-03
-- **Deciders**: Pablo Rizzo + Ofap
+- **Deciders**: el usuario (dueño del proyecto) + el orquestador
 
 ## Contexto
 
@@ -28,7 +28,7 @@ Desarrollo SIEMPRE en el repo fuente `cdad/cdad/`. Los agentes viven versionados
 
 ## Razones
 
-1. Pablo explícito: "hace todo el desarrollo en el dir de fuentes, luego los instalas (un script install.sh puede ser útil)".
+1. El usuario explícito: "hace todo el desarrollo en el dir de fuentes, luego los instalas (un script install.sh puede ser útil)".
 2. Verificado: instalaciones actuales son copias independientes byte-idénticas (firma cp -p/rsync -a), no symlinks.
 3. `cdad-spec-and-test` existía SOLO en `.config` — el repo debe ser fuente completa.
 4. install.sh nunca usa `--delete` (targets tienen contenido no-cdad) y nunca toca `.agents/.skill-lock.json` ni los 7 agentes no-Cdad.

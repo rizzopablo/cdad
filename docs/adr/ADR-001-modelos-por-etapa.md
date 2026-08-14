@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-03
-- **Deciders**: Pablo Rizzo + Ofap
+- **Deciders**: el usuario (dueño del proyecto) + el orquestador
 
 > Nota (2026-08-05): la elección de provider directo a bailian fue superseded por ADR-005 — los modelos ahora corren vía mofgw.
 
@@ -30,7 +30,7 @@ Crear 5 sub-agentes OpenCode nativos (`cdad-architect`, `cdad-test-writer`, `cda
 
 ## Razones
 
-1. Data empírica de Pablo: deepseek codea bien ("en general en todo"); lo más difícil es hacer buenos tests (→ rigor: glm-5.2 para test-writer).
+1. Data empírica del usuario: deepseek codea bien ("en general en todo"); lo más difícil es hacer buenos tests (→ rigor: glm-5.2 para test-writer).
 2. Regla no-negociable CDAD: reviewer ≠ implementer en familia de modelo. Implementer = deepseek-v4-flash, reviewer = qwen3.7-plus (familias distintas).
 3. Provider `bailian` directo (sin proxy router): el proxy router rota modelos y rompería el override. Verificado: los 4 modelos existen en bailian directo.
 4. Asignación: architect+scribe = deepseek-v4-pro (razonador fuerte), test-writer = glm-5.2 (rigor), implementer = deepseek-v4-flash (productivo barato), reviewer = qwen3.7-plus.

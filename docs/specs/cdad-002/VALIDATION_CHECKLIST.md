@@ -13,7 +13,7 @@ This document is for **manual execution after Phase 5 (install.sh) completes**. 
 Run the installer **for real** (not dry-run) — this makes the agents available:
 
 ```bash
-cd /path/to/project
+cd ~/cdad
 bash install.sh --optimus   # or --economical, --premium
 ```
 
