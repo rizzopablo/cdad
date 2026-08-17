@@ -18,6 +18,7 @@ Cargá `references/handoff-prompts.md` sección "Reviewer (Etapa 4)".
 
 Generá packet con:
 
+- **Contrato de veredicto (verdict-tuple.md):** referenciá el tuple de 4 campos — cada hallazgo del reviewer emite Veredicto (BLOQUEANTE|OPCIONAL|ABSTENER) + Bucket h|m|l por observables + rationale + provenance. El bucket lo deriva el reviewer por regla determinística (familia de modelo, diff completo, rationale grounded, spec en contexto), nunca por confianza elicitada. La sección Abstenciones se reporta siempre (vacía si no aplica).
 - Diff completo de la feature (`git diff <base>..HEAD`).
 - Spec aprobado (`docs/specs/<feat>/spec.md`).
 - Interface / contrato.

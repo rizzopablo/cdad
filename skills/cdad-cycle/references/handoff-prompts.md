@@ -439,7 +439,7 @@ Commit: <hash>"
 ### Reviewer (Etapa 4)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `reviewer` con la siguiente tarea:
+Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, leé `references/verdict-tuple.md` (contrato de veredicto: tuple de 4 campos por hallazgo) y actuá como `reviewer` con la siguiente tarea:
 
 Tarea: revisar el diff completo de la feature contra el spec aprobado y producir un reporte priorizado.
 
@@ -454,7 +454,14 @@ Reglas estrictas:
 - Permisos: read-only. NO modificás nada.
 - Idealmente sos modelo distinto al implementer (lo declarás al inicio).
 - Categorías obligatorias: Divergencias del spec, Violaciones de boundaries, Riesgos de seguridad, Inconsistencias de estilo, Sugerencias de simplificación.
-- Cada hallazgo: ubicación (archivo:líneas), problema, sugerencia, severidad (Bloqueante / Opcional).
+- **Contrato de veredicto (tuple 4 campos, ver `references/verdict-tuple.md`):**
+  cada hallazgo emite `Veredicto (BLOQUEANTE|OPCIONAL|ABSTENER)` + `Bucket (h|m|l)`
+  derivado por regla de observables (familia distinta al implementer +1, diff
+  completo +1, rationale grounded archivo:líneas +1, spec+convenciones +1;
+  0-1→l, 2→m, 3-4→h) + `Problema` (rationale verificable) + `Ubicación`
+  (provenance exacta). Si no podés juzgar un punto, emití `ABSTENER` con
+  motivo — nunca lo disfraces de Opcional. Sin provenance el hallazgo no
+  cuenta en la agregación.
 
 Output esperado: la review como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/review.md` desde ese texto — Contrato de roles §5):
 
@@ -465,15 +472,24 @@ Reviewer model: <declaración de modelo, ej: mofgw/qwen3.7-plus>
 ## Bloqueantes
 ### 1. <título>
 Ubicación: <archivo:líneas>
+Bucket: <h|m|l>  ← según regla de observables (verdict-tuple.md)
 Problema: <...>
 Sugerencia: <...>
 
 ## Opcionales
 ### N. <...>
+Ubicación: <archivo:líneas>
+Bucket: <h|m|l>
+Problema: <...>
+Sugerencia: <...>
+
+## Abstenciones
+### N. <punto que no pudiste juzgar>
+Motivo: <...>
 
 Cuando termines:
 
-"LISTO. Resumen: <X> bloqueantes, <Y> opcionales."
+"LISTO. Resumen: <X> bloqueantes, <Y> opcionales, <Z> abstenciones."
 ```
 
 ### Scribe (Etapa 5)

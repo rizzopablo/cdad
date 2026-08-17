@@ -274,7 +274,7 @@ Etapa 3: TDD anti-trampa     → references/stage-3-tdd.md
    ├─ 3.5 E2E: (opcional)
    │  └─ Gate: E2E verdes
    ↓ (gate: suite verde, toda postcondición con test)
-Etapa 4: Review two-layer    → references/stage-4-review.md
+Etapa 4: Review two-layer    → references/stage-4-review.md (+ contrato de veredicto: references/verdict-tuple.md)
    ↓ (gate: bloqueantes resueltos)
 Etapa 5: Merge + Memory Bank → references/stage-5-merge.md
    ↓ (gate: CI verde + Memory Bank actualizado)

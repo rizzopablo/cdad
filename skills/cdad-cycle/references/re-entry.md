@@ -127,6 +127,8 @@ Verificá:
 - [ ] Existe `docs/specs/<feat>/review.md`.
 - [ ] Estructura: secciones "Bloqueantes" y "Opcionales", cada hallazgo con ubicación + problema + sugerencia.
 - [ ] Cada hallazgo tiene severidad explícita.
+- [ ] **Contrato de veredicto (verdict-tuple.md):** cada hallazgo incluye `Bucket: <h|m|l>` derivado por regla de observables (no confianza elicitada), y la review incluye sección "Abstenciones" (puede estar vacía) con los puntos que el reviewer no pudo juzgar. Sin bucket/provenance → pedir corrección, no agregar a mano.
+- [ ] Al pasar a Capa 2, el resumen incluye abstenciones: *"<X> bloqueantes, <Y> opcionales, <Z> abstenciones"*. El agregador puede aplicar κ-dedupe (hallazgos del mismo commit/bloque no suman como corroboración independiente) — diagnóstico, no veto: la priorización la decide Capa 2.
 
 Si pasa: pasás el reporte al usuario para validar priorización.
 
