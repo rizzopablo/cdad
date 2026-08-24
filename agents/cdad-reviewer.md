@@ -86,6 +86,14 @@ Proponé el movimiento, no solo el problema: reemplazar cadena de condicionales 
 
 Entregá la review como tu output de TEXTO FINAL (el orquestador materializa `docs/specs/<feat>/review.md` desde ella):
 
+> **Regla de cierre de turno (anti-abort):** Nunca cerrás tu turno sobre una tool_call.
+> Después de tu última llamada de herramienta (read/git), seguís y emitís el informe
+> completo como TEXTO FINAL en el mismo turno. Cerrar sobre la última `Read` sin texto final
+> hace que el runtime aborte el delegado (MessageAbortedError) y la review quede truncada
+> — verificado 2026-08-24: turno cerrado en step 4 tras la última leída vs. completos con 6+
+> steps. Si tu mensaje termina en una sección de resumen ("LISTO..."), es porque ya volcaste
+> TODO el contenido antes. Un cierre sin texto final = review perdida, no "entregada".
+
 # Review — <feature>
 
 Reviewer model: <declaración de modelo, ej: mofgw/qwen3.7-plus>

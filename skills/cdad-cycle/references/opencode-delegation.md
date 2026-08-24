@@ -64,9 +64,23 @@ read-only sub-agents. Use task for write-capable sub-agents.`
 
 **Consecuencia para artefactos de roles read-only** (ej: review.md): el
 delegate NO puede escribir el artefacto (write deny). Opciones:
-a. Scoped write: permitir write SOLO al path del artefacto (ej:
-   `docs/specs/*/artifacts/review.md`) en la config del agente.
+a. ~~Scoped write~~ **verificado NO-FUNCIONAL en opencode 1.18.18 (2026-08-24)**:
+   cualquier `deny` en edit/write/bash (aunque sea scoped a `docs/specs/<feat>/review.md`)
+   hace que opencode colapse el agente a "read-only" y **fuerce `delegate`** igual.
+   No habilita `task`. Descartado por evidencia empírica (test de routing con agente
+   write-scoped a `log/**`: "Agent is read-only... use delegate").
 b. El orquestador materializa el artefacto desde el output del delegate.
+
+**Riesgo real del delegate: abort de turno (MessageAbortedError), no pérdida de
+persistencia.** El output async SÍ se persiste completo en disco
+(`~/.local/share/opencode/delegations/<hash>/<session>/<id>.md`); la causa de una
+review truncada es que el sub-agente delegado **cierra el turno sobre una tool_call
+sin emitir el texto final** (verificado 2026-08-24: truncado salió del loop en step 4
+tras la última leída vs. completos con 6+ steps). El runtime entonces marca el mensaje
+`MessageAbortedError` y solo persiste el trace (step-start + reasoning), no el informe.
+Mitigación: el prompt del rol read-only (ej. cdad-reviewer.md "Formato de output") debe
+incluir la **regla de cierre** — nunca cerrar sobre una tool_call, siempre volcar el
+texto final en el mismo turno tras la última herramienta.
 
 ## Fallback ante rate limit (429)
 

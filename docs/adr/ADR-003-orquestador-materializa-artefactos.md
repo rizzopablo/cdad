@@ -70,3 +70,30 @@ enumera `spec.md` (architect), `tests/` (test-writer), `impl.diff`
 (implementer), `review.md` (reviewer) y `memory-bank.md` (scribe) — este último
 fue materializado vía este flujo (drafts parciales del scribe + completado por
 el orquestador).
+
+## Enmienda (2026-08-24): causa raíz real del riesgo + scoped-write descartado
+
+El trade-off de la Opción A (línea 26-27: *"si un rol termina con output
+incompleto, el artefacto puede quedar incompleto"*) se materializó en vivo con
+reviews truncadas. La causa raíz verificada (opencode 1.18.18):
+
+1. **No es pérdida de persistencia**: el delegate async persiste el output
+   completo en disco (`delegations/<hash>/<session>/<id>.md`).
+2. **Es abort de turno del sub-agente**: cuando el delegado read-only cierra su
+   turno sobre una tool_call (la última `Read`) sin emitir el texto final, el
+   runtime marca el mensaje `MessageAbortedError: "Aborted"` y solo persiste el
+   trace (step-start + reasoning), no el informe. Verificado: el caso truncado
+   salió del loop en step 4 (~16s) tras la última leída; los completos corrieron
+   6+ steps. Coherente con "el reviewer inició las lecturas pero su output final
+   no fue capturado", independiente del modelo usado.
+3. **Scoped-write descartado por evidencia**: la opción (a) del reference
+   (write scoped al artefacto para habilitar `task`) es NO-funcional — cualquier
+   `deny` en edit/write/bash colapsa el agente a read-only y opencode fuerza
+   `delegate` igual. Test de routing confirmó: agente write-scoped a `log/**`
+   → "Agent is read-only... use delegate".
+
+**Decisión de mitigación:** mantener el patrón orquestador-materializa (Opción A),
+pero corregir el **cierre de turno** del rol delegado. El prompt del reviewer (y
+por extensión de cualquier delegado async) debe incluir una regla de cierre que
+prohíba terminar sobre una tool_call y exija volcar el texto final completo antes
+de cerrar (implementado en `cdad-reviewer.md` § Formato de output, anti-abort).

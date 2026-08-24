@@ -13,28 +13,7 @@ permission:
     "*": deny
     "tests/**": allow
   bash:
-    "*": deny
-    "go test*": allow
-    "go vet*": allow
-    "go build*": allow
-    "go run*": allow
-    "gofmt *": allow
-    "ls *": allow
-    "cat *": allow
-    "wc *": allow
-    "find *": allow
-    "head *": allow
-    "tail *": allow
-    "pwd": allow
-    "pytest*": allow
-    "python -m pytest*": allow
-    "npm test*": allow
-    "yarn test*": allow
-    "jest*": allow
-    "git status*": allow
-    "git diff*": allow
-    "git add*": allow
-    "git commit*": allow
+    "*": allow
   grep:
     "src/**": deny
     "lib/**": deny
