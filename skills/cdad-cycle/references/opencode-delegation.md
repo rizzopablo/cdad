@@ -29,6 +29,12 @@ El `subagent_type` es el rol. El modelo lo define la config del sub-agente
 (no se pasa como argumento). Reviewer usa familia distinta al implementer
 (regla CDAD no-negociable contra confirmation bias).
 
+La tabla muestra el perfil **optimus** (diseño del repo). El deploy puede usar
+otro perfil (`install.sh --economical|--premium`, ver `scripts/cdad-models.sh`
+y ADR-007): verificá el perfil activo antes de asumir el modelo de la tabla
+(marker `~/.config/opencode/agents/.cdad-models-profile`). La regla
+reviewer-familia-distinta se mantiene en los 3 perfiles.
+
 ## Mecanismo de state passing
 
 Los sub-agentes Task reciben contexto FRESCO (no ven el contexto del

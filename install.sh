@@ -175,8 +175,10 @@ Options:
                --status is an alias. Agents are compared profile-aware: the
                model: line must match the ACTIVE profile (flag/env
                CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus).
-  --economical Install the economical profile (all agents deepseek-v4-flash;
-               reviewer stays qwen3.7-plus). Cheapest, fastest, less depth.
+   --economical Install the economical profile (execution roles deepseek-v4-flash;
+                architect deepseek-v4-pro, reviewer minimax-m3 — familia
+                distinta al implementer). Cheap run, spec/review quality kept
+                (enmienda 2026-08-24, ADR-007).
   --optimus    Install the optimus profile (design default): architect/scribe
                deepseek-v4-pro, test-writer glm-5.2, implementer flash,
                reviewer qwen3.7-plus. Balanced cost/quality.

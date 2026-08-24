@@ -150,3 +150,40 @@ verificó byte-idéntica.
   --premium` → el validator FALLA con "reviewer e implementer comparten modelo"
   (después se reinstaló `--premium` sin envs).
 - Final: runtime restaurado a optimus (perfil de diseño).
+
+## Enmienda (2026-08-24): ajuste del perfil economical
+
+- **Status**: Accepted (supera la definición economical original de este ADR)
+- **Deciders**: el usuario (dueño del proyecto) + el orquestador
+
+### Contexto
+
+1. Reporte del dueño: `qwen3.7-plus` (reviewer economical por default) fallando
+   de forma recurrente en corridas recientes (causa raíz no auditada en logs;
+   el síntoma motivó el cambio).
+2. Propuesta inicial del dueño: mover architect y reviewer economical a
+   `deepseek-v4-pro`. **Rechazada para el reviewer**: deepseek-v4-pro y el
+   implementer economical (`deepseek-v4-flash`) son la MISMA familia — el guard
+   del validator (comparación de strings) la dejaría pasar, pero violaría el
+   invariante de diseño "familia DISTINTA" (anti-confirmation-bias).
+
+### Decisión
+
+- **economical|architect → `mofgw/deepseek-v4-pro`**: sin invariante de familia;
+   la precisión del spec es la carga crítica del ciclo (spec ambiguo → tests
+   ambiguos → AP-13 Garbage Cascade).
+- **economical|reviewer → `mofgw/minimax-m3`**: familia distinta al implementer
+   (antibias preservado en strings Y en familia); según `opencode.jsonc` cuesta
+   0.30/1.20 vs 0.40/1.60 de qwen3.7-plus (−25%) con 1M contexto / 512k output
+   (vs 131k de qwen) — mejor para reviews de diffs grandes.
+- Roles de ejecución (test-writer, implementer, scribe) sin cambios:
+   `deepseek-v4-flash`.
+- **optimus y premium quedan sin cambios** (siguen con qwen3.7-plus/max en
+   reviewer). Nota: si las fallas de qwen se confirman como del modelo y no de
+   provisión puntual, evaluar extender el reemplazo a los otros perfiles.
+
+### Verificación (realizada 2026-08-24)
+
+`install.sh --economical` → `--check` PASS → `validate-subagents.sh` PASS
+(guard anti-bias: minimax-m3 ≠ deepseek-v4-flash). Detalle en la corrida de
+instalación de esa fecha.

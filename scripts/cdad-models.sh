@@ -32,9 +32,17 @@
 cdad_model() {
   local perfil="$1" rol="$2"
   case "$perfil|$rol" in
-    # --- economical: mínimo costo — todo deepseek-v4-flash (productivo
-    # barato); el reviewer cae al default qwen3.7-plus (familia DISTINTA).
-    economical\|architect|economical\|test-writer|economical\|implementer|economical\|scribe)
+    # --- economical (enmienda 2026-08-24): ejecución barata con calidad en
+    # los puntos críticos — architect sube a deepseek-v4-pro (la precisión
+    # del spec es la carga crítica del ciclo), roles de ejecución en
+    # deepseek-v4-flash, reviewer en minimax-m3 (familia DISTINTA a
+    # deepseek; reemplaza a qwen3.7-plus — reporte del dueño: fallas
+    # recurrentes; minimax-m3 además 25% más barato: 0.30/1.20 vs 0.40/1.60).
+    economical\|architect)
+      echo "mofgw/deepseek-v4-pro";;
+    economical\|reviewer)
+      echo "mofgw/minimax-m3";;
+    economical\|test-writer|economical\|implementer|economical\|scribe)
       echo "mofgw/deepseek-v4-flash";;
 
     # --- optimus (perfil de diseño, default del repo): espeja la tabla §2 del
