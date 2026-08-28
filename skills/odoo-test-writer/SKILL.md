@@ -90,8 +90,15 @@ setUp con `env["res.partner"].create(...)`.
 ## Runner: `make test-one` para RED, `make test` para AUDIT
 
 - **RED** (test nuevo que debe fallar): corré SOLO ese test con
-  `make test-one TEST=mod:Clase.metodo` y verificá que falle por
-  **AssertionError** (no por ImportError/error de carga).
+  `make test-one TEST=mod:Clase.metodo` y verificá que falle por la razón
+  correcta. Dos formas válidas de RED en Odoo (verificado 2026-08-28):
+  * Postcondición sobre comportamiento existente (método presente, lógica
+    incompleta/cambiada) → falla con **AssertionError**.
+  * Feature nueva (el método NO existe aún) → falla con **AttributeError**
+    (`'x.y' object has no attribute '...'`). También es RED válido: el
+    método genuinamente no está implementado.
+  * Inválido como RED: **ImportError** o error de carga del módulo (indica
+    que el test o el `tests/__init__.py` está roto, no la feature).
 - **AUDIT / suite completa**: `make test` corre toda la suite sobre la DB
   caliente.
 - **Gate de instalación**: `make test-clean` instala desde cero con demo data.

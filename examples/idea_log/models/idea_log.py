@@ -78,3 +78,7 @@ class IdeaLog(models.Model):
                 "accepted_date": fields.Date.context_today(self),
             }
         )
+
+    def action_submit(self):
+        self.ensure_one()
+        self.write({"status": "submitted"})

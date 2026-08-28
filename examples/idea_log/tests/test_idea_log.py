@@ -55,6 +55,12 @@ class TestIdeaLog(TransactionCase):
         self.assertEqual(idea.status, "accepted")
         self.assertEqual(idea.accepted_date, fields.Date.context_today(idea))
 
+    def test_action_submit(self):
+        """action_submit moves a draft idea to submitted."""
+        idea = self.idea_model.create({"name": "Submit me"})
+        idea.action_submit()
+        self.assertEqual(idea.status, "submitted")
+
     def test_votes_aggregate(self):
         """Vote aggregation computes from vote lines."""
         idea = self.idea_model.create({"name": "Votes"})
