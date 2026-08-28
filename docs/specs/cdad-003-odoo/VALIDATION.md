@@ -67,15 +67,17 @@ Postcondición nueva (`action_submit`: draft→submitted) validada de punta a pu
 | Criterio | Estado | Evidencia |
 |---|---|---|
 | A1 ciclo completo | ✅ | RED→GREEN→clean verde en odoo.sh (§4) |
-| A2 dos entornos | 🟡 | odoo.sh completo; staging privado: gates estáticos ✅, runtime ⏳ (postgres saturado, escalado) |
+| A2 dos entornos | ✅ | odoo.sh 8/8; staging privado: `test-clean` verde 7/7 en DB fresca (05:52) + gates estáticos ✅. Runs warm posteriores flaky por saturación de postgres (escalado). |
 | A3 sanitización | ✅ | grep de patrones sensibles = 0 en lo publicable |
 | A4 reviewer≠implementer | ✅ | qwen3.7-plus vs deepseek-v4-flash |
 
 ## 6. Pendientes (escalados a Pablo)
 
 1. **Postgres del servidor privado saturado** (Tier 1): subir `max_connections`
-   o pgbouncer — bloquea F3 runtime. También propuesta de producto: presupuesto
-   de conexiones por tenant.
+   o pgbouncer — causa flakiness en los runs warm de F3. Se descubrió además
+   que procesos `odoo-bin` huérfanos retienen conexiones y son una causa
+   concreta: la mitigación operativa es matarlos antes de reintentar.
+   Propuesta de producto: presupuesto de conexiones por tenant.
 2. **Push al repo GitHub de odoo.sh** (flujo real push→rebuild): agregar
    colaborador (cuenta de trabajo) o push del owner.
 3. **CI completa estilo OCA** (fuera de alcance de este ciclo, futuro).

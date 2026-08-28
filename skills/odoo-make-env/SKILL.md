@@ -62,6 +62,20 @@ Detalle de la variante odoo.sh: `references/odoo-sh.md`.
 3. En odoo.sh, `scp`/`sftp` fallan: transferir con `tar` por stdin/SSH.
 4. `--workers 0` evita consumir slots del postgres compartido de otros
    tenants.
+5. **DB fresca + `-i` corre los tests at_install de TODAS las dependencias
+   (incluidos los de `base`, como `HttpCase`, que abren conexiones HTTP
+   adicionales).** En postgres compartido esos tests cuelgan. Fix: acotar
+   `test-clean` con `--test-tags $(MODULE)` para correr solo los tests del
+   módulo (la instalación de dependencias sigue ocurriendo; solo se filtran
+   sus tests).
+6. **Procesos odoo-bin huérfanos retienen conexiones postgres** y pueden ser
+   la causa real de "sin slots" (un `make` que hizo timeout deja el `odoo-bin`
+   pegado en `connect`). Antes de reintentar: `ps -eo pid,cmd | grep odoo` y
+   matar los huérfanos del runner (NUNCA los de la instancia de plataforma).
+   Un huérfano pegado es peor que un reintento fresco.
+7. **Evitá macro de retry sobre `odoo-bin`**: agrega complejidad (y bugs de
+   escaping `$$`) sin resolver la causa raíz. Preferí comandos directos; el
+   retry de slots, si existe, debe ser mínimo (solo `createdb`).
 
 ## Referencias
 
