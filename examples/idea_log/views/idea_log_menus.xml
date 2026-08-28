@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 CDAD Contributors
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+    <record id="idea_log_action" model="ir.actions.act_window">
+        <field name="name">Ideas</field>
+        <field name="res_model">idea.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Capture your first idea!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="idea_log_menu_root" name="Ideas" sequence="30"/>
+
+    <menuitem id="idea_log_menu" name="Ideas" parent="idea_log_menu_root"
+              action="idea_log_action" sequence="10"/>
+</odoo>

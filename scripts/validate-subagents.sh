@@ -7,18 +7,23 @@
 # Uso:    bash scripts/validate-subagents.sh
 #
 # Qué verifica (en orden):
-#   1. runtime  — los 5 agentes cdad-*.md existen en el dir de INSTALACIÓN
+#   1. runtime  — los agentes cdad-*.md existen en el dir de INSTALACIÓN
 #      ($HOME/.config/opencode/agents), no en el repo. Si el dir runtime no
 #      existe, fallback DOCUMENTADO: se compara contra el repo (agents/) con
 #      WARN explícito y la etapa cuenta como FAIL (runtime no instalado).
+#      Set validado: 5 roles base (architect/implementer/reviewer/scribe/
+#      test-writer) + 5 variantes Odoo (*-odoo con modelo fijo por ADR-007).
+#      El orquestador (cdad-orchestrator) se valida aparte (mode: all, sin
+#      model: — el modelo lo elige el usuario).
 #   2. repo     — cross-check contra la fuente de verdad reusando
 #      `install.sh --check` (no se duplica lógica de comparación).
 #   3. artefactos — enumera y verifica los 5 artefactos por etapa del ciclo
 #      CDAD en docs/specs/cdad-001-validate-subagents/artifacts/.
 #   4. modelos — cada agente cdad-* declara el modelo del PERFIL ACTIVO en su
 #      frontmatter (mapa scripts/cdad-models.sh; perfil activo = env
-#      CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus);
-#      cdad-orchestrator NO declara model: (el modelo lo elige el usuario).
+#      CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus); las
+#      variantes -odoo llevan modelo FJO por rol (ADR-007: igual en cualquier
+#      perfil). cdad-orchestrator NO declara model: y no integra este set.
 #      Guard anti-bias en los 3 perfiles: reviewer ≠ implementer (comparación
 #      de strings exacta) — cubre envs mal configuradas (CDAD_PREMIUM_MODEL_*).
 #
@@ -37,7 +42,10 @@ ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="${HOME:-}/.config/opencode/agents"
 RUNTIME_INSTALL_DIR="$RUNTIME_DIR"
 INSTALL_SH="$REPO_ROOT/install.sh"
-AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer)
+# 5 roles base + 5 variantes Odoo (modelo fijo por ADR-007). El orquestador se
+# valida aparte (no integra AGENTS): mode: all, sin model:.
+AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer \
+        cdad-architect-odoo cdad-implementer-odoo cdad-reviewer-odoo cdad-scribe-odoo cdad-test-writer-odoo)
 
 FAIL=0
 # Diagnósticos a stderr: no contaminan stdout verificable (reviewer finding #4).
@@ -65,7 +73,7 @@ for a in "${AGENTS[@]}"; do
     fail "frontmatter sin description: $a.md"
   fi
 done
-if [ "$FAIL" -eq 0 ]; then ok "5/5 agentes runtime presentes (frontmatter OK)"; fi
+if [ "$FAIL" -eq 0 ]; then ok "10/10 agentes runtime presentes (5 base + 5 variantes Odoo; frontmatter OK)"; fi
 
 # --- Etapa 2: cross-check contra repo (reusa install.sh --check) ------------
 echo "[repo] cross-check: install.sh --check"
@@ -168,7 +176,7 @@ fi
 if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
   fail "cdad-orchestrator.md no debe declarar model: (el modelo lo elige el usuario)"
 fi
-if [ "$FAIL" -eq 0 ]; then ok "modelos OK (5/5 según perfil $ACTIVE_PROFILE; orquestador sin model:)"; fi
+if [ "$FAIL" -eq 0 ]; then ok "modelos OK (10/10: 5 base + 5 variantes Odoo, según perfil $ACTIVE_PROFILE; orquestador sin model:)"; fi
 
 # --- Veredicto -----------------------------------------------------------------
 if [ "$FAIL" -eq 0 ]; then

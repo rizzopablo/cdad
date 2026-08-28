@@ -32,6 +32,23 @@
 cdad_model() {
   local perfil="$1" rol="$2"
   case "$perfil|$rol" in
+    # --- variantes Odoo (*-odoo): modelos FIJOS por rol (ADR-007), iguales en
+    # cualquier perfil (stack="odoo" en docs/.cdad-state.json delega a estas
+    # variantes). Puestos PRIMERO a propósito: son los patrones más específicos
+    # (sufijo "-odoo" exacto) e independientes del perfil, así el orden de los
+    # bloques genéricos de abajo NO es load-bearing — ningún patrón genérico
+    # (p.ej. *\|reviewer) puede sombrearlos aunque se reordene el case.
+    *\|architect-odoo)
+      echo "mofgw/deepseek-v4-pro";;
+    *\|test-writer-odoo)
+      echo "mofgw/glm-5.2";;
+    *\|implementer-odoo)
+      echo "mofgw/deepseek-v4-flash";;
+    *\|reviewer-odoo)
+      echo "mofgw/qwen3.7-plus";;
+    *\|scribe-odoo)
+      echo "mofgw/deepseek-v4-pro";;
+
     # --- economical (enmienda 2026-08-24): ejecución barata con calidad en
     # los puntos críticos — architect sube a deepseek-v4-pro (la precisión
     # del spec es la carga crítica del ciclo), roles de ejecución en
@@ -72,7 +89,10 @@ cdad_model() {
 
     # --- default del reviewer: qwen3.7-plus en cualquier perfil (modelo
     # distinto al del implementer de ese perfil; un override de env que lo
-    # iguale lo rechaza el guard anti-bias del validator).
+    # iguale lo rechaza el guard anti-bias del validator). Por la regla
+    # first-match de case, colocado DESPUÉS de las variantes -odoo y de los
+    # perfiles explícitos: no genera falso default para reviewer-odoo (el
+    # patrón *\|reviewer no hace full-match de "…reviewer-odoo").
     *\|reviewer)
       echo "mofgw/qwen3.7-plus";;
   esac

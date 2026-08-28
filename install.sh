@@ -28,8 +28,14 @@ CLAUDE_CODE_AGENTS_DIR="${HOME:-}/.claude/agents"
 CLAUDE_CODE_SKILLS_DIR="${HOME:-}/.claude/skills"
 CLAUDE_CODE_SCRIPTS_DIR="${HOME:-}/.claude/cdad-scripts"
 
-SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test)
-EXPECTED_CDAD_AGENTS=6
+SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer odoo-reviewer odoo-make-env)
+# EXPECTED_CDAD_AGENTS counts OpenCode agents. Base = 6 genéricos (architect,
+# implementer, orchestrator, reviewer, scribe, test-writer) + 5 variantes Odoo
+# (agents/cdad-*-odoo.md: architect/test-writer/implementer/reviewer/scribe).
+# Las variantes cdad-.*-odoo las captura el mismo glob cdad-*.md de install_agents()
+# y llevan modelo fijo por rol (perfil CDAD no las sobreescribe); cuentan acá
+# para que la verificación "N de N cdad agents presentes" sea correcta.
+EXPECTED_CDAD_AGENTS=11
 # NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code has the same 5 roles
 # in agents/claude-code/ subdirectory; install_claude_code_agents() handles that separately.
 EXPECTED_CDAD_AGENTS_CLAUDE_CODE=5

@@ -114,6 +114,15 @@ criterio de aceptación de la feature.
 
 Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 
+### 3.1 — Activación por stack: variantes especializadas
+
+El campo `stack` de `docs/.cdad-state.json` selecciona variantes de roles por
+dominio. Con `stack: odoo`, el orquestador delega cada rol a su variante
+especializada `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo`
+(perfiles de permisos, modelos y skills Odoo por rol). Detalle del mecanismo,
+disparadores y tabla de mapeo en `references/sub-agent-strategies.md`
+(no se duplica acá). Ausencia de `stack`, u otro valor, → agentes genéricos.
+
 ### 4. Regla de decisión de delegación (única, explícita)
 
 > ⚠️ **GUARDIA DE SPAWN (anti-loop):** Si estás corriendo como SUBAGENTE

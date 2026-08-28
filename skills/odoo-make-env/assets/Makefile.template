@@ -1,0 +1,31 @@
+# Makefile.template — contrato make Odoo (odoo-make-env)
+
+# Variables a resolver por entorno (placeholders):
+#   ODB     = binario odoo (p.ej. `odoo-bin`, `venv/bin/python3 src/odoo-bin`,
+#             `docker compose exec odoo odoo`)
+#   CONF    = archivo de config de test (p.ej. `odoo-test.conf`); en entornos
+#             gestionados como odoo.sh puede ser innecesario (quitar -c).
+#   TEST_DB = nombre de la DB de test (en odoo.sh: $PGDATABASE, única DB).
+#   MECANISMO test-clean: ver tabla de varianza en SKILL.md. Aquí se muestra
+#             la variante "DB fresca" (staging privado/docker); para odoo.sh reemplazar
+#             por: psql -c "UPDATE ir_module_module SET state='to install'
+#             WHERE name='<module>';" + -i.
+
+MODULE ?= <module>
+ODB    ?= odoo-bin
+CONF   ?= odoo-test.conf
+TEST_DB ?= <test_db_name>
+
+.PHONY: test test-one test-clean
+
+test:
+	$(ODB) -c $(CONF) -d $(TEST_DB) -u $(MODULE) --test-enable --stop-after-init --workers 0 --max-cron-threads 0 --log-level=test
+
+test-one:
+	@test -n "$(TEST)" || (echo "Requerido: TEST=modulo:Clase.metodo" && exit 1)
+	$(ODB) -c $(CONF) -d $(TEST_DB) -u $(MODULE) --test-enable --test-tags $(TEST) --stop-after-init --workers 0 --max-cron-threads 0 --log-level=test
+
+test-clean:
+	-dropdb --if-exists $(TEST_DB) 2>/dev/null || true
+	createdb $(TEST_DB)
+	$(ODB) -c $(CONF) -d $(TEST_DB) -i $(MODULE) --test-enable --stop-after-init --workers 0 --max-cron-threads 0 --log-level=test

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_idea_log_user,idea.log.user,model_idea_log,base.group_user,1,1,1,0
+access_idea_log_reviewer,idea.log.reviewer,model_idea_log,idea_log.group_reviewer,1,1,1,1
+access_idea_vote_user,idea.vote.user,model_idea_vote,base.group_user,1,1,1,0
+access_idea_vote_reviewer,idea.vote.reviewer,model_idea_vote,idea_log.group_reviewer,1,1,1,1

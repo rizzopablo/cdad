@@ -1,0 +1,21 @@
+[options]
+# Conf de TEST propia del proyecto (odoo-make-env).
+# En entornos gestionados (staging privado, odoo.sh) NO editar la conf de plataforma:
+# usar este archivo solo para las corridas de make.
+db_host = localhost
+db_port = 5432
+db_user = <db_user>
+# En setups con trust auth (PG local) esta línea se ignora; si tu PG requiere
+# auth, usá PGPASSWORD o ~/.pgpass en vez de commitear el valor.
+db_password = <db_password>
+db_name = <test_db_name>
+dbfilter = ^<test_db_name>$
+list_db = False
+http_port = <puerto_libre>
+addons_path = <odoo_addons>,<custom_modules_dir>
+logfile = <logfile_test>
+# Cortesía con postgres compartido multi-tenant:
+workers = 0
+max_cron_threads = 0
+db_maxconn = 5
+limit_time_real = 600

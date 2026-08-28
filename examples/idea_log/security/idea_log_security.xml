@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 CDAD Contributors
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+    <record id="module_category_idea_log" model="ir.module.category">
+        <field name="name">Idea Log</field>
+        <field name="sequence" eval="100"/>
+    </record>
+
+    <record id="privilege_idea_log" model="res.groups.privilege">
+        <field name="name">Idea Log</field>
+        <field name="category_id" ref="module_category_idea_log"/>
+    </record>
+
+    <record id="group_reviewer" model="res.groups">
+        <field name="name">Reviewer</field>
+        <field name="privilege_id" ref="privilege_idea_log"/>
+    </record>
+</odoo>

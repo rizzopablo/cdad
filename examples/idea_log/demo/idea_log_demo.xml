@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 CDAD Contributors
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+    <record id="idea_log_demo_1" model="idea.log">
+        <field name="name">Improve onboarding flow</field>
+        <field name="description">Reduce the number of steps needed for new users to start working.</field>
+        <field name="status">draft</field>
+        <field name="score" eval="8"/>
+        <field name="effort">medium</field>
+    </record>
+
+    <record id="idea_log_demo_2" model="idea.log">
+        <field name="name">Automate invoice reminders</field>
+        <field name="status">submitted</field>
+        <field name="score" eval="6"/>
+        <field name="effort">large</field>
+        <field name="vote_ids" eval="[(0, 0, {'voter_name': 'Alice', 'vote_type': 'up'}), (0, 0, {'voter_name': 'Bob', 'vote_type': 'down'})]"/>
+    </record>
+
+    <record id="idea_log_demo_3" model="idea.log">
+        <field name="name">Dark mode for portal</field>
+        <field name="status">accepted</field>
+        <field name="score" eval="9"/>
+        <field name="effort">quick</field>
+    </record>
+</odoo>

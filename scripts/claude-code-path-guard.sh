@@ -8,6 +8,9 @@
 #   implementer         → bloquea Edit/Write a tests/**
 #   test-writer-read   → bloquea Read/Grep/Glob a src/** y lib/**
 #   test-writer-write  → bloquea Edit/Write a todo excepto tests/**
+#   implementer-odoo   → alias de implementer (bloquea Edit/Write a **/tests/**)
+#   test-writer-odoo-read  → bloquea Read/Grep/Glob a models/views/controllers/wizards
+#   test-writer-odoo-write → bloquea Edit/Write a todo excepto **/tests/**
 
 set -e
 
@@ -80,6 +83,16 @@ case "$ROL" in
     exit 0  # Permite todo lo demás
     ;;
 
+  implementer-odoo)
+    # Alias de implementer, variante Odoo: bloquea Edit/Write a **/tests/**.
+    if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
+      if matches_glob "$FILE_PATH" "**/tests/**"; then
+        exit 2  # Bloquea
+      fi
+    fi
+    exit 0  # Permite todo lo demás
+    ;;
+
   test-writer-read)
     # Bloquea Read/Grep/Glob a src/** y lib/**
     if [[ "$TOOL_NAME" =~ ^(Read|Grep|Glob)$ ]]; then
@@ -90,10 +103,33 @@ case "$ROL" in
     exit 0  # Permite todo lo demás
     ;;
 
+  test-writer-odoo-read)
+    # Bloquea Read/Grep/Glob a la implementación Odoo (models/views/controllers/wizards).
+    if [[ "$TOOL_NAME" =~ ^(Read|Grep|Glob)$ ]]; then
+      if matches_glob "$FILE_PATH" "**/models/**" \
+        || matches_glob "$FILE_PATH" "**/views/**" \
+        || matches_glob "$FILE_PATH" "**/controllers/**" \
+        || matches_glob "$FILE_PATH" "**/wizards/**"; then
+        exit 2  # Bloquea
+      fi
+    fi
+    exit 0  # Permite todo lo demás
+    ;;
+
   test-writer-write)
     # Bloquea Edit/Write a todo excepto tests/**
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
       if ! matches_glob "$FILE_PATH" "tests/**"; then
+        exit 2  # Bloquea
+      fi
+    fi
+    exit 0  # Permite todo lo demás
+    ;;
+
+  test-writer-odoo-write)
+    # Bloquea Edit/Write a todo excepto **/tests/**
+    if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
+      if ! matches_glob "$FILE_PATH" "**/tests/**"; then
         exit 2  # Bloquea
       fi
     fi

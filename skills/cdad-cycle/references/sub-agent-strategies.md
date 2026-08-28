@@ -140,3 +140,26 @@ Adaptá las reglas y el contexto según el rol. Las reglas son negociables solo 
 | scribe | nada | spec, diff, review, Memory Bank | drafta updates de Memory Bank |
 
 Si el entorno enforza estos permisos por glob, perfecto. Si no, vos como orquestador respetás estos roles al dirigir cada fase.
+
+## Activación por stack — variantes especializadas por dominio
+
+La delegación de roles admite variantes especializadas por **stack**, activadas
+por el campo `stack` del state file `docs/.cdad-state.json`. Con
+`"stack": "odoo"`, el orquestador delega cada rol a su variante `*-odoo`
+(`cdad-architect-odoo`, `cdad-test-writer-odoo`, `cdad-implementer-odoo`,
+`cdad-reviewer-odoo`, `cdad-scribe-odoo`) en lugar de al agente genérico. El
+núcleo CDAD (ciclo de 5 etapas, state machine, verdict tuple, contratos de
+perfiles de modelo) **no cambia** — la especialización es aditiva: las
+variantes son thin shells (frontmatter con paths acotados a módulos Odoo y
+allowlist bash `make *`/`pre-commit *`/`pylint *`/`git *`, + carga del skill
+Odoo del rol) que preservan la directiva del rol genérico.
+
+- `stack` ausente o con otro valor → se delega a los agentes genéricos
+  (`cdad-<rol>`), comportamiento por defecto sin cambios.
+- `stack: odoo` → variantes `*-odoo`.
+- Las variantes se instalan con `install.sh` junto a los genéricos
+  (`agents/cdad-*-odoo.md`) sin tocar los agentes existentes.
+
+Regla de decisión de delegación: igual que en la §Contrato de roles §4 — si el
+entorno expone sub-agentes, se delega al sub-agente de la variante según el
+stack activo; el aislamiento de sesión y el modelo por rol se mantienen.

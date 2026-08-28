@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 CDAD Contributors
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+    <record id="idea_log_view_tree" model="ir.ui.view">
+        <field name="name">idea.log.tree</field>
+        <field name="model">idea.log</field>
+        <field name="arch" type="xml">
+            <list string="Ideas">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="status" widget="badge"
+                    decoration-success="status=='accepted'"
+                    decoration-danger="status=='rejected'"/>
+                <field name="score"/>
+                <field name="weighted_value"/>
+                <field name="total_votes"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="idea_log_view_form" model="ir.ui.view">
+        <field name="name">idea.log.form</field>
+        <field name="model">idea.log</field>
+        <field name="arch" type="xml">
+            <form string="Idea">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Title of the idea"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="status" widget="statusbar"/>
+                            <field name="score"/>
+                            <field name="effort"/>
+                            <field name="weighted_value"/>
+                            <field name="accepted_date"/>
+                            <field name="rejected_reason" groups="idea_log.group_reviewer"/>
+                        </group>
+                        <group>
+                            <field name="total_votes"/>
+                            <field name="net_score"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Votes">
+                            <field name="vote_ids">
+                <list editable="bottom">
+                    <field name="voter_name"/>
+                    <field name="vote_type"/>
+                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="idea_log_view_search" model="ir.ui.view">
+        <field name="name">idea.log.search</field>
+        <field name="model">idea.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="description"/>
+                <filter name="filter_draft" string="Draft" domain="[('status','=','draft')]"/>
+                <filter name="filter_accepted" string="Accepted" domain="[('status','=','accepted')]"/>
+                <separator/>
+                <filter name="group_by_effort" string="Effort" context="{'group_by':'effort'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="idea_log_view_tree_inherit" model="ir.ui.view">
+        <field name="name">idea.log.tree.inherit</field>
+        <field name="model">idea.log</field>
+        <field name="inherit_id" ref="idea_log_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='score']" position="after">
+                <field name="effort"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

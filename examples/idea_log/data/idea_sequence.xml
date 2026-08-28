@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 CDAD Contributors
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo noupdate="1">
+    <record id="seq_idea_log" model="ir.sequence">
+        <field name="name">Idea Log</field>
+        <field name="code">idea.log</field>
+        <field name="prefix">IDEA/%(year)s/</field>
+        <field name="padding" eval="3"/>
+    </record>
+</odoo>
