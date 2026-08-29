@@ -87,6 +87,8 @@ validador YAML con asserts de esquema se agregó como verificación post-fix.
 estructura a los agentes genéricos que funcionan), verificados con parseo YAML
 + asserts de acciones válidas + oráculo 121/121 (con su regex de comodín
 corregida: solo `"*": allow` puro dispara, no `"make *": allow`).
+**Confirmado por el usuario**: OpenCode arranca correctamente con los agentes
+reinstalados (commit `8ace12e`).
 
 ## 6. Estado por criterio de aceptación
 
