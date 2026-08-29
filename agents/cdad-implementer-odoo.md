@@ -4,25 +4,23 @@ mode: subagent
 model: mofgw/deepseek-v4-flash
 permission:
   edit:
-    deny:
-      - "**/tests/**"
+    "**/tests/**": deny
   write:
-    deny:
-      - "**/tests/**"
+    "**/tests/**": deny
   bash:
-    allow:
-      - "make *"
-      - "pre-commit *"
-      - "pylint *"
-      - "git *"
-      - "ls *"
-      - "cat *"
-      - "find *"
-      - "rg *"
-      - "head *"
-      - "tail *"
-      - "wc *"
-      - "pwd"
+    "*": deny
+    "make *": allow
+    "pre-commit *": allow
+    "pylint *": allow
+    "git *": allow
+    "ls *": allow
+    "cat *": allow
+    "find *": allow
+    "rg *": allow
+    "head *": allow
+    "tail *": allow
+    "wc *": allow
+    "pwd": allow
 ---
 
 # CDAD Implementer Agent — variante Odoo

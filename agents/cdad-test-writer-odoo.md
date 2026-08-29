@@ -4,40 +4,35 @@ mode: subagent
 model: mofgw/glm-5.2
 permission:
   read:
-    deny:
-      - "**/models/**"
-      - "**/views/**"
-      - "**/controllers/**"
-      - "**/wizards/**"
-    allow:
-      - "**/tests/**"
-      - "**/__manifest__.py"
+    "**/models/**": deny
+    "**/views/**": deny
+    "**/controllers/**": deny
+    "**/wizards/**": deny
   edit:
-    allow:
-      - "**/tests/**"
+    "*": deny
+    "**/tests/**": allow
   write:
-    allow:
-      - "**/tests/**"
+    "*": deny
+    "**/tests/**": allow
   bash:
-    allow:
-      - "make *"
-      - "pre-commit *"
-      - "pylint *"
-      - "git *"
-      - "ls *"
-      - "cat *"
-      - "find *"
-      - "rg *"
-      - "head *"
-      - "tail *"
-      - "wc *"
-      - "pwd"
+    "*": deny
+    "make *": allow
+    "pre-commit *": allow
+    "pylint *": allow
+    "git *": allow
+    "ls *": allow
+    "cat *": allow
+    "find *": allow
+    "rg *": allow
+    "head *": allow
+    "tail *": allow
+    "wc *": allow
+    "pwd": allow
   grep:
-    deny:
-      - "**/models/**"
-      - "**/views/**"
-      - "**/controllers/**"
-      - "**/wizards/**"
+    "**/models/**": deny
+    "**/views/**": deny
+    "**/controllers/**": deny
+    "**/wizards/**": deny
 ---
 
 # CDAD Test-Writer Agent — variante Odoo

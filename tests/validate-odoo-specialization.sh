@@ -130,7 +130,7 @@ for role in "${VARIANT_AGENTS[@]}"; do
     assert_file_has "$af" 'git[[:space:]]*\*'    "P1 ($role): allowlist incluye 'git *'"
     BASH_RULES="$(bash_section "$ROOT/$af")"
     if [[ -n "$BASH_RULES" ]]; then
-        if printf '%s' "$BASH_RULES" | grep -Eq '[*][[:space:]]*"?[[:space:]]*:[[:space:]]*"?[[:space:]]*allow'; then
+        if printf '%s' "$BASH_RULES" | grep -Eq '^[[:space:]]*"\*"[[:space:]]*:[[:space:]]*allow'; then
             fail "P1 ($role): sección bash CONTIENE comodín sin restricción (\"*\": allow)"
         else
             pass "P1 ($role): sección bash SIN comodín sin restricción (\"*\": allow)"

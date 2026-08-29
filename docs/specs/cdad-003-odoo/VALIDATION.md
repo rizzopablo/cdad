@@ -38,8 +38,9 @@ spikes descubrieron semánticas que habrían roto el spec si se escribía antes:
 - **GREEN**: 5 variantes de agente + 3 skills de rol + `odoo-make-env` +
   activación por stack + install.sh.
 - **Review adversarial** (modelo distinto): 6 bloqueantes (3 Critical + 3
-  Required) + 9 opcionales. Los más valiosos: sanitización "OPO"/"~/.opo" en
-  archivos públicos (Critical — regla de privacidad), bash allowlist `"*": allow`
+Required) + 9 opcionales. Los más valiosos: filtración del nombre de infra
+privada y de su ruta de producción en archivos públicos (Critical — regla de
+privacidad), bash allowlist `"*": allow`
   en 4 de 5 variantes (Critical), install.sh no instalaba los skills nuevos
   (Required), P4 enterrado en references/ (Required).
 - **Fixes**: sanitización completa (grep = 0), allowlist unificada en las 5
@@ -62,7 +63,32 @@ Postcondición nueva (`action_submit`: draft→submitted) validada de punta a pu
 3. Suite: `make test` 8/8 verde.
 4. Gate: `make test-clean` 8/8 verde + demo data cargada.
 
-## 5. Estado por criterio de aceptación
+## 5. Incidente post-merge: esquema de permisos inválido (OpenCode no arrancaba)
+
+**Síntoma:** OpenCode se caía al iniciar con los agentes variante instalados;
+Pablo tuvo que eliminar los permisos granulares de las copias instaladas para
+poder levantarlo.
+
+**Causa raíz:** el implementer reescribió los permisos con un esquema de
+LISTAS (`deny: [...]` / `allow: [...]`) que no es el esquema de OpenCode. El
+esquema válido (doc oficial + agentes genéricos en producción) es: cada clave
+(`read`/`edit`/`write`/`bash`/`grep`/...) acepta un **shorthand**
+(`allow|ask|deny`) o un **objeto glob → acción string**. Las listas son
+inválidas y tumban el startup.
+
+**Por qué no lo atrapó nuestro proceso:** el oráculo es grep-based — valida
+patrones de contenido, no validez de esquema YAML contra el runtime. La
+verificación end-to-end real (boot de OpenCode con los agentes instalados) no
+se ejecutó antes del merge. **Lección: un artefacto de configuración de agente
+debe validarse arrancando el runtime, no solo con checks de texto.** El
+validador YAML con asserts de esquema se agregó como verificación post-fix.
+
+**Fix:** los 5 frontmatter reescritos al esquema objeto-glob (idéntico
+estructura a los agentes genéricos que funcionan), verificados con parseo YAML
++ asserts de acciones válidas + oráculo 121/121 (con su regex de comodín
+corregida: solo `"*": allow` puro dispara, no `"make *": allow`).
+
+## 6. Estado por criterio de aceptación
 
 | Criterio | Estado | Evidencia |
 |---|---|---|
@@ -71,7 +97,7 @@ Postcondición nueva (`action_submit`: draft→submitted) validada de punta a pu
 | A3 sanitización | ✅ | grep de patrones sensibles = 0 en lo publicable |
 | A4 reviewer≠implementer | ✅ | qwen3.7-plus vs deepseek-v4-flash |
 
-## 6. Pendientes (escalados a Pablo)
+## 7. Pendientes (escalados a Pablo)
 
 1. **Postgres del servidor privado saturado** (Tier 1): subir `max_connections`
    o pgbouncer — causa flakiness en los runs warm de F3. Se descubrió además
