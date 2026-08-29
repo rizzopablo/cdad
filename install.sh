@@ -195,6 +195,14 @@ Options:
                de CUALQUIER provider (p.ej. anthropic/openai); el provider de
                destino debe estar configurado en el runtime.
                The profile flags are mutually exclusive.
+  --basic      Install the basic profile: NO fixed models — the model: line is
+               stripped from installed agents, which inherit the runtime's
+               default model. Portable across providers (useful when the
+               primary provider's accounts are exhausted and you switch to a
+               fallback, or with a single model available). Trade-off (ADR-007):
+               the reviewer≠implementer anti-bias invariant is NOT enforced by
+               the installer in this profile — configure models manually if you
+               need it.
   --help       Show this help and exit.
 
 No flags = install (safe default). The profile is STATEFUL: the last profile
@@ -260,6 +268,7 @@ parse_options() {
       --economical) normalized+=(-e) ;;
       --optimus)   normalized+=(-o) ;;
       --premium)   normalized+=(-p) ;;
+      --basic)     normalized+=(-b) ;;
       --help)      normalized+=(-h) ;;
       --*)         die "Unknown option: $arg (see --help)" ;;
       *)           normalized+=("$arg") ;;
@@ -268,7 +277,7 @@ parse_options() {
   set -- "${normalized[@]}"
 
   local opt profile_count=0
-  while getopts "dfuceoph" opt; do
+  while getopts "dfuceboph" opt; do
     case "$opt" in
       d) DRY_RUN=1 ;;
       f) FORCE=1 ;;
@@ -277,6 +286,7 @@ parse_options() {
       e) PROFILE_FLAG=economical; profile_count=$((profile_count + 1)) ;;
       o) PROFILE_FLAG=optimus;    profile_count=$((profile_count + 1)) ;;
       p) PROFILE_FLAG=premium;    profile_count=$((profile_count + 1)) ;;
+      b) PROFILE_FLAG=basic;      profile_count=$((profile_count + 1)) ;;
       h) usage; exit 0 ;;
       *) usage; exit 1 ;;
     esac
@@ -286,7 +296,7 @@ parse_options() {
     die "Unexpected arguments: $* (see --help)"
   fi
   if [ "$profile_count" -gt 1 ]; then
-    die "Profile flags are mutually exclusive: use only one of --economical | --optimus | --premium"
+    die "Profile flags are mutually exclusive: use only one of --economical | --optimus | --premium | --basic"
   fi
 }
 
@@ -340,7 +350,7 @@ resolve_profile() {
 
 validate_profile() {  # aborta si el perfil activo no es soportado
   if ! cdad_valid_profile "$MODEL_PROFILE"; then
-    die "Invalid model profile: '$MODEL_PROFILE' (esperado: economical | optimus | premium)"
+    die "Invalid model profile: '$MODEL_PROFILE' (esperado: economical | optimus | premium | basic)"
   fi
 }
 
@@ -377,6 +387,8 @@ copy_agent_file() {  # filename — copies one cdad agent, applying the profile'
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$model" ]; then
       log "DRY-RUN PROFILE $fname: model: $model (perfil $MODEL_PROFILE)"
+    elif [ "$MODEL_PROFILE" = "basic" ]; then
+      log "DRY-RUN PROFILE $fname: model: stripped (perfil basic — hereda el modelo del runtime)"
     fi
     return 0
   fi
@@ -385,6 +397,11 @@ copy_agent_file() {  # filename — copies one cdad agent, applying the profile'
   if [ -n "$model" ] && [ -f "$dst" ] && ! grep -q "^model:[[:space:]]*$model" "$dst"; then
     log "PROFILE $fname: model: -> $model"
     sed -i "s|^model:.*|model: $model|" "$dst"
+  elif [ "$MODEL_PROFILE" = "basic" ] && [ -f "$dst" ] && grep -q '^model:' "$dst"; then
+    # basic: strip de model: en la copia — el agente hereda el modelo del
+    # runtime (portable entre providers). El repo nunca se modifica.
+    log "PROFILE $fname: model: stripped (perfil basic)"
+    sed -i '/^model:/d' "$dst"
   fi
 }
 
@@ -462,6 +479,8 @@ install_claude_code_agents() {
     if [ "$DRY_RUN" -eq 1 ]; then
       if [ -n "$model" ]; then
         log "DRY-RUN PROFILE $(basename "$f"): model: $model (perfil $MODEL_PROFILE)"
+      elif [ "$MODEL_PROFILE" = "basic" ]; then
+        log "DRY-RUN PROFILE $(basename "$f"): model: stripped (perfil basic)"
       fi
       continue
     fi
@@ -472,6 +491,9 @@ install_claude_code_agents() {
         log "PROFILE $(basename "$f"): model: -> $model"
         sed -i "s|^model:.*|model: $model|" "$dst"
       fi
+    elif [ "$MODEL_PROFILE" = "basic" ] && [ -f "$dst" ] && grep -q '^model:' "$dst"; then
+      log "PROFILE $(basename "$f"): model: stripped (perfil basic)"
+      sed -i '/^model:/d' "$dst"
     fi
   done
 }

@@ -31,6 +31,12 @@
 # como "\|" (cada alternativa es un (perfil, rol) explícito).
 cdad_model() {
   local perfil="$1" rol="$2"
+  # basic: SIN modelos fijos — los agentes heredan el modelo por default del
+  # runtime (portable entre providers; útil cuando el provider principal se
+  # agota y se switch a otro, o con un solo modelo disponible). Trade-off
+  # documentado en ADR-007: el anti-bias reviewer≠implementer NO es garantizado
+  # por el instalador en este perfil (configuración manual si se necesita).
+  [ "$perfil" = "basic" ] && return 0
   case "$perfil|$rol" in
     # --- variantes Odoo (*-odoo): modelos FIJOS por rol (ADR-007), iguales en
     # cualquier perfil (stack="odoo" en docs/.cdad-state.json delega a estas
@@ -105,6 +111,8 @@ cdad_model() {
 # igualmente exigido).
 cdad_model_claude() {
   local perfil="$1" rol="$2"
+  # basic: SIN modelos fijos — mismos trade-offs que cdad_model (ADR-007).
+  [ "$perfil" = "basic" ] && return 0
   case "$perfil|$rol" in
     # --- economical: haiku para todo salvo reviewer (que sube a opus para
     # family diversity). NOTA: en Claude Code, economical|reviewer=haiku rompe
@@ -138,7 +146,7 @@ cdad_model_claude() {
 # borde: flag/env/marker). No imprime; el caller da el mensaje descriptivo.
 cdad_valid_profile() {
   case "$1" in
-    economical|optimus|premium) return 0 ;;
+    economical|optimus|premium|basic) return 0 ;;
     *) return 1 ;;
   esac
 }

@@ -42,7 +42,8 @@ ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="${HOME:-}/.config/opencode/agents"
 RUNTIME_INSTALL_DIR="$RUNTIME_DIR"
 INSTALL_SH="$REPO_ROOT/install.sh"
-# 5 roles base + 5 variantes Odoo (modelo fijo por ADR-007). El orquestador se
+# 5 roles base + 5 variantes Odoo (modelo fijo por ADR-007, salvo perfil basic
+# donde los agentes heredan el modelo del runtime). El orquestador se
 # valida aparte (no integra AGENTS): mode: all, sin model:.
 AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer \
         cdad-architect-odoo cdad-implementer-odoo cdad-reviewer-odoo cdad-scribe-odoo cdad-test-writer-odoo)
@@ -141,10 +142,13 @@ if [ -z "$ACTIVE_PROFILE" ] && [ -f "$RUNTIME_INSTALL_DIR/.cdad-models-profile" 
 fi
 ACTIVE_PROFILE="${ACTIVE_PROFILE:-optimus}"
 if [ "$MODELS_LOADED" -eq 1 ] && ! cdad_valid_profile "$ACTIVE_PROFILE"; then
-  fail "perfil de modelos inválido: '$ACTIVE_PROFILE' (esperado: economical | optimus | premium)"
+  fail "perfil de modelos inválido: '$ACTIVE_PROFILE' (esperado: economical | optimus | premium | basic)"
   ACTIVE_PROFILE="optimus"
 fi
 echo "[modelos] perfil activo: $ACTIVE_PROFILE"
+if [ "$ACTIVE_PROFILE" = "basic" ]; then
+  echo "[modelos] perfil basic: sin modelos fijos — los agentes heredan el modelo del runtime; el anti-bias reviewer≠implementer NO es verificado en este perfil (ADR-007)"
+fi
 
 declare -A MODEL_EXPECTED
 if [ "$MODELS_LOADED" -eq 1 ]; then

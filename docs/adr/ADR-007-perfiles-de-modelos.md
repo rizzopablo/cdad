@@ -187,3 +187,49 @@ verificó byte-idéntica.
 `install.sh --economical` → `--check` PASS → `validate-subagents.sh` PASS
 (guard anti-bias: minimax-m3 ≠ deepseek-v4-flash). Detalle en la corrida de
 instalación de esa fecha.
+
+## Enmienda 2026-08-29 — Perfil `basic` (portabilidad entre providers)
+
+### Contexto
+
+Cuando las cuentas del provider principal se agotan, el usuario switchea a un
+provider de fallback (p.ej. openrouter). Los perfiles existentes fijan
+`model: mofgw/<id>` que no existen en el provider destino → los subagentes
+quedan trabados. Se necesita un perfil portable que no dependa de IDs de
+modelo específicos.
+
+### Decisión
+
+Perfil **`basic`**: `install.sh --basic` **elimina la línea `model:`** de las
+copias instaladas (nunca del repo). Los agentes heredan el modelo por default
+del runtime, en cualquier provider.
+
+- `cdad_model` / `cdad_model_claude` devuelven vacío para todos los roles en
+  basic (incluidas las variantes `*-odoo`, cuyo modelo fijo por rol queda
+  suspendido en este perfil).
+- `--check` ya era profile-aware: con basic espera que las copias NO declaren
+  `model:`.
+
+### Trade-off (aceptado, documentado)
+
+El invariante anti-bias (reviewer en modelo distinto al implementer) NO es
+garantizado por el instalador en basic: todos los roles heredan el mismo
+modelo default. El usuario con varios modelos disponibles puede configurar
+modelos por agente a mano; con un solo modelo disponible, el sistema de
+agentes funciona igual. La protección estructural (sesiones aisladas,
+read-only, permisos por rol) no cambia con el perfil.
+
+### Cuándo usar cada perfil
+
+| Perfil   | Cuándo                                                                 |
+| -------- | ---------------------------------------------------------------------- |
+| basic    | provider único/agotado, switch a fallback, o setup minimalista          |
+| economical | ejecución barata con calidad en spec/review (mofgw)                  |
+| optimus  | diseño default, balance costo/calidad (mofgw)                          |
+| premium  | top-tier multi-provider con overrides por env                          |
+
+### Verificación (realizada 2026-08-29)
+
+`install.sh --basic` en sandbox (HOME aislado) → `model:` stripped en las 11
+copias (5 base + 5 odoo + orquestador sin modelo) → `--check` PASS → marker
+`.cdad-models-profile = basic`. Runtime real re-verificado con economical.
