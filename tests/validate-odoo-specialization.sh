@@ -234,12 +234,24 @@ echo "############################################"
 # TODO el repo publicable (docs/, skills/, drafts/, agents/, tests/, examples/,
 # README.md). Si aparece cualquiera de estos patrones → FAIL.
 # El propio oráculo se excluye del escaneo (es quien verifica, no un artefacto).
-SENS_PATTERN='OPO|\.opo|saas\.ar|opodev|oc05396|rizzopablodrgit'
+#
+# Los patrones NO se hardcodean acá (este test es público: hardcodear los
+# nombres privados los publicaría). Fuentes, en orden:
+#   1. env CDAD_SENSITIVE_PATTERNS (regex ERE separadas por |)
+#   2. tests/.sensitive-patterns.local (gitignoreado, una regex por línea)
+#   3. fallback genérico: IPs privadas (siempre corre, acumulativo con 1/2)
+SENS_PATTERN='\b(10|172\.(1[6-9]|2[0-9]|3[01])|192\.168)\.[0-9]+\.[0-9]+\.[0-9]+\b'
+if [ -n "${CDAD_SENSITIVE_PATTERNS:-}" ]; then
+    SENS_PATTERN="$SENS_PATTERN|${CDAD_SENSITIVE_PATTERNS}"
+elif [ -f "$ROOT/tests/.sensitive-patterns.local" ]; then
+    LOCAL_PAT="$(grep -v '^[[:space:]]*$' "$ROOT/tests/.sensitive-patterns.local" | tr '\n' '|' | sed 's/|$//')"
+    SENS_PATTERN="$SENS_PATTERN|${LOCAL_PAT}"
+fi
 SENS_DIRS=(docs skills drafts agents tests examples)
 SENS_HITS=""
 for d in "${SENS_DIRS[@]}"; do
     [[ -d "$ROOT/$d" ]] || continue
-    SENS_HITS+="$(grep -rEl --exclude="$(basename "$0")" -e "$SENS_PATTERN" "$ROOT/$d" 2>/dev/null)"
+    SENS_HITS+="$(grep -rEl --exclude="$(basename "$0")" --exclude=".sensitive-patterns.local" -e "$SENS_PATTERN" "$ROOT/$d" 2>/dev/null)"
 done
 if [[ -f "$ROOT/README.md" ]] && grep -Eq -e "$SENS_PATTERN" "$ROOT/README.md"; then
     SENS_HITS+=" README.md"

@@ -6,3 +6,4 @@ skills/*.skill
 cdad.toml
 cdad-cli
 logs/
+tests/.sensitive-patterns.local
