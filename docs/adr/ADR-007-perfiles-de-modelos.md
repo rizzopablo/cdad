@@ -233,3 +233,43 @@ read-only, permisos por rol) no cambia con el perfil.
 `install.sh --basic` en sandbox (HOME aislado) → `model:` stripped en las 11
 copias (5 base + 5 odoo + orquestador sin modelo) → `--check` PASS → marker
 `.cdad-models-profile = basic`. Runtime real re-verificado con economical.
+
+## Enmienda 2 (2026-08-29) — Fallback de proveedor: qué soporta OpenCode y receta
+
+### Investigación (docs oficiales opencode.ai, 2026-08-29)
+
+- **NO existe fallback de modelo nativo por agente**: ni `opencode.json` ni el
+  frontmatter aceptan una cadena de fallback (`fallback: [m1, m2]`). Cada
+  agente resuelve UN modelo (frontmatter `model:` o config); si el ID no
+  existe en el provider activo → `ProviderModelNotFoundError` → subagente
+  trabado (síntoma observado).
+- **Lo que sí existe**:
+  1. `model` + `small_model` globales (una primaria, una económica — no es
+     cadena de fallback).
+  2. Override por agente en config: `agent.<nombre>.model` en `opencode.json`
+     (documentado para agentes built-in; para agentes custom markdown la
+     precedencia config>frontmatter es el patrón documentado — verificar en
+     runtime con `opencode run --agent <nombre>` y revisar `modelID` en el
+     log si se depende de ello).
+  3. Vercel AI Gateway: `provider.vercel.models.<model>.options.order` permite
+     fallback real del MISMO model ID entre providers (requiere gateway; no
+     aplica a IDs distintos por provider).
+
+### Receta operativa (con el perfil `basic` de la enmienda 1)
+
+1. **Switch de provider = 1 línea**: en `opencode.jsonc`, `"model":
+   "<provider>/<model-id>"` del provider activo. Con perfil basic, TODOS los
+   agentes CDAD heredan esa primaria — cero ediciones por agente.
+2. **Anti-bias opcional en fallback**: si el provider de fallback tiene ≥2
+   modelos, agregar en `opencode.jsonc` un override puntual:
+   `"agent": { "cdad-reviewer": { "model": "<provider>/<otro-modelo>" } }` →
+   reviewer en modelo distinto sin tocar el repo ni el perfil.
+3. **Volver al principal**: restaurar `"model"` y `install.sh --economical`
+   (o el perfil que corresponda) — el switch es stateful y reversible.
+
+### Alternativa estructural (futura)
+
+La solución definitiva al problema de portabilidad es un gateway que exponga
+IDs estables por rol (patrón mofgw, ADR-005) con routing multi-provider y
+fallback en el gateway — no en el cliente. OpenCode no lo resuelve a nivel
+agente; quedará como ADR separado si se implementa.
