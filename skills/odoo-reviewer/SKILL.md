@@ -12,7 +12,7 @@ description: >
 
 > Estándares OCA (CONTRIBUTING.rst, pylint-odoo, oda-pre-commit-hooks,
 > manifestoo) + docs oficiales Odoo. Complementa al reviewer genérico CDAD
-> (skill `code-review`, 5 ejes); acá está el catálogo específico Odoo.
+> (los 5 ejes del rol reviewer); acá está el catálogo específico Odoo.
 
 ## Check básica por eje (mapeo a los 5 ejes del reviewer genérico)
 

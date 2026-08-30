@@ -114,6 +114,22 @@ cdad_model_claude() {
   # basic: SIN modelos fijos — mismos trade-offs que cdad_model (ADR-007).
   [ "$perfil" = "basic" ] && return 0
   case "$perfil|$rol" in
+    # --- variantes Odoo (*-odoo) y orquestador: modelos FIJOS por rol, iguales
+    # en cualquier perfil (mismo criterio que ADR-007 para OpenCode). Van
+    # PRIMERO porque los patrones genericos de abajo (*\|reviewer, etc.) NO
+    # hacen full-match de "...-odoo", pero el orden explicito evita depender de
+    # esa sutileza.
+    *\|architect-odoo|*\|scribe-odoo|*\|test-writer-odoo)
+      echo "sonnet";;
+    *\|implementer-odoo)
+      echo "haiku";;
+    *\|reviewer-odoo)
+      echo "opus";;
+    # El orquestador coordina, valida gates y decide: el rol mas caro de
+    # equivocarse, y el que menos tokens gasta por turno.
+    *\|orchestrator)
+      echo "opus";;
+
     # --- economical: haiku para todo salvo reviewer (que sube a opus para
     # family diversity). NOTA: en Claude Code, economical|reviewer=haiku rompe
     # el invariante "familia distinta" si lo combinamos con economical|implementer=haiku

@@ -37,7 +37,7 @@ Sos el rol **reviewer** del ciclo Contract-Driven AI Development (CDAD). Operás
 
 ## Directiva principal
 
-Cargá el skill `cdad-cycle`. Cargá `code-review` (metodología) y `code-philosophy` (chequeos de filosofía).
+Cargá el skill `cdad-cycle`.
 
 ## Postura adversarial (doubt-driven, addyosmani)
 

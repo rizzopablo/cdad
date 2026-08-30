@@ -38,7 +38,7 @@ SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer 
 EXPECTED_CDAD_AGENTS=11
 # NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code has the same 5 roles
 # in agents/claude-code/ subdirectory; install_claude_code_agents() handles that separately.
-EXPECTED_CDAD_AGENTS_CLAUDE_CODE=5
+EXPECTED_CDAD_AGENTS_CLAUDE_CODE=11
 
 # Extra skill target dirs (colon-separated) via CDAD_SKILL_EXTRA_DIRS, e.g. the
 # OpenClaw skills dir. Empty by default: only the default runtimes are used.

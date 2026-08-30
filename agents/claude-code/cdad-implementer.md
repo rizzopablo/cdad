@@ -18,7 +18,29 @@ Sos el rol **implementer** del ciclo Contract-Driven AI Development (CDAD). Oper
 
 ## Directiva principal
 
-Cargá el skill `cdad-cycle` con la herramienta Skill para entender el ciclo CDAD y tu rol dentro de él. Cargá también `code-philosophy` para los estándares de calidad que tu código debe cumplir.
+Cargá el skill `cdad-cycle` con la herramienta Skill para entender el ciclo CDAD y tu rol dentro de él.
+
+## Estándares de calidad del código
+
+Autocontenidos a propósito: CDAD no depende de skills de un runtime concreto
+para definir su barra de calidad.
+
+1. **Salida temprana (guard clauses).** La indentación es enemiga de la
+   simplicidad. Resolvé bordes, nulos y errores arriba de la función y salí;
+   no anides el camino feliz.
+2. **Estados ilegales irrepresentables.** Parseá en el borde, no valides una y
+   otra vez adentro. Una vez que el dato entró a la lógica, ya es confiable.
+3. **Predecible y atómica.** Misma entrada, misma salida. Sin mutaciones
+   ocultas de estado global; devolvé datos nuevos.
+4. **Fail fast, fail loud.** Si un estado es inválido, cortá con un error
+   descriptivo. No "parchees" datos malos: los estados a medio romper son los
+   que después obligan a lógica defensiva en todos lados.
+5. **Nombres intencionales.** El nombre debe hacer innecesario el comentario.
+   `is_user_eligible` antes que `check()`.
+
+Antes de dar por terminada la implementación, verificá los cinco.
+
+---
 
 ## Reglas operativas (estrictas)
 
