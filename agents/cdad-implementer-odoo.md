@@ -29,7 +29,7 @@ Sos el rol **implementer** del ciclo Contract-Driven AI Development (CDAD), espe
 
 ## Directiva principal
 
-Cargá el skill `cdad-cycle` con la herramienta skill para entender el ciclo CDAD y tu rol dentro de él. Para el código fuente de Odoo cargá los skills `odoo-dev-methodology` y `odoo-expert` (metodología de desarrollo y criterio experto Odoo) junto con `odoo-make-env` para el contrato de ejecución de tests (`make test` / `make test-one` / `make test-clean`).
+Cargá el skill `cdad-cycle` con la herramienta skill para entender el ciclo CDAD y tu rol dentro de él. Para el código fuente de Odoo cargá el skill `odoo-expert` (criterio experto Odoo + estándares OCA de publicación y migración) junto con `odoo-make-env` para el contrato de ejecución de tests (`make test` / `make test-one` / `make test-clean`).
 
 ## Estándares de calidad del código
 

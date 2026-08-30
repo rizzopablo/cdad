@@ -28,7 +28,7 @@ CLAUDE_CODE_AGENTS_DIR="${HOME:-}/.claude/agents"
 CLAUDE_CODE_SKILLS_DIR="${HOME:-}/.claude/skills"
 CLAUDE_CODE_SCRIPTS_DIR="${HOME:-}/.claude/cdad-scripts"
 
-SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer odoo-reviewer odoo-make-env)
+SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer odoo-reviewer odoo-make-env odoo-expert)
 # EXPECTED_CDAD_AGENTS counts OpenCode agents. Base = 6 genéricos (architect,
 # implementer, orchestrator, reviewer, scribe, test-writer) + 5 variantes Odoo
 # (agents/cdad-*-odoo.md: architect/test-writer/implementer/reviewer/scribe).
