@@ -25,12 +25,43 @@ Si dice no, preguntale si el Memory Bank está en otra ubicación.
 Hacé estas preguntas (una por turno o agrupadas si el usuario es expeditivo):
 
 1. **Nombre y propósito del proyecto** — para `projectbrief.md`.
-2. **Lenguaje y framework principal** — para `systemPatterns.md` y para detectar si conviene cargar un preset (Odoo, Django, Rails, etc.). En este skill el preset NO está incluido; mencionalo solo si el usuario pregunta.
+2. **Lenguaje y framework principal** — para `systemPatterns.md`. Ver Paso 2b
+   (abajo) para la detección de `stack` — no dependas solo de esta pregunta: en
+   bootstrap desatendido (sin humano presente) nadie la contesta.
 3. **¿Hay tests existentes? ¿En qué herramienta?** (pytest, jest, rspec, etc.).
 4. **¿Hay CI configurado?** Si no, mencionarlo como deuda a tomar pronto.
 5. **¿Quién aprueba specs?** Generalmente el usuario, pero confirmá para registrar el nombre en el state.
 
 No hagas un cuestionario largo. Tres o cuatro preguntas concretas y arrancá.
+
+### Paso 2b: detección de `stack` (automática, no bloqueante)
+
+`docs/.cdad-state.json.stack` es el campo genérico que activa variantes de rol
+especializadas (`cdad-<rol>-<stack>`) — ver `cdad-cycle` §3.1. **CDAD no
+conoce ningún stack por nombre**: la detección vive en cada skill de
+especialización, no acá. Esto es lo que hace que Django, Rails, Odoo o
+cualquier otra especialización futura se sumen sin tocar el core.
+
+Convención: una especialización para `<stack>` se distribuye como skill
+`<stack>-architect`, y **ese mismo skill declara cómo detectarse** — típicamente
+una sección corta tipo "Detección automática" con marcadores objetivos del
+repo (un archivo característico, una dependencia, etc.).
+
+Procedimiento:
+
+1. Listá los skills instalados que sigan el patrón `*-architect` (con guion,
+   distinto de `cdad-architect`).
+2. Para cada candidato, cargá su sección de detección automática (si la tiene)
+   y evaluala contra el repo.
+3. **Un solo candidato con evidencia objetiva y clara** → seteá
+   `stack: <nombre>` en el state file, **sin preguntar**. Es automático a
+   propósito: en bootstrap desatendido no hay a quién preguntarle.
+4. **Ambigüedad (cero o más de un candidato)** → si hay usuario presente,
+   preguntale; si no, dejá `stack` ausente (agentes genéricos) y registralo en
+   `activeContext.md` como algo a confirmar cuando vuelva un humano.
+
+No hace falta que sepas de antemano qué stacks existen: es autodescubrimiento
+sobre lo que esté instalado.
 
 ### Paso 3: crear la estructura
 

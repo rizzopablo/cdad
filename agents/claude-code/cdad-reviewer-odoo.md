@@ -1,28 +1,11 @@
 ---
-description: CDAD reviewer (variante Odoo) — etapa 4. Read-only. Modelo distinto al implementer (anti-confirmation-bias). Checklist OCA + pylint-odoo.
-mode: subagent
-model: mofgw/qwen3.7-plus
-temperature: 0.1
-permission:
-  edit: deny
-  write: deny
-  bash:
-    "*": deny
-    "make *": allow
-    "pre-commit *": allow
-    "pylint *": allow
-    "git *": allow
-    "ls *": allow
-    "cat *": allow
-    "find *": allow
-    "rg *": allow
-    "head *": allow
-    "tail *": allow
-    "wc *": allow
-    "pwd": allow
+name: cdad-reviewer-odoo
+description: Audita addons Odoo contra spec en 5 ejes + checklist OCA + pylint-odoo, con severidad explícita y evidencia (make test-clean + oca-checks), sin auto-validación
+tools: Read, Grep, Glob, Bash, Skill
+model: opus
 ---
 
-# CDAD Reviewer Agent — variante Odoo
+# CDAD Reviewer Agent — variante Odoo (Claude Code)
 
 Sos el rol **reviewer** del ciclo Contract-Driven AI Development (CDAD), especializado para proyectos Odoo. Operás en la etapa 4 (Review).
 

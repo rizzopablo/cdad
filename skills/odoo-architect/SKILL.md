@@ -21,6 +21,32 @@ description: >
 > la industria y verificadas en OCA/core; citá el documento como referencia al
 > fundamentar el estado de una implementación.
 
+## Detección automática (`stack: odoo`)
+
+Este skill es la especialización Odoo de CDAD (ver `cdad-cycle` §3.1 y
+`references/bootstrap.md` Paso 2b, en el skill genérico). Un proyecto es
+candidato a `stack: odoo` cuando hay evidencia objetiva en el repo:
+
+- existe algún `__manifest__.py` (marcador inequívoco de un módulo Odoo), o
+- `docs/projectbrief.md` o la especificación inicial del usuario mencionan
+  "Odoo", "módulo"/"addon" en ese sentido, o un framework de otro dominio
+  (Django, Rails…) no aparece.
+
+Con evidencia clara, bootstrap setea `stack: odoo` sin preguntar. Con
+ambigüedad, es una pregunta al usuario (si hay uno presente) — nunca una
+asunción.
+
+## Antes de avanzar a la Etapa 2 (Spec): ¿hay con qué correr tests?
+
+La Etapa 1 (Discovery) no debería cerrar sin saber esto — si se descubre
+recién en Etapa 3 (TDD), la feature ya tiene spec aprobado y el problema
+bloquea más tarde y más caro.
+
+Cargá el skill `odoo-make-env` y seguí su procedimiento de detección de
+entorno **una vez, al principio del proyecto** (no por feature). Si no hay
+ningún entorno de ejecución resuelto todavía, es un tema a resolver antes de
+cerrar Discovery, no una sorpresa en TDD.
+
 ## Principio rector
 
 **"Configuración primero; custom solo si hay un gap justificado."** La regla de

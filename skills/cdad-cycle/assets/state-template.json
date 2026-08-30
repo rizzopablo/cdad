@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "stack": null,
   "active_feature": null,
   "current_stage": "discovery",
   "tdd_substage": null,
