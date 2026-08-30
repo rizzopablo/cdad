@@ -121,9 +121,13 @@ Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
 Para cada tarea de rol, decidí el mecanismo en este orden:
 
 1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
-   al sub-agente del rol. Roles read-only (architect, reviewer, scribe) vía
-   `delegate`; roles write-capable (test-writer, implementer, refactorer) vía
-   `task`. Pasá contexto completo (ver regla 6). **Preferido: te da
+   al sub-agente del rol. **Primero resolvé el sufijo de stack:**
+   `docs/.cdad-state.json.stack` — si tiene valor y existe
+   `cdad-<rol>-<stack>`, usá esa variante (más contexto de dominio, mismo
+   contrato de rol); si `stack` está ausente o la variante no existe, usá el
+   agente genérico `cdad-<rol>`. Roles read-only (architect, reviewer, scribe)
+   vía `delegate`; roles write-capable (test-writer, implementer, refactorer)
+   vía `task`. Pasá contexto completo (ver regla 6). **Preferido: te da
    aislamiento de sesión real + routing de modelo por agente.**
 2. **¿No hay sub-agentes pero el usuario quiere correr el rol en chat nuevo?**
    → generá handoff packet (`references/handoff-prompts.md`). Aislamiento

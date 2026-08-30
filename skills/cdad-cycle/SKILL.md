@@ -338,7 +338,13 @@ Ver **Contrato de roles §2** arriba para la tabla completa con permisos, artefa
 
 ### Gate 5→done
 
-- [ ] CI completo verde (linter, type checker, import-linter, unit, integration, contract, property).
+- [ ] **Si hay CI configurado:** CI completo verde (linter, type checker,
+      import-linter, unit, integration, contract, property).
+- [ ] **Si NO hay CI configurado** (proyecto nuevo, primera feature): la suite
+      local verde equivale al gate, y la ausencia de CI se registra como deuda
+      explícita en `docs/progress.md` — nunca en silencio. No bloquea el
+      cierre de la primera feature esperando un CI que bootstrap ya anotó como
+      pendiente (`references/bootstrap.md` Paso 2, pregunta 4).
 - [ ] `docs/activeContext.md` con entry nueva (fecha + resumen).
 - [ ] `docs/progress.md` movió feature a "done".
 - [ ] Si hubo decisión arquitectónica → ADR nuevo en `docs/adr/`.
@@ -374,6 +380,7 @@ Templates en `assets/`. Si falta estructura, ofrecé bootstrap (ver `references/
 ```json
 {
   "version": 1,
+  "stack": null,
   "active_feature": "001-parseo-fechas-iso",
   "current_stage": "tdd",
   "tdd_substage": "green",
@@ -388,6 +395,11 @@ Templates en `assets/`. Si falta estructura, ofrecé bootstrap (ver `references/
 ```
 
 Actualizalo cuando: cambia de etapa, cambia de sub-fase, cambia status de postcondición, se aprueba spec. Avisale al usuario cada vez que lo modificás (una línea).
+
+**`stack`** (`null` por default): activa variantes de rol especializadas (ver
+§3.1). Se setea en bootstrap por autodetección (`references/bootstrap.md`
+Paso 2b) o, ya en curso, si el usuario lo indica explícito. CDAD no conoce
+stacks por nombre; el valor lo define la especialización instalada.
 
 ---
 
@@ -476,7 +488,7 @@ Si NO hay epic activo, el flujo es exactamente el actual sin modificaciones.
 | 3.2 GREEN | Output de la suite COMPLETA en verde (línea de resumen final incluida) |
 | 3.3-3.5 | Suite verde tras cada sub-fase; properties/E2E verdes si el spec los marca |
 | 4 (Review) | `review.md` con hallazgos contra el spec; bloqueantes resueltos o desestimados con motivo escrito |
-| 5 (Merge) | CI completo verde (linter, type checker, unit, integración, contrato, property); Memory Bank con entry nueva |
+| 5 (Merge) | CI verde si existe, si no suite local + deuda registrada; Memory Bank con entry nueva |
 
 **Reglas de evidencia:**
 

@@ -33,6 +33,24 @@ solo los 3 targets — nunca comandos específicos de un entorno.
 
 ## Cómo implementar un entorno nuevo
 
+**Paso 0 — ¿hay un entorno ya resuelto instalado?** Este skill no depende de
+ninguno en particular, pero si uno está disponible, usarlo es más rápido y
+más confiable que fabricar el Makefile a mano.
+
+Buscá, en este orden:
+
+1. Un skill de entorno instalado (convención: `<algo>-env`, p.ej.
+   `odoo-sandbox-env`) — su `description` declara cuándo aplica. Si hay uno y
+   aplica a este proyecto, **cargalo primero** y seguí su guía: ya trae el
+   Makefile verificado, dos veces más rápido que fabricar el propio.
+2. Si no hay ninguno, el binario del entorno podría estar igual disponible sin
+   el skill (p.ej. `command -v odoo-sandbox`). Poco común, pero revisalo.
+3. **Nada de lo anterior → procedimiento genérico** (lo que sigue). Es el
+   camino que siempre funciona, para cualquier entorno, con o sin skill
+   dedicado.
+
+### Procedimiento genérico (sin entorno dedicado)
+
 1. Copiar `assets/Makefile.template` al repo del proyecto.
 2. Resolver las 4 variables: binario odoo, config, DB de test, mecanismo de
    "desde cero".
@@ -43,15 +61,18 @@ solo los 3 targets — nunca comandos específicos de un entorno.
 
 ## Varianza por entorno (verificada empíricamente)
 
-| Aspecto | odoo.sh | staging privado | docker local (patrón) |
-|---|---|---|---|
-| Crear DBs | ❌ solo la del build | ✅ CREATEDB | ✅ contenedor postgres |
-| `test-clean` | reset `to install` + `-i` | dropdb+createdb+`-i` | dropdb+createdb+`-i` |
-| Demo data | siempre en builds dev | inicialización DB nueva | inicialización DB nueva |
-| Binario | wrapper `odoo-bin` | venv + `odoo-bin -c conf` | `docker compose exec` |
-| Postgres | dedicado | **compartido: retry + `db_maxconn` bajo** | dedicado |
+| Aspecto | odoo.sh | staging privado | docker local (patrón) | odoo-sandbox (si está instalado) |
+|---|---|---|---|---|
+| Crear DBs | ❌ solo la del build | ✅ CREATEDB | ✅ contenedor postgres | ✅ CREATEDB (u `odoo-bin` la crea sola) |
+| `test-clean` | reset `to install` + `-i` | dropdb+createdb+`-i` | dropdb+createdb+`-i` | dropdb+`-i` (Makefile provisto) |
+| Demo data | siempre en builds dev | inicialización DB nueva | inicialización DB nueva | inicialización DB nueva |
+| Binario | wrapper `odoo-bin` | venv + `odoo-bin -c conf` | `docker compose exec` | `odoo-sandbox exec ... -- odoo-bin` (host) u `odoo-bin` directo (dentro de una instancia) |
+| Postgres | dedicado | **compartido: retry + `db_maxconn` bajo** | dedicado | típicamente compartido: preflight de conexiones incluido |
 
-Detalle de la variante odoo.sh: `references/odoo-sh.md`.
+Detalle de la variante odoo.sh: `references/odoo-sh.md`. odoo-sandbox trae su
+propia guía en su propio skill (`odoo-sandbox-env`, si está instalado) —
+deliberadamente no vive acá: es un entorno más entre varios posibles, y
+CDAD/este skill no dependen de él.
 
 ## Trampas conocidas (verificadas 2026-08-28)
 
