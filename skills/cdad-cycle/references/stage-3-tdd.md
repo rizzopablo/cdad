@@ -202,6 +202,8 @@ Cada vez que cierra GREEN (+ REFACTOR opcional) de una postcondición, decidís:
 
 ## 🛑 Gate de salida (Etapa 3 → Etapa 4)
 
+- [ ] Test Audit completado y aprobado (existe `test-audit.md` con beneficio de duda resuelto, si aplica).
+- [ ] Cada test modificado tiene justificación explícita en spec.md.
 - [ ] Toda postcondición del spec tiene al menos un test que la verifica.
 - [ ] Todo test escrito mapea a una postcondición (sin tests "por completitud").
 - [ ] Ningún test depende de estructura interna (sin mocks sobre plumbing).

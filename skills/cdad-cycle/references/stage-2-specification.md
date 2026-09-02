@@ -158,4 +158,4 @@ Regla: NO se agrega silenciosamente al código. Volvés a Etapa 2: actualizar sp
 
 - **AP-5**: saltar el spec porque "es simple". Mínimo: un párrafo + test que falla, con aprobación.
 - **AP-6**: spec aprobado en silencio sin marca explícita. Sin marca, no avanzás.
-- **AP-10**: delegar la aprobación al LLM. Indelegable.
+- **AP-10**: delegar la aprobación al LLM SIN pedido explícito previo del usuario para esta feature/etapa (default: indelegable). Con pedido explícito, ver "Excepción: delegación explícita a agente experto" arriba — la excepción no aplica por iniciativa propia (AP-15).

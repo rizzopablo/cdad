@@ -159,7 +159,13 @@ Si la remoción es rechazada (archivos sin commitear): mostrá el output de `git
 
 ## 🛑 Gate de salida (Etapa 5 → done)
 
-- [ ] CI verde completo.
+- [ ] **Si hay CI configurado:** CI completo verde (linter, type checker,
+      import-linter, unit, integration, contract, property).
+- [ ] **Si NO hay CI configurado** (proyecto nuevo, primera feature): la suite
+      local verde equivale al gate, y la ausencia de CI se registra como deuda
+      explícita en `docs/progress.md` — nunca en silencio. No bloquea el
+      cierre de la primera feature esperando un CI que bootstrap ya anotó como
+      pendiente (`references/bootstrap.md` Paso 2, pregunta 4).
 - [ ] `docs/activeContext.md` con entry nueva.
 - [ ] `docs/progress.md` movió feature a "done".
 - [ ] Si decisión arquitectónica → ADR nuevo en `docs/adr/`.

@@ -109,7 +109,7 @@ Si hay bloqueantes a aplicar (o opcionales aceptados):
 
 - [ ] Existe `docs/specs/<feat>/review.md`.
 - [ ] Bloqueantes resueltos o explícitamente desestimados con motivo escrito.
-- [ ] Usuario aprobó priorización (no delegado al LLM).
+- [ ] Priorización validada por el usuario, o agente-delegada con pedido explícito registrado en `stage_history` (ver excepción en §2.3/Capa 2 — nunca autootorgada, AP-15).
 - [ ] Suite sigue verde tras los fixes.
 
 Cuando todos OK: actualizá state (`current_stage: merge`). Anunciá transición. Emití handoff a scribe (Etapa 5).

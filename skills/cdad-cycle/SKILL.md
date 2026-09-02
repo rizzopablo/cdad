@@ -315,6 +315,7 @@ Ver **Contrato de roles §2** arriba para la tabla completa con permisos, artefa
 - [ ] Postcondiciones numeradas y verificables.
 - [ ] Criterios de aceptación medibles.
 - [ ] Marca de aprobación del usuario inequívoca: línea final `Status: Approved by <X> on <fecha>` o frontmatter con `approved_by` + `approved_at`.
+- [ ] Si el spec es complejo (múltiples componentes): `plan.md` existe, pasó la auto-revisión y está aprobado junto con el spec.
 
 ### Gate 3→4 — TDD → Review
 
@@ -333,7 +334,7 @@ Ver **Contrato de roles §2** arriba para la tabla completa con permisos, artefa
 
 - [ ] Existe `docs/specs/<feature-id>/review.md`.
 - [ ] Bloqueantes resueltos o explícitamente desestimados con motivo escrito.
-- [ ] Usuario aprobó priorización (no delegado al LLM).
+- [ ] Priorización validada por el usuario, o agente-delegada con pedido explícito registrado en `stage_history` (ver excepción en §2.3/Capa 2 — nunca autootorgada, AP-15).
 - [ ] Suite sigue verde tras los fixes.
 
 ### Gate 5→done
@@ -349,6 +350,7 @@ Ver **Contrato de roles §2** arriba para la tabla completa con permisos, artefa
 - [ ] `docs/progress.md` movió feature a "done".
 - [ ] Si hubo decisión arquitectónica → ADR nuevo en `docs/adr/`.
 - [ ] Commit con prefijo `docs(memory):` — aprobado por el usuario, ejecutado por el orquestador.
+- [ ] Feature mergeada.
 
 ---
 

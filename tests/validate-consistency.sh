@@ -275,6 +275,39 @@ else
 fi
 rm -f /tmp/rc_skill.$$ /tmp/rc_oc.$$ /tmp/rc_cc.$$
 
+echo
+echo "############################################"
+echo "# F003 — gates SKILL.md ↔ stage-N sincronizados + B11"
+echo "############################################"
+
+# Gate 2→3: SKILL.md incluye el ítem de plan.md que antes solo tenía stage-2.
+assert_file_has "skills/cdad-cycle/SKILL.md" 'plan\.md.*existe.*auto-revisión|Si el spec es complejo' \
+  "F003: Gate 2→3 de SKILL.md incluye el ítem de plan.md (antes solo en stage-2)"
+
+# Gate 3→4: stage-3-tdd.md incluye los 2 ítems que antes solo tenía SKILL.md.
+assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'Test Audit completado y aprobado' \
+  "F003: Gate 3→4 de stage-3-tdd.md incluye 'Test Audit completado y aprobado' (antes solo en SKILL.md)"
+assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'justificación explícita en spec\.md' \
+  "F003: Gate 3→4 de stage-3-tdd.md incluye 'justificación explícita en spec.md' (antes solo en SKILL.md)"
+
+# Gate 5→done: carve-out de CI en stage-5-merge.md + "Feature mergeada" en SKILL.md.
+assert_file_has "skills/cdad-cycle/references/stage-5-merge.md" 'Si NO hay CI configurado' \
+  "F003: Gate 5→done de stage-5-merge.md incluye el carve-out de CI (antes solo en SKILL.md)"
+assert_file_has "skills/cdad-cycle/SKILL.md" 'Feature mergeada' \
+  "F003: Gate 5→done de SKILL.md incluye 'Feature mergeada' (antes solo en stage-5-merge.md)"
+
+# B11: el gate 4→5 ya no contradice la excepción de delegación explícita que
+# el propio archivo documenta (Capa 2 / §2.3).
+for f in skills/cdad-cycle/SKILL.md skills/cdad-cycle/references/stage-4-review.md; do
+  assert_file_not_has "$f" '\[ \] Usuario aprobó priorización \(no delegado al LLM\)\.' \
+    "F003 (B11): $f ya no tiene la redacción absoluta del gate 4→5"
+  assert_file_has "$f" 'agente-delegada con pedido explícito' \
+    "F003 (B11): $f menciona la excepción de delegación explícita en el gate"
+done
+assert_file_not_has "skills/cdad-cycle/references/stage-2-specification.md" \
+  '\*\*AP-10\*\*: delegar la aprobación al LLM\. Indelegable\.' \
+  "F003 (B11): AP-10 corto en stage-2 ya no es absoluto sin la excepción"
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"
