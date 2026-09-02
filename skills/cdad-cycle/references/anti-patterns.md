@@ -170,3 +170,11 @@ Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues 
 **Por qué es malo**: los fixes apilados ocultan cuál hizo qué — cuando la suite se pone verde (o no), ya no hay forma de atribuir el efecto. Cada fix sin diagnóstico puede introducir un bug nuevo encima del que intentaba arreglar. El thrashing quema la confianza del usuario (¿por qué nadie sabe qué está pasando?) y el presupuesto de contexto (cada ciclo RED→GREEN fallido es un turno completo). Y 3+ fixes fallidos sin diagnóstico no es mala suerte: es señal de que el problema es de diseño, no de puntería.
 
 **Corrección**: aplicar `references/stage-debugging.md` — loop rojo primero (comando tight que va rojo con el síntoma exacto y verde solo con el fix), hipótesis rankeadas falsables con una variable por vez, y un solo fix sobre la causa raíz verificada. Al 3er fallo: STOP → escalar al usuario con la evidencia acumulada → ADR que decida bug puntual vs. diseño equivocado.
+
+## AP-19 — Plan placeholder
+
+**Síntoma**: plan de feature compleja con tareas que no cierran en un mini-ciclo TDD propio; frases tipo «TBD», «TODO», «manejar edge cases apropiadamente», «similar a la Tarea N»; o firmas inconsistentes entre tareas (la tarea 2 produce `clearLayers`, la tarea 5 consume `clearFullLayers`). Señal: el plan no podría ejecutarse sin re-derivar decisiones de diseño a mitad de camino.
+
+**Por qué es malo**: el plan ambiguo delega decisiones de diseño al implementer sin contrato — es AP-13 (Garbage Cascade) a nivel de tarea. El test-writer hereda una interface inventada a mitad de camino y sus tests apuntan a un contrato que nadie aprobó; las firmas inconsistentes rompen la integración entre tareas y se descubren en GREEN, el lugar más caro para descubrirlas. Y un plan que contiene la implementación especulada revierte TDD: el implementer ejecuta decisiones que el planner horneó sin verificar.
+
+**Corrección**: seguir "Planning de features complejas" en `references/stage-2-specification.md` — tamaño de tarea con ciclo TDD propio, comportamiento observable como contrato (3-5 bullets verificables), lista de placeholders prohibidos = falla del plan, y auto-revisión de cobertura del spec y consistencia de firmas antes de cerrar Etapa 2.

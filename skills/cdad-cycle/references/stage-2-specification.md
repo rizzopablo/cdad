@@ -87,13 +87,57 @@ Registrá también en `stage_history` del state file un entry con `"approved_by"
 
 - **Trivial** (fix puntual): spec puede ser un párrafo + un test que falla. Igual brainstorm + aprobación, pero más cortos.
 - **Mediana** (mayoría): formato estándar.
-- **Compleja** (múltiples componentes): dividir en `spec.md`, `plan.md`, `tasks.md`.
+- **Compleja** (múltiples componentes): el architect produce además `plan.md` siguiendo la sección "Planning de features complejas" (abajo).
 
 Decidilo con el usuario al inicio de la etapa.
 
 ## Por qué la claridad del spec no es negociable
 
 Etapa 3 usa tests de contrato, no cobertura exhaustiva (ver "Convención de tests" en `stage-3-tdd.md`). Eso significa que la precisión que normalmente aportaría una suite exhaustiva tiene que venir del spec. Una postcondición vaga ("el sistema debe manejar bien los errores") no se puede convertir en un test de contrato verificable — el test-writer termina interpretando, y esa interpretación puede no ser la que el usuario necesitaba (AP-13, Garbage Cascade). Cada postcondición tiene que poder responder: *¿qué efecto observable, exactamente, confirma que esto se cumplió?*
+
+## Planning de features complejas
+
+Disparador: el spec es complejo (múltiples componentes). El architect produce `plan.md` además del spec, antes de cerrar Etapa 2. El plan se aprueba con el spec — un solo acto del usuario — y el gate 2→3 incluye el plan aprobado cuando existe.
+
+### Tamaño de tarea
+
+La tarea es la unidad más chica que cierra en su propio mini-ciclo TDD (RED→GREEN propio) y que un reviewer podría rechazar sin rechazar la vecina. Setup, configuración y scaffolding se pliega en la tarea que los necesita — nunca una tarea "de setup" suelta. Ni tan chica que fragmente el review, ni tan grande que no se pueda rechazar una parte sin arrastrar el resto.
+
+### Estructura de tarea
+
+Cada tarea del plan declara:
+
+- **Files**: paths exactos, marcados Create / Modify / Test.
+- **Consumes / Produces**: el contrato público — firmas exactas de lo que esta tarea recibe de las anteriores y de lo que expone a las siguientes. El implementer de una tarea solo ve su tarea; por eso las firmas tienen que estar acá, y ser apto para test-writer (el contrato, no el cuerpo).
+- **Pasos TDD**: el loop rojo→verde de la tarea, con el test primero.
+
+### La regla central: el plan define el CONTRATO, no el código
+
+*El plan define el CONTRATO — tests con aserciones reales, comandos exactos, comportamiento observable (3-5 bullets verificables contra el test) — y NUNCA código de implementación especulativo.* Escribir la implementación dos veces (en el plan y en la ejecución) revierte TDD y hornea supuestos que el planner adivina pero el implementer no verificó. El comportamiento específico de una tarea es el DELTA respecto al análogo existente en el repo: si hay que enumerar más de 3-5 bullets de comportamiento, ya se está re-derivando la implementación en markdown — cortar y dividir la tarea.
+
+Consecuencia para el aislamiento del test-writer: como el plan no contiene implementación, el test-writer puede ver el plan entero sin violar su restricción. El plan es la interface, no el código.
+
+### No placeholders
+
+Estas frases en un plan son falla del plan:
+
+- "TBD", "TODO", "implementar después".
+- "manejar edge cases apropiadamente" (y toda variante de manejo vago).
+- "similar a la Tarea N" — repetir el código de otra tarea; si es análogo, nombrá el análogo y describí el delta.
+- Pasos que describen QUÉ hacer sin mostrar el CÓMO verificarlo.
+- Referencias a tipos o firmas que no están definidas en ninguna tarea.
+
+Matiz: una vagueza CON contrato de comportamiento no es placeholder. El patrón prohibido es vagueza sin contrato — si el bullet observable está, la impl puede decidir detalles internos.
+
+### Auto-revisión (la corre el architect antes de cerrar Etapa 2)
+
+1. **Cobertura del spec**: cada postcondición → al menos 1 tarea (≥1 tarea). Si una postcondición no tiene tarea, el plan está incompleto; si una tarea no mapea a ninguna postcondición, sobra.
+2. **Escaneo de placeholders**: buscar las frases prohibidas de arriba en todo el plan.
+3. **Consistencia de firmas entre tareas**: una función llamada `clearLayers` en la tarea 2 y `clearFullLayers` en la tarea 5 es un bug del plan — corregirlo acá, no en GREEN.
+
+### Global constraints
+
+Las restricciones proyecto-wide del spec (versiones, naming, plataforma, etc.) se copian verbatim en el header del plan. Toda tarea las incluye implícitamente — ninguna tarea puede contradecirlas ni re-interpretarlas.
 
 ## 🛑 Gate de salida (Etapa 2 → Etapa 3)
 
@@ -102,6 +146,7 @@ Etapa 3 usa tests de contrato, no cobertura exhaustiva (ver "Convención de test
 - [ ] Postcondiciones numeradas y verificables.
 - [ ] Criterios de aceptación medibles.
 - [ ] Marca de aprobación del usuario inequívoca.
+- [ ] Si el spec es complejo (múltiples componentes): `plan.md` existe, pasó la auto-revisión y está aprobado junto con el spec.
 
 Cuando todos OK: actualizá state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, registrá `approved_by` en `stage_history`). Anunciá transición. Emití handoff a test-writer (RED) para postcondición 1.
 

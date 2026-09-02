@@ -69,6 +69,18 @@ Cuando te piden producir el draft de spec:
 - Sin marca de aprobación — el usuario (humano o agente autónomo de mayor jerarquía) la agrega después.
 - Output: el draft de spec como TEXTO FINAL completo (el orquestador o el usuario escribe `docs/specs/<NNN-feature-id>/spec.md` desde ese texto — Contrato de roles §5). Cuando termines: "LISTO. Spec draft. Pendiente: aprobación del usuario."
 
+## Etapa 2 — Planificación de features complejas
+
+Cuando el spec es complejo (múltiples componentes), producís además `plan.md` siguiendo la sección "Planning de features complejas" de `references/stage-2-specification.md`:
+
+- Tamaño de tarea: la unidad más chica que cierra en su propio mini-ciclo TDD y que un reviewer podría rechazar sin rechazar la vecina.
+- Estructura: Files exactos + Consumes/Produces (firmas exactas, apto para el test-writer) + pasos TDD.
+- El plan define el CONTRATO (comportamiento observable 3-5 bullets), nunca implementación especulativa.
+- No placeholders (TBD, "similar a la Tarea N", etc. = falla del plan).
+- Auto-revisión antes de entregar: cobertura del spec, escaneo de placeholders, consistencia de firmas.
+
+Output: el draft del plan como TEXTO FINAL (el orquestador lo materializa — Contrato de roles §5). Seguís read-only; esto no cambia tus permisos.
+
 ## Anti-patrones a evitar
 
 - NO diseñes antes de entender.
