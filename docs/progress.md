@@ -11,6 +11,12 @@ Estado de features del proyecto.
 
 ## Done
 
+- **cdad-009-parallel-dispatch** (2026-09-02) — § "Despacho paralelo" en
+  stage-3 (árbol, precondición cdad-008, owned/do-not-touch, integración
+  final del orquestador, state file solo orquestador, wave dispatch default)
+  + subsección en sub-agent-strategies. RED 9/9, GREEN 15/15 (H1 bug de
+  oráculo ERE corregido), review aprobado. Cierra el conjunto
+  superpowers-gaps (cdad-004..009). Commits: 401e9d5, 59eb932.
 - **cdad-008-granular-planning** (2026-09-02) — "Planning de features
   complejas" en stage-2 (tamaño de tarea, Consumes/Produces, plan=contrato
   no implementación) + architect produce plan.md + AP-19. RED 12/12, GREEN
@@ -38,9 +44,10 @@ Estado de features del proyecto.
 
 ## Queued
 
-- Investigación tema 5 de superpowers-gaps (parallel-dispatch) — research →
-  síntesis → cycle. Último tema pendiente.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
+- Dogfood pendiente: make lint (H3 cdad-004), §5.6 con worktree real,
+  receiving-feedback con bloqueantes reales, stage-debugging con bug real,
+  despacho paralelo con 2+ dominios disjuntos.
 
 ## Blocked
 
