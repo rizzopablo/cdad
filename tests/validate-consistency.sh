@@ -57,6 +57,25 @@ assert_cmd_ok() {
   if eval "$1" >/dev/null 2>&1; then pass "$2"; else fail "$2"; fi
 }
 
+frontmatter() {
+  # frontmatter <archivo> — imprime el bloque ---...--- (sin los delimitadores)
+  awk 'BEGIN{c=0} /^---/{c++; next} c==1 {print}' "$1"
+}
+
+bash_section() {
+  # bash_section <archivo> — imprime SOLO la sección 'bash:' del frontmatter
+  frontmatter "$1" | awk '/^[[:space:]]*bash:[[:space:]]*$/ {on=1; print; next} on'
+}
+
+assert_string_not_has() {
+  # assert_string_not_has <contenido> <patrón-grep> <mensaje>
+  if [[ -n "$1" ]] && ! printf '%s' "$1" | grep -Eq -e "$2"; then
+    pass "$3 (no contiene '$2')"
+  else
+    fail "$3 (contiene '$2', no permitido)"
+  fi
+}
+
 echo "############################################"
 echo "# epic-002-cdad-audit-fixes — validate-consistency"
 echo "############################################"
@@ -115,6 +134,68 @@ if load_table | grep -q 'claude-code-delegation\.md'; then
 else
   fail "F004: tabla 'Cómo leer las references' NO incluye claude-code-delegation.md"
 fi
+
+echo
+echo "############################################"
+echo "# F009 — bash allowlist calibrada (B1, M3, M4)"
+echo "############################################"
+
+# test-writer/implementer (genérico + odoo): ya NO bash:{"*":allow}; sí
+# allowlist con git commit propio (contrato §5: "escriben y commitean su
+# propio artefacto") y SIN comandos de lectura de contenido (cat/head/tail/rg)
+# que son el vector real de fuga hacia src/** o tests/**.
+for f in agents/cdad-test-writer.md agents/cdad-implementer.md \
+         agents/cdad-test-writer-odoo.md agents/cdad-implementer-odoo.md; do
+  # (comentarios de línea del bloque se descartan: pueden citar "*": allow
+  # en prosa explicando qué se removió, sin que eso sea el valor efectivo)
+  b="$(bash_section "$ROOT/$f" 2>/dev/null | grep -v '^[[:space:]]*#' || true)"
+  if [[ -n "$b" ]] && printf '%s' "$b" | grep -Eq -e '"\*":[[:space:]]*allow'; then
+    fail "F009: $f: bash sigue en \"*\": allow (fuga sin cerrar)"
+  else
+    pass "F009: $f: bash NO tiene \"*\": allow"
+  fi
+  assert_string_not_has "$b" '"cat \*":[[:space:]]*allow' \
+    "F009: $f: bash no permite 'cat *' (lectura de contenido arbitraria)"
+  assert_string_not_has "$b" '"head \*":[[:space:]]*allow' \
+    "F009: $f: bash no permite 'head *'"
+  assert_string_not_has "$b" '"tail \*":[[:space:]]*allow' \
+    "F009: $f: bash no permite 'tail *'"
+  assert_file_has "$f" '"git commit\*?":[[:space:]]*allow|"git add' \
+    "F009: $f: preserva git commit/add (contrato §5, roles write-capable comitean su artefacto)"
+done
+
+# architect/reviewer/scribe — variantes odoo: ya NO "git *": allow (AP-17:
+# un rol read-only no debe poder commitear/pushear/resetear).
+for f in agents/cdad-architect-odoo.md agents/cdad-reviewer-odoo.md agents/cdad-scribe-odoo.md; do
+  assert_string_not_has "$(bash_section "$ROOT/$f" 2>/dev/null || true)" '"git \*":[[:space:]]*allow' \
+    "F009: $f: bash NO tiene 'git *': allow sin acotar (AP-17)"
+  assert_file_has "$f" '"git diff\*?":[[:space:]]*allow' \
+    "F009: $f: preserva git diff (inspección no-mutante)"
+done
+
+# architect/reviewer/scribe — genéricos: allowlist agnóstica de lenguaje
+# (M3: eran Go-only — go test/go vet/go build/gofmt — inutilizable en
+# cualquier proyecto no-Go).
+for f in agents/cdad-architect.md agents/cdad-reviewer.md agents/cdad-scribe.md; do
+  assert_string_not_has "$(bash_section "$ROOT/$f" 2>/dev/null || true)" 'go test\*' \
+    "F009: $f: allowlist de bash ya no es Go-only"
+  assert_file_has "$f" '"make \*":[[:space:]]*allow' \
+    "F009: $f: allowlist agnóstica incluye 'make *' (convención AGENTS.md de la metodología)"
+done
+
+# Claude Code: hook Bash para test-writer/implementer (B1 — el hook actual
+# solo matchea Read|Grep|Glob y Edit|Write; Bash queda sin cubrir).
+assert_file_has "agents/claude-code/cdad-test-writer.md" 'matcher:[[:space:]]*Bash' \
+  "F009: cdad-test-writer (Claude Code) tiene hook PreToolUse con matcher Bash"
+assert_file_has "agents/claude-code/cdad-implementer.md" 'matcher:[[:space:]]*Bash' \
+  "F009: cdad-implementer (Claude Code) tiene hook PreToolUse con matcher Bash"
+
+# path-guard.sh: nuevo modo de guarda de contenido vía bash + fix del
+# fail-open de relativize() para rutas absolutas fuera de $PWD.
+assert_file_has "scripts/claude-code-path-guard.sh" 'bash-content-guard|BASH_CONTENT' \
+  "F009: path-guard.sh implementa un modo de guarda para Bash"
+assert_file_has "scripts/claude-code-path-guard.sh" 'HOME.*fuera del proyecto|fuera de \$PWD|outside.*PWD|no relativiza' \
+  "F009: path-guard.sh documenta o corrige el fail-open de rutas absolutas externas"
 
 echo "############################################"
 echo "# RESULTADO"

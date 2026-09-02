@@ -8,7 +8,26 @@ permission:
   write:
     "tests/**": deny
   bash:
-    "*": allow
+    # Allowlist explícita — reemplaza "*": allow (fuga: sed -i/tee/cat vía
+    # bash podían escribir o leer tests/** esquivando permission.edit/write
+    # de arriba). Preserva todo lo legítimo: correr la suite, inspeccionar
+    # git, comitear su propio artefacto (contrato §5 del SKILL). Ver
+    # findings/audit-consistencia-2026-09-02.md B1.
+    "*": deny
+    "make *": allow
+    "pytest*": allow
+    "npm test*": allow
+    "npm run*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git status*": allow
+    "git blame*": allow
+    "git add *": allow
+    "git commit*": allow
+    "ls *": allow
+    "find *": allow
+    "wc *": allow
+    "pwd": allow
 ---
 
 # CDAD Implementer Agent

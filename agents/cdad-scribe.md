@@ -11,11 +11,11 @@ permission:
   write: deny
   bash:
     "*": deny
-    "go test*": allow
-    "go vet*": allow
-    "go build*": allow
-    "go run*": allow
-    "gofmt *": allow
+    # Antes Go-only (heredado del spike cdad-002). "make *" es la
+    # convención agnóstica que la propia metodología documenta en su
+    # AGENTS.md de referencia (make test/test-fast/lint/check) — funciona
+    # en cualquier proyecto que exponga ese contrato, no solo Go.
+    "make *": allow
     "ls *": allow
     "cat *": allow
     "wc *": allow

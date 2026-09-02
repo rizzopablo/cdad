@@ -45,7 +45,8 @@
     },
     {
       "id": "002-009-bash-allowlist-hardening",
-      "status": "queued"
+      "status": "done",
+      "completed_at": "2026-09-02"
     },
     {
       "id": "002-010-higiene-agentes",

@@ -15,6 +15,11 @@ hooks:
         - type: command
           command: ~/.claude/cdad-scripts/path-guard.sh test-writer-odoo-write
           timeout: 5
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: ~/.claude/cdad-scripts/path-guard.sh test-writer-odoo-bash
+          timeout: 5
 ---
 
 # CDAD Test-Writer Agent — variante Odoo (Claude Code)

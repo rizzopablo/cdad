@@ -121,23 +121,61 @@ else
 fi
 
 # P1 — bash allowlist para las 5 variantes (criterio review, ya no solo reviewer):
-# SOLO comandos de la allowlist (make/pre-commit/pylint/git/ls/cat/find/rg/head/tail/wc/pwd);
-# NUNCA comodín sin restricción ("*": allow) ni comandos de entorno Odoo/específicos.
-FORBIDDEN_BASH=('odoo-bin' 'psql' 'createdb' 'dropdb' 'go ' 'python' 'sed' 'awk' 'curl' 'wget')
+# SOLO comandos de la allowlist; NUNCA comodín sin restricción ("*": allow) ni
+# comandos de entorno Odoo/específicos.
+#
+# Enmienda 2026-09-02 (epic-002-cdad-audit-fixes, 002-009, findings B1/M4):
+# la postcondición original de esta sección exigía 'git *' sin acotar para
+# las 5 variantes. Auditoría posterior detectó que eso era la fuga real: un
+# rol read-only (architect/reviewer/scribe) con 'git *' puede commitear/
+# pushear/resetear (AP-17), y un rol write-capable (test-writer/implementer)
+# con 'git *' + 'cat *'/'head *'/'tail *'/'rg *' puede leer/escribir contenido
+# fuera de su scope vía bash, esquivando el permission.read/edit declarativo.
+# La postcondición vigente: git ACOTADO a subcomandos no-mutantes para los
+# roles read-only (diff/log/show/blame/status); test-writer/implementer
+# agregan además commit/add (contrato §5 del SKILL: "escriben y commitean su
+# propio artefacto") pero pierden cat/head/tail/rg (ya cubierto por Read/Grep,
+# correctamente scopeados). Ver findings/audit-consistencia-2026-09-02.md.
+FORBIDDEN_BASH_ALL=('odoo-bin' 'psql' 'createdb' 'dropdb' 'go ' 'python' 'curl' 'wget' '"git \*"' '"git\*"')
+FORBIDDEN_BASH_CONTENT=('"cat \*"' '"head \*"' '"tail \*"' '"rg \*"' 'sed' 'awk')
 for role in "${VARIANT_AGENTS[@]}"; do
     af="agents/cdad-$role-odoo.md"
     assert_file_has "$af" 'pylint[[:space:]]*\*' "P1 ($role): allowlist incluye 'pylint *'"
-    assert_file_has "$af" 'git[[:space:]]*\*'    "P1 ($role): allowlist incluye 'git *'"
-    BASH_RULES="$(bash_section "$ROOT/$af")"
+    BASH_RULES="$(bash_section "$ROOT/$af" | grep -v '^[[:space:]]*#')"
     if [[ -n "$BASH_RULES" ]]; then
         if printf '%s' "$BASH_RULES" | grep -Eq '^[[:space:]]*"\*"[[:space:]]*:[[:space:]]*allow'; then
             fail "P1 ($role): sección bash CONTIENE comodín sin restricción (\"*\": allow)"
         else
             pass "P1 ($role): sección bash SIN comodín sin restricción (\"*\": allow)"
         fi
-        for forb in "${FORBIDDEN_BASH[@]}"; do
+        if printf '%s' "$BASH_RULES" | grep -Eq -e '"git diff\*?":[[:space:]]*allow'; then
+            pass "P1 ($role): allowlist incluye git diff (inspección no-mutante)"
+        else
+            fail "P1 ($role): allowlist NO incluye git diff"
+        fi
+        for forb in "${FORBIDDEN_BASH_ALL[@]}"; do
             assert_string_not_has "$BASH_RULES" "$forb" "P1 ($role): allowlist NO incluye '$forb'"
         done
+        case "$role" in
+            test-writer|implementer)
+                # write-capable: comitean su propio artefacto, pero sin
+                # comandos de lectura de contenido (ya cubiertos por Read/Grep).
+                if printf '%s' "$BASH_RULES" | grep -Eq -e '"git (commit|add \*)\*?":[[:space:]]*allow'; then
+                    pass "P1 ($role): allowlist incluye git commit/add (contrato §5)"
+                else
+                    fail "P1 ($role): allowlist NO incluye git commit/add"
+                fi
+                for forb in "${FORBIDDEN_BASH_CONTENT[@]}"; do
+                    assert_string_not_has "$BASH_RULES" "$forb" "P1 ($role): allowlist NO incluye '$forb' (lectura de contenido — usar Read/Grep)"
+                done
+                ;;
+            *)
+                # read-only: cat/head/tail/rg siguen permitidos (son full-read
+                # por diseño, sin scope restringido que esquivar).
+                assert_string_not_has "$BASH_RULES" 'sed' "P1 ($role): allowlist NO incluye 'sed'"
+                assert_string_not_has "$BASH_RULES" 'awk' "P1 ($role): allowlist NO incluye 'awk'"
+                ;;
+        esac
     else
         fail "P1 ($role): no se detectó sección 'bash:' en el frontmatter"
     fi

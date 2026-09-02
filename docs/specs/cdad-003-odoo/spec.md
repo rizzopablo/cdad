@@ -23,7 +23,13 @@ genérico SOLO en:
   `**/models/**`, `**/views/**`, `**/controllers/**`, `**/wizards/**`,
   permite `**/tests/**` y `__manifest__.py`; implementer: niega
   `**/tests/**`), allowlist bash limitada a `make *`, `pre-commit *`,
-  `pylint *`, `git *` (sin comandos de entorno específico), modelo del
+  `pylint *`, git ACOTADO a subcomandos no-mutantes (`diff/log/show/blame/
+  status`; test-writer/implementer agregan `add`/`commit` — enmienda
+  2026-09-02, epic-002-cdad-audit-fixes 002-009: `git *` sin acotar permitía
+  a roles read-only commitear/pushear/resetear (AP-17) y a test-writer/
+  implementer esquivar su scope de path vía `cat`/`head`/`tail`/`rg`, ambos
+  removidos de la allowlist — ver
+  `findings/audit-consistencia-2026-09-02.md` B1/M4), modelo del
   reviewer distinto al del implementer;
 - cuerpo: misma directiva del rol + carga del skill Odoo del rol.
 

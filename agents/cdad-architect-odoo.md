@@ -10,7 +10,14 @@ permission:
     "make *": allow
     "pre-commit *": allow
     "pylint *": allow
-    "git *": allow
+    # git * (sin acotar) quedaba fuera de "read-only por diseño": permitía
+    # commit/push/reset desde un rol que el contrato dice que no toca nada
+    # (AP-17). Se acota a inspección no-mutante.
+    "git diff*": allow
+    "git log*": allow
+    "git show*": allow
+    "git blame*": allow
+    "git status*": allow
     "ls *": allow
     "cat *": allow
     "find *": allow

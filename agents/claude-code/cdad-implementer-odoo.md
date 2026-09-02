@@ -10,6 +10,11 @@ hooks:
         - type: command
           command: ~/.claude/cdad-scripts/path-guard.sh implementer-odoo
           timeout: 5
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: ~/.claude/cdad-scripts/path-guard.sh implementer-odoo-bash
+          timeout: 5
 ---
 
 # CDAD Implementer Agent — variante Odoo (Claude Code)

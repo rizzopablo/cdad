@@ -15,6 +15,11 @@ hooks:
         - type: command
           command: ~/.claude/cdad-scripts/path-guard.sh test-writer-write
           timeout: 5
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: ~/.claude/cdad-scripts/path-guard.sh test-writer-bash
+          timeout: 5
 ---
 
 # CDAD Test-Writer Agent (Claude Code)

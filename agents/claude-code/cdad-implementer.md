@@ -10,6 +10,11 @@ hooks:
         - type: command
           command: ~/.claude/cdad-scripts/path-guard.sh implementer
           timeout: 5
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: ~/.claude/cdad-scripts/path-guard.sh implementer-bash
+          timeout: 5
 ---
 
 # CDAD Implementer Agent (Claude Code)

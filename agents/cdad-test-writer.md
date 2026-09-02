@@ -13,7 +13,29 @@ permission:
     "*": deny
     "tests/**": allow
   bash:
-    "*": allow
+    # Allowlist explícita — reemplaza "*": allow (fuga: cat/head/tail/rg vía
+    # bash leían src/** sin pasar por el permission.read de arriba). Todo lo
+    # que el rol necesita legítimamente sigue permitido: correr su propia
+    # suite, inspeccionar git, comitear su propio artefacto (contrato §5 del
+    # SKILL: "roles write-capable escriben y commitean"), navegar el árbol.
+    # Lo que NO entra es lectura/escritura de CONTENIDO de archivo vía shell
+    # (cat/sed/tee/etc.) — para eso ya están Read/Edit, correctamente
+    # scopeados arriba. Ver findings/audit-consistencia-2026-09-02.md B1.
+    "*": deny
+    "make *": allow
+    "pytest*": allow
+    "npm test*": allow
+    "npm run*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git status*": allow
+    "git blame*": allow
+    "git add *": allow
+    "git commit*": allow
+    "ls *": allow
+    "find *": allow
+    "wc *": allow
+    "pwd": allow
   grep:
     "src/**": deny
     "lib/**": deny

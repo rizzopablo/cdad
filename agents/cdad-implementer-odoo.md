@@ -8,17 +8,22 @@ permission:
   write:
     "**/tests/**": deny
   bash:
+    # cat/head/tail/rg/git-* sin acotar quedan fuera: escribían/leían
+    # **/tests/** vía bash esquivando el permission.edit/write de arriba
+    # (findings B1). Se preserva todo lo legítimo: make (contrato
+    # odoo-make-env), pylint/pre-commit, git commit propio, navegación.
     "*": deny
     "make *": allow
     "pre-commit *": allow
     "pylint *": allow
-    "git *": allow
+    "git diff*": allow
+    "git log*": allow
+    "git status*": allow
+    "git blame*": allow
+    "git add *": allow
+    "git commit*": allow
     "ls *": allow
-    "cat *": allow
     "find *": allow
-    "rg *": allow
-    "head *": allow
-    "tail *": allow
     "wc *": allow
     "pwd": allow
 ---
