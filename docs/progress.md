@@ -4,7 +4,8 @@ Estado de features del proyecto.
 
 ## In progress
 
-_(ninguna)_
+- **Epic `epic-001-superpowers-gaps`** (aprobado por Pablo 02 Sep 2026) —
+  features cdad-005 → cdad-009. En curso: cdad-005-receiving-feedback.
 
 ## Done
 
@@ -17,14 +18,8 @@ _(ninguna)_
 
 ## Queued
 
-- **Epic `superpowers-gaps`** — 5 mejoras inspiradas en obra/superpowers,
-  gaps verificados contra el código real (análisis 2026-09-02). Orden
-  propuesto:
-  1. G1 recepción de feedback (reference receiving-feedback.md + AP-16)
-  2. G5 git safety en cierre (§5.4 en stage-5-merge.md)
-  3. G3 debugging sistemático (stage-debugging.md + disparador ADR)
-  4. G4 planning granular (extensión stage-2 + architect)
-  5. G2 despacho paralelo (stage-3 + sub-agent-strategies + state file)
+- Features restantes del epic `epic-001-superpowers-gaps`: 006-git-safety,
+  007-debugging, 008-planning, 009-parallel.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
 
 ## Blocked

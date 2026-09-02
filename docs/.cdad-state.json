@@ -1,28 +1,15 @@
 {
   "version": 1,
   "stack": null,
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_epic": "epic-001-superpowers-gaps",
+  "active_feature": "cdad-005-receiving-feedback",
+  "current_stage": "specification",
   "tdd_substage": null,
-  "audit_status": "approved_by_Pablo_2026-09-02",
+  "audit_status": null,
   "postconditions_status": {},
   "stage_history": [
-    {
-      "stage": "discovery",
-      "completed_at": "2026-09-02T03:05:00Z",
-      "approved_by": "Pablo (aprobación del plan de ciclo en sesión)"
-    },
-    {
-      "stage": "specification",
-      "completed_at": "2026-09-02T03:20:00Z",
-      "approved_by": "Pablo"
-    },
-    {
-      "stage": "merge",
-      "completed_at": "2026-09-02T04:10:00Z",
-      "approved_by": "Pablo"
-    }
+    {"stage": "epic-plan", "completed_at": "2026-09-02T04:25:00Z", "approved_by": "Pablo"}
   ],
   "approver": "Pablo",
-  "last_updated": "2026-09-02T04:10:00Z"
+  "last_updated": "2026-09-02T04:25:00Z"
 }

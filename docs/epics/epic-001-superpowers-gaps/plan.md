@@ -2,8 +2,8 @@
 epic_id: epic-001-superpowers-gaps
 epic_name: superpowers-gaps
 created_at: 2026-09-02
-approved_by: <pendiente>
-approved_at: <pendiente>
+approved_by: Pablo
+approved_at: 2026-09-02
 ---
 
 # Epic epic-001: superpowers-gaps
@@ -104,4 +104,4 @@ _(vacío — se actualiza durante el loop de features si el plan cambia)_
 
 ---
 
-Status: Pending approval
+Status: Approved by Pablo on 2026-09-02
