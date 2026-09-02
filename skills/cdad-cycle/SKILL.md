@@ -426,9 +426,11 @@ Las references son **profundización**, no condición para entender el contrato.
 | `handoff-prompts.md` | Cuando vas a generar un handoff packet o cuando entrás en modo rol |
 | `re-entry.md` | Cuando el usuario vuelve con resultado de un rol |
 | `stage-1-discovery.md` ... `stage-5-merge.md` | Cuando estás en esa etapa |
+| `verdict-tuple.md` | Al armar el handoff del reviewer (Etapa 4) o al validar su reporte en re-entry — contrato de veredicto de 4 campos |
 | `bootstrap.md` | Proyecto sin Memory Bank |
 | `sub-agent-strategies.md` | Si el entorno tiene sub-agentes nativos y querés sugerir alternativa al chat nuevo |
 | `opencode-delegation.md` | Entorno OpenCode con sub-agentes `cdad-*` instalados; delegar rol vía Task |
+| `claude-code-delegation.md` | Entorno Claude Code con sub-agentes `cdad-*` instalados; delegar rol vía `Agent` |
 | `anti-patterns.md` | Si detectás señales de drift |
 | `receiving-feedback.md` | Al transmitir o recibir feedback de review, usuario o PR externo (loop de fixes de Etapa 4) |
 | `stage-debugging.md` | Cuando un fix falla, hay que diagnosticar un bug o CI está roto (GREEN fallido en §3.2, CI en §5.1) |

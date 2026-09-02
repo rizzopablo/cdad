@@ -104,12 +104,21 @@ Ubicación: <archivo:líneas>
 Problema: <...>
 Sugerencia: <...>
 Severidad: Critical | Required
+Veredicto: BLOQUEANTE
+Bucket: <h|m|l>  ← regla de observables, ver `references/verdict-tuple.md` — nunca confianza elicitada
 
 ## Opcionales (Optional + Nit + FYI)
 ### N. <...>
 Severidad: Optional | Nit | FYI
+Veredicto: OPCIONAL
+Bucket: <h|m|l>
 
-Cerrá con: "LISTO. Resumen: <X> bloqueantes, <Y> opcionales."
+## Abstenciones
+Puntos donde no pudiste juzgar por falta de contexto o por estar fuera de tu alcance. Reportá esta sección siempre — vacía si no aplica, nunca omitida.
+### N. <punto que no pudiste juzgar>
+Motivo: <qué contexto te falta>
+
+Cerrá con: "LISTO. Resumen: <X> bloqueantes, <Y> opcionales, <Z> abstenciones."
 
 ## Anti-rationalizations (rechazá estas, addyosmani)
 

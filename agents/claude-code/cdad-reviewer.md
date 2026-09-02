@@ -77,7 +77,9 @@ Severity: **CRITICAL** si viola SLO del spec. **MAJOR** si es manifiestamente in
 
 ## Formato de hallazgo
 
-Cada hallazgo en el reporte:
+Cada hallazgo en el reporte lleva, además de la severidad de esta taxonomía,
+el **contrato de veredicto** de `references/verdict-tuple.md` (`Veredicto` +
+`Bucket`, derivado por regla de observables — nunca confianza elicitada):
 
 ```
 ### [SEVERIDAD] <título>
@@ -87,6 +89,8 @@ Cada hallazgo en el reporte:
 **Detalle**: <qué está mal>
 **Spec ref**: <P1/P2/etc o "no aplica">
 **Cambio propuesto**: <cómo reparar> (descriptivo, no código)
+**Veredicto**: BLOQUEANTE | OPCIONAL
+**Bucket**: <h|m|l>
 ```
 
 Ejemplo:
@@ -98,7 +102,14 @@ Ejemplo:
 **Detalle**: Cuando payment_method es tarjeta, el código intenta procesar como billetera sin validar. Viola P2 explícitamente.
 **Spec ref**: P2 ("Si payment_method=card, validar número de tarjeta")
 **Cambio propuesto**: Agregar check `if payment_method == "card"` antes de line 147, lanzo error si validación falla.
+**Veredicto**: BLOQUEANTE
+**Bucket**: h
 ```
+
+Agregá al final del reporte una sección `## Abstenciones` (siempre presente,
+vacía si no aplica) con los puntos donde no pudiste juzgar por falta de
+contexto o por estar fuera de tu alcance — CRITICAL y MAJOR nunca se marcan
+"probablemente bien"; si dudás, es una abstención, no un TRIVIAL.
 
 ## Procedimiento
 

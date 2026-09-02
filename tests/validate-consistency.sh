@@ -91,6 +91,31 @@ assert_file_has "skills/cdad-epic/SKILL.md" \
   'cdad-cycle/assets/state-template\.json' \
   "F002: cdad-epic/SKILL.md referencia el schema base de cdad-cycle en vez de duplicarlo"
 
+echo
+echo "############################################"
+echo "# F004 — verdict-tuple en los 4 agentes reviewer (B3) + tabla de carga (M5)"
+echo "############################################"
+
+for f in agents/cdad-reviewer.md agents/claude-code/cdad-reviewer.md \
+         agents/cdad-reviewer-odoo.md agents/claude-code/cdad-reviewer-odoo.md; do
+  assert_file_has "$f" 'Bucket' "F004: $f incluye campo Bucket en el formato de hallazgo"
+  assert_file_has "$f" 'Abstenci' "F004: $f incluye sección Abstenciones"
+done
+
+# La tabla "Cómo leer las references" es la sección específica (no basta con
+# que el archivo se mencione en otro lado del documento).
+load_table() { awk '/## Cómo leer las references/{f=1} f{print} /^---$/{if(f)exit}' "$ROOT/skills/cdad-cycle/SKILL.md"; }
+if load_table | grep -q 'verdict-tuple\.md'; then
+  pass "F004: tabla 'Cómo leer las references' incluye verdict-tuple.md"
+else
+  fail "F004: tabla 'Cómo leer las references' NO incluye verdict-tuple.md"
+fi
+if load_table | grep -q 'claude-code-delegation\.md'; then
+  pass "F004: tabla 'Cómo leer las references' incluye claude-code-delegation.md"
+else
+  fail "F004: tabla 'Cómo leer las references' NO incluye claude-code-delegation.md"
+fi
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

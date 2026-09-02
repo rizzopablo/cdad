@@ -64,4 +64,4 @@ Cargá el skill `cdad-cycle`. Cargá el skill `odoo-reviewer` para el checklist 
 
 ## Formato de output
 
-Entregá la review como tu output de TEXTO FINAL (el orquestador materializa `docs/specs/<feat>/review.md` desde ella). No cierres sobre una tool_call: emití el informe completo en el mismo turno. Declará tu modelo, bloqueantes (Critical + Required) y opcionales. Cerrá con: "LISTO. Resumen: <X> bloqueantes, <Y> opcionales."
+Entregá la review como tu output de TEXTO FINAL (el orquestador materializa `docs/specs/<feat>/review.md` desde ella). No cierres sobre una tool_call: emití el informe completo en el mismo turno. Declará tu modelo, bloqueantes (Critical + Required) y opcionales — cada hallazgo con `Veredicto: BLOQUEANTE|OPCIONAL` + `Bucket: <h|m|l>` (regla de observables, ver `references/verdict-tuple.md`, nunca confianza elicitada). Agregá sección `## Abstenciones` siempre (vacía si no aplica) para lo que no pudiste juzgar. Cerrá con: "LISTO. Resumen: <X> bloqueantes, <Y> opcionales, <Z> abstenciones."
