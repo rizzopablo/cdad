@@ -95,6 +95,46 @@ Cargá `references/re-entry.md` sección "Test-writer — RED". Verificaciones c
 Si pasa: actualizá state, emití handoff a implementer.
 Si falla por razón equivocada, o si viola la convención de contrato: handoff de vuelta al test-writer con info del motivo.
 
+## Despacho paralelo
+
+El packet ortogonal (un test-writer, N postcondiciones) sigue siendo el **default**: una sola sesión RED, un solo handoff GREEN. El despacho paralelo —varias sesiones del mismo rol corriendo a la vez— es la excepción que se justifica solo cuando el packet es demasiado grande o las tareas son dominios genuinamente disjuntos.
+
+**Árbol de decisión**:
+
+- ¿2+ (dos o más) tareas **genuinamente independientes** — sin estado compartido y sin archivos en común? → despacho paralelo.
+- ¿Comparten archivo o estado? → secuencial, o **wave dispatch** (turnos: la sesión 1 termina y consolida, recién entonces entra la 2). Mismo archivo = serial, siempre.
+
+**Precondición (obligatoria)**: el paralelismo seguro requiere **contrato de interfaz** — los Consumes/Produces del plan (ver "Planning de features complejas" en `references/stage-2-specification.md`). Ese contrato es lo que hace independientes las tareas: define qué produce cada sesión y qué consume la siguiente. Sin él, no hay despacho paralelo: las sesiones se serializan. "Hoy no se pisan" no es un contrato; se rompe mañana sin que nadie lo sepa.
+
+**Reglas de despacho**:
+
+1. **Prompt autocontenido por sesión** (regla §6 de state-passing): cada packet incluye los **owned files** (archivos que esa sesión puede tocar) y una **do-not-touch list** (todo lo demás, explícito).
+2. **Scope disjunto verificado**: ante la duda, `git diff --name-only` sobre las branches/dominios planificados antes de despachar, y `comm -12` entre los conjuntos para detectar overlap. El análisis de independencia es lo que habilita el paralelismo, no lo que lo frena.
+3. **Mismo rol, sesiones distintas**: cada sesión sigue sin ver el trabajo de las otras — el aislamiento de sesión no se relaja porque haya paralelismo. Lo único que comparten es el handoff del orquestador.
+
+**Integración final (SOLO el orquestador)**: cuando todas las sesiones volvieron —
+
+1. Revisar cada resumen (el resumen del agente **no es evidencia** de que salió bien).
+2. Chequear overlap de archivos entre dominios: `git diff --name-only` + `comm` (o equivalente) sobre lo tocado por cada sesión.
+3. Correr la suite **COMPLETA** una sola vez al final (AP-3: sin verificación empírica no hay verde).
+
+Los conflictos los resuelve el orquestador, **nunca los subagentes** — un subagente resolviendo un conflicto está tocando dominio ajeno, con vista parcial y sin contrato. Si la integración falla, el orquestador diagnostica y re-delega con el alcance corregido.
+
+**State file**: SOLO el orquestador lo escribe, SIEMPRE. Las sesiones paralelas nunca lo tocan — escrituras concurrentes sobre el state file producen estado indefinido. El orquestador lo consolida en cada re-entry, igual que en el flujo secuencial.
+
+**Wave dispatch como default conservador**: CDAD corre sesiones aisladas sobre el mismo árbol de trabajo, así que los turnos (waves) con dominios disjuntos son el modo conservador por defecto. **Worktree-per-agent** (una branch + un worktree por sesión, merge orquestado) queda documentado como opción para entornos con soporte nativo de worktrees; el cleanup de esos worktrees sigue §5.6 — limpieza por provenance.
+
+### Tabla anti-racionalización
+
+| Racionalización | Realidad |
+|---|---|
+| "Los archivos no se pisan, no necesito análisis" | El análisis de independencia es lo que habilita el paralelismo, no lo que lo frena; sin contrato de interfaz, "no se pisan hoy" se rompe mañana. |
+| "Es una sola tarea, básicamente secuencial" | Sí, y entonces va secuencial — el árbol de decisión no lo presenta como opción paralela. |
+| "El resumen del agente dice que salió bien" | El resumen no es evidencia: suite COMPLETA al consolidar (AP-3). |
+| "El conflicto es chico, lo resuelvo en mi sesión de fix" | Los conflictos entre dominios los resuelve el orquestador con contexto completo, nunca un subagente con vista parcial. |
+| "Mismo archivo en 2 tareas, lo mando en paralelo igual" | Wave dispatch: mismo archivo = serial. |
+| "El state file lo puede actualizar cada sesión" | Solo el orquestador: escrituras concurrentes = estado indefinido. |
+
 ## Sub-fase 3.2 — GREEN
 
 Handoff a implementer con: spec, test que tiene que pasar, interface, systemPatterns.

@@ -163,3 +163,12 @@ Odoo del rol) que preservan la directiva del rol genérico.
 Regla de decisión de delegación: igual que en la §Contrato de roles §4 — si el
 entorno expone sub-agentes, se delega al sub-agente de la variante según el
 stack activo; el aislamiento de sesión y el modelo por rol se mantienen.
+
+### Sesiones paralelas del mismo rol
+
+El despacho paralelo de varias sesiones del mismo rol **mantiene el
+aislamiento**: cada sesión sigue sin ver el trabajo de las otras — lo único
+que comparten es el handoff del orquestador, que despacha, consolida y escribe
+el state file (las sesiones nunca lo tocan). Protocolo completo: árbol de
+decisión, owned/do-not-touch e integración final en `stage-3-tdd.md` §
+"Despacho paralelo".
