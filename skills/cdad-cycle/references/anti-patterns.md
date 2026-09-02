@@ -149,6 +149,14 @@ No avances de fase con "yo creo que pasa".
 
 **Corrección**: aplicar `references/receiving-feedback.md` — secuencia de 4 pasos (leer completo sin reaccionar → restatear → verificar contra el código real → implementar de a un fix con verificación), push-back con evidencia citada cuando el hallazgo es incorrecto. El push-back correcto con evidencia es obligación del receptor, no descortesía: lo descortés (con el codebase) es dejar pasar un hallazgo falso.
 
+## AP-17 — Integración destructiva
+
+**Síntoma**: el agente mergea, borra branches/worktrees o descarta trabajo sin presentar el menú de opciones, sin confirmar la base branch, o con confirmación débil ("sí, borralo"). Señal típica: `git branch -D`, `git worktree remove`, `git reset` ejecutados sin que el usuario haya elegido una opción del menú de cierre ni tipeado la palabra literal `discard`.
+
+**Por qué es malo**: borra trabajo irrecuperable — un reset/discard sin confirmación literal destruye commits sin red de seguridad. Un merge a base equivocada contamina la main de todo el equipo. Y el state file del ciclo asume árbol intacto: la destrucción silenciosa rompe la premisa de "volvés a etapa N-1" — el estado que el ciclo cree que existe ya no existe.
+
+**Corrección**: aplicar `stage-5-merge.md` §5.4 — detección de entorno, base branch confirmada, menú fijo de 4 opciones, discard solo con la palabra literal `discard`, limpieza por provenance (solo worktrees propios del ciclo), y nunca `--force` por iniciativa propia. (Nota de contexto histórico: un runtime con interfaz web ejecutó `git reset` sobre trabajo sin commitear en este proyecto — el reflog fue la única traza que quedó.)
+
 ## Cómo usar este archivo
 
 Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues preventivamente; es ruido si todo va bien. Cuando intervenís contra un anti-patrón, citá el código (AP-N) en tu mensaje al usuario para que pueda buscarlo:
