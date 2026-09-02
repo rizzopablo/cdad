@@ -2,7 +2,7 @@
 name: "odoo-make-env"
 description: >
   Contrato make para ejecutar tests Odoo en proyectos CDAD (targets test /
-  test-one / test-clean) y guía para implementar el contrato en un entorno
+  test-one / test-clean / lint) y guía para implementar el contrato en un entorno
   concreto (odoo.sh, staging privado, docker local, oca-ci). Usar cuando un proyecto
   Odoo debe exponer su runner de tests a los agentes CDAD-Odoo, o al crear
   el Makefile de un proyecto Odoo nuevo.
@@ -12,7 +12,7 @@ description: >
 
 **Principio:** CDAD define QUÉ se verifica (gates + evidencia); el proyecto
 define CÓMO (Makefile versionado en el repo). Los agentes CDAD-Odoo invocan
-solo los 3 targets — nunca comandos específicos de un entorno.
+solo los 4 targets — nunca comandos específicos de un entorno.
 
 ## El contrato (obligatorio, nombres exactos)
 
@@ -21,6 +21,7 @@ solo los 3 targets — nunca comandos específicos de un entorno.
 | `make test` | suite completa sobre DB caliente | test-writer (AUDIT), implementer (GREEN) |
 | `make test-one TEST=mod:Clase.metodo` | un solo test | test-writer (RED) |
 | `make test-clean` | instalación del módulo desde cero + suite | implementer (gate GREEN), reviewer |
+| `make lint` | lint del addon con `pre-commit-vauxoo` — `--diff` en desarrollo, `--all` para evidencia de gate | implementer (gate GREEN), reviewer |
 
 **Reglas:**
 1. `test-clean` = "instalación desde cero" — el mecanismo es libre por
@@ -30,6 +31,14 @@ solo los 3 targets — nunca comandos específicos de un entorno.
 3. `test-clean` ejercita la instalación CON demo data.
 4. Evidencia = output pegado con la línea `0 failed, 0 error(s) of N tests`.
 5. El Makefile es versionable y revisable — vive en el repo del proyecto.
+6. `make lint` invoca el lint pinneado `uvx pre-commit-vauxoo==8.3.18` y
+   SIEMPRE con `--no-overwrite`: la bootstrap de configs de pre-commit es
+   decisión del proyecto, nunca del agente. Autofixes deshabilitados
+   (default del tool).
+7. El lint corre en host, no dentro del runtime del entorno de tests; la
+   primera corrida requiere red (clona los repos de hooks).
+8. Evidencia de lint = output de `make lint --all` pegado, con `0`
+   bloqueantes.
 
 ## Cómo implementar un entorno nuevo
 
@@ -57,7 +66,7 @@ Buscá, en este orden:
 3. Ver tabla de varianza (abajo) para entornos conocidos.
 4. Agregar retry si el postgres es compartido (patrón `run_odoo` del
    template de staging privado, en referencias privadas de ese entorno).
-5. Verificar los 3 targets con un módulo mínimo (sugerido: `idea_log`).
+5. Verificar los 4 targets con un módulo mínimo (sugerido: `idea_log`).
 
 ## Varianza por entorno (verificada empíricamente)
 

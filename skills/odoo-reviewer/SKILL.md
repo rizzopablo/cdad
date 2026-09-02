@@ -53,7 +53,7 @@ La review marca cada hallazgo como `mandatory` (bloqueante, severidad
 Required/Critical) o `advisory` (opcional, severidad Optional/Nit/FYI).
 
 Evidencia de lint obligatoria en la review:
-- `pre-commit` limpio (hoo-oca-pre-commit-hooks) si el repo lo usa.
+- Output de `make lint --all` (`pre-commit-vauxoo`) pegado, con `0` bloqueantes.
 - Output de `pylint` pegado, con `0` checks `E` y los `W`/`C` listados.
 
 ## Evidencia requerida (no negociable)
@@ -66,10 +66,13 @@ La review de una feature Odoo exige, además del análisis del diff:
    --manifest` / `--oca-addons-cfg`) devuelve 0 problemas.
 3. **pylint-odoo** sin `E` bloqueantes (ver catálogo arriba), `W`/`C`
    documentados como advisory.
-4. La evidencia se **pega**, no se describe ("la suite está verde" no basta).
+4. **`make lint --all`** (`pre-commit-vauxoo`) con `0` bloqueantes, output
+   pegado; los hallazgos `W`/`C` del lint son advisory según el split
+   mandatory/advisory de arriba.
+5. La evidencia se **pega**, no se describe ("la suite está verde" no basta).
 
-> Nota: el lint es estático y corre en la máquina del desarrollador (no en
-> entornos gestionados); el output viaja con la review.
+> Nota: el lint (`make lint`) es estático y corre en la máquina del
+> desarrollador (no en entornos gestionados); el output viaja con la review.
 
 ## Procedimiento
 

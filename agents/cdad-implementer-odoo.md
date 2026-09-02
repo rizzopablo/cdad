@@ -66,7 +66,7 @@ Antes de dar por terminada la implementación, verificá los cinco.
 
 - Tarea: hacer pasar el test recién escrito con implementación mínima.
 - Contexto: spec aprobado, el test que debe pasar, interface/firma, docs/systemPatterns.md.
-- Verificación: suite verde (`make test`) y gate de instalación (`make test-clean`) si el spec lo marca.
+- Verificación: suite verde (`make test`), gate de instalación (`make test-clean`) si el spec lo marca, y lint limpio (`make lint`) — output de `make lint --all` pegado, 0 bloqueantes.
 - Commit: "feat: implement <postcondición>"
 
 ## Sub-modo REFACTOR (opcional)

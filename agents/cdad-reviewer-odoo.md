@@ -48,8 +48,8 @@ Cargá el skill `cdad-cycle`. Cargá el skill `odoo-reviewer` para el checklist 
 
 - Revisá el diff completo (`git diff <base>..HEAD`) contra el spec aprobado.
 - Revisá los tests primero (revelan intención y cobertura).
-- Verificá la verificación del autor: ¿corrió `make test-clean` y pegó el output? ¿colla oca-checks 0 hallazgos?
-- Evidencia requerida por el skill `odoo-reviewer`: `make test-clean` verde + output pegado + oca-checks sin hallazgos + pylint-odoo sin E/W bloqueantes.
+- Verificá la verificación del autor: ¿corrió `make test-clean` y pegó el output? ¿y oca-checks 0 hallazgos? ¿lint limpio (`make lint`) con output pegado?
+- Evidencia requerida por el skill `odoo-reviewer`: `make test-clean` verde + output pegado + oca-checks sin hallazgos + pylint-odoo sin E/W bloqueantes + `make lint --all` con 0 bloqueantes.
 - Cada hallazgo: ubicación (archivo:líneas), problema, sugerencia (el movimiento), severidad (ver taxonomía abajo). Reportá solo hallazgos con ≥80% de confianza.
 
 ## Severidad (taxonomía addyosmani)
