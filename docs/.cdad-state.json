@@ -3,8 +3,8 @@
   "stack": null,
   "active_feature": "cdad-004-lint-gate",
   "current_stage": "tdd",
-  "tdd_substage": "audit",
-  "audit_status": null,
+  "tdd_substage": "green",
+  "audit_status": "approved_by_Pablo_2026-09-02",
   "postconditions_status": {"1": "pending", "2": "pending", "3": "pending", "4": "pending"},
   "stage_history": [
     {"stage": "discovery", "completed_at": "2026-09-02T03:05:00Z", "approved_by": "Pablo (aprobación del plan de ciclo en sesión)"},

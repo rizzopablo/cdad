@@ -169,8 +169,8 @@ assert_file_has "skills/odoo-reviewer/SKILL.md" 'pylint-odoo' "P2 rev: menciona 
 assert_file_has "skills/odoo-reviewer/SKILL.md" 'mandatory'   "P2 rev: menciona split mandatory"
 assert_file_has "skills/odoo-reviewer/SKILL.md" 'advisory'    "P2 rev: menciona split advisory"
 
-# implementer variante referencia carga de skills odoo-dev-methodology y odoo-expert
-assert_file_has "agents/cdad-implementer-odoo.md" 'odoo-dev-methodology' "P2 imp: referencia skill odoo-dev-methodology"
+# implementer variante referencia el skill vigente odoo-expert (odoo-dev-methodology retirado en d9dc599)
+assert_file_not_has "agents/cdad-implementer-odoo.md" 'odoo-dev-methodology' "P2 imp: NO referencia skill retirado odoo-dev-methodology"
 assert_file_has "agents/cdad-implementer-odoo.md" 'odoo-expert'          "P2 imp: referencia skill odoo-expert"
 
 echo "############################################"
