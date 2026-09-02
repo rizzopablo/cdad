@@ -9,21 +9,62 @@
   "audit_status": null,
   "postconditions_status": {},
   "epic_features": [
-    {"id": "002-001-single-source-role-contract", "status": "queued"},
-    {"id": "002-002-single-source-state-schema", "status": "queued"},
-    {"id": "002-003-single-source-gates", "status": "queued"},
-    {"id": "002-004-verdict-tuple-en-reviewer", "status": "queued"},
-    {"id": "002-005-taxonomia-reviewer-unificada", "status": "queued"},
-    {"id": "002-006-property-tests-scope", "status": "queued"},
-    {"id": "002-007-orquestador-claude-code", "status": "queued"},
-    {"id": "002-008-guard-modelos-premium", "status": "queued"},
-    {"id": "002-009-bash-allowlist-hardening", "status": "queued"},
-    {"id": "002-010-higiene-agentes", "status": "queued"},
-    {"id": "002-011-validador-consistencia", "status": "queued"},
-    {"id": "002-012-epic-dogfood", "status": "queued"}
+    {
+      "id": "002-001-single-source-role-contract",
+      "status": "queued"
+    },
+    {
+      "id": "002-002-single-source-state-schema",
+      "status": "done",
+      "completed_at": "2026-09-02"
+    },
+    {
+      "id": "002-003-single-source-gates",
+      "status": "queued"
+    },
+    {
+      "id": "002-004-verdict-tuple-en-reviewer",
+      "status": "queued"
+    },
+    {
+      "id": "002-005-taxonomia-reviewer-unificada",
+      "status": "queued"
+    },
+    {
+      "id": "002-006-property-tests-scope",
+      "status": "queued"
+    },
+    {
+      "id": "002-007-orquestador-claude-code",
+      "status": "queued"
+    },
+    {
+      "id": "002-008-guard-modelos-premium",
+      "status": "queued"
+    },
+    {
+      "id": "002-009-bash-allowlist-hardening",
+      "status": "queued"
+    },
+    {
+      "id": "002-010-higiene-agentes",
+      "status": "queued"
+    },
+    {
+      "id": "002-011-validador-consistencia",
+      "status": "queued"
+    },
+    {
+      "id": "002-012-epic-dogfood",
+      "status": "queued"
+    }
   ],
   "epic_history": [
-    {"stage": "epic-plan", "completed_at": "2026-09-02T00:00:00Z", "approved_by": "Pablo"}
+    {
+      "stage": "epic-plan",
+      "completed_at": "2026-09-02T00:00:00Z",
+      "approved_by": "Pablo"
+    }
   ],
   "stage_history": [
     {

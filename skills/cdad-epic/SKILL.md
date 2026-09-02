@@ -154,11 +154,13 @@ Convención de IDs: features de un epic usan prefijo `<epic-num>-<feat-num>-<slu
 
 ## State file — extensión para epics
 
-El state file (compartido con `cdad-cycle`) gana estos campos cuando hay epic activo:
+El state file es compartido con `cdad-cycle`; **el schema completo (base +
+campos de epic) vive en `../cdad-cycle/assets/state-template.json`** — no se
+duplica acá. Lo de abajo es un ejemplo ilustrativo de un epic en curso,
+mostrando solo los campos que `cdad-epic` lee/escribe:
 
 ```json
 {
-  "version": 1,
   "active_epic": "001-facturacion-afip",
   "epic_stage": "features-loop",
   "active_feature": "001-002-generar-xml",
@@ -178,7 +180,18 @@ El state file (compartido con `cdad-cycle`) gana estos campos cuando hay epic ac
 }
 ```
 
-Si NO hay epic activo, esos campos se omiten o se setean a `null`. `cdad-cycle` ignora los campos de epic; `cdad-epic` los lee y los actualiza.
+Si NO hay epic activo, esos campos se omiten o se setean a `null`/`[]` (los
+defaults de `state-template.json`). `cdad-cycle` ignora los campos de epic;
+`cdad-epic` los lee y los actualiza.
+
+**Convención de ID cuando el epic no tiene número limpio** (epics nombrados
+por slug, como `epic-001-superpowers-gaps`): la convención
+`<epic-num>-<feat-num>-<slug>` de más abajo asume un epic numérico de 3
+dígitos. Para un epic con id compuesto, las features usan
+`<slug-corto-del-epic>-NNN-<slug-feature>` o simplemente se registran en
+`epic_features` sin exigir que el id de la feature codifique el id del epic
+— la pertenencia ya está en `epic_features`, no hace falta que esté también
+en el string del id. No es obligatorio forzar un formato que no calza.
 
 Avisale al usuario cada vez que modificás el state file.
 

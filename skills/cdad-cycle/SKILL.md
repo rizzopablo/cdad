@@ -375,7 +375,9 @@ Templates en `assets/`. Si falta estructura, ofrecé bootstrap (ver `references/
 
 ## State file — formato
 
-`docs/.cdad-state.json`:
+`docs/.cdad-state.json`. **Schema completo (todos los campos, incluidos los
+de epic): `assets/state-template.json`** — es la fuente única; lo de abajo es
+un ejemplo ilustrativo de una feature en curso, no una copia del schema.
 
 ```json
 {
@@ -400,6 +402,17 @@ Actualizalo cuando: cambia de etapa, cambia de sub-fase, cambia status de postco
 §3.1). Se setea en bootstrap por autodetección (`references/bootstrap.md`
 Paso 2b) o, ya en curso, si el usuario lo indica explícito. CDAD no conoce
 stacks por nombre; el valor lo define la especialización instalada.
+
+**`current_stage: "idle"`**: valor válido solo cuando `active_feature` es
+`null` — significa "sin feature en curso" (entre features, o esperando que
+`cdad-epic` asigne la próxima del loop). Distinto del enum de etapas de una
+feature en curso (`discovery|specification|tdd|review|merge|done`); ver
+`references/state-detection.md`.
+
+**Campos de epic** (`active_epic`, `epic_stage`, `epic_features`,
+`epic_history`): `null`/`[]` cuando no hay epic activo. `cdad-cycle` los
+ignora; `cdad-epic` los lee y actualiza — detalle del contrato en
+`skills/cdad-epic/SKILL.md` § State file.
 
 ---
 

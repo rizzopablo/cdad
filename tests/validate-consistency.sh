@@ -64,6 +64,34 @@ echo "(las secciones se completan feature por feature; ver plan.md)"
 echo
 
 echo "############################################"
+echo "# F002 — single-source state schema (B9)"
+echo "############################################"
+
+# assets/state-template.json es la fuente única: debe llevar TODOS los campos
+# (incluidos los de epic), no solo los de feature.
+for key in stack active_epic epic_stage epic_features epic_history \
+           audit_status postconditions_status stage_history active_feature \
+           current_stage tdd_substage approver last_updated version; do
+  assert_file_has "skills/cdad-cycle/assets/state-template.json" "\"$key\"" \
+    "F002: state-template.json declara el campo '$key'"
+done
+
+assert_file_has "skills/cdad-cycle/references/state-detection.md" 'idle' \
+  "F002: state-detection.md documenta el valor 'idle' de current_stage"
+
+assert_file_has "skills/cdad-cycle/SKILL.md" \
+  'assets/state-template\.json' \
+  "F002: SKILL.md § State file referencia assets/state-template.json como schema completo"
+
+assert_file_has "skills/cdad-cycle/references/bootstrap.md" \
+  'assets/state-template\.json' \
+  "F002: bootstrap.md Paso 4 referencia assets/state-template.json en vez de reproducir el schema"
+
+assert_file_has "skills/cdad-epic/SKILL.md" \
+  'cdad-cycle/assets/state-template\.json' \
+  "F002: cdad-epic/SKILL.md referencia el schema base de cdad-cycle en vez de duplicarlo"
+
+echo "############################################"
 echo "# RESULTADO"
 echo "############################################"
 echo "Assert PASS: $PASS_COUNT"

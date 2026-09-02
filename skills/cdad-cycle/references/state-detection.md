@@ -14,11 +14,20 @@ Si existe, leelo. La estructura mínima es:
 {
   "version": 1,
   "active_feature": "<feature-id>",
-  "current_stage": "discovery|specification|tdd|review|merge|done",
+  "current_stage": "discovery|specification|tdd|review|merge|done|idle",
   "tdd_substage": "red|green|refactor|properties|integration|null",
   "postconditions_status": { "1": "green|red|pending", ... }
 }
 ```
+
+Schema completo (todos los campos posibles, incluidos los de epic):
+`assets/state-template.json`. Esta tabla muestra solo el subconjunto que
+`cdad-cycle` necesita para detectar etapa de una feature.
+
+`current_stage: "idle"` es válido únicamente cuando `active_feature` es
+`null` — "sin feature en curso". No es una etapa del ciclo de una feature
+(esas son las cinco: discovery|specification|tdd|review|merge, más `done` al
+cerrar); es el valor de reposo entre features.
 
 Esa es la fuente de verdad. **Pero igual hacé un sanity check** contra los archivos reales del paso 2: si el state file dice `current_stage: tdd` pero no hay tests en el repo, está desactualizado y avisás al usuario.
 

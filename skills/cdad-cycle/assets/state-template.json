@@ -1,12 +1,16 @@
 {
   "version": 1,
   "stack": null,
+  "active_epic": null,
+  "epic_stage": null,
   "active_feature": null,
   "current_stage": "discovery",
   "tdd_substage": null,
   "audit_status": null,
   "postconditions_status": {},
+  "epic_features": [],
   "stage_history": [],
+  "epic_history": [],
   "approver": "<TODO: nombre del aprobador de specs>",
   "last_updated": "<YYYY-MM-DDTHH:MM:SSZ>"
 }
