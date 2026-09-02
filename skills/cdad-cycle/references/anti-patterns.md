@@ -155,7 +155,7 @@ No avances de fase con "yo creo que pasa".
 
 **Por qué es malo**: borra trabajo irrecuperable — un reset/discard sin confirmación literal destruye commits sin red de seguridad. Un merge a base equivocada contamina la main de todo el equipo. Y el state file del ciclo asume árbol intacto: la destrucción silenciosa rompe la premisa de "volvés a etapa N-1" — el estado que el ciclo cree que existe ya no existe.
 
-**Corrección**: aplicar `stage-5-merge.md` §5.4 — detección de entorno, base branch confirmada, menú fijo de 4 opciones, discard solo con la palabra literal `discard`, limpieza por provenance (solo worktrees propios del ciclo), y nunca `--force` por iniciativa propia. (Nota de contexto histórico: un runtime con interfaz web ejecutó `git reset` sobre trabajo sin commitear en este proyecto — el reflog fue la única traza que quedó.)
+**Corrección**: aplicar `stage-5-merge.md` §5.6 — detección de entorno, base branch confirmada, menú fijo de 4 opciones, discard solo con la palabra literal `discard`, limpieza por provenance (solo worktrees propios del ciclo), y nunca `--force` por iniciativa propia. (Nota de contexto histórico: un runtime con interfaz web ejecutó `git reset` sobre trabajo sin commitear en este proyecto — el reflog fue la única traza que quedó.)
 
 ## Cómo usar este archivo
 
