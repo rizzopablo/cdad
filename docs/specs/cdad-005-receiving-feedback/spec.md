@@ -1,88 +1,100 @@
 # cdad-005: Protocolo de recepción de feedback (anti-sicofantía)
 
 > Estado: DRAFT — pendiente de aprobación del usuario (Pablo).
-> Fecha: 2026-09-02 · Origen: epic-001-superpowers-gaps (feature 1/5).
-> Discovery: skill `receiving-code-review` de obra/superpowers leído completo
-> (205 líneas) + verificación contra CDAD real: grep de
-> "reacciona|push.?back|sicofant|aclaración" sobre stage-4-review.md,
-> re-entry.md, anti-patterns.md, verdict-tuple.md y agents/cdad-implementer.md
-> = 0 matches (02 Sep 2026). El reviewer EMITE veredicto (verdict-tuple); la
-> RECEPCIÓN del feedback no está protocolizada.
+> Fecha: 2026-09-02 · Origen: investigación superpowers-gaps tema 1
+> (docs/epics/research-tema1-receiving-feedback/research.md). Decisión de
+> forma: cycle standalone (aprobado por Pablo 02 Sep 2026).
 
 ## Descripción funcional
 
-CDAD define cómo el reviewer emite un veredicto pero no cómo cualquier rol
-(implementer, test-writer, architect) —ni el orquestador— debe RECIBIR
-feedback: del reviewer (bloqueantes de Etapa 4), del usuario, o de un review
-externo (comentarios en PR). Se incorpora un protocolo de recepción con
-rigor técnico: sin respuestas performativas, verificación contra el código
-real ANTES de implementar, push-back técnico con evidencia cuando el
-feedback está equivocado, y clarificación total antes de implementar cuando
-hay ítems ambiguos.
+CDAD define cómo el reviewer EMITE un veredicto (verdict-tuple, severidad,
+confidence ≥80%) pero no cómo se RECIBE feedback — del reviewer (bloqueantes
+de Etapa 4), del usuario, o de un review externo (PR). La sicofantía (RLHF)
+hace que los agentes respondan con agreement performativo e implementen a
+ciegas; también afecta al reviewer ante push-back (capitula). Se incorpora el
+protocolo de recepción en dos lados del canal, aprovechando la ventaja
+estructural de CDAD: sesiones aisladas llegan frescas y el handoff packet
+re-invoca las reglas (antídoto a la dilución de contexto documentada).
 
-## Restricciones de diseño (del análisis del epic)
+## Restricciones de diseño (de la investigación aprobada)
 
 - **R1 — Dos lados del canal:** el protocolo aplica al orquestador cuando
-  TRANSMITE feedback (íntegro, sin editar que suavice, al handoff packet) y
-  al rol que lo RECIBE (secuencia obligatoria antes de implementar).
-- **R2 — No debilita el aislamiento:** el feedback viaja por el handoff
-  packet (regla §6 de state-passing); el receptor no lee el diff del reviewer
-  ni sesiones ajenas.
-- **R3 — No cambia el núcleo:** verdict-tuple, matriz de severidad y gates
-  quedan intactos; el protocolo es el complemento de recepción del loop ya
-  existente (priorizar fixes → suite verde tras cada fix).
-- **R4 — Formato del repo:** la reference nueva incluye su tabla
-  anti-racionalización y "cuándo NO aplica" (convención del epic).
+  TRANSMITE (feedback íntegro en el handoff packet, sin editar que suavice)
+  y al rol que RECIBE (secuencia obligatoria antes de implementar).
+- **R2 — Sin cláusulas de salida:** las reglas del protocolo se redactan
+  sin "si el usuario insiste, cedé" — el compliance nativo (RLHF) ya cede
+  solo; la cláusula explícita acelera la capitulación (hallazgo Morricone,
+  verificado empíricamente en su A/B).
+- **R3 — Núcleo intacto:** verdict-tuple, matriz de severidad, confidence
+  threshold y gates no se modifican.
+- **R4 — Aprobación indelegable:** contra decisiones estratégicas ya
+  aprobadas por el usuario NO hay push-back post-hoc; la objeción técnica va
+  antes de la aprobación (brainstorm socrático, etapas 1-2). En el protocolo:
+  esas decisiones se ejecutan o se escalan por otro canal.
+- **R5 — Alcance cerrado:** 5 archivos (P1-P5). Nada más.
 
 ## Contrato (postcondiciones numeradas)
 
-**P1 — Reference nueva.** Existe `skills/cdad-cycle/references/receiving-feedback.md`
-con: (a) secuencia obligatoria de 4 pasos — leer completo sin reaccionar →
-restatear la postcondición/requirement en palabras propias → verificar contra
-el código real → implementar un fix por vez con verificación; (b) lista de
-respuestas prohibidas (agradecimientos, "tenés razón", agreement performativo
-previo a verificación) y sus reemplazos; (c) regla de feedback multi-ítem
-ambiguo: parar TODO y pedir aclaración antes de implementar ninguno;
-(d) protocolo de push-back técnico: cuándo procede (rompe funcionalidad,
-falta contexto, viola YAGNI, incorrecto para el stack, contradice decisiones
-arquitectónicas) y cómo (evidencia citada, no defensa emocional); (e) chequeo
-YAGNI con grep del codebase cuando el feedback pide "implementar bien algo";
-(f) manejo de push-back incorrecto propio (corrección factual, sin
-sobre-explicación); (g) tabla anti-racionalización; (h) sección "cuándo NO
-aplica" (feedback del usuario sobre decisiones estratégicas: se ejecuta, no
-se push-back-ea — la aprobación es indelegable).
+**P1 — Reference del protocolo.** Existe
+`skills/cdad-cycle/references/receiving-feedback.md` con:
+(a) secuencia obligatoria del receptor: leer completo sin reaccionar →
+restatear el requisito en palabras propias → verificar contra el código real
+→ implementar de a un fix con verificación (orden: bloqueantes → simples →
+complejos, suite verde tras cada uno); (b) lista de respuestas prohibidas
+(agradecimientos, "tenés razón", agreement performativo pre-verificación) y
+sus reemplazos factuales; (c) feedback multi-ítem con ítems ambiguos → parar
+TODO y pedir aclaración antes de implementar ninguno; (d) push-back técnico:
+cuándo procede (rompe funcionalidad / falta contexto / YAGNI con grep /
+incorrecto para el stack / legacy / contradice decisión arquitectónica) y
+cómo (evidencia citada, sin defensa emocional), con destino según la fuente:
+reviewer → reconsideración con veredicto re-emitido; desacuerdo persistente
+→ media el usuario; (e) chequeo YAGNI con grep del codebase cuando el
+feedback pide "implementar bien algo"; (f) corrección factual del push-back
+propio incorrecto (sin sobre-explicación); (g) matriz de fuente del feedback
+(usuario trusted-ejecutar / reviewer verificar / PR externo escéptico);
+(h) persistencia: patrón reutilizable detectado → nota al scribe para
+systemPatterns, nunca edición de memoria inline; (i) ventaja estructural
+documentada: packet re-invoca el protocolo (dilución) y sesión fresca
+(confirmation loop); (j) tabla anti-racionalización; (k) sección "cuándo NO
+aplica" (R4); (l) prohibición de cláusulas de salida en reglas propias (R2).
 
-**P2 — Loop de review.** `skills/cdad-cycle/references/stage-4-review.md`
-(en el loop de fixes con bloqueantes) referencia el protocolo: el orquestador
-transmite el feedback íntegro en el handoff packet (R1) y el implementer lo
-recibe aplicando receiving-feedback.md antes de tocar código.
+**P2 — Transmisión en el loop de review.**
+`skills/cdad-cycle/references/stage-4-review.md` (loop de fixes con
+bloqueantes): referencia el protocolo con la regla del transmisor — el
+orquestador pega el feedback íntegro del reviewer (y del usuario) en el
+handoff packet, sin editar que suavice, y el packet ordena al receptor
+aplicar receiving-feedback.md antes de tocar código.
 
-**P3 — Catálogo AP.** `skills/cdad-cycle/references/anti-patterns.md` agrega
+**P3 — AP-16.** `skills/cdad-cycle/references/anti-patterns.md` agrega
 **AP-16 — Respuesta performativa / implementación a ciegas** (formato del
-catálogo: Síntoma / Por qué es malo / Corrección), citando la reference.
+catálogo: Síntoma / Por qué es malo / Corrección) citando la reference.
 
-**P4 — Mapa de lectura.** `skills/cdad-cycle/SKILL.md` agrega
-`receiving-feedback.md` a la tabla "Cómo leer las references"; y
-`references/handoff-prompts.md` agrega al packet de fix/re-entry la línea de
-transmisión íntegra del feedback (R1).
+**P4 — Mapa de lectura + handoff.** `skills/cdad-cycle/SKILL.md` agrega
+`receiving-feedback.md` a la tabla "Cómo leer las references";
+`references/handoff-prompts.md` agrega al packet de fix/re-entry la regla de
+transmisión íntegra (R1) y la invocación del protocolo.
 
 ## Invariantes
 
-- El protocolo no introduce etapas ni gates nuevos; es un contrato de
-  conducta dentro del loop existente.
-- El push-back técnico nunca bloquea la aprobación indelegable del usuario
-  (contra decisiones estratégicas del usuario no hay push-back, hay ejecución
-  o escalado).
-- Ninguna otra reference ni agente se modifica (scope: los 4 archivos de P1-P4).
+- El protocolo no introduce etapas, gates ni roles nuevos.
+- El push-back técnico nunca posterga ni condiciona la aprobación indelegable
+  del usuario (R4).
+- Scope: los 4 archivos de P1-P4. Ningún otro archivo del repo se modifica.
+- La reconsideración del reviewer ante push-back (steelman/reversals) queda
+  documentada en la reference como regla de conducta del reviewer citada
+  desde verdict-tuple.md, SIN modificar el formato del veredicto (R3).
 
 ## Criterios de aceptación (verificables)
 
-1. `receiving-feedback.md` existe y contiene las 8 piezas de P1 (checks grep
-   por sección: secuencia, prohibidas, ambiguo, push-back, YAGNI,
-   corrección, anti-racionalización, cuándo NO).
-2. `stage-4-review.md` menciona `receiving-feedback` en su loop de fixes.
-3. `anti-patterns.md` contiene `## AP-16` con las 3 sub-secciones del formato.
+1. `receiving-feedback.md` existe con las 12 piezas de P1 (checks grep por
+   sección).
+2. `stage-4-review.md` menciona `receiving-feedback` en el loop de fixes con
+   la regla del transmisor.
+3. `anti-patterns.md` contiene `## AP-16` con las 3 sub-secciones del formato
+   del catálogo.
 4. SKILL.md (tabla de lectura) y handoff-prompts.md mencionan el protocolo.
-5. RED: checks definidos ANTES de editar y fallando sobre el estado actual.
-6. Sin regresión: suite cdad-003 121/121 y checks cdad-004 10/10 siguen
-   verdes tras GREEN.
+5. `verdict-tuple.md` referencia la conducta de reconsideración (steelman /
+   reversal counting) sin cambiar el formato del veredicto.
+6. RED: checks definidos ANTES de editar y fallando sobre el estado actual.
+7. Sin regresión: suite cdad-003 121/121 y checks cdad-004 10/10 verdes tras
+   GREEN.
