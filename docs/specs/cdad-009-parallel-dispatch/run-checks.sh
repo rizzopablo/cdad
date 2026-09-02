@@ -25,7 +25,7 @@ t() {
 
 echo "=== C1 -> P1: stage-3-tdd.md sección 'Despacho paralelo' (7 piezas) ==="
 # Posición: después del packet ortogonal (Sub-fase 3.1) y antes de Sub-fase 3.2.
-POS="test \$(grep -n '^## Despacho paralelo' '$S3' | cut -d: -f1) -gt \$(grep -n 'paths de c(ó|o)digo independiente' '$S3' | cut -d: -f1) && test \$(grep -n '^## Despacho paralelo' '$S3' | cut -d: -f1) -lt \$(grep -n '^## Sub-fase 3.2' '$S3' | cut -d: -f1)"
+POS="test \$(grep -nE 'paths de c(ó|o)digo independiente' '$S3' | cut -d: -f1) && test \$(grep -nE '^## Despacho paralelo' '$S3' | cut -d: -f1) -gt \$(grep -nE 'paths de c(ó|o)digo independiente' '$S3' | cut -d: -f1) && test \$(grep -nE '^## Despacho paralelo' '$S3' | cut -d: -f1) -lt \$(grep -nE '^## Sub-fase 3.2' '$S3' | cut -d: -f1)"
 t C1a "P1a: encabezado '## Despacho paralelo' + ubicado tras el packet ortogonal (Sub-fase 3.1) y antes de Sub-fase 3.2 + árbol de decisión (2+ tareas genuinamente independientes -> paralelo)" "test -f '$S3' && grep -qE '^## Despacho paralelo' '$S3' && $POS && $PAR | grep -qiE 'genuinamente independiente' && $PAR | grep -qiE '2\+|dos o m(á|a)s'"
 
 t C1b "P1b: árbol — comparten archivo/estado -> secuencial o wave dispatch; el packet ortogonal para UN test-writer sigue siendo el default" "$PAR | grep -qiE 'estado compartido|archivos en com(ú|u)n' && $PAR | grep -qi 'secuencial' && $PAR | grep -qiE 'wave dispatch' && $PAR | grep -qiE 'default' && $PAR | grep -qiE 'ortogonal'"
