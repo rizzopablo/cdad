@@ -1,7 +1,8 @@
 # Variante odoo.sh del contrato make (referencia pública — verificada 2026-08-28)
 
-> Implementación de los 3 targets en una instancia dev de odoo.sh. Sin
-> identificadores de cuenta: placeholders `<instance>` / `<project>`.
+> Implementación de los 4 targets en una instancia dev de odoo.sh. `make lint`
+> corre en host (no dentro del runtime de la instancia — ver sección Lint).
+> Sin identificadores de cuenta: placeholders `<instance>` / `<project>`.
 
 ## Características del entorno (FAQ oficial + verificación empírica)
 
@@ -23,7 +24,7 @@
 MODULE ?= <module>
 DB ?= $(PGDATABASE)
 
-.PHONY: test test-one test-clean
+.PHONY: test test-one test-clean lint
 
 test:
 	odoo-bin -d $(DB) -u $(MODULE) --test-enable --stop-after-init --workers 0 --max-cron-threads 0 --log-level=test
@@ -35,6 +36,11 @@ test-one:
 test-clean:
 	psql -q -c "UPDATE ir_module_module SET state='to install' WHERE name='$(MODULE)';"
 	odoo-bin -d $(DB) -i $(MODULE) --test-enable --stop-after-init --workers 0 --max-cron-threads 0 --log-level=test
+
+# make lint corre en HOST (no en la instancia): el lint es estático, sin deps
+# de plataforma. Pin según contrato odoo-make-env; --all para evidencia de gate.
+lint:
+	uvx pre-commit-vauxoo==8.3.18 run --no-overwrite --diff
 ```
 
 Notas:
