@@ -1,69 +1,44 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": "epic-001-superpowers-gaps",
+  "active_epic": "epic-002-cdad-audit-fixes",
+  "epic_stage": "features-loop",
   "active_feature": null,
   "current_stage": "idle",
   "tdd_substage": null,
   "audit_status": null,
   "postconditions_status": {},
+  "epic_features": [
+    {"id": "002-001-single-source-role-contract", "status": "queued"},
+    {"id": "002-002-single-source-state-schema", "status": "queued"},
+    {"id": "002-003-single-source-gates", "status": "queued"},
+    {"id": "002-004-verdict-tuple-en-reviewer", "status": "queued"},
+    {"id": "002-005-taxonomia-reviewer-unificada", "status": "queued"},
+    {"id": "002-006-property-tests-scope", "status": "queued"},
+    {"id": "002-007-orquestador-claude-code", "status": "queued"},
+    {"id": "002-008-guard-modelos-premium", "status": "queued"},
+    {"id": "002-009-bash-allowlist-hardening", "status": "queued"},
+    {"id": "002-010-higiene-agentes", "status": "queued"},
+    {"id": "002-011-validador-consistencia", "status": "queued"},
+    {"id": "002-012-epic-dogfood", "status": "queued"}
+  ],
+  "epic_history": [
+    {"stage": "epic-plan", "completed_at": "2026-09-02T00:00:00Z", "approved_by": "Pablo"}
+  ],
   "stage_history": [
     {
-      "stage": "epic-plan",
-      "completed_at": "2026-09-02T04:25:00Z",
-      "approved_by": "Pablo"
-    },
-    {
-      "stage": "review",
-      "completed_at": "2026-09-02T05:05:00Z",
-      "approved_by": "Pablo (delegación HITL)"
-    },
-    {
-      "stage": "merge",
-      "completed_at": "2026-09-02T05:06:00Z",
-      "approved_by": "Pablo (delegación HITL)"
-    },
-    {
-      "stage": "review",
-      "completed_at": "2026-09-02T05:35:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "merge",
-      "completed_at": "2026-09-02T05:36:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "review",
-      "completed_at": "2026-09-02T06:05:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "merge",
-      "completed_at": "2026-09-02T06:06:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "review",
-      "completed_at": "2026-09-02T06:35:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "merge",
-      "completed_at": "2026-09-02T06:36:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "review",
-      "completed_at": "2026-09-02T07:05:00Z",
-      "approved_by": "Pablo (HITL delegado)"
-    },
-    {
-      "stage": "merge",
+      "stage": "epic-001-superpowers-gaps",
       "completed_at": "2026-09-02T07:06:00Z",
-      "approved_by": "Pablo (HITL delegado)"
+      "note": "5 features done en progress.md; plan.md aprobado; closure.md pendiente — cerrado retroactivamente en 002-012-epic-dogfood"
     }
   ],
   "approver": "Pablo",
-  "last_updated": "2026-09-02T07:06:00Z"
+  "hitl_delegation": {
+    "delegated_to": "Claude (orquestador de este epic)",
+    "requested_by": "Pablo",
+    "requested_at": "2026-09-02",
+    "scope": "epic-002-cdad-audit-fixes completo: aprobación de specs, priorización de review, aprobación de Memory Bank para las 12 features de este epic",
+    "note": "Delegación explícita per feature/etapa puntual, según AP-10/AP-15 de cdad-cycle. Severidad de bloqueantes (seguridad, bug funcional) no se relaja por ser delegación agente."
+  },
+  "last_updated": "2026-09-02T00:00:00Z"
 }
