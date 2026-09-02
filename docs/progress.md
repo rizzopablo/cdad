@@ -11,6 +11,11 @@ Estado de features del proyecto.
 
 ## Done
 
+- **cdad-006-git-safety-close** (2026-09-02) — §5.6 "Cierre de la branch
+  (git safety)" en stage-5-merge: entorno+guard submodule, base confirmada,
+  menú fijo, discard literal, provenance; AP-17. RED 13/13+guard, GREEN
+  19/19, review aprobado (H1 cita §5.6 fixeado). Commits: baba7cf, 0824503,
+  be88880.
 - **cdad-005-receiving-feedback** (2026-09-02) — protocolo anti-sicofantía
   (reference receiving-feedback.md + transmisor íntegro en stage-4/handoff +
   AP-16 + reconsideración del reviewer con steelman/reversals). RED 22/23,
@@ -25,7 +30,7 @@ Estado de features del proyecto.
 
 ## Queued
 
-- Investigación temas 2-5 de superpowers-gaps (git-safety, debugging,
+- Investigación temas 3-5 de superpowers-gaps (debugging sistemático,
   planning granular, parallel-dispatch) — cada uno: research → síntesis →
   aprobación de Pablo → cycle.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
