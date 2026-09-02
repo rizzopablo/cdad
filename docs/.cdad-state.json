@@ -11,7 +11,8 @@
   "epic_features": [
     {
       "id": "002-001-single-source-role-contract",
-      "status": "queued"
+      "status": "done",
+      "completed_at": "2026-09-02"
     },
     {
       "id": "002-002-single-source-state-schema",

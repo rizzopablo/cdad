@@ -243,6 +243,38 @@ assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'fb-012' \
 assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'aprobación de Pablo' \
   "F010 (M8): verdict-tuple.md sin nombre propio del dueño"
 
+echo
+echo "############################################"
+echo "# F001 — nota de perfiles honesta + drift del bloque §2 (B7)"
+echo "############################################"
+
+# La nota de perfiles menciona los 4 perfiles reales (faltaba --basic) y
+# caveatea el invariante anti-bias para el perfil que lo suspende.
+for f in skills/cdad-cycle/SKILL.md agents/cdad-orchestrator.md agents/claude-code/cdad-orchestrator.md; do
+  assert_file_has "$f" '\-\-basic' "F001: $f menciona el perfil --basic en el switch"
+  assert_file_has "$f" 'basic.*[Nn][Oo] est[aá] garantizado|basic.*suspendid|salvo.*basic|excepto.*basic' \
+    "F001: $f caveatea el invariante anti-bias para el perfil basic"
+done
+
+# El bloque §2 (Contrato de roles + nota de perfiles) sigue siendo
+# INTENCIONALMENTE idéntico entre los 3 archivos (ADR-007: "La identidad del
+# bloque §2 (SKILL ↔ orquestador) con la nota de perfiles se verificó
+# byte-idéntica" — verificado a mano en su momento, nunca automatizado). Este
+# assert es la automatización que faltaba: extrae desde "### 2. Contrato de
+# cada rol" hasta la línea de "Switch:" inclusive, y compara.
+extract_role_contract() {
+  awk '/^### 2\. Contrato de cada rol/{f=1} f{print; if ($0 ~ /^Modelos del diseño/) exit}' "$ROOT/$1"
+}
+extract_role_contract "skills/cdad-cycle/SKILL.md" > /tmp/rc_skill.$$ 2>/dev/null
+extract_role_contract "agents/cdad-orchestrator.md" > /tmp/rc_oc.$$ 2>/dev/null
+extract_role_contract "agents/claude-code/cdad-orchestrator.md" > /tmp/rc_cc.$$ 2>/dev/null
+if diff -q /tmp/rc_skill.$$ /tmp/rc_oc.$$ >/dev/null 2>&1 && diff -q /tmp/rc_skill.$$ /tmp/rc_cc.$$ >/dev/null 2>&1; then
+  pass "F001: bloque §2 (Contrato de roles + nota de perfiles) idéntico en SKILL.md y los 2 orquestadores"
+else
+  fail "F001: bloque §2 DIVERGE entre SKILL.md y los orquestadores (ver diff)"
+fi
+rm -f /tmp/rc_skill.$$ /tmp/rc_oc.$$ /tmp/rc_cc.$$
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

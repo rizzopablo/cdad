@@ -67,7 +67,7 @@ sección "Gates"). Detalle por etapa en `references/stage-N-*.md`.
 | reviewer | 4 | reporte de hallazgos contra spec | todo (read-only) | nada | no toca código ni tests | `review.md` | qwen3.7-plus (**familia DISTINTA** al implementer) |
 | scribe | 5 | draft de Memory Bank update | spec, diff, review, Memory Bank | nada (draft) | no commitea (usuario indelegable: humano o agente autónomo de mayor jerarquía) | `memory-bank.md` (draft) | deepseek-v4-pro |
 
-Modelos del diseño (perfil optimus). Perfiles: economical (ejecución flash; architect deepseek-v4-pro, reviewer minimax-m3 — familia distinta al implementer, enmienda 2026-08-24 ADR-007) / premium (top-tier configurable vía env CDAD_PREMIUM_MODEL_*). Switch: install.sh --economical|--optimus|--premium.
+Modelos del diseño (perfil optimus). Perfiles: economical (ejecución flash; architect deepseek-v4-pro, reviewer minimax-m3 — familia distinta al implementer, enmienda 2026-08-24 ADR-007) / premium (top-tier configurable vía env CDAD_PREMIUM_MODEL_*) / basic (sin modelos fijos, portable entre providers — el invariante anti-bias reviewer≠implementer NO está garantizado por el instalador en este perfil, enmienda 2026-08-29 ADR-007; protección estructural de sesiones aisladas y permisos por rol no cambia). Switch: install.sh --economical|--optimus|--premium|--basic.
 
 **Invariantes anti-bias (no negociables):** reviewer usa familia de modelo
 distinta al implementer. test-writer nunca ve código de implementación (si
