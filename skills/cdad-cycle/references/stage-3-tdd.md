@@ -110,6 +110,8 @@ Si modificó tests: AP-4. Pedí revertir.
 
 Si pasa: actualizá `postconditions_status: { "<N>": "green" }`. Preguntá si refactor o siguiente.
 
+Si la suite sigue roja tras el fix: **ANTES de re-delegar otro GREEN**, el orquestador hace activar `references/stage-debugging.md` (debugging sistemático: loop rojo primero, hipótesis rankeadas, fix único sobre causa raíz). El próximo handoff de fix viaja con el protocolo de diagnóstico — re-delegar sin diagnóstico es thrashing (AP-18).
+
 ## Sub-fase 3.3 — REFACTOR (opcional)
 
 **Solo si hay fricción evidente** (duplicación, naming pobre, complejidad accidental). Si código limpio, saltá. Refactor por ritualismo no aporta.

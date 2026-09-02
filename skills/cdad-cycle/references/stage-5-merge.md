@@ -28,7 +28,7 @@ Si tenés bash: corré la suite. Si no: pedile al usuario el output.
 
 > *"Corré la suite completa (`<comando del proyecto>`). Necesito ver: linter, type checker, import-linter, todos los tests. Si algo falla, volvemos a Etapa 3."*
 
-Si CI falla: **volvés a Etapa 3** con el output del fallo. Sin excepciones.
+Si CI falla: activá `stage-debugging` (`references/stage-debugging.md`) con el output del fallo — sin causa raíz verificada no hay fix. Con el diagnóstico y el loop rojo, volvé a Etapa 3. Sin excepciones.
 
 ## 5.2 — Handoff al Scribe
 

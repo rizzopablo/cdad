@@ -162,3 +162,11 @@ No avances de fase con "yo creo que pasa".
 Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues preventivamente; es ruido si todo va bien. Cuando intervenís contra un anti-patrón, citá el código (AP-N) en tu mensaje al usuario para que pueda buscarlo:
 
 > *"Estamos cayendo en AP-2 (test después del código). Vamos a corregir antes de seguir."*
+
+## AP-18 — Fix sin diagnóstico (thrashing)
+
+**Síntoma**: 2+ fixes en la misma sesión sin repro estable o sin causa raíz escrita. Señal típica: «pruebo este cambio y veamos» — un fix delegado sin loop rojo, seguido de otro fix delegado sobre el resultado del primero.
+
+**Por qué es malo**: los fixes apilados ocultan cuál hizo qué — cuando la suite se pone verde (o no), ya no hay forma de atribuir el efecto. Cada fix sin diagnóstico puede introducir un bug nuevo encima del que intentaba arreglar. El thrashing quema la confianza del usuario (¿por qué nadie sabe qué está pasando?) y el presupuesto de contexto (cada ciclo RED→GREEN fallido es un turno completo). Y 3+ fixes fallidos sin diagnóstico no es mala suerte: es señal de que el problema es de diseño, no de puntería.
+
+**Corrección**: aplicar `references/stage-debugging.md` — loop rojo primero (comando tight que va rojo con el síntoma exacto y verde solo con el fix), hipótesis rankeadas falsables con una variable por vez, y un solo fix sobre la causa raíz verificada. Al 3er fallo: STOP → escalar al usuario con la evidencia acumulada → ADR que decida bug puntual vs. diseño equivocado.
