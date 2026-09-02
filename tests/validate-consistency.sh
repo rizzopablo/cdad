@@ -412,6 +412,18 @@ else
   fail "F011: tests/validate-odoo-specialization.sh → FAIL"
 fi
 
+echo
+echo "############################################"
+echo "# F012 — epic dogfood (M9 corregido, M10)"
+echo "############################################"
+
+assert_file "docs/epics/epic-001-superpowers-gaps/closure.md" \
+  "F012 (M9): closure.md retroactivo de epic-001-superpowers-gaps existe"
+assert_file_has "docs/epics/epic-001-superpowers-gaps/closure.md" 'Cerrado' \
+  "F012 (M9): closure.md tiene fecha de cierre"
+assert_file_has "skills/cdad-epic/SKILL.md" 'Por qué no hay un sub-agente' \
+  "F012 (M10): decisión documentada sobre ausencia de sub-agente cdad-epic-*"
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

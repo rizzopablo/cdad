@@ -1,8 +1,8 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": "epic-002-cdad-audit-fixes",
-  "epic_stage": "features-loop",
+  "active_epic": null,
+  "epic_stage": "done",
   "active_feature": null,
   "current_stage": "idle",
   "tdd_substage": null,
@@ -66,7 +66,8 @@
     },
     {
       "id": "002-012-epic-dogfood",
-      "status": "queued"
+      "status": "done",
+      "completed_at": "2026-09-02"
     }
   ],
   "epic_history": [
@@ -74,13 +75,18 @@
       "stage": "epic-plan",
       "completed_at": "2026-09-02T00:00:00Z",
       "approved_by": "Pablo"
+    },
+    {
+      "stage": "epic-closure",
+      "completed_at": "2026-09-02T00:00:00Z",
+      "note": "epic-002-cdad-audit-fixes: 12/12 features done, closure.md escrito, 3 validadores en PASS simultáneo"
     }
   ],
   "stage_history": [
     {
       "stage": "epic-001-superpowers-gaps",
       "completed_at": "2026-09-02T07:06:00Z",
-      "note": "5 features done en progress.md; plan.md aprobado; closure.md pendiente — cerrado retroactivamente en 002-012-epic-dogfood"
+      "note": "5 features done en progress.md; plan.md aprobado; closure.md escrito retroactivamente en 002-012-epic-dogfood (docs/epics/epic-001-superpowers-gaps/closure.md)"
     }
   ],
   "approver": "Pablo",
@@ -91,5 +97,5 @@
     "scope": "epic-002-cdad-audit-fixes completo: aprobación de specs, priorización de review, aprobación de Memory Bank para las 12 features de este epic",
     "note": "Delegación explícita per feature/etapa puntual, según AP-10/AP-15 de cdad-cycle. Severidad de bloqueantes (seguridad, bug funcional) no se relaja por ser delegación agente."
   },
-  "last_updated": "2026-09-02T00:00:00Z"
+  "last_updated": "2026-09-02T20:00:00Z"
 }

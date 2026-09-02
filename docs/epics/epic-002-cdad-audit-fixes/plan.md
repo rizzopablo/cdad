@@ -172,4 +172,4 @@ _(vacía — se completa durante el loop de features si el plan cambia)_
 
 ---
 
-Status: Pending approval
+Status: Approved by Pablo on 2026-09-02 ("aprobado, ahora eres el dueño del proceso, actúa como hitl, tomá las mejores decisiones hasta completar todas las correcciones"). Todas las 12 features done — ver `closure.md`.

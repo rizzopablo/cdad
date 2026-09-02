@@ -4,13 +4,28 @@ Estado de features del proyecto.
 
 ## In progress
 
-- **Temas 2-5 de superpowers-gaps** (decisión Pablo 02 Sep: investigación
-  a fondo por tema → síntesis → aprobación → cycle/epic según amerite).
-  Tema 1 (receiving-feedback) DONE como cycle. En cola: git-safety,
-  debugging, planning, parallel-dispatch.
+_(ninguna — "Temas 2-5 de superpowers-gaps" cerró completo con
+cdad-006..009, ver Done; nota vieja no se había actualizado al cerrar esas
+features. Corregido en epic-002-cdad-audit-fixes.)_
 
 ## Done
 
+- **epic-002-cdad-audit-fixes** (2026-09-02) — 12 features corrigiendo los
+  11 bloqueantes + 10 medios de `findings/audit-consistencia-2026-09-02.md`
+  (auditoría de consistencia de toda la metodología, agentes y skills).
+  HITL delegado por Pablo ("actuá como hitl, tomá las mejores decisiones").
+  Highlights: bash allowlist calibrada en test-writer/implementer (fuga que
+  esquivaba el path-scoping, calibrada para no perder capacidad legítima
+  por pedido explícito del dueño); guard anti-bias extendido a
+  cdad_model_claude (premium tenía reviewer==implementer=opus); taxonomía
+  del reviewer unificada (4/4 en addyosmani); orquestador Claude Code
+  reparado (mecanismo de delegación + resolución de stack); contrato de
+  veredicto (Bucket/Abstenciones) llevado a los 4 agentes reviewer;
+  contradicción property tests resuelta + disciplina "RED verifica
+  requerimiento, no maximiza cobertura"; `tests/validate-consistency.sh`
+  nuevo (124 asserts) verificando todo lo anterior; cierre retroactivo de
+  epic-001-superpowers-gaps (nunca había tenido closure.md formal). Detalle
+  completo: `docs/epics/epic-002-cdad-audit-fixes/plan.md` y `closure.md`.
 - **cdad-009-parallel-dispatch** (2026-09-02) — § "Despacho paralelo" en
   stage-3 (árbol, precondición cdad-008, owned/do-not-touch, integración
   final del orquestador, state file solo orquestador, wave dispatch default)

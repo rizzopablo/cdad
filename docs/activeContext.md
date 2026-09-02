@@ -4,6 +4,41 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-09-02 — Epic: epic-002-cdad-audit-fixes (12 features, cerrado)
+
+Cerrado el epic que corrige los hallazgos de
+`findings/audit-consistencia-2026-09-02.md` (auditoría completa de
+metodología, agentes OpenCode/Claude Code y skills, pedida por Pablo).
+Delegación HITL explícita para todo el epic (spec approval, priorización,
+Memory Bank) — ver `docs/.cdad-state.json` campo `hitl_delegation`.
+
+Decisiones relevantes:
+- **B1 (bash como fuga del aislamiento)**: calibrado como defensa en
+  profundidad, no reescritura estricta — decisión explícita de Pablo antes
+  de ejecutar: *"la combinación de barrera estructural parcial + conductual
+  está funcionando bastante bien"*. La allowlist de bash cierra la fuga de
+  contenido (cat/head/tail/rg) preservando TODO lo legítimo (tests, lint,
+  git commit propio, navegación) — ningún rol perdió capacidad real.
+- **Perfil `basic`**: es el más usado por Pablo (costo de tokens) y su
+  comportamiento NO cambió — el fix fue puramente documental (dejar de
+  afirmar el anti-bias como garantizado ahí, cuando ADR-007 ya documentaba
+  la excepción).
+- **RED verifica requerimiento, no cobertura**: refuerzo explícito pedido
+  por Pablo — un test-writer no debe sobre-especificar más allá del spec
+  (tests carísimos/imposibles de satisfacer, tiempo y tokens perdidos).
+  Agregado a SKILL.md, stage-3-tdd.md, y a los 4 agentes test-writer.
+
+Deuda técnica detectada:
+- Esta misma entry es la primera desde cdad-004 (2026-09-02) —
+  activeContext.md no tenía entries para cdad-005..009 pese a estar `done`
+  en progress.md. No se backfillea acá (fuera del scope de este epic); si
+  hace falta detalle de esas 5 features, está en sus commits y en
+  `docs/epics/epic-001-superpowers-gaps/closure.md`.
+- Deuda ya registrada sin cambios: CI del repo, dogfood pendiente de varias
+  features (ver progress.md Queued).
+
+Próxima feature en cola: ninguna decidida — Pablo define.
+
 ## 2026-09-02 — Feature: cdad-004-lint-gate
 
 Cerrada feature que incorpora `make lint` (pre-commit-vauxoo) como 4º target

@@ -212,6 +212,21 @@ Avisale al usuario cada vez que modificás el state file.
 
 ## Coordinación con `cdad-cycle`
 
+### Por qué no hay un sub-agente `cdad-epic-*` (decisión, no omisión)
+
+`cdad-cycle` tiene sub-agentes por rol (architect/test-writer/implementer/
+reviewer/scribe) porque el aislamiento de sesión resuelve un problema
+estructural: un agente que ve test e implementación a la vez los alinea
+entre sí (capítulo 1 de la metodología). Ese problema no existe a nivel
+epic — coordinar qué feature sigue, trackear progreso, e integrar
+cross-feature no tiene un análogo de "verificación adversarial" que se
+degrade por ver de más. Por eso `cdad-orchestrator` (el mismo agente en
+ambos runtimes) es el punto de entrada para **features y epics** — carga
+`cdad-cycle` o `cdad-epic` según corresponda, sin necesitar una sesión
+aislada nueva. Agregar un sub-agente dedicado acá sería la clase de "teatro
+de gobernanza" que la sección "Filosofía: light por defecto" de este mismo
+skill dice explícitamente que se evita.
+
 ### Tu output al delegar a `cdad-cycle`
 
 Cuando el coordinador identifica la próxima feature del epic, emite un handoff que dice:
