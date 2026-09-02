@@ -11,6 +11,10 @@ Estado de features del proyecto.
 
 ## Done
 
+- **cdad-007-systematic-debugging** (2026-09-02) — stage-debugging.md (ley de
+  causa raíz, loop rojo = RED, hipótesis rankeadas, 3+ fixes → ADR) + AP-18 +
+  enlaces en SKILL/stage-3/stage-5. RED 16/16, GREEN 23/23, review aprobado.
+  Commits: cfe5948, 9a70295.
 - **cdad-006-git-safety-close** (2026-09-02) — §5.6 "Cierre de la branch
   (git safety)" en stage-5-merge: entorno+guard submodule, base confirmada,
   menú fijo, discard literal, provenance; AP-17. RED 13/13+guard, GREEN
@@ -30,9 +34,8 @@ Estado de features del proyecto.
 
 ## Queued
 
-- Investigación temas 3-5 de superpowers-gaps (debugging sistemático,
-  planning granular, parallel-dispatch) — cada uno: research → síntesis →
-  aprobación de Pablo → cycle.
+- Investigación temas 4-5 de superpowers-gaps (planning granular,
+  parallel-dispatch) — cada uno: research → síntesis → cycle.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
 
 ## Blocked
