@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "stack": null,
+  "active_feature": "cdad-004-lint-gate",
+  "current_stage": "tdd",
+  "tdd_substage": "audit",
+  "audit_status": null,
+  "postconditions_status": {"1": "pending", "2": "pending", "3": "pending", "4": "pending"},
+  "stage_history": [
+    {"stage": "discovery", "completed_at": "2026-09-02T03:05:00Z", "approved_by": "Pablo (aprobación del plan de ciclo en sesión)"},
+    {"stage": "specification", "completed_at": "2026-09-02T03:20:00Z", "approved_by": "Pablo Manuel Rizzo"}
+  ],
+  "approver": "Pablo Manuel Rizzo",
+  "last_updated": "2026-09-02T03:05:00Z"
+}
