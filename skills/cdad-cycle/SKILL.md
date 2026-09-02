@@ -96,11 +96,19 @@ criterio de aceptación de la feature.
   consumidor externo del sistema (otro proceso, otro servicio, el usuario)
   percibiría si cambiara. Eventos internos de coordinación entre módulos que
   nunca salen del sistema son plumbing disfrazado de contrato.
-- **La cobertura exhaustiva, property tests, load/perf y edge cases NO
+- **La cobertura exhaustiva, load/perf y edge cases no derivados del spec NO
   pertenecen al ciclo de feature.** Son responsabilidad de una etapa/epic de
   hardening separada, posterior. Mezclar ambas preguntas en un gate hace que
   la más fácil de medir (coverage %) devore el tiempo de la difícil de
-  razonar (¿es correcto el contrato?).
+  razonar (¿es correcto el contrato?). Property tests derivados de invariantes
+  que el spec marca explícitamente (sub-fase 3.4) sí pertenecen al ciclo —
+  lo que queda fuera es generar property tests por cobertura, sin invariante
+  del spec detrás.
+- **RED verifica el requerimiento, no maximiza cobertura.** Cada test (y
+  cada property test) señala la postcondición numerada que verifica; si no
+  puede, sobra. Un test-writer que sobre-especifica más allá del spec produce
+  tests difíciles o imposibles de satisfacer — tiempo y tokens perdidos en
+  GREEN sin llegar a resultado. Detalle en `references/stage-3-tdd.md`.
 - **Criterio de aceptación de una feature:** postcondición verificada por
   tests de comportamiento, no un porcentaje de coverage.
 - **Relevancia:** cada test mapea a una postcondición del spec. No se

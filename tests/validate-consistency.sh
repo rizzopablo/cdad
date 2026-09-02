@@ -364,6 +364,32 @@ for f in agents/cdad-reviewer.md agents/cdad-reviewer-odoo.md agents/claude-code
     "F005: $f ya usaba la taxonomía addyosmani (sin cambios, verificación de paridad)"
 done
 
+echo
+echo "############################################"
+echo "# F006 — contradicción property tests + disciplina RED (B5 + decisión 3)"
+echo "############################################"
+
+# La frase de exclusión ya no incluye "property tests" en bloque — separa
+# cobertura exhaustiva/load-perf/edge-cases-no-derivados (fuera del ciclo)
+# de property tests derivados de invariantes marcados por el spec (dentro,
+# sub-fase 3.4).
+for f in skills/cdad-cycle/SKILL.md skills/cdad-cycle/references/stage-3-tdd.md; do
+  assert_file_not_has "$f" 'cobertura exhaustiva, property tests, load' \
+    "F006: $f ya no agrupa property tests dentro de la frase de exclusión del ciclo"
+  assert_file_has "$f" 'Property tests.*[Nn][Oo]? son la misma pregunta|Property tests derivados de invariantes' \
+    "F006: $f aclara que los property tests derivados de invariantes del spec sí pertenecen al ciclo"
+  assert_file_has "$f" 'RED verifica el requerimiento, no maximiza cobertura' \
+    "F006: $f declara la regla RED-verifica-requerimiento"
+done
+
+# La regla llega también al system prompt de los 4 test-writer (no solo a
+# la reference, que puede no cargarse).
+for f in agents/cdad-test-writer.md agents/claude-code/cdad-test-writer.md \
+         agents/cdad-test-writer-odoo.md agents/claude-code/cdad-test-writer-odoo.md; do
+  assert_file_has "$f" 'verifica el requerimiento, no maximiza cobertura' \
+    "F006: $f — Procedimiento RED incluye la regla de no sobre-especificar"
+done
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

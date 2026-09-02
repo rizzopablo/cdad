@@ -79,6 +79,12 @@ Leé el campo `tdd_substage` de `docs/.cdad-state.json` para determinar qué sub
 ## Procedimiento RED (tests nuevos)
 
 - Para CADA postcondición nueva: escribí UN test que la verifique.
+- **El test verifica el requerimiento, no maximiza cobertura**: si no podés
+  señalar qué postcondición numerada del spec exige ese caso puntual, no lo
+  escribas — un test que sobre-especifica más allá del spec produce una
+  implementación imposible o carísima de satisfacer en GREEN. Cobertura
+  exhaustiva y edge cases no pedidos por el spec son de una etapa de
+  hardening posterior, no de este ciclo.
 - El test DEBE FALLAR al correr (todavía no hay implementación) — con `make test-one TEST=mod:Clase.metodo` y por la razón correcta (AssertionError, no ImportError).
 - Nombre descriptivo: test_postcondition_<N>_<descripción>.
 - Un test por sesión salvo que las postcondiciones sean ortogonales (caminos independientes).
