@@ -34,4 +34,6 @@ Restricciones R1-R4 respetadas. Invariante de scope (solo 4 archivos) respetada 
 
 `aprobado-con-observaciones` — 1 bloqueante de documentación (H1, decisión de enmienda pendiente del usuario), 2 opcionales.
 
+**Resolución (2026-09-02):** usuario aprobó priorización → H1 y H2 corregidos por el implementer (commit `ef08084`): odoo-sh.md ahora dice "4 targets" con regla `lint:` en host, pregunta del reviewer-odoo reescrita. H3 queda registrada como deuda de dogfood (primera feature Odoo real valida `make lint` end-to-end). Verificación: 10/10 checks PASS, suite 121/121, grep "3 targets" = 0. Gate 4→5 cerrado.
+
 LISTO. Resumen: 1 bloqueante, 2 opcionales.
