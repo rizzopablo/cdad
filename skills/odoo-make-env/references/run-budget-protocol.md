@@ -1,9 +1,9 @@
 # Protocolo de presupuesto de corridas de tests (CDAD-Odoo)
 
-> Origen: protocolo diseñado y validado empíricamente durante la feature
-> 001-004 del epic 001-liquidacion-repartos (repo reparto-odoo, sep 2026),
-> donde el costo real resultó ser `setup completo × corridas repetidas ×
-> property tests`, no la cantidad de tests. Incorporado a CDAD como estándar.
+> Origen: protocolo diseñado y validado empíricamente durante una feature de
+> un proyecto CDAD-Odoo multi-módulo (sep 2026), donde el costo real resultó
+> ser `setup completo × corridas repetidas × property tests`, no la cantidad
+> de tests. Incorporado a CDAD como estándar.
 > Presupuestos numéricos: **defaults calibrados para setups de 15-20 min** —
 > el owner (HITL) los ajusta por proyecto en `systemPatterns.md`.
 
