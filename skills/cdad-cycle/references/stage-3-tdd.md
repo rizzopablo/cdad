@@ -22,6 +22,18 @@ Los tests de feature verifican **postcondiciones de comportamiento (el contrato)
 
 El mapeo test→postcondición (`test-audit.md` o equivalente) **no lo audita la misma sesión que escribió los tests**. Si el test-writer certifica su propia relevancia, el criterio "si un test no mapea, sobra" queda auto-servido. Usá una tercera sesión aislada (o el reviewer de Etapa 4) para esa auditoría, igual que test-writer e implementer están aislados entre sí.
 
+## Presupuesto de corridas (evitar que el runtime devore el ciclo)
+
+La suite completa es de **gate, no de depuración**. En proyectos con suite
+lenta (típico en Odoo: el setup desde cero domina el costo, no la cantidad de
+tests), la iteración usa corridas mínimas con ciclo anti-loop: leer el fallo
+completo → hipótesis escrita → UN cambio → UNA corrida; máximo 2 corridas sin
+convergencia → STOP y escalar, nunca re-correr "a ver si pasa". Presupuesto
+duro por etapa con regla de STOP; excederlo es señal de escalada, no
+justificación para "una corrida más". En proyectos Odoo el protocolo completo
+vive en `odoo-make-env/references/run-budget-protocol.md`; en otros stacks,
+adaptarlo a la misma estructura (depuración barata, gate completo único).
+
 ## Ancla conceptual: el loop TDD es inducción, no abducción
 
 Referencia: "Position: LLMs Can't Jump" (Zahavy, https://tomzahavy.com/files/llms-cant-jump.pdf). El propio paper usa como ejemplo de **Inducción** "generar una función que satisfaga unit tests" — es decir, el loop RED→GREEN de CDAD es inducción guiada por señal de error. Implicaciones para este ciclo:

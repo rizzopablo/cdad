@@ -21,6 +21,7 @@ solo los 4 targets — nunca comandos específicos de un entorno.
 | `make test` | suite completa sobre DB caliente | test-writer (AUDIT), implementer (GREEN) |
 | `make test-one TEST=mod:Clase.metodo` | un solo test | test-writer (RED) |
 | `make test-clean` | instalación del módulo desde cero + suite | implementer (gate GREEN), reviewer |
+| `make test-all` | gate unificado multi-módulo: DB fresca + UNA instalación + todas las suites (opcional en mono-módulo; condición: grafo de deps en cadena, si no `-i mod1,mod2`) | implementer (cierre GREEN), reviewer |
 | `make lint` | lint del addon con `pre-commit-vauxoo` — `--diff` en desarrollo, `--all` para evidencia de gate | implementer (gate GREEN), reviewer |
 
 **Reglas:**
@@ -28,7 +29,10 @@ solo los 4 targets — nunca comandos específicos de un entorno.
    entorno (DB nueva si se puede; reset+`-i` si no).
 2. Corridas SIEMPRE `--stop-after-init --test-enable` y sin workers
    (`workers = 0`): jobs efímeros, mínimo uso de conexiones.
-3. `test-clean` ejercita la instalación CON demo data.
+3. **Demo data:** en Odoo 19 el CLI crea DBs SIN demo (`--with-demo` default
+   False, `config.py:233`). En entornos que sí la cargan (odoo.sh builds),
+   `test-clean` ejercita la instalación con demo — pero los fixtures de test
+   son self-contained SIEMPRE (ver `odoo-test-writer`).
 4. Evidencia = output pegado con la línea `0 failed, 0 error(s) of N tests`.
 5. El Makefile es versionable y revisable — vive en el repo del proyecto.
 6. `make lint` invoca el lint pinneado `uvx pre-commit-vauxoo==8.3.18` y
@@ -106,6 +110,22 @@ CDAD/este skill no dependen de él.
 7. **Evitá macro de retry sobre `odoo-bin`**: agrega complejidad (y bugs de
    escaping `$$`) sin resolver la causa raíz. Preferí comandos directos; el
    retry de slots, si existe, debe ser mínimo (solo `createdb`).
+8. **La coma en `--test-tags` separa SPECS completos**: `mod:A,mod:B` corre
+   ambas clases; `mod:A,B` corre menos tests, sin error. Repetir el prefijo
+   por spec y verificar la línea `of N tests` contra el conteo esperado
+   (fuente: `odoo/tests/tag_selector.py`).
+9. **Guards anti-falso-verde obligatorios** (`require-installed` /
+   `require-module`): `-u` de módulo no instalado y `-i` de módulo inexistente
+   reportan `0 failed ... of 0 tests` con rc=0 — falso verde puro.
+
+## Presupuesto de corridas (protocolo obligatorio)
+
+La suite completa es de gate, no de depuración: la iteración usa `test-one`
+sobre DB caliente con ciclo anti-loop (leer fallo → hipótesis → un cambio →
+una corrida; max 2 sin convergencia → STOP); el gate se cierra con UNA
+`test-all` en DB fresca. Presupuesto duro por etapa, default 2 completas +
+~15 `test-one` por feature (ajustable por proyecto por el owner en
+`systemPatterns.md`). Detalle completo: `references/run-budget-protocol.md`.
 
 ## Referencias
 
@@ -115,3 +135,6 @@ CDAD/este skill no dependen de él.
 - `references/odoo-sh.md` — implementación de referencia pública.
 - `references/odoo-19-traps.md` — trampas de API Odoo 19 verificadas
   (`res.groups.privilege` / `<list>` y su relación con el drift de schema).
+- `references/run-budget-protocol.md` — protocolo de presupuesto de corridas
+  por etapa (test-one caliente para iterar, test-all para gate, presupuesto 0
+  en review con identidad de árbol, N de property tests como calibración).

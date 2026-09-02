@@ -79,6 +79,17 @@ Si detectás sesgo (usuario queriendo cerrar rápido, marcando bloqueantes como 
 
 > *"Si dudás de si un bloqueante es genuino, errate del lado de tratarlo como bloqueante. El costo de una iteración extra es bajo; el costo de mergear un bug es alto."*
 
+## Reutilización de evidencia (presupuesto 0 del reviewer)
+
+Si el árbol de código es idéntico al de la corrida de evidencia del gate
+(verificable: `git diff --stat <commit-de-la-corrida>..HEAD` muestra solo
+commits `[STATE]`/docs), el reviewer **cita el log registrado (ruta + línea)
+en vez de re-corrida la suite** — presupuesto de corridas 0. Solo si el árbol
+cambió corresponde UNA corrida completa nueva. Los analizadores estáticos
+(lint, import-linter) no consumen presupuesto. Requisito: cada corrida de
+gate queda registrada con su log y su commit (state file o mensaje de
+commit). En Odoo, detalle en `odoo-make-env/references/run-budget-protocol.md`.
+
 ## Loop con Etapa 3
 
 Si hay bloqueantes a aplicar (o opcionales aceptados):

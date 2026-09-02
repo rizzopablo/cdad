@@ -79,6 +79,13 @@ un test no debe asumir que la demo data está cargada ni que un registro
 "siempre existe". Si el módulo necesita crear un partner, lo creás vos en el
 setUp con `env["res.partner"].create(...)`.
 
+**Caso crítico — facturación/contabilidad:** en Odoo 19 el CLI crea las DB de
+test SIN demo data (`config.py:233`). Todo test que facturee o toque
+contabilidad configura sus propios diarios/cuentas (chart template genérico)
+en el fixture. Sin esto: pasa en DB caliente (diarios de historias previas) y
+falla en la DB fresca del gate con `UserError: No journal could be found`,
+un fallo que aparece lejos de la causa.
+
 ## Ubicación: tests/ del addon con __init__.py
 
 - Los tests viven en `**/tests/` del addon, cada archivo con su
@@ -101,8 +108,23 @@ setUp con `env["res.partner"].create(...)`.
     que el test o el `tests/__init__.py` está roto, no la feature).
 - **AUDIT / suite completa**: `make test` corre toda la suite sobre la DB
   caliente.
-- **Gate de instalación**: `make test-clean` instala desde cero con demo data.
+- **Gate de instalación**: `make test-clean` (o `test-all` en multi-módulo)
+  instala desde cero en DB fresca — única corrida completa del gate.
 - Evidencia = output pegado con la línea `0 failed, 0 error(s) of N tests`.
+
+**Presupuesto de corridas:** RED e iteración SOLO con `test-one` sobre DB
+caliente (suite completa = gate, no depuración). Ciclo anti-loop: leer fallo
+completo → hipótesis escrita → UN cambio → UNA corrida; max 2 sin
+convergencia → STOP y reportar. Protocolo completo:
+`odoo-make-env/references/run-budget-protocol.md`.
+
+## Property tests: N como calibración, no contrato
+
+El spec define QUÉ invariante (postcondición); el N de escenarios aleatorios
+es presupuesto de runtime, no semántica. Default del ciclo de feature: chico
+(8-10), con **seed fija** y N explícito como constante del archivo. Reducir N
+se documenta en el commit como calibración (nunca como debilitamiento del
+test); subir N pertenece al hardening, sin tocar postcondiciones.
 
 ## Permisos: `new_test_user`
 

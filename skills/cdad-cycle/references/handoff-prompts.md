@@ -533,6 +533,42 @@ Cuando termines:
 
 ---
 
+## Bloque "REGLAS DE CORRIDAS" (inyectar en packets de roles que corren tests)
+
+Cuando el proyecto tiene suite de tests costosa (en Odoo: `odoo-make-env/references/run-budget-protocol.md`), el orquestador agrega este bloque al final de las "Reglas estrictas" de los packets de test-writer (RED), implementer (GREEN), refactorer y reviewer:
+
+```text
+## REGLAS DE CORRIDAS (obligatorias)
+- Iteración SOLO con corridas mínimas sobre entorno caliente
+  (Odoo: make test-one sobre DB caliente). PROHIBIDO test-clean /
+  make test durante la iteración (la suite completa es de gate, no de
+  depuración).
+- Ciclo: leer el fallo completo -> hipótesis escrita -> UN cambio -> UNA
+  corrida. Nunca re-correr sin cambio. Máximo 2 corridas por fallo sin
+  convergencia: STOP y reportar hallazgos (es señal de escalada, no de
+  "una corrida más").
+- Gate: UNA sola corrida completa en entorno fresco (Odoo: make test-all;
+  mono-módulo: make test-clean). Presupuesto de la tarea: máx ~15 corridas
+  mínimas y 1 completa (default; el proyecto lo calibra en systemPatterns).
+- Logs de corrida con nombre en ~/tmp/ (nunca /tmp/) para que la evidencia
+  sea referenciable.
+- Evidencia de gate: línea "0 failed, 0 error(s) of N tests" + commit del
+  árbol corrido (registrado en state file o mensaje de commit).
+```
+
+Para el packet del reviewer, el bloque equivalente:
+
+```text
+## REGLAS DE CORRIDAS (review: presupuesto 0 por defecto)
+- Si git diff --stat <commit-de-la-corrida-evidencia>..HEAD muestra solo
+  commits [STATE]/docs, el árbol es idéntico: CITÁ el log (ruta + línea).
+  NO re-corres la suite.
+- Solo si el árbol cambió: UNA corrida completa como evidencia nueva.
+- Analizadores estáticos (lint, import-linter) no consumen presupuesto.
+```
+
+---
+
 ## Notas para el orquestador al generar el packet
 
 - **Rellená TODO el contexto** antes de entregar al usuario. No le digas "pegá el spec acá"; pegalo vos en el packet (si tenés acceso al archivo).
