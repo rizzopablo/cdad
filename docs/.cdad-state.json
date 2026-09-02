@@ -32,8 +32,18 @@
       "stage": "merge",
       "completed_at": "2026-09-02T05:36:00Z",
       "approved_by": "Pablo (HITL delegado)"
+    },
+    {
+      "stage": "review",
+      "completed_at": "2026-09-02T06:05:00Z",
+      "approved_by": "Pablo (HITL delegado)"
+    },
+    {
+      "stage": "merge",
+      "completed_at": "2026-09-02T06:06:00Z",
+      "approved_by": "Pablo (HITL delegado)"
     }
   ],
   "approver": "Pablo",
-  "last_updated": "2026-09-02T05:36:00Z"
+  "last_updated": "2026-09-02T06:06:00Z"
 }
