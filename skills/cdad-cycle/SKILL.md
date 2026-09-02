@@ -417,6 +417,7 @@ Las references son **profundización**, no condición para entender el contrato.
 | `sub-agent-strategies.md` | Si el entorno tiene sub-agentes nativos y querés sugerir alternativa al chat nuevo |
 | `opencode-delegation.md` | Entorno OpenCode con sub-agentes `cdad-*` instalados; delegar rol vía Task |
 | `anti-patterns.md` | Si detectás señales de drift |
+| `receiving-feedback.md` | Al transmitir o recibir feedback de review, usuario o PR externo (loop de fixes de Etapa 4) |
 
 Cargá una a la vez. No mantengas todo el árbol en contexto.
 

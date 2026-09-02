@@ -355,6 +355,15 @@ Output esperado: código de implementación + commit "feat: implement <postcondi
 Commit: <hash>"
 ```
 
+#### Packet de fix (re-entry de review — loop de Etapa 4)
+
+El template de implementer de arriba se reutiliza para aplicar fixes de review (loop con Etapa 3). El orquestador agrega DOS cosas obligatorias al packet:
+
+1. **Feedback íntegro**: los hallazgos del reviewer y el contexto del usuario viajan pegados completos en el packet (texto original, rationale y provenance incluidos). Sin editar que suavice — ni tono amable, ni recortes, ni "resumen". El receptor verifica contra la evidencia original, no contra tu paráfrasis.
+2. **Línea al inicio de las instrucciones**: *"Aplicá el protocolo `skills/cdad-cycle/references/receiving-feedback.md` antes de tocar código"*.
+
+Motivo: el packet re-invoca el protocolo con tokens frescos (antídoto a la dilución en sesiones largas) y la sesión aislada llega sin emotional investment. Detalle del protocolo: `references/receiving-feedback.md`.
+
 ### Refactorer (Etapa 3 — REFACTOR opcional)
 
 ```

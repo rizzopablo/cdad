@@ -141,6 +141,14 @@ No avances de fase con "yo creo que pasa".
 
 **Corrección**: revertí el test. Reescribilo verificando el efecto que un consumidor externo del sistema (otro proceso, otro servicio, el usuario) puede observar — mensaje wire, resultado de command, evento emitido hacia afuera, auth rechazada. Si el efecto que querés verificar es puramente interno entre módulos, probablemente no corresponde a una postcondición del spec; revisá si el spec necesita precisión.
 
+## AP-16 — Respuesta performativa / implementación a ciegas
+
+**Síntoma**: el rol responde al feedback con «¡tenés razón!», agradecimientos o agreement inmediato, y/o implementa las sugerencias sin verificar contra el código. Señal típica: el receptor arranca a editar mientras todavía está leyendo el reporte del reviewer.
+
+**Por qué es malo**: la sicofantía es un artefacto de entrenamiento (RLHF) — el compliance fue premiado, así que el modelo lo produce por defecto. El agreement performativo emitido antes de verificar anula la única defensa real del receptor (la verificación contra el código), e implementar a ciegas congela dentro del codebase los errores que el propio feedback pueda tener: ni el receptor ni el feedback son ground truth por sí solos.
+
+**Corrección**: aplicar `references/receiving-feedback.md` — secuencia de 4 pasos (leer completo sin reaccionar → restatear → verificar contra el código real → implementar de a un fix con verificación), push-back con evidencia citada cuando el hallazgo es incorrecto. El push-back correcto con evidencia es obligación del receptor, no descortesía: lo descortés (con el codebase) es dejar pasar un hallazgo falso.
+
 ## Cómo usar este archivo
 
 Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues preventivamente; es ruido si todo va bien. Cuando intervenís contra un anti-patrón, citá el código (AP-N) en tu mensaje al usuario para que pueda buscarlo:

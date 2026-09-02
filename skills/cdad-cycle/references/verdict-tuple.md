@@ -81,6 +81,16 @@ Este contrato aplica HOY a:
 - Los defaults α_b/β_b son placeholders a estimar por datos (G3), no
   calibrados por benchmarks.
 
+## Conducta del reviewer ante push-back (reconsideración)
+
+Cuando el receptor emite push-back con evidencia (ver
+`receiving-feedback.md`), el reviewer hace **steelman ANTES de retractar** un
+hallazgo — «¿cuál es el caso más fuerte de que sigue válido dado este
+contexto?» — y solo lo revierte con motivo escrito. 2+ reversals en una misma
+review = yellow flag de capitulación → segunda pasada en sesión fresca. La
+reconsideración re-emite el hallazgo con el mismo tuple de 4 campos: nada de
+esto cambia el formato del veredicto.
+
 **Estado:** descriptor mínimo activo en cdad-cycle (template de reviewer +
 re-entry). G3/G4 del deep-read 2608.14509 quedan abiertos (estimación de
 tasas por datos; bloques de dependencia en DCPM cluster weights).

@@ -79,6 +79,12 @@ Si detectás sesgo (usuario queriendo cerrar rápido, marcando bloqueantes como 
 
 > *"Si dudás de si un bloqueante es genuino, errate del lado de tratarlo como bloqueante. El costo de una iteración extra es bajo; el costo de mergear un bug es alto."*
 
+### Transmisión del feedback al implementer (R1)
+
+Cuando la priorización produce fixes, el orquestador TRANSMITE el feedback **íntegro** del reviewer y del usuario en el handoff packet: los hallazgos viajan pegados tal como fueron escritos (con su rationale y provenance), **sin editar que suavice** — parafrasear en tono amable, recortar la evidencia o "resumir" el hallazgo suaviza exactamente la señal que el receptor necesita para verificar. El feedback del usuario (contexto que motivó la priorización) viaja en el mismo packet.
+
+El packet ordena al receptor aplicar `references/receiving-feedback.md` **antes de tocar código**: secuencia leer completo sin reaccionar → restatear el requisito → verificar contra el código real → implementar de a un fix (bloqueantes → simples → complejos, suite verde tras cada uno). Si el receptor emite push-back técnico con evidencia, el reviewer lo reconsidera (`verdict-tuple.md`); desacuerdo persistente → media el usuario. La sesión de fix llega fresca — esa es la ventaja estructural del ciclo: el packet re-invoca el protocolo con tokens frescos y el receptor llega sin emotional investment.
+
 ## Reutilización de evidencia (presupuesto 0 del reviewer)
 
 Si el árbol de código es idéntico al de la corrida de evidencia del gate
