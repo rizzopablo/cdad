@@ -6,19 +6,9 @@ Cuando ejecutás CDAD en Claude Code y disponés de sub-agentes `cdad-*` nativos
 
 ## Mecanismo: herramienta `Agent`
 
-Claude Code expone la herramienta `Agent` para spawnear subagentes. El orquestador carga el skill y usa:
+Claude Code expone la herramienta `Agent` para spawnear subagentes. El orquestador la invoca directamente como cualquier otra tool call — no hay un módulo Python que importar; la invocación es una llamada a herramienta con `subagent_type` y `prompt` como parámetros (ej: delegar test-writer RED con `subagent_type: cdad-test-writer` y el handoff packet completo como `prompt`).
 
-```python
-from Agent import agent
-
-# Ej: delegar test-writer RED
-result = agent(
-    subagent_type="cdad-test-writer",
-    prompt="<handoff packet con contexto completo>"
-)
-```
-
-O en markdown/prosa para que Claude Code lo interprete:
+En markdown/prosa, para que Claude Code lo interprete:
 
 ```
 Invocá la herramienta Agent con subagent_type: cdad-test-writer
@@ -68,7 +58,7 @@ Claude Code no tiene soporte declarativo para restricciones de path (como `permi
 
 **Caveat:** los hooks preToolUse son ejecutados ANTES de la llamada a la herramienta, pero No son tan fuertes como el enforcement OpenCode. Un subagente que logre **leer el JSON del hook antes de ejecutarlo** teóricamente podría adivinar la ruta bloqueada. En la práctica, el guard script bloquea la llamada misma (exit 2 previene la ejecución), pero la garantía es **conductual**, no **structural** (como en OpenCode con `permission` a nivel de runtime).
 
-**Implicación:** el invariante "test-writer nunca ve `src/`" es **crítico** (AP-7, anti-trampa); se preserve vía hook, pero requiere confianza en que el runtime respecta el exit code 2 (lo hace, verificado empiricamente en validation-cdad-002.md).
+**Implicación:** el invariante "test-writer nunca ve `src/`" es **crítico** (AP-1/AP-2, anti-trampa: una sesión que ve test e implementación a la vez alinea ambos en vez de verificar el spec independientemente); se preserva vía hook, pero requiere confianza en que el runtime respeta el exit code 2 (lo hace, verificado empíricamente en validation-cdad-002.md).
 
 ## Re-delegación (NO permitida)
 

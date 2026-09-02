@@ -197,6 +197,52 @@ assert_file_has "scripts/claude-code-path-guard.sh" 'bash-content-guard|BASH_CON
 assert_file_has "scripts/claude-code-path-guard.sh" 'HOME.*fuera del proyecto|fuera de \$PWD|outside.*PWD|no relativiza' \
   "F009: path-guard.sh documenta o corrige el fail-open de rutas absolutas externas"
 
+echo
+echo "############################################"
+echo "# F010 — higiene de agentes (M2, M6, M7, M8)"
+echo "############################################"
+
+# M2: el scribe de Claude Code apuntaba a docs/memory-bank.md (no existe en
+# la convención — el Memory Bank real es activeContext.md/progress.md/adr/).
+assert_file_not_has "agents/claude-code/cdad-scribe.md" 'docs/memory-bank\.md' \
+  "F010 (M2): cdad-scribe (Claude Code) ya no referencia docs/memory-bank.md"
+assert_file_has "agents/claude-code/cdad-scribe.md" 'activeContext\.md' \
+  "F010 (M2): cdad-scribe (Claude Code) referencia activeContext.md (Memory Bank real)"
+
+# M6: API inventada (from Agent import agent) + cita de AP-7 mal apuntada
+# (AP-7 es "Memory Bank desactualizado"; el invariante de aislamiento es
+# AP-1/AP-2).
+assert_file_not_has "skills/cdad-cycle/references/claude-code-delegation.md" \
+  'from Agent import agent' \
+  "F010 (M6): claude-code-delegation.md ya no tiene la API Python inventada"
+assert_file_not_has "skills/cdad-cycle/references/claude-code-delegation.md" \
+  '\(AP-7' \
+  "F010 (M6): claude-code-delegation.md ya no cita AP-7 para el invariante de aislamiento (es AP-1/AP-2)"
+
+# M7: los 4 skills/*.md sueltos quedan como stub de una línea (o se borran);
+# en cualquier caso, no pueden seguir siendo una copia divergente completa.
+for f in skills/handoff-prompts.md skills/re-entry.md skills/feature-handoff.md skills/epic-planning.md; do
+  if [[ -f "$ROOT/$f" ]]; then
+    lines="$(wc -l < "$ROOT/$f" | tr -d ' ')"
+    if [[ "$lines" -le 10 ]]; then
+      pass "F010 (M7): $f es un stub corto (≤10 líneas) o fue removido"
+    else
+      fail "F010 (M7): $f sigue siendo una copia completa ($lines líneas) — trampa de lectura"
+    fi
+  else
+    pass "F010 (M7): $f fue removido"
+  fi
+done
+
+# M8: contexto privado (pipeline arXiv, fb-012, guard-event-log, nombre del
+# dueño) fuera de un skill distribuible.
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'mi pipeline arXiv' \
+  "F010 (M8): verdict-tuple.md sin referencia a 'mi pipeline arXiv'"
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'fb-012' \
+  "F010 (M8): verdict-tuple.md sin referencia a 'fb-012'"
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'aprobación de Pablo' \
+  "F010 (M8): verdict-tuple.md sin nombre propio del dueño"
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

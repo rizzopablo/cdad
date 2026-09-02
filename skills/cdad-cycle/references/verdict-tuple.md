@@ -60,24 +60,20 @@ prior 0.2 → posterior 0.39; 2/6 → 0.001 — mismo conteo, 300× de diferenci
 Un review de 12 BLOQUEANTES no es 6× más severo que uno de 2 si vienen del
 mismo commit bloque (κ) y del mismo bucket (ℓ idénticos).
 
-## Aplicación actual (sin tocar cdad-epic gated)
+## Aplicación actual
 
-Este contrato aplica HOY a:
-
-1. **Deep-read reviews (mi pipeline arXiv):** cada FINDINGS entry ya emite
-   un tuple informal (autoridad = Ŷ/b aproximado, síntesis = r, fuente =
-   a). Formalizar = declarar bucket por observables (lectura completa +
-   URL + sección) y agregar ABSTENER cuando el paper no permite concluir.
-2. **Audits de proyectos (fb-012 lesson, post-audit):** el reviewer 2-layer
-   con familia distinta ya es bucket `h` — el tuple solo lo hace explícito.
-3. **guard-event-log (G1):** la agregación κ-dedupe ya aplica el mismo
-   principio a eventos de guardias.
+Este contrato aplica al ciclo `cdad-cycle`: el reviewer de Etapa 4 (cualquiera
+de las variantes, genérica u Odoo, en cualquier runtime) emite el tuple de 4
+campos por hallazgo; el orquestador lo usa como diagnóstico de drift al pasar
+el reporte a la Capa 2 humana. No se extiende automáticamente a usos fuera
+del ciclo (otros pipelines de review, otros formatos de auditoría) — cada
+adopción nueva se evalúa por separado contra su propio contexto.
 
 ## Anti-scope
 
 - NO cambia la Capa 2 de stage-4-review.md: la priorización sigue siendo
   humana o del dueño del proceso. La aritmética es diagnóstico, no veto.
-- NO toca cdad-epic (gated por aprobación de Pablo) — solo cdad-cycle.
+- NO toca `cdad-epic` — solo `cdad-cycle`; extenderlo al nivel de epic requiere aprobación separada del dueño del proceso.
 - Los defaults α_b/β_b son placeholders a estimar por datos (G3), no
   calibrados por benchmarks.
 
