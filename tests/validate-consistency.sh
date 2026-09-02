@@ -345,6 +345,25 @@ done
 assert_file_has "scripts/validate-subagents.sh" 'cdad_model_claude' \
   "F008: validate-subagents.sh evalúa cdad_model_claude (antes solo cdad_model de OpenCode)"
 
+echo
+echo "############################################"
+echo "# F005 — taxonomía del reviewer unificada (B4)"
+echo "############################################"
+
+CCR="agents/claude-code/cdad-reviewer.md"
+assert_file_not_has "$CCR" '\*\*CRITICAL\*\*|\*\*MAJOR\*\*|\*\*MINOR\*\*|\*\*TRIVIAL\*\*' \
+  "F005: $CCR ya no usa la taxonomía CRITICAL/MAJOR/MINOR/TRIVIAL"
+assert_file_has "$CCR" 'Critical:.*Bloquea merge' \
+  "F005: $CCR usa la taxonomía addyosmani (Critical/Required/Nit/Optional/FYI)"
+assert_file_has "$CCR" 'Eje 4: Security' \
+  "F005: $CCR incluye el eje Security (ausente antes — único de los 4 reviewers sin él)"
+
+# Los 4 reviewers comparten la misma taxonomía de severidad ahora.
+for f in agents/cdad-reviewer.md agents/cdad-reviewer-odoo.md agents/claude-code/cdad-reviewer-odoo.md; do
+  assert_file_has "$f" 'Critical:.*Bloquea merge' \
+    "F005: $f ya usaba la taxonomía addyosmani (sin cambios, verificación de paridad)"
+done
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"
