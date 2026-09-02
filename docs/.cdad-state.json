@@ -39,7 +39,8 @@
     },
     {
       "id": "002-007-orquestador-claude-code",
-      "status": "queued"
+      "status": "done",
+      "completed_at": "2026-09-02"
     },
     {
       "id": "002-008-guard-modelos-premium",

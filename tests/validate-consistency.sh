@@ -308,6 +308,23 @@ assert_file_not_has "skills/cdad-cycle/references/stage-2-specification.md" \
   '\*\*AP-10\*\*: delegar la aprobación al LLM\. Indelegable\.' \
   "F003 (B11): AP-10 corto en stage-2 ya no es absoluto sin la excepción"
 
+echo
+echo "############################################"
+echo "# F007 — orquestador Claude Code reparado (B6)"
+echo "############################################"
+
+CCO="agents/claude-code/cdad-orchestrator.md"
+assert_file_has "$CCO" 'con la herramienta' \
+  "F007: $CCO instruye delegar vía herramienta (no task/delegate)"
+assert_file_has "$CCO" 'Agent.{0,10}subagent_type' \
+  "F007: $CCO menciona la herramienta Agent con subagent_type"
+assert_file_not_has "$CCO" 'vía\s*\n?\s*`delegate`; roles write-capable' \
+  "F007: $CCO ya no instruye 'delegate' como mecanismo de invocación por rol"
+assert_file_has "$CCO" 'resolvé el sufijo de' \
+  "F007: $CCO resuelve el sufijo de stack antes de delegar (paridad con OpenCode)"
+assert_file_has "$CCO" 'cdad-<rol>-<stack>' \
+  "F007: $CCO menciona el patrón cdad-<rol>-<stack> para variantes especializadas"
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"
