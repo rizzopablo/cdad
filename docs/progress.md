@@ -11,6 +11,10 @@ Estado de features del proyecto.
 
 ## Done
 
+- **cdad-008-granular-planning** (2026-09-02) — "Planning de features
+  complejas" en stage-2 (tamaño de tarea, Consumes/Produces, plan=contrato
+  no implementación) + architect produce plan.md + AP-19. RED 12/12, GREEN
+  17/17, review aprobado. Commits: 8db3286, 2413253.
 - **cdad-007-systematic-debugging** (2026-09-02) — stage-debugging.md (ley de
   causa raíz, loop rojo = RED, hipótesis rankeadas, 3+ fixes → ADR) + AP-18 +
   enlaces en SKILL/stage-3/stage-5. RED 16/16, GREEN 23/23, review aprobado.
@@ -34,8 +38,8 @@ Estado de features del proyecto.
 
 ## Queued
 
-- Investigación temas 4-5 de superpowers-gaps (planning granular,
-  parallel-dispatch) — cada uno: research → síntesis → cycle.
+- Investigación tema 5 de superpowers-gaps (parallel-dispatch) — research →
+  síntesis → cycle. Último tema pendiente.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
 
 ## Blocked
