@@ -105,12 +105,23 @@ if [ -f "$ART_DIR/spec.md" ] && grep -q "^## 2\. Postcondición" "$ART_DIR/spec.
   stage architect "spec.md" 0; else stage architect "spec.md" 1; fi
 if [ -d "$ART_DIR/tests" ] && [ -n "$(ls -A "$ART_DIR/tests" 2>/dev/null)" ]; then
   stage test-writer "tests/" 0; else stage test-writer "tests/" 1; fi
-# impl.diff: bien formado Y representando el estado actual (git apply --check
-# --reverse = ya aplicado; fallback forward = aún aplicable). `patch --dry-run`
-# falla con diffs de creación ya aplicados (archivo existe) — ver review.md.
-if [ -f "$ART_DIR/impl.diff" ] && { \
-    (cd "$REPO_ROOT" && git apply --check --reverse "$ART_DIR/impl.diff" >/dev/null 2>&1) || \
-    (cd "$REPO_ROOT" && git apply --check "$ART_DIR/impl.diff" >/dev/null 2>&1); }; then
+# impl.diff: verificación de FORMATO (diff bien formado), no de que siga
+# aplicando contra el árbol actual.
+#
+# Enmienda 2026-09-02 (epic-002-cdad-audit-fixes, 002-011, finding B8): la
+# versión anterior exigía "git apply --check[--reverse]" contra el árbol
+# real — es decir, que el diff congelado el 05 Ago 2026 siguiera aplicando
+# (o des-aplicando) sobre scripts/validate-subagents.sh, el mismo archivo
+# que este validador vive editando. Cualquier cambio legítimo posterior al
+# validador (cdad-003, ADR-007, este mismo epic) invalida el diff sin que
+# eso sea un bug real — es una aserción auto-invalidante: nunca puede
+# volver a ponerse verde, y quedó en rojo permanente sin que
+# docs/progress.md lo registrara como deuda (deuda oculta, contra la propia
+# regla de Verification del skill). El valor probatorio del spike ya está
+# capturado en findings/validation-cdad-001.md; lo que queda de valor
+# duradero es que el ARTEFACTO sea un diff bien formado (evidencia de que
+# el spike produjo un diff real, no texto libre) — eso sí es estable.
+if [ -f "$ART_DIR/impl.diff" ] && grep -q '^diff --git' "$ART_DIR/impl.diff" && grep -qE '^@@ .* @@' "$ART_DIR/impl.diff"; then
   stage implementer "impl.diff" 0; else stage implementer "impl.diff" 1; fi
 if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.md"; then
   stage reviewer "review.md" 0; else stage reviewer "review.md" 1; fi

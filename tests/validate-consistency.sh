@@ -390,6 +390,28 @@ for f in agents/cdad-test-writer.md agents/claude-code/cdad-test-writer.md \
     "F006: $f — Procedimiento RED incluye la regla de no sobre-especificar"
 done
 
+echo
+echo "############################################"
+echo "# F011 — validador consolidado (B8)"
+echo "############################################"
+
+assert_file_not_has "scripts/validate-subagents.sh" 'git apply --check --reverse' \
+  "F011 (B8): validate-subagents.sh ya no exige que impl.diff siga aplicando contra el árbol (aserción auto-invalidante retirada)"
+assert_file_has "scripts/validate-subagents.sh" "diff --git" \
+  "F011 (B8): validate-subagents.sh sigue verificando formato de impl.diff (diff bien formado)"
+
+if bash "$ROOT/scripts/validate-subagents.sh" >/dev/null 2>&1; then
+  pass "F011: scripts/validate-subagents.sh (perfil activo) → PASS"
+else
+  fail "F011: scripts/validate-subagents.sh (perfil activo) → FAIL — correlo directo para ver detalle"
+fi
+
+if bash "$ROOT/tests/validate-odoo-specialization.sh" >/dev/null 2>&1; then
+  pass "F011: tests/validate-odoo-specialization.sh → PASS (regresión cero sobre cdad-003/004)"
+else
+  fail "F011: tests/validate-odoo-specialization.sh → FAIL"
+fi
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"
