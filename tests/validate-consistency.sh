@@ -325,6 +325,26 @@ assert_file_has "$CCO" 'resolvé el sufijo de' \
 assert_file_has "$CCO" 'cdad-<rol>-<stack>' \
   "F007: $CCO menciona el patrón cdad-<rol>-<stack> para variantes especializadas"
 
+echo
+echo "############################################"
+echo "# F008 — guard anti-bias también para cdad_model_claude (B2)"
+echo "############################################"
+
+# shellcheck source=scripts/cdad-models.sh
+source "$ROOT/scripts/cdad-models.sh"
+for p in economical optimus premium; do
+  r="$(cdad_model_claude "$p" reviewer)"
+  i="$(cdad_model_claude "$p" implementer)"
+  if [[ -n "$r" && -n "$i" && "$r" != "$i" ]]; then
+    pass "F008: cdad_model_claude perfil '$p' — reviewer ($r) != implementer ($i)"
+  else
+    fail "F008: cdad_model_claude perfil '$p' — reviewer ($r) == implementer ($i), viola anti-bias"
+  fi
+done
+
+assert_file_has "scripts/validate-subagents.sh" 'cdad_model_claude' \
+  "F008: validate-subagents.sh evalúa cdad_model_claude (antes solo cdad_model de OpenCode)"
+
 echo "############################################"
 echo "# RESULTADO"
 echo "############################################"

@@ -146,9 +146,18 @@ cdad_model_claude() {
     optimus\|implementer)
       echo "haiku";;
 
-    # --- premium: opus architect/scribe/reviewer, sonnet test-writer, opus implementer.
-    premium\|architect|premium\|scribe|premium\|reviewer|premium\|implementer)
+    # --- premium: opus architect/scribe/reviewer/test-writer (máxima calidad
+    # en los roles que más se benefician: spec, síntesis, revisión adversarial,
+    # tests de contrato). implementer en sonnet — NO opus (bug B2, findings
+    # 2026-09-02: opus==opus con el reviewer violaba el invariante anti-bias
+    # reviewer≠implementer, y el guard de validate-subagents.sh no lo veía
+    # porque solo evaluaba cdad_model de OpenCode, nunca cdad_model_claude).
+    # sonnet sigue siendo top-tier para el rol que menos necesita el modelo
+    # más caro (código mínimo que hace pasar un test ya escrito).
+    premium\|architect|premium\|scribe|premium\|reviewer)
       echo "opus";;
+    premium\|implementer)
+      echo "sonnet";;
     premium\|test-writer)
       echo "opus";;  # mejora respecto a optimus
 

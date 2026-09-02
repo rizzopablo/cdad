@@ -177,6 +177,23 @@ IMPLEMENTER_MODEL="${MODEL_EXPECTED[cdad-implementer]:-}"
 if [ -n "$REVIEWER_MODEL" ] && [ -n "$IMPLEMENTER_MODEL" ] && [ "$REVIEWER_MODEL" = "$IMPLEMENTER_MODEL" ]; then
   fail "reviewer e implementer comparten modelo ($REVIEWER_MODEL) — viola el invariante anti-bias; revisá CDAD_PREMIUM_MODEL_REVIEWER/IMPLEMENTER"
 fi
+
+# Guard anti-bias — Claude Code (findings B1/B2, 2026-09-02): el guard de
+# arriba solo evalúa cdad_model (mapa OpenCode/mofgw). cdad_model_claude
+# (haiku/sonnet/opus) nunca se chequeaba, y el perfil premium daba "opus"
+# para reviewer Y implementer — violación silenciosa del mismo invariante,
+# en el mismo perfil, sin que ningún guard lo detectara. En Claude Code no
+# hay familias de modelo cruzadas (todo es Anthropic-native): "distinto" acá
+# significa string distinto, igual que el guard de arriba pero contra el
+# mapa correcto. basic queda exento (mismo trade-off documentado en ADR-007).
+if [ "$MODELS_LOADED" -eq 1 ] && [ "$ACTIVE_PROFILE" != "basic" ]; then
+  CC_REVIEWER_MODEL="$(cdad_model_claude "$ACTIVE_PROFILE" reviewer)"
+  CC_IMPLEMENTER_MODEL="$(cdad_model_claude "$ACTIVE_PROFILE" implementer)"
+  if [ -n "$CC_REVIEWER_MODEL" ] && [ -n "$CC_IMPLEMENTER_MODEL" ] && [ "$CC_REVIEWER_MODEL" = "$CC_IMPLEMENTER_MODEL" ]; then
+    fail "Claude Code: reviewer e implementer comparten modelo ($CC_REVIEWER_MODEL) en perfil '$ACTIVE_PROFILE' — viola el invariante anti-bias (cdad_model_claude)"
+  fi
+fi
+
 if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
   fail "cdad-orchestrator.md no debe declarar model: (el modelo lo elige el usuario)"
 fi
