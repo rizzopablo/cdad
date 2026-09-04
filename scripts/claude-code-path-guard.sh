@@ -6,12 +6,12 @@
 # Invoke: command: "~/.claude/cdad-scripts/path-guard.sh <rol>"
 #
 # Roles basados en file_path (Read/Grep/Glob/Edit/Write):
-#   implementer         → bloquea Edit/Write a tests/**
-#   test-writer-read   → bloquea Read/Grep/Glob a src/** y lib/**
-#   test-writer-write  → bloquea Edit/Write a todo excepto tests/**
-#   implementer-odoo   → alias de implementer (bloquea Edit/Write a **/tests/**)
+#   implementer         → bloquea Edit/Write a archivos de test (tests/** y colocados)
+#   test-writer-read   → bloquea Read/Grep/Glob a src/** y lib/** (salvo archivos de test)
+#   test-writer-write  → bloquea Edit/Write a todo excepto archivos de test
+#   implementer-odoo   → alias de implementer
 #   test-writer-odoo-read  → bloquea Read/Grep/Glob a models/views/controllers/wizards
-#   test-writer-odoo-write → bloquea Edit/Write a todo excepto **/tests/**
+#   test-writer-odoo-write → igual que test-writer-write (allowlist de test)
 #
 # Roles basados en command (Bash) — ver findings/audit-consistencia-2026-09-02.md
 # B1: el matcher de arriba solo cubre Read/Grep/Glob/Edit/Write; Bash quedaba
@@ -144,12 +144,38 @@ matches_glob() {
   return 1
 }
 
+# Lista canónica de patrones "archivo de test" (fuente única de verdad).
+# Cubre los DOS layouts: directorio dedicado (tests/**) y tests COLOCADOS
+# junto al código por convención de nombre. Colocación no es estilo: Go EXIGE
+# mismo paquete/directorio para acceder a identificadores no exportados
+# (requisito del compilador). Usada por test-writer-*-write (allowlist) y
+# implementer* (blocklist — el implementer NO debe poder tocar tests, ni
+# colocados, o rompe el gate anti-trampa).
+TEST_FILE_GLOBS=(
+  "tests/**"
+  "**/tests/**"
+  "**/*.test.js" "**/*.test.ts" "**/*.test.mjs" "**/*.test.cjs"
+  "**/*.spec.ts" "**/*.spec.js"
+  "**/*_test.go"
+  "**/test_*.py"
+)
+is_test_file() {
+  local path="$1" glob
+  for glob in "${TEST_FILE_GLOBS[@]}"; do
+    matches_glob "$path" "$glob" && return 0
+  done
+  return 1
+}
+
 # Lógica por rol
 case "$ROL" in
   implementer)
-    # Bloquea Edit/Write a tests/**
+    # Bloquea Edit/Write a tests: directorio dedicado Y colocados (cualesquiera
+    # de las convenciones de TEST_FILE_GLOBS). Sin los colocados, en repos Go/JS
+    # con tests junto al código el implementer podría editar los tests que lo
+    # validan — rompe el gate anti-trampa.
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
-      if matches_glob "$FILE_PATH" "tests/**"; then
+      if is_test_file "$FILE_PATH"; then
         exit 2  # Bloquea
       fi
     fi
@@ -157,9 +183,9 @@ case "$ROL" in
     ;;
 
   implementer-odoo)
-    # Alias de implementer, variante Odoo: bloquea Edit/Write a **/tests/**.
+    # Alias de implementer, variante Odoo: misma regla (tests dedicados y colocados).
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
-      if matches_glob "$FILE_PATH" "**/tests/**"; then
+      if is_test_file "$FILE_PATH"; then
         exit 2  # Bloquea
       fi
     fi
@@ -167,9 +193,18 @@ case "$ROL" in
     ;;
 
   test-writer-read)
-    # Bloquea Read/Grep/Glob a src/** y lib/**
+    # Bloquea Read/Grep/Glob a src/** y lib/**, CON EXCEPCIÓN de archivos de
+    # test colocados (2026-09-04, mismo motivo que test-writer-write más abajo:
+    # Foxbridge — y cualquier repo Go — tiene sus tests bajo src/**, no en un
+    # tests/** separado). Sin esto, el test-writer no puede leer/auditar la
+    # suite existente que tiene mandato de editar (AUDIT + ediciones
+    # autorizadas de spec), aunque SÍ pueda escribirla — bloqueo asimétrico
+    # descubierto en fb-018-001. La implementación real (serializer.js,
+    # resolver.js, tools.go, etc.) sigue bloqueada: ninguno de esos matchea
+    # los globs de test.
     if [[ "$TOOL_NAME" =~ ^(Read|Grep|Glob)$ ]]; then
-      if matches_glob "$FILE_PATH" "src/**" || matches_glob "$FILE_PATH" "lib/**"; then
+      if (matches_glob "$FILE_PATH" "src/**" || matches_glob "$FILE_PATH" "lib/**") \
+        && ! is_test_file "$FILE_PATH"; then
         exit 2  # Bloquea
       fi
     fi
@@ -190,9 +225,18 @@ case "$ROL" in
     ;;
 
   test-writer-write)
-    # Bloquea Edit/Write a todo excepto tests/**
+    # Bloquea Edit/Write a todo EXCEPTO archivos de test (allowlist = TEST_FILE_GLOBS).
+    # Dos layouts soportados (2026-09-04, Foxbridge fb-018-001/002): directorio
+    # dedicado `tests/**`, y tests COLOCADOS junto al código, identificados por
+    # convención de nombre. Colocación no es un capricho de estilo: Go EXIGE
+    # mismo paquete (mismo directorio) para que un test acceda a identificadores
+    # no exportados — moverlos a tests/ rompería el acceso a internals en gran
+    # parte de una suite Go típica. Sin este glob, un repo que coloca sus tests
+    # (Foxbridge: src/extension/frame/*.test.js, src/server/**/*_test.go) deja
+    # al rol test-writer sin NINGÚN path escribible. La intención del guard no
+    # cambia: el test-writer sigue escribiendo únicamente archivos de test.
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
-      if ! matches_glob "$FILE_PATH" "tests/**"; then
+      if ! is_test_file "$FILE_PATH"; then
         exit 2  # Bloquea
       fi
     fi
@@ -200,9 +244,10 @@ case "$ROL" in
     ;;
 
   test-writer-odoo-write)
-    # Bloquea Edit/Write a todo excepto **/tests/**
+    # Variante Odoo: misma allowlist (tests/** es el layout Odoo; los patrones
+    # colocados son inocuos — un addon no tiene *_test.go).
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
-      if ! matches_glob "$FILE_PATH" "**/tests/**"; then
+      if ! is_test_file "$FILE_PATH"; then
         exit 2  # Bloquea
       fi
     fi
