@@ -4,6 +4,37 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-09-04 — Fix: path-guard reconoce tests colocados (sin ciclo formal)
+
+Fix en `scripts/claude-code-path-guard.sh` (commit `0fd023f`), detectado en
+Foxbridge con Claude y reportado por Pablo. El guard asumía tests en
+`tests/**` dedicado, pero Go EXIGE tests en el mismo paquete/directorio
+(`*_test.go`, requisito del compilador) y JS/TS coloca `*.test.{js,ts}`
+junto al módulo. Consecuencias corregidas en AMBOS lados:
+
+- **test-writer-write / test-writer-odoo-write**: la allowlist de escritura
+  ahora acepta tests colocados (`**/*_test.go`, `**/*.test.{js,ts,mjs,cjs}`,
+  `**/*.spec.{ts,js}`, `**/test_*.py`), además de `tests/**` y `**/tests/**`.
+  Sin esto, el rol quedaba sin NINGÚN path escribible en un repo Go.
+- **implementer / implementer-odoo** (lado inverso, no reportado — detectado
+  en revisión): la blocklist ahora incluye los mismos patrones. Sin esto, el
+  implementer podía editar tests colocados y romper silenciosamente el gate
+  anti-trampa.
+- **test-writer-read**: excepción de lectura para tests colocados bajo
+  `src/**`/`lib/**` (el test-writer debe poder leer la suite que edita).
+- **Factorización**: array `TEST_FILE_GLOBS` + `is_test_file()` como fuente
+  única usada por ambos lados.
+
+Verificación: batería de 19 casos por rol (bloqueos/permisos, ambos layouts,
+variantes Odoo) — 19/19 PASS. Copia instalada (`~/.claude/cdad-scripts/`)
+redesplegada e idéntica a la canónica.
+
+**Deuda de proceso (documentada, no oculta):** el fix se aplicó inline y
+antes del spec — bypass del ciclo CDAD (Pablo pidió ciclo light a mitad de
+camino; se decidió no retroactivar y solo documentar). La batería de 19
+casos no vive como test permanente en `tests/` — si el guard vuelve a
+tocarse, incorporarla como RED formal de esa feature.
+
 ## 2026-09-02 — Epic: epic-002-cdad-audit-fixes (12 features, cerrado)
 
 Cerrado el epic que corrige los hallazgos de
