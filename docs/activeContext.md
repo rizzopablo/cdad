@@ -7,7 +7,8 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 ## 2026-09-04 — Fix: path-guard reconoce tests colocados (sin ciclo formal)
 
 Fix en `scripts/claude-code-path-guard.sh` (commit `0fd023f`), detectado en
-Foxbridge con Claude y reportado por Pablo. El guard asumía tests en
+un proyecto cliente (backend Go + extensión JS) y reportado por Pablo. El
+guard asumía tests en
 `tests/**` dedicado, pero Go EXIGE tests en el mismo paquete/directorio
 (`*_test.go`, requisito del compilador) y JS/TS coloca `*.test.{js,ts}`
 junto al módulo. Consecuencias corregidas en AMBOS lados:

@@ -195,13 +195,13 @@ case "$ROL" in
   test-writer-read)
     # Bloquea Read/Grep/Glob a src/** y lib/**, CON EXCEPCIÓN de archivos de
     # test colocados (2026-09-04, mismo motivo que test-writer-write más abajo:
-    # Foxbridge — y cualquier repo Go — tiene sus tests bajo src/**, no en un
-    # tests/** separado). Sin esto, el test-writer no puede leer/auditar la
-    # suite existente que tiene mandato de editar (AUDIT + ediciones
-    # autorizadas de spec), aunque SÍ pueda escribirla — bloqueo asimétrico
-    # descubierto en fb-018-001. La implementación real (serializer.js,
-    # resolver.js, tools.go, etc.) sigue bloqueada: ninguno de esos matchea
-    # los globs de test.
+    # un repo con backend Go — como cualquier repo Go — tiene sus tests junto
+    # al código, bajo src/**, no en un tests/** separado). Sin esto, el
+    # test-writer no puede leer/auditar la suite existente que tiene mandato
+    # de editar (AUDIT + ediciones autorizadas de spec), aunque SÍ pueda
+    # escribirla — bloqueo asimétrico descubierto en revisión del guard. La
+    # implementación real (serializer.js, resolver.js, tools.go, etc.) sigue
+    # bloqueada: ninguno de esos matchea los globs de test.
     if [[ "$TOOL_NAME" =~ ^(Read|Grep|Glob)$ ]]; then
       if (matches_glob "$FILE_PATH" "src/**" || matches_glob "$FILE_PATH" "lib/**") \
         && ! is_test_file "$FILE_PATH"; then
@@ -226,14 +226,15 @@ case "$ROL" in
 
   test-writer-write)
     # Bloquea Edit/Write a todo EXCEPTO archivos de test (allowlist = TEST_FILE_GLOBS).
-    # Dos layouts soportados (2026-09-04, Foxbridge fb-018-001/002): directorio
-    # dedicado `tests/**`, y tests COLOCADOS junto al código, identificados por
-    # convención de nombre. Colocación no es un capricho de estilo: Go EXIGE
-    # mismo paquete (mismo directorio) para que un test acceda a identificadores
-    # no exportados — moverlos a tests/ rompería el acceso a internals en gran
-    # parte de una suite Go típica. Sin este glob, un repo que coloca sus tests
-    # (Foxbridge: src/extension/frame/*.test.js, src/server/**/*_test.go) deja
-    # al rol test-writer sin NINGÚN path escribible. La intención del guard no
+    # Dos layouts soportados (2026-09-04, fix detectado en proyecto cliente
+    # con backend Go + extensión JS): directorio dedicado `tests/**`, y tests
+    # COLOCADOS junto al código, identificados por convención de nombre.
+    # Colocación no es un capricho de estilo: Go EXIGE mismo paquete (mismo
+    # directorio) para que un test acceda a identificadores no exportados —
+    # moverlos a tests/ rompería el acceso a internals en gran parte de una
+    # suite Go típica. Sin este glob, un repo que coloca sus tests (p.ej.
+    # src/extension/*.test.js, src/server/**/*_test.go) deja al rol
+    # test-writer sin NINGÚN path escribible. La intención del guard no
     # cambia: el test-writer sigue escribiendo únicamente archivos de test.
     if [[ "$TOOL_NAME" =~ ^(Edit|Write)$ ]]; then
       if ! is_test_file "$FILE_PATH"; then

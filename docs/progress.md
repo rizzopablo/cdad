@@ -13,8 +13,9 @@ features. Corregido en epic-002-cdad-audit-fixes.)_
 - **fix-path-guard-colocated-tests** (2026-09-04, sin ciclo formal — ver
   nota de proceso en activeContext.md) — `scripts/claude-code-path-guard.sh`
   reconoce tests colocados (Go `*_test.go`, JS/TS `*.test.{js,ts,mjs,cjs}` /
-  `*.spec.{ts,js}`, Python `test_*.py`) además de `tests/**`. Fix de
-  Foxbridge sincronizado a la canónica, más el lado inverso no reportado:
+  `*.spec.{ts,js}`, Python `test_*.py`) además de `tests/**`. Fix de un
+  proyecto cliente sincronizado a la canónica, más el lado inverso no
+  reportado:
   implementer/implementer-odoo ahora bloquean edición de tests colocados
   (gate anti-trampa). Factorizado en `TEST_FILE_GLOBS` + `is_test_file()`.
   Verificado 19/19. Commit: `0fd023f`.
