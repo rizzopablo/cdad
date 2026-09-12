@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": null,
   "epic_stage": "done",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "cdad-010-opencode-permissions",
+  "current_stage": "discovery",
   "tdd_substage": null,
   "audit_status": null,
   "postconditions_status": {},
@@ -97,5 +97,5 @@
     "scope": "epic-002-cdad-audit-fixes completo: aprobación de specs, priorización de review, aprobación de Memory Bank para las 12 features de este epic",
     "note": "Delegación explícita per feature/etapa puntual, según AP-10/AP-15 de cdad-cycle. Severidad de bloqueantes (seguridad, bug funcional) no se relaja por ser delegación agente."
   },
-  "last_updated": "2026-09-02T20:00:00Z"
+  "last_updated": "2026-09-12T03:40:00Z"
 }
