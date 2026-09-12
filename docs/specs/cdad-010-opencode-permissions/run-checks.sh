@@ -240,7 +240,7 @@ assert_file_has "agents/cdad-orchestrator.md" 'write: ask|task-able' \
 assert_file_has "docs/projectbrief.md" 'task-able|write: ask' \
   "A8: projectbrief.md: restricción de delegación corregida"
 assert_file_has "docs/systemPatterns.md" 'write: ask' "A8: systemPatterns.md documenta la palanca"
-assert_file_has "docs/systemPatterns.md" 'vigilancia' "A8: systemPatterns.md incluye regla de vigilancia"
+assert_file_has "docs/systemPatterns.md" '[Vv]igilancia|VIGILANCIA' "A8: systemPatterns.md incluye regla de vigilancia"
 echo
 
 echo "## A9 — criterio 6: cero diff en agents/claude-code/"
