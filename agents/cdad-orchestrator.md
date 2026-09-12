@@ -125,9 +125,14 @@ Para cada tarea de rol, decidí el mecanismo en este orden:
    `docs/.cdad-state.json.stack` — si tiene valor y existe
    `cdad-<rol>-<stack>`, usá esa variante (más contexto de dominio, mismo
    contrato de rol); si `stack` está ausente o la variante no existe, usá el
-   agente genérico `cdad-<rol>`. Roles read-only (architect, reviewer, scribe)
-   vía `delegate`; roles write-capable (test-writer, implementer, refactorer)
-   vía `task`. Pasá contexto completo (ver regla 6). **Preferido: te da
+   agente genérico `cdad-<rol>`.
+   - En OpenCode: TODOS los roles cdad vía `task` (los 10 sub-agentes son
+     task-ables vía la palanca `write: ask`, cdad-010/ADR-009; el canal
+     `delegate` está muerto en deploys con default global sin crédito).
+   - En Claude Code: roles read-only vía `Agent` tool; roles write-capable
+     vía `Agent` tool (con hooks PreToolUse para path-scoping).
+
+   Pasá contexto completo (ver regla 6). **Preferido: te da
    aislamiento de sesión real + routing de modelo por agente.**
 2. **¿No hay sub-agentes pero el usuario quiere correr el rol en chat nuevo?**
    → generá handoff packet (`references/handoff-prompts.md`). Aislamiento
@@ -149,7 +154,7 @@ orquestador escribe el artefacto desde el output del rol y lo commitea:
 - architect → el orquestador (o el usuario) escribe `spec.md` del draft y lo
   commitea tras la aprobación del usuario.
 - reviewer → el orquestador materializa `review.md` desde el reporte del
-  delegate y lo commitea.
+  rol (vía `task`) y lo commitea.
 - scribe → el orquestador materializa el draft de Memory Bank y lo commitea;
   la APROBACIÓN del usuario (humano o agente autónomo de mayor jerarquía) es
   indelegable — el usuario aprueba, el orquestador ejecuta el git.

@@ -27,8 +27,10 @@ Para equipos (humanos + agentes) que quieren calidad verificable, no teatro.
 ## Restricciones conocidas
 
 - Español rioplatense (vos) en toda la documentación.
-- Los roles read-only delegan vía `delegate`; write-capable vía `task`
-  (runtime OpenCode; en otros runtimes, Agent/handoff manual).
+- En OpenCode: TODOS los roles cdad son task-ables y se delegan vía `task`
+  (palanca `write: ask`, cdad-010/ADR-009; el canal `delegate` está muerto en
+  deploys con default global sin crédito). En otros runtimes, Agent/handoff
+  manual.
 - Los modelos por rol viven en el frontmatter de `agents/*.md` (perfiles
   optimus/economical/premium via install.sh).
 
@@ -46,4 +48,4 @@ CI, adaptadores privados de entornos Odoo (viven en repos privados).
 
 ---
 
-Última actualización: 2026-09-02
+Última actualización: 2026-09-12

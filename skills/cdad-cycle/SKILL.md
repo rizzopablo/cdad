@@ -147,8 +147,9 @@ Para cada tarea de rol, decidí el mecanismo en este orden:
 
 1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
    al sub-agente del rol. 
-   - En OpenCode: roles read-only (architect, reviewer, scribe) vía `delegate`; 
-     roles write-capable (test-writer, implementer, refactorer) vía `task`.
+   - En OpenCode: TODOS los roles cdad vía `task` (los 10 sub-agentes son
+     task-ables vía la palanca `write: ask`, cdad-010/ADR-009; el canal
+     `delegate` está muerto en deploys con default global sin crédito).
    - En Claude Code: roles read-only vía `Agent` tool; roles write-capable 
      vía `Agent` tool (con hooks PreToolUse para path-scoping).
    

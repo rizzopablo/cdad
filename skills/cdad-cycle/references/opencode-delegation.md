@@ -48,39 +48,54 @@ orquestador). Por eso:
 3. El orquestador NO asume que el sub-agente recuerda nada de la sesión
    anterior. Todo el contexto necesario va en el prompt del Task.
 
-## ⚠️ task vs delegate — distinción por permisos del sub-agente
+## ⚠️ task vs delegate — clasificación por permisos del plugin
 
-opencode distingue DOS herramientas de delegación, según los permisos del
-sub-agente (verificado 05 Ago 2026, opencode 1.18.4):
+opencode distingue DOS herramientas de delegación, pero la clasificación
+**NO la decide el rol CDAD**: la decide el **PLUGIN**, a partir de los
+permisos del bloque `permission:` anidado del frontmatter del sub-agente:
+
+- El sub-agente es **task-able (write-capable)** cuando AL MENOS UNO de los
+  permisos `edit`, `write` o `bash` del bloque `permission:` anidado NO es
+  catch-all deny (ej. la palanca `write: ask` de cdad-010: `write` no es
+  deny, así que el agente no colapsa a read-only).
+- El sub-agente es **read-only** solo si `edit`, `write` y `bash` del bloque
+  anidado son TODOS catch-all deny.
 
 | Herramienta | Para sub-agentes | Detalle |
 |-------------|------------------|---------|
-| `task` | con `write` habilitado (edit/write permitidos) | El sub-agente puede mutar archivos y devuelve resultado síncrono |
-| `delegate` | read-only (`write: deny`, `edit: deny`, bash restringido) | Ejecución ASYNC en background; el orquestador debe esperar el evento de completado; el resultado puede venir como texto O como efecto (archivo escrito por el propio orquestador)
+| `task` | task-ables (plugin: al menos un permiso anidado no-deny) | El sub-agente puede mutar archivos y devuelve resultado síncrono |
+| `delegate` | read-only puros (los tres anidados catch-all deny) | Ejecución ASYNC en background; el orquestador debe esperar el evento de completado |
 
-**Regla:** Si el rol CDAD es read-only por diseño (reviewer, scribe), NO usar
-`task` — opencode lo rechaza con: `Agent 'X' is read-only... Use delegate for
-read-only sub-agents. Use task for write-capable sub-agents.`
+**Con la palanca `write: ask` (cdad-010, 2026-09-12), los 10 sub-agentes
+`cdad-*` son task-ables → TODO el routing CDAD en OpenCode va por `task`.**
 
-**Consecuencia para artefactos de roles read-only** (ej: review.md): el
-delegate NO puede escribir el artefacto (write deny). Opciones:
-a. ~~Scoped write~~ **verificado NO-FUNCIONAL en opencode 1.18.18 (2026-08-24)**:
-   cualquier `deny` en edit/write/bash (aunque sea scoped a `docs/specs/<feat>/review.md`)
-   hace que opencode colapse el agente a "read-only" y **fuerce `delegate`** igual.
-   No habilita `task`. Descartado por evidencia empírica (test de routing con agente
-   write-scoped a `log/**`: "Agent is read-only... use delegate").
-b. El orquestador materializa el artefacto desde el output del delegate.
+### `delegate` — fallback NO-VIABLE en este deploy
 
-**Riesgo real del delegate: abort de turno (MessageAbortedError), no pérdida de
-persistencia.** El output async SÍ se persiste completo en disco
-(`~/.local/share/opencode/delegations/<hash>/<session>/<id>.md`); la causa de una
-review truncada es que el sub-agente delegado **cierra el turno sobre una tool_call
-sin emitir el texto final** (verificado 2026-08-24: truncado salió del loop en step 4
-tras la última leída vs. completos con 6+ steps). El runtime entonces marca el mensaje
-`MessageAbortedError` y solo persiste el trace (step-start + reasoning), no el informe.
-Mitigación: el prompt del rol read-only (ej. cdad-reviewer.md "Formato de output") debe
-incluir la **regla de cierre** — nunca cerrar sobre una tool_call, siempre volcar el
-texto final en el mismo turno tras la última herramienta.
+**`delegate` es fallback no-viable en este deploy (canal muerto):** el
+`session.prompt` que el plugin usa para inyectar la tarea NO pasa modelo, el
+sub-agente delegado cae al default global (sin crédito) y muere con timeout
+y 0 mensajes. Evidencia: findings `delegation-timeouts-2026-09-08` del
+workspace. NO usar `delegate` para routing CDAD.
+
+**Referencia histórica del canal (cuando estuvo vivo) — riesgo
+MessageAbortedError.** El riesgo real del delegate nunca fue la pérdida de
+persistencia: el output async SÍ se persiste completo en disco
+(`~/.local/share/opencode/delegations/<hash>/<session>/<id>.md`); la causa de
+una review truncada era que el sub-agente delegado **cerraba el turno sobre
+una tool_call sin emitir el texto final** (verificado 2026-08-24: truncado
+salió del loop en step 4 tras la última leída vs. completos con 6+ steps). El
+runtime entonces marcaba el mensaje `MessageAbortedError` y solo persistía el
+trace (step-start + reasoning), no el informe. La **regla de cierre** que lo
+mitigaba — nunca cerrar sobre una tool_call, siempre volcar el texto final en
+el mismo turno tras la última herramienta — sigue siendo buena práctica de
+prompt para cualquier rol read-only, hoy vía `task`.
+
+Nota histórica sobre scoped write: cualquier `deny` en edit/write/bash (aunque
+sea scoped a un path) hace que opencode colapse el agente a "read-only" y
+fuerce `delegate` (verificado NO-FUNCIONAL como mecanismo para habilitar
+`task` en opencode 1.18.18, 2026-08-24). Desde cdad-010 la palanca es
+`write: ask`: no es deny, no colapsa a read-only, y no genera prompts (el
+runtime no evalúa `write`; detalle y vigilancia en `docs/systemPatterns.md`).
 
 ## Fallback ante rate limit (429)
 
