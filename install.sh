@@ -84,6 +84,69 @@ fi
 # shellcheck source=scripts/cdad-models.sh
 source "$MODELS_SH"
 
+# ---------------------------------------------------------------------------
+# Bash allowlists — fuente única del bloque bash por rol (P5, cdad-010)
+# ---------------------------------------------------------------------------
+# install.sh deriva la allowlist bash de cada agente del stack detectado en
+# la máquina destino y la inyecta SOLO en la copia instalada (mismo patrón
+# que la línea model:). El repo conserva un default agnóstico (F009).
+ALLOWLIST_SH="$SCRIPT_DIR/scripts/cdad-bash-allowlist.sh"
+if [ ! -f "$ALLOWLIST_SH" ]; then
+  die "Bash allowlist generator missing: $ALLOWLIST_SH"
+fi
+
+# Roles cuyo bloque bash se deriva (P5). El orquestador no es task-spawneado
+# y conserva el bloque escrito a mano del repo.
+ALLOWLIST_ROLES="architect test-writer implementer reviewer scribe"
+
+role_is_generated() {
+  case " $ALLOWLIST_ROLES " in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# cdad_bash_allowlist <role> — imprime el bloque bash derivado para el rol
+# en esta máquina (el generador detecta el stack; fail fast). Se invoca vía
+# `bash` (mismo criterio que validate-subagents.sh con install.sh): solo
+# importa que el archivo exista; el bit +x lo exige el check A7 aparte.
+cdad_bash_allowlist() {
+  bash "$ALLOWLIST_SH" "$1"
+}
+
+# apply_bash_block <src> <role> — imprime el contenido del archivo con las
+# reglas de la sección bash reemplazadas por la allowlist derivada. Función
+# pura de (archivo, stack de esta máquina): esa pureza es la que permite a
+# --check comparar contra la expectativa DERIVADA y no contra bytes del repo.
+apply_bash_block() {
+  local src="$1" role="$2" block
+  block="$(cdad_bash_allowlist "$role")"
+  awk -v block="$block" '
+    /^---[[:space:]]*$/ { fm++; print; next }
+    fm == 1 && /^[[:space:]]{2}bash:[[:space:]]*$/ {
+      print
+      printf "%s\n", block
+      skip = 1
+      next
+    }
+    fm == 1 && skip && /^[[:space:]]{2}[A-Za-z_-]+:/ { skip = 0 }
+    skip { next }
+    { print }
+  ' "$src"
+}
+
+# rewrite_bash_section <dst> <role> — reescribe la sección bash de la COPIA
+# in situ (nunca el repo). Idempotente: una segunda pasada produce los mismos
+# bytes (la copia se resetea desde el repo en cada install antes de derivar).
+rewrite_bash_section() {
+  local dst="$1" role="$2" tmp="$1.cdad-allowlist.$$"
+  if ! apply_bash_block "$dst" "$role" > "$tmp"; then
+    rm -f "$tmp"
+    die "Cannot derive bash allowlist for $dst (role $role)"
+  fi
+  mv "$tmp" "$dst"
+}
+
 # do_run desc cmd [args...] — log the action, then execute (or skip in dry-run)
 do_run() {
   local desc="$1"
@@ -178,9 +241,13 @@ Options:
                ~/.config/opencode/agents and the 3 cdad skill dirs from both
                runtimes. Asks for confirmation unless --force is given.
   --check      Verify installed files match the repo (exit 1 on drift).
-               --status is an alias. Agents are compared profile-aware: the
-               model: line must match the ACTIVE profile (flag/env
-               CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus).
+               --status is an alias. Agents are compared profile-aware AND
+               allowlist-aware: the model: line must match the ACTIVE profile
+               (flag/env CDAD_MODEL_PROFILE > marker .cdad-models-profile >
+               optimus), and the bash: allowlist is compared against the
+               DERIVED expectation for this machine's stack
+               (scripts/cdad-bash-allowlist.sh, cdad-010 P5) — not against
+               the repo bytes.
    --economical Install the economical profile (execution roles deepseek-v4-flash;
                 architect deepseek-v4-pro, reviewer minimax-m3 — familia
                 distinta al implementer). Cheap run, spec/review quality kept
@@ -238,6 +305,8 @@ What gets installed:
                                            (rsync -a, NEVER --delete; or cp -rp)
   agents/cdad-*.md (OpenCode format)
       -> ~/.config/opencode/agents/           (cp -p, NEVER --delete)
+         + the bash: allowlist section is derived per role/stack via
+           scripts/cdad-bash-allowlist.sh (cdad-010 P5) on the COPY only
   agents/claude-code/cdad-*.md (Claude Code format)
       -> ~/.claude/agents/                    (cp -p, NEVER --delete)
   scripts/claude-code-path-guard.sh
@@ -374,7 +443,7 @@ sync_skill_to() {  # skill_name target_base_dir — mirrors the skill dir (never
   fi
 }
 
-copy_agent_file() {  # filename — copies one cdad agent, applying the profile's model to the COPY
+copy_agent_file() {  # filename — copies one cdad agent, deriving allowlist + model on the COPY
   local fname="$1"
   local src="$SOURCE_AGENTS_DIR/$fname"
   local dst="$OPENCODE_AGENTS_DIR/$fname"
@@ -390,7 +459,22 @@ copy_agent_file() {  # filename — copies one cdad agent, applying the profile'
     elif [ "$MODEL_PROFILE" = "basic" ]; then
       log "DRY-RUN PROFILE $fname: model: stripped (perfil basic — hereda el modelo del runtime)"
     fi
+    # P5 (cdad-010): --dry-run lista la allowlist derivada por agente.
+    if role_is_generated "$role"; then
+      log "DRY-RUN ALLOWLIST $fname: bloque bash derivado del stack detectado (rol $role):"
+      cdad_bash_allowlist "$role" | while IFS= read -r line; do
+        log "    $line"
+      done
+    else
+      log "DRY-RUN ALLOWLIST $fname: sin derivar (rol sin generador — conserva el bloque del repo)"
+    fi
     return 0
+  fi
+  # P5 (cdad-010): allowlist bash derivada del stack detectado, aplicada
+  # SOLO en la copia (mismo patrón que la línea model:). El repo nunca cambia.
+  if role_is_generated "$role" && [ -f "$dst" ]; then
+    log "ALLOWLIST $fname: bloque bash derivado del stack detectado (rol $role)"
+    rewrite_bash_section "$dst" "$role"
   fi
   # Perfil aplicado SOLO en la copia; el repo (diseño optimus) nunca cambia.
   # Si la copia ya tiene ese modelo (install idempotente), no se toca nada.
@@ -595,17 +679,27 @@ uninstall_cdad() {
 # ---------------------------------------------------------------------------
 # Verification & summary
 # ---------------------------------------------------------------------------
-check_agent_file() {  # src dst role expected — profile-aware compare; 0 = identical
+check_agent_file() {  # src dst role expected — profile-aware + allowlist-derived compare; 0 = identical
   local src="$1" dst="$2" role="$3" expected="$4"
   if [ ! -f "$dst" ]; then
     printf 'DRIFT: missing %s\n' "$dst"
     return 1
   fi
   # Byte-compare del contenido SIN la línea model: — el deploy puede desviarse
-  # del repo SOLO en esa línea (perfil aplicado en la copia).
-  if ! cmp -s <(grep -v '^model:' "$src") <(grep -v '^model:' "$dst"); then
-    printf 'DRIFT: differs %s\n' "$dst"
-    return 1
+  # del repo SOLO en esa línea (perfil aplicado en la copia) y en el bloque
+  # bash (allowlist derivada del stack de ESTA máquina, P5 cdad-010). La
+  # expectativa se DERIVA: el repo pasa por el mismo reemplazo que la
+  # instalación — no se compara contra bytes del repo.
+  if role_is_generated "$role"; then
+    if ! cmp -s <(apply_bash_block "$src" "$role" | grep -v '^model:') <(grep -v '^model:' "$dst"); then
+      printf 'DRIFT: differs %s\n' "$dst"
+      return 1
+    fi
+  else
+    if ! cmp -s <(grep -v '^model:' "$src") <(grep -v '^model:' "$dst"); then
+      printf 'DRIFT: differs %s\n' "$dst"
+      return 1
+    fi
   fi
   # La línea model: del runtime debe ser EXACTA al modelo del perfil activo.
   local actual
