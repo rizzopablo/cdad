@@ -2,16 +2,40 @@
 description: CDAD test-writer — etapa 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edita tests/ únicamente. No ve código de implementación (src/).
 mode: subagent
 model: mofgw/glm-5.2
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
 permission:
   read:
+    # Catch-all primero, específicas después (semántica findLast, cdad-010 P2).
+    "*": deny
     "src/**": deny
     "lib/**": deny
+    # Excepciones de lectura para tests colocados bajo src/ y lib/ — son
+    # scope legítimo del test-writer (cdad-010 P2/A4).
+    "src/**/*_test.go": allow
+    "src/**/test_*.py": allow
+    "src/**/*.test.js": allow
+    "src/**/*.test.ts": allow
+    "lib/**/*.test.js": allow
+    "lib/**/*.test.ts": allow
   edit:
+    # Catch-all deny + tests permitidos. Globs de tests colocados EXPANDIDOS:
+    # el matcher de opencode escapa { } (audit cdad-010 3.3) — nunca braces.
     "*": deny
     "tests/**": allow
-  write:
-    "*": deny
-    "tests/**": allow
+    "**/tests/**": allow
+    "**/*_test.go": allow
+    "**/*.test.js": allow
+    "**/*.test.ts": allow
+    "**/*.test.mjs": allow
+    "**/*.test.cjs": allow
+    "**/*.spec.ts": allow
+    "**/*.spec.js": allow
+    "**/test_*.py": allow
   bash:
     # Allowlist explícita — reemplaza "*": allow (fuga: cat/head/tail/rg vía
     # bash leían src/** sin pasar por el permission.read de arriba). Todo lo
@@ -21,21 +45,48 @@ permission:
     # Lo que NO entra es lectura/escritura de CONTENIDO de archivo vía shell
     # (cat/sed/tee/etc.) — para eso ya están Read/Edit, correctamente
     # scopeados arriba. Ver findings/audit-consistencia-2026-09-02.md B1.
+    # Orden findLast (cdad-010 P4): catch-all + denies ANTES de los allows.
     "*": deny
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Fuga de lectura vía proxy (B1): la lectura va por Read/Grep, no por rtk.
+    "rtk read*": deny
+    "rtk grep*": deny
+    "rtk find*": deny
+    "rtk diff*": deny
+    # Base común agnóstica (F009) + pares rtk (ADR-009).
     "make *": allow
-    "pytest*": allow
-    "npm test*": allow
-    "npm run*": allow
+    "rtk make *": allow
+    "ls *": allow
+    "wc *": allow
+    "find *": allow
+    "cd *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
     "git status*": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Suites del stack del workspace — pares X*/rtk X* (P4; en las copias
+    # instaladas install.sh deriva este bloque por stack, P5).
+    "pytest*": allow
+    "rtk pytest*": allow
+    "npm test*": allow
+    "npm run*": allow
+    "go test*": allow
+    "rtk go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "gofmt *": allow
+    # Contrato §5: comitea su propio artefacto (los tests).
     "git blame*": allow
     "git add *": allow
     "git commit*": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
-    "pwd": allow
+    "rtk git blame*": allow
+    "rtk git add *": allow
+    "rtk git commit*": allow
   grep:
     "src/**": deny
     "lib/**": deny

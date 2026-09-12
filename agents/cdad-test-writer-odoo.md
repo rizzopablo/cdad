@@ -2,37 +2,86 @@
 description: CDAD test-writer (variante Odoo) — etapa 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edita tests/ del addon únicamente. No ve la implementación (**/models/**, **/views/**, **/controllers/**, **/wizards/**).
 mode: subagent
 model: mofgw/glm-5.2
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
 permission:
   read:
+    # Catch-all primero, específicas después (semántica findLast, cdad-010 P2).
+    "*": deny
     "**/models/**": deny
     "**/views/**": deny
     "**/controllers/**": deny
     "**/wizards/**": deny
+    # Excepciones de lectura para tests colocados — mismos globs que el
+    # test-writer genérico (cdad-010 P2/A4: los tests colocados son scope
+    # legítimo del test-writer).
+    "src/**/*_test.go": allow
+    "src/**/test_*.py": allow
+    "src/**/*.test.js": allow
+    "src/**/*.test.ts": allow
+    "lib/**/*.test.js": allow
+    "lib/**/*.test.ts": allow
   edit:
+    # Catch-all deny + tests permitidos. Globs EXPANDIDOS (el matcher escapa
+    # { } — audit cdad-010 3.3); nunca braces.
     "*": deny
+    "tests/**": allow
     "**/tests/**": allow
-  write:
-    "*": deny
-    "**/tests/**": allow
+    "**/*_test.go": allow
+    "**/*.test.js": allow
+    "**/*.test.ts": allow
+    "**/*.test.mjs": allow
+    "**/*.test.cjs": allow
+    "**/*.spec.ts": allow
+    "**/*.spec.js": allow
+    "**/test_*.py": allow
   bash:
     # cat/head/tail/rg/git-* sin acotar quedan fuera: leían **/models/** vía
     # bash esquivando el permission.read de arriba (findings B1). Se preserva
     # todo lo legítimo: make (contrato odoo-make-env), pylint/pre-commit,
     # git commit propio (contrato §5: comitea su artefacto), navegación.
+    # Orden findLast (cdad-010 P4): catch-all + denies ANTES de los allows.
+    # Stack Odoo (audit cdad-010 3.2): suites vía make — sin go/python/pytest
+    # crudos (FORBIDDEN_BASH_ALL del validador odoo).
     "*": deny
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Fuga de lectura vía proxy (B1): la lectura va por Read/Grep, no por rtk.
+    "rtk read*": deny
+    "rtk grep*": deny
+    "rtk find*": deny
+    "rtk diff*": deny
+    # Base común agnóstica (F009) + pares rtk (ADR-009).
     "make *": allow
-    "pre-commit *": allow
-    "pylint *": allow
+    "rtk make *": allow
+    "ls *": allow
+    "wc *": allow
+    "find *": allow
+    "cd *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
     "git status*": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Lint y hooks del stack Odoo (validador odoo P1 exige pylint *).
+    "pylint *": allow
+    "rtk pylint *": allow
+    "pre-commit *": allow
+    "rtk pre-commit *": allow
+    # Contrato §5: comitea su propio artefacto (los tests).
     "git blame*": allow
     "git add *": allow
     "git commit*": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
-    "pwd": allow
+    "rtk git blame*": allow
+    "rtk git add *": allow
+    "rtk git commit*": allow
   grep:
     "**/models/**": deny
     "**/views/**": deny

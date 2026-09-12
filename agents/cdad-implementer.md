@@ -2,32 +2,76 @@
 description: CDAD implementer — etapa 3 GREEN (+ sub-modo REFACTOR opcional). Edita la implementación src/, lee tests/ pero no puede editarlos.
 mode: subagent
 model: mofgw/deepseek-v4-flash
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
 permission:
   edit:
+    # Catch-all allow PROPIO (autocontención: nunca heredado del global,
+    # cdad-010 P2) + blocklist de tests. Globs EXPANDIDOS (el matcher escapa
+    # { } — audit 3.3). Orden findLast: catch-all primero, denies después.
+    "*": allow
     "tests/**": deny
-  write:
-    "tests/**": deny
+    "**/tests/**": deny
+    "**/*_test.go": deny
+    "**/*.test.js": deny
+    "**/*.test.ts": deny
+    "**/*.test.mjs": deny
+    "**/*.test.cjs": deny
+    "**/*.spec.ts": deny
+    "**/*.spec.js": deny
+    "**/test_*.py": deny
   bash:
     # Allowlist explícita — reemplaza "*": allow (fuga: sed -i/tee/cat vía
-    # bash podían escribir o leer tests/** esquivando permission.edit/write
+    # bash podían escribir o leer tests/** esquivando permission.edit
     # de arriba). Preserva todo lo legítimo: correr la suite, inspeccionar
     # git, comitear su propio artefacto (contrato §5 del SKILL). Ver
     # findings/audit-consistencia-2026-09-02.md B1.
+    # Orden findLast (cdad-010 P4): catch-all + denies ANTES de los allows.
     "*": deny
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Fuga de lectura vía proxy (B1): la lectura va por Read/Grep, no por rtk.
+    "rtk read*": deny
+    "rtk grep*": deny
+    "rtk find*": deny
+    "rtk diff*": deny
+    # Base común agnóstica (F009) + pares rtk (ADR-009).
     "make *": allow
-    "pytest*": allow
-    "npm test*": allow
-    "npm run*": allow
+    "rtk make *": allow
+    "ls *": allow
+    "wc *": allow
+    "find *": allow
+    "cd *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
     "git status*": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Suites del stack del workspace — pares X*/rtk X* (P4; en las copias
+    # instaladas install.sh deriva este bloque por stack, P5).
+    "pytest*": allow
+    "rtk pytest*": allow
+    "npm test*": allow
+    "npm run*": allow
+    "go test*": allow
+    "rtk go test*": allow
+    "go vet*": allow
+    "go build*": allow
+    "gofmt *": allow
+    # Contrato §5: comitea su propio artefacto (la implementación).
     "git blame*": allow
     "git add *": allow
     "git commit*": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
-    "pwd": allow
+    "rtk git blame*": allow
+    "rtk git add *": allow
+    "rtk git commit*": allow
 ---
 
 # CDAD Implementer Agent

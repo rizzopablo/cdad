@@ -3,30 +3,60 @@ description: CDAD reviewer (variante Odoo) — etapa 4. Read-only. Modelo distin
 mode: subagent
 model: mofgw/qwen3.7-plus
 temperature: 0.1
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
+# edit: deny — espejo top-level del permission.edit: deny de abajo (cdad-010
+# P2/A6). La clave simple es inerte en runtime (el runtime solo evalúa el
+# permission: anidado); queda como marcador del estado read-only del rol.
+edit: deny
 permission:
   edit: deny
-  write: deny
   bash:
-    "*": deny
-    "make *": allow
-    "pre-commit *": allow
-    "pylint *": allow
-    # git * (sin acotar) quedaba fuera de "read-only por diseño": permitía
+    # Allowlist explícita (cdad-010 P4): catch-all deny primero, específicas
+    # después (semántica findLast). Denies globales rtk — AP-17 vía proxy
+    # (audit cdad-010 3.1); nunca "rtk *": allow. Pares X*/rtk X* (ADR-009).
+    # git * (sin acotar) quedó fuera de "read-only por diseño": permitía
     # commit/push/reset desde un rol que el contrato dice que no toca nada
     # (AP-17). Se acota a inspección no-mutante.
+    "*": deny
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Base común agnóstica (F009): make + navegación + git no-mutante.
+    "make *": allow
+    "rtk make *": allow
+    "ls *": allow
+    "wc *": allow
+    "find *": allow
+    "cd *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
-    "git show*": allow
-    "git blame*": allow
     "git status*": allow
-    "ls *": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Lint y hooks del stack Odoo (validador odoo P1 exige pylint *).
+    "pylint *": allow
+    "rtk pylint *": allow
+    "pre-commit *": allow
+    "rtk pre-commit *": allow
+    # Rol lector: lectura de contenido + inspección git no-mutante.
     "cat *": allow
-    "find *": allow
-    "rg *": allow
     "head *": allow
     "tail *": allow
-    "wc *": allow
-    "pwd": allow
+    "rg *": allow
+    "rtk read*": allow
+    "rtk grep*": allow
+    "rtk find*": allow
+    "git show*": allow
+    "git blame*": allow
+    "rtk git show*": allow
+    "rtk git blame*": allow
 ---
 
 # CDAD Reviewer Agent — variante Odoo

@@ -3,32 +3,58 @@ description: CDAD reviewer — etapa 4. Read-only. Modelo distinto al implemente
 mode: subagent
 model: mofgw/qwen3.7-plus
 temperature: 0.1
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
+# edit: deny — espejo top-level del permission.edit: deny de abajo (cdad-010
+# P2/A6). La clave simple es inerte en runtime (el runtime solo evalúa el
+# permission: anidado); queda como marcador del estado read-only del rol.
+edit: deny
 permission:
   edit: deny
   # Read-only por diseño CDAD (anti-confirmation-bias). El reviewer NO escribe:
   # entrega la review como texto final del delegate y el ORQUESTADOR materializa
   # el artefacto (verificado 05 Ago: write como objeto con catch-all deny =
   # tratado como write=deny por opencode → task rechazado, delegate obligatorio).
-  write: deny
+  # cdad-010 P1: la palanca de clasificación es el `write: ask` top-level de
+  # arriba; el runtime sigue protegido por `edit: deny`.
   bash:
+    # Allowlist explícita (cdad-010 P4): catch-all deny primero, específicas
+    # después (semántica findLast). Denies globales rtk — AP-17 vía proxy
+    # (audit cdad-010 3.1); nunca "rtk *": allow. Pares X*/rtk X* (ADR-009).
     "*": deny
-    # Antes Go-only (heredado del spike cdad-002). "make *" es la
-    # convención agnóstica que la propia metodología documenta en su
-    # AGENTS.md de referencia (make test/test-fast/lint/check) — funciona
-    # en cualquier proyecto que exponga ese contrato, no solo Go.
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Base común agnóstica (F009): make + navegación + git no-mutante.
     "make *": allow
+    "rtk make *": allow
     "ls *": allow
-    "cat *": allow
     "wc *": allow
     "find *": allow
-    "head *": allow
-    "tail *": allow
+    "cd *": allow
     "pwd": allow
     "git diff*": allow
     "git log*": allow
+    "git status*": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Rol lector: lectura de contenido + inspección git no-mutante.
+    "cat *": allow
+    "head *": allow
+    "tail *": allow
+    "rg *": allow
+    "rtk read*": allow
+    "rtk grep*": allow
+    "rtk find*": allow
     "git show*": allow
     "git blame*": allow
-    "rg *": allow
+    "rtk git show*": allow
+    "rtk git blame*": allow
 ---
 
 # CDAD Reviewer Agent

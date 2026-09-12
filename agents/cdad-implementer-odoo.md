@@ -2,30 +2,71 @@
 description: CDAD implementer (variante Odoo) — etapa 3 GREEN (+ sub-modo REFACTOR opcional). Edita la implementación del addon, lee tests/ pero no puede editarlos.
 mode: subagent
 model: mofgw/deepseek-v4-flash
+# write: ask — palanca de clasificación (cdad-010 P1, 2026-09-12): el
+# clasificador del plugin lee la clave `write`; el runtime NO la evalúa (el
+# tool write pide "edit"; cero evaluaciones permission=write en logs).
+# REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
+# runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
+write: ask
 permission:
   edit:
+    # Catch-all allow PROPIO (autocontención, cdad-010 P2) + blocklist de
+    # tests. Globs EXPANDIDOS (el matcher escapa { } — audit 3.3). Orden
+    # findLast: catch-all primero, denies después.
+    "*": allow
+    "tests/**": deny
     "**/tests/**": deny
-  write:
-    "**/tests/**": deny
+    "**/*_test.go": deny
+    "**/*.test.js": deny
+    "**/*.test.ts": deny
+    "**/*.test.mjs": deny
+    "**/*.test.cjs": deny
+    "**/*.spec.ts": deny
+    "**/*.spec.js": deny
+    "**/test_*.py": deny
   bash:
     # cat/head/tail/rg/git-* sin acotar quedan fuera: escribían/leían
-    # **/tests/** vía bash esquivando el permission.edit/write de arriba
+    # **/tests/** vía bash esquivando el permission.edit de arriba
     # (findings B1). Se preserva todo lo legítimo: make (contrato
     # odoo-make-env), pylint/pre-commit, git commit propio, navegación.
+    # Orden findLast (cdad-010 P4): catch-all + denies ANTES de los allows.
+    # Stack Odoo (audit cdad-010 3.2): suites vía make — sin go/python/pytest
+    # crudos (FORBIDDEN_BASH_ALL del validador odoo).
     "*": deny
+    "rtk err*": deny
+    "rtk summary*": deny
+    "rtk git *": deny
+    # Fuga de lectura vía proxy (B1): la lectura va por Read/Grep, no por rtk.
+    "rtk read*": deny
+    "rtk grep*": deny
+    "rtk find*": deny
+    "rtk diff*": deny
+    # Base común agnóstica (F009) + pares rtk (ADR-009).
     "make *": allow
-    "pre-commit *": allow
-    "pylint *": allow
+    "rtk make *": allow
+    "ls *": allow
+    "wc *": allow
+    "find *": allow
+    "cd *": allow
+    "pwd": allow
     "git diff*": allow
     "git log*": allow
     "git status*": allow
+    "rtk git diff*": allow
+    "rtk git log*": allow
+    "rtk git status*": allow
+    # Lint y hooks del stack Odoo (validador odoo P1 exige pylint *).
+    "pylint *": allow
+    "rtk pylint *": allow
+    "pre-commit *": allow
+    "rtk pre-commit *": allow
+    # Contrato §5: comitea su propio artefacto (la implementación).
     "git blame*": allow
     "git add *": allow
     "git commit*": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
-    "pwd": allow
+    "rtk git blame*": allow
+    "rtk git add *": allow
+    "rtk git commit*": allow
 ---
 
 # CDAD Implementer Agent — variante Odoo
