@@ -97,3 +97,16 @@ Nota menor al spec: `validate-subagents.sh` vive en `scripts/`, no en
 AUDIT: **PASS con ajustes** — 2 extensiones de asserts justificadas (3.1,
 3.2), 1 ajuste menor al spec registrado (3.3: braces → expansión), sin
 roturas de asserts existentes. Suite existente sana; RED puede abrirse.
+
+## Corrección post-RED (2026-09-12, evidencia de corrida)
+
+El punto "suite existente sana" era INCORRECTO en un aspecto: al abrir RED,
+`scripts/validate-subagents.sh` y `tests/validate-consistency.sh` (F011)
+están en FAIL **preexistente** — causa: las copias instaladas en
+`~/.config/opencode/agents/` driftaron del repo (las enmiendas del 02-09 y
+09-08 se aplicaron a mano en las copias, violando "repo = fuente de verdad";
+`install.sh --check` compara contra bytes del repo y falla). No es regresión
+de cdad-010. Implicancia: el GREEN de cdad-010 (instalar desde repo con
+allowlists derivadas + `--check` contra expectativa derivada, P5) debe dejar
+ambos validadores en PASS — es criterio de aceptación 4. Registrado como
+baseline en VALIDATION.md.
