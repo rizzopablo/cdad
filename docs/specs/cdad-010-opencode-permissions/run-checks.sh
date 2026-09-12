@@ -42,7 +42,9 @@ assert_file_not_has() {
 }
 
 assert_string_not_has() {
-  if [[ -n "$1" ]] && ! printf '%s' "$1" | grep -Eq -e "$2"; then
+  if [[ -z "$1" ]]; then
+    fail "$3 (sección VACÍA/no encontrada — no verificable; revisar helper o archivo)"
+  elif ! printf '%s' "$1" | grep -Eq -e "$2"; then
     pass "$3 (no contiene '$2')"
   else
     fail "$3 (contiene '$2', no permitido)"
@@ -55,10 +57,14 @@ frontmatter() {
 
 # section <archivo> <clave> — imprime SOLO la sección <clave>: del frontmatter
 # (líneas desde "  <clave>:" hasta la próxima clave al mismo nivel o "---")
+# NOTA: el key se interpola con regex DINÁMICA de awk ($0 ~ ... key ...),
+# NO con splice de shell — un splice '"$key"' expandiría la variable shell
+# `key` (unset) y produciría secciones vacías silenciosas (bug hallado en
+# la primera corrida RED de este script).
 section() {
   frontmatter "$1" | awk -v key="$2" '
-    /^[[:space:]]{2}[a-z_]+:/ && !/^[[:space:]]{2}'"$key"':/ { if (on) exit }
-    /^[[:space:]]{2}'"$key"':/ { on=1; print; next }
+    $0 ~ "^[[:space:]]{2}[a-z_]+:" && $0 !~ ("^[[:space:]]{2}" key ":") { if (on) exit }
+    $0 ~ ("^[[:space:]]{2}" key ":") { on=1; print; next }
     on { print }
   '
 }
