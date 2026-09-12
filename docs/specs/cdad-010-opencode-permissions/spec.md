@@ -2,7 +2,9 @@
 
 > Fecha: 2026-09-12 · Origen: probes empíricos del 2026-09-12 (sesión primaria)
 > y hallazgo de delegación rota (delegate timeout, findings del workspace
-> 2026-09-08). Estado: DRAFT — sin marca de aprobación.
+> 2026-09-08). Estado: APPROVED.
+
+Status: Approved by Pablo on 2026-09-12
 
 ## Descripción funcional
 
