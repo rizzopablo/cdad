@@ -49,6 +49,41 @@ Convenciones técnicas, patrones, y reglas estructurales del proyecto. Este arch
   inline (último recurso, con caveat de aislamiento registrado).
 - Evidencia, no confianza: cada gate se cierra con output pegado.
 
+## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
+
+### Palanca `write: ask` (2026-09-12)
+
+Los 10 agentes declaran `write: ask` a nivel top del frontmatter con un doble
+rol NO obvio: es la palanca que hace al agente **task-able**. Motivo: el
+clasificador del plugin de sub-agentes lee la clave `write` del bloque
+`permission:` anidado para decidir si el agente es write-capable o read-only;
+el runtime NO la evalúa (el tool `write` pide "edit" — cero evaluaciones
+`permission=write` en logs). Mecánica: el agente queda task-able sin generar
+prompts de permiso.
+
+**REGLA DE VIGILANCIA: si una versión futura de opencode empieza a evaluar
+`write` en runtime, la palanca `write: ask` genera prompts de permiso en cada
+escritura y hay que revisar los 10 agentes.** Checklist al migrar versión:
+(1) grep de logs buscando `permission=write`; (2) si aparece, migrar la
+palanca a otra vía y re-probar la clasificación task/delegate con los probes
+de cdad-010 como baseline.
+
+### Bloques `permission:` anidados y orden findLast
+
+El clasificador del plugin lee SOLO el bloque anidado `permission:`
+(edit/bash/read); las claves top-level caen en `options` — inertes en
+runtime. Semántica del matcher: **catch-all primero, específicas después**
+(findLast: la última regla que matchea gana). Una regla específica antes del
+catch-all es un bug de config. Única excepción documentada de `ask`: la
+palanca `write: ask` top-level.
+
+### Pares rtk `X*` + `rtk X*` (ADR-009)
+
+Los modelos del workspace envuelven comandos en `rtk` (proxy CLI), así que
+las allowlists por comando llevan SIEMPRE el par (`"pytest*"` y
+`"rtk pytest*"`), con los subcomandos peligrosos de rtk denegados en todos
+los roles. Matriz completa y razones: `docs/adr/ADR-009-politica-rtk-allowlists.md`.
+
 ## Convenciones de tests
 
 - **Framework**: bash + grep asserts (`assert_file_has`/`assert_file_not_has`).
@@ -70,4 +105,4 @@ Convenciones técnicas, patrones, y reglas estructurales del proyecto. Este arch
 
 ---
 
-Última actualización: 2026-09-02
+Última actualización: 2026-09-12
