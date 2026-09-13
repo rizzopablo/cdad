@@ -84,7 +84,24 @@ resultado esperado. Evidencia: output pegado abajo de cada fila al ejecutar.
 
 ### Resultados GREEN
 
-_(pendiente — se completa tras implementación + restart)_
+#### Fase 1 — install + cierre del drift (2026-09-13, sesión primaria, post-restart)
+
+```
+$ bash install.sh --dry-run → Would install: 8 skills x 2 runtimes + 11 cdad agents
+$ bash install.sh           → Verify: PASS — 11 cdad agents present after install
+$ bash install.sh --check   → Check: PASS (27/27 in sync, perfil basic)
+$ rm ~/.config/opencode/agents/cdad-test-writer-local.md → REMOVED (huérfana del spike)
+$ bash tests/validate-consistency.sh → Assert PASS: 124, Assert FAIL: 0
+$ bash scripts/validate-subagents.sh → RESULTADO: PASS (todas las verificaciones OK)
+$ bash docs/specs/cdad-010-opencode-permissions/run-checks.sh → 174 PASS, 0 FAIL
+```
+
+Criterio 4 ✓ (3 validadores PASS simultáneo) · Criterio 5 ✓ (dry-run/check/idempotente).
+A10 en PASS — el drift preexistente quedó cerrado por install desde el repo.
+
+#### Fase 2 — probes de runtime (matriz G1-G16)
+
+_(pendiente — se completa con el output de los task de esta sesión)_
 
 ## Checklist de criterios de aceptación
 
