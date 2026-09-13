@@ -7,8 +7,12 @@ model: mofgw/deepseek-v4-flash
 # tool write pide "edit"; cero evaluaciones permission=write en logs).
 # REGLA DE VIGILANCIA: si una versión futura de opencode evalúa `write` en
 # runtime, esta palanca empieza a generar prompts — revisar al migrar versión.
-write: ask
 permission:
+  # write: ask — palanca de clasificación (cdad-010 P1): el clasificador
+  # del plugin lee ESTA clave (permission.write); el runtime NO la evalúa
+  # (el tool write pide "edit"). REGLA DE VIGILANCIA: si opencode empieza a
+  # evaluar write en runtime, genera prompts — revisar al migrar versión.
+  write: ask
   edit:
     # Catch-all allow PROPIO (autocontención: nunca heredado del global,
     # cdad-010 P2) + blocklist de tests. Globs EXPANDIDOS (el matcher escapa

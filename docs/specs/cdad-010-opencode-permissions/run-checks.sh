@@ -83,12 +83,16 @@ echo "############################################"
 echo
 
 echo "## A1 — P1: write: ask (palanca de clasificación)"
+# CORRECCIÓN post-probe (2026-09-13): la palanca debe vivir ANIDADA como
+# permission.write — KNOWN_KEYS del core (config/agent.ts:43-56) no incluye
+# `write` top-level, que cae en `options` (inerte TAMBIÉN para el
+# clasificador, que lee configData.agent[name].permission.write).
 for a in "${AGENTS_ALL[@]}"; do
   f="agents/$a.md"
-  if [[ -f "$ROOT/$f" ]] && frontmatter "$ROOT/$f" | grep -Eq '^write:[[:space:]]*ask[[:space:]]*$'; then
-    pass "A1: $f declara 'write: ask'"
+  if [[ -f "$ROOT/$f" ]] && frontmatter "$ROOT/$f" | grep -Eq '^  write:[[:space:]]*ask[[:space:]]*$'; then
+    pass "A1: $f declara 'permission.write: ask'"
   else
-    fail "A1: $f NO declara 'write: ask' literal"
+    fail "A1: $f NO declara 'permission.write: ask' anidado"
   fi
 done
 echo
