@@ -4,8 +4,8 @@
   "active_epic": null,
   "epic_stage": "done",
   "active_feature": "cdad-010-opencode-permissions",
-  "current_stage": "tdd",
-  "tdd_substage": "green",
+  "current_stage": "review",
+  "tdd_substage": null,
   "audit_status": "approved",
   "postconditions_status": {"P1": "green", "P2": "green", "P3": "green", "P4": "green", "P5": "green", "P6": "green"},
   "epic_features": [
@@ -97,6 +97,6 @@
     "scope": "epic-002-cdad-audit-fixes completo: aprobación de specs, priorización de review, aprobación de Memory Bank para las 12 features de este epic",
     "note": "Delegación explícita per feature/etapa puntual, según AP-10/AP-15 de cdad-cycle. Severidad de bloqueantes (seguridad, bug funcional) no se relaja por ser delegación agente."
   },
-  "last_updated": "2026-09-13T23:45:00Z",
-  "green_note": "cdad-010 GREEN completo 2026-09-13: estático (run-checks 174/174, 3 validadores PASS) + empírico (matriz G1-G16 post-restart, cero ask/permission=write en logs). Pendiente: usuario prioriza review (etapa 4)."
+  "last_updated": "2026-09-13T23:55:00Z",
+  "green_note": "cdad-010 GREEN completo 2026-09-13: estático (run-checks 174/174, 3 validadores PASS) + empírico (matriz G1-G16 post-restart, cero ask/permission=write en logs). Gate 3→4 aprobado por Pablo 2026-09-13."
 }
