@@ -229,6 +229,26 @@ compuesto por PREFIJO allowlist-eado — `cd X && <cualquier cosa>` y
 misma clase de exploit que H3 describe a nivel de patrón. Candidato a
 feature de hardening posterior (política de matching de compuestos).
 
+**CORRECCIÓN de la premisa anterior (re-review, N1, 2026-09-13):** el
+reviewer falsificó la premisa con probes directos y el orquestador la
+re-verificó desde sesión de agente (cdad-architect, que tiene `cd *` allow +
+catch-all deny):
+
+```
+P1: cd . && pwd        → PERMITIDO (/home/ofap/clawd/projects/cdad)
+P2: cd . && uname -sr  → DENEGADO por permisos
+P3: pwd; uname -sr     → DENEGADO por permisos
+```
+
+El matcher evalúa compuestos **POR SEGMENTO**: cada segmento debe pasar
+independientemente (`cd .` permitido en ambos P1/P2, resultado distinto según
+el segundo segmento). `cd X && <arbitrario>` NO bypassa. El vector real
+residual era solo `find -exec/-delete` dentro del patrón `find *` (cerrado
+por H3). Re-probe pegado por la Regla de Oro: la observación del test-writer
+era narrada, no evidencia. Corrida de run-checks al árbol HEAD (post
+`9875917`, docs-only) exigida por el re-review (H2): **RESULTADO: 215 PASS,
+0 FAIL.**
+
 ## Checklist de criterios de aceptación
 
 1. [x] run-checks.sh todo PASS (RED definido antes de editar) — 215/215

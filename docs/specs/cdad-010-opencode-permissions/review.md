@@ -103,3 +103,70 @@ silencio.
 | H6 | APLICAR | 5 pares rtk faltantes en default del repo; mecánico. |
 | H7 | DESESTIMADO con motivo | Variantes odoo read-only estructuralmente idénticas a sus pares base probados en runtime + cobertura estática A1/A6 de los 10; el mecanismo de clasificación del plugin es por-config (idéntico entre pares), no por-nombre. Registrado como desviación aceptada en VALIDATION. |
 | H8 | APLICAR | Limpieza trivial del loop muerto; se hace junto con los asserts de H3/H4. |
+
+---
+
+# Segunda pasada (re-review del loop de fixes) — 2026-09-13
+
+> Materializado por el orquestador desde el output textual del rol. Familia
+> de modelo: glm-5.3-flash (implementer: deepseek-v4-flash — familias
+> distintas ✓). Bucket de sesión: **h** (4/4 observables: familia distinta,
+> diff completo del loop `a795da3..HEAD` — 15 archivos —, rationale con cita
+> `archivo:líneas`, spec+convenciones en contexto).
+
+## Re-evaluación de H1-H8
+
+**H1: RESUELTO** — El registro cumple el hallazgo bajo la política del dueño: la desviación 5f9f4d2 quedó documentada como precedente (VALIDATION.md, con la regla "violación así futura = tarea NO cumplida"), la enmienda P1 precisiona la ubicación anidada con provenance al review (spec.md:58-66, aprobada por Pablo en Capa 2), y la expectativa vive ahora en procedimiento (systemPatterns.md). Verificado además que el loop de fixes respetó roles esta vez: `17ce985` (test:) toca solo run-checks.sh, `a45219c` (fix(agents)) solo agents+generador — AP-4 honrado en el loop.
+
+**H2: RESUELTO-CON-OBSERVACIÓN** — RED 184/31 → GREEN 215/0 + 3 validadores PASS pegados: la evidencia existe y es post-fix de código. Observación: la corrida pegada correspondía al árbol `a45219c`; HEAD añade el commit docs `9875917` (delta docs-only). **Cerrada post-re-review: corrida al HEAD pegada en VALIDATION (215 PASS / 0 FAIL).**
+
+**H3: RESUELTO** — `"find *": allow` eliminado de los 10 agentes + generador, assertionado por A11 (11 asserts). Búsqueda de vectores residuales directos en los 10 frontmatters: **cero** allows de find/xargs/awk/sed/perl/ruby/node/npx/deno/cargo/pip/python. Navegación restante es inspección (ls/wc/cat/head/tail/rg/pwd/cd + git no-mutante), y el matcher evalúa compuestos **por segmento** (verificado con probes, ver N1): `cd X && <arbitrario>` NO bypassa. `rtk find*` en lectores no es vector: el wrapper rechaza `-exec`/acciones compuestas. `make *` en lectores es vector de ejecución preexistente, sancionado por spec P5/F009 con motivo escrito (política punto 2 — riesgo aceptado documentado, no residual del fix). Nota fuera de scope: el `opencode.jsonc` global del usuario mantiene `find *` allow (el invariante del spec prohíbe tocarlo) — candidato al bucket de hardening (N4).
+
+**H4: RESUELTO** — 16 globs agregados a ambos test-writers, en orden correcto: allows DESPUÉS de `src/**: deny`/`lib/**: deny` (findLast gana la excepción). Cubre exactamente los 8 patrones del edit: × src/lib, como P2 exige.
+
+**H5: RESUELTO** — systemPatterns corregido a palanca anidada con el motivo empírico y la referencia a la enmienda, y los comentarios heredados de reviewer/scribe actualizados.
+
+**H6: RESUELTO** — 5 pares agregados a ambos genéricos. Verificado que npm/pytest no existen en los 6 readers y que las variantes odoo derivan del generador — el alcance del fix es correcto.
+
+**H7: RESUELTO (desestimación validada)** — Los tres pares read-only odoo son **byte-idénticos** a sus bases (`git diff --no-index` vacío ×3) — la clasificación por-config garantiza el mismo resultado sin probe. Motivo escrito registrado ✓.
+
+**H8: RESUELTO** — Loop muerto eliminado en el commit del test-writer (rol correcto sobre el artefacto de tests).
+
+## Hallazgos nuevos
+
+### N1: La premisa del hallazgo-futuro registrado (matching de compuestos) está contradicha por probes directos; re-validar antes del hardening
+- Veredicto: **OPCIONAL**
+- Bucket: h
+- Rationale: VALIDATION.md registraba como premisa que "`cd X && <cualquier cosa>` y `find ... -exec ...` pasan el gate si el prefijo matchea un allow". Probes controlados lo falsifican tal como estaba enunciado: `cd . && pwd` → PERMITIDO, `cd . && uname -sr` → DENEGADO, `pwd; uname -sr` → DENEGADO — la evaluación es por segmento y el segundo segmento debe pasar independientemente. Impacto: (a) el riesgo residual post-H3 estaba sobre-estimado en el registro; (b) un hardening construido sobre la premisa enunciada perseguiría un vector inexistente.
+- Provenance: VALIDATION.md §Fase 3 (registro de la premisa) + probes del reviewer + **re-probe post-re-review desde sesión de agente cdad-architect: P1 `cd . && pwd` PERMITIDO (`/home/ofap/clawd/projects/cdad`), P2 `cd . && uname -sr` DENEGADO por permisos, P3 `pwd; uname -sr` DENEGADO por permisos** — confirmado, evidencia pegada.
+
+### N2: A4 (globs de lectura H4) assertiona presencia, no posición findLast: ventana de regresión de la clase H4
+- Veredicto: **OPCIONAL**
+- Bucket: h
+- Rationale: los asserts nuevos usan `assert_file_has` (run-checks.sh:183-201), que solo verifica presencia del glob. Si una edición futura coloca los 16 allows ANTES de `src/**: deny`/`lib/**: deny`, findLast hace ganar el deny, las excepciones quedan inertes y A4 sigue PASS — reaparece el bug de H4 sin que el check lo detecte. A2 solo guarda catch-all-primero, no allow-después-de-deny dentro de la clave. Fix mecánico: assert de orden.
+- Provenance: run-checks.sh:183-201 vs semántica findLast (spec.md:177-179) + agents/cdad-test-writer.md:16-38.
+
+### N3: La política de enforcement es operable pero "directo y evidente" carece de definición operativa; episodio N1 demuestra divergencia real
+- Veredicto: **OPCIONAL**
+- Bucket: h
+- Rationale: los puntos 2/3/4 de la política son operables y el registro H1 fija precedente trazable. El punto 1 ("vectores directos y evidentes") quedó sin test operativo y el propio loop lo demostró: sobre el mismo matcher, el test-writer concluyó "compuestos pasan por prefijo" y el reviewer concluyó lo contrario — dos sesiones, dos veredictos de "evidencia". Propuesta concreta: definir "vector directo y evidente" = vector demostrable con un probe de una sola invocación **con output pegado** (Regla de Oro); las desviaciones con registro de tuple fijo (qué violó / dónde / motivo / quién).
+- Provenance: review.md §Capa 2 + systemPatterns.md §Política de enforcement + VALIDATION.md (registro de la premisa corregida).
+
+### N4: `find *` allow persiste en la config global del usuario (capa sesión primaria) — misma clase que H3, fuera del alcance declarado
+- Veredicto: **OPCIONAL** (feature adicional sugerida → bucket de hardening)
+- Bucket: h
+- Rationale: el invariante del spec prohíbe tocar la config global (spec.md:174-176) y el diff no la tocó — no es regresión ni residual del fix de H3. Pero la regla `bash "find *": allow` del `opencode.jsonc` global retiene el mismo vector `-exec/-delete` que H3 bloqueó en los agentes, en la sesión primaria. Candidato a sumarse a la feature de hardening de matching/allowlists.
+- Provenance: spec.md:174-176 (invariante de no-modificación) + review.md H3 (mecánica del vector).
+
+## Abstenciones
+
+1. Re-corrida de run-checks.sh al árbol HEAD: no ejecutable desde la sesión reviewer → **compensada post-re-review por el orquestador (sesión primaria): 215 PASS / 0 FAIL, pegada en VALIDATION.**
+2. La observación in-vivo del test-writer en contexto de agente: resuelta por el re-probe post-re-review desde sesión de agente cdad-architect (N1, evidencia pegada).
+
+## Resumen
+
+**0 bloqueantes nuevos · 4 observaciones OPCIONALES** · H1-H8: 7 RESUELTO + H2 RESUELTO-CON-OBSERVACIÓN (ningún NO RESUELTO) · Veredicto global: **APROBADO-COMENTARIOS** — los fixes resuelven los hallazgos bajo la política del dueño, el loop de fixes respetó los roles, y la suite está verde con evidencia pegada; las 4 observaciones son baratas y no comprometen el avance a Etapa 5.
+
+## Capa 2 (segunda pasada) — Priorización de N1-N4
+
+_(pendiente — decisiones del usuario)_
