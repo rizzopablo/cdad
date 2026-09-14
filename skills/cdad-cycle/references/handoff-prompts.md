@@ -1,534 +1,534 @@
-# Handoff Prompts — Templates por rol
+# Handoff Prompts — Templates per role
 
-Cómo el orquestador genera el prompt que el usuario pega en chat nuevo (o en sub-agente nativo) para arrancar un rol específico.
+How the orchestrator generates the prompt the user pastes into a new chat (or a native sub-agent) to start a specific role.
 
-## Invocación con sub-agentes nativos en OpenCode
+## Invocation with native sub-agents in OpenCode
 
-Si el entorno tiene sub-agentes `cdad-*` instalados (ver
-`references/opencode-delegation.md`), NO entregues packet: invocá el rol vía
-`task` con `subagent_type: cdad-<rol>`. El prompt del Task usa el MISMO
-contenido del template de rol de abajo (tarea, contexto, reglas, output), con
-estas adaptaciones:
+If the environment has `cdad-*` sub-agents installed (see
+`references/opencode-delegation.md`), do NOT hand over a packet: invoke the role via
+`task` with `subagent_type: cdad-<role>`. The Task prompt uses the SAME
+content as the role template below (task, context, rules, output), with
+these adaptations:
 
-- Arrancá el prompt con: "Buscá y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender tu rol dentro del ciclo. Actuá como `<rol>` con la siguiente tarea:"
-- Agregá la línea: "Además, leé `docs/.cdad-state.json` y `docs/specs/<feature-id>/` según corresponda a tu rol."
-- NO incluyas instrucciones de "pegá en chat nuevo" — el Task ya aísla sesión.
-- Mantené las reglas estrictas, el contexto y el output esperado del template.
+- Start the prompt with: "Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand your role within the cycle. Act as `<role>` with the following task:"
+- Add the line: "Also, read `docs/.cdad-state.json` and `docs/specs/<feature-id>/` as applicable to your role."
+- Do NOT include "paste into a new chat" instructions — the Task already isolates the session.
+- Keep the strict rules, the context and the expected output of the template.
 
-Los templates por rol de abajo siguen siendo la fuente de contenido; la
-diferencia es SOLO el mecanismo de entrega (Task vs chat nuevo).
+The per-role templates below remain the content source; the
+difference is ONLY the delivery mechanism (Task vs new chat).
 
-## Formato del handoff packet
+## Handoff packet format
 
-Siempre entregás al usuario **un bloque copiable** con estructura fija:
-Siempre incluyes referencia al skill para que el sub-agente se encuadre en la metodología correctamente.
+You always hand the user **one copyable block** with a fixed structure:
+Always include the skill reference so the sub-agent frames itself correctly in the methodology.
 
 
 ```
-🛑 HANDOFF: <rol> — <tarea atómica>
+🛑 HANDOFF: <role> — <atomic task>
 
 ──────────────────────────────────────────
-PROMPT PARA CHAT NUEVO (copiar y pegar):
+PROMPT FOR A NEW CHAT (copy and paste):
 ──────────────────────────────────────────
 
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `<rol>` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `<role>` with the following task:
 
-Tarea: <tarea específica, una sola>
+Task: <specific task, a single one>
 
-Contexto que recibís (pegar después de este prompt):
-1. <archivo 1>
-2. <archivo 2>
+Context you receive (paste after this prompt):
+1. <file 1>
+2. <file 2>
 3. <...>
 
-Reglas estrictas:
-- <regla 1>
-- <regla 2>
+Strict rules:
+- <rule 1>
+- <rule 2>
 
-Output esperado:
-- <archivo concreto / commit / formato de respuesta>
+Expected output:
+- <concrete file / commit / response format>
 
-Cuando termines, respondé al usuario con:
-"LISTO. <output específico esperado>"
+When you finish, respond to the user with:
+"DONE. <expected specific output>"
 
 ──────────────────────────────────────────
 
-Tu trabajo (usuario):
-1. Abrí chat nuevo (Zed thread, OpenCode session, ChatGPT new chat, etc.).
-2. Pegá el prompt de arriba.
-3. Adjuntá / pegá los archivos del contexto: <lista>.
-4. Cuando el rol termine, volvé acá con el output (commit hash, diff, archivo nuevo).
+Your job (user):
+1. Open a new chat (Zed thread, OpenCode session, ChatGPT new chat, etc.).
+2. Paste the prompt above.
+3. Attach / paste the context files: <list>.
+4. When the role finishes, come back here with the output (commit hash, diff, new file).
 
-Para alternativas con sub-agentes nativos (OpenCode @nombre, Claude Code Task), ver `references/sub-agent-strategies.md`.
+For alternatives with native sub-agents (OpenCode @name, Claude Code Task), see `references/sub-agent-strategies.md`.
 ```
 
-El packet **es el último output** del orquestador en ese turno. Después esperás re-entry.
+The packet **is the last output** of the orchestrator in that turn. Then you wait for re-entry.
 
 ---
 
-## Templates por rol
+## Templates per role
 
-### Test-writer (Etapa 3 — AUDIT)
+### Test-writer (Stage 3 — AUDIT)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Tarea: auditar la suite de tests existente ANTES de escribir tests nuevos para la feature. Producir Test Audit Report que documente qué tests se modificarán, cuáles se mantienen intactos, y qué tests nuevos se escribirán.
+Task: audit the existing test suite BEFORE writing new tests for the feature. Produce a Test Audit Report documenting which tests will be modified, which stay untouched, and which new tests will be written.
 
-Contexto:
-1. Spec aprobado (pegar contenido completo de docs/specs/<feat>/spec.md)
-2. Tests existentes relevantes (listar archivos en tests/ que tocan el módulo/aggregate de la feature)
-3. Template de test-audit.md: assets/spec-template/test-audit.md
+Context:
+1. Approved spec (paste the full content of docs/specs/<feat>/spec.md)
+2. Relevant existing tests (list the files in tests/ that touch the feature's module/aggregate)
+3. test-audit.md template: assets/spec-template/test-audit.md
 
-Reglas estrictas:
-- Permisos: read-only en codebase. NO editás nada todavía.
-- Releé la spec con ojos críticos: ¿qué comportamiento viejo cambia?
-- Para cada test existente que podría verse afectado, determiná:
-  - ¿Valida comportamiento que CAMBIA? → Marcar para modificación
-  - ¿Valida comportamiento que SE MANTIENE? → Marcar como untouched
-  - ¿No relacionado? → Ignorar
-- Cada test modificado DEBE tener justificación explícita en la spec (línea/sección)
-- Listar tests untouched EXPLÍCITAMENTE (no implícitamente)
-- Identificar regression risks: comportamiento nuevo sin cobertura de test
+Strict rules:
+- Permissions: read-only on the codebase. You do NOT edit anything yet.
+- Re-read the spec with a critical eye: what old behavior changes?
+- For each existing test that could be affected, determine:
+  - Does it validate behavior that CHANGES? → Mark for modification
+  - Does it validate behavior that STAYS? → Mark as untouched
+  - Unrelated? → Ignore
+- Every modified test MUST have explicit justification in the spec (line/section)
+- List untouched tests EXPLICITLY (not implicitly)
+- Identify regression risks: new behavior without test coverage
 
-Output esperado: el Test Audit Report como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/test-audit.md` desde ese texto — Contrato de roles §5):
-- Resumen de comportamiento que cambia
-- Tests modificados (con justificación y spec ref)
-- Tests nuevos a escribir
-- Tests untouched (lista explícita)
+Expected output: the Test Audit Report as FINAL TEXT with this structure (the orchestrator materializes `docs/specs/<feat>/test-audit.md` from that text — Roles contract §5):
+- Summary of changing behavior
+- Modified tests (with justification and spec ref)
+- New tests to write
+- Untouched tests (explicit list)
 - Regression risk assessment
-- Gate de Test Audit checklist
+- Test Audit gate checklist
 
-Cuando termines:
+When you finish:
 
-"LISTO. Test Audit Report. Resumen:
-- Tests a modificar: N
-- Tests untouched: M
-- Tests nuevos: P
-- Regression risks: [sí/no, detalle]
+"DONE. Test Audit Report. Summary:
+- Tests to modify: N
+- Untouched tests: M
+- New tests: P
+- Regression risks: [yes/no, detail]
 
-Pendiente: aprobación del usuario del audit antes de pasar a RED."
+Pending: user approval of the audit before moving to RED."
 ```
 
-### Architect (Etapa 1 — Descubrimiento por feature)
+### Architect (Stage 1 — Per-feature discovery)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `architect` with the following task:
 
-Tarea: mapear qué APIs, hooks, métodos y campos del sistema toca la feature "<feature-name>". Output va a la sección "Contexto técnico" del spec.
+Task: map which APIs, hooks, methods and fields of the system the feature "<feature-name>" touches. Output goes to the "Technical context" section of the spec.
 
-Contexto:
-1. docs/landscape.md (descubrimiento inicial del proyecto)
-2. docs/projectbrief.md y docs/systemPatterns.md
-3. Lista de archivos del repo relevantes a la feature: <archivos>
-4. Descripción funcional preliminar de la feature: <una frase>
+Context:
+1. docs/landscape.md (project's initial discovery)
+2. docs/projectbrief.md and docs/systemPatterns.md
+3. List of repo files relevant to the feature: <files>
+4. Preliminary functional description of the feature: <one sentence>
 
-Reglas estrictas:
-- Permisos: read-only. NO editás nada.
-- NO inventás métodos ni campos. Si no podés verificar, marcalo como "VERIFICAR".
-- Trabajás solo sobre archivos reales del repo, no sobre suposiciones.
+Strict rules:
+- Permissions: read-only. You do NOT edit anything.
+- You do NOT invent methods or fields. If you can't verify, mark it as "VERIFY".
+- You work only from real repo files, not assumptions.
 
-Output esperado: un bloque markdown con secciones "Modelos/entidades tocadas", "Hooks/extensión disponibles", "Convenciones aplicables a esta feature", "Verificaciones pendientes". Cuando termines, respondé:
+Expected output: a markdown block with sections "Models/entities touched", "Available hooks/extensions", "Conventions applicable to this feature", "Pending verifications". When you finish, respond:
 
-"LISTO. <bloque markdown>"
+"DONE. <markdown block>"
 ```
 
-### Architect (Etapa 2 — Brainstorm socrático y draft de spec)
+### Architect (Stage 2 — Socratic brainstorm and spec draft)
 
 Brainstorm:
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `architect` with the following task:
 
-Tarea: ayudar al usuario a definir la feature "<feature-name>" haciendo preguntas que expongan ambigüedades. NO proponés diseño todavía, solo preguntás.
+Task: help the user define the feature "<feature-name>" by asking questions that expose ambiguities. You do NOT propose design yet, you only ask.
 
-Contexto:
-1. Descripción funcional preliminar: <una a tres líneas>
-2. docs/landscape.md y contexto técnico del descubrimiento
+Context:
+1. Preliminary functional description: <one to three lines>
+2. docs/landscape.md and the technical context of the discovery
 3. docs/systemPatterns.md
 
-Reglas estrictas:
-- Permisos: read-only.
-- NO escribís el spec en este turno.
-- Hacés preguntas socráticas en categorías: inputs, outputs, errores, casos de borde, no-funcionales, permisos, persistencia, out of scope.
-- Una a tres preguntas por turno. Esperás respuestas antes de seguir.
-- Cortás cuando las preguntas que quedan son detalles de implementación, no decisiones de comportamiento.
+Strict rules:
+- Permissions: read-only.
+- You do NOT write the spec in this turn.
+- You ask Socratic questions in categories: inputs, outputs, errors, edge cases, non-functional, permissions, persistence, out of scope.
+- One to three questions per turn. You wait for answers before continuing.
+- You cut off when the remaining questions are implementation details, not behavior decisions.
 
-Output esperado: ronda de preguntas. Cuando consideres cerrado el brainstorm, respondé:
+Expected output: a round of questions. When you consider the brainstorm closed, respond:
 
-"LISTO PARA DRAFT. Resumen del brainstorm: <bullets de decisiones tomadas>"
+"READY FOR DRAFT. Summary of the brainstorm: <bullets of decisions made>"
 ```
 
 Draft:
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `architect` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `architect` with the following task:
 
-Tarea: producir el draft de spec para "<feature-name>" basado en el brainstorm.
+Task: produce the spec draft for "<feature-name>" based on the brainstorm.
 
-Contexto:
-1. Resumen del brainstorm: <pegar resumen>
-2. Template del spec: <pegar contenido de assets/spec-template/spec.md>
+Context:
+1. Brainstorm summary: <paste summary>
+2. Spec template: <paste the content of assets/spec-template/spec.md>
 3. docs/systemPatterns.md
 
-Reglas estrictas:
-- Cuatro secciones obligatorias: Descripción funcional, Contrato (firma + postcondiciones numeradas), Invariantes verificables, Criterios de aceptación.
-- Postcondiciones numeradas y verificables (un test puede determinar pass/fail).
-- Criterios de aceptación medibles (no adjetivos vagos).
-- Sin marca de aprobación: el usuario la agrega después.
+Strict rules:
+- Four mandatory sections: Functional description, Contract (signature + numbered postconditions), Verifiable invariants, Acceptance criteria.
+- Numbered and verifiable postconditions (a test can determine pass/fail).
+- Measurable acceptance criteria (no vague adjectives).
+- No approval mark: the user adds it later.
 
-Output esperado: el draft de spec como TEXTO FINAL completo (el orquestador o el usuario escribe `docs/specs/<NNN-feature-id>/spec.md` desde ese texto — Contrato de roles §5). Cuando termines:
+Expected output: the spec draft as complete FINAL TEXT (the orchestrator or the user writes `docs/specs/<NNN-feature-id>/spec.md` from that text — Roles contract §5). When you finish:
 
-"LISTO. Spec draft. Pendiente: aprobación del usuario."
+"DONE. Spec draft. Pending: user approval."
 ```
 
-### Test-writer (Etapa 3 — POST-AUDIT: Actualizar suite existente)
+### Test-writer (Stage 3 — POST-AUDIT: Update existing suite)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Tarea: actualizar la suite de tests existente según el Test Audit Report aprobado. Luego, escribir tests nuevos en RED. Esta es una sesión combinada de dos subfases: POST-AUDIT + RED.
+Task: update the existing test suite according to the approved Test Audit Report. Then, write new tests in RED. This is a combined session of two sub-phases: POST-AUDIT + RED.
 
-Contexto:
-1. Test Audit Report aprobado (pegar contenido de docs/specs/<feat>/test-audit.md)
-2. Spec aprobado (pegar docs/specs/<feat>/spec.md)
-3. Suite de tests actual (archivos o ruta)
-4. Convenciones de testing: docs/systemPatterns.md
+Context:
+1. Approved Test Audit Report (paste the content of docs/specs/<feat>/test-audit.md)
+2. Approved spec (paste docs/specs/<feat>/spec.md)
+3. Current test suite (files or path)
+4. Testing conventions: docs/systemPatterns.md
 
-Reglas estrictas:
-- Permisos: edit SOLO en tests/. NO mirás código de implementación.
-- Esta sesión tiene TRES partes claramente separadas (importante para que no se mezclen):
+Strict rules:
+- Permissions: edit ONLY in tests/. You do NOT look at implementation code.
+- This session has THREE clearly separated parts (important so they don't get mixed):
 
-#### PARTE 1: Actualizar tests auditados
+#### PART 1: Update audited tests
 
-Para CADA test listado en la sección "Tests modified" del test-audit.md:
-- Abrí el test actual en el repo.
-- Cambiá el test para validar el NUEVO comportamiento según spec.
-  - Si la nueva postcondición es "este comportamiento ya no existe": **ELIMINÁ el test**.
-  - Si el comportamiento cambió: actualizá la lógica del test para reflejar la nueva expectativa.
-  - Si solo cambió la interface/nombre: renombrá y actualizá.
-- Ejecutá SOLO ese test actualizado.
-  - ¿Falla? **Correcto.** El implementer aún no tocó el código. Eso es lo esperado.
-  - ¿Pasa inesperadamente? Raro, pero posible si el cambio es cosmético. Reportá en output.
-- Comiteá el cambio: `git commit -m "test: update <test-name> for spec change <ref-en-spec>"`
+For EACH test listed in the "Tests modified" section of test-audit.md:
+- Open the current test in the repo.
+- Change the test to validate the NEW behavior according to the spec.
+  - If the new postcondition is "this behavior no longer exists": **DELETE the test**.
+  - If the behavior changed: update the test's logic to reflect the new expectation.
+  - If only the interface/name changed: rename and update.
+- Run ONLY that updated test.
+  - Fails? **Correct.** The implementer hasn't touched the code yet. That is expected.
+  - Passes unexpectedly? Rare, but possible if the change is cosmetic. Report it in the output.
+- Commit the change: `git commit -m "test: update <test-name> for spec change <ref-in-spec>"`
 
-#### PARTE 2: Verificar tests sin cambios
+#### PART 2: Verify unchanged tests
 
-Para CADA test listado en la sección "Tests untouched" del test-audit.md:
-- Ejecutá ese test AHORA, antes de tocar nada más.
-  - ¿Pasa? Perfecto. Continuá.
-  - ¿Falla? ALTO. Esto significa que el cambio de spec/código rompió un test que NO debería haber sido afectado. Reportá como "Regression detectada" y STOP.
+For EACH test listed in the "Tests untouched" section of test-audit.md:
+- Run that test NOW, before touching anything else.
+  - Passes? Perfect. Continue.
+  - Fails? HALT. This means the spec/code change broke a test that should NOT have been affected. Report it as "Regression detected" and STOP.
 
-#### PARTE 3: Escribir tests nuevos (RED)
+#### PART 3: Write new tests (RED)
 
-Para CADA postcondición nueva del spec (no tocada por las anteriores):
-- Escribí UN test que verifica esa postcondición.
-- El test debe FALLAR al ejecutarse (porque el código no está implementado).
-- Fallar por la razón correcta: AssertionError, no ImportError.
-- Nombre descriptivo: test_postcondition_<N>_<descripción>.
-- Comiteá: `git commit -m "test: add failing test for postcondition <N>"`
+For EACH new postcondition of the spec (not touched by the previous ones):
+- Write ONE test that verifies that postcondition.
+- The test must FAIL when run (because the code is not implemented).
+- Fail for the right reason: AssertionError, not ImportError.
+- Descriptive name: test_postcondition_<N>_<description>.
+- Commit it: `git commit -m "test: add failing test for postcondition <N>"`
 
-#### Flujo de ejecución esperado
+#### Expected execution flow
 
-1. Actualizar tests → comitear (pueden estar rojos, es correcto)
-2. Verificar untouched → todos deben pasar
-3. Escribir tests nuevos → comitear (deben estar rojos)
-4. Run final de TODA la suite:
-   - Tests actualizados: ROJO esperado (comportamiento nuevo, código sin implementar)
-   - Tests untouched: VERDE esperado (comportamiento sin cambios)
-   - Tests nuevos: ROJO esperado (nuevas postcondiciones, sin implementación)
+1. Update tests → commit (they may be red, that is correct)
+2. Verify untouched → all must pass
+3. Write new tests → commit (they must be red)
+4. Final run of the ENTIRE suite:
+   - Updated tests: RED expected (new behavior, unimplemented code)
+   - Untouched tests: GREEN expected (unchanged behavior)
+   - New tests: RED expected (new postconditions, no implementation)
 
-Output esperado:
+Expected output:
 
-Después de terminar todo (3 partes), respondé:
+After finishing everything (3 parts), respond:
 
-"LISTO. Suite actualizada post-audit + tests nuevos en RED.
+"DONE. Suite updated post-audit + new tests in RED.
 
-**PARTE 1 — Tests auditados actualizados:**
-- <test-name-1>: [eliminado | actualizado para <cambio>]
-- <test-name-2>: [actualizado para <cambio>]
+**PART 1 — Audited tests updated:**
+- <test-name-1>: [deleted | updated for <change>]
+- <test-name-2>: [updated for <change>]
 
-**PARTE 2 — Tests sin cambios verificados:**
-- Todos pasando (lista con <N> tests)
+**PART 2 — Unchanged tests verified:**
+- All passing (list with <N> tests)
 
-**PARTE 3 — Tests nuevos en RED:**
+**PART 3 — New tests in RED:**
 - <test-name-new-1>
 - <test-name-new-2>
 
-Output del run final de suite:
+Output of the final suite run:
 
-<pegar output pytest/jest/etc mostrando:
-  - Tests rojos de nuevas postcondiciones
-  - Tests rojos de actualizados
-  - Tests verdes de untouched
+<paste pytest/jest/etc output showing:
+  - Red tests from new postconditions
+  - Red tests from updated ones
+  - Green tests from untouched ones
 >
 
 Commits:
-<listar hashes de:
+<list hashes of:
   - Updated tests
   - New RED tests
 >"
 ```
 
-**Notas para el orquestador**:
-- Tests actualizados pueden estar **rojos** post-sesión (es correcto, esperado).
-- Tests untouched deben estar **verdes** (gate de regresión).
-- Tests nuevos deben estar **rojos** (RED estándar).
-- NUNCA digas "tests migrados deben pasar". Es incorrecto.
+**Notes for the orchestrator**:
+- Updated tests may be **red** post-session (that is correct, expected).
+- Untouched tests must be **green** (regression gate).
+- New tests must be **red** (standard RED).
+- NEVER say "migrated tests must pass". It is incorrect.
 
 ---
 
-### Test-writer (Etapa 3 — RED)
+### Test-writer (Stage 3 — RED)
 
-#### Pre-RED: Test Audit Checklist (antes de cualquier test nuevo)
+#### Pre-RED: Test Audit Checklist (before any new test)
 
-Antes de tocar un archivo de tests, ejecutá:
+Before touching a test file, run through:
 
-1. **Releer spec nueva completa** con enfoque en: ¿qué comportamiento viejo cambia?
-2. **Recorrer codebase**: importá módulos/modelos que toca la feature. ¿Qué tests existentes tocan eso?
-3. **Crear `test-audit.md`** (template en assets) con:
-   - Qué comportamiento cambia (párrafo)
-   - Qué tests se modifican + justificación de cada uno
-   - Qué tests nuevos se escriben
-   - Qué tests se mantienen sin cambios (EXPLICITAR)
+1. **Re-read the new spec in full** focusing on: what old behavior changes?
+2. **Walk the codebase**: import the modules/models the feature touches. What existing tests touch that?
+3. **Create `test-audit.md`** (template in assets) with:
+   - What behavior changes (paragraph)
+   - What tests get modified + justification for each
+   - What new tests get written
+   - What tests stay unchanged (STATE EXPLICITLY)
    - Regression risks
-4. **El usuario aprueba Test Audit** antes de empezar RED.
+4. **The user approves the Test Audit** before RED starts.
 
-Si no podés responder con confianza "cada test modificado está en spec", **no avances**. Preguntar es más barato que arreglar después.
+If you can't confidently answer "every modified test is in the spec", **don't proceed**. Asking is cheaper than fixing afterwards.
 
-**Si ya completaste POST-AUDIT**: usá la sección anterior (Test-writer POST-AUDIT) que combina actualización de tests auditados + escritura de tests nuevos en una sola sesión. La sección de abajo es para casos donde POST-AUDIT no aplica (feature sin tests previos afectados).
+**If you already completed the POST-AUDIT**: use the previous section (Test-writer POST-AUDIT), which combines updating audited tests + writing new tests in a single session. The section below is for cases where POST-AUDIT does not apply (a feature with no prior affected tests).
 
 ---
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Tarea: escribir UN test que verifica una postcondición NUEVA (no tocada por audit) del spec. El test debe FALLAR al ejecutarse, porque no hay implementación todavía. Debe fallar por la razón correcta (assertion falla, no ImportError ni syntax error).
+Task: write ONE test that verifies a NEW postcondition (not touched by the audit) of the spec. The test must FAIL when run, because there is no implementation yet. It must fail for the right reason (assertion failure, not ImportError or syntax error).
 
-IMPORTANTE: Esto ocurre DESPUÉS del POST-AUDIT. Si aún no completaste POST-AUDIT (actualizar tests auditados + verificar untouched), hacelo primero en esa sesión o en otra.
+IMPORTANT: This happens AFTER the POST-AUDIT. If you haven't completed the POST-AUDIT yet (update audited tests + verify untouched), do it first in that session or another one.
 
-Contexto:
-1. Spec aprobado (pegar contenido completo de docs/specs/<feat>/spec.md)
-2. Interface / firma del módulo (pegar)
-3. Convenciones de testing del proyecto: docs/systemPatterns.md (sección de tests)
+Context:
+1. Approved spec (paste the full content of docs/specs/<feat>/spec.md)
+2. Module interface / signature (paste)
+3. Project testing conventions: docs/systemPatterns.md (tests section)
 
-Reglas estrictas:
-- Permisos: edit SOLO en tests/. NO mirás src/, lib/, ni código de implementación.
-- Si el código de implementación existe (caso extender feature), NO lo leés. Trabajás solo desde el spec.
-- Nombre del test: descriptivo, referencia la postcondición. Ej: test_postcondition_<N>_<descripción>.
-- UN solo test por sesión, salvo que postcondiciones sean ortogonales (paths independientes), en cuyo caso podés agrupar.
-- Después del test, corré la suite y verificá que falla por la razón correcta.
+Strict rules:
+- Permissions: edit ONLY in tests/. You do NOT look at src/, lib/, or implementation code.
+- If implementation code exists (feature-extension case), you do NOT read it. You work only from the spec.
+- Test name: descriptive, references the postcondition. E.g.: test_postcondition_<N>_<description>.
+- ONE test per session, unless postconditions are orthogonal (independent paths), in which case you may group.
+- After the test, run the suite and verify it fails for the right reason.
 
-Output esperado: archivo de tests + commit con mensaje "test: add failing test for postcondition <N>". Cuando termines:
+Expected output: test file + commit with message "test: add failing test for postcondition <N>". When you finish:
 
-"LISTO. Test agregado en <archivo>. Output del run que confirma falla esperada:
+"DONE. Test added in <file>. Run output confirming the expected failure:
 
-<pegar output del pytest/jest/etc. que muestra el assertion error>
+<paste the pytest/jest/etc output showing the assertion error>
 
 Commit: <hash>"
 ```
 
-### Implementer (Etapa 3 — GREEN)
+### Implementer (Stage 3 — GREEN)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `implementer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `implementer` with the following task:
 
-Tarea: hacer pasar el test recién escrito con código mínimo. NADA de features extra.
+Task: make the freshly written test pass with minimal code. NO extra features.
 
-Contexto:
-1. Spec aprobado (pegar)
-2. Test que tiene que pasar (pegar archivo)
-3. Interface / firma del módulo (pegar)
+Context:
+1. Approved spec (paste)
+2. The test that has to pass (paste file)
+3. Module interface / signature (paste)
 4. docs/systemPatterns.md
 
-Reglas estrictas:
-- Permisos: edit SOLO en código de implementación. NO tocás tests/. Si pensás que el test está mal, NO lo cambies; reportá al orquestador.
-- Código MÍNIMO. La implementación más simple que hace pasar el test.
-- NO agregás features no pedidas "por las dudas".
-- Después de implementar, corré la SUITE COMPLETA (no solo el test nuevo). Todo verde.
+Strict rules:
+- Permissions: edit ONLY in implementation code. You do NOT touch tests/. If you think the test is wrong, do NOT change it; report to the orchestrator.
+- MINIMAL code. The simplest implementation that makes the test pass.
+- You do NOT add unrequested features "just in case".
+- After implementing, run the FULL SUITE (not just the new test). All green.
 
-Output esperado: código de implementación + commit "feat: implement <postcondición>". Cuando termines:
+Expected output: implementation code + commit "feat: implement <postcondition>". When you finish:
 
-"LISTO. Implementación en <archivo>. Output del run de la suite completa:
+"DONE. Implementation in <file>. Output of the full suite run:
 
-<pegar output con todos los tests verdes>
+<paste output with all tests green>
 
 Commit: <hash>"
 ```
 
-#### Packet de fix (re-entry de review — loop de Etapa 4)
+#### Fix packet (review re-entry — Stage 4 loop)
 
-El template de implementer de arriba se reutiliza para aplicar fixes de review (loop con Etapa 3). El orquestador agrega DOS cosas obligatorias al packet:
+The implementer template above is reused to apply review fixes (loop with Stage 3). The orchestrator adds TWO mandatory things to the packet:
 
-1. **Feedback íntegro**: los hallazgos del reviewer y el contexto del usuario viajan pegados completos en el packet (texto original, rationale y provenance incluidos). Sin editar que suavice — ni tono amable, ni recortes, ni "resumen". El receptor verifica contra la evidencia original, no contra tu paráfrasis.
-2. **Línea al inicio de las instrucciones**: *"Aplicá el protocolo `skills/cdad-cycle/references/receiving-feedback.md` antes de tocar código"*.
+1. **Complete feedback**: the reviewer's findings and the user's context travel pasted in full in the packet (original text, rationale and provenance included). No softening edits — no friendly tone, no cuts, no "summary". The receiver verifies against the original evidence, not your paraphrase.
+2. **A line at the start of the instructions**: *"Apply the `skills/cdad-cycle/references/receiving-feedback.md` protocol before touching code"*.
 
-Motivo: el packet re-invoca el protocolo con tokens frescos (antídoto a la dilución en sesiones largas) y la sesión aislada llega sin emotional investment. Detalle del protocolo: `references/receiving-feedback.md`.
+Rationale: the packet re-invokes the protocol with fresh tokens (antidote to dilution in long sessions) and the isolated session arrives without emotional investment. Protocol detail: `references/receiving-feedback.md`.
 
-### Refactorer (Etapa 3 — REFACTOR opcional)
+### Refactorer (Stage 3 — REFACTOR optional)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `refactorer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `refactorer` with the following task:
 
-Tarea: mejorar legibilidad/simplicidad del código sin cambiar comportamiento observable.
+Task: improve code readability/simplicity without changing observable behavior.
 
-Contexto:
-1. Código actual (pegar archivo o ruta)
-2. Suite de tests completa
+Context:
+1. Current code (paste file or path)
+2. Full test suite
 3. docs/systemPatterns.md
 
-Reglas estrictas:
-- Permisos: edit en código de implementación. NO tocás tests/.
-- Suite debe seguir verde EN TODO MOMENTO. Si un cambio rompe un test, lo revertís.
-- Comportamiento observable NO cambia. Solo legibilidad, naming, duplicación, extracción de helpers.
+Strict rules:
+- Permissions: edit in implementation code. You do NOT touch tests/.
+- The suite must stay green AT ALL TIMES. If a change breaks a test, you revert it.
+- Observable behavior does NOT change. Only readability, naming, duplication, helper extraction.
 
-Output esperado: código refactorizado + commit "refactor: <qué se mejoró>". Cuando termines:
+Expected output: refactored code + commit "refactor: <what was improved>". When you finish:
 
-"LISTO. Refactor en <archivos>. Suite verde confirmada:
+"DONE. Refactor in <files>. Green suite confirmed:
 
-<pegar output del run>
+<paste run output>
 
 Commit: <hash>"
 ```
 
-### Test-writer (Etapa 3 — Properties)
+### Test-writer (Stage 3 — Properties)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Tarea: escribir property tests que verifican las invariantes del spec con inputs aleatorios.
+Task: write property tests that verify the spec's invariants with random inputs.
 
-Contexto:
-1. Spec aprobado, sección "Invariantes verificables" (pegar)
-2. Interface (pegar)
-3. Librería de property testing del proyecto: <Hypothesis / fast-check / QuickCheck / etc.>
+Context:
+1. Approved spec, "Verifiable invariants" section (paste)
+2. Interface (paste)
+3. Project's property-testing library: <Hypothesis / fast-check / QuickCheck / etc.>
 4. docs/systemPatterns.md
 
-Reglas estrictas:
-- Permisos: edit SOLO en tests/. NO mirás código de implementación.
-- Una invariante por property test, claro y legible.
-- Volumen razonable: 100-1000 inputs por property.
-- Seed FIJO en config para reproducibilidad en CI.
+Strict rules:
+- Permissions: edit ONLY in tests/. You do NOT look at implementation code.
+- One invariant per property test, clear and legible.
+- Reasonable volume: 100-1000 inputs per property.
+- FIXED seed in config for reproducibility in CI.
 
-Output esperado: archivo de property tests + commit "test: add property tests for invariants". Cuando termines:
+Expected output: property tests file + commit "test: add property tests for invariants". When you finish:
 
-"LISTO. Property tests en <archivo>. Output del run:
+"DONE. Property tests in <file>. Run output:
 
-<pegar output mostrando properties verdes>
-
-Commit: <hash>"
-```
-
-### Test-writer (Etapa 3 — Integración / E2E)
-
-```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `test-writer` con la siguiente tarea:
-
-Tarea: traducir los criterios de aceptación del spec a tests E2E que verifican el flujo cross-componente.
-
-Contexto:
-1. Spec aprobado, sección "Criterios de aceptación" (pegar)
-2. API pública del sistema (endpoints, interfaces externas)
-3. Convenciones de tests E2E del proyecto
-
-Reglas estrictas:
-- Permisos: edit SOLO en tests/. NO leés la implementación de la feature.
-- Setup con fixtures completas, no mocks puntuales.
-- Llamada vía API pública, no por internals.
-- Asserts derivados de los criterios de aceptación, uno por uno.
-
-Output esperado: archivo de tests E2E + commit "test: add E2E tests for <feature>". Cuando termines:
-
-"LISTO. E2E en <archivo>. Estado actual del run: <verde si modalidad B / rojo esperado si modalidad A outside-in>.
-
-<pegar output>
+<paste output showing green properties>
 
 Commit: <hash>"
 ```
 
-### Reviewer (Etapa 4)
+### Test-writer (Stage 3 — Integration / E2E)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, leé `references/verdict-tuple.md` (contrato de veredicto: tuple de 4 campos por hallazgo) y actuá como `reviewer` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Tarea: revisar el diff completo de la feature contra el spec aprobado y producir un reporte priorizado.
+Task: translate the spec's acceptance criteria into E2E tests that verify the cross-component flow.
 
-Contexto:
-1. Diff completo: pegar output de `git diff <base>..HEAD`
-2. Spec aprobado: pegar docs/specs/<feat>/spec.md
-3. Interface / contrato (pegar)
-4. .importlinter o equivalente (pegar)
-5. Convenciones: AGENTS.md / CONTRIBUTING.md / docs/systemPatterns.md
+Context:
+1. Approved spec, "Acceptance criteria" section (paste)
+2. System's public API (endpoints, external interfaces)
+3. Project's E2E test conventions
 
-Reglas estrictas:
-- Permisos: read-only. NO modificás nada.
-- Idealmente sos modelo distinto al implementer (lo declarás al inicio).
-- Categorías obligatorias: Divergencias del spec, Violaciones de boundaries, Riesgos de seguridad, Inconsistencias de estilo, Sugerencias de simplificación.
-- **Contrato de veredicto (tuple 4 campos, ver `references/verdict-tuple.md`):**
-  cada hallazgo emite `Veredicto (BLOQUEANTE|OPCIONAL|ABSTENER)` + `Bucket (h|m|l)`
-  derivado por regla de observables (familia distinta al implementer +1, diff
-  completo +1, rationale grounded archivo:líneas +1, spec+convenciones +1;
-  0-1→l, 2→m, 3-4→h) + `Problema` (rationale verificable) + `Ubicación`
-  (provenance exacta). Si no podés juzgar un punto, emití `ABSTENER` con
-  motivo — nunca lo disfraces de Opcional. Sin provenance el hallazgo no
-  cuenta en la agregación.
+Strict rules:
+- Permissions: edit ONLY in tests/. You do NOT read the feature's implementation.
+- Setup with complete fixtures, no point mocks.
+- Calls via the public API, not through internals.
+- Asserts derived from the acceptance criteria, one by one.
 
-Output esperado: la review como TEXTO FINAL con esta estructura (el orquestador materializa `docs/specs/<feat>/review.md` desde ese texto — Contrato de roles §5):
+Expected output: E2E tests file + commit "test: add E2E tests for <feature>". When you finish:
+
+"DONE. E2E in <file>. Current run state: <green if mode B / expected red if mode A outside-in>.
+
+<paste output>
+
+Commit: <hash>"
+```
+
+### Reviewer (Stage 4)
+
+```
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, read `references/verdict-tuple.md` (verdict contract: 4-field tuple per finding) and act as `reviewer` with the following task:
+
+Task: review the feature's full diff against the approved spec and produce a prioritized report.
+
+Context:
+1. Full diff: paste the output of `git diff <base>..HEAD`
+2. Approved spec: paste docs/specs/<feat>/spec.md
+3. Interface / contract (paste)
+4. .importlinter or equivalent (paste)
+5. Conventions: AGENTS.md / CONTRIBUTING.md / docs/systemPatterns.md
+
+Strict rules:
+- Permissions: read-only. You do NOT modify anything.
+- Ideally you are a model different from the implementer's (declare it at the start).
+- Mandatory categories: Spec divergences, Boundary violations, Security risks, Style inconsistencies, Simplification suggestions.
+- **Verdict contract (4-field tuple, see `references/verdict-tuple.md`):**
+  each finding emits `Verdict (BLOCKING|OPTIONAL|ABSTAIN)` + `Bucket (h|m|l)`
+  derived by the observables rule (family different from implementer +1, full
+  diff +1, grounded rationale file:lines +1, spec+conventions +1;
+  0-1→l, 2→m, 3-4→h) + `Problem` (verifiable rationale) + `Location`
+  (exact provenance). If you can't judge a point, emit `ABSTAIN` with
+  a reason — never disguise it as Optional. Without provenance the finding
+  does not count in the aggregation.
+
+Expected output: the review as FINAL TEXT with this structure (the orchestrator materializes `docs/specs/<feat>/review.md` from that text — Roles contract §5):
 
 # Review — <feature>
 
-Reviewer model: <declaración de modelo, ej: mofgw/qwen3.7-plus>
+Reviewer model: <model declaration, e.g.: mofgw/qwen3.7-plus>
 
-## Bloqueantes
-### 1. <título>
-Ubicación: <archivo:líneas>
-Bucket: <h|m|l>  ← según regla de observables (verdict-tuple.md)
-Problema: <...>
-Sugerencia: <...>
+## Blocking
+### 1. <title>
+Location: <file:lines>
+Bucket: <h|m|l>  ← per the observables rule (verdict-tuple.md)
+Problem: <...>
+Suggestion: <...>
 
-## Opcionales
+## Optional
 ### N. <...>
-Ubicación: <archivo:líneas>
+Location: <file:lines>
 Bucket: <h|m|l>
-Problema: <...>
-Sugerencia: <...>
+Problem: <...>
+Suggestion: <...>
 
-## Abstenciones
-### N. <punto que no pudiste juzgar>
-Motivo: <...>
+## Abstentions
+### N. <point you couldn't judge>
+Reason: <...>
 
-Cuando termines:
+When you finish:
 
-"LISTO. Resumen: <X> bloqueantes, <Y> opcionales, <Z> abstenciones."
+"DONE. Summary: <X> blocking, <Y> optional, <Z> abstentions."
 ```
 
-### Scribe (Etapa 5)
+### Scribe (Stage 5)
 
 ```
-Busca y lee el skill cdad-cycle (`skills/cdad-cycle/SKILL.md`) para entender el ciclo CDAD y tu rol específico dentro de él. Luego, actuá como `scribe` con la siguiente tarea:
+Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `scribe` with the following task:
 
-Tarea: producir tres drafts para la actualización del Memory Bank después del cierre de la feature.
+Task: produce three drafts for the Memory Bank update after the feature closes.
 
-Contexto:
-1. Spec aprobado: docs/specs/<feat>/spec.md
-2. Diff completo del PR: git diff <base>..HEAD
-3. Reporte del reviewer: docs/specs/<feat>/review.md
-4. Estado actual del Memory Bank: docs/projectbrief.md, docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/
+Context:
+1. Approved spec: docs/specs/<feat>/spec.md
+2. Full PR diff: git diff <base>..HEAD
+3. Reviewer's report: docs/specs/<feat>/review.md
+4. Current state of the Memory Bank: docs/projectbrief.md, docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/
 
-Reglas estrictas:
-- Permisos: read-only. NO commiteás. Generás drafts; el usuario los APRUEBA; el orquestador los commitea.
+Strict rules:
+- Permissions: read-only. You do NOT commit. You generate drafts; the user APPROVES them; the orchestrator commits them.
 
-Output esperado, tres bloques:
+Expected output, three blocks:
 
-1. Draft de entry para activeContext.md (formato: ## YYYY-MM-DD — Feature: <nombre>, con secciones "Decisiones relevantes", "Deuda técnica detectada", "Próxima feature en cola").
+1. Draft entry for activeContext.md (format: ## YYYY-MM-DD — Feature: <name>, with sections "Key decisions", "Detected technical debt", "Next feature in the queue").
 
-2. Draft de modificaciones para progress.md (mover feature de in-progress a done, actualizar estado).
+2. Draft changes for progress.md (move the feature from in-progress to done, update status).
 
-3. Si detectás decisión arquitectónica relevante: draft de ADR (formato MADR), con campo "Confianza" indicando qué tan seguro estás de que merece ADR (Alta / Media / Baja).
-   Si NO detectás → "Sin ADR sugerido".
+3. If you detect a relevant architectural decision: draft ADR (MADR format), with a "Confidence" field stating how sure you are that it merits an ADR (High / Medium / Low).
+   If you do NOT detect one → "No ADR suggested".
 
-Cuando termines:
+When you finish:
 
-"LISTO. Drafts:
+"DONE. Drafts:
 
 [Draft 1: activeContext.md entry]
 <...>
@@ -536,66 +536,66 @@ Cuando termines:
 [Draft 2: progress.md changes]
 <...>
 
-[Draft 3: ADR | Sin ADR sugerido]
+[Draft 3: ADR | No ADR suggested]
 <...>"
 ```
 
 ---
 
-## Bloque "REGLAS DE CORRIDAS" (inyectar en packets de roles que corren tests)
+## "RUN RULES" block (inject into packets of roles that run tests)
 
-Cuando el proyecto tiene suite de tests costosa (en Odoo: `odoo-make-env/references/run-budget-protocol.md`), el orquestador agrega este bloque al final de las "Reglas estrictas" de los packets de test-writer (RED), implementer (GREEN), refactorer y reviewer:
+When the project has an expensive test suite (in Odoo: `odoo-make-env/references/run-budget-protocol.md`), the orchestrator adds this block at the end of the "Strict rules" of the test-writer (RED), implementer (GREEN), refactorer and reviewer packets:
 
 ```text
-## REGLAS DE CORRIDAS (obligatorias)
-- Iteración SOLO con corridas mínimas sobre entorno caliente
-  (Odoo: make test-one sobre DB caliente). PROHIBIDO test-clean /
-  make test durante la iteración (la suite completa es de gate, no de
-  depuración).
-- Ciclo: leer el fallo completo -> hipótesis escrita -> UN cambio -> UNA
-  corrida. Nunca re-correr sin cambio. Máximo 2 corridas por fallo sin
-  convergencia: STOP y reportar hallazgos (es señal de escalada, no de
-  "una corrida más").
-- Gate: UNA sola corrida completa en entorno fresco (Odoo: make test-all;
-  mono-módulo: make test-clean). Presupuesto de la tarea: máx ~15 corridas
-  mínimas y 1 completa (default; el proyecto lo calibra en systemPatterns).
-- Logs de corrida con nombre en ~/tmp/ (nunca /tmp/) para que la evidencia
-  sea referenciable.
-- Evidencia de gate: línea "0 failed, 0 error(s) of N tests" + commit del
-  árbol corrido (registrado en state file o mensaje de commit).
+## RUN RULES (mandatory)
+- Iterate ONLY with minimal runs against a warm environment
+  (Odoo: make test-one against the warm DB). test-clean /
+  make test FORBIDDEN during iteration (the full suite is for the
+  gate, not for debugging).
+- Cycle: read the full failure -> written hypothesis -> ONE change -> ONE
+  run. Never re-run without a change. Max 2 runs per failure without
+  convergence: STOP and report findings (it is a signal to escalate, not
+  a "one more run").
+- Gate: ONE single full run on a fresh environment (Odoo: make test-all;
+  single-module: make test-clean). Task budget: max ~15 minimal
+  runs and 1 full one (default; the project calibrates it in systemPatterns).
+- Run logs named under ~/tmp/ (never /tmp/) so the evidence
+  is referenceable.
+- Gate evidence: the line "0 failed, 0 error(s) of N tests" + commit of the
+  tree that was run (recorded in the state file or commit message).
 ```
 
-Para el packet del reviewer, el bloque equivalente:
+For the reviewer's packet, the equivalent block:
 
 ```text
-## REGLAS DE CORRIDAS (review: presupuesto 0 por defecto)
-- Si git diff --stat <commit-de-la-corrida-evidencia>..HEAD muestra solo
-  commits [STATE]/docs, el árbol es idéntico: CITÁ el log (ruta + línea).
-  NO re-corres la suite.
-- Solo si el árbol cambió: UNA corrida completa como evidencia nueva.
-- Analizadores estáticos (lint, import-linter) no consumen presupuesto.
+## RUN RULES (review: 0 budget by default)
+- If git diff --stat <evidence-run-commit>..HEAD shows only
+  [STATE]/docs commits, the tree is identical: CITE the log (path + line).
+  You do NOT re-run the suite.
+- Only if the tree changed: ONE full run as new evidence.
+- Static analyzers (lint, import-linter) consume no budget.
 ```
 
 ---
 
-## Notas para el orquestador al generar el packet
+## Notes for the orchestrator when generating the packet
 
-- **Rellená TODO el contexto** antes de entregar al usuario. No le digas "pegá el spec acá"; pegalo vos en el packet (si tenés acceso al archivo).
-- **Tarea atómica**: una postcondición por test-writer, un test por implementer, un diff por reviewer. NO agrupes a menos que el spec marque postcondiciones ortogonales explícitas.
-- **Adjuntar archivos**: cuando puedas, indicá rutas exactas. Cuando el contenido cabe, pegalo inline en el packet.
-- **Frase final del packet**: siempre tu turno termina con el packet y la indicación al usuario de "volvé cuando el rol termine, con el output". Nada más.
+- **Fill in ALL the context** before handing it to the user. Don't tell them "paste the spec here"; paste it yourself in the packet (if you have access to the file).
+- **Atomic task**: one postcondition per test-writer, one test per implementer, one diff per reviewer. Do NOT group unless the spec marks explicitly orthogonal postconditions.
+- **Attaching files**: when you can, give exact paths. When the content fits, paste it inline in the packet.
+- **Final line of the packet**: your turn always ends with the packet and the instruction to the user to "come back when the role finishes, with the output". Nothing else.
 
 ---
 
-## Si el usuario está en modo B (rol específico)
+## If the user is in mode B (specific role)
 
-No emitís packet de handoff. Aplicás las reglas estrictas del rol pedido a vos mismo:
+You do not emit a handoff packet. You apply the strict rules of the requested role to yourself:
 
-1. Identificá qué rol pidió.
-2. Buscá la sección correspondiente arriba.
-3. Trabajá respetando las "Reglas estrictas".
-4. Output con el formato "Output esperado".
+1. Identify which role was requested.
+2. Find the corresponding section above.
+3. Work respecting the "Strict rules".
+4. Output in the "Expected output" format.
 
-Si en medio del trabajo notás que necesitás algo fuera de los permisos del rol (ej. test-writer queriendo ver código de implementación), parate y reportá:
+If in the middle of the work you notice you need something outside the role's permissions (e.g. a test-writer wanting to see implementation code), stop and report:
 
-> *"Como test-writer no debería ver el código de implementación. Si genuinamente lo necesito, esto sugiere que el spec o la interface están incompletos. ¿Qué preferís: completar el spec, o me autorizás a ver el código (perdiendo aislamiento de fase)?"*
+> *"As a test-writer I should not see the implementation code. If I genuinely need it, this suggests the spec or the interface are incomplete. What do you prefer: completing the spec, or authorizing me to see the code (losing phase isolation)?"*

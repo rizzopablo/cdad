@@ -1,101 +1,103 @@
-# Protocolo de presupuesto de corridas de tests (CDAD-Odoo)
+# Test run budget protocol (CDAD-Odoo)
 
-> Origen: protocolo diseñado y validado empíricamente durante una feature de
-> un proyecto CDAD-Odoo multi-módulo (sep 2026), donde el costo real resultó
-> ser `setup completo × corridas repetidas × property tests`, no la cantidad
-> de tests. Incorporado a CDAD como estándar.
-> Presupuestos numéricos: **defaults calibrados para setups de 15-20 min** —
-> el owner (HITL) los ajusta por proyecto en `systemPatterns.md`.
+> Origin: protocol designed and validated empirically during a feature of
+> a multi-module CDAD-Odoo project (Sep 2026), where the real cost turned out
+> to be `full setup × repeated runs × property tests`, not the number of
+> tests. Incorporated into CDAD as a standard.
+> Numeric budgets: **defaults calibrated for 15-20 min setups** —
+> the owner (HITL) adjusts them per project in `systemPatterns.md`.
 
-## Principios
+## Principles
 
-1. **La suite completa es de gate, no de depuración.** Depuración = `test-one`
-   sobre DB caliente; suite completa UNA vez para cerrar el gate.
-2. **El costo es el setup.** Se minimiza el número de setups, no el número de
-   tests. Un setup que no sigue a un cambio con hipótesis es desperdicio puro.
-3. **Toda corrida sigue a un cambio.** Ciclo: leer el fallo completo →
-   hipótesis escrita → UN cambio → UNA corrida. Nunca re-correr "a ver si pasa".
-4. **Presupuesto duro por etapa, fijado por el owner.** Excederlo = STOP y
-   escalar, no reintentar.
-5. **La evidencia ya producida es reutilizable** si el árbol de código es
-   idéntico (ver "Review: presupuesto 0").
-6. **El N de property tests es calibración de runtime, no contrato.** La
-   postcondición define QUÉ invariante; M escenarios es presupuesto. N mayor
-   pertenece al hardening.
+1. **The full suite is for the gate, not for debugging.** Debugging =
+   `test-one` on the warm DB; the full suite runs ONCE to close the gate.
+2. **The cost is the setup.** Minimize the number of setups, not the number
+   of tests. A setup that does not follow a change with a hypothesis is pure
+   waste.
+3. **Every run follows a change.** Cycle: read the full failure → written
+   hypothesis → ONE change → ONE run. Never re-run "to see if it passes".
+4. **Hard budget per stage, set by the owner.** Exceeding it = STOP and
+   escalate, not retry.
+5. **Evidence already produced is reusable** if the code tree is identical
+   (see "Review: budget 0").
+6. **The N of property tests is runtime calibration, not contract.** The
+   postcondition defines WHAT invariant; M scenarios is a budget. A larger N
+   belongs to hardening.
 
-## Presupuesto por etapa (defaults; ajustar por proyecto)
+## Budget per stage (defaults; adjust per project)
 
-| Etapa | Corrida permitida | Presupuesto default |
+| Stage | Allowed run | Default budget |
 |---|---|---|
-| RED (test-writer) | `test-one` por clase, DB caliente | 1-2 corridas, 0 completas |
-| GREEN (implementer, iteración) | `test-one` | max 2 por fallo sin convergencia → STOP. Prohibido `test-clean`/`make test` durante iteración |
-| Cierre GREEN | UNA `test-all` (DB fresca) | 1 |
-| Review (reviewer) | ninguna si el árbol es idéntico; si cambió, 1 `test-all` | 0-1 |
-| Fix de review | mini-ciclo RED→fix con `test-one` + UN gate `test-all` | ~15 `test-one` y 2 completas por feature |
+| RED (test-writer) | `test-one` per class, warm DB | 1-2 runs, 0 full |
+| GREEN (implementer, iteration) | `test-one` | max 2 per failure without convergence → STOP. `test-clean`/`make test` forbidden during iteration |
+| GREEN closure | ONE `test-all` (fresh DB) | 1 |
+| Review (reviewer) | none if the tree is identical; if it changed, 1 `test-all` | 0-1 |
+| Review fix | mini RED→fix cycle with `test-one` + ONE `test-all` gate | ~15 `test-one` and 2 full runs per feature |
 
-## Target `test-all` (multi-módulo: un setup para todas las suites)
+## Target `test-all` (multi-module: one setup for all suites)
 
-Una sola DB fresca que instala el módulo más profundo (que arrastra al resto
-por `depends`) y filtra los tests de todos los módulos del repo:
+A single fresh DB that installs the deepest module (which pulls in the rest
+via `depends`) and filters the tests of all the repo's modules:
 
 ```make
 test-all:
 	$(require-module)
 	-dropdb --if-exists $(TEST_DB) 2>/dev/null || true
-	$(RUN) odoo-bin -c $(CONF) -d $(TEST_DB) -i <modulo_mas_profundo> \
-		--test-tags /modulo_A,/modulo_B $(ODOO_FLAGS)
+	$(RUN) odoo-bin -c $(CONF) -d $(TEST_DB) -i <deepest_module> \
+		--test-tags /module_A,/module_B $(ODOO_FLAGS)
 ```
 
-**Condición:** la abstracción "instalar el más profundo arrastra al resto"
-solo vale si el grafo de dependencias es una cadena. Con módulos
-independientes, usar `-i mod1,mod2`. Reemplaza N `test-clean` por 1 setup.
+**Condition:** the abstraction "installing the deepest one pulls in the
+rest" only holds if the dependency graph is a chain. With independent
+modules, use `-i mod1,mod2`. It replaces N `test-clean` with 1 setup.
 
-## Guards anti-falso-verde (obligatorios en el Makefile)
+## Anti-false-green guards (mandatory in the Makefile)
 
-- `require-installed`: `-u` sobre módulo no instalado es no-op que reporta
-  `0 failed, 0 error(s) of 0 tests` con rc=0 → rechazar, apuntar a
+- `require-installed`: `-u` on a non-installed module is a no-op that
+  reports `0 failed, 0 error(s) of 0 tests` with rc=0 → reject, point to
   `test-clean`/`test-all`.
-- `require-module`: `-i` de módulo inexistente no instala nada y corre 0
-  tests con rc=0 → verificar que el módulo exista en algún addons_path.
-- La DB caliente (`$(INST)_test`) es de iteración; la fresca de `test-all` es
-  la evidencia. **Nunca declarar gate cerrado con corrida caliente sola.**
+- `require-module`: `-i` of a non-existent module installs nothing and runs
+  0 tests with rc=0 → verify the module exists in some addons_path.
+- The warm DB (`$(INST)_test`) is for iteration; the fresh one of `test-all`
+  is the evidence. **Never declare the gate closed with a warm run alone.**
 
-## Trampa de la coma en `--test-tags` (verificada: `odoo/tests/tag_selector.py`,
+## Comma trap in `--test-tags` (verified: `odoo/tests/tag_selector.py`,
 `re.split(r',(?![^\[]*\])', spec)`)
 
-La coma separa SPECS completos: `mod:ClaseA,mod:ClaseB` corre ambas clases;
-`mod:ClaseA,ClaseB` toma `ClaseB` como otro spec (sin módulo) y corre menos
-tests de los esperados, **sin error**. Regla: repetir el prefijo en cada
-spec, y verificar la línea `of N tests` contra el conteo esperado.
+The comma separates COMPLETE specs: `mod:ClassA,mod:ClassB` runs both
+classes; `mod:ClassA,ClassB` takes `ClassB` as another spec (without module)
+and runs fewer tests than expected, **without error**. Rule: repeat the
+prefix in each spec, and verify the `of N tests` line against the expected
+count.
 
-## Review: presupuesto 0 con identidad de árbol
+## Review: budget 0 with tree identity
 
-Si `git diff --stat <commit-de-la-corrida-evidencia>..HEAD` muestra solo
-commits `[STATE]`/docs, el árbol de código es idéntico → **se cita el log**
-(ruta + línea), no se re-corre. Requisito: cada corrida de gate queda
-registrada con su log y su commit (state file o mensaje de commit). Los
-analizadores estáticos (`make lint`) no consumen presupuesto.
+If `git diff --stat <commit-of-the-evidence-run>..HEAD` shows only
+`[STATE]`/docs commits, the code tree is identical → **cite the log**
+(path + line), do not re-run. Requirement: every gate run is recorded with
+its log and its commit (state file or commit message). Static analyzers
+(`make lint`) do not consume budget.
 
-## Property tests: N como calibración
+## Property tests: N as calibration
 
-El spec define la postcondición; el N por defecto del ciclo de feature es
-chico (8-10), con **seed fija** y N explícito como constante. Reducir N se
-documenta en el commit como calibración (no debilitamiento). Subir N
-pertenece al hardening, sin tocar postcondiciones.
+The spec defines the postcondition; the default N of the feature cycle is
+small (8-10), with a **fixed seed** and explicit N as a constant. Reducing N
+is documented in the commit as calibration (not weakening). Raising N
+belongs to hardening, without touching postconditions.
 
-## Fixtures self-contained (condición de DB fresca)
+## Self-contained fixtures (fresh DB condition)
 
-Verificado en fuente Odoo 19 (`odoo/tools/config.py:233`): el CLI crea las DB
-**sin demo data** (`--with-demo` default False). Consecuencia: todo test que
-facturee o toque contabilidad configura sus propios diarios/cuentas (chart
-template genérico) en su fixture. Sin esto, pasa en DB caliente (diarios de
-historias previas) y falla en la DB fresca del gate con `UserError: No
-journal could be found`, lejos de la causa.
+Verified in Odoo 19 source (`odoo/tools/config.py:233`): the CLI creates the
+DBs **without demo data** (`--with-demo` default False). Consequence: every
+test that invoices or touches accounting configures its own journals/accounts
+(generic chart template) in its fixture. Without this, it passes on the warm
+DB (journals from previous stories) and fails on the gate's fresh DB with
+`UserError: No journal could be found`, far from the cause.
 
-## Caso de origen (evidencia)
+## Origin case (evidence)
 
-Antes: 6 corridas completas en ~6 h para validar una enmienda; 1.5 h
-post-commit sin cerrar gate; tarea cancelada. Después: 4 `test-one` de ~45 s
-identificaron 4 fallos con aserción exacta en UNA corrida; gate final 87/87
-en 6m50s con 1 setup (`test-all`); review con 0 corridas (identidad de
-árbol). Ninguna postcondición ni aserción fue debilitada.
+Before: 6 full runs in ~6 h to validate an amendment; 1.5 h post-commit
+without closing the gate; task cancelled. After: 4 `test-one` runs of ~45 s
+identified 4 failures with exact assertion in ONE run; final gate 87/87 in
+6m50s with 1 setup (`test-all`); review with 0 runs (tree identity). No
+postcondition or assertion was weakened.

@@ -1,79 +1,79 @@
-# Etapa 1 — Descubrimiento
+# Stage 1 — Discovery
 
-Destruir suposiciones del LLM sobre el sistema antes de codear.
+Destroy the LLM's assumptions about the system before coding.
 
-## Tu rol como orquestador en esta etapa
+## Your role as orchestrator in this stage
 
-NO descubrís vos. Coordinás:
+YOU do not do the discovery. You coordinate:
 
-1. Detectás si falta `docs/landscape.md` (descubrimiento inicial) o si la feature requiere descubrimiento puntual.
-2. Si descubrimiento inicial: el **usuario** lo hace manualmente (no delegás al architect; el usuario (humano o agente autónomo de mayor jerarquía) necesita ganar conocimiento de primera mano para evaluar después). Vos lo guiás con preguntas estructuradoras y armás el documento con sus respuestas.
-3. Si descubrimiento por feature: emitís handoff packet al **architect** (read-only) que mapea APIs/hooks/módulos relevantes.
-4. Validás resultado en re-entry.
+1. Detect whether `docs/landscape.md` is missing (initial discovery) or whether the feature requires point-in-time discovery.
+2. If initial discovery: the **user** does it manually (do not delegate to the architect; the user (human or higher-hierarchy autonomous agent) needs to gain first-hand knowledge in order to evaluate later). You guide it with structuring questions and assemble the document from their answers.
+3. If per-feature discovery: emit the handoff packet to the **architect** (read-only) who maps the relevant APIs/hooks/modules.
+4. Validate the result at re-entry.
 
-## Modalidad A — Descubrimiento inicial
+## Mode A — Initial discovery
 
-Aplica solo si `docs/landscape.md` no existe Y es la primera feature.
+Applies only if `docs/landscape.md` does not exist AND it is the first feature.
 
-### Tu trabajo
+### Your work
 
-Hacé preguntas al usuario (una a tres por turno) para que cubra:
+Ask the user questions (one to three per turn) so they cover:
 
-- Entidades/modelos centrales del sistema.
-- Hooks o puntos de extensión del framework.
-- Convenciones de naming, organización, layering.
-- Diferencias entre la versión usada y la documentada.
-- Patrones recomendados / desaconsejados.
+- Central entities/models of the system.
+- Hooks or extension points of the framework.
+- Naming, organization, and layering conventions.
+- Differences between the version in use and the documented one.
+- Recommended / discouraged patterns.
 
-Estructurás las respuestas en `docs/landscape.md` con secciones claras. Devolvés draft, el usuario edita y confirma.
+Structure the answers into `docs/landscape.md` with clear sections. You deliver a draft; the user edits and confirms it.
 
-**No emitís handoff a un rol acá.** Esta modalidad es vos + usuario (humano o agente dueño del proceso) directamente.
+**You do not emit a handoff to any role here.** This mode is you + user (human or agent owning the process) directly.
 
-### Estructura típica
+### Typical structure
 
 ```markdown
-# Landscape — <proyecto>
+# Landscape — <project>
 
-## Contexto del sistema
-## Entidades y modelos centrales
-## Puntos de extensión
-## Convenciones del proyecto
-## Diferencias con documentación oficial
-## Lo que NO usamos
+## System context
+## Central entities and models
+## Extension points
+## Project conventions
+## Differences from official documentation
+## What we do NOT use
 ```
 
-## Modalidad B — Descubrimiento por feature
+## Mode B — Per-feature discovery
 
-Modalidad habitual antes de cada feature.
+The usual mode before each feature.
 
-### Tu trabajo
+### Your work
 
-1. Pedile al usuario qué partes del sistema toca la feature (módulos, modelos, endpoints, capas).
-2. Cargá `references/handoff-prompts.md` sección "Architect (Etapa 1 — Descubrimiento por feature)".
-3. Generá el handoff packet con:
-   - La descripción funcional preliminar (una frase).
-   - La lista de archivos relevantes que el usuario te dio.
-   - El contenido de `docs/landscape.md`, `docs/projectbrief.md`, `docs/systemPatterns.md`.
-4. **Entregá el packet y terminá el turno.**
+1. Ask the user which parts of the system the feature touches (modules, models, endpoints, layers).
+2. Load `references/handoff-prompts.md` section "Architect (Stage 1 — Per-feature discovery)".
+3. Generate the handoff packet with:
+   - The preliminary functional description (one sentence).
+   - The list of relevant files the user gave you.
+   - The content of `docs/landscape.md`, `docs/projectbrief.md`, `docs/systemPatterns.md`.
+4. **Deliver the packet and end the turn.**
 
 ### Re-entry
 
-Cuando el usuario vuelve con el output del architect, cargá `references/re-entry.md` sección "Architect — descubrimiento por feature" y validá.
+When the user comes back with the architect's output, load `references/re-entry.md` section "Architect — per-feature discovery" and validate.
 
-Si pasa: el output va a la sección "Contexto técnico" del spec en Etapa 2.
+If it passes: the output goes to the "Technical context" section of the spec in Stage 2.
 
-## 🛑 Gate de salida (Etapa 1 → Etapa 2)
+## 🛑 Exit gate (Stage 1 → Stage 2)
 
-- [ ] Si primera feature: `docs/landscape.md` con contenido real (no placeholders).
-- [ ] Para esta feature: el usuario puede explicar qué APIs/hooks va a tocar sin abrir el código.
-- [ ] No quedan suposiciones tipo "yo creo que existe X" pendientes.
+- [ ] If first feature: `docs/landscape.md` with real content (no placeholders).
+- [ ] For this feature: the user can explain which APIs/hooks it will touch without opening the code.
+- [ ] No assumptions of the form "I think X exists" remain pending.
 
-Si todos OK: actualizá state file (`current_stage: specification`), anunciá transición, y emití handoff a architect modo brainstorm para Etapa 2.
+If all OK: update the state file (`current_stage: specification`), announce the transition, and emit the handoff to the architect in brainstorm mode for Stage 2.
 
-Si falta algo: identificá qué específicamente y volvé al usuario / al architect.
+If something is missing: identify specifically what, and go back to the user / the architect.
 
-## Anti-patrones
+## Anti-patterns
 
-- **Saltar al spec sin descubrimiento** → garantía de inventos en Etapa 3.
-- **Descubrimiento exhaustivo** mapeando proyecto entero (modalidad A para cada feature) → consume tiempo sin ROI.
-- **Vos haciendo el descubrimiento** en lugar de coordinarlo → perdés el oráculo independiente del architect y, peor, el usuario pierde la oportunidad de aprender de primera mano.
+- **Jumping to the spec without discovery** → guarantee of inventions in Stage 3.
+- **Exhaustive discovery** mapping the entire project (mode A for each feature) → consumes time without ROI.
+- **You doing the discovery** instead of coordinating it → you lose the architect's independent oracle and, worse, the user loses the opportunity to learn first-hand.

@@ -1,79 +1,79 @@
 # State Detection — Epic level
 
-Lógica para detectar en qué etapa de epic está el proyecto.
+Logic to detect which epic stage the project is in.
 
-## Algoritmo
+## Algorithm
 
-Aplicalo en orden, parate en la primera condición que coincide.
+Apply it in order, stop at the first condition that matches.
 
-### Paso 1 — ¿Existe `docs/.cdad-state.json`?
+### Step 1 — Does `docs/.cdad-state.json` exist?
 
-Si sí, leé los campos de epic:
+If yes, read the epic fields:
 
-- `active_epic`: id del epic activo, o `null`/ausente.
+- `active_epic`: id of the active epic, or `null`/absent.
 - `epic_stage`: `epic-discovery | epic-planning | features-loop | epic-integration | epic-closure | epic-done`.
-- `epic_features`: lista de features del epic con su status (`done | in-progress | queued | blocked`).
+- `epic_features`: list of the epic's features with their status (`done | in-progress | queued | blocked`).
 
-Si `active_epic` es `null` o no existe el campo: no hay epic activo. El usuario está empezando uno nuevo o trabajando solo a nivel feature standalone.
+If `active_epic` is `null` or the field does not exist: there is no active epic. The user is starting a new one or working only at the standalone feature level.
 
-### Paso 2 — Si no hay state file, inferir desde archivos
+### Step 2 — If there is no state file, infer from files
 
-Buscar `docs/epics/`. Si existe:
+Look for `docs/epics/`. If it exists:
 
-- Carpeta más reciente sin `closure.md` → epic activo.
-- Si tiene `plan.md` con marca de aprobación → epic está en `features-loop` o más adelante.
-- Si tiene `plan.md` sin aprobar → `epic-planning`.
-- Si tiene `decomposition.md` solo, sin `plan.md` → `epic-discovery`.
-- Si tiene `integration.md` pero no `closure.md` → `epic-integration`.
-- Si tiene `integration.md` con E2E verde y `closure.md` en draft → `epic-closure`.
+- Most recent folder without `closure.md` → active epic.
+- If it has `plan.md` with an approval mark → the epic is in `features-loop` or later.
+- If it has an unapproved `plan.md` → `epic-planning`.
+- If it has `decomposition.md` only, without `plan.md` → `epic-discovery`.
+- If it has `integration.md` but not `closure.md` → `epic-integration`.
+- If it has `integration.md` with green E2E and `closure.md` in draft → `epic-closure`.
 
-### Paso 3 — Detectar progreso de features dentro del epic
+### Step 3 — Detect feature progress within the epic
 
-Para cada feature listada en `epic_features` (o inferida desde `docs/specs/<epic-num>-*`):
+For each feature listed in `epic_features` (or inferred from `docs/specs/<epic-num>-*`):
 
-- Buscar entry en `docs/progress.md`. Si está en "Done", marcar `done`.
-- Si está en "In progress", marcar `in-progress`.
-- Si no aparece, marcar `queued`.
-- Si tiene marca de bloqueo, marcar `blocked`.
+- Look for an entry in `docs/progress.md`. If it is under "Done", mark `done`.
+- If it is under "In progress", mark `in-progress`.
+- If it does not appear, mark `queued`.
+- If it has a blocking mark, mark `blocked`.
 
-### Paso 4 — Detectar feature actualmente en desarrollo
+### Step 4 — Detect the feature currently in development
 
-Si `active_feature` está seteado en el state file y empieza con el prefijo del epic activo (`<epic-num>-...`), esa es la feature in-progress del epic.
+If `active_feature` is set in the state file and starts with the active epic's prefix (`<epic-num>-...`), that is the epic's in-progress feature.
 
-Si `active_feature` está seteado pero NO pertenece al epic activo: el usuario está trabajando en una feature standalone en paralelo. Esto es válido pero conviene avisar:
+If `active_feature` is set but does NOT belong to the active epic: the user is working on a standalone feature in parallel. This is valid but worth flagging:
 
-> *"Detecté que estás trabajando en feature `<X>` pero no pertenece al epic activo `<epic-id>`. ¿Es feature standalone (en paralelo al epic) o querés cambiar el epic activo?"*
+> *"I detected that you are working on feature `<X>` but it does not belong to the active epic `<epic-id>`. Is it a standalone feature (in parallel to the epic) or do you want to change the active epic?"*
 
-### Paso 5 — Salida
+### Step 5 — Output
 
-Comunicá al usuario en una sola frase:
+Communicate to the user in a single sentence:
 
-> *"Estás en el epic `<epic-id>`, etapa **<epic-stage>**. <X de Y features done>. Próximo paso: <propuesta>. ¿Avanzamos?"*
+> *"You are in epic `<epic-id>`, stage **<epic-stage>**. <X of Y features done>. Next step: <proposal>. Shall we advance?"*
 
-## Casos especiales
+## Special cases
 
-### Epic sin features definidas todavía
+### Epic without features defined yet
 
-Si `epic_features` está vacío y `epic_stage` es `epic-planning`, el plan está incompleto. Volvés a Etapa E2 a completar la decomposición antes de avanzar.
+If `epic_features` is empty and `epic_stage` is `epic-planning`, the plan is incomplete. Go back to Stage E2 to complete the decomposition before advancing.
 
-### Epic con feature standalone que parece pertenecer
+### Epic with a standalone feature that seems to belong
 
-Ejemplo: hay epic `001-facturacion-afip` activo, y el usuario crea spec `005-validar-cuit` (sin prefijo de epic). Probable: el usuario olvidó usar la convención de naming del epic.
+Example: there is an active epic `001-facturacion-afip`, and the user creates spec `005-validar-cuit` (without the epic prefix). Likely: the user forgot to use the epic's naming convention.
 
-Preguntale:
+Ask them:
 
-> *"Veo que creaste spec `005-validar-cuit`. ¿Pertenece al epic `001-facturacion-afip`? Si sí, te sugiero renombrarla a `001-NNN-validar-cuit` para mantener trazabilidad. Si no, la trato como standalone."*
+> *"I see you created spec `005-validar-cuit`. Does it belong to epic `001-facturacion-afip`? If yes, I suggest renaming it to `001-NNN-validar-cuit` to keep traceability. If not, I'll treat it as standalone."*
 
-### Múltiples epics activos
+### Multiple active epics
 
-CDAD-epic asume **un epic activo por vez**. Si detectás dos `active_epic` (no debería pasar, pero por error humano puede), avisás:
+CDAD-epic assumes **one active epic at a time**. If you detect two `active_epic` (it shouldn't happen, but human error can), flag it:
 
-> *"Detecté dos epics marcados como activos. CDAD asume uno por vez. ¿Cuál es el activo realmente y cuál movemos a 'pausado'?"*
+> *"I detected two epics marked as active. CDAD assumes one at a time. Which one is really active and which one do we move to 'paused'?"*
 
-Para "pausado", agregás campo `epic_features[].status: paused` o un campo `paused_epics: []` al state.
+For "paused", add the field `epic_features[].status: paused` or a `paused_epics: []` field to the state.
 
-## Sanity check entre state y archivos
+## Sanity check between state and files
 
-Si state dice `epic_stage: features-loop` pero `docs/epics/<id>/plan.md` no existe: state desactualizado. Avisás:
+If the state says `epic_stage: features-loop` but `docs/epics/<id>/plan.md` does not exist: stale state. Flag it:
 
-> *"State decía 'features-loop' pero falta `plan.md`. Voy a corregir a 'epic-planning' y arrancamos por ahí."*
+> *"The state said 'features-loop' but `plan.md` is missing. I'll correct it to 'epic-planning' and we'll start from there."*

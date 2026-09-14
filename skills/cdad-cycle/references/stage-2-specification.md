@@ -1,161 +1,161 @@
-# Etapa 2 — Especificación
+# Stage 2 — Specification
 
-Convertir idea funcional en spec implementable sin ambigüedad.
+Turn a functional idea into an implementable spec with no ambiguity.
 
-## Tu rol como orquestador
+## Your role as orchestrator
 
-NO escribís el spec. Coordinás:
+You do NOT write the spec. You coordinate:
 
-1. Emitís handoff a **architect modo brainstorm** (preguntas socráticas).
-2. Validás cierre del brainstorm en re-entry.
-3. Emitís handoff a **architect modo redacción de spec**.
-4. Validás draft del spec en re-entry.
-5. Pasás el spec al **usuario (humano o agente autónomo de mayor jerarquía) para aprobación** (por defecto indelegable; ver excepción en 2.3 si el usuario pidió explícitamente delegarla a un agente para esta feature).
-6. Cuando la aprobación llega (del usuario, o agente-delegada con pedido explícito), cerrás la etapa.
+1. Emit handoff to **architect in brainstorm mode** (Socratic questions).
+2. Validate brainstorm closure at re-entry.
+3. Emit handoff to **architect in spec-writing mode**.
+4. Validate the spec draft at re-entry.
+5. Pass the spec to the **user (human or higher-hierarchy autonomous agent) for approval** (by default non-delegable; see the exception in 2.3 if the user explicitly requested delegating it to an agent for this feature).
+6. When the approval arrives (from the user, or agent-delegated under an explicit request), close the stage.
 
-## Sub-fase 2.1 — Brainstorm socrático
+## Sub-phase 2.1 — Socratic brainstorm
 
-Cargá `references/handoff-prompts.md` sección "Architect (Etapa 2 — Brainstorm socrático)". Generá el packet con:
+Load `references/handoff-prompts.md` section "Architect (Stage 2 — Socratic brainstorm)". Generate the packet with:
 
-- Descripción funcional preliminar (de Etapa 1).
-- `docs/landscape.md` y output de descubrimiento por feature (sección "Contexto técnico" en draft).
+- Preliminary functional description (from Stage 1).
+- `docs/landscape.md` and the per-feature discovery output ("Technical context" section in the draft).
 - `docs/systemPatterns.md`.
 
-Entregás packet y terminás turno.
+Deliver the packet and end the turn.
 
 ### Re-entry
 
-Cuando el architect cierra brainstorm con resumen de decisiones, validá (ver `re-entry.md` sección "Architect — brainstorm"). Si pasa, emití handoff a redacción.
+When the architect closes the brainstorm with a summary of decisions, validate it (see `re-entry.md` section "Architect — brainstorm"). If it passes, emit the handoff for spec writing.
 
-## Sub-fase 2.2 — Redacción del spec
+## Sub-phase 2.2 — Spec writing
 
-Handoff packet del architect modo redacción con:
+Handoff packet for the architect in spec-writing mode with:
 
-- Resumen del brainstorm (del re-entry anterior).
-- Contenido de `assets/spec-template/spec.md`.
+- Brainstorm summary (from the previous re-entry).
+- Content of `assets/spec-template/spec.md`.
 - `docs/systemPatterns.md`.
 
-Entregás packet, terminás turno.
+Deliver the packet, end the turn.
 
 ### Re-entry
 
-Validá draft del spec (ver `re-entry.md` sección "Architect — draft de spec").
+Validate the spec draft (see `re-entry.md` section "Architect — spec draft").
 
-Si pasa: pasás al usuario para aprobación.
+If it passes: pass it to the user for approval.
 
-## Sub-fase 2.3 — Aprobación (del usuario por defecto; delegable solo bajo pedido explícito)
+## Sub-phase 2.3 — Approval (by the user by default; delegable only under an explicit request)
 
-**Regla general: la aprobación es del usuario** (humano o agente autónomo de mayor jerarquía dueño del proceso). Decile al usuario:
+**General rule: approval belongs to the user** (human or higher-hierarchy autonomous agent owning the process). Tell the user:
 
-> *"Spec en `docs/specs/<NNN>/spec.md`. Revisalo: (a) cada postcondición es lo que querés, (b) criterios de aceptación medibles, (c) out of scope completo. Si está OK, agregá la marca de aprobación al final del archivo (`Status: Approved by <vos> on <fecha>`) o en frontmatter (`approved_by: <vos>`, `approved_at: <fecha>`). Avisame cuando esté."*
+> *"Spec is at `docs/specs/<NNN>/spec.md`. Review it: (a) each postcondition is what you want, (b) measurable acceptance criteria, (c) complete out of scope. If it's OK, add the approval mark at the end of the file (`Status: Approved by <you> on <date>`) or in frontmatter (`approved_by: <you>`, `approved_at: <date>`). Let me know when it's done."*
 
-**Si el usuario te pide aprobar vos** sin haberlo pedido antes explícitamente para esta feature/etapa: declinás amablemente.
+**If the user asks you to approve it** without having explicitly requested it before for this feature/stage: decline politely.
 
-> *"La aprobación del spec requiere tu juicio sobre dominio, cliente, y producto. Yo puedo proponerte cambios si querés, pero la marca de aprobado va con tu nombre — a menos que quieras delegarla explícitamente a un agente para esta feature."*
+> *"Spec approval requires your judgment about the domain, the client, and the product. I can propose changes if you want, but the approved mark goes with your name — unless you want to explicitly delegate it to an agent for this feature."*
 
-**Cuando el usuario ES un agente autónomo de mayor jerarquía** (dueño del
-proceso que orquesta este ciclo, p.ej. desde un proceso orquestador externo), aprueba
-directamente — no hay ceremonia de delegación explícita que cumplir: es el
-dueño. Aplica los mismos criterios que un humano: corre la autoevaluación de
-abajo antes de aprobar y no baja la severidad por ser agente.
+**When the user IS a higher-hierarchy autonomous agent** (owner of the
+process that orchestrates this cycle, e.g. from an external orchestrating
+process), it approves directly — there is no explicit delegation ceremony
+to fulfill: it is the owner. Apply the same criteria as a human: run the
+self-assessment below before approving and do not lower the severity for being an agent.
 
-### Excepción: delegación explícita a agente experto
+### Exception: explicit delegation to an expert agent
 
-Si el usuario, **para esta feature o etapa puntual**, pide explícitamente que un agente (vos como orquestador, u otro agente con criterio delegado) haga la revisión y apruebe en su lugar — recién ahí aplica esta excepción. No se activa por defecto, no se asume de un pedido anterior en otra feature, y no la activás vos por iniciativa propia. (Cuando el usuario es un agente de mayor jerarquía, no aplica esta ceremonia: aprueba directamente como dueño.)
+If the user, **for this feature or specific stage**, explicitly requests that an agent (you as orchestrator, or another agent with delegated judgment) do the review and approve on their behalf — only then does this exception apply. It is not activated by default, is not assumed from a previous request in another feature, and you do not activate it on your own initiative. (When the user is a higher-hierarchy agent, this ceremony does not apply: it approves directly as the owner.)
 
-Con el pedido explícito en mano, antes de aprobar corré la misma autoevaluación que le pedirías al usuario — pero aplicada a vos:
+With the explicit request in hand, before approving run the same self-assessment you would ask of the user — but applied to yourself:
 
-1. ¿Tenés contexto suficiente de dominio, cliente y producto para juzgar esta spec, o te falta información que solo el usuario tiene?
-2. ¿Las postcondiciones son lo que el usuario necesita, o solo lo que el usuario escribió? (Diferencia real: repetir el spec no es aprobarlo.)
-3. ¿Hay algo en esta spec con consecuencias difíciles de revertir (breaking changes, seguridad, alcance con cliente final) donde preferís igual una segunda mirada del usuario?
+1. Do you have sufficient context of the domain, the client, and the product to judge this spec, or are you missing information that only the user has?
+2. Are the postconditions what the user needs, or just what the user wrote? (Real difference: repeating the spec is not approving it.)
+3. Is there anything in this spec with hard-to-revert consequences (breaking changes, security, scope with a final client) where you would still prefer a second look from the user?
 
-**Si tenés dudas razonables en cualquiera de los tres puntos: no aprobás.** Explicáselo al usuario y pedile la aprobación del usuario, aunque la delegación esté habilitada para esta feature — el pedido explícito te da permiso, no te obliga a usarlo.
+**If you have reasonable doubts on any of the three points: you do not approve.** Explain it to the user and ask for the user's approval, even if delegation is enabled for this feature — the explicit request gives you permission, it does not oblige you to use it.
 
-Si aprobás: marcá explícitamente la fuente de la aprobación, nunca como si fuera del usuario:
+If you approve: explicitly mark the source of the approval, never as if it came from the user:
 
 ```
-Status: Approved by <tu identificador de modelo/agente> (agent-delegated, pedido explícito de <usuario> el <fecha>) on <fecha>
+Status: Approved by <your model/agent identifier> (agent-delegated, explicit request from <user> on <date>) on <date>
 ```
 
-Registrá también en `stage_history` del state file un entry con `"approved_by"`, `"delegated": true` y `"requested_by"`. La trazabilidad de que fue una aprobación delegada — y no del usuario — tiene que quedar tan clara como la trazabilidad de la aprobación misma (mismo principio que AP-6).
+Also register in the state file's `stage_history` an entry with `"approved_by"`, `"delegated": true`, and `"requested_by"`. The traceability of it having been a delegated approval — and not the user's — must be as clear as the traceability of the approval itself (same principle as AP-6).
 
-**Si el usuario quiere saltarse la aprobación** (ni del usuario ni agente-delegada explícita):
+**If the user wants to skip approval** (neither the user's nor an explicit agent-delegated one):
 
-> *"La aprobación es lo que define si el spec captura lo que necesitás. Sin esa marca, en Etapa 4 no vamos a saber contra qué versión validar el código. Tres minutos de leer y aprobar te ahorran retrabajo en Etapa 3 o 4."*
+> *"Approval is what defines whether the spec captures what you need. Without that mark, in Stage 4 we won't know which version to validate the code against. Three minutes of reading and approving saves you rework in Stage 3 or 4."*
 
-## Variantes según tamaño
+## Variants by size
 
-- **Trivial** (fix puntual): spec puede ser un párrafo + un test que falla. Igual brainstorm + aprobación, pero más cortos.
-- **Mediana** (mayoría): formato estándar.
-- **Compleja** (múltiples componentes): el architect produce además `plan.md` siguiendo la sección "Planning de features complejas" (abajo).
+- **Trivial** (point fix): the spec can be one paragraph + one failing test. Still brainstorm + approval, but shorter.
+- **Medium** (most cases): standard format.
+- **Complex** (multiple components): the architect also produces `plan.md` following the "Planning for complex features" section (below).
 
-Decidilo con el usuario al inicio de la etapa.
+Decide it with the user at the start of the stage.
 
-## Por qué la claridad del spec no es negociable
+## Why spec clarity is not negotiable
 
-Etapa 3 usa tests de contrato, no cobertura exhaustiva (ver "Convención de tests" en `stage-3-tdd.md`). Eso significa que la precisión que normalmente aportaría una suite exhaustiva tiene que venir del spec. Una postcondición vaga ("el sistema debe manejar bien los errores") no se puede convertir en un test de contrato verificable — el test-writer termina interpretando, y esa interpretación puede no ser la que el usuario necesitaba (AP-13, Garbage Cascade). Cada postcondición tiene que poder responder: *¿qué efecto observable, exactamente, confirma que esto se cumplió?*
+Stage 3 uses contract tests, not exhaustive coverage (see "Test convention" in `stage-3-tdd.md`). That means the precision that an exhaustive suite would normally provide has to come from the spec. A vague postcondition ("the system must handle errors well") cannot be turned into a verifiable contract test — the test-writer ends up interpreting, and that interpretation may not be what the user needed (AP-13, Garbage Cascade). Every postcondition must be able to answer: *what observable effect, exactly, confirms that this was satisfied?*
 
-## Planning de features complejas
+## Planning for complex features
 
-Disparador: el spec es complejo (múltiples componentes). El architect produce `plan.md` además del spec, antes de cerrar Etapa 2. El plan se aprueba con el spec — un solo acto del usuario — y el gate 2→3 incluye el plan aprobado cuando existe.
+Trigger: the spec is complex (multiple components). The architect produces `plan.md` in addition to the spec, before closing Stage 2. The plan is approved together with the spec — a single user action — and the 2→3 gate includes the approved plan when it exists.
 
-### Tamaño de tarea
+### Task size
 
-La tarea es la unidad más chica que cierra en su propio mini-ciclo TDD (RED→GREEN propio) y que un reviewer podría rechazar sin rechazar la vecina. Setup, configuración y scaffolding se pliega en la tarea que los necesita — nunca una tarea "de setup" suelta. Ni tan chica que fragmente el review, ni tan grande que no se pueda rechazar una parte sin arrastrar el resto.
+The task is the smallest unit that closes in its own mini TDD cycle (its own RED→GREEN) and that a reviewer could reject without rejecting its neighbor. Setup, configuration, and scaffolding are folded into the task that needs them — never a loose "setup" task. Neither so small that it fragments the review, nor so large that a part can't be rejected without dragging the rest along.
 
-### Estructura de tarea
+### Task structure
 
-Cada tarea del plan declara:
+Each task in the plan declares:
 
-- **Files**: paths exactos, marcados Create / Modify / Test.
-- **Consumes / Produces**: el contrato público — firmas exactas de lo que esta tarea recibe de las anteriores y de lo que expone a las siguientes. El implementer de una tarea solo ve su tarea; por eso las firmas tienen que estar acá, y ser apto para test-writer (el contrato, no el cuerpo).
-- **Pasos TDD**: el loop rojo→verde de la tarea, con el test primero.
+- **Files**: exact paths, marked Create / Modify / Test.
+- **Consumes / Produces**: the public contract — exact signatures of what this task receives from the previous ones and of what it exposes to the next ones. The implementer of a task only sees its own task; that is why the signatures must be here, and be usable by the test-writer (the contract, not the body).
+- **TDD steps**: the task's red→green loop, with the test first.
 
-### La regla central: el plan define el CONTRATO, no el código
+### The central rule: the plan defines the CONTRACT, not the code
 
-*El plan define el CONTRATO — tests con aserciones reales, comandos exactos, comportamiento observable (3-5 bullets verificables contra el test) — y NUNCA código de implementación especulativo.* Escribir la implementación dos veces (en el plan y en la ejecución) revierte TDD y hornea supuestos que el planner adivina pero el implementer no verificó. El comportamiento específico de una tarea es el DELTA respecto al análogo existente en el repo: si hay que enumerar más de 3-5 bullets de comportamiento, ya se está re-derivando la implementación en markdown — cortar y dividir la tarea.
+*The plan defines the CONTRACT — tests with real assertions, exact commands, observable behavior (3-5 bullets verifiable against the test) — and NEVER speculative implementation code.* Writing the implementation twice (in the plan and in the execution) reverses TDD and bakes in assumptions that the planner guessed but the implementer never verified. The specific behavior of a task is the DELTA relative to the existing analog in the repo: if you have to enumerate more than 3-5 behavior bullets, the implementation is already being re-derived in markdown — cut and split the task.
 
-Consecuencia para el aislamiento del test-writer: como el plan no contiene implementación, el test-writer puede ver el plan entero sin violar su restricción. El plan es la interface, no el código.
+Consequence for test-writer isolation: since the plan contains no implementation, the test-writer can see the whole plan without violating its restriction. The plan is the interface, not the code.
 
 ### No placeholders
 
-Estas frases en un plan son falla del plan:
+These phrases in a plan are a plan failure:
 
-- "TBD", "TODO", "implementar después".
-- "manejar edge cases apropiadamente" (y toda variante de manejo vago).
-- "similar a la Tarea N" — repetir el código de otra tarea; si es análogo, nombrá el análogo y describí el delta.
-- Pasos que describen QUÉ hacer sin mostrar el CÓMO verificarlo.
-- Referencias a tipos o firmas que no están definidas en ninguna tarea.
+- "TBD", "TODO", "implement later".
+- "handle edge cases appropriately" (and every variant of vague handling).
+- "similar to Task N" — repeating another task's code; if it is analogous, name the analog and describe the delta.
+- Steps that describe WHAT to do without showing HOW to verify it.
+- References to types or signatures not defined in any task.
 
-Matiz: una vagueza CON contrato de comportamiento no es placeholder. El patrón prohibido es vagueza sin contrato — si el bullet observable está, la impl puede decidir detalles internos.
+Nuance: a vagueness WITH a behavior contract is not a placeholder. The forbidden pattern is vagueness without a contract — if the observable bullet is there, the impl can decide internal details.
 
-### Auto-revisión (la corre el architect antes de cerrar Etapa 2)
+### Self-review (run by the architect before closing Stage 2)
 
-1. **Cobertura del spec**: cada postcondición → al menos 1 tarea (≥1 tarea). Si una postcondición no tiene tarea, el plan está incompleto; si una tarea no mapea a ninguna postcondición, sobra.
-2. **Escaneo de placeholders**: buscar las frases prohibidas de arriba en todo el plan.
-3. **Consistencia de firmas entre tareas**: una función llamada `clearLayers` en la tarea 2 y `clearFullLayers` en la tarea 5 es un bug del plan — corregirlo acá, no en GREEN.
+1. **Spec coverage**: every postcondition → at least 1 task (≥1 task). If a postcondition has no task, the plan is incomplete; if a task maps to no postcondition, it is superfluous.
+2. **Placeholder scan**: search for the forbidden phrases above throughout the plan.
+3. **Signature consistency across tasks**: a function called `clearLayers` in task 2 and `clearFullLayers` in task 5 is a plan bug — fix it here, not in GREEN.
 
 ### Global constraints
 
-Las restricciones proyecto-wide del spec (versiones, naming, plataforma, etc.) se copian verbatim en el header del plan. Toda tarea las incluye implícitamente — ninguna tarea puede contradecirlas ni re-interpretarlas.
+The project-wide constraints of the spec (versions, naming, platform, etc.) are copied verbatim into the plan header. Every task includes them implicitly — no task may contradict or re-interpret them.
 
-## 🛑 Gate de salida (Etapa 2 → Etapa 3)
+## 🛑 Exit gate (Stage 2 → Stage 3)
 
-- [ ] `docs/specs/<NNN-feature-id>/spec.md` existe.
-- [ ] Cuatro secciones mínimas presentes y no son placeholders.
-- [ ] Postcondiciones numeradas y verificables.
-- [ ] Criterios de aceptación medibles.
-- [ ] Marca de aprobación del usuario inequívoca.
-- [ ] Si el spec es complejo (múltiples componentes): `plan.md` existe, pasó la auto-revisión y está aprobado junto con el spec.
+- [ ] `docs/specs/<NNN-feature-id>/spec.md` exists.
+- [ ] Four minimum sections present and not placeholders.
+- [ ] Numbered, verifiable postconditions.
+- [ ] Measurable acceptance criteria.
+- [ ] Unequivocal user approval mark.
+- [ ] If the spec is complex (multiple components): `plan.md` exists, passed the self-review, and is approved together with the spec.
 
-Cuando todos OK: actualizá state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, registrá `approved_by` en `stage_history`). Anunciá transición. Emití handoff a test-writer (RED) para postcondición 1.
+When all OK: update the state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, register `approved_by` in `stage_history`). Announce the transition. Emit handoff to test-writer (RED) for postcondition 1.
 
-## Si surge algo no contemplado en spec durante implementación
+## If something not contemplated in the spec comes up during implementation
 
-Regla: NO se agrega silenciosamente al código. Volvés a Etapa 2: actualizar spec, commitear el cambio (`docs: update spec — add postcondition X`), reaprobar. Recién entonces el implementer puede tocar el caso.
+Rule: it is NOT silently added to the code. You go back to Stage 2: update the spec, commit the change (`docs: update spec — add postcondition X`), re-approve. Only then may the implementer touch the case.
 
-## Anti-patrones
+## Anti-patterns
 
-- **AP-5**: saltar el spec porque "es simple". Mínimo: un párrafo + test que falla, con aprobación.
-- **AP-6**: spec aprobado en silencio sin marca explícita. Sin marca, no avanzás.
-- **AP-10**: delegar la aprobación al LLM SIN pedido explícito previo del usuario para esta feature/etapa (default: indelegable). Con pedido explícito, ver "Excepción: delegación explícita a agente experto" arriba — la excepción no aplica por iniciativa propia (AP-15).
+- **AP-5**: skipping the spec because "it's simple". Minimum: one paragraph + failing test, with approval.
+- **AP-6**: spec approved silently with no explicit mark. Without the mark, you don't advance.
+- **AP-10**: delegating approval to the LLM WITHOUT a previous explicit request from the user for this feature/stage (default: non-delegable). With an explicit request, see "Exception: explicit delegation to an expert agent" above — the exception does not apply on its own initiative (AP-15).

@@ -1,180 +1,180 @@
-# Anti-patrones documentados
+# Documented Anti-patterns
 
-Patrones a detectar y corregir cuando aparecen en cualquier etapa del ciclo.
+Patterns to detect and correct when they appear at any stage of the cycle.
 
-## AP-1 — Single session para todo
+## AP-1 — Single session for everything
 
-**Síntoma**: el usuario dice "ya está, le pedí al LLM que escriba el test y el código en una sola pasada".
+**Symptom**: the user says "it's done, I asked the LLM to write the test and the code in a single pass".
 
-**Por qué es malo**: el agente alinea test e implementación entre sí. El test pasa porque fue escrito para el código que el agente iba a escribir, no porque verifique el spec. Pierdes el oráculo independiente.
+**Why it's bad**: the agent aligns test and implementation with each other. The test passes because it was written for the code the agent was going to write, not because it verifies the spec. You lose the independent oracle.
 
-**Corrección**: pedí al usuario que retomemos. Aunque el código "funcione", los tests no son confiables. Volvé a Etapa 3 con sesión `test-writer` aislada y reescribí los tests sin mirar el código actual. Después corré los tests contra el código existente: si pasan, está bien; si fallan, hay bug que el primer test no detectó.
+**Correction**: ask the user to let us restart. Even if the code "works", the tests are not reliable. Go back to Stage 3 with an isolated `test-writer` session and rewrite the tests without looking at the current code. Then run the tests against the existing code: if they pass, it's fine; if they fail, there is a bug the first tests didn't catch.
 
-## AP-2 — Test escrito después del código
+## AP-2 — Test written after the code
 
-**Síntoma**: el usuario implementa primero "para ver si funciona" y después escribe el test.
+**Symptom**: the user implements first "to see if it works" and then writes the test.
 
-**Por qué es malo**: el test que escribís después del código tiende a verificar **lo que el código hace**, no **lo que el spec pide**. Es la trampa más sutil.
+**Why it's bad**: the test you write after the code tends to verify **what the code does**, not **what the spec asks for**. It is the subtlest trap.
 
-**Corrección**: si ya pasó, no podés deshacerlo, pero podés mitigarlo: pedile al usuario que revise el test contra el spec, **sin mirar el código**, y se pregunte "si el código fuera completamente distinto, ¿este test seguiría siendo válido?". Si la respuesta es "no estoy seguro", reescribilo desde el spec.
+**Correction**: if it already happened, you can't undo it, but you can mitigate it: ask the user to review the test against the spec, **without looking at the code**, and ask themselves "if the code were completely different, would this test still be valid?". If the answer is "I'm not sure", rewrite it from the spec.
 
-Para próximas postcondiciones, reforzá la disciplina: test primero, sí o sí.
+For upcoming postconditions, reinforce the discipline: test first, no exceptions.
 
-## AP-3 — Test "verde" sin verificación empírica
+## AP-3 — "Green" test without empirical verification
 
-**Síntoma**: alguien dice "el test pasa" pero no se corrió la suite.
+**Symptom**: someone says "the test passes" but the suite was never run.
 
-**Por qué es malo**: la confianza no es evidencia. El test puede tener un bug que lo hace siempre pasar. La implementación puede tener side effects que rompen otros tests.
+**Why it's bad**: confidence is not evidence. The test may have a bug that makes it always pass. The implementation may have side effects that break other tests.
 
-**Corrección**: corré la suite. Si tu entorno no permite ejecución, pedile al usuario el output exacto:
+**Correction**: run the suite. If your environment does not allow execution, ask the user for the exact output:
 
-> *"Necesito el output de la suite. Pegame las últimas 20 líneas del run, incluyendo la línea de resumen final."*
+> *"I need the suite output. Paste the last 20 lines of the run, including the final summary line."*
 
-No avances de fase con "yo creo que pasa".
+Do not advance a phase with "I think it passes".
 
-## AP-4 — Implementer modifica tests
+## AP-4 — Implementer modifies tests
 
-**Síntoma**: durante GREEN, el implementer encuentra que el test "está mal" y lo cambia para que pase.
+**Symptom**: during GREEN, the implementer finds the test "is wrong" and changes it to make it pass.
 
-**Por qué es malo**: la regla del implementer es **hacer pasar el test, no cambiarlo**. Si el test está mal, hay que volver al test-writer en una sesión aislada para corregirlo, no permitirle al implementer "ajustarlo".
+**Why it's bad**: the implementer's rule is **make the test pass, don't change it**. If the test is wrong, you must go back to the test-writer in an isolated session to correct it, not allow the implementer to "adjust it".
 
-**Corrección**: revertí el cambio del test. Si el test genuinamente está mal:
+**Correction**: revert the test change. If the test is genuinely wrong:
 
-1. Cerrá la sesión del implementer.
-2. Abrí sesión de test-writer.
-3. Pasale: el spec, el test problemático, el motivo por el que parece estar mal.
-4. El test-writer corrige (o explica por qué estaba bien y el implementer se confundió).
-5. Volvé al implementer con el test corregido.
+1. Close the implementer session.
+2. Open a test-writer session.
+3. Hand over: the spec, the problematic test, the reason it seems wrong.
+4. The test-writer corrects it (or explains why it was right and the implementer was confused).
+5. Go back to the implementer with the corrected test.
 
-## AP-5 — Saltar el spec porque "es simple"
+## AP-5 — Skipping the spec because "it's simple"
 
-**Síntoma**: "es solo agregar un campo, no necesita spec".
+**Symptom**: "it's just adding a field, it doesn't need a spec".
 
-**Por qué es malo**: las features que parecen simples al inicio son las que más frecuentemente revelan ambigüedades en implementación. Y "simple" para vos puede no ser simple para el LLM.
+**Why it's bad**: features that seem simple at the start are the ones that most frequently reveal ambiguities during implementation. And "simple" for you may not be simple for the LLM.
 
-**Corrección**: aceptá la **variante mínima del spec**: un párrafo de descripción + un test que falla. No es overkill — es el mínimo que mantiene la disciplina.
+**Correction**: accept the **minimum spec variant**: one paragraph of description + one failing test. It is not overkill — it is the minimum that keeps the discipline.
 
-> *"OK, no necesitamos los seis bloques. Pero un párrafo describiendo qué hace, un assertion concreto, y aprobación tuya. Tres minutos."*
+> *"OK, we don't need the six blocks. But one paragraph describing what it does, one concrete assertion, and your approval. Three minutes."*
 
-## AP-6 — Spec aprobado en silencio
+## AP-6 — Spec approved silently
 
-**Síntoma**: el spec existe pero no tiene marca de aprobación inequívoca; el usuario "asume que está aprobado".
+**Symptom**: the spec exists but has no unequivocal approval mark; the user "assumes it's approved".
 
-**Por qué es malo**: en Etapa 4, cuando el reviewer detecta una divergencia, no vamos a saber si la divergencia es contra el spec original aprobado o contra una versión que cambió.
+**Why it's bad**: in Stage 4, when the reviewer detects a divergence, we won't know whether the divergence is against the original approved spec or against a version that changed.
 
-**Corrección**: agregar la marca explícita ahora. Línea final `Status: Approved by <X> on <fecha>` o frontmatter. Después seguimos.
+**Correction**: add the explicit mark now. Final line `Status: Approved by <X> on <date>` or frontmatter. Then we continue.
 
-## AP-7 — Memory Bank desactualizado
+## AP-7 — Outdated Memory Bank
 
-**Síntoma**: la feature se mergea, pero `activeContext.md` y `progress.md` no se tocaron.
+**Symptom**: the feature gets merged, but `activeContext.md` and `progress.md` were not touched.
 
-**Por qué es malo**: la próxima sesión arranca sin contexto de lo que se acaba de hacer. El LLM no sabe que ya tenemos parser de fechas, propone reimplementarlo desde cero.
+**Why it's bad**: the next session starts without context of what was just done. The LLM doesn't know we already have a date parser, and proposes reimplementing it from scratch.
 
-**Corrección**: bloqueá el cierre de Etapa 5. Aplicá patrón Scribe (drafteás vos, el usuario aprueba y el orquestador commitea). 5 minutos, no se negocia.
+**Correction**: block the Stage 5 closure. Apply the Scribe pattern (you draft it, the user approves, and the orchestrator commits). 5 minutes, non-negotiable.
 
-## AP-8 — ADRs especulativos o ausentes
+## AP-8 — Speculative or missing ADRs
 
-**Dos extremos malos**:
+**Two bad extremes**:
 
-- **Especulativos**: ADR-001 "Vamos a usar PostgreSQL en algún momento". No hay decisión real, es expectativa. Ruido.
-- **Ausentes**: se tomó decisión arquitectónica grande (ej. cambio de DB, nuevo bounded context) y no hay ADR.
+- **Speculative**: ADR-001 "We're going to use PostgreSQL at some point". There is no real decision, it's an expectation. Noise.
+- **Missing**: a big architectural decision was made (e.g. DB change, new bounded context) and there is no ADR.
 
-**Corrección**: ADR cuando hay decisión real con consecuencias y trade-offs documentables. Si dudás, preguntá: *"¿alguien dentro de 6 meses podría preguntar 'por qué hicimos X así'?"* Si sí → ADR. Si no → no.
+**Correction**: an ADR when there is a real decision with consequences and documentable trade-offs. If in doubt, ask: *"could someone in 6 months ask 'why did we do X this way'?"* If yes → ADR. If no → no.
 
-## AP-9 — CI skipeado
+## AP-9 — CI skipped
 
-**Síntoma**: "el linter falla pero es cosa menor, mergeamos y arreglamos después".
+**Symptom**: "the linter fails but it's a minor thing, let's merge and fix it later".
 
-**Por qué es malo**: "después" no llega. Las violaciones se acumulan. Cada PR que pasa con CI skipeado erosiona la confianza en CI.
+**Why it's bad**: "later" never arrives. Violations accumulate. Every PR that goes through with CI skipped erodes trust in CI.
 
-**Corrección**: lo arreglás antes. Si genuinamente es trivial, son 2 minutos. Si es real, había una razón para que CI lo bloqueara.
+**Correction**: fix it first. If it is genuinely trivial, it's 2 minutes. If it's real, there was a reason CI blocked it.
 
-## AP-10 — "Pasa por mí"
+## AP-10 — "Pass it through me"
 
-**Síntoma**: el usuario empieza a delegar al LLM, en el momento y sin pedido explícito previo, cosas que son indelegables por defecto (aprobación de spec, priorización del review, contenido del Memory Bank update).
+**Symptom**: the user starts delegating to the LLM, on the spot and without a previous explicit request, things that are non-delegable by default (spec approval, review prioritization, Memory Bank update content).
 
-**Por qué es malo**: erosiona el principio de aprobación del usuario en momentos clave. La calidad sostenible viene de la combinación dueño-del-proceso (humano o agente de mayor jerarquía) + LLM, no del LLM solo.
+**Why it's bad**: it erodes the principle of user approval at key moments. Sustainable quality comes from the combination of process owner (human or higher-hierarchy agent) + LLM, not from the LLM alone.
 
-**Corrección**: señalá la indelegabilidad amablemente.
+**Correction**: point out the non-delegability politely.
 
-> *"Esto requiere tu juicio sobre <dominio/cliente/producto>. Yo puedo draftearlo o darte opciones, pero la decisión es tuya. ¿Te paso un draft para que lo edites?"*
+> *"This requires your judgment about <domain/client/product>. I can draft it or give you options, but the decision is yours. Want me to give you a draft to edit?"*
 
-**Excepción — no confundir con delegación legítima**: aprobación de spec (Etapa 2) y priorización de review (Etapa 4) admiten delegación a un agente experto **solo si el usuario lo pidió explícitamente para esa feature o etapa puntual**, no como default del proyecto. Ver "Excepción: delegación explícita a agente experto" en `stage-2-specification.md` y `stage-4-review.md`. Un pedido casual dentro de la conversación ("aprobalo vos, dale") sin ese contexto previo sigue siendo AP-10 — la diferencia es que el pedido explícito tiene que preceder al momento de aprobar, no coincidir con él.
+**Exception — do not confuse with legitimate delegation**: spec approval (Stage 2) and review prioritization (Stage 4) allow delegation to an expert agent **only if the user explicitly requested it for that specific feature or stage**, not as a project default. See "Exception: explicit delegation to an expert agent" in `stage-2-specification.md` and `stage-4-review.md`. A casual request within the conversation ("you approve it, go ahead") without that previous context is still AP-10 — the difference is that the explicit request must precede the moment of approval, not coincide with it.
 
-## AP-15 — Autoaprobación no solicitada
+## AP-15 — Unsolicited self-approval
 
-**Síntoma**: el orquestador (u otro agente) asume por su cuenta que puede aprobar spec o priorizar review porque "se siente con suficiente contexto", sin que el usuario lo haya pedido explícitamente para esa feature.
+**Symptom**: the orchestrator (or another agent) assumes on its own that it can approve the spec or prioritize the review because "it feels it has enough context", without the user having explicitly requested it for that feature.
 
-**Por qué es malo**: la delegación de aprobación existe para casos donde el usuario, con su propio juicio, decide que confía el criterio a un agente. Si el agente se autootorga esa autoridad, no hay ninguna decisión del usuario detrás — es AP-10 con un paso extra de justificación.
+**Why it's bad**: approval delegation exists for cases where the user, with their own judgment, decides to trust their judgment to an agent. If the agent grants itself that authority, there is no user decision behind it — it is AP-10 with an extra step of justification.
 
-**Corrección**: si no hubo pedido explícito previo, aprobación del usuario por defecto, sin excepciones. Si el orquestador está tentado a aprobar porque "esto es obvio" o "no vale la pena molestar al usuario", esa tentación es la señal de que hay que pasarlo al usuario, no la justificación para saltearlo.
+**Correction**: if there was no previous explicit request, user approval by default, no exceptions. If the orchestrator is tempted to approve because "this is obvious" or "it's not worth bothering the user", that temptation is the signal to pass it to the user, not the justification for skipping them.
 
-## AP-11 — Refactor que rompe tests
+## AP-11 — Refactor that breaks tests
 
-**Síntoma**: el refactorer hace cambios y "ahora tres tests fallan, pero son menores, los arreglamos".
+**Symptom**: the refactorer makes changes and "now three tests fail, but they're minor, we'll fix them".
 
-**Por qué es malo**: la regla del refactor es "comportamiento observable no cambia". Si tests fallan, cambió comportamiento. No es refactor; es modificación funcional sin spec.
+**Why it's bad**: the rule of refactoring is "observable behavior does not change". If tests fail, behavior changed. It is not a refactor; it is a functional modification without a spec.
 
-**Corrección**: revertí el refactor. Si era genuinamente refactor y los tests estaban mal, eso es problema de los tests (volvé a test-writer). Si era modificación funcional, eso requiere actualizar el spec primero (volvé a Etapa 2).
+**Correction**: revert the refactor. If it was genuinely a refactor and the tests were wrong, that is a problem with the tests (go back to the test-writer). If it was a functional modification, that requires updating the spec first (go back to Stage 2).
 
-## AP-12 — Property tests con seed aleatorio
+## AP-12 — Property tests with a random seed
 
-**Síntoma**: property tests verdes localmente, rojos en CI a veces.
+**Symptom**: property tests green locally, red in CI sometimes.
 
-**Por qué es malo**: tests no determinísticos rompen la confianza en la suite.
+**Why it's bad**: non-deterministic tests break trust in the suite.
 
-**Corrección**: configurá seed fijo para property tests en CI. Hypothesis, fast-check y libs similares lo soportan. El seed se commitea junto con el test.
+**Correction**: configure a fixed seed for property tests in CI. Hypothesis, fast-check, and similar libraries support it. The seed is committed together with the test.
 
-## AP-13 — Garbage Cascade (spec ambiguo con tests no exhaustivos)
+## AP-13 — Garbage Cascade (ambiguous spec with non-exhaustive tests)
 
-**Síntoma**: la etapa de feature no usa cobertura exhaustiva (por diseño — ver "Convención de tests" en `stage-3-tdd.md`), pero el spec tiene postcondiciones vagas o sin numerar.
+**Symptom**: the feature stage does not use exhaustive coverage (by design — see "Test convention" in `stage-3-tdd.md`), but the spec has vague or unnumbered postconditions.
 
-**Por qué es malo**: sin exhaustividad de tests, toda la carga de precisión recae en el spec. Un spec ambiguo produce tests de contrato que verifican una interpretación posible pero no la correcta, y una implementación que pasa la suite sin ser lo que el usuario necesitaba. El error se propaga en cascada desde Etapa 2 sin que nada en Etapa 3 lo detecte.
+**Why it's bad**: without test exhaustiveness, the entire burden of precision falls on the spec. An ambiguous spec produces contract tests that verify one possible interpretation but not the correct one, and an implementation that passes the suite without being what the user needed. The error cascades from Stage 2 with nothing in Stage 3 detecting it.
 
-**Corrección**: no se abre RED con postcondiciones no numeradas o no testeables. Si aparece ambigüedad durante RED o GREEN, no se resuelve "a criterio" del test-writer o implementer — se vuelve a Etapa 2 a precisar el spec y se reaprueba.
+**Correction**: RED is not opened with unnumbered or untestable postconditions. If ambiguity appears during RED or GREEN, it is not resolved "at the discretion" of the test-writer or implementer — go back to Stage 2 to make the spec precise and re-approve it.
 
-## AP-14 — Mock sobre plumbing
+## AP-14 — Mock over plumbing
 
-**Síntoma**: el test-writer verifica orden de llamadas de middleware, nombres de funciones internas, o mockea colaboradores internos en vez de verificar el efecto observable.
+**Symptom**: the test-writer verifies middleware call order, internal function names, or mocks internal collaborators instead of verifying the observable effect.
 
-**Por qué es malo**: fija una decisión de implementación en la etapa RED, antes de que exista implementación. Le quita al implementer la libertad de diseño que GREEN necesita, y acopla el test a una estructura interna que puede cambiar sin que el comportamiento cambie — el test se vuelve frágil y deja de ser un oráculo confiable del contrato.
+**Why it's bad**: it fixes an implementation decision in the RED stage, before an implementation exists. It takes away from the implementer the design freedom GREEN needs, and couples the test to an internal structure that can change without the behavior changing — the test becomes fragile and stops being a reliable oracle of the contract.
 
-**Corrección**: revertí el test. Reescribilo verificando el efecto que un consumidor externo del sistema (otro proceso, otro servicio, el usuario) puede observar — mensaje wire, resultado de command, evento emitido hacia afuera, auth rechazada. Si el efecto que querés verificar es puramente interno entre módulos, probablemente no corresponde a una postcondición del spec; revisá si el spec necesita precisión.
+**Correction**: revert the test. Rewrite it verifying the effect an external consumer of the system (another process, another service, the user) can observe — wire message, command result, event emitted outward, rejected auth. If the effect you want to verify is purely internal between modules, it probably does not correspond to a postcondition of the spec; check whether the spec needs precision.
 
-## AP-16 — Respuesta performativa / implementación a ciegas
+## AP-16 — Performative response / blind implementation
 
-**Síntoma**: el rol responde al feedback con «¡tenés razón!», agradecimientos o agreement inmediato, y/o implementa las sugerencias sin verificar contra el código. Señal típica: el receptor arranca a editar mientras todavía está leyendo el reporte del reviewer.
+**Symptom**: the role responds to feedback with "you're so right!", thank-yous, or immediate agreement, and/or implements the suggestions without verifying against the code. Typical signal: the receiver starts editing while still reading the reviewer's report.
 
-**Por qué es malo**: la sicofantía es un artefacto de entrenamiento (RLHF) — el compliance fue premiado, así que el modelo lo produce por defecto. El agreement performativo emitido antes de verificar anula la única defensa real del receptor (la verificación contra el código), e implementar a ciegas congela dentro del codebase los errores que el propio feedback pueda tener: ni el receptor ni el feedback son ground truth por sí solos.
+**Why it's bad**: sycophancy is a training artifact (RLHF) — compliance was rewarded, so the model produces it by default. The performative agreement emitted before verifying nullifies the receiver's only real defense (verification against the code), and implementing blindly freezes into the codebase the errors the feedback itself may have: neither the receiver nor the feedback is ground truth on its own.
 
-**Corrección**: aplicar `references/receiving-feedback.md` — secuencia de 4 pasos (leer completo sin reaccionar → restatear → verificar contra el código real → implementar de a un fix con verificación), push-back con evidencia citada cuando el hallazgo es incorrecto. El push-back correcto con evidencia es obligación del receptor, no descortesía: lo descortés (con el codebase) es dejar pasar un hallazgo falso.
+**Correction**: apply `references/receiving-feedback.md` — a 4-step sequence (read fully without reacting → restate → verify against the real code → implement one fix at a time with verification), push-back with cited evidence when the finding is wrong. Proper push-back with evidence is the receiver's obligation, not rudeness: the rude thing (toward the codebase) is letting a false finding go through.
 
-## AP-17 — Integración destructiva
+## AP-17 — Destructive integration
 
-**Síntoma**: el agente mergea, borra branches/worktrees o descarta trabajo sin presentar el menú de opciones, sin confirmar la base branch, o con confirmación débil ("sí, borralo"). Señal típica: `git branch -D`, `git worktree remove`, `git reset` ejecutados sin que el usuario haya elegido una opción del menú de cierre ni tipeado la palabra literal `discard`.
+**Symptom**: the agent merges, deletes branches/worktrees, or discards work without presenting the options menu, without confirming the base branch, or with weak confirmation ("yes, delete it"). Typical signal: `git branch -D`, `git worktree remove`, `git reset` executed without the user having chosen an option from the closure menu or typed the literal word `discard`.
 
-**Por qué es malo**: borra trabajo irrecuperable — un reset/discard sin confirmación literal destruye commits sin red de seguridad. Un merge a base equivocada contamina la main de todo el equipo. Y el state file del ciclo asume árbol intacto: la destrucción silenciosa rompe la premisa de "volvés a etapa N-1" — el estado que el ciclo cree que existe ya no existe.
+**Why it's bad**: it deletes irrecoverable work — a reset/discard without literal confirmation destroys commits with no safety net. A merge onto the wrong base contaminates the whole team's main. And the cycle's state file assumes an intact tree: silent destruction breaks the premise of "you go back to stage N-1" — the state the cycle believes exists no longer exists.
 
-**Corrección**: aplicar `stage-5-merge.md` §5.6 — detección de entorno, base branch confirmada, menú fijo de 4 opciones, discard solo con la palabra literal `discard`, limpieza por provenance (solo worktrees propios del ciclo), y nunca `--force` por iniciativa propia. (Nota de contexto histórico: un runtime con interfaz web ejecutó `git reset` sobre trabajo sin commitear en este proyecto — el reflog fue la única traza que quedó.)
+**Correction**: apply `stage-5-merge.md` §5.6 — environment detection, base branch confirmed, fixed menu of 4 options, discard only with the literal word `discard`, cleanup by provenance (only the cycle's own worktrees), and never `--force` on your own initiative. (Historical context note: a runtime with a web interface executed `git reset` over uncommitted work in this project — the reflog was the only trace left.)
 
-## Cómo usar este archivo
+## How to use this file
 
-Cargalo cuando detectes señales de cualquiera de estos patrones. No lo cargues preventivamente; es ruido si todo va bien. Cuando intervenís contra un anti-patrón, citá el código (AP-N) en tu mensaje al usuario para que pueda buscarlo:
+Load it when you detect signals of any of these patterns. Do not load it preventively; it is noise if everything is going well. When you intervene against an anti-pattern, cite the code (AP-N) in your message to the user so they can look it up:
 
-> *"Estamos cayendo en AP-2 (test después del código). Vamos a corregir antes de seguir."*
+> *"We are falling into AP-2 (test after code). We are going to correct before continuing."*
 
-## AP-18 — Fix sin diagnóstico (thrashing)
+## AP-18 — Fix without diagnosis (thrashing)
 
-**Síntoma**: 2+ fixes en la misma sesión sin repro estable o sin causa raíz escrita. Señal típica: «pruebo este cambio y veamos» — un fix delegado sin loop rojo, seguido de otro fix delegado sobre el resultado del primero.
+**Symptom**: 2+ fixes in the same session with no stable repro or no written root cause. Typical signal: "let's try this change and see" — a delegated fix with no red loop, followed by another delegated fix on top of the first one's result.
 
-**Por qué es malo**: los fixes apilados ocultan cuál hizo qué — cuando la suite se pone verde (o no), ya no hay forma de atribuir el efecto. Cada fix sin diagnóstico puede introducir un bug nuevo encima del que intentaba arreglar. El thrashing quema la confianza del usuario (¿por qué nadie sabe qué está pasando?) y el presupuesto de contexto (cada ciclo RED→GREEN fallido es un turno completo). Y 3+ fixes fallidos sin diagnóstico no es mala suerte: es señal de que el problema es de diseño, no de puntería.
+**Why it's bad**: stacked fixes hide which one did what — by the time the suite goes green (or not), there is no way to attribute the effect. Every fix without a diagnosis can introduce a new bug on top of the one it was trying to fix. Thrashing burns the user's trust (why does nobody know what's going on?) and the context budget (every failed RED→GREEN cycle is a full turn). And 3+ failed fixes without a diagnosis is not bad luck: it is a signal that the problem is one of design, not of aim.
 
-**Corrección**: aplicar `references/stage-debugging.md` — loop rojo primero (comando tight que va rojo con el síntoma exacto y verde solo con el fix), hipótesis rankeadas falsables con una variable por vez, y un solo fix sobre la causa raíz verificada. Al 3er fallo: STOP → escalar al usuario con la evidencia acumulada → ADR que decida bug puntual vs. diseño equivocado.
+**Correction**: apply `references/stage-debugging.md` — red loop first (a tight command that goes red with the exact symptom and green only with the fix), falsifiable ranked hypotheses with one variable at a time, and a single fix on the verified root cause. At the 3rd failure: STOP → escalate to the user with the accumulated evidence → an ADR deciding one-off bug vs. wrong design.
 
-## AP-19 — Plan placeholder
+## AP-19 — Placeholder plan
 
-**Síntoma**: plan de feature compleja con tareas que no cierran en un mini-ciclo TDD propio; frases tipo «TBD», «TODO», «manejar edge cases apropiadamente», «similar a la Tarea N»; o firmas inconsistentes entre tareas (la tarea 2 produce `clearLayers`, la tarea 5 consume `clearFullLayers`). Señal: el plan no podría ejecutarse sin re-derivar decisiones de diseño a mitad de camino.
+**Symptom**: a plan for a complex feature with tasks that don't close in their own mini TDD cycle; phrases like "TBD", "TODO", "handle edge cases appropriately", "similar to Task N"; or inconsistent signatures across tasks (task 2 produces `clearLayers`, task 5 consumes `clearFullLayers`). Signal: the plan could not be executed without re-deriving design decisions halfway through.
 
-**Por qué es malo**: el plan ambiguo delega decisiones de diseño al implementer sin contrato — es AP-13 (Garbage Cascade) a nivel de tarea. El test-writer hereda una interface inventada a mitad de camino y sus tests apuntan a un contrato que nadie aprobó; las firmas inconsistentes rompen la integración entre tareas y se descubren en GREEN, el lugar más caro para descubrirlas. Y un plan que contiene la implementación especulada revierte TDD: el implementer ejecuta decisiones que el planner horneó sin verificar.
+**Why it's bad**: the ambiguous plan delegates design decisions to the implementer with no contract — it is AP-13 (Garbage Cascade) at task level. The test-writer inherits an interface invented halfway through, and its tests point to a contract nobody approved; inconsistent signatures break the integration between tasks and are discovered in GREEN, the most expensive place to discover them. And a plan containing the speculated implementation reverses TDD: the implementer executes decisions the planner baked in without verifying.
 
-**Corrección**: seguir "Planning de features complejas" en `references/stage-2-specification.md` — tamaño de tarea con ciclo TDD propio, comportamiento observable como contrato (3-5 bullets verificables), lista de placeholders prohibidos = falla del plan, y auto-revisión de cobertura del spec y consistencia de firmas antes de cerrar Etapa 2.
+**Correction**: follow "Planning for complex features" in `references/stage-2-specification.md` — task size with its own TDD cycle, observable behavior as contract (3-5 verifiable bullets), the list of forbidden placeholders = plan failure, and a self-review of spec coverage and signature consistency before closing Stage 2.

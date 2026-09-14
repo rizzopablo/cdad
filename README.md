@@ -1,210 +1,210 @@
 # Contract-Driven AI Development (CDAD)
 
-**Una metodología disciplinada para construir software con agentes de IA**
+**A disciplined methodology for building software with AI agents**
 
 ---
 
-## ¿Qué es CDAD?
+## What is CDAD?
 
-CDAD es una metodología de desarrollo de software diseñada específicamente para trabajar con agentes de inteligencia artificial como implementadores. Resuelve un problema fundamental: los modelos de lenguaje son brillantes pero inconsistentes. Pueden generar código excelente o defectuoso, y la diferencia muchas veces no es predecible.
+CDAD is a software development methodology designed specifically to work with AI agents as implementers. It solves a fundamental problem: language models are brilliant but inconsistent. They can produce excellent or defective code, and the difference is often not predictable.
 
-En lugar de confiar en review humano post-hoc y cansador, **CDAD inserta barreras estructurales antes y durante el proceso de implementación**. Estas barreras son automatizadas y garantizan que el agente nunca sea el único responsable de verificar que su trabajo es correcto.
-
----
-
-## Los Cinco Principios Fundacionales
-
-CDAD se sostiene sobre cinco principios estructurales que conforman la columna vertebral de la metodología:
-
-### 1. **Spec antes que código (siempre)**
-Antes de que cualquier agente toque una sola línea de código de implementación, debe existir un documento escrito que defina qué hace la feature, con contratos verificables incluidos.
-
-### 2. **Contratos verificables como guardián**
-Los contratos entre componentes se definen como tipos formales (interfaces, protocols, traits) con postcondiciones explícitas, verificados automáticamente mediante contract tests parametrizados.
-
-### 3. **Sesiones aisladas con permisos granulares**
-Las distintas fases del trabajo (escribir test, escribir código, refactorizar, revisar) se ejecutan en sub-agentes diferentes con permisos de archivo distintos, en sesiones separadas.
-
-### 4. **TDD con la "Ley de Hierro"**
-Nunca se escribe código de implementación sin antes tener un test que falla por la razón correcta. Sin excepciones, sin atajos, sin "después agrego el test."
-
-### 5. **Memory Bank persistente**
-El proyecto mantiene un conjunto de archivos versionados que capturan el estado actual, las decisiones tomadas, los aprendizajes acumulados, y el contexto para futuras sesiones.
+Instead of relying on post-hoc, exhausting human review, **CDAD inserts structural barriers before and during the implementation process**. These barriers are automated and guarantee that the agent is never the only one responsible for verifying that its work is correct.
 
 ---
 
-## El Ciclo: Las Cinco Etapas
+## The Five Foundational Principles
 
-### 🔍 Etapa 1: Descubrimiento
-Mapea el terreno del sistema. Destruye las suposiciones que el modelo de IA arrastra desde su entrenamiento. Genera documentación del landscape y contexto técnico.
+CDAD rests on five structural principles that form the backbone of the methodology:
 
-### 📋 Etapa 2: Especificación
-Brainstorm socrático, redacción del spec con descripción funcional, contrato, invariantes y criterios de aceptación, y aprobación humana.
+### 1. **Spec before code (always)**
+Before any agent touches a single line of implementation code, a written document must exist that defines what the feature does, with verifiable contracts included.
 
-### 🧪 Etapa 3: TDD Anti-trampa
-Sub-agentes separados escriben tests (que fallan), implementan código (que pasa), refactorizan, y escriben property tests. Todo en sesiones aisladas.
+### 2. **Verifiable contracts as the guardian**
+The contracts between components are defined as formal types (interfaces, protocols, traits) with explicit postconditions, verified automatically through parameterized contract tests.
 
-### 👀 Etapa 4: Review Two-Layer
-Sub-agente reviewer genera reporte priorizado de hallazgos. Vos validás la priorización antes del merge.
+### 3. **Isolated sessions with granular permissions**
+The different phases of the work (writing tests, writing code, refactoring, reviewing) are executed in different sub-agents with different file permissions, in separate sessions.
 
-### ✅ Etapa 5: Merge + Memory Bank
-CI automatizado valida. Actualizás el Memory Bank con decisiones, aprendizajes, y estado del proyecto.
+### 4. **TDD with the "Iron Law"**
+Implementation code is never written without first having a test that fails for the right reason. No exceptions, no shortcuts, no "I'll add the test later."
+
+### 5. **Persistent Memory Bank**
+The project maintains a set of versioned files that capture the current state, the decisions made, the accumulated learnings, and the context for future sessions.
 
 ---
 
-## Documentación Completa
+## The Cycle: The Five Stages
 
-- 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Documento completo con 13 capítulos
-- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Recursos para facilitar el estudio de CDAD
-- 🎯 **[docs/specs/](./docs/specs/)** — Estructura de especificaciones
+### 🔍 Stage 1: Discovery
+Maps the terrain of the system. Destroys the assumptions the AI model drags along from its training. Generates landscape documentation and technical context.
+
+### 📋 Stage 2: Specification
+Socratic brainstorm, spec writing with functional description, contract, invariants and acceptance criteria, and human approval.
+
+### 🧪 Stage 3: Anti-gaming TDD
+Separate sub-agents write tests (which fail), implement code (which passes), refactor, and write property tests. All in isolated sessions.
+
+### 👀 Stage 4: Two-Layer Review
+A reviewer sub-agent generates a prioritized report of findings. You validate the prioritization before the merge.
+
+### ✅ Stage 5: Merge + Memory Bank
+Automated CI validates. You update the Memory Bank with decisions, learnings, and project status.
+
+---
+
+## Complete Documentation
+
+- 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Complete document with 13 chapters
+- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Resources to facilitate the study of CDAD
+- 🎯 **[docs/specs/](./docs/specs/)** — Specification structure
 - 🏗️ **[docs/adr/](./docs/adr/)** — Architecture Decision Records
-- 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Brief del proyecto
+- 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Project brief
 
 ---
 
-## ¿Cuándo Vale la Pena CDAD?
+## When is CDAD Worth It?
 
-CDAD tiene un costo operativo. No es para todo. Vale la pena cuando se cumplen al menos **dos de estas condiciones**:
+CDAD has an operational cost. It is not for everything. It is worth it when at least **two of these conditions** are met:
 
-- El código va a vivir mucho tiempo (meses o años) y va a evolucionar
-- La corrección del código importa más allá de "compila y pasa tests"
-- El proyecto es lo suficientemente grande como para que ningún humano pueda mantener todo el contexto
-- El equipo va a usar agentes de IA como parte regular del flujo
-- La calidad debe ser sostenible a largo plazo
+- The code will live a long time (months or years) and will evolve
+- Code correctness matters beyond "it compiles and passes tests"
+- The project is large enough that no human can keep all the context in mind
+- The team will use AI agents as a regular part of the workflow
+- Quality must be sustainable in the long run
 
-### Matriz de Decisión
+### Decision Matrix
 
-| Puntaje | Modo Recomendado | Aplicación |
+| Score | Recommended Mode | Application |
 |---------|------------------|-----------|
-| 3-4 | **Vibe Coding** | Sin spec, sin sesiones aisladas, sin Memory Bank |
-| 5-6 | **CDAD Light** | Spec breve, TDD con sesiones aisladas en componentes críticos |
-| 7-9 | **CDAD Completo** | Las cinco etapas completas sin atajos |
+| 3-4 | **Vibe Coding** | No spec, no isolated sessions, no Memory Bank |
+| 5-6 | **CDAD Light** | Brief spec, anti-gaming TDD with isolated sessions on critical components |
+| 7-9 | **Full CDAD** | All five stages complete, no shortcuts |
 
 ---
 
-## Estructura de un Proyecto CDAD
+## Structure of a CDAD Project
 
 ```
 proyecto/
 ├── docs/
-│   ├── projectbrief.md          # Qué es el proyecto
-│   ├── landscape.md             # Mapeo del terreno
-│   ├── systemPatterns.md        # Patrones técnicos
-│   ├── activeContext.md         # Estado actual
-│   ├── progress.md              # Estado de features
+│   ├── projectbrief.md          # What the project is
+│   ├── landscape.md             # Terrain mapping
+│   ├── systemPatterns.md        # Technical patterns
+│   ├── activeContext.md         # Current state
+│   ├── progress.md              # Feature status
 │   ├── adr/                     # Architecture Decision Records
 │   │   ├── 001-decisión.md
 │   │   └── 002-decisión.md
-│   └── specs/                   # Especificaciones versionadas
+│   └── specs/                   # Versioned specifications
 │       ├── 001-feature-a/
 │       │   ├── spec.md
 │       │   ├── plan.md
 │       │   └── tasks.md
 │       └── 002-feature-b/
-├── src/                         # Implementación
+├── src/                         # Implementation
 ├── tests/                       # Tests
-└── .aiignore                    # Control de permisos para sub-agentes
+└── .aiignore                    # Permission control for sub-agents
 ```
 
 ---
 
-## Spec: Estructura Mínima
+## Spec: Minimal Structure
 
-Cada feature tiene un spec que sigue esta estructura:
+Each feature has a spec that follows this structure:
 
 ```markdown
-# Spec: [nombre de la feature]
+# Spec: [feature name]
 
-## Descripción funcional
-Qué hace, en lenguaje no técnico.
+## Functional description
+What it does, in non-technical language.
 
-## Contrato (firma e invariantes)
-Tipos formales con postcondiciones explícitas.
+## Contract (signature and invariants)
+Formal types with explicit postconditions.
 
-## Invariantes verificables
-Que se convertirán en property tests.
+## Verifiable invariants
+That will become property tests.
 
-## Criterios de aceptación
-Métricas medibles para considerar la feature done.
+## Acceptance criteria
+Measurable metrics to consider the feature done.
 
 ## Out of scope
-Qué NO hace, para evitar scope creep.
+What it does NOT do, to avoid scope creep.
 ```
 
 ---
 
-## Comparación con Otras Metodologías
+## Comparison with Other Methodologies
 
-| Aspecto | Vibe Coding | TDD Clásico | BDD | DDD | CDAD |
+| Aspect | Vibe Coding | Classic TDD | BDD | DDD | CDAD |
 |---------|-------------|-------------|-----|-----|------|
-| **Quién implementa** | Agente sin restricciones | Dev humano | Dev humano | Dev humano | Sub-agentes limitados |
-| **Spec antes de código** | No | Implícito | Sí (Gherkin) | Sí (modelo) | Sí (markdown) |
-| **Tests primero** | A veces | Sí | Sí | No prescriptivo | Sí |
-| **Contratos formales** | No | Opcional | No central | Sí | Sí |
-| **Memoria persistente** | No | No | No | Sí (modelo) | Sí |
-| **Calidad a largo plazo** | Variable | Alta con disciplina | Alta | Alta | Alta consistente |
-| **Diseñado para agentes IA** | No | Parcial | Parcial | No | Sí |
+| **Who implements** | Unrestricted agent | Human dev | Human dev | Human dev | Limited sub-agents |
+| **Spec before code** | No | Implicit | Yes (Gherkin) | Yes (model) | Yes (markdown) |
+| **Tests first** | Sometimes | Yes | Yes | Non-prescriptive | Yes |
+| **Formal contracts** | No | Optional | Not central | Yes | Yes |
+| **Persistent memory** | No | No | No | Yes (model) | Yes |
+| **Long-term quality** | Variable | High with discipline | High | High | Consistently high |
+| **Designed for AI agents** | No | Partial | Partial | No | Yes |
 
 ---
 
-## Reglas Operativas Clave
+## Key Operational Rules
 
-✅ **Nunca saltes etapas.** Las features que parecen simples frecuentemente revelan ambigüedades.
+✅ **Never skip stages.** Features that look simple frequently reveal ambiguities.
 
-✅ **Si una etapa falla, volvés a la etapa anterior.** No más atrás.
+✅ **If a stage fails, you go back to the previous stage.** No further back.
 
-✅ **La aprobación humana en momentos clave es indelegable.** Aprobás spec, validás review, evaluás Memory Bank.
-
----
-
-## Casos de Uso
-
-**✅ Usar CDAD cuando:**
-- Usarás agentes de IA como implementadores principales
-- El código vivirá meses/años y evolucionará
-- La calidad sostenible importa más que velocidad inicial
-- Necesitas documentación persistente de decisiones
-
-**❌ No usar CDAD cuando:**
-- Estás en exploración pura o prototipando algo desechable
-- Es un script one-off que irá a la basura
-- El código tiene menos de un mes de vida útil esperada
+✅ **Human approval at key moments is non-delegable.** You approve the spec, validate the review, evaluate the Memory Bank.
 
 ---
 
-## Diferencias Clave con Alternativas
+## Use Cases
+
+**✅ Use CDAD when:**
+- You will use AI agents as the primary implementers
+- The code will live months/years and will evolve
+- Sustainable quality matters more than initial speed
+- You need persistent documentation of decisions
+
+**❌ Do not use CDAD when:**
+- You are in pure exploration or prototyping something disposable
+- It is a one-off script headed for the trash
+- The code has less than a month of expected useful life
+
+---
+
+## Key Differences from Alternatives
 
 ### vs. Vibe Coding
-CDAD trae estructura y garantías de calidad que vibe coding no ofrece. Con agentes, sin estructura = código impredecible.
+CDAD brings structure and quality guarantees that vibe coding does not offer. With agents, no structure = unpredictable code.
 
-### vs. TDD Clásico
-CDAD + TDD, pero con separación de agentes. El test-writer no ve la implementación. Esto elimina el sesgo de coherencia interna que los agentes tienen naturalmente.
+### vs. Classic TDD
+CDAD + TDD, but with agent separation. The test-writer does not see the implementation. This eliminates the internal-coherence bias that agents naturally have.
 
 ### vs. BDD
-CDAD es más técnico y específico para agentes. BDD se enfoca en comunicación con stakeholders no técnicos.
+CDAD is more technical and agent-specific. BDD focuses on communication with non-technical stakeholders.
 
 ### vs. DDD
-CDAD no excluye DDD. Se pueden combinar perfectamente. CDAD se enfoca en *cómo* implementar con agentes; DDD se enfoca en *qué* modelar.
+CDAD does not exclude DDD. They can be combined perfectly. CDAD focuses on *how* to implement with agents; DDD focuses on *what* to model.
 
 ---
 
-## Próximos Pasos
+## Next Steps
 
-1. **Lee el documento completo** (`CDAD_metodologia.md`) para entender cada etapa en profundidad
-2. **Empieza con CDAD Light** si es tu primer proyecto
-3. **Configura tu Memory Bank** con los documentos estructurales
-4. **Establece sub-agentes** con permisos granulares
-5. **Aplica la disciplina:** specs antes de código, siempre
+1. **Read the full document** (`CDAD_metodologia.md`) to understand each stage in depth
+2. **Start with CDAD Light** if it is your first project
+3. **Set up your Memory Bank** with the structural documents
+4. **Set up sub-agents** with granular permissions
+5. **Apply the discipline:** specs before code, always
 
 ---
 
-## Configuración por deploy
+## Per-deploy configuration
 
-Los agentes `agents/cdad-*.md` son agnósticos de la máquina en la que corren:
-no declaran `permission.external_directory` en el repo. El acceso a directorios
-externos al workspace (por ejemplo, los directorios de skills del runtime) es
-**configuración de cada deployment** y se declara en el `opencode.jsonc` del
-runtime bajo `agent.<nombre>.permission.external_directory`:
+The `agents/cdad-*.md` agents are machine-agnostic in the machine they run on:
+they do not declare `permission.external_directory` in the repo. Access to directories
+outside the workspace (for example, the runtime's skill directories) is
+**configuration of each deployment** and is declared in the runtime's
+`opencode.jsonc` under `agent.<name>.permission.external_directory`:
 
 ```jsonc
 {
@@ -212,8 +212,8 @@ runtime bajo `agent.<nombre>.permission.external_directory`:
     "cdad-architect": {
       "permission": {
         "external_directory": {
-          "<abs path al dir de skills del runtime>/**": "allow",
-          "<otro dir externo>/**": "allow",
+          "<abs path to the runtime's skill dir>/**": "allow",
+          "<another external dir>/**": "allow",
           "/tmp/opencode/*": "allow"
         }
       }
@@ -222,17 +222,17 @@ runtime bajo `agent.<nombre>.permission.external_directory`:
 }
 ```
 
-Cada deployment agrega su propio `external_directory` (rutas reales de esa
-máquina) vía `opencode.jsonc`; esa capa de config local no se versiona en el
-repo. Nota: opencode **no expande** `${HOME}` ni variables de entorno en los
-patrones de `external_directory` — usá rutas absolutas.
+Each deployment adds its own `external_directory` (real paths of that
+machine) via `opencode.jsonc`; that local config layer is not versioned in the
+repo. Note: opencode **does not expand** `${HOME}` nor environment variables in the
+`external_directory` patterns — use absolute paths.
 
 ---
 
-## Licencia
+## License
 
-Este repositorio contiene documentación y metodología abierta para construir software con agentes de IA.
+This repository contains open documentation and methodology for building software with AI agents.
 
 ---
 
-**CDAD: Contract-Driven AI Development** — Disciplina estructural para agentes de IA que importa.
+**CDAD: Contract-Driven AI Development** — Structural discipline for AI agents that pays off.

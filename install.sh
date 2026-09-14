@@ -29,12 +29,12 @@ CLAUDE_CODE_SKILLS_DIR="${HOME:-}/.claude/skills"
 CLAUDE_CODE_SCRIPTS_DIR="${HOME:-}/.claude/cdad-scripts"
 
 SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer odoo-reviewer odoo-make-env odoo-expert)
-# EXPECTED_CDAD_AGENTS counts OpenCode agents. Base = 6 genéricos (architect,
-# implementer, orchestrator, reviewer, scribe, test-writer) + 5 variantes Odoo
+# EXPECTED_CDAD_AGENTS counts OpenCode agents. Base = 6 generic (architect,
+# implementer, orchestrator, reviewer, scribe, test-writer) + 5 Odoo variants
 # (agents/cdad-*-odoo.md: architect/test-writer/implementer/reviewer/scribe).
-# Las variantes cdad-.*-odoo las captura el mismo glob cdad-*.md de install_agents()
-# y llevan modelo fijo por rol (perfil CDAD no las sobreescribe); cuentan acá
-# para que la verificación "N de N cdad agents presentes" sea correcta.
+# The cdad-.*-odoo variants are captured by the same cdad-*.md glob in install_agents()
+# and carry a fixed model per role (the CDAD profile does not overwrite them); they are
+# counted here so the "N of N cdad agents present" verification is correct.
 EXPECTED_CDAD_AGENTS=11
 # NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code has the same 5 roles
 # in agents/claude-code/ subdirectory; install_claude_code_agents() handles that separately.
@@ -75,7 +75,7 @@ log() {
 }
 
 # ---------------------------------------------------------------------------
-# Model profiles — fuente única del mapa (scripts/cdad-models.sh)
+# Model profiles — single source of the map (scripts/cdad-models.sh)
 # ---------------------------------------------------------------------------
 MODELS_SH="$SCRIPT_DIR/scripts/cdad-models.sh"
 if [ ! -f "$MODELS_SH" ]; then
@@ -85,18 +85,18 @@ fi
 source "$MODELS_SH"
 
 # ---------------------------------------------------------------------------
-# Bash allowlists — fuente única del bloque bash por rol (P5, cdad-010)
+# Bash allowlists — single source of the per-role bash block (P5, cdad-010)
 # ---------------------------------------------------------------------------
-# install.sh deriva la allowlist bash de cada agente del stack detectado en
-# la máquina destino y la inyecta SOLO en la copia instalada (mismo patrón
-# que la línea model:). El repo conserva un default agnóstico (F009).
+# install.sh derives each agent's bash allowlist from the stack detected on
+# the target machine and injects it into the INSTALLED copy ONLY (same pattern
+# as the model: line). The repo keeps an agnostic default (F009).
 ALLOWLIST_SH="$SCRIPT_DIR/scripts/cdad-bash-allowlist.sh"
 if [ ! -f "$ALLOWLIST_SH" ]; then
   die "Bash allowlist generator missing: $ALLOWLIST_SH"
 fi
 
-# Roles cuyo bloque bash se deriva (P5). El orquestador no es task-spawneado
-# y conserva el bloque escrito a mano del repo.
+# Roles whose bash block is derived (P5). The orchestrator is not task-spawned
+# and keeps the handwritten block from the repo.
 ALLOWLIST_ROLES="architect test-writer implementer reviewer scribe"
 
 role_is_generated() {
@@ -106,18 +106,18 @@ role_is_generated() {
   esac
 }
 
-# cdad_bash_allowlist <role> — imprime el bloque bash derivado para el rol
-# en esta máquina (el generador detecta el stack; fail fast). Se invoca vía
-# `bash` (mismo criterio que validate-subagents.sh con install.sh): solo
-# importa que el archivo exista; el bit +x lo exige el check A7 aparte.
+# cdad_bash_allowlist <role> — prints the derived bash block for the role on
+# this machine (the generator detects the stack; fail fast). Invoked via
+# `bash` (same criterion as validate-subagents.sh with install.sh): only the
+# file's existence matters; the +x bit is enforced by the separate A7 check.
 cdad_bash_allowlist() {
   bash "$ALLOWLIST_SH" "$1"
 }
 
-# apply_bash_block <src> <role> — imprime el contenido del archivo con las
-# reglas de la sección bash reemplazadas por la allowlist derivada. Función
-# pura de (archivo, stack de esta máquina): esa pureza es la que permite a
-# --check comparar contra la expectativa DERIVADA y no contra bytes del repo.
+# apply_bash_block <src> <role> — prints the file content with the bash section
+# rules replaced by the derived allowlist. Pure function of (file, this
+# machine's stack): that purity is what lets --check compare against the
+# DERIVED expectation and not against repo bytes.
 apply_bash_block() {
   local src="$1" role="$2" block
   block="$(cdad_bash_allowlist "$role")"
@@ -135,9 +135,9 @@ apply_bash_block() {
   ' "$src"
 }
 
-# rewrite_bash_section <dst> <role> — reescribe la sección bash de la COPIA
-# in situ (nunca el repo). Idempotente: una segunda pasada produce los mismos
-# bytes (la copia se resetea desde el repo en cada install antes de derivar).
+# rewrite_bash_section <dst> <role> — rewrites the bash section of the COPY
+# in situ (never the repo). Idempotent: a second pass produces the same bytes
+# (the copy is reset from the repo on every install before deriving).
 rewrite_bash_section() {
   local dst="$1" role="$2" tmp="$1.cdad-allowlist.$$"
   if ! apply_bash_block "$dst" "$role" > "$tmp"; then
@@ -249,19 +249,19 @@ Options:
                (scripts/cdad-bash-allowlist.sh, cdad-010 P5) — not against
                the repo bytes.
    --economical Install the economical profile (execution roles deepseek-v4-flash;
-                architect deepseek-v4-pro, reviewer minimax-m3 — familia
-                distinta al implementer). Cheap run, spec/review quality kept
-                (enmienda 2026-08-24, ADR-007).
+                architect deepseek-v4-pro, reviewer minimax-m3 — family
+                different from the implementer). Cheap run, spec/review quality kept
+                (2026-08-24 amendment, ADR-007).
   --optimus    Install the optimus profile (design default): architect/scribe
                deepseek-v4-pro, test-writer glm-5.2, implementer flash,
                reviewer qwen3.7-plus. Balanced cost/quality.
-  --premium    Install the premium profile (top-tier configurable por env):
-               por default architect/reviewer/scribe qwen3.7-max, implementer
-               deepseek-v4-pro, test-writer glm-5.2. Cada rol es overrideable
-               con una env CDAD_PREMIUM_MODEL_<ROL> en formato provider/model
-               de CUALQUIER provider (p.ej. anthropic/openai); el provider de
-               destino debe estar configurado en el runtime.
-               The profile flags are mutually exclusive.
+  --premium    Install the premium profile (top-tier, configurable via env):
+                by default architect/reviewer/scribe qwen3.7-max, implementer
+                deepseek-v4-pro, test-writer glm-5.2. Each role is overridable
+                with a CDAD_PREMIUM_MODEL_<ROLE> env in provider/model format
+                from ANY provider (e.g. anthropic/openai); the target provider
+                must be configured in the runtime.
+                The profile flags are mutually exclusive.
   --basic      Install the basic profile: NO fixed models — the model: line is
                stripped from installed agents, which inherit the runtime's
                default model. Portable across providers (useful when the
@@ -278,18 +278,18 @@ or env reuses it instead of falling back to optimus. Precedence is the same
 everywhere (install, --check, --dry-run):
     flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
 Fresh installs (no marker yet) default to optimus (the repo's design default);
-switch profiles at any time with `install.sh --<perfil>` — the new choice is
+switch profiles at any time with `install.sh --<profile>` — the new choice is
 installed AND persisted as the marker.
 
-Environment — premium overrides (top-tier multi-provider; sin prefijo mofgw
-forzado; el provider de destino debe estar configurado en el runtime, p.ej.
+Environment — premium overrides (top-tier multi-provider; no forced mofgw
+prefix; the target provider must be configured in the runtime, e.g.
 opencode.jsonc):
   CDAD_PREMIUM_MODEL_ARCHITECT    top-tier architect (default mofgw/qwen3.7-max)
   CDAD_PREMIUM_MODEL_TEST_WRITER  top-tier test-writer (default mofgw/glm-5.2)
   CDAD_PREMIUM_MODEL_IMPLEMENTER  top-tier implementer (default mofgw/deepseek-v4-pro)
   CDAD_PREMIUM_MODEL_REVIEWER     top-tier reviewer (default mofgw/qwen3.7-max)
   CDAD_PREMIUM_MODEL_SCRIBE       top-tier scribe (default mofgw/qwen3.7-max)
-  Ejemplo: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 \
+  Example: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 \
            bash install.sh --premium
   CDAD_SKILL_EXTRA_DIRS  colon-separated list of ADDITIONAL directories where
                the 3 cdad skills are also installed (e.g. the OpenClaw skills
@@ -399,12 +399,13 @@ guard_sources() {
 # ---------------------------------------------------------------------------
 # Profile resolution (fail fast on invalid profile)
 # ---------------------------------------------------------------------------
-# resolve_profile — asigna MODEL_PROFILE (perfil activo). Precedencia
-# consistente en install, --check y --dry-run:
+# resolve_profile — assigns MODEL_PROFILE (active profile). Consistent
+# precedence across install, --check and --dry-run:
 #     flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
-# El marker hace STATEFUL la instalación: el último perfil instalado persiste
-# (un install sin flag ni env lo respeta); un install fresco sin marker usa
-# optimus (diseño del repo). --check ya leía el marker; ahora install también.
+# The marker makes the install STATEFUL: the last installed profile persists
+# (an install without flag or env respects it); a fresh install without a
+# marker uses optimus (repo's design). --check already read the marker;
+# now install does too.
 resolve_profile() {
   if [ -n "$PROFILE_FLAG" ]; then
     MODEL_PROFILE="$PROFILE_FLAG"
@@ -417,9 +418,9 @@ resolve_profile() {
   fi
 }
 
-validate_profile() {  # aborta si el perfil activo no es soportado
+validate_profile() {  # aborts if the active profile is not supported
   if ! cdad_valid_profile "$MODEL_PROFILE"; then
-    die "Invalid model profile: '$MODEL_PROFILE' (esperado: economical | optimus | premium | basic)"
+    die "Invalid model profile: '$MODEL_PROFILE' (expected: economical | optimus | premium | basic)"
   fi
 }
 
@@ -455,41 +456,41 @@ copy_agent_file() {  # filename — copies one cdad agent, deriving allowlist + 
   do_run "COPY agents/$fname -> $dst" cp -p "$src" "$dst"
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$model" ]; then
-      log "DRY-RUN PROFILE $fname: model: $model (perfil $MODEL_PROFILE)"
+      log "DRY-RUN PROFILE $fname: model: $model (profile $MODEL_PROFILE)"
     elif [ "$MODEL_PROFILE" = "basic" ]; then
-      log "DRY-RUN PROFILE $fname: model: stripped (perfil basic — hereda el modelo del runtime)"
+      log "DRY-RUN PROFILE $fname: model: stripped (basic profile — inherits the runtime's model)"
     fi
-    # P5 (cdad-010): --dry-run lista la allowlist derivada por agente.
+    # P5 (cdad-010): --dry-run lists the derived allowlist per agent.
     if role_is_generated "$role"; then
-      log "DRY-RUN ALLOWLIST $fname: bloque bash derivado del stack detectado (rol $role):"
+      log "DRY-RUN ALLOWLIST $fname: bash block derived from the detected stack (role $role):"
       cdad_bash_allowlist "$role" | while IFS= read -r line; do
         log "    $line"
       done
     else
-      log "DRY-RUN ALLOWLIST $fname: sin derivar (rol sin generador — conserva el bloque del repo)"
+      log "DRY-RUN ALLOWLIST $fname: not derived (role without generator — keeps the repo's block)"
     fi
     return 0
   fi
-  # P5 (cdad-010): allowlist bash derivada del stack detectado, aplicada
-  # SOLO en la copia (mismo patrón que la línea model:). El repo nunca cambia.
+  # P5 (cdad-010): bash allowlist derived from the detected stack, applied
+  # to the COPY ONLY (same pattern as the model: line). The repo never changes.
   if role_is_generated "$role" && [ -f "$dst" ]; then
-    log "ALLOWLIST $fname: bloque bash derivado del stack detectado (rol $role)"
+    log "ALLOWLIST $fname: bash block derived from the detected stack (role $role)"
     rewrite_bash_section "$dst" "$role"
   fi
-  # Perfil aplicado SOLO en la copia; el repo (diseño optimus) nunca cambia.
-  # Si la copia ya tiene ese modelo (install idempotente), no se toca nada.
+  # Profile applied to the COPY ONLY; the repo (optimus design) never changes.
+  # If the copy already has that model (idempotent install), nothing is touched.
   if [ -n "$model" ] && [ -f "$dst" ] && ! grep -q "^model:[[:space:]]*$model" "$dst"; then
     log "PROFILE $fname: model: -> $model"
     sed -i "s|^model:.*|model: $model|" "$dst"
   elif [ "$MODEL_PROFILE" = "basic" ] && [ -f "$dst" ] && grep -q '^model:' "$dst"; then
-    # basic: strip de model: en la copia — el agente hereda el modelo del
-    # runtime (portable entre providers). El repo nunca se modifica.
-    log "PROFILE $fname: model: stripped (perfil basic)"
+    # basic: strip model: in the copy — the agent inherits the runtime's
+    # model (portable across providers). The repo is never modified.
+    log "PROFILE $fname: model: stripped (basic profile)"
     sed -i '/^model:/d' "$dst"
   fi
 }
 
-write_profile_marker() {  # persiste el perfil activo para --check y el validator
+write_profile_marker() {  # persists the active profile for --check and the validator
   ensure_dir "$OPENCODE_AGENTS_DIR"
   if [ "$DRY_RUN" -eq 1 ]; then
     log "DRY-RUN MARKER $PROFILE_MARKER = $MODEL_PROFILE"
@@ -562,9 +563,9 @@ install_claude_code_agents() {
     do_run "COPY agents/claude-code/$(basename "$f") -> $dst" cp -p "$src" "$dst"
     if [ "$DRY_RUN" -eq 1 ]; then
       if [ -n "$model" ]; then
-        log "DRY-RUN PROFILE $(basename "$f"): model: $model (perfil $MODEL_PROFILE)"
+        log "DRY-RUN PROFILE $(basename "$f"): model: $model (profile $MODEL_PROFILE)"
       elif [ "$MODEL_PROFILE" = "basic" ]; then
-        log "DRY-RUN PROFILE $(basename "$f"): model: stripped (perfil basic)"
+        log "DRY-RUN PROFILE $(basename "$f"): model: stripped (basic profile)"
       fi
       continue
     fi
@@ -576,7 +577,7 @@ install_claude_code_agents() {
         sed -i "s|^model:.*|model: $model|" "$dst"
       fi
     elif [ "$MODEL_PROFILE" = "basic" ] && [ -f "$dst" ] && grep -q '^model:' "$dst"; then
-      log "PROFILE $(basename "$f"): model: stripped (perfil basic)"
+      log "PROFILE $(basename "$f"): model: stripped (basic profile)"
       sed -i '/^model:/d' "$dst"
     fi
   done
@@ -685,11 +686,11 @@ check_agent_file() {  # src dst role expected — profile-aware + allowlist-deri
     printf 'DRIFT: missing %s\n' "$dst"
     return 1
   fi
-  # Byte-compare del contenido SIN la línea model: — el deploy puede desviarse
-  # del repo SOLO en esa línea (perfil aplicado en la copia) y en el bloque
-  # bash (allowlist derivada del stack de ESTA máquina, P5 cdad-010). La
-  # expectativa se DERIVA: el repo pasa por el mismo reemplazo que la
-  # instalación — no se compara contra bytes del repo.
+  # Byte-compare of the content WITHOUT the model: line — the deploy may drift
+  # from the repo ONLY on that line (profile applied to the copy) and on the
+  # bash block (allowlist derived from THIS machine's stack, P5 cdad-010). The
+  # expectation is DERIVED: the repo goes through the same replacement as the
+  # installation — it is not compared against repo bytes.
   if role_is_generated "$role"; then
     if ! cmp -s <(apply_bash_block "$src" "$role" | grep -v '^model:') <(grep -v '^model:' "$dst"); then
       printf 'DRIFT: differs %s\n' "$dst"
@@ -701,16 +702,16 @@ check_agent_file() {  # src dst role expected — profile-aware + allowlist-deri
       return 1
     fi
   fi
-  # La línea model: del runtime debe ser EXACTA al modelo del perfil activo.
+  # The runtime's model: line must be EXACTLY the active profile's model.
   local actual
   actual="$(sed -n 's/^model:[[:space:]]*//p' "$dst" | head -1)"
   if [ -z "$expected" ]; then
     if [ -n "$actual" ]; then
-      printf '❌ %s: declara model: %s pero el rol %s no lleva modelo en el perfil %s\n' "$dst" "$actual" "$role" "$MODEL_PROFILE"
+      printf '❌ %s: declares model: %s but role %s carries no model in profile %s\n' "$dst" "$actual" "$role" "$MODEL_PROFILE"
       return 1
     fi
   elif [ "$actual" != "$expected" ]; then
-    printf '❌ %s: model esperado (perfil %s) = %s, encontrado: %s\n' "$dst" "$MODEL_PROFILE" "$expected" "${actual:-<ninguno>}"
+    printf '❌ %s: expected model (profile %s) = %s, found: %s\n' "$dst" "$MODEL_PROFILE" "$expected" "${actual:-<none>}"
     return 1
   fi
   printf 'OK: %s\n' "$dst"
@@ -796,13 +797,13 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
   done < <(extra_skills_dirs)
   if [ "$drifted" -eq 0 ]; then
     if [ "$extra_expected" -gt 0 ]; then
-      log "Check: PASS ($total/$expected_total in sync + $extra_total/$extra_expected extra dirs, perfil $MODEL_PROFILE)"
+      log "Check: PASS ($total/$expected_total in sync + $extra_total/$extra_expected extra dirs, profile $MODEL_PROFILE)"
     else
-      log "Check: PASS ($total/$expected_total in sync, perfil $MODEL_PROFILE)"
+      log "Check: PASS ($total/$expected_total in sync, profile $MODEL_PROFILE)"
     fi
     return 0
   fi
-  log "Check: FAIL — ${drifted_paths[*]} (perfil $MODEL_PROFILE)"
+  log "Check: FAIL — ${drifted_paths[*]} (profile $MODEL_PROFILE)"
   return 1
 }
 
@@ -849,7 +850,7 @@ print_dry_run_summary() {
   src_agents=$(count_flat_files "$SOURCE_AGENTS_DIR" 'cdad-*.md')
   cur_agents=$(count_flat_files "$OPENCODE_AGENTS_DIR" 'cdad-*.md')
   log "=== Summary (dry-run) ==="
-  log "Perfil de modelos: $MODEL_PROFILE"
+  log "Model profile: $MODEL_PROFILE"
   local f base role m
   for f in "$SOURCE_AGENTS_DIR"/cdad-*.md; do
     [ -e "$f" ] || continue
@@ -860,7 +861,7 @@ print_dry_run_summary() {
     if [ -n "$m" ]; then
       log "  $base -> model: $m"
     else
-      log "  $base -> (sin model:)"
+      log "  $base -> (no model:)"
     fi
   done
   log "Would install: ${#SKILLS[@]} skills x 2 runtimes + $src_agents cdad agents"

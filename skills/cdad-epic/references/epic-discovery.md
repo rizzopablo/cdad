@@ -1,108 +1,108 @@
-# Etapa E1 — Descubrimiento del epic
+# Stage E1 — Epic discovery
 
-Mapear el dominio del epic completo. Es light: identificar qué áreas funcionales toca, no exhaustivo.
+Map the domain of the whole epic. It is light: identify which functional areas it touches, not exhaustive.
 
-## Tu rol
+## Your role
 
-Coordinás. No hacés el descubrimiento vos, ni emitís handoff a un rol específico. Esta etapa es **vos + usuario (humano o agente dueño del proceso)** directamente, igual que el descubrimiento inicial del proyecto en `cdad-cycle`.
+You coordinate. You do not do the discovery yourself, nor do you issue a handoff to a specific role. This stage is **you + user (human or the agent owning the process)** directly, just like the project's initial discovery in `cdad-cycle`.
 
-## Por qué es light
+## Why it is light
 
-El epic ya tiene un alcance definido. La diferencia con descubrimiento de feature es que tocás múltiples áreas funcionales que tienen que coordinarse. Lo que necesitás establecer:
+The epic already has a defined scope. The difference with feature discovery is that you touch multiple functional areas that have to be coordinated. What you need to establish:
 
-1. **Scope claro**: qué entra al epic y qué no.
-2. **Áreas funcionales**: qué módulos/dominios del sistema toca.
-3. **Dependencias externas**: APIs, servicios, librerías, integraciones que el epic requiere.
-4. **Restricciones**: regulatorias, de performance, de compatibilidad, deadlines duros.
-5. **Stakeholders**: quién aprueba, quién va a usar el resultado.
+1. **Clear scope**: what goes into the epic and what does not.
+2. **Functional areas**: which modules/domains of the system it touches.
+3. **External dependencies**: APIs, services, libraries, integrations the epic requires.
+4. **Constraints**: regulatory, performance, compatibility, hard deadlines.
+5. **Stakeholders**: who approves, who will use the result.
 
-## Pasos
+## Steps
 
-### Paso 1 — Confirmar arranque
+### Step 1 — Confirm start
 
-Si el usuario dice "arranquemos epic X", confirmá que es trabajo nuevo:
+If the user says "let's start epic X", confirm it is new work:
 
-> *"Vamos a arrancar el epic `<X>`. Voy a hacerte unas preguntas para mapear el alcance, sin entrar en diseño todavía. ¿OK?"*
+> *"We are going to start epic `<X>`. I will ask you a few questions to map the scope, without getting into design yet. OK?"*
 
-### Paso 2 — Hacer las preguntas
+### Step 2 — Ask the questions
 
-Una a tres preguntas por turno, esperando respuestas. Cubrí:
+One to three questions per turn, waiting for answers. Cover:
 
-**Sobre el scope:**
-- ¿Cuál es el problema que el epic resuelve, en una frase?
-- ¿Qué resultado esperás cuando el epic esté done?
-- ¿Qué deliberadamente NO entra en este epic? (out of scope inicial)
+**About scope:**
+- What is the problem the epic solves, in one sentence?
+- What result do you expect when the epic is done?
+- What deliberately does NOT go into this epic? (initial out of scope)
 
-**Sobre áreas funcionales:**
-- ¿Qué módulos o áreas del sistema toca?
-- ¿Hay áreas nuevas a crear (módulos nuevos, subdominios nuevos)?
+**About functional areas:**
+- Which modules or areas of the system does it touch?
+- Are there new areas to create (new modules, new subdomains)?
 
-**Sobre dependencias:**
-- ¿Hay APIs externas? ¿Servicios de terceros?
-- ¿Hay librerías nuevas que vas a tener que evaluar/elegir?
-- ¿Hay datos preexistentes a migrar o consumir?
+**About dependencies:**
+- Are there external APIs? Third-party services?
+- Are there new libraries you will have to evaluate/choose?
+- Is there pre-existing data to migrate or consume?
 
-**Sobre restricciones:**
-- ¿Hay deadlines? ¿Compromisos con terceros?
-- ¿Restricciones regulatorias (compliance, auditoría)?
-- ¿Performance esperada? ¿Carga prevista?
+**About constraints:**
+- Are there deadlines? Commitments with third parties?
+- Regulatory constraints (compliance, audit)?
+- Expected performance? Anticipated load?
 
-**Sobre stakeholders:**
-- ¿Quién aprueba el plan del epic?
-- ¿Quién va a usar/operar el resultado?
+**About stakeholders:**
+- Who approves the epic plan?
+- Who will use/operate the result?
 
-No hacés un cuestionario. Tres a cinco preguntas concretas y avanzás. Si al usuario le surge algo importante por su lado, lo capturás.
+You do not run a questionnaire. Three to five concrete questions and you move forward. If something important comes up on the user's side, you capture it.
 
-### Paso 3 — Capturar en `docs/epics/<id>/discovery-notes.md` (opcional)
+### Step 3 — Capture in `docs/epics/<id>/discovery-notes.md` (optional)
 
-Para epics chicos esto puede ser parte del `plan.md` directamente. Para epics más grandes, vale tener notas separadas que después se condensan en el plan.
+For small epics this can be part of `plan.md` directly. For larger epics, it is worth having separate notes that are later condensed into the plan.
 
-Si optás por archivo separado:
+If you opt for a separate file:
 
 ```markdown
 # Epic <id> — Discovery Notes
 
-## Problema
-<una frase>
+## Problem
+<one sentence>
 
-## Resultado esperado
-<qué cambia cuando esté done>
+## Expected result
+<what changes when it is done>
 
-## Áreas funcionales tocadas
-<lista>
+## Functional areas touched
+<list>
 
-## Dependencias externas
-<lista>
+## External dependencies
+<list>
 
-## Restricciones
-<lista>
+## Constraints
+<list>
 
 ## Stakeholders
-<lista>
+<list>
 
-## Out of scope inicial
-<lista>
+## Initial out of scope
+<list>
 ```
 
-Si optás por capturar directamente en `plan.md`, saltá este archivo y construí el plan en E2.
+If you opt to capture directly in `plan.md`, skip this file and build the plan in E2.
 
-### Paso 4 — Cerrar la etapa
+### Step 4 — Close the stage
 
-Cuando tenés respuestas a las preguntas y el usuario confirma que el scope es claro:
+When you have answers to the questions and the user confirms the scope is clear:
 
-> *"Discovery del epic cerrado. Tenemos: <resumen 1-2 líneas>. ¿Pasamos a planning para definir las features que lo componen?"*
+> *"Epic discovery closed. We have: <1-2 line summary>. Shall we move to planning to define the features that compose it?"*
 
-## 🛑 Gate de salida (E1 → E2)
+## 🛑 Exit gate (E1 → E2)
 
-- [ ] Scope del epic claro: qué entra, qué no.
-- [ ] Áreas funcionales identificadas.
-- [ ] Dependencias externas conocidas.
-- [ ] Restricciones documentadas.
-- [ ] Aprobador del plan identificado.
+- [ ] Epic scope clear: what's in, what's out.
+- [ ] Functional areas identified.
+- [ ] External dependencies known.
+- [ ] Constraints documented.
+- [ ] Plan approver identified.
 
-Si todos OK: actualizá state file (`epic_stage: epic-planning`). Cargá `references/epic-planning.md`.
+If all OK: update the state file (`epic_stage: epic-planning`). Load `references/epic-planning.md`.
 
-## Anti-patrones
+## Anti-patterns
 
-- **EAP-1**: discovery se convierte en plan exhaustivo. Acá NO definís features todavía. Eso es E2. Si el usuario empieza a listar features con detalle, frenalo y guardá la lista para E2.
-- **Evitar análisis paralizante**: el discovery del epic es light. Si no tenés respuesta a una pregunta, marcala como "VERIFICAR en feature N" y avanzás. Algunas restricciones se descubren al implementar, no al planificar.
+- **EAP-1**: discovery turns into an exhaustive plan. Here you do NOT define features yet. That is E2. If the user starts listing features in detail, stop them and save the list for E2.
+- **Avoid paralyzing analysis**: epic discovery is light. If you don't have an answer to a question, mark it as "VERIFY in feature N" and move forward. Some constraints are discovered while implementing, not while planning.

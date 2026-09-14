@@ -1,140 +1,143 @@
 ---
 name: "odoo-make-env"
 description: >
-  Contrato make para ejecutar tests Odoo en proyectos CDAD (targets test /
-  test-one / test-clean / lint) y guía para implementar el contrato en un entorno
-  concreto (odoo.sh, staging privado, docker local, oca-ci). Usar cuando un proyecto
-  Odoo debe exponer su runner de tests a los agentes CDAD-Odoo, o al crear
-  el Makefile de un proyecto Odoo nuevo.
+  Make contract for running Odoo tests on CDAD projects (targets test /
+  test-one / test-clean / lint) and a guide for implementing the contract in a
+  concrete environment (odoo.sh, private staging, local docker, oca-ci). Use when
+  an Odoo project must expose its test runner to the CDAD-Odoo agents, or when
+  creating the Makefile of a new Odoo project.
 ---
 
-# odoo-make-env — contrato de ejecución de tests Odoo
+# odoo-make-env — Odoo test execution contract
 
-**Principio:** CDAD define QUÉ se verifica (gates + evidencia); el proyecto
-define CÓMO (Makefile versionado en el repo). Los agentes CDAD-Odoo invocan
-solo los 4 targets — nunca comandos específicos de un entorno.
+**Principle:** CDAD defines WHAT is verified (gates + evidence); the project
+defines HOW (Makefile versioned in the repo). The CDAD-Odoo agents invoke
+only the 4 targets — never environment-specific commands.
 
-## El contrato (obligatorio, nombres exactos)
+## The contract (mandatory, exact names)
 
-| Target | Semántica | Usado por |
+| Target | Semantics | Used by |
 |---|---|---|
-| `make test` | suite completa sobre DB caliente | test-writer (AUDIT), implementer (GREEN) |
-| `make test-one TEST=mod:Clase.metodo` | un solo test | test-writer (RED) |
-| `make test-clean` | instalación del módulo desde cero + suite | implementer (gate GREEN), reviewer |
-| `make test-all` | gate unificado multi-módulo: DB fresca + UNA instalación + todas las suites (opcional en mono-módulo; condición: grafo de deps en cadena, si no `-i mod1,mod2`) | implementer (cierre GREEN), reviewer |
-| `make lint` | lint del addon con `pre-commit-vauxoo` — `--diff` en desarrollo, `--all` para evidencia de gate | implementer (gate GREEN), reviewer |
+| `make test` | full suite on the warm DB | test-writer (AUDIT), implementer (GREEN) |
+| `make test-one TEST=mod:Class.method` | a single test | test-writer (RED) |
+| `make test-clean` | install the module from scratch + suite | implementer (GREEN gate), reviewer |
+| `make test-all` | unified multi-module gate: fresh DB + ONE install + all suites (optional in mono-module; condition: dependency graph in a chain, otherwise `-i mod1,mod2`) | implementer (GREEN closure), reviewer |
+| `make lint` | addon lint with `pre-commit-vauxoo` — `--diff` in development, `--all` for gate evidence | implementer (GREEN gate), reviewer |
 
-**Reglas:**
-1. `test-clean` = "instalación desde cero" — el mecanismo es libre por
-   entorno (DB nueva si se puede; reset+`-i` si no).
-2. Corridas SIEMPRE `--stop-after-init --test-enable` y sin workers
-   (`workers = 0`): jobs efímeros, mínimo uso de conexiones.
-3. **Demo data:** en Odoo 19 el CLI crea DBs SIN demo (`--with-demo` default
-   False, `config.py:233`). En entornos que sí la cargan (odoo.sh builds),
-   `test-clean` ejercita la instalación con demo — pero los fixtures de test
-   son self-contained SIEMPRE (ver `odoo-test-writer`).
-4. Evidencia = output pegado con la línea `0 failed, 0 error(s) of N tests`.
-5. El Makefile es versionable y revisable — vive en el repo del proyecto.
-6. `make lint` invoca el lint pinneado `uvx pre-commit-vauxoo==8.3.18` y
-   SIEMPRE con `--no-overwrite`: la bootstrap de configs de pre-commit es
-   decisión del proyecto, nunca del agente. Autofixes deshabilitados
-   (default del tool).
-7. El lint corre en host, no dentro del runtime del entorno de tests; la
-   primera corrida requiere red (clona los repos de hooks).
-8. Evidencia de lint = output de `make lint --all` pegado, con `0`
-   bloqueantes.
+**Rules:**
+1. `test-clean` = "install from scratch" — the mechanism is free per
+   environment (new DB if possible; reset+`-i` if not).
+2. Runs ALWAYS with `--stop-after-init --test-enable` and without workers
+   (`workers = 0`): ephemeral jobs, minimal use of connections.
+3. **Demo data:** in Odoo 19 the CLI creates DBs WITHOUT demo
+   (`--with-demo` default False, `config.py:233`). In environments that do
+   load it (odoo.sh builds), `test-clean` exercises the installation with
+   demo — but test fixtures are self-contained ALWAYS (see
+   `odoo-test-writer`).
+4. Evidence = pasted output with the `0 failed, 0 error(s) of N tests` line.
+5. The Makefile is versionable and reviewable — it lives in the project repo.
+6. `make lint` invokes the pinned lint `uvx pre-commit-vauxoo==8.3.18` and
+   ALWAYS with `--no-overwrite`: the bootstrap of pre-commit configs is the
+   project's decision, never the agent's. Autofixes disabled
+   (tool default).
+7. The lint runs on the host, not inside the test environment's runtime; the
+   first run requires network (clones the hook repos).
+8. Lint evidence = output of `make lint --all` pasted, with `0`
+   blocking.
 
-## Cómo implementar un entorno nuevo
+## How to implement a new environment
 
-**Paso 0 — ¿hay un entorno ya resuelto instalado?** Este skill no depende de
-ninguno en particular, pero si uno está disponible, usarlo es más rápido y
-más confiable que fabricar el Makefile a mano.
+**Step 0 — is there an already-resolved environment installed?** This skill
+does not depend on any in particular, but if one is available, using it is
+faster and more reliable than fabricating the Makefile by hand.
 
-Buscá, en este orden:
+Look, in this order:
 
-1. Un skill de entorno instalado (convención: `<algo>-env`, p.ej.
-   `odoo-sandbox-env`) — su `description` declara cuándo aplica. Si hay uno y
-   aplica a este proyecto, **cargalo primero** y seguí su guía: ya trae el
-   Makefile verificado, dos veces más rápido que fabricar el propio.
-2. Si no hay ninguno, el binario del entorno podría estar igual disponible sin
-   el skill (p.ej. `command -v odoo-sandbox`). Poco común, pero revisalo.
-3. **Nada de lo anterior → procedimiento genérico** (lo que sigue). Es el
-   camino que siempre funciona, para cualquier entorno, con o sin skill
-   dedicado.
+1. An installed environment skill (convention: `<something>-env`, e.g.
+   `odoo-sandbox-env`) — its `description` declares when it applies. If one
+   exists and applies to this project, **load it first** and follow its
+   guide: it already brings the verified Makefile, twice as fast as
+   fabricating your own.
+2. If there is none, the environment's binary might still be available
+   without the skill (e.g. `command -v odoo-sandbox`). Uncommon, but check it.
+3. **None of the above → generic procedure** (what follows). It is the path
+   that always works, for any environment, with or without a dedicated
+   skill.
 
-### Procedimiento genérico (sin entorno dedicado)
+### Generic procedure (without a dedicated environment)
 
-1. Copiar `assets/Makefile.template` al repo del proyecto.
-2. Resolver las 4 variables: binario odoo, config, DB de test, mecanismo de
-   "desde cero".
-3. Ver tabla de varianza (abajo) para entornos conocidos.
-4. Agregar retry si el postgres es compartido (patrón `run_odoo` del
-   template de staging privado, en referencias privadas de ese entorno).
-5. Verificar los 4 targets con un módulo mínimo (sugerido: `idea_log`).
+1. Copy `assets/Makefile.template` into the project repo.
+2. Resolve the 4 variables: odoo binary, config, test DB, "from scratch"
+   mechanism.
+3. See the variance table (below) for known environments.
+4. Add retry if the postgres is shared (`run_odoo` pattern from the private
+   staging template, in that environment's private references).
+5. Verify the 4 targets with a minimal module (suggested: `idea_log`).
 
-## Varianza por entorno (verificada empíricamente)
+## Variance per environment (verified empirically)
 
-| Aspecto | odoo.sh | staging privado | docker local (patrón) | odoo-sandbox (si está instalado) |
+| Aspect | odoo.sh | private staging | local docker (pattern) | odoo-sandbox (if installed) |
 |---|---|---|---|---|
-| Crear DBs | ❌ solo la del build | ✅ CREATEDB | ✅ contenedor postgres | ✅ CREATEDB (u `odoo-bin` la crea sola) |
-| `test-clean` | reset `to install` + `-i` | dropdb+createdb+`-i` | dropdb+createdb+`-i` | dropdb+`-i` (Makefile provisto) |
-| Demo data | siempre en builds dev | inicialización DB nueva | inicialización DB nueva | inicialización DB nueva |
-| Binario | wrapper `odoo-bin` | venv + `odoo-bin -c conf` | `docker compose exec` | `odoo-sandbox exec ... -- odoo-bin` (host) u `odoo-bin` directo (dentro de una instancia) |
-| Postgres | dedicado | **compartido: retry + `db_maxconn` bajo** | dedicado | típicamente compartido: preflight de conexiones incluido |
+| Create DBs | ❌ only the build's | ✅ CREATEDB | ✅ postgres container | ✅ CREATEDB (or `odoo-bin` creates it itself) |
+| `test-clean` | reset `to install` + `-i` | dropdb+createdb+`-i` | dropdb+createdb+`-i` | dropdb+`-i` (Makefile provided) |
+| Demo data | always in dev builds | fresh DB initialization | fresh DB initialization | fresh DB initialization |
+| Binary | `odoo-bin` wrapper | venv + `odoo-bin -c conf` | `docker compose exec` | `odoo-sandbox exec ... -- odoo-bin` (host) or direct `odoo-bin` (inside an instance) |
+| Postgres | dedicated | **shared: retry + low `db_maxconn`** | dedicated | typically shared: connection preflight included |
 
-Detalle de la variante odoo.sh: `references/odoo-sh.md`. odoo-sandbox trae su
-propia guía en su propio skill (`odoo-sandbox-env`, si está instalado) —
-deliberadamente no vive acá: es un entorno más entre varios posibles, y
-CDAD/este skill no dependen de él.
+Details of the odoo.sh variant: `references/odoo-sh.md`. odoo-sandbox brings
+its own guide in its own skill (`odoo-sandbox-env`, if installed) —
+deliberately it does not live here: it is one environment among several
+possible, and CDAD/this skill do not depend on it.
 
-## Trampas conocidas (verificadas 2026-08-28)
+## Known traps (verified 2026-08-28)
 
-1. `-i` sobre módulo instalado = no-op (0 tests) → el mecanismo de
-   "desde cero" es obligatorio en `test-clean`.
-2. Builds dev gestionados pueden tener drift de schema (columna fantasma) →
-   el antídoto es DB nueva/rebuild; `test-clean` real lo detecta.
-3. En odoo.sh, `scp`/`sftp` fallan: transferir con `tar` por stdin/SSH.
-4. `--workers 0` evita consumir slots del postgres compartido de otros
+1. `-i` on an installed module = no-op (0 tests) → the "from scratch"
+   mechanism is mandatory in `test-clean`.
+2. Managed dev builds can have schema drift (ghost column) → the antidote is
+   a new DB/rebuild; a real `test-clean` detects it.
+3. On odoo.sh, `scp`/`sftp` fail: transfer with `tar` over stdin/SSH.
+4. `--workers 0` avoids consuming slots from the shared postgres of other
    tenants.
-5. **DB fresca + `-i` corre los tests at_install de TODAS las dependencias
-   (incluidos los de `base`, como `HttpCase`, que abren conexiones HTTP
-   adicionales).** En postgres compartido esos tests cuelgan. Fix: acotar
-   `test-clean` con `--test-tags $(MODULE)` para correr solo los tests del
-   módulo (la instalación de dependencias sigue ocurriendo; solo se filtran
-   sus tests).
-6. **Procesos odoo-bin huérfanos retienen conexiones postgres** y pueden ser
-   la causa real de "sin slots" (un `make` que hizo timeout deja el `odoo-bin`
-   pegado en `connect`). Antes de reintentar: `ps -eo pid,cmd | grep odoo` y
-   matar los huérfanos del runner (NUNCA los de la instancia de plataforma).
-   Un huérfano pegado es peor que un reintento fresco.
-7. **Evitá macro de retry sobre `odoo-bin`**: agrega complejidad (y bugs de
-   escaping `$$`) sin resolver la causa raíz. Preferí comandos directos; el
-   retry de slots, si existe, debe ser mínimo (solo `createdb`).
-8. **La coma en `--test-tags` separa SPECS completos**: `mod:A,mod:B` corre
-   ambas clases; `mod:A,B` corre menos tests, sin error. Repetir el prefijo
-   por spec y verificar la línea `of N tests` contra el conteo esperado
-   (fuente: `odoo/tests/tag_selector.py`).
-9. **Guards anti-falso-verde obligatorios** (`require-installed` /
-   `require-module`): `-u` de módulo no instalado y `-i` de módulo inexistente
-   reportan `0 failed ... of 0 tests` con rc=0 — falso verde puro.
+5. **Fresh DB + `-i` runs the at_install tests of ALL dependencies
+   (including those of `base`, like `HttpCase`, which open additional HTTP
+   connections).** On shared postgres those tests hang. Fix: scope
+   `test-clean` with `--test-tags $(MODULE)` to run only the module's tests
+   (the dependency installation still happens; only their tests are
+   filtered).
+6. **Orphan odoo-bin processes retain postgres connections** and can be the
+   real cause of "no slots" (a `make` that timed out leaves the `odoo-bin`
+   stuck in `connect`). Before retrying: `ps -eo pid,cmd | grep odoo` and
+   kill the runner's orphans (NEVER the platform instance's).
+   A stuck orphan is worse than a fresh retry.
+7. **Avoid a retry macro over `odoo-bin`**: it adds complexity (and `$$`
+   escaping bugs) without solving the root cause. Prefer direct commands;
+   the slot retry, if any, must be minimal (only `createdb`).
+8. **The comma in `--test-tags` separates COMPLETE specs**: `mod:A,mod:B`
+   runs both classes; `mod:A,B` runs fewer tests, without error. Repeat the
+   prefix per spec and verify the `of N tests` line against the expected
+   count (source: `odoo/tests/tag_selector.py`).
+9. **Anti-false-green guards are mandatory** (`require-installed` /
+   `require-module`): `-u` of a non-installed module and `-i` of a
+   non-existent module report `0 failed ... of 0 tests` with rc=0 — pure
+   false green.
 
-## Presupuesto de corridas (protocolo obligatorio)
+## Run budget (mandatory protocol)
 
-La suite completa es de gate, no de depuración: la iteración usa `test-one`
-sobre DB caliente con ciclo anti-loop (leer fallo → hipótesis → un cambio →
-una corrida; max 2 sin convergencia → STOP); el gate se cierra con UNA
-`test-all` en DB fresca. Presupuesto duro por etapa, default 2 completas +
-~15 `test-one` por feature (ajustable por proyecto por el owner en
-`systemPatterns.md`). Detalle completo: `references/run-budget-protocol.md`.
+The full suite is for the gate, not for debugging: iteration uses `test-one`
+on the warm DB with the anti-loop cycle (read failure → hypothesis → one
+change → one run; max 2 without convergence → STOP); the gate is closed with
+ONE `test-all` on a fresh DB. Hard budget per stage, default 2 full runs +
+~15 `test-one` per feature (adjustable per project by the owner in
+`systemPatterns.md`). Full detail: `references/run-budget-protocol.md`.
 
-## Referencias
+## References
 
-- `assets/Makefile.template` — base del contrato (placeholders).
-- `assets/odoo-test.conf.template` — conf de test propia (no tocar la de
-  plataforma en entornos gestionados).
-- `references/odoo-sh.md` — implementación de referencia pública.
-- `references/odoo-19-traps.md` — trampas de API Odoo 19 verificadas
-  (`res.groups.privilege` / `<list>` y su relación con el drift de schema).
-- `references/run-budget-protocol.md` — protocolo de presupuesto de corridas
-  por etapa (test-one caliente para iterar, test-all para gate, presupuesto 0
-  en review con identidad de árbol, N de property tests como calibración).
+- `assets/Makefile.template` — contract base (placeholders).
+- `assets/odoo-test.conf.template` — own test conf (do not touch the
+  platform's in managed environments).
+- `references/odoo-sh.md` — public reference implementation.
+- `references/odoo-19-traps.md` — verified Odoo 19 API traps
+  (`res.groups.privilege` / `<list>` and their relation to schema drift).
+- `references/run-budget-protocol.md` — per-stage run budget protocol
+  (warm test-one for iterating, test-all for the gate, budget 0 in review
+  with tree identity, N of property tests as calibration).

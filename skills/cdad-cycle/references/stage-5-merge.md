@@ -1,91 +1,91 @@
-# Etapa 5 — Merge y Memory Bank
+# Stage 5 — Merge and Memory Bank
 
-CI completo + actualización del Memory Bank con patrón Scribe.
+Full CI + Memory Bank update with the Scribe pattern.
 
-## Tu rol como orquestador
+## Your role as orchestrator
 
-NO actualizás el Memory Bank por tu cuenta. Coordinás:
+You do NOT update the Memory Bank on your own. You coordinate:
 
-1. Verificás CI completo (vos corrés si tenés bash, o pedís output al usuario).
-2. Emitís handoff a **scribe** con spec + diff + review + Memory Bank actual.
-3. Validás drafts en re-entry.
-4. Pasás drafts al **usuario** para APROBACIÓN (indelegable); vos los commiteás tras la aprobación.
-5. Cierre de feature cuando CI verde + Memory Bank commiteado.
+1. Verify full CI (you run it if you have bash, or ask the user for the output).
+2. Emit handoff to the **scribe** with spec + diff + review + current Memory Bank.
+3. Validate the drafts at re-entry.
+4. Pass the drafts to the **user** for APPROVAL (non-delegable); you commit them after the approval.
+5. Feature closure when CI is green + Memory Bank committed.
 
-## 5.1 — Verificación CI
+## 5.1 — CI verification
 
-**No es opcional.**
+**Not optional.**
 
-Verificaciones obligatorias:
+Mandatory checks:
 
-- Linter completo sobre archivos modificados.
+- Full linter over the modified files.
 - Type checker (mypy / tsc / etc.).
-- Import-linter o equivalente.
-- Suite completa: unit + integration + contract + property.
-- Verificaciones específicas del proyecto.
+- Import-linter or equivalent.
+- Full suite: unit + integration + contract + property.
+- Project-specific checks.
 
-Si tenés bash: corré la suite. Si no: pedile al usuario el output.
+If you have bash: run the suite. If not: ask the user for the output.
 
-> *"Corré la suite completa (`<comando del proyecto>`). Necesito ver: linter, type checker, import-linter, todos los tests. Si algo falla, volvemos a Etapa 3."*
+> *"Run the full suite (`<the project's command>`). I need to see: linter, type checker, import-linter, all the tests. If anything fails, we go back to Stage 3."*
 
-Si CI falla: activá `stage-debugging` (`references/stage-debugging.md`) con el output del fallo — sin causa raíz verificada no hay fix. Con el diagnóstico y el loop rojo, volvé a Etapa 3. Sin excepciones.
+If CI fails: activate `stage-debugging` (`references/stage-debugging.md`) with the failure output — without a verified root cause there is no fix. With the diagnosis and the red loop, go back to Stage 3. No exceptions.
 
-## 5.2 — Handoff al Scribe
+## 5.2 — Handoff to the Scribe
 
-Cargá `references/handoff-prompts.md` sección "Scribe (Etapa 5)".
+Load `references/handoff-prompts.md` section "Scribe (Stage 5)".
 
-Generá packet con:
+Generate the packet with:
 
-- Spec aprobado (`docs/specs/<feat>/spec.md`).
-- Diff completo del PR.
-- Reporte del reviewer (`docs/specs/<feat>/review.md`).
-- Memory Bank actual (`projectbrief`, `activeContext`, `progress`, `systemPatterns`, `adr/`).
+- Approved spec (`docs/specs/<feat>/spec.md`).
+- Full diff of the PR.
+- Reviewer's report (`docs/specs/<feat>/review.md`).
+- Current Memory Bank (`projectbrief`, `activeContext`, `progress`, `systemPatterns`, `adr/`).
 
-Entregás packet, terminás turno.
+Deliver the packet, end the turn.
 
 ### Re-entry
 
-Cargá `re-entry.md` sección "Scribe". Validá tres drafts presentes (activeContext entry, progress changes, ADR draft o "sin ADR").
+Load `re-entry.md` section "Scribe". Validate that the three drafts are present (activeContext entry, progress changes, ADR draft or "no ADR").
 
-## 5.3 — Validación del usuario (indelegable)
+## 5.3 — User validation (non-delegable)
 
-Pasás los drafts al usuario para aprobación:
+Pass the drafts to the user for approval:
 
-> *"Scribe terminó. Tres drafts:*
+> *"The scribe is done. Three drafts:*
 >
-> *1. activeContext.md entry: <pegar>*
-> *2. progress.md changes: <pegar>*
-> *3. ADR: <pegar | "sin ADR sugerido", confianza <X>>*
+> *1. activeContext.md entry: <paste>*
+> *2. progress.md changes: <paste>*
+> *3. ADR: <paste | "no ADR suggested", confidence <X>>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, aprobá; el orquestador commitea con prefijo `docs(memory):`. Avisame cuando esté."*
+> *Edit whatever the scribe got wrong. When you're satisfied, approve; the orchestrator commits with the `docs(memory):` prefix. Let me know when it's done."*
 
-**La aprobación es del usuario (indelegable); la ejecución del git es del
-orquestador.** Si el usuario aprueba los drafts, vos los commiteás con `git add
-docs/**` + `git commit` (prefijo `docs(memory):`).
+**The approval belongs to the user (non-delegable); the git execution belongs to the
+orchestrator.** If the user approves the drafts, you commit them with `git add
+docs/**` + `git commit` (prefix `docs(memory):`).
 
-## 5.4 — Decisión sobre ADR
+## 5.4 — Decision on the ADR
 
-Si el scribe propuso ADR:
+If the scribe proposed an ADR:
 
-- **Confianza Alta**: probablemente merece ADR. Pasalo al usuario para que lo expanda.
-- **Confianza Media**: preguntale al usuario si la decisión amerita ADR.
-- **Confianza Baja**: descartá por defecto, salvo que el usuario vea valor.
+- **High confidence**: it probably deserves an ADR. Pass it to the user so they can expand it.
+- **Medium confidence**: ask the user whether the decision warrants an ADR.
+- **Low confidence**: discard by default, unless the user sees value in it.
 
-Heurística general: ¿alguien en 6 meses podría preguntar "por qué hicimos X así"? Si sí → ADR. Si no → descartá.
+General heuristic: could someone in 6 months ask "why did we do X this way"? If yes → ADR. If no → discard.
 
 ## 5.5 — Merge
 
-Una vez CI verde + Memory Bank commiteado (+ ADR si corresponde):
+Once CI is green + Memory Bank committed (+ ADR if applicable):
 
-Mergeás a main. Estrategia (squash, merge, rebase) según convención del proyecto, no del skill.
+Merge to main. Strategy (squash, merge, rebase) per the project's convention, not the skill's.
 
-## 5.6 — Cierre de la branch (git safety)
+## 5.6 — Branch closure (git safety)
 
-**Precondición heredada**: suite ya verde (§5.1) y Memory Bank cerrado (§5.2-5.3). No se re-verifican acá; esta sección cubre lo que pasa con la branch y el worktree una vez que el trabajo está terminado y aprobado.
+**Inherited precondition**: suite already green (§5.1) and Memory Bank closed (§5.2-5.3). They are not re-verified here; this section covers what happens with the branch and the worktree once the work is finished and approved.
 
-### Paso 1 — Detectar el entorno
+### Step 1 — Detect the environment
 
-Antes de tocar nada, determiná en qué tipo de repo estás:
+Before touching anything, determine what type of repo you are in:
 
 ```bash
 git rev-parse --git-dir
@@ -93,100 +93,100 @@ git rev-parse --git-common-dir
 git rev-parse --show-superproject-working-tree
 ```
 
-- Si `--git-dir` y `--git-common-dir` coinciden → repo normal.
-- Si `--git-common-dir` apunta a otro lugar → worktree vinculado.
-- Guard de submodule: si `--show-superproject-working-tree` devuelve un path → estás dentro de un submodule; el repo real es el superprojecto (repo normal para efectos del cierre).
+- If `--git-dir` and `--git-common-dir` match → normal repo.
+- If `--git-common-dir` points elsewhere → linked worktree.
+- Submodule guard: if `--show-superproject-working-tree` returns a path → you are inside a submodule; the real repo is the superproject (a normal repo for closure purposes).
 
-| Entorno detectado | Qué aplica |
+| Detected environment | What applies |
 |---|---|
-| Repo normal | Menú completo, incluido merge local. |
-| Worktree vinculado con branch propia | Menú completo. |
-| Detached HEAD | Menú sin merge local (push + PR, keep o discard). |
+| Normal repo | Full menu, including local merge. |
+| Linked worktree with its own branch | Full menu. |
+| Detached HEAD | Menu without local merge (push + PR, keep or discard). |
 
-### Paso 2 — Confirmar la base branch
+### Step 2 — Confirm the base branch
 
-Si la base no está registrada en el spec ni en el state file, **confirmá con el usuario**: *"Esta branch salió de `<mejor candidata>` — ¿correcto?"*. **Nunca** la asumas ni la infieras en silencio: un merge a base equivocada es caro de revertir.
+If the base is not recorded in the spec nor in the state file, **confirm with the user**: *"This branch came off `<best candidate>` — correct?"*. **Never** assume it or infer it silently: a merge onto the wrong base is expensive to revert.
 
-### Paso 3 — Menú fijo de cierre
+### Step 3 — Fixed closure menu
 
-> *"Implementación completa. ¿Qué hacemos?"*
+> *"Implementation complete. What do we do?"*
 >
-> 1. **Merge local** a `<base>`
-> 2. **Push** y crear **PR**
-> 3. **Keep**: dejar la branch como está
-> 4. **Discard**: descartar el trabajo
+> 1. **Local merge** to `<base>`
+> 2. **Push** and create a **PR**
+> 3. **Keep**: leave the branch as is
+> 4. **Discard**: throw the work away
 
-El usuario elige; el orquestador ejecuta (§5.3). Nunca elijas por defecto.
+The user chooses; the orchestrator executes (§5.3). Never choose by default.
 
-**Ejecución por opción:**
+**Execution per option:**
 
-1. **Merge local**: corré el merge y hacé re-verificación de la suite sobre el resultado mergeado (el gate valida el árbol a mergear, no el árbol que estaba cuando corriste la suite hace una hora). Si aparecieron conflictos: **STOP** — listá los archivos afectados, sin auto-resolver nada, y llevá la decisión al usuario. Si el merge falla, la branch y el worktree quedan en su lugar.
-2. **Push + PR**: el worktree sigue vivo para iterar el feedback del PR.
-3. **Keep**: reportá dónde quedó la branch y el worktree.
-4. **Discard**: SOLO a pedido explícito del usuario. Mostrá qué se borra (branch, lista de commits, worktree) y esperá que el usuario tipee la palabra literal `discard` — *"sí, borralo"* no alcanza. Recién entonces: `git branch -D` + limpieza.
+1. **Local merge**: run the merge and re-verify the suite over the merged result (the gate validates the tree being merged, not the tree as it was when you ran the suite an hour ago). If conflicts appeared: **STOP** — list the affected files, without auto-resolving anything, and bring the decision to the user. If the merge fails, the branch and the worktree stay in place.
+2. **Push + PR**: the worktree stays alive to iterate on the PR feedback.
+3. **Keep**: report where the branch and the worktree ended up.
+4. **Discard**: ONLY on the user's explicit request. Show what gets deleted (branch, list of commits, worktree) and wait for the user to type the literal word `discard` — *"yes, delete it"* is not enough. Only then: `git branch -D` + cleanup.
 
-### Limpieza por provenance
+### Cleanup by provenance
 
-Solo limpiás los worktrees que el propio ciclo creó (`.worktrees/` / `worktrees/`). Un worktree ajeno al ciclo queda intacto.
+Only clean the worktrees the cycle itself created (`.worktrees/` / `worktrees/`). A worktree foreign to the cycle stays intact.
 
 ```bash
-git worktree remove <path>   # desde la raíz del repo
+git worktree remove <path>   # from the repo root
 git worktree prune
 ```
 
-Si la remoción es rechazada (archivos sin commitear): mostrá el output de `git status --porcelain` y preguntale al usuario. **Sin `--force` por iniciativa propia** — el rechazo significa que hay archivos que existen solo ahí.
+If the removal is rejected (uncommitted files): show the output of `git status --porcelain` and ask the user. **No `--force` on your own initiative** — the rejection means there are files that exist only there.
 
-### ⚠️ Orden crítico
+### ⚠️ Critical order
 
-**Merge primero → worktree después → branch al final.** Borrar la branch con el worktree vivo referenciándola falla; y remover el worktree antes de confirmar el merge destruye trabajo si el merge falla.
+**Merge first → worktree after → branch last.** Deleting the branch while a live worktree still references it fails; and removing the worktree before confirming the merge destroys work if the merge fails.
 
-### Anti-racionalización
+### Anti-rationalization
 
-| Racionalización | Corrección |
+| Rationalization | Correction |
 |---|---|
-| "Ya corrimos la suite hace un rato" | El gate valida el árbol a mergear: re-corre sobre el resultado del merge. |
-| "Es obvio que quiere mergear" | La decisión es del usuario (§5.3). Presentá el menú. |
-| "Sí, borralo" alcanza como confirmación | Solo la palabra literal `discard` autoriza destrucción. |
-| "Este otro worktree viejo lo limpio de paso" | Provenance: solo los que este ciclo creó. |
-| "El rechazo del worktree remove es un tecnicismo, uso --force" | El rechazo significa archivos que existen solo ahí; forzar los destruye. |
-| "El merge falló pero es flaky, reintento" | Un resultado mergeado rojo frena todo; branch y worktree quedan mientras se investiga. |
-| "Detecto la base con git y listo" | Merge a base equivocada es caro de revertir; confirmá con el usuario. |
+| "We already ran the suite a while ago" | The gate validates the tree being merged: re-run over the merge result. |
+| "It's obvious he wants to merge" | The decision is the user's (§5.3). Present the menu. |
+| "'Yes, delete it' is enough as confirmation" | Only the literal word `discard` authorizes destruction. |
+| "I'll clean that other old worktree while I'm at it" | Provenance: only the ones this cycle created. |
+| "The worktree remove rejection is a technicality, I'll use --force" | The rejection means files that exist only there; forcing destroys them. |
+| "The merge failed but it's flaky, I'll retry" | A red merged result halts everything; the branch and worktree stay while it's investigated. |
+| "I'll detect the base with git and be done" | A merge onto the wrong base is expensive to revert; confirm with the user. |
 
-### Cuándo NO aplica
+### When it does not apply
 
-- **Proyectos con squash o rebase-merge por convención**: cambia el comando de integración, no la decisión del usuario ni el menú.
-- **Repos sin branch de feature** (commiteo directo a main — común en proyectos solo o monorepo): el menú se reduce a push/PR, y la sección aplica solo a lo no destructivo.
+- **Projects with squash or rebase-merge by convention**: the integration command changes, not the user's decision nor the menu.
+- **Repos without a feature branch** (committing directly to main — common in solo projects or monorepos): the menu reduces to push/PR, and the section applies only to the non-destructive parts.
 
-## 🛑 Gate de salida (Etapa 5 → done)
+## 🛑 Exit gate (Stage 5 → done)
 
-- [ ] **Si hay CI configurado:** CI completo verde (linter, type checker,
+- [ ] **If CI is configured:** full CI green (linter, type checker,
       import-linter, unit, integration, contract, property).
-- [ ] **Si NO hay CI configurado** (proyecto nuevo, primera feature): la suite
-      local verde equivale al gate, y la ausencia de CI se registra como deuda
-      explícita en `docs/progress.md` — nunca en silencio. No bloquea el
-      cierre de la primera feature esperando un CI que bootstrap ya anotó como
-      pendiente (`references/bootstrap.md` Paso 2, pregunta 4).
-- [ ] `docs/activeContext.md` con entry nueva.
-- [ ] `docs/progress.md` movió feature a "done".
-- [ ] Si decisión arquitectónica → ADR nuevo en `docs/adr/`.
-- [ ] Commit con prefijo `docs(memory):` — aprobado por el usuario, ejecutado por el orquestador.
-- [ ] Feature mergeada.
+- [ ] **If NO CI is configured** (new project, first feature): the local green
+      suite equals the gate, and the absence of CI is recorded as explicit
+      debt in `docs/progress.md` — never silently. It does not block
+      the closure of the first feature while waiting for a CI that bootstrap already noted as
+      pending (`references/bootstrap.md` Step 2, question 4).
+- [ ] `docs/activeContext.md` with a new entry.
+- [ ] `docs/progress.md` moved the feature to "done".
+- [ ] If an architectural decision → new ADR in `docs/adr/`.
+- [ ] Commit with the `docs(memory):` prefix — approved by the user, executed by the orchestrator.
+- [ ] Feature merged.
 
-Cuando todos OK: actualizá state (`current_stage: done`, `active_feature: null`).
+When all OK: update state (`current_stage: done`, `active_feature: null`).
 
-**Si la feature pertenece a un epic** (`active_epic` no null en el state file), cerrá así:
+**If the feature belongs to an epic** (`active_epic` not null in the state file), close like this:
 
-> *"Feature `<X>` cerrada. Memory Bank actualizado. La feature pertenece al epic `<epic-id>`. Te recomiendo volver a `cdad-epic` (en chat nuevo) para coordinar la siguiente feature del epic. ¿O preferís arrancar feature standalone fuera del epic acá?"*
+> *"Feature `<X>` closed. Memory Bank updated. The feature belongs to epic `<epic-id>`. I recommend going back to `cdad-epic` (in a new chat) to coordinate the next feature of the epic. Or would you rather start a standalone feature outside the epic here?"*
 
-**Si la feature NO pertenece a un epic** (caso standalone), cerrá así:
+**If the feature does NOT belong to an epic** (standalone case), close like this:
 
-> *"Feature `<X>` cerrada. Memory Bank actualizado. ¿Próxima feature, o cerramos por hoy?"*
+> *"Feature `<X>` closed. Memory Bank updated. Next feature, or are we done for today?"*
 
-Si próxima feature → vuelta a Etapa 1.
+If next feature → back to Stage 1.
 
-## Anti-patrones
+## Anti-patterns
 
-- **AP-7**: Memory Bank desactualizado. Bloqueá cierre.
-- **AP-8**: ADRs especulativos o ausentes.
-- **AP-9**: CI skipeado.
-- **AP-10**: delegar la APROBACIÓN del Memory Bank al LLM. La ejecución del commit es del orquestador; la decisión de aprobar es del usuario (indelegable).
+- **AP-7**: outdated Memory Bank. Block the closure.
+- **AP-8**: speculative or missing ADRs.
+- **AP-9**: CI skipped.
+- **AP-10**: delegating the Memory Bank APPROVAL to the LLM. The commit execution is the orchestrator's; the decision to approve is the user's (non-delegable).

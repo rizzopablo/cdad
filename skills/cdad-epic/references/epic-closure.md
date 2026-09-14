@@ -1,112 +1,112 @@
-# Etapa E4 — Closure del epic
+# Stage E4 — Epic closure
 
-Cierre del epic: consolidación del Memory Bank, retrospectiva breve, ADRs pendientes (si surgieron decisiones del epic que aún no están documentadas), commit de cierre.
+Epic closure: Memory Bank consolidation, brief retrospective, pending ADRs (if epic-level decisions emerged that are not yet documented), closing commit.
 
-## Tu rol
+## Your role
 
-Coordinás. Emitís handoff a **scribe modo epic** para drafts. El usuario (humano o agente autónomo de mayor jerarquía) aprueba; el orquestador commitea.
+You coordinate. You issue the handoff to the **scribe in epic mode** for drafts. The user (human or a higher-hierarchy autonomous agent) approves; the orchestrator commits.
 
-## Pasos
+## Steps
 
-### Paso 1 — Handoff al scribe
+### Step 1 — Handoff to the scribe
 
-Es similar al scribe de feature (`cdad-cycle`) pero con scope ampliado: cubre el epic completo.
+It is similar to the feature scribe (`cdad-cycle`) but with an expanded scope: it covers the whole epic.
 
-Generá packet con:
+Generate the packet with:
 
-- `docs/epics/<id>/plan.md` (aprobado).
+- `docs/epics/<id>/plan.md` (approved).
 - `docs/epics/<id>/integration.md`.
-- Los specs de todas las features del epic.
-- Memory Bank actual: `projectbrief.md`, `activeContext.md`, `progress.md`, `systemPatterns.md`, `docs/adr/`.
-- Diff agregado del epic (si tu entorno lo permite, generá un diff cumulativo entre el commit base del epic y HEAD).
+- The specs of all the epic's features.
+- Current Memory Bank: `projectbrief.md`, `activeContext.md`, `progress.md`, `systemPatterns.md`, `docs/adr/`.
+- Aggregate epic diff (if your environment allows it, generate a cumulative diff between the epic's base commit and HEAD).
 
 ```
-Sos un sub-agente scribe en CDAD modo cierre de epic.
+You are a scribe sub-agent in CDAD epic-closure mode.
 
-Tarea: producir cuatro drafts para el cierre del epic:
-1. Entry de cierre del epic en activeContext.md.
-2. Update de progress.md (mover epic completo a "done").
-3. ADR(s) si detectás decisiones arquitectónicas del epic que aún no están 
-   documentadas en docs/adr/. Por feature pueden ya estar; acá buscás las 
-   transversales al epic.
-4. Draft de docs/epics/<id>/closure.md con resumen, retrospectiva breve, 
-   deuda técnica que se llevó.
+Task: produce four drafts for the epic closure:
+1. Epic closure entry in activeContext.md.
+2. progress.md update (move the whole epic to "done").
+3. ADR(s) if you detect architectural decisions of the epic that are not yet 
+   documented in docs/adr/. Per-feature ones may already exist; here you look 
+   for the ones that span the epic.
+4. Draft of docs/epics/<id>/closure.md with summary, brief retrospective, 
+   technical debt carried forward.
 
-Contexto:
-1. Plan del epic: <pegar plan.md>
-2. Integration report: <pegar integration.md>
-3. Specs de features: <pegar todos>
-4. Memory Bank actual
-5. ADRs ya creados durante features del epic: <listar nombres>
+Context:
+1. Epic plan: <paste plan.md>
+2. Integration report: <paste integration.md>
+3. Feature specs: <paste all>
+4. Current Memory Bank
+5. ADRs already created during the epic's features: <list names>
 
-Reglas estrictas:
-- Permisos: read-only.
-- NO commiteás. Generás drafts; el usuario aprueba; el orquestador commitea.
-- Para ADRs nuevos: solo si la decisión es claramente del epic (transversal a 
-  varias features) y aún no está documentada. Marcá confianza Alta/Media/Baja.
+Strict rules:
+- Permissions: read-only.
+- You do NOT commit. You generate drafts; the user approves; the orchestrator commits.
+- For new ADRs: only if the decision clearly belongs to the epic (spanning 
+  several features) and is not yet documented. Mark confidence High/Medium/Low.
 
-Output esperado, cuatro bloques:
-[Draft 1: activeContext entry de cierre]
+Expected output, four blocks:
+[Draft 1: closure activeContext entry]
 [Draft 2: progress.md changes]
-[Draft 3: ADRs nuevos | "Sin ADRs nuevos"]
+[Draft 3: new ADRs | "No new ADRs"]
 [Draft 4: closure.md]
 
-Cuando termines:
-"LISTO. Cuatro drafts: <bloques>"
+When done:
+"READY. Four drafts: <blocks>"
 ```
 
-Entregás packet, terminás turno.
+Deliver the packet, end your turn.
 
-### Paso 2 — Re-entry
+### Step 2 — Re-entry
 
-Validá los cuatro drafts presentes. Pasá al usuario para aprobación; vos commiteás tras la aprobación.
+Validate that the four drafts are present. Pass to the user for approval; you commit after approval.
 
-### Paso 3 — Validación del usuario (indelegable)
+### Step 3 — User validation (non-delegable)
 
-Decile al usuario:
+Tell the user:
 
-> *"Scribe terminó. Cuatro drafts:*
+> *"The scribe finished. Four drafts:*
 >
-> *1. activeContext entry: <pegar>*
-> *2. progress changes: <pegar>*
-> *3. ADRs nuevos: <pegar | 'sin ADRs', con confianza>*
-> *4. closure.md: <pegar>*
+> *1. activeContext entry: <paste>*
+> *2. progress changes: <paste>*
+> *3. New ADRs: <paste | 'no ADRs', with confidence>*
+> *4. closure.md: <paste>*
 >
-> *Editá lo que el scribe entendió mal. Cuando estés conforme, aprobá; el orquestador commitea con prefijo `docs(memory): close epic <id>`. Avisame cuando esté."*
+> *Edit whatever the scribe misunderstood. When you are satisfied, approve; the orchestrator commits with prefix `docs(memory): close epic <id>`. Let me know when it's done."*
 
-### Paso 4 — Decisión sobre ADRs nuevos
+### Step 4 — Decision on new ADRs
 
-Si el scribe propuso ADRs nuevos:
+If the scribe proposed new ADRs:
 
-- **Confianza Alta**: típicamente merece ADR si es transversal al epic. Pasá al usuario para que lo expanda.
-- **Confianza Media**: preguntale al usuario si vale.
-- **Confianza Baja**: descartar por defecto.
+- **High confidence**: it typically deserves an ADR if it spans the epic. Pass to the user to expand it.
+- **Medium confidence**: ask the user whether it's worth it.
+- **Low confidence**: discard by default.
 
-Heurística: ¿la decisión afectó cómo se diseñaron varias features? ¿alguien dentro de 6-12 meses podría preguntar "por qué este epic se hizo así"? Si sí → ADR. Si no → descartar.
+Heuristic: did the decision affect how several features were designed? Could someone 6-12 months from now ask "why was this epic built this way"? If yes → ADR. If no → discard.
 
-ADRs surgidos durante features individuales **ya deberían estar** en `docs/adr/` (escritos en E5 de `cdad-cycle`). El scribe del epic NO duplica esos; solo agrega los que son específicamente del epic y aún no están documentados.
+ADRs that emerged during individual features **should already be** in `docs/adr/` (written in E5 of `cdad-cycle`). The epic scribe does NOT duplicate those; it only adds the ones that are specifically epic-level and not yet documented.
 
-### Paso 5 — Closure final
+### Step 5 — Final closure
 
-Una vez:
+Once:
 
-- CI verde completo.
-- Cuatro drafts aprobados por el usuario y commiteados por el orquestador.
-- ADRs (si los hay) commiteados.
+- Full CI green.
+- The four drafts approved by the user and committed by the orchestrator.
+- ADRs (if any) committed.
 
-Mergeás el branch del epic a main (o lo que el flujo del proyecto indique). Estrategia según convención del proyecto.
+You merge the epic branch to main (or whatever the project's flow indicates). Strategy according to the project's convention.
 
-## 🛑 Gate de salida (E4 → epic done)
+## 🛑 Exit gate (E4 → epic done)
 
-- [ ] CI verde completo.
-- [ ] `docs/epics/<id>/closure.md` existe con resumen, retrospectiva, deuda llevada.
-- [ ] `docs/activeContext.md` con entry de cierre del epic.
-- [ ] `docs/progress.md` movió epic a "done".
-- [ ] ADRs nuevos del epic (si los hay) commiteados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` — aprobado por el usuario, ejecutado por el orquestador.
-- [ ] Epic mergeado.
+- [ ] Full CI green.
+- [ ] `docs/epics/<id>/closure.md` exists with summary, retrospective, debt carried forward.
+- [ ] `docs/activeContext.md` with the epic closure entry.
+- [ ] `docs/progress.md` moved the epic to "done".
+- [ ] New epic ADRs (if any) committed.
+- [ ] Commit with prefix `docs(memory): close epic <id>` — approved by the user, executed by the orchestrator.
+- [ ] Epic merged.
 
-Cuando todos OK: actualizá state file:
+When all OK: update the state file:
 
 ```json
 {
@@ -117,59 +117,59 @@ Cuando todos OK: actualizá state file:
 }
 ```
 
-Y cerrá:
+And close:
 
-> *"Epic `<id>` cerrado. <X features> entregadas. Memory Bank consolidado. ¿Próximo epic, próxima feature standalone, o cerramos por hoy?"*
+> *"Epic `<id>` closed. <X features> delivered. Memory Bank consolidated. Next epic, next standalone feature, or do we call it a day?"*
 
-## Estructura de `closure.md`
+## Structure of `closure.md`
 
-Template en `assets/epic-closure-template.md`. Estructura:
+Template in `assets/epic-closure-template.md`. Structure:
 
 ```markdown
 # Epic <id> — Closure
 
-Cerrado: <YYYY-MM-DD>
+Closed: <YYYY-MM-DD>
 
-## Resumen
+## Summary
 
-<2-3 líneas: qué se entregó, contra qué problema>
+<2-3 lines: what was delivered, against what problem>
 
-## Features entregadas
+## Features delivered
 
-<lista con id, nombre, fecha de cierre individual>
+<list with id, name, individual closure date>
 
-## Criterios de aceptación
+## Acceptance criteria
 
-<cada criterio del plan + ✅ verificado / ❌ no cumplido (con motivo)>
+<each criterion from the plan + ✅ verified / ❌ not met (with reason)>
 
-## Retrospectiva breve
+## Brief retrospective
 
-### Lo que funcionó bien
-<1-3 puntos>
+### What worked well
+<1-3 points>
 
-### Lo que se complicó
-<1-3 puntos>
+### What got complicated
+<1-3 points>
 
-### Aprendizajes para futuros epics
-<1-3 puntos>
+### Lessons for future epics
+<1-3 points>
 
-## Deuda técnica que se llevó
+## Technical debt carried forward
 
-<lista corta: cosas que decidimos no hacer en este epic y por qué>
+<short list: things we decided not to do in this epic and why>
 
-## Decisiones arquitectónicas tomadas
+## Architectural decisions made
 
-<lista de ADRs creados durante el epic, con link>
+<list of ADRs created during the epic, with link>
 ```
 
-Mantenelo corto. Una página, máximo dos. Si el epic fue chico, una sola sección de "Resumen" y "Deuda" alcanza.
+Keep it short. One page, two at most. If the epic was small, a single "Summary" and "Debt" section is enough.
 
-## Anti-patrones
+## Anti-patterns
 
-- **EAP-3**: ADRs especulativos al cierre. Solo ADRs que documentan decisiones reales tomadas durante el epic. No "vamos a usar X en el futuro".
-- **Closure exhaustivo**: closure de 10 páginas no se lee. Una página, dos máximo.
-- **Saltar el closure** porque "ya está mergeado". Sin closure, en 6 meses nadie recuerda qué se hizo y por qué. Es deuda invisible.
+- **EAP-3**: speculative ADRs at closure. Only ADRs documenting real decisions made during the epic. Not "we are going to use X in the future".
+- **Exhaustive closure**: a 10-page closure does not get read. One page, two at most.
+- **Skipping the closure** because "it's already merged". Without closure, in 6 months nobody remembers what was done and why. It is invisible debt.
 
-## Después del cierre
+## After closure
 
-El epic está done. Vuelta al estado inicial: el usuario puede arrancar otro epic, una feature standalone, o cerrar la sesión.
+The epic is done. Back to the initial state: the user can start another epic, a standalone feature, or end the session.

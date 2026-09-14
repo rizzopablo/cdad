@@ -1,44 +1,44 @@
-# Trampas de API Odoo 19 (verificadas 2026-08-28)
+# Odoo 19 API traps (verified 2026-08-28)
 
-Hallazgos empíricos de la especialización Odoo, verificados en entornos reales
-(odoo.sh y staging privado). Acumulá aquí las trampas de API nuevas que confirmes
-al implementar; no las dupliques en otro lugar del repo.
+Empirical findings from the Odoo specialization, verified in real
+environments (odoo.sh and private staging). Accumulate here the new API traps
+you confirm while implementing; do not duplicate them elsewhere in the repo.
 
-## 1. `res.groups.category_id` → renombrado a `privilege_id` (Odoo 19)
+## 1. `res.groups.category_id` → renamed to `privilege_id` (Odoo 19)
 
-En Odoo 19 el campo de agrupación de derechos cambió de nombre:
-- **Antes (≤17):** `res.groups.category_id` — categoría que agrupa grupos.
-- **Ahora (19):** `res.groups.privilege_id`, apuntando al modelo
-  **`res.groups.privilege`**.
+In Odoo 19 the rights-grouping field was renamed:
+- **Before (≤17):** `res.groups.category_id` — category that groups groups.
+- **Now (19):** `res.groups.privilege_id`, pointing to the
+  **`res.groups.privilege`** model.
 
-Al referenciar la agrupación de un grupo de seguridad (`security/` o en
-código), usá el nombre nuevo. Cualquier referencia legacy
-`category_id` / `res.groups.category` a un `res.groups` raíz típico del 17
-falla o queda huérfana en 19.
+When referencing a security group's grouping (in `security/` or in code),
+use the new name. Any legacy reference
+`category_id` / `res.groups.category` to a typical 17-era root `res.groups`
+fails or is left orphaned in 19.
 
-## 2. Vista <list> en vez de <tree> (Odoo 19)
+## 2. <list> view instead of <tree> (Odoo 19)
 
-La etiqueta `<tree>` de las vistas de lista se renombró a **`<list>`**
-(`<tree>` era la etiqueta histórica de `ir.ui.view` en versiones previas).
-- **Antes (≤17):** `<tree>` en `views/*.xml`.
-- **Ahora (19):** `<list>` (con atributos equivalentes: `editable`,
+The `<tree>` tag of list views was renamed to **`<list>`**
+(`<tree>` was the historical tag of `ir.ui.view` in previous versions).
+- **Before (≤17):** `<tree>` in `views/*.xml`.
+- **Now (19):** `<list>` (with equivalent attributes: `editable`,
   `create`, `delete`, multiplies, etc.).
 
-Un addon del 17 escrito con `<tree>` no carga su vista en 19; migrar a
-`<list>` al portar.
+A 17-era addon written with `<tree>` does not load its view in 19; migrate
+to `<list>` when porting.
 
-## 3. Reconfirmado en el entorno de tests
+## 3. Reconfirmed in the test environment
 
-Estas dos trampas se confirmaron al montar el entorno de test de la
-especialización (contrato make): el `make test-clean` instala el módulo desde
-cero y expone estos renombres de API como error de carga si un addon los usa
-con el nombre viejo. El antídoto es versionar el addon contra la API 19
+These two traps were confirmed while setting up the specialization's test
+environment (make contract): `make test-clean` installs the module from
+scratch and exposes these API renames as a load error if an addon uses them
+under the old name. The antidote is versioning the addon against the 19 API
 (`res.groups.privilege` + `<list>`).
 
-## Relación con el drift de schema
+## Relation to schema drift
 
-El drift de schema en builds gestionados (rebuild de plataforma que deja
-columnas fantasma, ver SKILL.md §Trampas) se suma a estas renombradas de API:
-un addon que el build no re-instala desde cero puede quedar en un estado
-intermedio (vista `<tree>` vieja + DB con schema nuevo). `make test-clean`
-(instalación desde cero) es el detector real.
+Schema drift in managed builds (a platform rebuild that leaves ghost
+columns, see SKILL.md §Traps) compounds these API renames: an addon that the
+build does not re-install from scratch can end up in an intermediate state
+(old `<tree>` view + DB with new schema). `make test-clean`
+(install from scratch) is the real detector.
