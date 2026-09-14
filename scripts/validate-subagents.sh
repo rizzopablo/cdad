@@ -101,7 +101,7 @@ echo "[artifacts] $ART_DIR"
 stage() { # name path ok(0|1)
   if [ "$3" = "0" ]; then ok "$1 -> OK"; else fail "$1 -> FAIL ($2)"; fi
 }
-if [ -f "$ART_DIR/spec.md" ] && grep -q "^## 2\. Postcondición" "$ART_DIR/spec.md"; then
+if [ -f "$ART_DIR/spec.md" ] && grep -q "^## 2\. Postcondición\|^## 2\. Postcondition" "$ART_DIR/spec.md"; then
   stage architect "spec.md" 0; else stage architect "spec.md" 1; fi
 if [ -d "$ART_DIR/tests" ] && [ -n "$(ls -A "$ART_DIR/tests" 2>/dev/null)" ]; then
   stage test-writer "tests/" 0; else stage test-writer "tests/" 1; fi

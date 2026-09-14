@@ -1,36 +1,36 @@
 # Project Brief
 
-## Propósito del proyecto
+## Project purpose
 
-<TODO: Una a tres líneas sobre qué es este proyecto, para quién, y qué problema resuelve.>
+<TODO: One to three lines about what this project is, for whom, and what problem it solves.>
 
-## Stack técnico
+## Technical stack
 
-- **Lenguaje**: <TODO: Python 3.11, TypeScript 5.x, etc.>
-- **Framework principal**: <TODO: Django, Odoo, Rails, FastAPI, etc.>
-- **Base de datos**: <TODO si aplica>
-- **Tooling de tests**: <TODO: pytest, jest, rspec>
+- **Language**: <TODO: Python 3.11, TypeScript 5.x, etc.>
+- **Main framework**: <TODO: Django, Odoo, Rails, FastAPI, etc.>
+- **Database**: <TODO if applicable>
+- **Test tooling**: <TODO: pytest, jest, rspec>
 - **Lint / type check**: <TODO: ruff + mypy, eslint + tsc, etc.>
-- **CI**: <TODO: GitHub Actions, GitLab CI, etc., o "pendiente">
+- **CI**: <TODO: GitHub Actions, GitLab CI, etc., or "pending">
 
-## Stakeholders y roles
+## Stakeholders and roles
 
-- **Aprobador de specs**: <TODO: nombre>
-- **Tech lead**: <TODO si aplica>
-- **Otros**: <TODO>
+- **Spec approver**: <TODO: name>
+- **Tech lead**: <TODO if applicable>
+- **Others**: <TODO>
 
-## Restricciones conocidas
+## Known constraints
 
-<TODO: cualquier restricción no técnica relevante: regulaciones, compatibilidad, deadlines duros, etc.>
+<TODO: any relevant non-technical constraint: regulations, compatibility, hard deadlines, etc.>
 
-## Scope general
+## Overall scope
 
-<TODO: qué cubre el proyecto y qué deliberadamente queda fuera.>
+<TODO: what the project covers and what is deliberately left out.>
 
-## Recursos externos
+## External resources
 
-<TODO: links a documentación oficial del framework, repos relacionados, tickets, etc.>
+<TODO: links to the framework's official documentation, related repos, tickets, etc.>
 
 ---
 
-Última actualización: <YYYY-MM-DD>
+Last updated: <YYYY-MM-DD>

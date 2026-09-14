@@ -1,29 +1,29 @@
 # Active Context
 
-Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries más recientes arriba.
+Current state of the project. Each closed feature adds an entry. Most recent entries on top.
 
 ---
 
-<!-- Plantilla para nuevas entries (las nuevas van arriba):
+<!-- Template for new entries (new ones go on top):
 
-## <YYYY-MM-DD> — Feature: <nombre corto>
+## <YYYY-MM-DD> — Feature: <short name>
 
-Cerrada feature de <descripción de una línea>.
+Closed feature for <one-line description>.
 
-Decisiones relevantes:
-- <decisión 1, con trade-off si aplica>
+Relevant decisions:
+- <decision 1, with trade-off if applicable>
 
-Deuda técnica detectada:
-- <punto 1>
+Technical debt detected:
+- <item 1>
 
-Próxima feature en cola: <si la sabe>.
+Next feature in the queue: <if you know it>.
 
 -->
 
-## <YYYY-MM-DD> — Bootstrap del proyecto
+## <YYYY-MM-DD> — Project bootstrap
 
-Memory Bank inicializado. Listos para arrancar la primera feature.
+Memory Bank initialized. Ready to start the first feature.
 
-Pendientes para completar manualmente:
-- `projectbrief.md`: secciones marcadas TODO.
-- `systemPatterns.md`: convenciones técnicas existentes.
+Pending manual completion:
+- `projectbrief.md`: sections marked TODO.
+- `systemPatterns.md`: existing technical conventions.

@@ -1,62 +1,62 @@
 ---
 feature_id: <NNN-feature-id>
-feature_name: <nombre corto>
+feature_name: <short name>
 created_at: <YYYY-MM-DD>
-approved_by: <pendiente>
-approved_at: <pendiente>
+approved_by: <pending>
+approved_at: <pending>
 ---
 
-# Spec: <nombre de la feature>
+# Spec: <feature name>
 
-## Descripción funcional
+## Functional description
 
-<Descripción en lenguaje cercano al usuario final. Qué hace la feature, para qué sirve, en qué contexto se usa. 2-5 líneas.>
+<Description in language close to the end user. What the feature does, what it is for, in what context it is used. 2-5 lines.>
 
-## Contrato (firma e invariantes)
+## Contract (signature and invariants)
 
-**Firma:**
+**Signature:**
 
-```<lenguaje>
-<firma de la función / método / endpoint, con tipos>
+```<language>
+<signature of the function / method / endpoint, with types>
 ```
 
-**Postcondiciones (numeradas y verificables):**
+**Postconditions (numbered and verifiable):**
 
-1. <Si <input válido>, retorna <output esperado con propiedades específicas>.>
-2. <Si <caso de error>, lanza/retorna <comportamiento específico>.>
+1. <If <valid input>, returns <expected output with specific properties>.>
+2. <If <error case>, throws/returns <specific behavior>.>
 3. <...>
 
-## Invariantes verificables
+## Verifiable invariants
 
-<Propiedades que se cumplen para todo input válido. Base de property tests. Si la feature no tiene invariantes claras, eliminá esta sección.>
+<Properties that hold for every valid input. Basis for property tests. If the feature has no clear invariants, delete this section.>
 
-- ∀ <variable> válido: <propiedad>
+- ∀ <variable> valid: <property>
 - <...>
 
-## Criterios de aceptación
+## Acceptance criteria
 
-<Métricas medibles, no adjetivos vagos.>
+<Measurable metrics, not vague adjectives.>
 
-- [ ] Test unitario para cada postcondición pasa.
-- [ ] Cobertura de líneas en `<archivo principal>` ≥ <X>%.
-- [ ] Property test con <N> inputs random pasa.
-- [ ] <Test E2E si aplica: descripción del flujo completo>.
+- [ ] Unit test for each postcondition passes.
+- [ ] Line coverage in `<main file>` ≥ <X>%.
+- [ ] Property test with <N> random inputs passes.
+- [ ] <E2E test if applicable: description of the full flow>.
 
 ## Out of scope
 
-<Qué NO hace la feature, para evitar scope creep.>
+<What the feature does NOT do, to avoid scope creep.>
 
-- <Caso 1 explícitamente fuera>
-- <Caso 2>
+- <Case 1 explicitly out>
+- <Case 2>
 
-## Notas de implementación (opcional)
+## Implementation notes (optional)
 
-<Decisiones técnicas tomadas durante el brainstorm que aclaran el cómo sin imponerlo. Pueden ir aquí trade-offs, alternativas descartadas, etc.>
+<Technical decisions made during the brainstorm that clarify the how without imposing it. Trade-offs, discarded alternatives, etc. can go here.>
 
-## Contexto técnico
+## Technical context
 
-<Output del descubrimiento por feature: qué APIs/hooks/módulos toca, convenciones específicas que aplican, gotchas conocidos.>
+<Output of the per-feature discovery: which APIs/hooks/modules it touches, specific conventions that apply, known gotchas.>
 
 ---
 
-Status: <Pending approval | Approved by <nombre> on <YYYY-MM-DD>>
+Status: <Pending approval | Approved by <name> on <YYYY-MM-DD>>

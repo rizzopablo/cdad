@@ -1,7 +1,7 @@
-# Handoff Prompts — ver `skills/cdad-cycle/references/handoff-prompts.md`
+# Handoff Prompts — see `skills/cdad-cycle/references/handoff-prompts.md`
 
-Este archivo quedó desactualizado respecto de su copia canónica (319 líneas
-de diff detectadas en `findings/audit-consistencia-2026-09-02.md`, M7).
-`install.sh` no lo instala nunca — es documentación de referencia, no un
-skill dir válido. La fuente vigente es
+This file became outdated with respect to its canonical copy (319 lines
+of diff detected in `findings/audit-consistencia-2026-09-02.md`, M7).
+`install.sh` never installs it — it is reference documentation, not a
+valid skill dir. The current source is
 `skills/cdad-cycle/references/handoff-prompts.md`.

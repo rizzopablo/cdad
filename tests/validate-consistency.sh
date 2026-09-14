@@ -118,21 +118,21 @@ echo "############################################"
 for f in agents/cdad-reviewer.md agents/claude-code/cdad-reviewer.md \
          agents/cdad-reviewer-odoo.md agents/claude-code/cdad-reviewer-odoo.md; do
   assert_file_has "$f" 'Bucket' "F004: $f includes the Bucket field in the finding format"
-  assert_file_has "$f" 'Abstenci' "F004: $f includes an Abstentions section"
+  assert_file_has "$f" 'Abstenti' "F004: $f includes an Abstentions section"
 done
 
-# The "Cómo leer las references" table is the specific section (it is not enough
+# The "How to read the references" table is the specific section (it is not enough
 # for the file to be mentioned elsewhere in the document).
-load_table() { awk '/## Cómo leer las references/{f=1} f{print} /^---$/{if(f)exit}' "$ROOT/skills/cdad-cycle/SKILL.md"; }
+load_table() { awk '/## How to read the references/{f=1} f{print} /^---$/{if(f)exit}' "$ROOT/skills/cdad-cycle/SKILL.md"; }
 if load_table | grep -q 'verdict-tuple\.md'; then
-  pass "F004: the 'Cómo leer las references' table includes verdict-tuple.md"
+  pass "F004: the 'How to read the references' table includes verdict-tuple.md"
 else
-  fail "F004: the 'Cómo leer las references' table does NOT include verdict-tuple.md"
+  fail "F004: the 'How to read the references' table does NOT include verdict-tuple.md"
 fi
 if load_table | grep -q 'claude-code-delegation\.md'; then
-  pass "F004: the 'Cómo leer las references' table includes claude-code-delegation.md"
+  pass "F004: the 'How to read the references' table includes claude-code-delegation.md"
 else
-  fail "F004: the 'Cómo leer las references' table does NOT include claude-code-delegation.md"
+  fail "F004: the 'How to read the references' table does NOT include claude-code-delegation.md"
 fi
 
 echo
@@ -194,7 +194,7 @@ assert_file_has "agents/claude-code/cdad-implementer.md" 'matcher:[[:space:]]*Ba
 # relativize() fail-open for absolute paths outside $PWD.
 assert_file_has "scripts/claude-code-path-guard.sh" 'bash-content-guard|BASH_CONTENT' \
   "F009: path-guard.sh implements a guard mode for Bash"
-assert_file_has "scripts/claude-code-path-guard.sh" 'HOME.*fuera del proyecto|fuera de \$PWD|outside.*PWD|no relativiza' \
+assert_file_has "scripts/claude-code-path-guard.sh" 'outside.*PWD|outside the project' \
   "F009: path-guard.sh documents or fixes the fail-open for external absolute paths"
 
 echo
@@ -236,11 +236,11 @@ done
 
 # M8: private context (arXiv pipeline, fb-012, guard-event-log, owner's
 # name) outside a distributable skill.
-assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'mi pipeline arXiv' \
-  "F010 (M8): verdict-tuple.md without a reference to 'mi pipeline arXiv'"
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'my arXiv pipeline' \
+  "F010 (M8): verdict-tuple.md without a reference to 'my arXiv pipeline'"
 assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'fb-012' \
   "F010 (M8): verdict-tuple.md without a reference to 'fb-012'"
-assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'aprobación de Pablo' \
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'Approved by Pablo' \
   "F010 (M8): verdict-tuple.md without the owner's proper name"
 
 echo
@@ -252,7 +252,7 @@ echo "############################################"
 # caveats the anti-bias invariant for the profile that suspends it.
 for f in skills/cdad-cycle/SKILL.md agents/cdad-orchestrator.md agents/claude-code/cdad-orchestrator.md; do
   assert_file_has "$f" '\-\-basic' "F001: $f mentions the --basic profile in the switch"
-  assert_file_has "$f" 'basic.*[Nn][Oo] est[aá] garantizado|basic.*suspendid|salvo.*basic|excepto.*basic' \
+  assert_file_has "$f" 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic' \
     "F001: $f caveats the anti-bias invariant for the basic profile"
 done
 
@@ -260,9 +260,9 @@ done
 # across the 3 files (ADR-007: "The identity of the §2 block (SKILL ↔ orchestrator)
 # with the profiles note was verified byte-identical" — verified by hand at the
 # time, never automated). This assert is the missing automation: it extracts from
-# "### 2. Contrato de cada rol" up to and including the "Switch:" line, and compares.
+# "### 2. Contract of each role" up to and including the "Switch:" line, and compares.
 extract_role_contract() {
-  awk '/^### 2\. Contrato de cada rol/{f=1} f{print; if ($0 ~ /^Modelos del diseño/) exit}' "$ROOT/$1"
+  awk '/^### 2\. Contract of each role/{f=1} f{print; if ($0 ~ /^Models of the design|^Design models/) exit}' "$ROOT/$1"
 }
 extract_role_contract "skills/cdad-cycle/SKILL.md" > /tmp/rc_skill.$$ 2>/dev/null
 extract_role_contract "agents/cdad-orchestrator.md" > /tmp/rc_oc.$$ 2>/dev/null
@@ -280,31 +280,31 @@ echo "# F003 — SKILL.md ↔ stage-N gates synchronized + B11"
 echo "############################################"
 
 # Gate 2→3: SKILL.md includes the plan.md item that previously only stage-2 had.
-assert_file_has "skills/cdad-cycle/SKILL.md" 'plan\.md.*existe.*auto-revisión|Si el spec es complejo' \
+assert_file_has "skills/cdad-cycle/SKILL.md" 'plan\.md.*exists.*self-review|If the spec is complex' \
   "F003: SKILL.md's Gate 2→3 includes the plan.md item (previously only in stage-2)"
 
 # Gate 3→4: stage-3-tdd.md includes the 2 items previously only in SKILL.md.
-assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'Test Audit completado y aprobado' \
-  "F003: Gate 3→4 of stage-3-tdd.md includes 'Test Audit completado y aprobado' (previously only in SKILL.md)"
-assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'justificación explícita en spec\.md' \
-  "F003: Gate 3→4 of stage-3-tdd.md includes 'justificación explícita en spec.md' (previously only in SKILL.md)"
+assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'Test Audit completed and approved' \
+  "F003: Gate 3→4 of stage-3-tdd.md includes 'Test Audit completed and approved' (previously only in SKILL.md)"
+assert_file_has "skills/cdad-cycle/references/stage-3-tdd.md" 'explicit justification in spec\.md' \
+  "F003: Gate 3→4 of stage-3-tdd.md includes 'explicit justification in spec.md' (previously only in SKILL.md)"
 
-# Gate 5→done: CI carve-out in stage-5-merge.md + "Feature mergeada" in SKILL.md.
-assert_file_has "skills/cdad-cycle/references/stage-5-merge.md" 'Si NO hay CI configurado' \
+# Gate 5→done: CI carve-out in stage-5-merge.md + "Feature merged" in SKILL.md.
+assert_file_has "skills/cdad-cycle/references/stage-5-merge.md" 'If NO CI is configured' \
   "F003: Gate 5→done of stage-5-merge.md includes the CI carve-out (previously only in SKILL.md)"
-assert_file_has "skills/cdad-cycle/SKILL.md" 'Feature mergeada' \
-  "F003: Gate 5→done of SKILL.md includes 'Feature mergeada' (previously only in stage-5-merge.md)"
+assert_file_has "skills/cdad-cycle/SKILL.md" 'Feature merged' \
+  "F003: Gate 5→done of SKILL.md includes 'Feature merged' (previously only in stage-5-merge.md)"
 
 # B11: the 4→5 gate no longer contradicts the explicit-delegation exception that
 # the file itself documents (Layer 2 / §2.3).
 for f in skills/cdad-cycle/SKILL.md skills/cdad-cycle/references/stage-4-review.md; do
-  assert_file_not_has "$f" '\[ \] Usuario aprobó priorización \(no delegado al LLM\)\.' \
+  assert_file_not_has "$f" '\[ \] User approved prioritization \(not delegated to the LLM\)\.' \
     "F003 (B11): $f no longer has the absolute wording of the 4→5 gate"
-  assert_file_has "$f" 'agente-delegada con pedido explícito' \
+  assert_file_has "$f" 'agent-delegated with an explicit request' \
     "F003 (B11): $f mentions the explicit-delegation exception in the gate"
 done
 assert_file_not_has "skills/cdad-cycle/references/stage-2-specification.md" \
-  '\*\*AP-10\*\*: delegar la aprobación al LLM\. Indelegable\.' \
+  '\*\*AP-10\*\*: delegating approval to the LLM\. Non-delegable\.' \
   "F003 (B11): the short AP-10 in stage-2 is no longer absolute without the exception"
 
 echo
@@ -313,16 +313,16 @@ echo "# F007 — Claude Code orchestrator repaired (B6)"
 echo "############################################"
 
 CCO="agents/claude-code/cdad-orchestrator.md"
-assert_file_has "$CCO" 'con la herramienta' \
+assert_file_has "$CCO" '`Agent` tool' \
   "F007: $CCO instructs delegating via a tool (not task/delegate)"
 assert_file_has "$CCO" 'Agent.{0,10}subagent_type' \
   "F007: $CCO mentions the Agent tool with subagent_type"
-assert_file_not_has "$CCO" 'vía\s*\n?\s*`delegate`; roles write-capable' \
+assert_file_not_has "$CCO" 'via `delegate`; roles write-capable' \
   "F007: $CCO no longer instructs 'delegate' as the per-role invocation mechanism"
-assert_file_has "$CCO" 'resolvé el sufijo de' \
+assert_file_has "$CCO" 'resolve the stack' \
   "F007: $CCO resolves the stack suffix before delegating (parity with OpenCode)"
-assert_file_has "$CCO" 'cdad-<rol>-<stack>' \
-  "F007: $CCO mentions the cdad-<rol>-<stack> pattern for specialized variants"
+assert_file_has "$CCO" 'cdad-<role>-<stack>' \
+  "F007: $CCO mentions the cdad-<role>-<stack> pattern for specialized variants"
 
 echo
 echo "############################################"
@@ -352,14 +352,14 @@ echo "############################################"
 CCR="agents/claude-code/cdad-reviewer.md"
 assert_file_not_has "$CCR" '\*\*CRITICAL\*\*|\*\*MAJOR\*\*|\*\*MINOR\*\*|\*\*TRIVIAL\*\*' \
   "F005: $CCR no longer uses the CRITICAL/MAJOR/MINOR/TRIVIAL taxonomy"
-assert_file_has "$CCR" 'Critical:.*Bloquea merge' \
+assert_file_has "$CCR" 'Critical:.*Blocks merge' \
   "F005: $CCR uses the addyosmani taxonomy (Critical/Required/Nit/Optional/FYI)"
-assert_file_has "$CCR" 'Eje 4: Security' \
+assert_file_has "$CCR" 'Axis 4: Security' \
   "F005: $CCR includes the Security axis (previously absent — the only one of the 4 reviewers without it)"
 
 # The 4 reviewers now share the same severity taxonomy.
 for f in agents/cdad-reviewer.md agents/cdad-reviewer-odoo.md agents/claude-code/cdad-reviewer-odoo.md; do
-  assert_file_has "$f" 'Critical:.*Bloquea merge' \
+  assert_file_has "$f" 'Critical:.*Blocks merge' \
     "F005: $f already used the addyosmani taxonomy (no changes, parity verification)"
 done
 
@@ -373,11 +373,11 @@ echo "############################################"
 # from property tests derived from invariants marked by the spec (inside,
 # sub-phase 3.4).
 for f in skills/cdad-cycle/SKILL.md skills/cdad-cycle/references/stage-3-tdd.md; do
-  assert_file_not_has "$f" 'cobertura exhaustiva, property tests, load' \
+  assert_file_not_has "$f" 'Exhaustive coverage, property tests, load' \
     "F006: $f no longer groups property tests inside the cycle's exclusion phrase"
-  assert_file_has "$f" 'Property tests.*[Nn][Oo]? son la misma pregunta|Property tests derivados de invariantes' \
+  assert_file_has "$f" 'Property tests are NOT the same question|Property tests derived from invariants' \
     "F006: $f clarifies that property tests derived from the spec's invariants do belong to the cycle"
-  assert_file_has "$f" 'RED verifica el requerimiento, no maximiza cobertura' \
+  assert_file_has "$f" 'RED verifies the requirement, it does not maximize coverage' \
     "F006: $f declares the RED-verifies-the-requirement rule"
 done
 
@@ -385,7 +385,7 @@ done
 # reference, which may not get loaded).
 for f in agents/cdad-test-writer.md agents/claude-code/cdad-test-writer.md \
          agents/cdad-test-writer-odoo.md agents/claude-code/cdad-test-writer-odoo.md; do
-  assert_file_has "$f" 'verifica el requerimiento, no maximiza cobertura' \
+  assert_file_has "$f" 'verifies the requirement, it does not maximize coverage' \
     "F006: $f — the RED Procedure includes the no-over-specification rule"
 done
 
@@ -418,9 +418,9 @@ echo "############################################"
 
 assert_file "docs/epics/epic-001-superpowers-gaps/closure.md" \
   "F012 (M9): retrospective closure.md of epic-001-superpowers-gaps exists"
-assert_file_has "docs/epics/epic-001-superpowers-gaps/closure.md" 'Cerrado' \
+assert_file_has "docs/epics/epic-001-superpowers-gaps/closure.md" 'Cerrado|Closed' \
   "F012 (M9): closure.md has a closure date"
-assert_file_has "skills/cdad-epic/SKILL.md" 'Por qué no hay un sub-agente' \
+assert_file_has "skills/cdad-epic/SKILL.md" 'Why there is no .cdad-epic-.* sub-agent' \
   "F012 (M10): documented decision about the absence of a cdad-epic-* sub-agent"
 
 echo "############################################"

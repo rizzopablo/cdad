@@ -1,35 +1,35 @@
 # Architecture Decision Records (ADR)
 
-Decisiones arquitectónicas del proyecto. Inmutables una vez aceptadas.
+The project's architectural decisions. Immutable once accepted.
 
-## Cuándo crear un ADR
+## When to create an ADR
 
-Si dentro de 6 meses, alguien (vos o un agente) podría preguntar **"¿por qué hicimos X de esta forma?"**, esa decisión merece un ADR.
+If within 6 months, someone (you or an agent) could ask **"why did we do X this way?"**, that decision deserves an ADR.
 
-Ejemplos típicos:
+Typical examples:
 
-- Elección de base de datos.
-- Decisión de arquitectura (monolito vs servicios, layering, bounded contexts).
-- Elección de librería principal cuando había alternativas.
-- Patrones que se prohíben deliberadamente.
+- Choice of database.
+- Architecture decision (monolith vs services, layering, bounded contexts).
+- Choice of a main library when there were alternatives.
+- Patterns that are deliberately forbidden.
 
-## Cuándo NO crear un ADR
+## When NOT to create an ADR
 
-- Decisiones de implementación local (qué algoritmo usar dentro de una función).
-- Convenciones generales del proyecto (van a `systemPatterns.md`).
-- Estado actual o trabajo en curso (va a `activeContext.md`).
+- Local implementation decisions (which algorithm to use inside a function).
+- General project conventions (they go to `systemPatterns.md`).
+- Current state or work in progress (it goes to `activeContext.md`).
 
-## Numeración y formato
+## Numbering and format
 
-`ADR-NNN-titulo-en-kebab-case.md`. Numeración sequencial.
+`ADR-NNN-title-in-kebab-case.md`. Sequential numbering.
 
-Template en `<skill>/assets/adr-template/ADR.md`.
+Template in `<skill>/assets/adr-template/ADR.md`.
 
-## Estados posibles
+## Possible states
 
-- **Proposed**: en discusión.
-- **Accepted**: aprobado, en vigor.
-- **Deprecated**: ya no aplica pero no fue reemplazado.
-- **Superseded by ADR-NNN**: reemplazado por otro ADR.
+- **Proposed**: under discussion.
+- **Accepted**: approved, in force.
+- **Deprecated**: no longer applies but was not replaced.
+- **Superseded by ADR-NNN**: replaced by another ADR.
 
-Una vez **Accepted**, un ADR no se modifica. Si la decisión cambia, se crea un nuevo ADR que `supersede` al anterior.
+Once **Accepted**, an ADR is not modified. If the decision changes, a new ADR is created that `supersede`s the previous one.

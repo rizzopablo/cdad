@@ -55,17 +55,17 @@ the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 
 ### 2. Contract of each role
 
-| Role | Stage | Does | Can read | Can edit | Must NOT touch | Artifact | Model family |
+| Role | Stage | Does | May read | May edit | MUST NOT touch | Artifact | Model family |
 |-----|-------|------|------------|--------------|-----------------|-----------|----------------|
-| architect | 1, 2 | technical mapping + Socratic brainstorm + spec draft | everything | nothing | does not approve the spec (user) | `docs/specs/<id>/spec.md` (draft) | deepseek-v4-pro |
-| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits the existing suite, records the test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) | glm-5.2 |
-| test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **does NOT see `src/` or implementation code** | tests in `tests/` | glm-5.2 |
+| architect | 1, 2 | technical mapping + Socratic brainstorm + spec draft | everything | nothing | does not approve spec (user) | `docs/specs/<id>/spec.md` (draft) | deepseek-v4-pro |
+| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits existing suite, registers test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) | glm-5.2 |
+| test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **Does NOT see `src/` or implementation code** | tests in `tests/` | glm-5.2 |
 | implementer | 3.2 | minimal code that makes the test pass | spec, tests, interface | implementation code | **NOT `tests/**`** | diff/commits | deepseek-v4-flash |
 | refactorer | 3.3 | cleans code keeping the suite green (runs as cdad-implementer REFACTOR sub-mode) | full suite | implementation code | **NOT `tests/**`**, suite always green | diff | deepseek-v4-flash |
-| reviewer | 4 | findings report against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` | qwen3.7-plus (**DIFFERENT family** from the implementer) |
+| reviewer | 4 | report of findings against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` | qwen3.7-plus (**DIFFERENT family** from the implementer's) |
 | scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) | deepseek-v4-pro |
 
-Design models (optimus profile). Profiles: economical (flash execution; architect deepseek-v4-pro, reviewer minimax-m3 — different family from the implementer, amendment 2026-08-24 ADR-007) / premium (top-tier configurable via env CDAD_PREMIUM_MODEL_*) / basic (no fixed models, portable across providers — the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer in this profile, amendment 2026-08-29 ADR-007; the structural protection of isolated sessions and per-role permissions does not change). Switch: install.sh --economical|--optimus|--premium|--basic.
+Models of the design (optimus profile). Profiles: economical (flash execution; architect deepseek-v4-pro, reviewer minimax-m3 — family different from the implementer's, amendment 2026-08-24 ADR-007) / premium (configurable top-tier via env CDAD_PREMIUM_MODEL_*) / basic (no fixed models, portable across providers — the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer in this profile, amendment 2026-08-29 ADR-007; the structural protection of isolated sessions and per-role permissions does not change). Switch: install.sh --economical|--optimus|--premium|--basic.
 
 **Anti-bias invariants (non-negotiable):** the reviewer uses a model family
 different from the implementer's. The test-writer never sees implementation code (if
