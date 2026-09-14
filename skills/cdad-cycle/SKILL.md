@@ -168,7 +168,7 @@ faster". Delegate or switch modes explicitly.
 ### 5. Artifact materialization and commit rule
 
 The read-only roles (architect, reviewer, scribe) do NOT persist their own
-output —they can't (write deny) or shouldn't (anti-self-validation). The
+output —they can't (write deny) or must not (anti-self-validation). The
 orchestrator writes the artifact from the role's output and commits it:
 
 - architect → the orchestrator (or the user) writes `spec.md` from the draft and
