@@ -235,7 +235,7 @@ re-verificó desde sesión de agente (cdad-architect, que tiene `cd *` allow +
 catch-all deny):
 
 ```
-P1: cd . && pwd        → PERMITIDO (/home/ofap/clawd/projects/cdad)
+P1: cd . && pwd        → PERMITIDO (<workspace>/projects/cdad)
 P2: cd . && uname -sr  → DENEGADO por permisos
 P3: pwd; uname -sr     → DENEGADO por permisos
 ```

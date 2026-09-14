@@ -138,7 +138,7 @@ silencio.
 - Veredicto: **OPCIONAL**
 - Bucket: h
 - Rationale: VALIDATION.md registraba como premisa que "`cd X && <cualquier cosa>` y `find ... -exec ...` pasan el gate si el prefijo matchea un allow". Probes controlados lo falsifican tal como estaba enunciado: `cd . && pwd` → PERMITIDO, `cd . && uname -sr` → DENEGADO, `pwd; uname -sr` → DENEGADO — la evaluación es por segmento y el segundo segmento debe pasar independientemente. Impacto: (a) el riesgo residual post-H3 estaba sobre-estimado en el registro; (b) un hardening construido sobre la premisa enunciada perseguiría un vector inexistente.
-- Provenance: VALIDATION.md §Fase 3 (registro de la premisa) + probes del reviewer + **re-probe post-re-review desde sesión de agente cdad-architect: P1 `cd . && pwd` PERMITIDO (`/home/ofap/clawd/projects/cdad`), P2 `cd . && uname -sr` DENEGADO por permisos, P3 `pwd; uname -sr` DENEGADO por permisos** — confirmado, evidencia pegada.
+- Provenance: VALIDATION.md §Fase 3 (registro de la premisa) + probes del reviewer + **re-probe post-re-review desde sesión de agente cdad-architect: P1 `cd . && pwd` PERMITIDO (`<workspace>/projects/cdad`), P2 `cd . && uname -sr` DENEGADO por permisos, P3 `pwd; uname -sr` DENEGADO por permisos** — confirmado, evidencia pegada.
 
 ### N2: A4 (globs de lectura H4) assertiona presencia, no posición findLast: ventana de regresión de la clase H4
 - Veredicto: **OPCIONAL**
