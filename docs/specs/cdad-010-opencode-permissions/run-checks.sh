@@ -180,6 +180,16 @@ for a in cdad-test-writer cdad-test-writer-odoo; do
   # (review cdad-010): P2 exige las MISMAS excepciones que el edit:. Si falta
   # una, el test-writer crea el archivo (edit allow) y no puede releerlo con
   # Read (src/**: deny / lib/**: deny ganan por findLast).
+  # Orden findLast de las excepciones (re-review N2): cada allow de test
+  # colocada DEBE quedar DESPUÉS (número de línea mayor dentro de $r) del
+  # último deny que la invade — el catch-all '"*"': deny siempre, y
+  # '"src/**"': deny / '"lib/**"': deny cuando existen. Si queda antes, el
+  # deny gana por findLast y la excepción es inerte sin que la presencia la
+  # detecte (regresión de la clase H4).
+  dden="$(printf '%s\n' "$r" | grep -n '"\*":[[:space:]]*deny' | tail -1 | cut -d: -f1)"
+  dsrc="$(printf '%s\n' "$r" | grep -n '"src/\*\*":[[:space:]]*deny' | tail -1 | cut -d: -f1)"
+  dlib="$(printf '%s\n' "$r" | grep -n '"lib/\*\*":[[:space:]]*deny' | tail -1 | cut -d: -f1)"
+  ord_bad=0
   for rglob in 'src/\*\*/\*_test\.go' \
                'src/\*\*/test_\*\.py' \
                'src/\*\*/\*\.test\.js' \
@@ -198,7 +208,29 @@ for a in cdad-test-writer cdad-test-writer-odoo; do
                'lib/\*\*/\*\.spec\.js'; do
     assert_file_has "$f" "\"$rglob\"[[:space:]]*:[[:space:]]*allow" \
       "A4: $f/read: excepción de lectura para tests colocados '$rglob'"
+    # Orden findLast (re-review N2): la última allow de este globo debe
+    # quedar después del último deny que la invade (catch-all '*' y, si
+    # existe, el deny de su prefijo src/|lib/).
+    case "$rglob" in
+      'src/'*) ord_dnum="$dsrc" ;;
+      *) ord_dnum="$dlib" ;;
+    esac
+    ord_anum="$(printf '%s\n' "$r" | grep -n "\"$rglob\"[[:space:]]*:[[:space:]]*allow" | tail -1 | cut -d: -f1)"
+    ord_dmax="$ord_dnum"
+    if [[ -n "$dden" && ( -z "$ord_dmax" || "$dden" -gt "$ord_dmax" ) ]]; then
+      ord_dmax="$dden"
+    fi
+    if [[ -z "$ord_anum" ]]; then
+      fail "A4: $f/read: '$rglob': allow ausente en la sección read — orden no verificable"
+      ord_bad=1
+    elif [[ -n "$ord_dmax" ]] && (( ord_anum <= ord_dmax )); then
+      fail "A4: $f/read: orden findLast violado: '$rglob': allow (línea $ord_anum) NO queda después de su deny (línea $ord_dmax) — la excepción queda inerte"
+      ord_bad=1
+    fi
   done
+  if (( ! ord_bad )); then
+    pass "A4: $f/read: orden findLast correcto (excepciones de tests colocados después de los denies)"
+  fi
 done
 echo
 

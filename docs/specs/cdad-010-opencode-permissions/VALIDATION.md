@@ -249,6 +249,28 @@ era narrada, no evidencia. Corrida de run-checks al árbol HEAD (post
 `9875917`, docs-only) exigida por el re-review (H2): **RESULTADO: 215 PASS,
 0 FAIL.**
 
+**Fixes de observaciones del re-review (Capa 2 segunda pasada, "De acuerdo"):
+N2 aplicado, N3 aplicado, N4 descartado → bucket de hardening.**
+
+- **N2:** assert de orden findLast en A4 (extensión diseñada por
+  test-writer, semántica fiel: última allow del globo > último deny invasor
+  — catch-all `*` + deny de prefijo `src/**`/`lib/**` condicional; la
+  variante Odoo no tiene denies src/lib, solo catch-all + dominio). Evidencia:
+  ```
+  $ bash run-checks.sh → RESULTADO: 217 PASS, 0 FAIL   (positivo)
+  # test negativo: allow movida antes del deny (temporal, revertido):
+  FAIL: A4: agents/cdad-test-writer.md/read: orden findLast violado:
+        'src/\*\*/\*_test\.go': allow (línea 3) NO queda después de su
+        deny (línea 4) — la excepción queda inerte
+  RESULTADO: 214 PASS, 3 FAIL → revert → 217 PASS, 0 FAIL
+  ```
+- **N3:** definición operativa de "vector directo y evidente" en
+  systemPatterns.md (probe de una sola invocación con output pegado; lo que
+  no califique → candidato de hardening con premisa explícita a verificar).
+- **N4:** `find *: allow` global del usuario — descartado de esta feature
+  (invariante de no-modificación), anotado para el epic de hardening junto
+  con la re-evaluación de matching con la premisa corregida (N1).
+
 ## Checklist de criterios de aceptación
 
 1. [x] run-checks.sh todo PASS (RED definido antes de editar) — 215/215

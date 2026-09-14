@@ -169,4 +169,12 @@ silencio.
 
 ## Capa 2 (segunda pasada) — Priorización de N1-N4
 
-_(pendiente — decisiones del usuario)_
+Decisión del dueño (Pablo, 2026-09-13): "De acuerdo" con la recomendación del
+orquestador:
+
+| Hallazgo | Decisión | Motivo |
+|---|---|---|
+| N1 | YA APLICADO (corrección de registro) | La premisa falsa ya fue corregida en VALIDATION con re-probe pegado (matching por segmento); el "hardening de matching" futuro probablemente ya no es necesario — se re-evaluará en el epic de hardening con la premisa correcta. |
+| N2 | APLICAR | Assert de orden findLast en run-checks.sh (A4): barato y cierra la ventana de regresión de la clase H4. Vía test-writer (artefacto de verificación, AP-4). |
+| N3 | APLICAR | Definición operativa de "vector directo y evidente" en systemPatterns: vector demostrable con un probe de una sola invocación con output pegado (Regla de Oro). Cierra la divergencia demostrada por el episodio N1. |
+| N4 | DESCARTADO de esta feature → bucket de hardening | El spec prohíbe tocar la config global (invariante); se anota para el epic de hardening junto con la re-evaluación de matching de N1. |

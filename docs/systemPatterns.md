@@ -91,6 +91,18 @@ palanca `permission.write: ask` (anidada).
    y sin motivo válido que pueda explicar, **la tarea se considera NO
    cumplida (fallida)** — aunque el artefacto exista.
 
+**Definición operativa de "vector directo y evidente" (2026-09-13, N3 del
+re-review de cdad-010):** un vector es directo y evidente si y solo si es
+**demostrable con un probe de una sola invocación con output pegado** (Regla
+de Oro). No califican: razonamientos sobre lo que el matcher "debería"
+hacer, observaciones narradas sin paste, ni construcciones hipotéticas
+multi-paso. Motivo: en el propio ciclo cdad-010, dos sesiones concluyeron
+veredictos OPUESTOS sobre el mismo matcher ("compuestos pasan por prefijo"
+vs "por segmento") — el que tenía probes pegados tenía razón. Cuando un
+hallazgo de seguridad no pueda demostrarse con un probe de una invocación,
+se registra como candidato de hardening con la premisa explícita a
+verificar, nunca como bloqueante por intuición.
+
 ### Pares rtk `X*` + `rtk X*` (ADR-009)
 
 Los modelos del workspace envuelven comandos en `rtk` (proxy CLI), así que

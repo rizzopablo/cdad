@@ -4,7 +4,7 @@
   "active_epic": null,
   "epic_stage": "done",
   "active_feature": "cdad-010-opencode-permissions",
-  "current_stage": "review",
+  "current_stage": "merge",
   "tdd_substage": null,
   "audit_status": "approved",
   "postconditions_status": {"P1": "green", "P2": "green", "P3": "green", "P4": "green", "P5": "green", "P6": "green"},
