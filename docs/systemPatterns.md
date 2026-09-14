@@ -51,15 +51,18 @@ Convenciones técnicas, patrones, y reglas estructurales del proyecto. Este arch
 
 ## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
 
-### Palanca `write: ask` (2026-09-12)
+### Palanca `write: ask` (2026-09-12; enmienda de ubicación 2026-09-13)
 
-Los 10 agentes declaran `write: ask` a nivel top del frontmatter con un doble
-rol NO obvio: es la palanca que hace al agente **task-able**. Motivo: el
-clasificador del plugin de sub-agentes lee la clave `write` del bloque
-`permission:` anidado para decidir si el agente es write-capable o read-only;
-el runtime NO la evalúa (el tool `write` pide "edit" — cero evaluaciones
-`permission=write` en logs). Mecánica: el agente queda task-able sin generar
-prompts de permiso.
+Los 10 agentes declaran `permission.write: ask` — la clave `write` ANIDADA
+dentro del bloque `permission:` del frontmatter (NO top-level: el KNOWN_KEYS
+del clasificador no incluye `write` top-level y una palanca top-level es
+inerte — el agente colapsa a read-only y `task` lo rechaza; verificado por
+probe en cdad-010, enmienda registrada en el spec H1). Doble rol NO obvio: es
+la palanca que hace al agente **task-able**. Motivo: el clasificador del
+plugin de sub-agentes lee la clave `write` del bloque `permission:` anidado
+para decidir si el agente es write-capable o read-only; el runtime NO la
+evalúa (el tool `write` pide "edit" — cero evaluaciones `permission=write`
+en logs). Mecánica: el agente queda task-able sin generar prompts de permiso.
 
 **REGLA DE VIGILANCIA: si una versión futura de opencode empieza a evaluar
 `write` en runtime, la palanca `write: ask` genera prompts de permiso en cada
@@ -75,7 +78,18 @@ El clasificador del plugin lee SOLO el bloque anidado `permission:`
 runtime. Semántica del matcher: **catch-all primero, específicas después**
 (findLast: la última regla que matchea gana). Una regla específica antes del
 catch-all es un bug de config. Única excepción documentada de `ask`: la
-palanca `write: ask` top-level.
+palanca `permission.write: ask` (anidada).
+
+### Política de enforcement (2026-09-13, Pablo — decisión de Capa 2 de cdad-010)
+
+1. **Bloquear vectores directos y evidentes**, no bypasses hipotéticos: un
+   agente con ganas de saltar las vallas siempre encontrará cómo.
+2. **La expectativa se documenta** en skills y archivos de procedimiento:
+   qué debe hacer el agente, qué no, y para qué.
+3. **El agente debe SABER lo que se espera de él**: si no puede cumplir,
+   devuelve la tarea explicando por qué; si cumple sin respetar el protocolo
+   y sin motivo válido que pueda explicar, **la tarea se considera NO
+   cumplida (fallida)** — aunque el artefacto exista.
 
 ### Pares rtk `X*` + `rtk X*` (ADR-009)
 

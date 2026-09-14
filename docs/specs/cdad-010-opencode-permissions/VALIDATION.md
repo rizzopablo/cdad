@@ -176,9 +176,63 @@ funcionó correcto en ambos runs; lo que falló fue el reporte del agente.
 **Limpieza:** los 3 archivos probe creados (G2, G8, G14) fueron eliminados
 post-batería; árbol del repo limpio (git status sin cambios).
 
+#### Fase 3 — loop de fixes de Etapa 4 (2026-09-13)
+
+Review Capa 1 (`review.md`): 4 bloqueantes (H1-H4), 4 opcionales (H5-H8),
+veredicto RECHAZADO, bucket h 4/4. Capa 2 (Pablo): política de enforcement +
+priorización (transcripta en review.md). Fixes ejecutados:
+
+- **H1 (desviación registrada):** el commit `5f9f4d2` mezcló el fix de la
+  palanca anidada (10 agentes) con la edición del assert A1 de
+  `run-checks.sh` — el implementer tocó el artefacto de tests fuera de rol
+  (AP-4). Bajo la política del dueño, esto se registra como precedente: la
+  violación ocurrió, el diseño era correcto (verificado empíricamente), y la
+  resolución es documental (enmienda P1 en spec.md + este registro). Una
+  violación así futura = tarea NO cumplida.
+- **H2 (cerrado con evidencia):** corrida post-fix del validador pegada abajo.
+- **H3 (cerrado):** `"find *": allow` eliminado de los 10 agentes + generador
+  (`emit_base_allow`). Vector directo (`-delete`/`-exec sh`) bloqueado según
+  la política del dueño. `ls *`, `wc *`, `pwd`, `cd *` y pares `rtk find*` de
+  lectores se preservan (navegación cubierta).
+- **H4 (cerrado):** 16 globs de lectura de tests colocados (src/lib ×
+  _test.go/test_*.py/.test.js/.test.ts/.test.mjs/.test.cjs/.spec.ts/.spec.js)
+  agregados al `read:` de ambos test-writers, simétricos al `edit:`.
+- **H5 (cerrado):** docs stale corregidos (systemPatterns: palanca anidada;
+  comentarios de reviewer/scribe).
+- **H6 (cerrado):** 5 pares rtk agregados al default agnóstico del repo
+  (implementer + test-writer genéricos).
+- **H7 (desestimado con motivo):** variantes odoo read-only sin probe runtime
+  — estructuralmente idénticas a pares base probados + cobertura estática
+  A1/A6 de los 10; la clasificación del plugin es por-config, no por-nombre.
+- **H8 (cerrado):** loop muerto de run-checks.sh:155 eliminado.
+
+Evidencia del loop (RED → GREEN, Regla de Oro):
+
+```
+# RED (asserts nuevos de H3/H4, commit 17ce985):
+$ bash docs/specs/cdad-010-opencode-permissions/run-checks.sh
+RESULTADO: 184 PASS, 31 FAIL        # 11 FAIL A11 (find) + 20 FAIL A4 (globs)
+
+# GREEN (fixes implementer en agents/ + generador):
+$ bash install.sh                   → Verify: PASS — 11 cdad agents present
+$ bash install.sh --check           → Check: PASS (27/27 in sync, perfil basic)
+$ bash tests/validate-consistency.sh → Assert FAIL: 0
+$ bash scripts/validate-subagents.sh → RESULTADO: PASS
+$ bash docs/specs/cdad-010-opencode-permissions/run-checks.sh
+RESULTADO: 215 PASS, 0 FAIL
+```
+
+**Hallazgo nuevo para ciclo futuro (registrado, NO fixeado acá):** el
+test-writer observó en vivo que el matcher de permisos valida el comando
+compuesto por PREFIJO allowlist-eado — `cd X && <cualquier cosa>` y
+`find ... -exec ...` pasan el gate si el prefijo matchea un allow. Es la
+misma clase de exploit que H3 describe a nivel de patrón. Candidato a
+feature de hardening posterior (política de matching de compuestos).
+
 ## Checklist de criterios de aceptación
 
-1. [x] run-checks.sh todo PASS (RED definido antes de editar) — 174/174
+1. [x] run-checks.sh todo PASS (RED definido antes de editar) — 215/215
+   post-fixes de review (184/31 RED → 215/0 GREEN; ver Fase 3)
 2. [x] Matriz G1-G16 con output pegado (Fase 2; G14 con re-test justificado)
 3. [x] Cero prompts ask / cero `permission=write` en logs (grep pegado → 0)
 4. [x] 3 validadores en PASS simultáneo (Fase 1)

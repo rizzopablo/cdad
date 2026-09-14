@@ -53,8 +53,20 @@ allowlists del stack detectado, (vi) actualización del mapa de delegación.
 (`cdad-{architect,test-writer,implementer,reviewer,scribe}` + sus 5 variantes
 `-odoo`) declaran en su frontmatter la clave `write: "ask"` (valor simple,
 literal), y ninguna otra clave de permisos con catch-all deny cambia su
-clasificación. Verificación:
-- (estático) `frontmatter` de cada agente contiene `write: "ask"`.
+clasificación.
+
+> **Enmienda 2026-09-13 (post-probe, aprobada por Pablo en la priorización de
+> Capa 2 — review.md H1):** la palanca se implementa ANIDADA como
+> `permission.write: ask` (clave `write` dentro del bloque `permission:` del
+> frontmatter), NO top-level. Motivo empírico: el KNOWN_KEYS del clasificador
+> del plugin no incluye `write` top-level (probe: top-level es inerte — el
+> agente colapsa a read-only y `task` lo rechaza); anidada, el clasificador la
+> lee y el runtime NO la evalúa (cero `permission=write` en logs, G16). El
+> texto original de esta P1 decía "en su frontmatter la clave" sin precisar
+> ubicación — la enmienda precisiona la ubicación sin cambiar el contrato.
+
+Verificación:
+- (estático) `permission` de cada agente contiene `write: "ask"` anidado.
 - (empírico, probe) `task` con `subagent_type: cdad-<rol>` para cada uno →
   aceptado (sin rechazo "read-only... use delegate").
 `cdad-orchestrator` queda fuera (mode: all, permission: allow, nunca
