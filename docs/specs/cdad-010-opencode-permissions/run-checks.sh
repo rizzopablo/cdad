@@ -152,7 +152,6 @@ for a in cdad-test-writer cdad-test-writer-odoo; do
   b="$(section "$ROOT/$f" bash | grep -v '^[[:space:]]*#' || true)"
   e="$(section "$ROOT/$f" edit | grep -v '^[[:space:]]*#' || true)"
   r="$(section "$ROOT/$f" read | grep -v '^[[:space:]]*#' || true)"
-  for forb in '"rtk read\*":[[:space:]]*allow' '"rtk grep\*":[[:space:]]*allow' '"rtk find\*":[[:space:]]*allow' '"rtk diff\*":[[:space:]]*allow;'; do :; done
   for pat in '"rtk read\*"' '"rtk grep\*"' '"rtk find\*"' '"rtk diff\*"'; do
     if printf '%s' "$b" | grep -Eq "$pat"; then
       val="$(printf '%s' "$b" | grep -E "$pat" | head -1 | sed -E 's/.*:[[:space:]]*//')"
@@ -177,9 +176,29 @@ for a in cdad-test-writer cdad-test-writer-odoo; do
   done
   assert_file_has "$f" '"tests/\*\*":[[:space:]]*allow' "A4: $f/edit: 'tests/**': allow"
   assert_file_has "$f" '"\*\*/tests/\*\*":[[:space:]]*allow' "A4: $f/edit: '**/tests/**': allow"
-  # read: excepciones de lectura para tests colocados bajo src/lib
-  assert_file_has "$f" '"src/\*\*/\*_test\.go"[[:space:]]*:[[:space:]]*allow|"src/\*\*/\*\*_test\.go"[[:space:]]*:[[:space:]]*allow' \
-    "A4: $f/read: excepción de lectura para tests Go colocados"
+  # read: excepciones de lectura para tests colocados bajo src/lib — H4
+  # (review cdad-010): P2 exige las MISMAS excepciones que el edit:. Si falta
+  # una, el test-writer crea el archivo (edit allow) y no puede releerlo con
+  # Read (src/**: deny / lib/**: deny ganan por findLast).
+  for rglob in 'src/\*\*/\*_test\.go' \
+               'src/\*\*/test_\*\.py' \
+               'src/\*\*/\*\.test\.js' \
+               'src/\*\*/\*\.test\.ts' \
+               'src/\*\*/\*\.test\.mjs' \
+               'src/\*\*/\*\.test\.cjs' \
+               'src/\*\*/\*\.spec\.ts' \
+               'src/\*\*/\*\.spec\.js' \
+               'lib/\*\*/\*_test\.go' \
+               'lib/\*\*/test_\*\.py' \
+               'lib/\*\*/\*\.test\.js' \
+               'lib/\*\*/\*\.test\.ts' \
+               'lib/\*\*/\*\.test\.mjs' \
+               'lib/\*\*/\*\.test\.cjs' \
+               'lib/\*\*/\*\.spec\.ts' \
+               'lib/\*\*/\*\.spec\.js'; do
+    assert_file_has "$f" "\"$rglob\"[[:space:]]*:[[:space:]]*allow" \
+      "A4: $f/read: excepción de lectura para tests colocados '$rglob'"
+  done
 done
 echo
 
@@ -217,6 +236,24 @@ for a in cdad-architect cdad-reviewer cdad-scribe cdad-architect-odoo cdad-revie
       "A6: $f/bash: $pat en allow (rol lector)"
   done
 done
+echo
+
+echo "## A11 — H3 (review): 'find *': allow es backdoor de escritura/ejecución"
+# 'find *' matchea la invocación COMPLETA del comando: `find . -name x -delete`
+# (borrado — escritura) y `find . -name x -exec sh -c '...' \;` (ejecución
+# arbitraria) resuelven a allow bajo el catch-all-deny. Prohibido en TODOS los
+# roles (H3, review cdad-010; riesgo de seguridad = bloqueante sin excepciones).
+for a in "${AGENTS_ALL[@]}"; do
+  f="agents/$a.md"
+  b="$(section "$ROOT/$f" bash | grep -v '^[[:space:]]*#' || true)"
+  assert_string_not_has "$b" '"find \*":[[:space:]]*allow' \
+    "A11: $f/bash: sin 'find *': allow (backdoor -delete/-exec, H3)"
+done
+# El generador replica el vector en TODAS las copias derivadas
+# (emit_base_allow es común a todos los roles) — misma prohibición a nivel
+# fuente (H3, provenance: scripts/cdad-bash-allowlist.sh:153).
+assert_file_not_has "scripts/cdad-bash-allowlist.sh" 'rule "find \*" allow' \
+  "A11: generador NO emite 'find *': allow (raíz del vector, H3)"
 echo
 
 echo "## A7 — P5: generador de allowlists + integración install.sh"
