@@ -150,7 +150,6 @@ emit_base_allow() {
   rule "cd *" allow
   rule "ls *" allow
   rule "wc *" allow
-  rule "find *" allow
   rule "pwd" allow
   pair "git diff"
   pair "git log"

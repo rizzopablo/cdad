@@ -24,8 +24,18 @@ permission:
     "src/**/test_*.py": allow
     "src/**/*.test.js": allow
     "src/**/*.test.ts": allow
+    "src/**/*.test.mjs": allow
+    "src/**/*.test.cjs": allow
+    "src/**/*.spec.ts": allow
+    "src/**/*.spec.js": allow
+    "lib/**/*_test.go": allow
+    "lib/**/test_*.py": allow
     "lib/**/*.test.js": allow
     "lib/**/*.test.ts": allow
+    "lib/**/*.test.mjs": allow
+    "lib/**/*.test.cjs": allow
+    "lib/**/*.spec.ts": allow
+    "lib/**/*.spec.js": allow
   edit:
     # Catch-all deny + tests permitidos. Globs de tests colocados EXPANDIDOS:
     # el matcher de opencode escapa { } (audit cdad-010 3.3) — nunca braces.
@@ -64,7 +74,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow
@@ -78,12 +87,17 @@ permission:
     "pytest*": allow
     "rtk pytest*": allow
     "npm test*": allow
+    "rtk npm test*": allow
     "npm run*": allow
+    "rtk npm run*": allow
     "go test*": allow
     "rtk go test*": allow
     "go vet*": allow
+    "rtk go vet*": allow
     "go build*": allow
+    "rtk go build*": allow
     "gofmt *": allow
+    "rtk gofmt *": allow
     # Contrato §5: comitea su propio artefacto (los tests).
     "git blame*": allow
     "git add *": allow

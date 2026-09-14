@@ -34,7 +34,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow

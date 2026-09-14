@@ -23,8 +23,8 @@ permission:
   # entrega la review como texto final del delegate y el ORQUESTADOR materializa
   # el artefacto (verificado 05 Ago: write como objeto con catch-all deny =
   # tratado como write=deny por opencode → task rechazado, delegate obligatorio).
-  # cdad-010 P1: la palanca de clasificación es el `write: ask` top-level de
-  # arriba; el runtime sigue protegido por `edit: deny`.
+  # cdad-010 P1: la palanca de clasificación es el `permission.write: ask`
+  # (anidada en el bloque permission); el runtime sigue protegido por `edit: deny`.
   bash:
     # Allowlist explícita (cdad-010 P4): catch-all deny primero, específicas
     # después (semántica findLast). Denies globales rtk — AP-17 vía proxy
@@ -38,7 +38,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow

@@ -49,7 +49,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow
@@ -63,12 +62,17 @@ permission:
     "pytest*": allow
     "rtk pytest*": allow
     "npm test*": allow
+    "rtk npm test*": allow
     "npm run*": allow
+    "rtk npm run*": allow
     "go test*": allow
     "rtk go test*": allow
     "go vet*": allow
+    "rtk go vet*": allow
     "go build*": allow
+    "rtk go build*": allow
     "gofmt *": allow
+    "rtk gofmt *": allow
     # Contrato §5: comitea su propio artefacto (la implementación).
     "git blame*": allow
     "git add *": allow

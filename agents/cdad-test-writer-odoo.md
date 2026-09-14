@@ -27,8 +27,18 @@ permission:
     "src/**/test_*.py": allow
     "src/**/*.test.js": allow
     "src/**/*.test.ts": allow
+    "src/**/*.test.mjs": allow
+    "src/**/*.test.cjs": allow
+    "src/**/*.spec.ts": allow
+    "src/**/*.spec.js": allow
+    "lib/**/*_test.go": allow
+    "lib/**/test_*.py": allow
     "lib/**/*.test.js": allow
     "lib/**/*.test.ts": allow
+    "lib/**/*.test.mjs": allow
+    "lib/**/*.test.cjs": allow
+    "lib/**/*.spec.ts": allow
+    "lib/**/*.spec.js": allow
   edit:
     # Catch-all deny + tests permitidos. Globs EXPANDIDOS (el matcher escapa
     # { } — audit cdad-010 3.3); nunca braces.
@@ -65,7 +75,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow

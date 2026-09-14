@@ -22,7 +22,8 @@ permission:
   # materializa y commitea tras la aprobación del usuario). Igual que reviewer:
   # entrega el memory-bank entry como texto final del delegate; el orquestador
   # materializa el artefacto. cdad-010 P1: la palanca de clasificación es el
-  # `write: ask` top-level de arriba; el runtime sigue protegido por edit: deny.
+  # `permission.write: ask` (anidada en el bloque permission); el runtime
+  # sigue protegido por edit: deny.
   bash:
     # Allowlist explícita (cdad-010 P4): catch-all deny primero, específicas
     # después (semántica findLast). Denies globales rtk — AP-17 vía proxy
@@ -36,7 +37,6 @@ permission:
     "rtk make *": allow
     "ls *": allow
     "wc *": allow
-    "find *": allow
     "cd *": allow
     "pwd": allow
     "git diff*": allow
