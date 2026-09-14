@@ -72,4 +72,34 @@ Veredicto global: **RECHAZADO** — los 4 bloqueantes son mecánicos y baratos d
 
 ## Capa 2 — Priorización (usuario)
 
-_(pendiente — decisiones del usuario sobre H1-H8)_
+**Política de enforcement del dueño (Pablo, 2026-09-13, transcripta):**
+
+> "No vamos a ser tan estrictos porque si no es infinito. La idea es bloquear
+> las opciones más directas y evidentes, y dejar claro en los skills y demás
+> archivos de procedimiento lo que debe y lo que no debe hacer el agente y
+> para qué. Un agente con ganas de saltar las vallas siempre encontrará cómo
+> hacerlo. Lo que queremos es que el agente *sepa* lo que esperamos de él y
+> que si no hace lo que esperamos debe tener un motivo válido para nosotros
+> que pueda explicar, o debe devolver la tarea explicando por qué no puede
+> cumplir con su objetivo. Si un agente cumple una tarea sin respetar el
+> protocolo, se considera que no cumplió la tarea, falló."
+
+Derivados para reviews futuros: (1) bloquear vectores directos y evidentes,
+no bypasses hipotéticos; (2) la expectativa se documenta en skills/
+procedimientos (qué, qué no, y por qué); (3) violación de protocolo sin
+motivo válido = tarea NO cumplida aunque el artefacto exista; (4) el agente
+cumple o devuelve la tarea con explicación — nunca cumple violando en
+silencio.
+
+**Aplicación a los hallazgos:**
+
+| Hallazgo | Decisión | Motivo |
+|---|---|---|
+| H1 | Resolver vía docs: enmienda spec P1 (palanca anidada) + registro de desviación en VALIDATION | La palanca anidada es el diseño correcto, verificado empíricamente (G-series); re-hacer el commit vía otra sesión sería strictness infinito. La violación de proceso queda REGISTRADA como precedente; bajo la política del dueño, una violación así futura = tarea fallida. |
+| H2 | APLICAR (bloqueante) | Evidencia pegada post-fix es barata y es la Regla de Oro. |
+| H3 | APLICAR (bloqueante) | `find -delete`/`-exec sh` es exactamente un vector "directo y evidente" — la filosofía del dueño lo CONFIRMA como bloqueante (coincide con matriz: seguridad sin excepciones). Fix: eliminar `"find *": allow` de los roles + generador. |
+| H4 | APLICAR (bloqueante) | Divergencia mecánica del spec P2; fix de globs de lectura. |
+| H5 | APLICAR | Docs stale contradicen la filosofía del dueño (expectativas claras de dónde vive la palanca); fix mecánico de docs + comentarios. |
+| H6 | APLICAR | 5 pares rtk faltantes en default del repo; mecánico. |
+| H7 | DESESTIMADO con motivo | Variantes odoo read-only estructuralmente idénticas a sus pares base probados en runtime + cobertura estática A1/A6 de los 10; el mecanismo de clasificación del plugin es por-config (idéntico entre pares), no por-nombre. Registrado como desviación aceptada en VALIDATION. |
+| H8 | APLICAR | Limpieza trivial del loop muerto; se hace junto con los asserts de H3/H4. |
