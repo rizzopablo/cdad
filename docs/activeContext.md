@@ -4,6 +4,63 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-09-13 — Feature: cdad-010-opencode-permissions
+
+Cerrada la feature que reparó la delegación a los sub-agentes `cdad-*` en
+OpenCode (rota por interacción de 3 capas: clasificador del plugin que ignora
+allows específicas, huecos de allowlist + wrapper rtk, y el hack `write: ask`
+top-level inerte). 10 agentes task-ables (5 base + 5 odoo), bloques de
+permisos autocontenidos (catch-all primero, específicas después — semántica
+findLast), cero `ask` en runtime (fail-fast deny), allowlists bash por rol con
+pares `X*`/`rtk X*` derivadas del stack detectado (`scripts/cdad-bash-allowlist.sh`
++ `install.sh`, P5), docs de delegación corregidos (P6) y ADR-009. Copia
+huérfana `cdad-test-writer-local.md` (fuera del repo, filtraba a `src/`)
+eliminada.
+
+Decisiones clave:
+- **Palanca anidada, no top-level (enmienda P1):** `permission.write: ask`
+  dentro del bloque `permission:` — el KNOWN_KEYS del clasificador no incluye
+  `write` top-level (probe: palanca top-level inerte, agente colapsa a
+  read-only y `task` lo rechaza); anidada, el clasificador la lee y el runtime
+  NO la evalúa (cero `permission=write` en 124MB de logs). La enmienda nace de
+  una desviación registrada: el commit `5f9f4d2` mezcló el fix de agentes con
+  la edición del assert A1 de run-checks.sh fuera de rol (AP-4) — bajo la
+  política del dueño queda como precedente: violación así futura = tarea NO
+  cumplida.
+- **Eliminación de `"find *": allow` (H3):** vector directo de
+  escritura/ejecución (`find -delete`, `-exec sh`) en los 6 roles read-only
+  cuya allowlist declara "solo lectura". Navegación preservada (`ls *`, `wc *`,
+  `pwd`, `cd *`, pares `rtk find*` en lectores).
+- **Política de enforcement del dueño (Capa 2, Pablo):** bloquear vectores
+  directos y evidentes, no bypasses hipotéticos; la expectativa se documenta en
+  skills/procedimientos; agente que cumple violando el protocolo sin motivo
+  válido = tarea NO cumplida. Definición operativa (N3): "vector directo y
+  evidente" = demostrable con un probe de una sola invocación con output
+  pegado (Regla de Oro) — el episodio N1 lo demostró: dos sesiones dieron
+  veredictos opuestos sobre el mismo matcher y el que tenía probes pegados
+  tenía razón.
+
+Estado final: run-checks.sh 217 PASS / 0 FAIL (RED 42/132 → 174/0 → 184/31 →
+215/0 → 217/0 con assert de orden findLast N2), 3 validadores en PASS
+simultáneo, matriz de probes G1-G16 ejecutada post-restart desde sesión
+primaria con evidencia pegada (G9 con enmienda justificada: `go version`
+DENEGADO es diseño correcto; G14 con re-test tras misreport del modelo), cero
+prompts `ask` y cero `permission=write` en logs, review APROBADO-COMENTARIOS
+(2 pasadas). Commits: rango `b352bf6..a1d37a7` (27 commits; highlights:
+`f36f8c7` P1-P4, `b0027bd` P5, `5f9f4d2` palanca anidada, `a45219c` fixes
+H3/H4, `a1d37a7` N2).
+
+Pendiente (bucket de hardening, NO fixeado acá):
+- Re-evaluación de matching de comandos compuestos con la premisa corregida
+  (N1: el matcher evalúa por segmento — `cd X && <arbitrario>` NO bypassa; el
+  "hardening de matching" original probablemente ya no es necesario).
+- `"find *": allow` en la config global del usuario (`opencode.jsonc`) —
+  misma clase que H3, fuera de alcance por invariante de no-modificación (N4).
+- Solape de globs de dominio Odoo (intersección entre globs odoo y globs
+  genéricos de tests colocados en las variantes) — revisar en hardening.
+
+---
+
 ## 2026-09-04 — Fix: path-guard reconoce tests colocados (sin ciclo formal)
 
 Fix en `scripts/claude-code-path-guard.sh` (commit `0fd023f`), detectado en

@@ -10,6 +10,21 @@ features. Corregido en epic-002-cdad-audit-fixes.)_
 
 ## Done
 
+- **cdad-010-opencode-permissions** (2026-09-13) — delegación a sub-agentes
+  cdad-* reparada en OpenCode: 10 agentes task-ables vía `permission.write:
+  ask` anidada (palanca de clasificación, no evaluable en runtime — regla de
+  vigilancia en systemPatterns), bloques autocontenidos catch-all-first
+  (findLast), cero `ask` en runtime, allowlists bash por rol con pares
+  `X*`/`rtk X*` (ADR-009) derivadas del stack por generador + install.sh
+  (P5), `"find *": allow` eliminado (backdoor -delete/-exec), globs de
+  lectura de tests colocados completos (16), política de enforcement del
+  dueño + definición operativa de "vector directo y evidente" en
+  systemPatterns. Evidencia: run-checks 217/0, 3 validadores PASS, probes
+  G1-G16 con output pegado, cero ask/permission=write en logs. Review
+  APROBADO-COMENTARIOS. Commits: b352bf6..a1d37a7. Bucket de hardening
+  pendiente: matching de compuestos (premisa corregida N1), find * global del
+  usuario (N4), solape de globs de dominio Odoo.
+
 - **fix-path-guard-colocated-tests** (2026-09-04, sin ciclo formal — ver
   nota de proceso en activeContext.md) — `scripts/claude-code-path-guard.sh`
   reconoce tests colocados (Go `*_test.go`, JS/TS `*.test.{js,ts,mjs,cjs}` /
@@ -79,4 +94,4 @@ _(ninguna)_
 
 ---
 
-Última actualización: 2026-09-02
+Última actualización: 2026-09-13
