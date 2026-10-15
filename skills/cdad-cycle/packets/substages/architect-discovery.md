@@ -1,0 +1,1 @@
+Map the real technical surface touched by the feature. Record verified entities, extension points, applicable conventions, and open verification items. Use the approved epic plan as the contract; do not claim that a feature specification already exists.

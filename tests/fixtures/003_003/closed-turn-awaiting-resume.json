@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "reconstruction-of-real-incident",
+  "incident_ref": "guards-incidents-observed.md fila 2026-10-06 C1: 'El implementer cerró el turno «esperando ser retomado automáticamente» sin entrega final' (dispatch-ledger, misma fila de recuperación)",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (C1) / P5 + invariante 4 + límite C1",
+  "description": "Reconstrucción del incidente REAL C1 (no es un fallo provocado): trabajo progresivo real (progreso avanzando) y luego el turno se CIERRA sin entrega final ('sin reporte final' no es un campo estructurado — la sesión parecía viva pero no entregó; límite C1: la DB no distingue 'viva pero estancada' de 'terminada'). Última llamada con resultado unobservable (result_class 'unknown') -> escalada unknown:true al orquestador; NUNCA se fabrica 'entregó por otra vía' ni 'no entregó'. Recuperación real aplicada: reanudar la misma sesión (decision_needed).",
+  "session_id": "sess-recon-closed-turn-awaiting-resume",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "write", "args": ["tests/test_feature_x.py"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest", "tests/test_feature_x.py"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "unknown", "progress_token": "p1", "at": "2026-10-06T00:30:00Z"}
+  ]
+}

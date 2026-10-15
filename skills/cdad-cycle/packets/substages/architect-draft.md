@@ -1,0 +1,1 @@
+Draft a specification with functional description, contract, numbered testable postconditions, verifiable invariants, and measurable acceptance criteria. Leave it unapproved for explicit user decision.

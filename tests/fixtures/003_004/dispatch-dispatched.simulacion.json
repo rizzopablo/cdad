@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "execution_id": "@EXECUTION_ID@",
+  "packet_id": "@PACKET_ID@",
+  "attempt_id": "attempt-1",
+  "role": "test-writer",
+  "substage": "green",
+  "runtime": "opencode",
+  "session": "ses-simulacion-t2",
+  "started_at": "2026-10-07T00:00:00Z",
+  "model_configured": "simulacion",
+  "model_reported": null,
+  "provenance": {
+    "runtime": "SIMULACION fixture (dato suplente; no incidente real)",
+    "session": "SIMULACION fixture (dato suplente; no incidente real)"
+  },
+  "source": "SIMULACION fixture 003-004 (registro I8 del despacho, matriz T2)"
+}

@@ -1,0 +1,102 @@
+{
+  "attempt": 1,
+  "body_sha256": "df6f09f64202f49d24eff613070f2d061cd92b0b74a0bfd56f99f8fdb28b1f1f",
+  "bytes": 2430,
+  "execution_id": "exec-003-007-living-continuity-001",
+  "max_bytes": 16384,
+  "packet_id": "003-007-living-continuity-reviewer-review-002",
+  "prev_checkpoint_sha256": "9d3cd0fa371419bcaa749bb50c4288347ac0814cad0efa6237bb796f11143c9b",
+  "projection": {
+    "authority": {
+      "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
+      "expires_on": null,
+      "state": "active"
+    },
+    "decisions": [
+      {
+        "decision": "Feature 003-007 abierta por el dueño tras la revisión de Codex",
+        "rationale": "el dueño respondió 'De acuerdo, avanza con eso' el 2026-10-08"
+      },
+      {
+        "decision": "Gate del implementer = focales + tests de módulos tocados; suite completa al cierre o si toca instalador/staging/renderer",
+        "rationale": "aprobado por el dueño 2026-10-08; costo medido en 003-006 (7 suites, ~95 min)"
+      },
+      {
+        "decision": "v6 abcd4d3 activada en el repo por el dueño; agentes v6 publicados por el prepare de T1 RED",
+        "rationale": ".cdad/activation.json y .opencode/agents/.cdad-derived.json source_dir = raíz abcd4d3"
+      },
+      {
+        "decision": "Spec P1-P10 y plan T1-T4 aprobados bajo delegación HITL",
+        "rationale": "review-draft-001-decision.md: BL-1..BL-3 y R-1..R-4 aceptados, R-5 rechazado"
+      },
+      {
+        "decision": "Sonda de descubrimiento 1 parcial: reconstrucción correcta sin resume; la aclaración de solo lectura entra en T4 (d)",
+        "rationale": "discovery-probe-decision.md"
+      },
+      {
+        "decision": "T1 RED aceptado tras corregir el legado: store real pre-003-007 versionado como fixture",
+        "rationale": "dispatch-ledger filas 5-6; commits 4a8bfbc, 3a9bc82, 4ba979a"
+      },
+      {
+        "decision": "T1 GREEN b1e56e9 aceptado en producción; clase en body y reflejada en la envolvente (opción A); dos defectos de test van al test-writer",
+        "rationale": "t1-green-decision.md"
+      },
+      {
+        "decision": "Fix de tests 4e82ca4 aceptado; gate acotado 52/52 reproducido",
+        "rationale": "dispatch-ledger fila 8"
+      },
+      {
+        "decision": "T1 cerrada por review GLM sin bloqueantes; O-1 (legado solo si el body no tiene record) entra en T2",
+        "rationale": "review-t1-decision.md"
+      },
+      {
+        "decision": "T2 RED 1d43ac7 aceptado; record en todo body nuevo (también begin); legado = body sin record",
+        "rationale": "t2-record-decision.md"
+      },
+      {
+        "decision": "T2 GREEN f466ed9 con gate acotado 60/60",
+        "rationale": "dispatch-ledger fila 11"
+      }
+    ],
+    "goal": "Cerrar 003-007-living-continuity: que cdad_continuity tolere documentos vivos (T4-REF) y distinga checkpoint de begin (T4-CKPT); reconciliar la regla de encargo atómico del orquestador. Última feature de epic-003; su cierre habilita el cierre del epic con enmienda (decisión del dueño ya tomada, diferida a este cierre). Sin push.",
+    "next_action": "Review T2 (GLM); receive; decidir; luego T3 (rotación real con la versión nueva instalada en raíz aislada).",
+    "uncertainties": []
+  },
+  "record": "active-record-v1",
+  "references": [
+    {
+      "class": "contract",
+      "current_sha256": "3b4e8c4ad7fefc49faa6086786cee1ac63bdeed6c41aec692cd686a0a3afa07c",
+      "legacy": true,
+      "path": "docs/specs/003-007-living-continuity/spec.md",
+      "sha256": "3b4e8c4ad7fefc49faa6086786cee1ac63bdeed6c41aec692cd686a0a3afa07c",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "3771f5afa9c94cf64e0e77f4e7265274d27d058a190e08068d0fe340f6a33ac4",
+      "legacy": true,
+      "path": "docs/specs/003-007-living-continuity/plan.md",
+      "sha256": "3771f5afa9c94cf64e0e77f4e7265274d27d058a190e08068d0fe340f6a33ac4",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "a8263646e6eb5af708a5f2e9741d6240ad389e76d6381fe8513caa7114d47453",
+      "legacy": true,
+      "path": "docs/specs/003-007-living-continuity/review-t1-decision.md",
+      "sha256": "a8263646e6eb5af708a5f2e9741d6240ad389e76d6381fe8513caa7114d47453",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "3ce4d4a323cc8703db3499f7e0f923782e9f6710a8b74a2fbb96db0ca37ed682",
+      "legacy": true,
+      "path": "docs/specs/003-007-living-continuity/t2-record-decision.md",
+      "sha256": "23cbacbeff1dd8ec62c336010cbb82c2a0aab10d38c8d111d2e36a822dbbe536",
+      "state": "changed"
+    }
+  ],
+  "schema_version": 1,
+  "seq": 7
+}

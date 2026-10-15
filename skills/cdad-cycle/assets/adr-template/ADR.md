@@ -1,48 +1,48 @@
-# ADR-<NNN>: <título corto de la decisión>
+# ADR-<NNN>: <short title of the decision>
 
 - **Status**: <Proposed | Accepted | Deprecated | Superseded by ADR-NNN>
 - **Date**: <YYYY-MM-DD>
-- **Deciders**: <quién decidió>
+- **Deciders**: <who decided>
 
-## Contexto
+## Context
 
-<Cuál es el problema que requiere decisión. Qué fuerzas (técnicas, organizacionales, de producto) están en juego. 2-6 líneas.>
+<What is the problem that requires a decision. What forces (technical, organizational, product) are at play. 2-6 lines.>
 
-## Opciones consideradas
+## Options considered
 
-### Opción A: <nombre>
+### Option A: <name>
 - Pros: <...>
-- Contras: <...>
+- Cons: <...>
 
-### Opción B: <nombre>
+### Option B: <name>
 - Pros: <...>
-- Contras: <...>
+- Cons: <...>
 
-### Opción C: <nombre>
+### Option C: <name>
 - Pros: <...>
-- Contras: <...>
+- Cons: <...>
 
-## Decisión
+## Decision
 
-<La opción elegida, en una frase.>
+<The chosen option, in one sentence.>
 
-## Razones
+## Reasons
 
-1. <Razón principal>
-2. <Razón secundaria>
+1. <Primary reason>
+2. <Secondary reason>
 3. <...>
 
-## Consecuencias
+## Consequences
 
-**Positivas:**
+**Positive:**
 - <...>
 
-**Negativas / trade-offs:**
+**Negative / trade-offs:**
 - <...>
 
-**Neutrales:**
+**Neutral:**
 - <...>
 
-## Notas
+## Notes
 
-<Cualquier contexto adicional, links a discusiones, referencias externas. Opcional.>
+<Any additional context, links to discussions, external references. Optional.>

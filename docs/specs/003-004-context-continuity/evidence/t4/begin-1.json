@@ -1,0 +1,35 @@
+{
+  "attempt": 1,
+  "body_sha256": "58c1df549ba5543e7ffd75d6a72a031acc639f881fa8e76f880a7a7634bb760e",
+  "bytes": 2483,
+  "checkpoint": "continuity-checkpoint-v1",
+  "execution_id": "exec-003-004-context-continuity-001",
+  "max_bytes": 16384,
+  "no_op": false,
+  "packet_id": "003-004-context-continuity-reviewer-review-005",
+  "prev_checkpoint_sha256": null,
+  "references": [
+    {
+      "path": "docs/specs/003-004-context-continuity/spec.md",
+      "sha256": "31cffdb01663e3d7cca167a29a71f5f22b79e6c99bfaea987ec9326911984d78"
+    },
+    {
+      "path": "docs/specs/003-004-context-continuity/plan.md",
+      "sha256": "85f8f2ba137dceaeb985a39a9c075c43b7b83e59668b4f17b64764da0de7cf2f"
+    },
+    {
+      "path": "docs/specs/003-004-context-continuity/dispatch-ledger.md",
+      "sha256": "ae0fa9ec96dd4b0aa3788147f9ac345287814bf8b93d61fb0b3f2f114b30046b"
+    },
+    {
+      "path": "docs/specs/003-004-context-continuity/debt.md",
+      "sha256": "027a4aea8e83ac2bcf25fe0ee0bf2d5ec8d4a1d3de4b2741781d709a0b60cf48"
+    },
+    {
+      "path": "skills/cdad-cycle/references/continuity.md",
+      "sha256": "ab5dd1e7e8a1915f766610e0897c9d9a039e3d8a6e66ad20678150450da7df83"
+    }
+  ],
+  "schema_version": 1,
+  "seq": 1
+}

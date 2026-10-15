@@ -1,0 +1,26 @@
+{
+ "packet_id": "003-006-runtime-adoption-implementer-green-005",
+ "attempt": 1,
+ "goal": "Cerrar 003-006-runtime-adoption: cablear y activar en OpenCode, Claude Code y Codex lo construido en 003-001..004. T4: re-adopción v5 (d958672), recorrido real por runtime, receive y continuidad reales, borrador de enmienda de cierre del epic para el dueño. Sin push.",
+ "decisions": [
+  {"decision": "Spec P1-P12 y plan T1-T4 aprobados bajo delegación HITL", "rationale": "review-draft-001-decision.md; el usuario dijo 'ok' a la feature el 2026-10-07"},
+  {"decision": "T1, T2 y T3 cerradas tras review GLM; B-1 de T2 corregido", "rationale": "dispatch-ledger filas 6, 15 y 21"},
+  {"decision": "RU-1: el hook emitido fija CDAD_PACKET_CLI a la raíz adoptada", "rationale": "t4-ru1-decision.md: el guard busca el clasificador en HOME (copia vieja) y falla cerrado"},
+  {"decision": "La activación real del repo y la confianza de Claude Code quedan para el dueño", "rationale": "el clasificador de permisos denegó la activación del repo real; la confianza es un cambio de seguridad en HOME"}
+ ],
+ "uncertainties": [
+  "Claude Code: las skills de usuario ganan a las de proyecto; hay que despachar con --setting-sources project,local o retirar las copias de HOME (decisión del dueño)",
+  "Codex: el catálogo lista las dos copias; en la sonda usó la de proyecto",
+  "trigger sigue dando unknown (sin lector de contexto)"
+ ],
+ "next_action": "Despachar RU-1 GREEN; después receive del resultado, reconcile (esperado received), checkpoint; verificar el hook emitido vía bash -c; rotación con resume en sesión nueva de orquestador; borrador de enmienda; decisiones al dueño.",
+ "references": [
+  "docs/specs/003-006-runtime-adoption/spec.md",
+  "docs/specs/003-006-runtime-adoption/plan.md",
+  "docs/specs/003-006-runtime-adoption/dispatch-ledger.md",
+  "docs/specs/003-006-runtime-adoption/adoption-ledger.md",
+  "docs/specs/003-006-runtime-adoption/debt.md",
+  "docs/specs/003-006-runtime-adoption/t4-ru1-decision.md"
+ ],
+ "budget": {"source": "none (orquestador Claude Code sin lector de contexto)"}
+}

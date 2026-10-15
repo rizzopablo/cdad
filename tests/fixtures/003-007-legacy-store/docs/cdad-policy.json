@@ -1,0 +1,18 @@
+{
+  "path_policy": {
+    "documentation_roots": [
+      "docs"
+    ],
+    "implementation_roots": [
+      "agents",
+      "skills",
+      "scripts",
+      "sources",
+      "build"
+    ],
+    "test_roots": [
+      "tests"
+    ]
+  },
+  "schema_version": 1
+}

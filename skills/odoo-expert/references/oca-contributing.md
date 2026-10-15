@@ -1,128 +1,128 @@
-# OCA — requisitos para publicar y colaborar
+# OCA — requirements for publishing and contributing
 
-Fuente: `OCA/odoo-community.org` (`website/Contribution/CONTRIBUTING.rst` y
-`oca_repository_policy.rst`), consultado 2026-08-30. Ante la duda, el repo manda.
+Source: `OCA/odoo-community.org` (`website/Contribution/CONTRIBUTING.rst` and
+`oca_repository_policy.rst`), consulted 2026-08-30. When in doubt, the repo rules.
 
-## Mensajes de commit
+## Commit messages
 
-Formato: `[TAG] module_name: descripción breve`
+Format: `[TAG] module_name: short description`
 
-- Resumen ≤ 50 caracteres, **sin prefijo antes del tag**; líneas de cuerpo ≤ 80.
-- **Inglés**, presente imperativo: "Fix formatting", no "Fixes" ni "Fixed".
-- Debe decir **qué módulo** toca y **por qué** el cambio.
+- Summary ≤ 50 characters, **no prefix before the tag**; body lines ≤ 80.
+- **English**, present imperative: "Fix formatting", not "Fixes" nor "Fixed".
+- It must say **which module** it touches and **why** the change.
 
-| Tag | Uso |
+| Tag | Use |
 |---|---|
-| `[ADD]` | módulo o funcionalidad nueva |
-| `[FIX]` | corrección de bug |
-| `[IMP]` | mejora de algo existente |
-| `[REF]` | refactor sin cambio funcional |
-| `[MIG]` | migración de versión |
-| `[REM]` | eliminación |
+| `[ADD]` | new module or feature |
+| `[FIX]` | bug fix |
+| `[IMP]` | improvement of something existing |
+| `[REF]` | refactor with no functional change |
+| `[MIG]` | version migration |
+| `[REM]` | removal |
 
-**Prohibido:**
+**Forbidden:**
 
-- Commits de una palabra ("bugfix", "improvements").
-- Commits tipo "Fix pep8", "Code review", "Add unittest" **encima** de un commit
-  de feature — eso va dentro del commit que corresponde.
-- Un commit que toque **varios módulos** a la vez: se parte en uno por módulo.
+- One-word commits ("bugfix", "improvements").
+- "Fix pep8", "Code review", "Add unittest" commits **on top of** a feature
+  commit — that belongs inside the corresponding commit.
+- One commit touching **several modules** at once: split it into one commit per module.
 
-## Nombres
+## Names
 
-**Módulos** — minúsculas y guiones bajos, en **singular** (salvo que el modelo
-Odoo ya sea plural, p.ej. `mrp_operations_*`):
+**Modules** — lowercase and underscores, in **singular** (unless the Odoo
+model is already plural, e.g. `mrp_operations_*`):
 
-| Caso | Prefijo | Ejemplo |
+| Case | Prefix | Example |
 |---|---|---|
-| Base para otros módulos | `base_` | `base_location_nuts` |
-| Localización | `l10n_CC_` (CC = código de país) | `l10n_es_pos` |
-| Extiende un módulo Odoo | `<modulo_odoo>_` | `mail_forward` |
-| Combina Odoo + OCA | el nombre de Odoo primero | `crm_partner_firstname` |
+| Base for other modules | `base_` | `base_location_nuts` |
+| Localization | `l10n_CC_` (CC = country code) | `l10n_es_pos` |
+| Extends an Odoo module | `<odoo_module>_` | `mail_forward` |
+| Combines Odoo + OCA | Odoo's name first | `crm_partner_firstname` |
 
-**Repositorios** — con guiones, no guiones bajos (`l10n-belgium`,
-`connector-magento`). Nunca "odoo" ni "openerp" en el nombre.
+**Repositories** — with dashes, not underscores (`l10n-belgium`,
+`connector-magento`). Never "odoo" nor "openerp" in the name.
 
-**Archivos** — solo `[a-z0-9_]`. Permisos: directorios 755, archivos 644.
+**Files** — only `[a-z0-9_]`. Permissions: directories 755, files 644.
 
-## Versión en el manifest
+## Version in the manifest
 
-Versión mayor de Odoo + `x.y.z` del módulo: el primer release de un módulo para
-19.0 es `19.0.1.0.0`.
+Odoo major version + module `x.y.z`: the first release of a module for
+19.0 is `19.0.1.0.0`.
 
-## Qué exige un módulo antes de mergear
+## What a module needs before merging
 
 **Manifest**
 
-- Sin claves vacías.
-- `license` e `images` presentes.
-- `author` termina con `Odoo Community Association (OCA)`.
-- `website` apuntando al repo: `https://github.com/OCA/<repo>`.
+- No empty keys.
+- `license` and `images` present.
+- `author` ends with `Odoo Community Association (OCA)`.
+- `website` pointing to the repo: `https://github.com/OCA/<repo>`.
 
-**Documentación**
+**Documentation**
 
-- `README.rst` explicando propósito, instalación y uso.
-- Dependencias externas documentadas en la sección de instalación.
-- Descripción según el template, **sin secciones vacías**.
-- **Sin logos ni branding de empresa** — se acredita en autores/contribuidores.
+- `README.rst` explaining purpose, installation and usage.
+- External dependencies documented in the installation section.
+- Description following the template, **no empty sections**.
+- **No logos or company branding** — credit goes in authors/contributors.
 
-**Código**
+**Code**
 
-- PEP8 (flake8) y guidelines OCA de Python, XML, JavaScript y CSS.
-- Todos los tests en verde.
+- PEP8 (flake8) and OCA guidelines for Python, XML, JavaScript and CSS.
+- All tests green.
 
 **Tests**
 
-- Test unitario para funcionalidad nueva.
-- Test de regresión para cada bugfix.
-- **Sin depender de demo data.**
-- Cobertura igual o mejor que antes.
+- Unit test for new functionality.
+- Regression test for every bugfix.
+- **No depending on demo data.**
+- Coverage equal or better than before.
 
-**Dependencias**
+**Dependencies**
 
-- Externas en `external_dependencies` del manifest.
-- Paquetes Python en `requirements.txt`.
-- Dependencias OCA en `oca_dependencies.txt`.
-- **Sin pinear versiones exactas.**
+- External ones in `external_dependencies` of the manifest.
+- Python packages in `requirements.txt`.
+- OCA dependencies in `oca_dependencies.txt`.
+- **No pinning exact versions.**
 
-**Migraciones**
+**Migrations**
 
-- Un cambio incompatible exige script de migración.
-- Migrar entre versiones mayores de Odoo: script o nota en el README.
+- An incompatible change requires a migration script.
+- Migrating between Odoo major versions: script or note in the README.
 
-**Traducciones**
+**Translations**
 
-- Un PR **nunca** modifica `.po` directamente: eso es responsabilidad de Weblate.
-- Excepción: un módulo nuevo puede traer sus propios `.po`.
+- A PR **never** modifies `.po` directly: that is Weblate's responsibility.
+- Exception: a new module may ship its own `.po` files.
 
-## Proceso de revisión
+## Review process
 
-- Hacen falta **dos cosas distintas**: revisión de código y prueba funcional.
-- Al menos una aprobación debe ser de un miembro del PSC o con permiso de
-  escritura en el repo. Se puede convocar a `@OCA/core-maintainers`.
-- Mergean personas con permiso de escritura, preferentemente Core Maintainers,
-  respetando al autor (`--author`) y su mensaje de commit.
-- Un PR sin actividad por **6 meses** puede cerrarse.
+- Two **different things** are needed: code review and functional testing.
+- At least one approval must come from a PSC member or someone with write
+  access to the repo. `@OCA/core-maintainers` can be called in.
+- People with write access merge, preferably Core Maintainers,
+  respecting the author (`--author`) and their commit message.
+- A PR without activity for **6 months** may be closed.
 
-**Checklist del revisor:** ¿es lo bastante genérico para la comunidad? ¿no
-duplica otro módulo OCA? ¿está documentado? ¿el enfoque es correcto? ¿hay casos
-de uso? ¿no hay configuración hardcodeada? ¿trae demo data? ¿los commits están
-limpios?
+**Reviewer's checklist:** is it generic enough for the community? does it
+duplicate another OCA module? is it documented? is the approach correct? are there
+use cases? is there hardcoded configuration? does it ship demo data? are the
+commits clean?
 
-**Tono:** agradecer primero, ser cordial, explicar el motivo de cada pedido.
+**Tone:** thank first, be cordial, explain the reason for each request.
 
-## Política del repositorio OCA
+## OCA repository policy
 
-Un módulo en nivel **Stable** o **Mature** debe cumplir tres cosas:
+A module at the **Stable** or **Mature** level must meet three things:
 
-1. **Calidad** — pasa los checks automáticos y fue revisado por pares.
-2. **Estabilidad** — no rompe instalaciones existentes ni módulos dependientes
-   de la misma versión de Odoo.
-3. **Relevancia** — genérico, y sin solaparse significativamente con módulos OCA
-   que ya existen.
+1. **Quality** — passes the automatic checks and was peer-reviewed.
+2. **Stability** — does not break existing installations or modules that depend
+   on the same Odoo version.
+3. **Relevance** — generic, and without significant overlap with existing OCA
+   modules.
 
-En **Alpha** y **Beta** el criterio se relaja (basta con los checks automáticos)
-para no frenar a quien recién contribuye. El código de incubación abandonado se
-borra.
+At **Alpha** and **Beta** the criterion is relaxed (the automatic checks suffice)
+so as not to slow down first-time contributors. Abandoned incubating code gets
+deleted.
 
-Cada repositorio tiene un **PSC** (Project Steering Committee) responsable, que
-decide excepciones de nombres y organización.
+Each repository has a responsible **PSC** (Project Steering Committee), which
+decides naming and organization exceptions.

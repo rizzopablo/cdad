@@ -1,0 +1,35 @@
+# Spec — Permissive bash policy for CDAD agents (owner decision 2026-09-29)
+
+context: >
+  The named-command bash allowlist (002-009 hardening) causes constant
+  operational failures in real cycles: findLast matching requires exact
+  argument shapes ("npm test *" does not match a bare `npm test`), compound
+  commands (`cd x && true`, pipes, cat of the spec) explode with permission
+  denials, and hand-authorization per operation breaks the role flow. The
+  owner reverses 002-009: NO operation filtering. The retained barrier is
+  PATH-based and per-role: each agent must NOT be able to edit files/dirs
+  outside its role scope; everything else runs.
+
+resolution: >
+  Replace the derived bash allowlist with a single permissive catch-all
+  (`"*": allow`) declared in the canonical host sources (architect = reader
+  class, test-writer = writer class) and composed by the generator (PD-1).
+  Keep the path maps unchanged (edit/read/grep) and the Claude Code
+  path-guard for Read/Edit/Write; remove the CC Bash content-guard hook.
+  Fix the implementer-odoo edit bug (models/views/controllers/wizards were
+  wrongly denied — that IS the implementer's scope). Update the oracles that
+  froze the old contract, with this spec as the sanctioning reference.
+
+postcondition: >
+  Every deployed CDAD role agent runs any shell operation (single permissive
+  bash rule), can only EDIT within its role's path scope, and the full
+  pipeline (sources -> generator -> tests -> validators -> staging -> install)
+  is green and byte-stable.
+
+verification:
+  - "P1 bash: for all 10 generated role agents (opencode, odoo stack), the permission.bash block contains exactly one rule '\"*\": allow' and no other rule lines"
+  - "P2 derivation (PD-1/PD-3): removing 'rule \"*\"' from sources/roles/architect.md or test-writer.md makes scripts/cdad-generate.py exit non-zero with a PD-3 diagnostic naming the source"
+  - "P3 path barriers: architect/reviewer/scribe keep permission.edit: deny; test-writer edit allows only tests/** + colocated test globs and read/grep keep implementation invisibility; implementer edit allows '*' with tests/** + colocated denials (odoo variant WITHOUT the models/views/controllers/wizards denial)"
+  - "P4 claude-code: no role agent frontmatter carries a Bash PreToolUse hook; Read|Grep|Glob and Edit|Write guards remain for writer roles"
+  - "P5 oracles: pytest suite green with env -u TMPDIR; tests/validate-consistency.sh and tests/validate-odoo-specialization.sh PASS (rewritten to the permissive contract, referencing the owner decision 2026-09-29)"
+  - "P6 determinism + deploy: make staging twice is byte-identical (PD-2); install.sh reinstalls the new agents into ~/.config/opencode/agents and ~/.claude/agents; install.sh --check PASS; the reviewer model pin (mofgw/qwen3.8-flash) is preserved on the installed reviewer/odoo files"

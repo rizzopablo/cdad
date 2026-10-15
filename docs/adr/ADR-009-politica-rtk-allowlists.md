@@ -6,6 +6,15 @@
 
 ---
 
+## Estado de la política objetivo — 2026-09-24
+
+[ADR-011](ADR-011-autonomia-supervisada-limites-proporcionales.md) sustituye
+la obligatoriedad general de allowlists cerradas como diseño objetivo. Este
+ADR conserva evidencia y decisiones históricas; los adaptadores instalados
+siguen operando hasta su migración comprobada en 004-001/002. Preservar las
+fronteras útiles, no necesariamente su mecanismo de prefijos. Una pareja RTK
+solo se conserva donde sea pertinente y preserve la semántica de la operación.
+
 ## Problema
 
 Los modelos del workspace envuelven comandos en `rtk` (proxy CLI que filtra y

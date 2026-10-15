@@ -1,87 +1,87 @@
-# Anti-patrones del epic-level
+# Epic-level anti-patterns
 
-Específicos de coordinación de epics. Son aditivos a los anti-patrones de feature (`cdad-cycle/references/anti-patterns.md`); los AP-N siguen aplicando dentro de cada feature.
+Specific to epic coordination. They are additive to the feature anti-patterns (`cdad-cycle/references/anti-patterns.md`); the AP-N ones keep applying within each feature.
 
-## EAP-1 — Plan kilométrico que nunca cierra
+## EAP-1 — Kilometer-long plan that never closes
 
-**Síntoma**: el planning del epic lleva más de 90 minutos. El plan supera 5 páginas. Aparecen secciones como "Apéndice A", "Anexo de consideraciones".
+**Symptom**: epic planning takes more than 90 minutes. The plan exceeds 5 pages. Sections like "Appendix A", "Annex of considerations" appear.
 
-**Por qué es malo**: el plan light se vuelve plan pesado. La mayoría del contenido extra es especulación sobre el cómo (que es trabajo de cada feature) o sobre riesgos hipotéticos.
+**Why it's bad**: the light plan becomes a heavy plan. Most of the extra content is speculation about the how (which is each feature's work) or about hypothetical risks.
 
-**Corrección**: cortás donde estás. Lo que falta queda como TBD a decidir cuando arranque la feature correspondiente. El plan se actualiza sobre la marcha.
+**Correction**: you cut where you are. What's missing stays as TBD to be decided when the corresponding feature starts. The plan is updated on the fly.
 
-> *"Llevamos <X minutos>. El plan ya tiene lo esencial. Lo que sigue parece más detalle del cómo de cada feature, que es trabajo del cdad-cycle, no del plan del epic. ¿Cerramos planning y arrancamos la primera feature?"*
+> *"<X minutes> in. The plan already has the essentials. What comes next looks like more detail on the how of each feature, which is cdad-cycle's work, not the epic plan's. Shall we close planning and start the first feature?"*
 
-## EAP-2 — Mini-specs dentro del plan
+## EAP-2 — Mini-specs inside the plan
 
-**Síntoma**: cada feature en la decomposición del plan tiene su propio bloque de 1 página con detalles técnicos, postcondiciones, criterios de aceptación.
+**Symptom**: each feature in the plan's decomposition has its own 1-page block with technical details, postconditions, acceptance criteria.
 
-**Por qué es malo**: duplica el trabajo de la spec real (que se hace en `cdad-cycle` cuando la feature arranca). El mini-spec dentro del plan envejece mal: cuando la feature arranca, el spec real puede divergir, y queda el mini-spec del plan como ruido.
+**Why it's bad**: it duplicates the work of the real spec (which is done in `cdad-cycle` when the feature starts). The mini-spec inside the plan ages badly: when the feature starts, the real spec may diverge, and the plan's mini-spec remains as noise.
 
-**Corrección**: en el plan, una línea por feature. Suficiente para entender qué hace y por qué está en el epic. La spec se hace cuando la feature se ejecuta.
+**Correction**: in the plan, one line per feature. Enough to understand what it does and why it is in the epic. The spec is done when the feature is executed.
 
-## EAP-3 — ADRs especulativos al inicio del epic
+## EAP-3 — Speculative ADRs at the start of the epic
 
-**Síntoma**: el plan incluye una sección "Decisiones arquitectónicas" con varios ADRs hipotéticos: "Vamos a usar PostgreSQL", "Vamos a separar en bounded contexts", etc., **antes** de que ninguna feature haya empezado.
+**Symptom**: the plan includes a section "Architectural decisions" with several hypothetical ADRs: "We are going to use PostgreSQL", "We are going to split into bounded contexts", etc., **before** any feature has started.
 
-**Por qué es malo**: ADRs son inmutables. Si los creás especulativamente y después la realidad de las features te dice otra cosa, tenés que crear ADR-NNN-Supersede que reemplace al original. Eso es ruido.
+**Why it's bad**: ADRs are immutable. If you create them speculatively and later the reality of the features tells you otherwise, you have to create an ADR-NNN-Supersede that replaces the original one. That is noise.
 
-**Corrección**: ADRs surgen cuando la decisión es real. Si en E1 (descubrimiento) está clarísimo que "vamos a usar PostgreSQL" y eso afecta a varias features, vale crear UN ADR del epic. Pero no llenes el plan con 5 ADRs especulativos. Cuando dudes, **diferí**: ADR cuando la feature lo necesita.
+**Correction**: ADRs emerge when the decision is real. If in E1 (discovery) it is crystal clear that "we are going to use PostgreSQL" and that affects several features, it is worth creating ONE epic ADR. But don't fill the plan with 5 speculative ADRs. When in doubt, **defer**: the ADR when the feature needs it.
 
-## EAP-4 — Saltar la integración cross-feature
+## EAP-4 — Skipping cross-feature integration
 
-**Síntoma**: las features individuales pasaron sus E2E. El usuario quiere ir directo a closure. *"Ya están todos verdes, ¿qué más?"*
+**Symptom**: the individual features passed their E2Es. The user wants to go straight to closure. *"They're all green already, what else?"*
 
-**Por qué es malo**: tests individuales no cubren el flujo cross-feature. Bugs cross-feature solo aparecen en integración.
+**Why it's bad**: individual tests do not cover the cross-feature flow. Cross-feature bugs only appear in integration.
 
-**Corrección**: identificá los criterios de aceptación cross-feature del plan y exigí E2E para cada uno. Si tu argumento es "no queda tiempo", al menos exigí UNO: el flujo principal del epic.
+**Correction**: identify the plan's cross-feature acceptance criteria and require an E2E for each one. If your argument is "there's no time left", require at least ONE: the epic's main flow.
 
-## EAP-5 — Sub-epics que aparecen sin pedir (epic creep)
+## EAP-5 — Sub-epics appearing unrequested (epic creep)
 
-**Síntoma**: durante el epic, aparece "una funcionalidad relacionada" que no estaba en el plan, y se mete al epic actual en lugar de quedar como epic separado o feature standalone posterior.
+**Symptom**: during the epic, "a related functionality" appears that was not in the plan, and it sneaks into the current epic instead of remaining as a separate epic or a later standalone feature.
 
-**Por qué es malo**: el scope del epic crece sin control. El epic nunca cierra porque "siempre queda algo más".
+**Why it's bad**: the epic's scope grows without control. The epic never closes because "there's always something else left".
 
-**Corrección**: si la funcionalidad nueva NO está en el scope original del plan, queda fuera del epic. Opciones:
+**Correction**: if the new functionality is NOT in the plan's original scope, it stays out of the epic. Options:
 
-- Crear feature standalone para hacerla después del epic actual.
-- Crear epic siguiente con esa funcionalidad como base.
-- Si es realmente urgente y bloquea el epic actual: actualizar plan con reaprobación del usuario, agregar la funcionalidad como feature explícita.
+- Create a standalone feature to do it after the current epic.
+- Create a next epic with that functionality as its base.
+- If it is genuinely urgent and blocks the current epic: update the plan with user re-approval, adding the functionality as an explicit feature.
 
-NO la metas silenciosamente. Es la principal causa de epics que tardan el doble de lo previsto.
+Do NOT sneak it in silently. It is the main cause of epics taking twice as long as planned.
 
-## EAP-6 — Trackeo del epic solo en cabeza
+## EAP-6 — Epic tracking only in one's head
 
-**Síntoma**: el state file no se actualiza. `epic_features` queda con datos viejos. `progress.md` no refleja el estado real.
+**Symptom**: the state file is not updated. `epic_features` is left with stale data. `progress.md` does not reflect the real state.
 
-**Por qué es malo**: cuando volvés al epic después de unos días, no recordás dónde estabas. Se pierde tiempo redescubriendo.
+**Why it's bad**: when you come back to the epic after a few days, you don't remember where you were. Time is lost rediscovering.
 
-**Corrección**: cada cierre de feature actualiza el state. Cada cambio de plan actualiza el state. La actualización es responsabilidad del coordinador del epic; vos como skill la hacés cuando corresponde.
+**Correction**: every feature closure updates the state. Every plan change updates the state. The update is the epic coordinator's responsibility; you, as the skill, do it when appropriate.
 
-## EAP-7 — Coordinación con `cdad-cycle` rota
+## EAP-7 — Broken coordination with `cdad-cycle`
 
-**Síntoma**: el usuario está en `cdad-cycle` trabajando una feature del epic y nunca vuelve a `cdad-epic` para coordinar la siguiente. Las features se completan pero el epic queda en `features-loop` indefinidamente.
+**Symptom**: the user is in `cdad-cycle` working on a feature of the epic and never comes back to `cdad-epic` to coordinate the next one. Features get completed but the epic stays in `features-loop` indefinitely.
 
-**Por qué es malo**: pierde la coordinación. La feature siguiente podría tener dependencias que el plan considera pero que el usuario olvidó.
+**Why it's bad**: coordination is lost. The next feature might have dependencies that the plan accounts for but the user forgot.
 
-**Corrección**: en el handoff de feature (cuando delegás a `cdad-cycle`), recordale al usuario que vuelva al `cdad-epic` cuando la feature cierre. En `cdad-cycle`, el cierre de feature debe sugerir volver al coordinador del epic si pertenece a uno.
+**Correction**: in the feature handoff (when you delegate to `cdad-cycle`), remind the user to come back to `cdad-epic` when the feature closes. In `cdad-cycle`, feature closure should suggest going back to the epic coordinator if the feature belongs to one.
 
-(Nota: esto requiere cambio menor en `cdad-cycle`; ver `references/coordination-with-cdad-cycle.md` o equivalente.)
+(Note: this requires a minor change in `cdad-cycle`; see `references/coordination-with-cdad-cycle.md` or equivalent.)
 
-## EAP-8 — Closure ritualista
+## EAP-8 — Ritualistic closure
 
-**Síntoma**: closure del epic termina siendo "marca todo done y mergea", sin retrospectiva ni reflexión sobre qué se aprendió.
+**Symptom**: epic closure ends up being "mark everything done and merge", without a retrospective or reflection on what was learned.
 
-**Por qué es malo**: pierde el valor del cierre. La retrospectiva breve (3 puntos de "lo que funcionó", 3 de "lo que se complicó", 3 de "aprendizajes") es lo que hace que el próximo epic sea mejor.
+**Why it's bad**: it loses the value of closure. The brief retrospective (3 points of "what worked", 3 of "what got complicated", 3 of "lessons learned") is what makes the next epic better.
 
-**Corrección**: insistí en la retrospectiva breve. No es ritualismo; es ROI sobre el trabajo invertido. Si genuinamente no hay nada que retrospectar, marcalo: *"Sin hallazgos relevantes para retrospectiva."*
+**Correction**: insist on the brief retrospective. It is not ritualism; it is ROI on the invested work. If genuinely there is nothing to retrospect on, mark it: *"No relevant findings for the retrospective."*
 
 ---
 
-## Cómo usar este archivo
+## How to use this file
 
-Cargalo cuando detectes señales. Citá el código (`EAP-N`) en tu mensaje al usuario:
+Load it when you detect signals. Cite the code (`EAP-N`) in your message to the user:
 
-> *"Estamos en EAP-1: el plan está creciendo más allá de lo light. ¿Cerramos lo que tenemos y arrancamos features?"*
+> *"We are in EAP-1: the plan is growing beyond light. Shall we close what we have and start features?"*
 
-No lo cargues preventivamente.
+Do not load it preventively.

@@ -1,0 +1,683 @@
+=== 19:35:51 architect deepseek-v4.1-flash
+[0m
+> cdad-architect · deepseek-v4.1-flash
+[0m$ [0mpwd; ls -la; echo "---which rtk---"; which rtk || echo "rtk NOT FOUND"
+~/.cache/cdad-verify-tmp/walk-repo
+total 28
+drwxrwxr-x  7 <user> <group>  7 Sep 29 19:35 .
+drwxrwxr-x 10 <user> <group> 13 Sep 29 19:35 ..
+drwxrwxr-x  3 <user> <group>  3 Sep 29 19:35 docs
+drwxrwxr-x  8 <user> <group> 13 Sep 29 19:35 .git
+drwxrwxr-x  3 <user> <group>  6 Sep 29 19:35 .pytest_cache
+drwxrwxr-x  4 <user> <group>  5 Sep 29 19:35 src
+drwxrwxr-x  3 <user> <group>  4 Sep 29 19:35 tests
+---which rtk---
+~/.local/bin/rtk
+[0m→ [0mRead docs/specs/sub/spec.md 
+[0m$ [0mgit log --oneline
+06c9d54 fixture
+> cdad-architect · deepseek-v4.1-flash
+[0m$ [0mrtk wc -l src/ tests/; echo "=== exit: $? ==="; echo "--- files ---"; find src tests -type f | sort
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+0 src/
+0 tests/
+Σ 0
+=== exit: 1 ===
+--- files ---
+src/calc/__init__.py
+src/calc/__pycache__/__init__.cpython-313.pyc
+src/__init__.py
+src/__pycache__/__init__.cpython-313.pyc
+tests/__pycache__/test_calc.cpython-313-pytest-8.3.5.pyc
+tests/test_calc.py
+> cdad-architect · deepseek-v4.1-flash
+[0m$ [0mrtk --help 2>&1 | head -40; echo "=== version ==="; rtk --version 2>&1 | head -5
+A high-performance CLI proxy designed to filter and summarize system outputs before they reach your LLM context.
+
+Usage: rtk [OPTIONS] <COMMAND>
+
+Commands:
+  ls             List directory contents with token-optimized output (proxy to native ls)
+  tree           Directory tree with token-optimized output (proxy to native tree)
+  read           Read file with intelligent filtering
+  smart          Generate 2-line technical summary (heuristic-based)
+  git            Git commands with compact output
+  gh             GitHub CLI (gh) commands with token-optimized output
+  glab           GitLab CLI (glab) commands with token-optimized output
+  aws            AWS CLI with compact output (force JSON, compress)
+  psql           PostgreSQL client with compact output (strip borders, compress tables)
+  pnpm           pnpm commands with ultra-compact output
+  err            Run command and show only errors/warnings
+  test           Run tests and show only failures
+  json           Show JSON (compact values by default, or keys-only with --keys-only)
+  deps           Summarize project dependencies
+  env            Show environment variables (filtered, sensitive masked)
+  find           Find files with compact tree output (accepts native find flags like -name, -type)
+  diff           Ultra-condensed diff (only changed lines)
+  log            Filter and deduplicate log output
+  dotnet         .NET commands with compact output (build/test/restore/format)
+  docker         Docker commands with compact output
+  kubectl        Kubectl commands with compact output
+  summary        Run command and show heuristic summary
+  grep           Compact grep - strips whitespace, truncates, groups by file
+  init           Initialize rtk instructions for assistant CLI usage
+  wget           Download with compact output (strips progress bars)
+  wc             Word/line/byte count with compact output (strips paths and padding)
+  gain           Show token savings summary and history
+  cc-economics   Claude Code economics: spending (ccusage) vs savings (rtk) analysis
+  config         Show or create configuration file
+  jest           Jest commands with compact output
+  vitest         Vitest commands with compact output
+  prisma         Prisma commands with compact output (no ASCII art)
+  tsc            TypeScript compiler with grouped error output
+  next           Next.js build with compact output
+  lint           ESLint with grouped rule violations
+=== version ===
+rtk 0.42.3
+[0m$ [0mecho "--- rtk wc -l on a single file ---"; rtk wc -l tests/test_calc.py; echo "exit=$?"; echo "--- real wc on the same file ---"; wc -l tests/test_calc.py; echo "--- file contents ---"; cat src/calc/__init__.py; echo "==="; cat tests/test_calc.py
+--- rtk wc -l on a single file ---
+5
+exit=0
+--- real wc on the same file ---
+5 tests/test_calc.py
+--- file contents ---
+def add(a, b):
+    return a + b
+===
+from src.calc import add
+
+
+def test_add():
+    assert add(2, 3) == 5
+> cdad-architect · deepseek-v4.1-flash
+[0m$ [0mrtk wc --help 2>&1 | head -30; echo "=== try recursive/glob ==="; rtk wc -l 'src/**/*' 2>&1; echo "exit=$?"; echo "=== explicit files ==="; rtk wc -l src/__init__.py src/calc/__init__.py tests/test_calc.py 2>&1; echo "exit=$?"; echo "=== native wc dirs ==="; wc -l src/*.py src/calc/*.py tests/*.py 2>&1
+Word/line/byte count with compact output (strips paths and padding)
+
+Usage: rtk wc [OPTIONS] [ARGS]...
+
+Arguments:
+  [ARGS]...  Arguments passed to wc (files, flags like -l, -w, -c)
+
+Options:
+  -v, --verbose...     Verbosity level (-v, -vv, -vvv)
+      --ultra-compact  Ultra-compact mode: ASCII icons, inline format (Level 2 optimizations)
+      --skip-env       Set SKIP_ENV_VALIDATION=1 for child processes (Next.js, tsc, lint, prisma)
+  -h, --help           Print help
+=== try recursive/glob ===
+
+exit=1
+=== explicit files ===
+0 src/__init__.py
+2 src/calc/__init__.py
+5 tests/test_calc.py
+Σ 7
+exit=0
+=== native wc dirs ===
+  0 src/__init__.py
+  2 src/calc/__init__.py
+  5 tests/test_calc.py
+  7 total
+> cdad-architect · deepseek-v4.1-flash
+## Informe — recorrido de capacidad PD-11 (solo lectura, sin ediciones)
+
+Trabajé únicamente en este repo sintético (`~/.cache/cdad-verify-tmp/walk-repo`). Comando tal cual pedido:
+
+```
+$ rtk wc -l src/ tests/
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+0 src/
+0 tests/
+Σ 0
+exit = 1
+```
+
+**Ese resultado es una medición falsa, no un total real.** `rtk wc` reenvía a `wc`, que no recorre directorios: al pasarle `src/` y `tests/` no mide nada y sale con código 1 (Σ 0). No puede usarse como total honesto.
+
+Verifiqué la causa midiendo con los mismos argumentos contra archivos explícitos (no sumé a mano; **sumé con `rtk`**, que emite su propio `Σ`):
+
+```
+$ rtk wc -l src/__init__.py src/calc/__init__.py tests/test_calc.py
+0 src/__init__.py
+2 src/calc/__init__.py
+5 tests/test_calc.py
+Σ 7
+exit = 0
+```
+
+### Total medido (con `rtk`, vía archivos explícitos)
+- `src/`: **2** líneas (`src/calc/__init__.py`; `src/__init__.py` = 0; los `.pyc` en `__pycache__` no son fuente).
+- `tests/`: **5** líneas (`tests/test_calc.py`).
+- **Total: 7 líneas** (el `Σ` que da `rtk`, no una suma manual).
+
+No encontré una forma de que `rtk wc -l` acepte directorios (probé `'src/**/*'` → vacío, exit 1). Si el contrato exige la forma `rtk wc -l src/ tests/` como fuente del total, esa forma **no produce medición válida**; el número fiable es el de archivos explícitos. Lo reporto como limitación, no sustituyo la medición por una estimación (PD-15 / ADR-011).
+
+### `git log --oneline`
+```
+06c9d54 fixture
+```
+Un solo commit ("fixture"). Sin historial adicional que revisar.
+
+### Spec — `docs/specs/sub/spec.md`
+```
+docs/specs/sub/spec.md:1  # sub
+docs/specs/sub/spec.md:2  Postcondición P1: `sub(a, b)` en `src/calc` devuelve `a - b` para enteros.
+```
+
+**¿Es verificable? Sí.** P1 es una postcondición observable y acotada: función concreta (`sub(a, b)`), módulo concreto (`src/calc`), entrada acotada (enteros) y salida esperada (`a - b`). Se puede cubrir con un test determinista (p. ej. `assert sub(5, 3) == 2`).
+
+**Estado real (hallazgo honesto):** es verificable pero **no está implementada ni verificada**:
+- `src/calc/__init__.py` define solo `add` (`src/calc/__init__.py:1-2`), **no existe `sub`**.
+- `tests/test_calc.py:4-5` solo prueba `add`; **no hay test de `sub`**.
+
+Por tanto la spec es verificable como contrato, pero el repo actual no la satisface.
+
+### Resumen
+- Total `src/` + `tests/`: **7 líneas** (medido con `rtk`, archivos explícitos). La forma con directorios da `0`/exit 1 = medición inválida, reportada como tal.
+- `git log`: un único commit `06c9d54 fixture`.
+- Spec: **verificable** (postcondición P1 clara), pero `sub` no implementada y sin test.
+- No edité ningún archivo.
+=== 19:36:33 architect rc=0
+=== 19:36:33 test-writer glm-5.3-flash
+[0m
+> cdad-test-writer · glm-5.3-flash
+[0m→ [0mRead tests/test_calc.py 
+[0m→ [0mRead docs/specs/sub/spec.md 
+> cdad-test-writer · glm-5.3-flash
+[0m← [0mEdit tests/test_calc.py
+Index: tests/test_calc.py
+===================================================================
+--- tests/test_calc.py
++++ tests/test_calc.py
+@@ -1,5 +1,11 @@
+-from src.calc import add
++import pytest
+ 
++from src.calc import add, sub
+ 
++
+ def test_add():
+     assert add(2, 3) == 5
++
++
++def test_sub_p1():
++    assert sub(5, 3) == 2
+
+> cdad-test-writer · glm-5.3-flash
+> cdad-test-writer · glm-5.3-flash
+[0m$ [0mpython3 -m pytest -q
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_calc.py ______________________
+ImportError while importing test module '~/.cache/cdad-verify-tmp/walk-repo/tests/test_calc.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_calc.py:3: in <module>
+    from src.calc import add, sub
+E   ImportError: cannot import name 'sub' from 'src.calc' (~/.cache/cdad-verify-tmp/walk-repo/src/calc/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/test_calc.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.18s
+> cdad-test-writer · glm-5.3-flash
+Falla por la razón esperada: `sub` no existe (`ImportError: cannot import name 'sub' from 'src.calc'`). Limpio el import `pytest` que agregué sin necesidad y hago commit:
+[0m← [0mEdit tests/test_calc.py
+Index: tests/test_calc.py
+===================================================================
+--- tests/test_calc.py
++++ tests/test_calc.py
+@@ -1,6 +1,4 @@
+-import pytest
+-
+ from src.calc import add, sub
+ 
+ 
+ def test_add():
+
+> cdad-test-writer · glm-5.3-flash
+> cdad-test-writer · glm-5.3-flash
+> cdad-test-writer · glm-5.3-flash
+> cdad-test-writer · glm-5.3-flash
+[0m$ [0mpython3 -m pytest -q 2>&1 | tail -3; git add tests/test_calc.py; git -c user.name="cdad-test-writer" -c user.email="test-writer@cdad.local" commit -m "test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)" -- tests/test_calc.py
+ERROR tests/test_calc.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.49s
+[master 4929170] test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+> cdad-test-writer · glm-5.3-flash
+[0m$ [0mgit log --oneline -2; git show --stat HEAD; cat tests/test_calc.py
+4929170 test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+06c9d54 fixture
+commit 492917042b41b0bad125d26365ebbdfc54c71f07
+Author: cdad-test-writer <test-writer@cdad.local>
+Date:   Tue Sep 29 19:40:07 2026 -0300
+
+    test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+
+ tests/test_calc.py | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+from src.calc import add, sub
+
+
+def test_add():
+    assert add(2, 3) == 5
+
+
+def test_sub_p1():
+    assert sub(5, 3) == 2
+> cdad-test-writer · glm-5.3-flash
+Listo — recorrido de capacidad PD-11 completado en el repo sintético:
+
+1. **Spec**: `docs/specs/sub/spec.md` → P1: `sub(a, b)` en `src/calc` devuelve `a - b`.
+2. **Test agregado** en `tests/test_calc.py`: `test_sub_p1` — `assert sub(5, 3) == 2`, mapeado 1:1 a la postcondición (una sola, sin extras).
+3. **RED verificado**: `python3 -m pytest -q` falla por la razón correcta — `ImportError: cannot import name 'sub' from 'src.calc'` (collection error, no AssertionError; el test nunca pudo ejecutarse porque la función aún no existe).
+4. **Commit**: `4929170` limitado a `tests/test_calc.py` (solo `tests/` tocado, sin mirar la implementación de `src/calc`).
+=== 19:40:14 test-writer rc=0
+=== 19:40:14 implementer glm-5.3-flash
+[0m
+> cdad-implementer · glm-5.3-flash
+Entendido: recorrido de capacidad PD-11, sin cargar skills. Veo el estado del repo primero.
+[0m→ [0mRead . 
+[0m✱ [0mGlob "**/*.py" [90m3 matches[0m
+> cdad-implementer · glm-5.3-flash
+[0m→ [0mRead tests/test_calc.py 
+[0m→ [0mRead src/calc/__init__.py 
+> cdad-implementer · glm-5.3-flash
+[0m→ [0mRead docs [90m[limit=60][0m
+> cdad-implementer · glm-5.3-flash
+> cdad-implementer · glm-5.3-flash
+> cdad-implementer · glm-5.3-flash
+[0m→ [0mRead docs/specs 
+> cdad-implementer · glm-5.3-flash
+[0m✱ [0mGlob "docs/specs/**/*" [90m1 match[0m
+> cdad-implementer · glm-5.3-flash
+[0m→ [0mRead docs/specs/sub/spec.md 
+> cdad-implementer · glm-5.3-flash
+La spec define la postcondición P1: `sub(a, b)` devuelve `a - b` para enteros. El test aprobado en `tests/test_calc.py` ya lo cubre. Implemento el mínimo que lo hace pasar, sin tocar tests.
+[0m← [0mEdit src/calc/__init__.py
+Index: src/calc/__init__.py
+===================================================================
+--- src/calc/__init__.py
++++ src/calc/__init__.py
+@@ -1,2 +1,6 @@
+ def add(a, b):
+     return a + b
++
++
++def sub(a, b):
++    return a - b
+
+> cdad-implementer · glm-5.3-flash
+Corro la suite completa:
+[0m$ [0mpython3 -m pytest -q 2>&1 | tail -5
+..                                                                       [100%]
+2 passed in 0.01s
+> cdad-implementer · glm-5.3-flash
+Suite completa verde (2 passed). Hago commit:
+[0m$ [0mgit add src/calc/__init__.py && git commit -m "feat: implement sub (postcondition P1: sub(a,b) returns a-b)" --quiet && git log --oneline -1 && git status --short
+3dd73b6 feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+?? src/__pycache__/
+?? src/calc/__pycache__/
+?? tests/__pycache__/
+> cdad-implementer · glm-5.3-flash
+GREEN completado. Resumen del recorrido de capacidad PD-11:
+
+**Intake**: sin packet validado ni carga de skills — tarea directa en repo sintético, según lo pedido.
+
+**Decisiones autónomas ejercidas y evidencia:**
+1. **Leer el contrato antes de construir**: leí el test aprobado (`tests/test_calc.py::test_sub_p1`) y la spec (`docs/specs/sub/spec.md` — postcondición P1: `sub(a,b)` devuelve `a-b` para enteros). El test define exactamente el contrato; no hay ambigüedad.
+2. **Tamaño de cambio**: `git diff --stat` sería 1 función / +4 líneas — el mínimo que hace pasar el test, sin features extra.
+3. **Toca solo implementación**: edité únicamente `src/calc/__init__.py`. Los tests quedaron intactos (anti-gaming: quien construye no valida su validador).
+4. **Ejecución real de tests**: `python3 -m pytest -q` → **2 passed**, exit 0 (suite completa, no solo el test nuevo).
+5. **Commit trazable**: `3dd73b6 feat: implement sub (postcondition P1: sub(a,b) returns a-b)`.
+
+Snapshot de tests al ejecutar: ambos tests corrieron juntos al final y pasaron; no hubo estado intermedio ambiguo (la suite era de 2 tests, ejecutada una vez tras el cambio mínimo).
+
+Working tree limpio respecto a código (solo `__pycache__` sin trackear, que no corresponde commitear).
+
+**Capacidad verificada**: editar src, correr tests, ver diff/estado propio, y commit — todos operativos en esta sesión.
+=== 19:45:23 implementer rc=0
+=== 19:45:23 reviewer deepseek-v4.1-flash
+[0m
+> cdad-reviewer · deepseek-v4.1-flash
+[0m$ [0mcat docs/specs/sub/spec.md 2>/dev/null || echo "NOT FOUND"
+# sub
+Postcondición P1: `sub(a, b)` en `src/calc` devuelve `a - b` para enteros.
+[0m$ [0mgit log --oneline -10 && echo "---STATUS---" && git status --short && echo "---TREE---" && find . -type f -not -path './.git/*' | sort
+3dd73b6 feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+4929170 test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+06c9d54 fixture
+---STATUS---
+?? src/__pycache__/
+?? src/calc/__pycache__/
+?? tests/__pycache__/
+---TREE---
+./docs/specs/sub/spec.md
+./.pytest_cache/CACHEDIR.TAG
+./.pytest_cache/.gitignore
+./.pytest_cache/README.md
+./.pytest_cache/v/cache/lastfailed
+./.pytest_cache/v/cache/nodeids
+./.pytest_cache/v/cache/stepwise
+./src/calc/__init__.py
+./src/calc/__pycache__/__init__.cpython-313.pyc
+./src/__init__.py
+./src/__pycache__/__init__.cpython-313.pyc
+./tests/__pycache__/test_calc.cpython-313-pytest-8.3.5.pyc
+./tests/test_calc.py
+> cdad-reviewer · deepseek-v4.1-flash
+[0m$ [0mecho "===== src/calc/__init__.py ====="; cat -A src/calc/__init__.py; echo; echo "===== src/__init__.py ====="; cat -A src/__init__.py; echo; echo "===== tests/test_calc.py ====="; cat -A tests/test_calc.py
+===== src/calc/__init__.py =====
+def add(a, b):$
+    return a + b$
+$
+$
+def sub(a, b):$
+    return a - b$
+
+===== src/__init__.py =====
+
+===== tests/test_calc.py =====
+from src.calc import add, sub$
+$
+$
+def test_add():$
+    assert add(2, 3) == 5$
+$
+$
+def test_sub_p1():$
+    assert sub(5, 3) == 2$
+[0m$ [0mecho "===== git log ====="; git log --stat --decorate; echo; echo "===== git diff HEAD~2 ====="; git diff HEAD~2; echo; echo "===== git show HEAD ====="; git show --stat HEAD
+===== git log =====
+commit 3dd73b6418cbe28c427cd83336132ad462fc79fc (HEAD -> master)
+Author: <owner identity redacted>
+Date:   Tue Sep 29 19:45:02 2026 -0300
+
+    feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+
+ src/calc/__init__.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 492917042b41b0bad125d26365ebbdfc54c71f07
+Author: cdad-test-writer <test-writer@cdad.local>
+Date:   Tue Sep 29 19:40:07 2026 -0300
+
+    test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+
+ tests/test_calc.py | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit 06c9d545d2087bae408b355fa725d66d4b0767b5
+Author: walk <t@t>
+Date:   Tue Sep 29 19:35:50 2026 -0300
+
+    fixture
+
+ docs/specs/sub/spec.md | 2 ++
+ src/__init__.py        | 0
+ src/calc/__init__.py   | 2 ++
+ tests/test_calc.py     | 5 +++++
+ 4 files changed, 9 insertions(+)
+
+===== git diff HEAD~2 =====
+diff --git a/src/calc/__init__.py b/src/calc/__init__.py
+index 4693ad3..4c2d043 100644
+--- a/src/calc/__init__.py
++++ b/src/calc/__init__.py
+@@ -1,2 +1,6 @@
+ def add(a, b):
+     return a + b
++
++
++def sub(a, b):
++    return a - b
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index 45cd537..48e40b2 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -1,5 +1,9 @@
+-from src.calc import add
++from src.calc import add, sub
+ 
+ 
+ def test_add():
+     assert add(2, 3) == 5
++
++
++def test_sub_p1():
++    assert sub(5, 3) == 2
+
+===== git show HEAD =====
+commit 3dd73b6418cbe28c427cd83336132ad462fc79fc
+Author: <owner identity redacted>
+Date:   Tue Sep 29 19:45:02 2026 -0300
+
+    feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+
+ src/calc/__init__.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+> cdad-reviewer · deepseek-v4.1-flash
+[0m$ [0mecho "=== pytest version / python ==="; python3 --version; python3 -m pytest --version 2>&1 | head -3; echo; echo "=== is sub importable? ==="; python3 -c "from src.calc import sub; print('ok', sub(5,3), sub(3,5), sub(0,0))" 2>&1; echo; echo "=== import path check: package discovery ==="; python3 -c "import src.calc as c; print(c.__file__)" 2>&1; echo; echo "=== any conftest/pyproject/setup? ==="; ls -la; find . -maxdepth 3 -name 'conftest.py' -o -maxdepth 3 -name 'pyproject.toml' -o -maxdepth 3 -name 'setup.py' -o -maxdepth 3 -name 'setup.cfg' -o -maxdepth 3 -name 'pytest.ini' -o -maxdepth 3 -name 'tox.ini' 2>/dev/null
+=== pytest version / python ===
+Python 3.13.5
+pytest 8.3.5
+
+=== is sub importable? ===
+ok 2 -2 0
+
+=== import path check: package discovery ===
+~/.cache/cdad-verify-tmp/walk-repo/src/calc/__init__.py
+
+=== any conftest/pyproject/setup? ===
+total 28
+drwxrwxr-x  7 <user> <group>  7 Sep 29 19:35 .
+drwxrwxr-x 10 <user> <group> 13 Sep 29 19:35 ..
+drwxrwxr-x  3 <user> <group>  3 Sep 29 19:35 docs
+drwxrwxr-x  8 <user> <group> 13 Sep 29 19:45 .git
+drwxrwxr-x  3 <user> <group>  6 Sep 29 19:35 .pytest_cache
+drwxrwxr-x  4 <user> <group>  5 Sep 29 19:35 src
+drwxrwxr-x  3 <user> <group>  4 Sep 29 19:35 tests
+[0m$ [0mpython3 -m pytest -q; echo "EXIT=$?"
+..                                                                       [100%]
+2 passed in 0.06s
+EXIT=0
+> cdad-reviewer · deepseek-v4.1-flash
+[0m$ [0mecho "=== reflog ==="; git reflog -8 2>/dev/null; echo; echo "=== lastfailed cache ==="; cat .pytest_cache/v/cache/lastfailed 2>/dev/null || echo "(none)"; echo; echo "=== nodeids ==="; cat .pytest_cache/v/cache/nodeids 2>/dev/null; echo; echo "=== tracked files ==="; git ls-files; echo; echo "=== .gitignore? ==="; ls -a | grep -i gitignore || echo "(no .gitignore)"
+=== reflog ===
+3dd73b6 HEAD@{0}: commit: feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+4929170 HEAD@{1}: commit: test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+06c9d54 HEAD@{2}: commit (initial): fixture
+
+=== lastfailed cache ===
+{}
+=== nodeids ===
+[
+  "tests/test_calc.py::test_add",
+  "tests/test_calc.py::test_sub_p1"
+]
+=== tracked files ===
+docs/specs/sub/spec.md
+src/__init__.py
+src/calc/__init__.py
+tests/test_calc.py
+
+=== .gitignore? ===
+(no .gitignore)
+[0m$ [0mset -e
+D=$(mktemp -d /tmp/opencode/pd11-red.XXXXXX)
+git archive 4929170 | tar -x -C "$D"
+echo "=== tree at test commit 4929170 (impl absent) ==="
+find "$D" -name '__pycache__' -prune -o -type f -print | sed "s#$D/##"
+echo "--- src/calc/__init__.py ---"; cat "$D/src/calc/__init__.py"
+echo "--- pytest on RED tree ---"
+cd "$D" && python3 -m pytest -q; echo "RED_EXIT=$?"
+
+=== tree at test commit 4929170 (impl absent) ===
+tests/test_calc.py
+src/calc/__init__.py
+src/__init__.py
+docs/specs/sub/spec.md
+--- src/calc/__init__.py ---
+def add(a, b):
+    return a + b
+--- pytest on RED tree ---
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_calc.py ______________________
+ImportError while importing test module '/tmp/opencode/pd11-red.wO1NnS/tests/test_calc.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_calc.py:1: in <module>
+    from src.calc import add, sub
+E   ImportError: cannot import name 'sub' from 'src.calc' (/tmp/opencode/pd11-red.wO1NnS/src/calc/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/test_calc.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.11s
+> cdad-reviewer · deepseek-v4.1-flash
+## Review report — PD-11 capability walkthrough
+
+**Intake path:** No `---cdad-packet-json` packet present; the prompt is an explicit PD-11 capacity walkthrough ("no es un ciclo CDAD completo; no hace falta cargar skills"). No skills loaded, per instruction. Read-only posture held (only reads + the requested test run).
+
+**Scope reviewed:** `HEAD` = `3dd73b6` ("feat: implement sub"), against `docs/specs/sub/spec.md`, with the cumulative view `git diff HEAD~2` (test commit `4929170` + impl commit `3dd73b6`).
+
+### Evidence actually gathered (author-independent)
+
+```
+$ git log --oneline
+3dd73b6 feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+4929170 test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+06c9d54 fixture
+
+$ git show --stat HEAD
+ src/calc/__init__.py | 4 ++++     (impl commit touches src ONLY — no test edits)
+
+$ git diff HEAD~2
+ src/calc/__init__.py: +def sub(a, b): return a - b
+ tests/test_calc.py :  from src.calc import add, sub ; +def test_sub_p1(): assert sub(5,3)==2
+
+$ python3 -m pytest -q
+2 passed in 0.06s        (EXIT=0; python 3.13.5, pytest 8.3.5)
+```
+
+**Independent RED reproduction** (I re-ran the test-commit tree out-of-band, `git archive 4929170` into `/tmp`, not touching the repo): collection fails with `ImportError: cannot import name 'sub'`. So the test is genuinely RED before the implementation and GREEN after — the TDD ordering (test `4929170` → impl `3dd73b6`) is real, not claimed.
+
+**Postcondition check:** spec P1 = `sub(a,b) in src/calc returns a-b for integers`. Implementation is exactly `return a - b` in the correct module (`src/calc/__init__.py`); Python int arithmetic is exact, so P1 holds for the full stated domain. No over-implementation, no unrelated changes in `HEAD`.
+
+### Findings (ordered by leverage)
+
+**F1 — Test breadth vs. universal postcondition** · Severity: **Nit** · `Verdict: OPTIONAL` · `Bucket: l`
+`test_sub_p1` exercises a single positive case (`sub(5,3)==2`). P1 quantifies over *all* integers; `a<b` (negative result), `b==0`, `a==0` and `a==b` are unobserved. Not blocking: the test satisfies the observable-contract convention (one concrete postcondition assertion, no mocks/plumbing) and the implementation is universally correct by construction. Remedy move: add example assertions for `sub(3,5)==-2` and `sub(0,0)==0` if coverage is wanted; not a merge gate.
+
+**F2 — RED is a collection ImportError, not an assertion failure** · Severity: **FYI** · `Verdict: OPTIONAL` · `Bucket: l`
+The failing signal on the RED tree is `ImportError` (symbol absent), so the assertion expression itself never executed RED. This is legitimate for a brand-new symbol and does not indicate gaming; noted only for traceability.
+
+**F3 — Working tree not clean / no `.gitignore`** · Severity: **FYI** · `Verdict: OPTIONAL` · `Bucket: l`
+`src/**/__pycache__`, `tests/__pycache__` are untracked and no `.gitignore` exists (`git ls-files` = 4 files, all relevant). Does not affect the commit; pre-existing fixture condition.
+
+No Critical or Required findings. Security axis: no untrusted input, no I/O, no authz surface. Performance axis: no loops/IO/N+1 — O(1) arithmetic.
+
+## Abstentions
+- **Non-integer / float / bool inputs:** spec scopes P1 to integers ("para enteros"); no finding rendered for float/bool behavior — out of the declared contract.
+- **Subtype/overflow semantics:** Python ints are unbounded; C-style overflow semantics not in spec — abstained, not a Nit.
+- **Integration/wiring with callers:** no other in-repo caller of `sub` exists in the tracked tree; cannot validate call-site behavior — abstained.
+- **Packaging/import-path robustness** (`from src.calc import ...` requires repo root on `sys.path`): works under pytest rootdir here; treated as the pre-existing fixture convention, not a defect of this commit — abstained.
+
+## Verdict
+**APTO — no BLOCKING findings.** The implementation faithfully realizes postcondition P1, the test maps to P1, RED was independently reproduced and GREEN is real (`2 passed`). F1–F3 are optional/low-bucket observations only; the user decides whether to act on F1.
+=== 19:46:26 reviewer rc=0
+=== 19:46:26 scribe deepseek-v4.1-flash
+[0m
+> cdad-scribe · deepseek-v4.1-flash
+[0m$ [0mgit log --oneline -20
+3dd73b6 feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+4929170 test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+06c9d54 fixture
+[0m$ [0mpython3 -m pytest -q 2>&1 | tail -30
+..                                                                       [100%]
+2 passed in 0.01s
+> cdad-scribe · deepseek-v4.1-flash
+[0m$ [0mgit show --stat HEAD~1 HEAD 2>&1 | head -60; echo "=== SPEC ==="; find . -path ./.git -prune -o -type f -print | head -50
+commit 492917042b41b0bad125d26365ebbdfc54c71f07
+Author: cdad-test-writer <test-writer@cdad.local>
+Date:   Tue Sep 29 19:40:07 2026 -0300
+
+    test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)
+
+ tests/test_calc.py | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit 3dd73b6418cbe28c427cd83336132ad462fc79fc
+Author: <owner identity redacted>
+Date:   Tue Sep 29 19:45:02 2026 -0300
+
+    feat: implement sub (postcondition P1: sub(a,b) returns a-b)
+
+ src/calc/__init__.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+=== SPEC ===
+./tests/__pycache__/test_calc.cpython-313-pytest-8.3.5.pyc
+./tests/test_calc.py
+./docs/specs/sub/spec.md
+./.pytest_cache/v/cache/stepwise
+./.pytest_cache/v/cache/lastfailed
+./.pytest_cache/v/cache/nodeids
+./.pytest_cache/CACHEDIR.TAG
+./.pytest_cache/.gitignore
+./.pytest_cache/README.md
+./src/__init__.py
+./src/__pycache__/__init__.cpython-313.pyc
+./src/calc/__init__.py
+./src/calc/__pycache__/__init__.cpython-313.pyc
+[0m$ [0mgit status --porcelain; echo "=== diff vs prev ==="; git diff HEAD~1 HEAD -- . | head -80
+?? src/__pycache__/
+?? src/calc/__pycache__/
+?? tests/__pycache__/
+=== diff vs prev ===
+diff --git a/src/calc/__init__.py b/src/calc/__init__.py
+index 4693ad3..4c2d043 100644
+--- a/src/calc/__init__.py
++++ b/src/calc/__init__.py
+@@ -1,2 +1,6 @@
+ def add(a, b):
+     return a + b
++
++
++def sub(a, b):
++    return a - b
+> cdad-scribe · deepseek-v4.1-flash
+[0m→ [0mRead tests/test_calc.py 
+[0m→ [0mRead docs/specs/sub/spec.md 
+> cdad-scribe · deepseek-v4.1-flash
+## Entrada de progreso (borrador — no escrito a disco)
+
+**Feature: `sub` — postcondición P1**
+
+**Estado:** completada (implementación y test fusionados en el historial); `python3 -m pytest -q` → `2 passed in 0.01s` (salida citada tal cual, exit code 0).
+
+**Evidencia del historial (3 commits):**
+- `4929170` `test: add test for sub(a,b) per docs/specs/sub/spec.md (P1)` — autoría `cdad-test-writer` — `tests/test_calc.py` (+5/−1).
+- `3dd73b6` `feat: implement sub (postcondition P1: sub(a,b) returns a-b)` — autoría `Ofap Saas` — `src/calc/__init__.py` (+4).
+- `06c9d54` `fixture` — base previa.
+
+**Contrato verificado:** `docs/specs/sub/spec.md` P1 = «`sub(a, b)` en `src/calc` devuelve `a - b` para enteros». El test `test_sub_p1` (`assert sub(5, 3) == 2`) implementa esa postcondición y pasa junto con `test_add`. La implementación (`return a - b`) coincide con la postcondición.
+
+**Decisiones relevantes:**
+- Ubicación en `src/calc/__init__.py`, junto a `add` (sin módulo nuevo): cambio mínimo, coherente con el código existente; trade-off: `__init__` acumula funciones a medida que crezca `calc`.
+- Orden test-antes-que-implementación reflejado en el historial (`4929170` antes de `3dd73b6`), consistente con la disciplina test↔postcondición.
+
+**Deuda técnica detectada (con evidencia):**
+- `git status` muestra `src/__pycache__/`, `src/calc/__pycache__/`, `tests/__pycache__/` sin trackear → no hay `.gitignore` para artefactos de Python.
+- P1 queda verificada con un único ejemplo (`5, 3`); la spec dice «para enteros» pero no hay casos de borde (negativos, cero) ni test de propiedad. No es un incumplimiento de P1 tal como está escrita; es cobertura de evidencia limitada.
+
+**Sin ADR sugerido:** añadir `sub(a, b) = a - b` no introduce una decisión arquitectónica (no hay cambio de estructura, dependencia ni frontera). No aplica el borrador MADR.
+
+**Siguiente en cola:** sin state file de CDAD en este repo (`docs/` solo contiene `specs/sub/spec.md`); no hay `activeContext.md`/`progress.md` que mover de in-progress a done. Este texto queda como borrador para que el orquestador/usuario lo materialice si se crea el Memory Bank.
+
+---
+
+Nota honesta (rol scribe): borrador, no aprobación ni commit — la aprobación es del usuario y la ejecución git del orquestador. No escribí ningún archivo. Si esta pasada PD-11 debía producir además los borradores 1–3 completos del stage 5, dilo y los extiendo; aquí el repo no tiene Memory Bank ni informe de reviewer que citar.
+=== 19:46:52 scribe rc=0
+=== WALK DONE 19:46:52

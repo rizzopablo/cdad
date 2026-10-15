@@ -1,0 +1,18 @@
+# Live smoke AFTER the fix — 2026-09-29 (installed: install.sh --optimus, check PASS 395 groups)
+Same prompt, same command as smoke-before.txt (opencode v2.0.16, agent cdad-test-writer).
+
+## output (ANSI stripped)
+> cdad-test-writer · deepseek-v4-flash
+I'll do exactly the three things requested.
+→ Read docs/specs/permissive-bash-policy-2026-09-29/spec.yaml [limit=3]
+$ echo hi
+hi
+$ wc -l docs/specs/permissive-bash-policy-2026-09-29/spec.yaml | cat
+35 docs/specs/permissive-bash-policy-2026-09-29/spec.yaml
+> cdad-test-writer · deepseek-v4-flash
+1. `echo hi` → `hi` (exit 0).
+2. Read first 3 lines of spec.yaml → line 1: `# Spec — Permissive bash policy for CDAD agents (owner decision 2026-09-29)`, line 2 blank, line 3: `context: >`.
+3. `wc -l ... | cat` → file has 35 lines.
+real	0m14.218s
+user	0m0.223s
+sys	0m0.087s

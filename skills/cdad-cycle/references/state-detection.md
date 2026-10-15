@@ -1,14 +1,21 @@
 # State Detection
 
-Lógica para determinar en qué etapa del ciclo CDAD está el proyecto y la feature activa.
+Logic to determine which stage of the CDAD cycle the project and the active feature are in.
 
-## Algoritmo de detección
+> **Canonical owner (PD-13, 005-006).** This document is the canonical owner of
+> the feature/Memory-Bank recognition (Steps 1-2 and "Memory Bank detection"
+> below). The epic-stage vocabulary is owned by
+> `cdad-epic/references/state-detection.md`. The start-from-rest composition that
+> uses both — and re-declares neither — lives in `project-start.md`, which
+> references this document.
 
-Aplicalo **en orden** y parate en la primera condición que coincide.
+## Detection algorithm
 
-### Paso 1: ¿Existe `docs/.cdad-state.json`?
+Apply it **in order** and stop at the first condition that matches.
 
-Si existe, leelo. La estructura mínima es:
+### Step 1: Does `docs/.cdad-state.json` exist?
+
+If it exists, read it. The minimal structure is:
 
 ```json
 {
@@ -20,92 +27,96 @@ Si existe, leelo. La estructura mínima es:
 }
 ```
 
-Schema completo (todos los campos posibles, incluidos los de epic):
-`assets/state-template.json`. Esta tabla muestra solo el subconjunto que
-`cdad-cycle` necesita para detectar etapa de una feature.
+Full schema (all possible fields, including the epic ones):
+`assets/state-template.json`. This table shows only the subset that
+`cdad-cycle` needs to detect the stage of a feature.
 
-`current_stage: "idle"` es válido únicamente cuando `active_feature` es
-`null` — "sin feature en curso". No es una etapa del ciclo de una feature
-(esas son las cinco: discovery|specification|tdd|review|merge, más `done` al
-cerrar); es el valor de reposo entre features.
+`current_stage: "idle"` is valid only when `active_feature` is
+`null` — "no feature in progress". It is not a stage of a feature's cycle
+(those are the five: discovery|specification|tdd|review|merge, plus `done` at
+closure); it is the resting value between features.
 
-Esa es la fuente de verdad. **Pero igual hacé un sanity check** contra los archivos reales del paso 2: si el state file dice `current_stage: tdd` pero no hay tests en el repo, está desactualizado y avisás al usuario.
+That is the source of truth. **But still do a sanity check** against the real files of step 2: if the state file says `current_stage: tdd` but there are no tests in the repo, it is outdated and you notify the user.
 
-**Detección de epic activo**: si el state file tiene campo `active_epic` no null, la feature actual pertenece a un epic. Esto NO cambia el flujo de `cdad-cycle` (la feature se ejecuta igual), pero sí cambia tres cosas:
+**Active epic detection**: if the state file has a non-null `active_epic` field, the current feature belongs to an epic. This does NOT change the flow of `cdad-cycle` (the feature runs the same way), but it does change three things:
 
-1. **El ID de la feature suele tener prefijo del epic**: `<epic-num>-<feat-num>-<slug>` (ej. `001-002-generar-xml`). Tratá ese formato como válido.
-2. **Hay contexto adicional en `docs/epics/<epic-id>/plan.md`** que conviene leer en Etapa 1 (descubrimiento por feature). Específicamente: la sección "Contratos cross-feature" del plan puede tener interfaces que la feature actual debe respetar.
-3. **El cierre de feature debe sugerir volver al coordinador del epic** (ver `references/stage-5-merge.md`, sección final).
+1. **The feature ID usually has the epic's prefix**: `<epic-num>-<feat-num>-<slug>` (e.g. `001-002-generar-xml`). Treat that format as valid.
+2. **There is additional context in `docs/epics/<epic-id>/plan.md`** worth reading in Stage 1 (per-feature discovery). Specifically: the "Cross-feature contracts" section of the plan may contain interfaces the current feature must respect.
+3. **Feature closure must suggest going back to the epic coordinator** (see `references/stage-5-merge.md`, final section).
 
-Si detectás `active_epic` activo, comunicalo al usuario en la frase inicial:
+If you detect an active `active_epic`, communicate it to the user in the opening sentence:
 
-> *"Estás en feature `001-002-generar-xml` (parte del epic `001-facturacion-afip`), etapa **<X>**. <próximo paso>. ¿Avanzamos?"*
+> *"You are on feature `001-002-generar-xml` (part of epic `001-facturacion-afip`), stage **<X>**. <next step>. Shall we proceed?"*
 
-### Paso 2: Si no existe state file, inferir desde archivos
+### Step 2: If there is no state file, infer from files
 
-Aplicá los siguientes checks en orden:
+Apply the following checks in order:
 
-| Condición | Etapa inferida |
+| Condition | Inferred stage |
 |-----------|---------------|
-| No existe `docs/projectbrief.md` ni `docs/activeContext.md` | **bootstrap** (cargá `references/bootstrap.md`) |
-| Existe Memory Bank pero `docs/specs/` está vacío o no existe | **discovery** (próxima feature por arrancar) |
-| Existe `docs/specs/<feat>/spec.md` pero **sin marca de aprobación** | **specification** (en redacción/brainstorm) |
-| Existe `docs/specs/<feat>/spec.md` aprobado, pero `tests/` no tiene tests para esta feature | **tdd**, sub-fase **red** (test-writer aún no escribió) |
-| Tests para la feature existen pero fallan (RED real) | **tdd**, sub-fase **red→green** (listo para implementer) |
-| Tests pasan (GREEN), pero faltan property tests si el spec los pedía | **tdd**, sub-fase **properties** |
-| Tests + property tests verdes, pero falta E2E si el spec lo pedía | **tdd**, sub-fase **integration** |
-| Toda la suite verde, pero no existe `docs/specs/<feat>/review.md` | **review** |
-| Existe `review.md` con bloqueantes sin resolver (commits posteriores no los abordan) | **review** (loop con etapa 3) |
-| Review limpio, suite verde, pero `docs/activeContext.md` no tiene entry para esta feature | **merge** (CI + Memory Bank update pendiente) |
-| Memory Bank actualizado, feature mergeada | **done** |
+| `docs/projectbrief.md` and `docs/activeContext.md` do not exist | **bootstrap** (load `references/bootstrap.md`) |
+| Memory Bank exists but `docs/specs/` is empty or does not exist | **discovery** (next feature about to start) |
+| `docs/specs/<feat>/spec.md` exists but **without an approval mark** | **specification** (in writing/brainstorm) |
+| `docs/specs/<feat>/spec.md` approved, but `tests/` has no tests for this feature | **tdd**, sub-phase **red** (test-writer hasn't written yet) |
+| Tests for the feature exist but fail (real RED) | **tdd**, sub-phase **red→green** (ready for implementer) |
+| Tests pass (GREEN), but property tests are missing if the spec asked for them | **tdd**, sub-phase **properties** |
+| Tests + property tests green, but E2E is missing if the spec asked for it | **tdd**, sub-phase **integration** |
+| Whole suite green, but `docs/specs/<feat>/review.md` does not exist | **review** |
+| `review.md` exists with unresolved blockings (later commits don't address them) | **review** (loop with stage 3) |
+| Review clean, suite green, but `docs/activeContext.md` has no entry for this feature | **merge** (CI + Memory Bank update pending) |
+| Memory Bank updated, feature merged | **done** |
 
-### Paso 3: Detectar marca de aprobación del spec
+> Suite frequency follows the evidence policy owned by
+> `references/stage-3-tdd.md` §"Test evidence policy" (proportional regression;
+> complete suite at feature closure).
 
-Para distinguir spec aprobado vs. en draft, buscá **una de estas señales** en `docs/specs/<feat>/spec.md`:
+### Step 3: Detect the spec's approval mark
 
-1. Línea final del spec con formato: `Status: Approved by <X> on <YYYY-MM-DD>`
-2. Frontmatter YAML con `approved_by: <X>` y `approved_at: <fecha>`
-3. Commit message que diga `docs: approve spec for <feat>` (si tenés acceso a git log)
+To distinguish an approved spec from a draft one, look for **one of these signals** in `docs/specs/<feat>/spec.md`:
 
-Si ninguna está → tratá como NO aprobado.
+1. Final line of the spec with the format: `Status: Approved by <X> on <YYYY-MM-DD>`
+2. YAML frontmatter with `approved_by: <X>` and `approved_at: <date>`
+3. Commit message saying `docs: approve spec for <feat>` (if you have access to git log)
 
-### Paso 4: Detectar feature activa
+If none is present → treat as NOT approved.
 
-El campo `active_feature` del state file gana. Si no hay state file:
+### Step 4: Detect the active feature
 
-1. Si hay una sola carpeta en `docs/specs/` que no tiene `review.md` ni está marcada como done → esa es la activa.
-2. Si hay varias en progreso → preguntale al usuario cuál es la activa antes de seguir.
-3. Si no hay ninguna → activa es la próxima a crear.
+The state file's `active_feature` field wins. If there is no state file:
 
-### Paso 5: Verificar consistencia entre state file y archivos
+1. If there is a single folder in `docs/specs/` that has no `review.md` and is not marked as done → that is the active one.
+2. If several are in progress → ask the user which one is active before continuing.
+3. If there is none → the active one is the next one to be created.
 
-Si state file dice una etapa pero los archivos reales sugieren otra, **el archivo gana** (es la realidad). Avisale al usuario:
+### Step 5: Verify consistency between state file and files
 
-> *"El state file decía `current_stage: review` pero los tests están rojos. Voy a corregir el state a `tdd:green` y arrancamos por ahí. ¿OK?"*
+If the state file says one stage but the real files suggest another, **the file wins** (it is the reality). Notify the user:
 
-## Tests pasan / fallan — cómo verificarlo
+> *"The state file said `current_stage: review` but the tests are red. I'm going to correct the state to `tdd:green` and we start from there. OK?"*
 
-Para determinar si los tests pasan o fallan:
+## Tests pass / fail — how to verify it
 
-1. Si tu entorno permite ejecución (`bash` disponible), corré la suite y leé el exit code.
-2. Si no, pedile al usuario el output: *"¿Podés correr la suite y pegarme el resumen final? Necesito saber cuántos tests pasan y cuántos fallan."*
-3. NO infiero "verde" porque el código compila ni porque el test "se ve bien". El verde se verifica empíricamente.
+To determine whether the tests pass or fail:
 
-## Detección de Memory Bank
+1. If your environment allows execution (`bash` available), run the suite and read the exit code.
+2. If not, ask the user for the output: *"Can you run the suite and paste the final summary for me? I need to know how many tests pass and how many fail."*
+3. Do NOT infer "green" because the code compiles or because the test "looks good". Green is verified empirically.
 
-Mínimo para considerar Memory Bank inicializado:
+## Memory Bank detection
 
-- `docs/projectbrief.md` existe y no es solo placeholder.
-- `docs/activeContext.md` existe.
-- `docs/progress.md` existe.
-- `docs/systemPatterns.md` existe (puede ser corto pero tiene contenido real).
+Minimum to consider the Memory Bank initialized:
 
-Si falta cualquiera → bootstrap.
+- `docs/projectbrief.md` exists and is not only placeholders.
+- `docs/activeContext.md` exists.
+- `docs/progress.md` exists.
+- `docs/systemPatterns.md` exists (it can be short but has real content).
 
-## Salida del paso
+If any is missing → bootstrap.
 
-Después de aplicar la detección, comunicá al usuario en una sola frase corta:
+## Output of the step
 
-> *"Estás en **<etapa>** trabajando en `<feature-id>`. <una frase con el próximo paso lógico>. ¿Avanzamos?"*
+After applying the detection, communicate to the user in a single short sentence:
 
-Y esperá su respuesta antes de continuar.
+> *"You are in **<stage>** working on `<feature-id>`. <one sentence with the next logical step>. Shall we proceed?"*
+
+And wait for their answer before continuing.

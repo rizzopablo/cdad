@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CDAD packet request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "packet_id", "execution_id", "feature_id", "role", "substage", "objective", "contract", "inputs", "read_scope", "write_scope", "invariants", "expected_output", "evidence_required"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "packet_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "feature_id": {"type": "string", "minLength": 1},
+    "role": {"enum": ["architect", "test-writer", "implementer", "reviewer", "scribe"]},
+    "substage": {"enum": ["discovery", "brainstorm", "draft", "audit", "post-audit", "red", "properties", "e2e", "green", "refactor", "review-fix", "review", "plan-review", "memory"]},
+    "objective": {"type": "string", "minLength": 1},
+    "contract": {"type": "object"},
+    "inputs": {"type": "array"},
+    "read_scope": {"type": "array"},
+    "write_scope": {"type": "array"},
+    "invariants": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "expected_output": {"type": "string", "minLength": 1},
+    "evidence_required": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "plan_task": {"type": "string", "minLength": 1}
+  }
+}

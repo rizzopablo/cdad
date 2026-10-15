@@ -1,0 +1,4 @@
+{"schema_version": 1, "execution_id": "@EXECUTION_ID@", "packet_id": "@PACKET_ID@, "feature_id": "003-004-context-continuity", "role": "test-writer",
+ "parts": [], "bundle_sha256": null, "state_transition_requested": "received",
+ "semantic_status": "pending",
+ "source": "SIMULACION fixture 003-004 (receipt CORIZADO/ilegible: senal NO fiable -> unknown, matriz T2)"}

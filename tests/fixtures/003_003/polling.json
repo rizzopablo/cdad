@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (polling) / P2",
+  "description": "Polling legítimo con condición, deadline y cadencia válidos: encuestas ANTES del vencimiento no se cortan (wait); al vencer, escala UNA SOLA VEZ (i3); las encuestas posteriores sin cambio relevante NO re-escalan (i4 -> wait, dedup P7/O3).",
+  "session_id": "sess-sim-poll-valid",
+  "entries": [
+    {"i": 1, "kind": "poll", "condition": "job-status==done", "deadline": "2026-10-06T01:00:00Z", "cadence_seconds": 60, "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "poll", "condition": "job-status==done", "deadline": "2026-10-06T01:00:00Z", "cadence_seconds": 60, "at": "2026-10-06T00:30:00Z"},
+    {"i": 3, "kind": "poll", "condition": "job-status==done", "deadline": "2026-10-06T01:00:00Z", "cadence_seconds": 60, "at": "2026-10-06T01:10:00Z"},
+    {"i": 4, "kind": "poll", "condition": "job-status==done", "deadline": "2026-10-06T01:00:00Z", "cadence_seconds": 60, "at": "2026-10-06T01:20:00Z"}
+  ]
+}

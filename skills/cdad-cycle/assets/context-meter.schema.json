@@ -1,0 +1,458 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "context-meter-v1",
+  "title": "CDAD neutral context-measurement record (005-002)",
+  "description": "Runtime-agnostic measurement record emitted by the canonical adapter (skills/cdad-cycle/scripts/cdad_context_meter.py). The record is the CONTRACT; the adapter only translates, and it is the only layer that knows the source table/column names. The record therefore carries NO runtime names (neutrality). Every metric lives in EXACTLY ONE explicit bucket (observed/estimated/unknown). A null/absent/not-reported value is unknown WITH a cause, never 0. No bytes-to-tokens conversion and no fabricated context/limit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "meter",
+    "run",
+    "window",
+    "sessions",
+    "roles",
+    "unknowns"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of the NEUTRAL record (distinct from the source, which has no schema marker).",
+      "const": 1
+    },
+    "meter": {
+      "description": "Declares the neutral-record contract.",
+      "const": "context-meter-v1"
+    },
+    "run": {
+      "description": "The run: a hashed/omitted reference to the store, the observed runtime version and whether the source schema was recognized.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["store_ref", "runtime_version", "schema"],
+      "properties": {
+        "store_ref": {
+          "description": "Hashed/omitted reference to the store (privacy): never an absolute path.",
+          "type": ["string", "null"]
+        },
+        "runtime_version": {
+          "description": "Runtime version observed in the source.",
+          "type": ["string", "null"]
+        },
+        "schema": {
+          "description": "Whether the source schema was recognized. An unrecognized schema fails closed before any record is emitted.",
+          "enum": ["recognized", "unknown"]
+        }
+      }
+    },
+    "window": {
+      "$ref": "#/$defs/window"
+    },
+    "reader": {
+      "description": "OPTIONAL: declares the reader's recognized dispatch tools, so the consumer knows the limit of the dispatch detection (D4). A dispatch made with a tool outside `dispatch_tools` is NOT detected by this reader.",
+      "$ref": "#/$defs/reader"
+    },
+    "sessions": {
+      "description": "Per-session/tramo measurements.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/session"}
+    },
+    "roles": {
+      "description": "Aggregate per role (sums and distributions).",
+      "type": "array",
+      "items": {"$ref": "#/$defs/role"}
+    },
+    "application": {
+      "description": "OPTIONAL referenced application annotation (PD-9). It is a reference, NOT a copy of content, and the reader never approves anything.",
+      "$ref": "#/$defs/application"
+    },
+    "unknowns": {
+      "description": "Explicit causes of what is not observable. An entry names its cause in text.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {"type": "string", "minLength": 1},
+          {"type": "object"}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "window": {
+      "description": "The window and cut actually used, explicit and reproducible.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterion", "start_ref", "end_ref", "cutoff"],
+      "properties": {
+        "criterion": {"type": "string", "minLength": 1},
+        "start_ref": {"type": ["string", "null"]},
+        "end_ref": {"type": ["string", "null"]},
+        "cutoff": {"type": ["number", "null"]}
+      }
+    },
+    "reader": {
+      "description": "The reader's declared recognition surface (D4). `dispatch_tools` is the set of tools this reader recognizes as a role work dispatch; a dispatch made with any other tool is NOT detected, so an absence caused by an unrecognized tool is distinguishable from a dispatch that did not happen.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dispatch_tools"],
+      "properties": {
+        "dispatch_tools": {
+          "description": "Tools recognized as a role work dispatch (e.g. subagent, task).",
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "position": {
+      "description": "Position of a milestone in the trace of the tramo: call/message index and its seq.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["call_index", "seq"],
+      "properties": {
+        "call_index": {"type": "integer"},
+        "seq": {"type": "integer"}
+      }
+    },
+    "milestone": {
+      "description": "One milestone of a session/tramo. `position` and `time_relative` are required when observed; `cause` is required when absent/unknown.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["observed", "absent", "unknown"]},
+        "position": {"$ref": "#/$defs/position"},
+        "time_relative": {
+          "description": "Time relative to the start of the tramo, in minutes. When the milestone POSITION is observable but its time is NOT, this is null (never a fabricated 0) and the milestone carries a cause declaring the time not observable (D1).",
+          "type": ["number", "null"]
+        },
+        "cause": {
+          "description": "Observable cause of the absence (required when absent/unknown).",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "observed"}},
+            "required": ["status"]
+          },
+          "then": {"required": ["position", "time_relative"]}
+        },
+        {
+          "if": {
+            "properties": {"status": {"enum": ["absent", "unknown"]}},
+            "required": ["status"]
+          },
+          "then": {"required": ["cause"]}
+        }
+      ]
+    },
+    "milestones": {
+      "description": "Two separate milestones, both present as keys even when absent/unknown.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_resume", "first_dispatch"],
+      "properties": {
+        "first_resume": {"$ref": "#/$defs/milestone"},
+        "first_dispatch": {"$ref": "#/$defs/milestone"}
+      }
+    },
+    "measure": {
+      "description": "One metric: `unit` and `provenance` are mandatory, `value` may be null (which makes it unknown with a cause). The `input_per_step` measure additionally carries the `truncated` indicator declaring the output-size policy (PD-12/D2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "provenance", "bucket"],
+      "properties": {
+        "value": {
+          "description": "The measured value, or null when it cannot be observed (then the bucket is unknown). For `input_per_step` this is EITHER the fixed-size default summary (`#/$defs/input_per_step_summary`, emitted unless the caller passes the detail flag) OR the full ordered per-step array (one element per step; a null element means the proxy is not observable for that step, never 0).",
+          "anyOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "array"},
+            {"$ref": "#/$defs/input_per_step_summary"},
+            {"type": "object"},
+            {"type": "null"}
+          ]
+        },
+        "unit": {
+          "description": "Mandatory unit (minutes, calls, unicode characters, tokens, ...).",
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "description": "Mandatory origin of the datum.",
+          "type": "string",
+          "minLength": 1
+        },
+        "bucket": {"enum": ["observed", "estimated", "unknown"]},
+        "truncated": {"$ref": "#/$defs/truncated"}
+      }
+    },
+    "input_per_step_summary": {
+      "description": "FIXED-SIZE default summary of the per-step context proxy (PD-12/D2). Its shape does not grow with the number of steps, so one session's document stays at or below the published limit of 16384 bytes whatever the session size. A proxy that is not observable is `null` (in last/previous/min/max), NEVER 0, and counted in `unobserved`. The full ordered per-step detail is emitted only when the caller passes the detail flag declared in the measure's `truncated.detail_flag`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "last", "previous", "min", "max", "unobserved"],
+      "properties": {
+        "count": {
+          "description": "Number of steps of the stretch.",
+          "type": "integer"
+        },
+        "last": {
+          "description": "Proxy of the LAST step of the stretch, or null when it is not observable (never 0).",
+          "type": ["integer", "null"]
+        },
+        "previous": {
+          "description": "Proxy of the step before the last, or null when there is none or it is not observable (never 0).",
+          "type": ["integer", "null"]
+        },
+        "min": {
+          "description": "Smallest OBSERVABLE proxy of the stretch, or null when there is no observable proxy (never 0).",
+          "type": ["integer", "null"]
+        },
+        "max": {
+          "description": "Largest OBSERVABLE proxy of the stretch, or null when there is no observable proxy (never 0).",
+          "type": ["integer", "null"]
+        },
+        "unobserved": {
+          "description": "How many steps of the stretch have no observable proxy.",
+          "type": "integer"
+        }
+      }
+    },
+    "truncated": {
+      "description": "Indicator of the output-size policy and its cause (PD-12/D2), declared on the `input_per_step` measure so the omission of the per-step detail is never silent. By default the detail is omitted to honor the published limit of 16384 bytes per single-session document (truncated=true, omitted_steps=count); with the detail flag it is emitted in full and the limit does not apply (truncated=false, omitted_steps=0).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["truncated", "cause", "omitted_steps", "detail_flag"],
+      "properties": {
+        "truncated": {
+          "description": "Whether the per-step detail was omitted from the document.",
+          "type": "boolean"
+        },
+        "cause": {
+          "description": "Text declaring WHY the detail is omitted (or that it was emitted in full), citing the published limit and the detail flag.",
+          "type": "string",
+          "minLength": 1
+        },
+        "omitted_steps": {
+          "description": "How many steps are not detailed (equal to count by default; 0 with the detail flag).",
+          "type": "integer"
+        },
+        "detail_flag": {
+          "description": "Name of the flag that restores the full per-step detail.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "measures": {
+      "description": "Mandatory orientation measures. Each is a `measure` (value/unit/provenance/bucket); `cache` nests its read/write components. A measure that cannot be observed is unknown with a cause, never 0.",
+      "type": "object",
+      "required": [
+        "time_to_first_resume",
+        "time_to_first_dispatch",
+        "previous_calls",
+        "previous_reads",
+        "total_output",
+        "max_output",
+        "input_per_step",
+        "accumulated",
+        "cache"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/measure"},
+      "properties": {
+        "cache": {
+          "description": "Cache tokens: read observed; write unknown when the provider does not report it (never 0).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["read", "write"],
+          "properties": {
+            "read": {"$ref": "#/$defs/measure"},
+            "write": {"$ref": "#/$defs/measure"}
+          }
+        }
+      }
+    },
+    "bucket_members": {
+      "description": "Names of the metrics assigned to one bucket.",
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "buckets": {
+      "description": "Explicit buckets and the ASSIGNMENT RULE (mandatory): every metric lives in EXACTLY ONE bucket, never in two. observed = read directly from the record (reported tokens, reported cost, call counts, positions, times, output size). estimated = declared proxy (context loaded per step = input + cache.read + cache.write; NOT the real window). unknown = null/absent/not-reported WITH a cause, NEVER 0.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observed", "estimated", "unknown"],
+      "properties": {
+        "observed": {"$ref": "#/$defs/bucket_members"},
+        "estimated": {"$ref": "#/$defs/bucket_members"},
+        "unknown": {"$ref": "#/$defs/bucket_members"}
+      }
+    },
+    "session": {
+      "description": "One measured session/tramo.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_ref",
+        "role",
+        "model",
+        "parent_ref",
+        "runtime_version",
+        "window",
+        "milestones",
+        "measures",
+        "buckets"
+      ],
+      "properties": {
+        "session_ref": {
+          "description": "Hashed session reference (privacy).",
+          "type": ["string", "null"]
+        },
+        "role": {"type": "string", "minLength": 1},
+        "model": {
+          "description": "Parsed model, or unknown.",
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_ref": {
+          "description": "Hashed parent session reference, or null.",
+          "type": ["string", "null"]
+        },
+        "runtime_version": {"type": ["string", "null"]},
+        "window": {"$ref": "#/$defs/window"},
+        "milestones": {"$ref": "#/$defs/milestones"},
+        "measures": {"$ref": "#/$defs/measures"},
+        "buckets": {"$ref": "#/$defs/buckets"}
+      }
+    },
+    "role": {
+      "description": "Aggregate per role. Each SUMMED component declares its COVERAGE (R1): a partial subtotal is never presented as the role total. `sums.sessions` is the INTEGER member count; every other `sums` entry is a declared aggregate entry. Each `distributions` entry declares the coverage of its values.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "sums", "distributions"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "sums": {
+          "description": "Sums over the role's sessions. `sessions` is the INTEGER member count (a count of members, never a sum of a measure). EVERY other entry is a DECLARED aggregate entry `{value, unit, bucket, sessions_reporting, sessions_total, cause}`: the sum is `observed` with a numeric `value` only when EVERY session of the role reports the component (`sessions_reporting == sessions_total`, `cause` null); otherwise it is `unknown` with `value` null and a `cause` declaring the coverage — a partial subtotal is NEVER presented as the role total. A plain number for a summed component does not validate.",
+          "type": "object",
+          "required": ["sessions"],
+          "properties": {
+            "sessions": {"type": "integer"}
+          },
+          "additionalProperties": {"$ref": "#/$defs/role_aggregate_entry"}
+        },
+        "distributions": {
+          "description": "Distributions over the role's sessions. EVERY entry is a DECLARED distribution `{values, sessions_reporting, sessions_total, cause}` declaring its coverage: the observed `values` are a subset of the sessions, never presented as the whole role. A plain array does not validate.",
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/role_distribution"}
+        }
+      }
+    },
+    "role_aggregate_entry": {
+      "description": "One SUMMED component of `roles[].sums`, with its declared COVERAGE (R1). `sessions_reporting` and `sessions_total` are ALWAYS numbers, never null. When `sessions_reporting == sessions_total` the sum is a COMPLETE observation: bucket `observed`, numeric `value`, `cause` null. Otherwise the entry is `unknown` with `value` null — a partial subtotal is NEVER emitted as the role total — and `cause` declares the coverage (k of n).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "bucket", "sessions_reporting", "sessions_total", "cause"],
+      "properties": {
+        "value": {
+          "description": "The complete sum, or null when the coverage is incomplete (never a partial subtotal).",
+          "type": ["number", "null"]
+        },
+        "unit": {"type": "string", "minLength": 1},
+        "bucket": {"enum": ["observed", "unknown"]},
+        "sessions_reporting": {
+          "description": "How many sessions of the role report the component (always a number).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "sessions_total": {
+          "description": "How many sessions the role aggregates (always a number).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "cause": {
+          "description": "Null with full coverage; the coverage cause (naming role, component and k of n) when incomplete.",
+          "type": ["string", "null"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"bucket": {"const": "observed"}},
+            "required": ["bucket"]
+          },
+          "then": {
+            "properties": {"value": {"type": "number"}, "cause": {"type": "null"}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"bucket": {"const": "unknown"}},
+            "required": ["bucket"]
+          },
+          "then": {
+            "properties": {
+              "value": {"type": "null"},
+              "cause": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "role_distribution": {
+      "description": "One distribution of `roles[].distributions`, with its declared COVERAGE (R1): `values` carries only the OBSERVED evidence of the sessions that report it (a subset of the role's sessions is never presented as the whole role), `sessions_reporting`/`sessions_total` declare the coverage (always numbers, never null) and `cause` is null only with full coverage.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["values", "sessions_reporting", "sessions_total", "cause"],
+      "properties": {
+        "values": {
+          "description": "The observed values of the sessions that report the distribution (a subset when the coverage is incomplete).",
+          "type": "array",
+          "items": {"type": "integer"}
+        },
+        "sessions_reporting": {
+          "description": "How many sessions of the role report the distribution (always a number).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "sessions_total": {
+          "description": "How many sessions the role aggregates (always a number).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "cause": {
+          "description": "Null with full coverage; the coverage cause (naming role, component and k of n) when incomplete.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "application": {
+      "description": "Referenced application annotation (PD-9). `ref` is a durable reference (path/commit/receipt), NOT a copy of the content; `limit` derives from observable facts, not the reader's judgement; `basis` names those facts. The reader never approves anything.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "limit", "basis"],
+      "properties": {
+        "ref": {
+          "description": "Durable reference (path/commit/receipt) to the application evidence; never an embedded copy.",
+          "type": "string",
+          "minLength": 1
+        },
+        "limit": {"enum": ["accepted", "blocked", "pending", "unknown"]},
+        "basis": {
+          "description": "Observable facts that support the limit.",
+          "type": "string",
+          "minLength": 1
+        },
+        "included_sessions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "relations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

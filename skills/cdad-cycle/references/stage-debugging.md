@@ -1,153 +1,153 @@
-# Debugging sistemático — protocolo de diagnóstico
+# Systematic debugging — diagnostic protocol
 
-> **Fuentes:** obra/superpowers `systematic-debugging/SKILL.md` (ley de hierro,
-> 4 fases, regla 3+ fixes → arquitectura, red flags) y sus auxiliares
-> `root-cause-tracing.md` (fix en la fuente, no donde aparece el síntoma),
-> `condition-based-waiting.md` (polling de condición, nunca sleep arbitrario) y
-> `defense-in-depth.md` (validación por capas); adaptación Hermes Agent —
-> "The Feedback Loop Rule": adivinar sin loop rojo-capable ES el failure mode;
-> arjenschwarz `systematic-debugger` — inspección Fagan modificada + Five Whys
-> para bugs stubborn (post-múltiples-fallos); research del epic
+> **Sources:** obra/superpowers `systematic-debugging/SKILL.md` (Iron Law,
+> 4 phases, rule 3+ fixes → architecture, red flags) and its auxiliaries
+> `root-cause-tracing.md` (fix at the source, not where the symptom appears),
+> `condition-based-waiting.md` (polling on a condition, never arbitrary sleep) and
+> `defense-in-depth.md` (layered validation); Hermes Agent adaptation —
+> "The Feedback Loop Rule": guessing without a red-capable loop IS the failure mode;
+> arjenschwarz `systematic-debugger` — modified Fagan inspection + Five Whys
+> for stubborn bugs (post-multiple-failures); epic research
 > (`docs/epics/research-tema3-debugging/research.md`).
-> Notación canónica de búsqueda: `defense.?in.?depth` y
-> `condition.?based.?waiting` — los términos matchean con o sin guiones
+> Canonical search notation: `defense.?in.?depth` and
+> `condition.?based.?waiting` — the terms match with or without dashes
 > ("defense-in-depth", "defense in depth").
 >
-> **Se invoca cuando:** un GREEN falla en Etapa 3 y hay que diagnosticar antes
-> de re-delegar (`stage-3-tdd.md` §3.2), o CI está roto en Etapa 5
+> **Invoked when:** a GREEN fails in Stage 3 and a diagnosis is needed before
+> re-delegating (`stage-3-tdd.md` §3.2), or CI is broken in Stage 5
 > (`stage-5-merge.md` §5.1).
 
-**Principio core:** SIN CAUSA RAÍZ VERIFICADA NO HAY FIX. El síntoma es dato,
-no diagnóstico. Un fix que no sale de una causa raíz verificada es una apuesta
-disfrazada de corrección — y las apuestas apiladas son thrashing (AP-18).
+**Core principle:** WITHOUT A VERIFIED ROOT CAUSE THERE IS NO FIX. The symptom is data,
+not a diagnosis. A fix that does not come from a verified root cause is a bet
+disguised as a correction — and stacked bets are thrashing (AP-18).
 
-## El loop rojo ES la sub-fase RED
+## The red loop IS the RED sub-phase
 
-Esta es la síntesis central del protocolo en CDAD: el debugging no es otra
-metodología, es RED con disciplina de diagnóstico. El *tight feedback loop* de
-Superpowers/Hermes — un comando que reproduce el bug — **es la sub-fase RED**
-de `stage-3-tdd.md` aplicada al bug:
+This is the central synthesis of the protocol in CDAD: debugging is not another
+methodology, it is RED with diagnostic discipline. The *tight feedback loop* of
+Superpowers/Hermes — one command that reproduces the bug — **is the RED sub-phase**
+of `stage-3-tdd.md` applied to the bug:
 
-- Un comando **tight**: rápido, determinista, agent-runnable, que va **rojo con
-  el síntoma exacto** y verde **solo con el fix**.
-- El assert verifica el síntoma observado, no "que no crashea". Un test que
-  pasa sin el fix no es un loop rojo: no falsa nada.
-- **Antes de leer código para armar teorías, el loop rojo tiene que existir.**
-  Adivinar sin loop rojo-capable es EL failure mode del debugging.
-- Si el bug es flaky: el primer trabajo es **subir la tasa de repro** — correr
-  el test 100 veces, paralelizar, estrechar la ventana de timing. NUNCA sleep
-  arbitrario ni "re-intento y veamos": `condition-based-waiting` — polling de
-  la condición real (el recurso está, el evento llegó, el estado cambió) en
-  lugar de esperar un tiempo inventado.
+- A **tight** command: fast, deterministic, agent-runnable, that goes **red with
+  the exact symptom** and green **only with the fix**.
+- The assert verifies the observed symptom, not "that it doesn't crash". A test
+  that passes without the fix is not a red loop: it falsifies nothing.
+- **Before reading code to build theories, the red loop has to exist.**
+  Guessing without a red-capable loop is THE failure mode of debugging.
+- If the bug is flaky: the first job is to **raise the repro rate** — run
+  the test 100 times, parallelize, narrow the timing window. NEVER arbitrary
+  sleep or "retry and see": `condition-based-waiting` — polling on
+  the real condition (the resource is there, the event arrived, the state changed) instead of
+  waiting an invented amount of time.
 
-## Fase 1 — Diagnóstico (recolectar evidencia)
+## Phase 1 — Diagnosis (collect evidence)
 
-1. **Leer el error completo.** Stack traces enteros, line numbers, primer
-   error del output (no el último). Recortar el error es recortar la evidencia.
-2. **Armar el loop rojo** (ver arriba). Sin repro no hay diagnóstico: hay
-   adivinanza.
-3. **Cambios recientes:** `git diff` / `git log` del área afectada. La mayoría
-   de los bugs llegó con un commit reciente.
-4. **Sistemas multi-componente:** instrumentar cada boundary (qué entra, qué
-   sale en cada frontera de servicio/módulo/proceso) **antes** de proponer
-   nada. La evidencia en boundaries reemplaza teorías sobre "a qué hora se
-   rompe el pipeline".
-5. Llevá la evidencia acumulada como registro (qué probaste, qué observaste).
-   En la regla 3+, esa evidencia es lo que escala.
+1. **Read the full error.** Entire stack traces, line numbers, first
+   error in the output (not the last). Trimming the error is trimming the evidence.
+2. **Build the red loop** (see above). Without a repro there is no diagnosis:
+   there is guesswork.
+3. **Recent changes:** `git diff` / `git log` of the affected area. Most
+   bugs arrived with a recent commit.
+4. **Multi-component systems:** instrument each boundary (what goes in, what
+   comes out at each service/module/process frontier) **before** proposing
+   anything. Evidence at boundaries replaces theories about "at what time the
+   pipeline breaks".
+5. Keep the accumulated evidence as a log (what you tried, what you observed).
+   Under the 3+ rule, that evidence is what gets escalated.
 
-## Fase 2 — Minimizar + comparar
+## Phase 2 — Minimize + compare
 
-- **Repro mínimo (cut-one-thing):** quitá de a un elemento del repro (datos,
-  pasos, componentes). El criterio de done: quitar cualquiera de los elementos
-  restantes lo pone verde. Cada elemento que sobra en el repro es ruido que
-  puede apuntar la hipótesis mal.
-- **Comparar contra código que sí funciona** (mismo codebase, mismo mecanismo
-  en otro lugar) **listando TODAS las diferencias** — no solo la que ya
-  sospechás. La diferencia que no miraste es la que causa el bug.
+- **Minimal repro (cut-one-thing):** remove one element at a time from the repro (data,
+  steps, components). The done criterion: removing any of the remaining
+  elements turns it green. Every element left over in the repro is noise that
+  can point the hypothesis wrong.
+- **Compare against code that does work** (same codebase, same mechanism
+  elsewhere) **listing ALL the differences** — not only the one you already
+  suspect. The difference you did not look at is the one causing the bug.
 
-## Fase 3 — Hipótesis rankeadas
+## Phase 3 — Ranked hypotheses
 
-No elijas una teoría y la defiendas: generá **3-5 hipótesis falsables**,
-ordenadas por verosimilitud × baratura de falsar. Cada una lleva una
-predicción explícita: "si X es la causa, Y debería pasar Z".
+Don't pick a theory and defend it: generate **3-5 falsifiable hypotheses**,
+ordered by likelihood × cheapness to falsify. Each one carries an explicit
+prediction: "if X is the cause, Y should do Z".
 
-- Testeá con la **sonda más chica** (un log, un breakpoint, un assert extra) —
-  nunca un cambio grande "para ver si se arregla".
-- **UNA variable por vez.** Cambiar dos cosas juntos destruye la información:
-  aunque se arregle, no sabés cuál fue, y el otro cambio puede haber
-  introducido un bug nuevo.
-- **Verificá antes de seguir.** Si la predicción no se cumple, la hipótesis
-  está muerta: anotala y pasá a la siguiente, no la retuerzas.
-- "No entiendo X" es una respuesta válida y útil — mejor que una teoría
-  conveniente no falsada.
+- Test with the **smallest probe** (a log, a breakpoint, an extra assert) —
+  never a big change "to see if it gets fixed".
+- **ONE variable at a time.** Changing two things together destroys the information:
+  even if it gets fixed, you don't know which one did it, and the other change may have
+  introduced a new bug.
+- **Verify before moving on.** If the prediction fails, the hypothesis
+  is dead: write it down and move to the next one, don't twist it.
+- "I don't understand X" is a valid and useful answer — better than a
+  convenient theory that was never falsified.
 
-## Fase 4 — Fix
+## Phase 4 — Fix
 
-- **Un solo fix, sobre la causa raíz** — no sobre el síntoma. Tracing hacia
-  atrás por la call chain: el fix va en la **fuente**, no donde aparece el
-  síntoma.
-- **Sin "while I'm here":** sin fixes empaquetados con refactor ni limpieza de
-  al lado. Si el vecino necesita refactor, es otra tarea (y otro ciclo RED).
-- **Test de regresión primero.** Si la causa raíz es una postcondición nueva,
-  el test de regresión lo escribe el test-writer (RED); si el test que falló
-  estaba mal (verificaba otra cosa), el fix es del test. El fix de código entra
-  después, y ese test es lo que impide que el bug vuelva.
-- **Defense-in-depth DESPUÉS del fix:** validación por capas (borde de datos,
-  entrada de módulo, invariantes internos) para que la clase de bug sea
-  imposible, no solo ausente. Nunca en lugar del fix de causa raíz.
+- **A single fix, on the root cause** — not on the symptom. Trace backwards
+  through the call chain: the fix goes at the **source**, not where the
+  symptom appears.
+- **No "while I'm here":** no fixes bundled with a refactor or nearby cleanup.
+  If the neighbor needs a refactor, that is another task (and another RED cycle).
+- **Regression test first.** If the root cause is a new postcondition,
+  the test-writer writes the regression test (RED); if the failing
+  test itself was wrong (it verified something else), the fix belongs to the test. The code fix comes in
+  afterwards, and that test is what keeps the bug from coming back.
+- **Defense-in-depth AFTER the fix:** layered validation (data boundary,
+  module entry, internal invariants) so the bug class becomes
+  impossible, not just absent. Never in place of the root-cause fix.
 
-## Regla del 3+ → STOP → ADR
+## The 3+ rule → STOP → ADR
 
-**3 fixes fallidos o más = STOP.** No intentes el cuarto: el cuarto intento
-sobre la misma teoría no es persistencia, es ignorar evidencia.
+**3 or more failed fixes = STOP.** Don't attempt the fourth: a fourth attempt
+on the same theory is not persistence, it is ignoring evidence.
 
-1. Cuestioná la arquitectura, no tu suerte: 3+ fixes sin resultado es señal de
-   que el diseño, no el detalle, está en la causa.
-2. **Escala al usuario** con la evidencia acumulada (loop rojo, hipótesis
-   testeadas y sus resultados, qué aprendiste en cada fallo).
-3. El desenlace es un **ADR** (`docs/adr/`) que decide: bug puntual dentro de
-   un diseño razonable, o diseño equivocado → posible vuelta a Descubrimiento
-   (la excepción ya existente del ciclo, "spec entero mal → Etapa 1").
-4. Cada fix que arregla acá pero rompe allá **ES la señal**: el problema nuevo
-   en otro lugar es el dato de que el corte de responsabilidades está mal.
+1. Question the architecture, not your luck: 3+ fixes with no result is a sign that
+   the design, not the detail, is at the root.
+2. **Escalate to the user** with the accumulated evidence (red loop, hypotheses
+   tested and their results, what you learned from each failure).
+3. The outcome is an **ADR** (`docs/adr/`) that decides: a one-off bug within a
+   reasonable design, or a wrong design → possible return to Discovery
+   (the pre-existing exception of the cycle, "whole spec wrong → Stage 1").
+4. Every fix that fixes here but breaks there **IS the signal**: the new problem
+   elsewhere is the data showing the boundary of responsibilities is wrong.
 
-## Roles en el ciclo CDAD
+## Roles in the CDAD cycle
 
-- **Diagnóstico = implementer.** Lee la suite y el código (puede leer tests),
-  pero NO toca `tests/` (AP-4 sigue aplicando). El loop rojo puede ser el test
-  rojo existente o un comando de repro desechable fuera de `tests/`.
-- **Test de regresión = test-writer.** Si la causa raíz implica postcondición
-  nueva, el test entra por RED (test-writer); el implementer no lo escribe.
-- **Bugs stubborn (3+ fallos ya acumulados):** inspección **Fagan** modificada
-  (clarificar el problema → lectura línea a línea del código involucrado SIN
-  arreglar nada en el recorrido) + **Five Whys** (3-5 whys, escribiendo los
-  supuestos de cada salto) como técnica de las fases 1-2. Se disparan CUANDO
-  ya hubo 3+ fallos, no antes.
+- **Diagnosis = implementer.** It reads the suite and the code (it may read tests),
+  but does NOT touch `tests/` (AP-4 still applies). The red loop can be the existing red
+  test or a disposable repro command outside `tests/`.
+- **Regression test = test-writer.** If the root cause implies a new
+  postcondition, the test enters through RED (test-writer); the implementer does not write it.
+- **Stubborn bugs (3+ accumulated failures):** modified **Fagan**
+  inspection (clarify the problem → line-by-line reading of the code involved WITHOUT
+  fixing anything along the way) + **Five Whys** (3-5 whys, writing down the
+  assumptions of each jump) as techniques for phases 1-2. They are triggered WHEN
+  there have already been 3+ failures, not before.
 
-## Tabla anti-racionalización
+## Anti-rationalization table
 
-| Excusa típica | Refutación |
+| Typical excuse | Refutation |
 |---|---|
-| «Es simple, lo arreglo directo» | Simple ≠ diagnosticado. Sin causa raíz verificada no hay fix — ni para bugs "obvios" |
-| «Solo pruebo un cambio y veo» | Probar sin loop rojo es adivinar con steps extra. Primero el comando que va rojo con el síntoma exacto |
-| «Corro 2 cambios juntos para ir más rápido» | Dos variables a la vez destruyen la información: si se arregla, no sabés cuál fue; y una puede introducir un bug nuevo. UNA por vez |
-| «Ya intenté 3, uno más no molesta» | 3+ es STOP, no "otra ronda": escala al usuario con evidencia y ADR. El cuarto intento quema contexto y confianza |
-| «Es flaky, re-intento» | Re-intentar es rezar. Subí la tasa de repro (correr 100x, paralelizar, estrechar ventana) y usá condition-based-waiting, nunca sleep arbitrario |
-| «No hay repro, voy por intuición» | Sin loop rojo no hay teoría que valga: toda teoría sin repro es infalsable. Invertí primero en reproducir |
-| «Aprovecho y refactorizo lo de al lado» | While-I'm-here apila un cambio de diseño encima de un fix sin diagnóstico: si algo rompe, no sabés qué. El fix es único y enfocado |
-| «El ADR es burocracia, pruebo otro fix» | El ADR es el único registro de por qué el cuarto fix también fallaría. Sin ADR, el próximo ciclo vuelve a empezar de cero |
+| "It's simple, I'll fix it directly" | Simple ≠ diagnosed. Without a verified root cause there is no fix — not even for "obvious" bugs |
+| "Let me just try one change and see" | Trying without a red loop is guessing with extra steps. First the command that goes red with the exact symptom |
+| "I'll run 2 changes together to go faster" | Two variables at once destroy the information: if it gets fixed, you don't know which one; and one may introduce a new bug. ONE at a time |
+| "I've already tried 3, one more won't hurt" | 3+ is STOP, not "another round": escalate to the user with evidence and an ADR. The fourth attempt burns context and trust |
+| "It's flaky, I'll retry" | Retrying is praying. Raise the repro rate (run 100x, parallelize, narrow the window) and use condition-based-waiting, never arbitrary sleep |
+| "There's no repro, I'll go by intuition" | Without a red loop no theory is worth anything: every theory without a repro is unfalsifiable. Invest in reproducing first |
+| "While I'm at it, I'll refactor the thing next to it" | While-I'm-here stacks a design change on top of a fix without diagnosis: if something breaks, you don't know what. The fix is single and focused |
+| "The ADR is bureaucracy, I'll try another fix" | The ADR is the only record of why the fourth fix would also fail. Without an ADR, the next cycle starts from zero again |
 
-## Cuándo NO aplica
+## When it does NOT apply
 
-1. **Infra pura documentada:** caída de proveedor externo, cuota agotada,
-   incidente de plataforma — no es código que arreglar: escalar al usuario +
-   monitoreo, y esperar al proveedor. El protocolo no fabrica fixes de código
-   para problemas que no son de código.
-2. **Flaky crónico con plan de monitoreo explícito y deuda registrada:** si la
-   inestabilidad ya está documentada como deuda con plan de monitoreo y quota
-   acordada con el usuario, no se re-diagnostica en cada sesión — se consulta
-   el plan.
+1. **Pure documented infrastructure:** an external provider outage, an exhausted quota,
+   a platform incident — not code to fix: escalate to the user +
+   monitoring, and wait for the provider. The protocol does not fabricate code fixes
+   for problems that are not code problems.
+2. **Chronic flaky with an explicit monitoring plan and registered debt:** if the
+   instability is already documented as debt with a monitoring plan and a quota
+   agreed with the user, it is not re-diagnosed in every session — consult
+   the plan.
 
-Fuera de estos dos casos, el protocolo aplica completo: loop rojo primero →
-diagnóstico → minimizar + comparar → hipótesis rankeadas → fix único sobre
-causa raíz.
+Outside these two cases, the protocol applies in full: red loop first →
+diagnosis → minimize + compare → ranked hypotheses → single fix on
+the root cause.

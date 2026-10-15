@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "reconstruction-of-real-incident",
+  "incident_ref": "guards-incidents-observed.md fila 2026-10-06 C2: 'El implementer lanzó la suite completa en segundo plano; murió al terminar la sesión' (dispatch-ledger fila 6; run green-t1-003-003-a1)",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (C2) / P5 + invariante 4 + límite C2",
+  "description": "Reconstrucción del incidente REAL C2 (no es un fallo provocado): se lanza la suite en segundo plano (`make test &`); el cliente retorna pero el exit del proceso hijo NO es observable (límite C2 declarado: la DB no expone el proceso hijo del SO ni su exit code); la sesión termina sin evidencia durable de la corrida. Clasificación honesta: result_class 'unknown' -> escalada unknown:true al orquestador; NUNCA se fabrica 'la suite pasó' ni 'murió' — la ausencia de evidencia es débil (podría estar pendiente). Recuperación real aplicada en el incidente: re-ejecutar una vez en primer plano (decision_needed).",
+  "session_id": "sess-recon-background-suite-death",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "write", "args": ["pkg/suite_test.go"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["make", "test", "&"], "result_class": "unknown", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"}
+  ]
+}

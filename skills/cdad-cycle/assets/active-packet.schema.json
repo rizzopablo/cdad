@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdad.dev/schemas/active-packet.schema.json",
+  "title": "CDAD active packet state",
+  "oneOf": [
+    {"type": "null"},
+    {
+      "type": "object",
+      "required": ["id", "role", "substage", "status", "packet_version", "contract_kind", "contract_sha256"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "role": {"enum": ["architect", "test-writer", "implementer", "reviewer", "scribe"]},
+        "substage": {"enum": ["discovery", "brainstorm", "draft", "audit", "post-audit", "red", "properties", "e2e", "green", "refactor", "review-fix", "review", "plan-review", "memory"]},
+        "status": {"enum": ["prepared", "dispatched", "completed", "failed"]},
+        "packet_version": {"const": 1},
+        "contract_kind": {"enum": ["approved-epic-plan", "approved-feature-spec", "draft-plan"]},
+        "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    }
+  ]
+}

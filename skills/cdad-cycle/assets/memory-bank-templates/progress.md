@@ -1,31 +1,31 @@
 # Progress
 
-Estado de features del proyecto.
+Feature status of the project.
 
 ## In progress
 
-<!-- features actualmente en alguna etapa del ciclo CDAD -->
+<!-- features currently in some stage of the CDAD cycle -->
 
-_(ninguna)_
+_(none)_
 
 ## Done
 
-<!-- features cerradas (mergeadas + Memory Bank actualizado) -->
+<!-- closed features (merged + Memory Bank updated) -->
 
-_(ninguna todavía)_
+_(none yet)_
 
 ## Queued
 
-<!-- features identificadas pero no arrancadas todavía -->
+<!-- features identified but not started yet -->
 
-_(ninguna)_
+_(none)_
 
 ## Blocked
 
-<!-- features que dependen de algo externo -->
+<!-- features that depend on something external -->
 
-_(ninguna)_
+_(none)_
 
 ---
 
-Última actualización: <YYYY-MM-DD>
+Last updated: <YYYY-MM-DD>

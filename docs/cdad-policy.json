@@ -1,0 +1,28 @@
+{
+  "path_policy": {
+    "documentation_roots": [
+      "docs"
+    ],
+    "implementation_files": [
+      "install.sh"
+    ],
+    "implementation_roots": [
+      "agents",
+      "skills",
+      "scripts",
+      "sources",
+      "build"
+    ],
+    "test_roots": [
+      "tests"
+    ],
+    "private_paths": [
+      "tests/.sensitive-patterns.local"
+    ],
+    "documentation_files": [
+      "README.md"
+    ]
+  },
+  "schema_version": 1,
+  "temporary_roots": []
+}

@@ -1,0 +1,9 @@
+{
+  "execution_id": "exec-003-007-t1-red-001",
+  "hitl_delegation": {
+    "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
+    "expires_on": "2099-12-31"
+  },
+  "runtime": "opencode",
+  "schema_version": 1
+}

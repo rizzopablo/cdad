@@ -1,0 +1,1 @@
+Review correctness, readability, architecture, security, performance, and contract compliance. Separate blocking findings, optional improvements, and abstentions; never soften a blocking observable defect.

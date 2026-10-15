@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "active-record-v1",
+  "title": "active-record-v1",
+  "description": "L1 active-memory projection rendered on-demand by cdad_continuity.py resume; it is never persisted (O1) and never embeds a transcript (P7/D2).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "goal",
+    "authority",
+    "decisions",
+    "uncertainties",
+    "next_action"
+  ],
+  "properties": {
+    "goal": {
+      "type": ["string", "null"]
+    },
+    "authority": {
+      "description": "HITL delegation read from the execution context or, when absent, from the structured state (D4); expired authority reconstructs context but never authorizes effects. `state` is the CURRENT vigencia, evaluated at read time (never frozen stale in the L2 body).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authority_ref": {
+          "type": ["string", "null"]
+        },
+        "expires_on": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "description": "active/current when the delegation is in force; expired when revoked or past; unknown when no reliable signal exists.",
+          "type": "string",
+          "enum": ["active", "current", "expired", "unknown"]
+        }
+      }
+    },
+    "decisions": {
+      "description": "Frozen decisions, each WITH its rationale (D11).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["decision", "rationale"],
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_action": {
+      "type": ["string", "null"]
+    }
+  }
+}

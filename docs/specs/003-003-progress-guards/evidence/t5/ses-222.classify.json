@@ -1,0 +1,22 @@
+{
+  "escalations": [],
+  "incidents": [
+    {
+      "count": 5,
+      "evidence": {
+        "progress": {
+          "changed": false
+        }
+      },
+      "fingerprint": "sha256:2405a99df6d36921ff2109d85f6f9fdb1068fb31ca5966b565b54fc8826214fc",
+      "kind": "repetition-without-progress",
+      "result_class": "ok",
+      "rule": "repetition-without-progress: >=3 consecutive tool_call entries with the same fingerprint (tool + args as recorded + result_class) and a frozen observed progress_token (no observable progress)"
+    }
+  ],
+  "polls": [],
+  "schema_version": 1,
+  "session_id": "<ses-222>",
+  "simulation": false,
+  "trace": "trace-v1"
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CDAD guard recorded trace (003-003 trace-v1)",
+  "description": "Recorded trace consumed by `cdad_guard classify`. Argument canonicalization is the recorder's responsibility: `entries[].args` must be recorded already-canonicalized (only stable fields). The guard hashes args as recorded and does not canonicalize them (003-003 B3b). An absent or non-string `progress_token` is an unobserved progress signal and must not yield a frozen-progress incident (B1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "trace", "simulation", "session_id", "entries"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "trace": {"const": "trace-v1"},
+    "simulation": {
+      "type": "boolean",
+      "description": "Provoked failure scenarios are labelled simulation (P6)."
+    },
+    "session_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "packet_id": {"type": "string", "minLength": 1},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["i", "kind"],
+        "properties": {
+          "i": {"type": "integer"},
+          "kind": {"enum": ["tool_call", "poll"]},
+          "tool": {"type": "string"},
+          "args": {"type": "array", "items": {"type": "string"}},
+          "result_class": {"type": "string", "minLength": 1},
+          "progress_token": {"type": "string"},
+          "condition": {"type": "string", "minLength": 1},
+          "deadline": {"type": "string", "minLength": 1},
+          "cadence_seconds": {"type": "integer", "minimum": 1},
+          "at": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

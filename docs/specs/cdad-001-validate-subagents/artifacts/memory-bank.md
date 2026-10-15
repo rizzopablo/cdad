@@ -30,7 +30,7 @@ Ciclo CDAD real con sub-agentes nativos opencode (delegación end-to-end):
 
 ### Próxima feature en cola
 - Phase 4 task pendiente: "Ajustar prompts/permisos/modelos según empiria" (los 5 opcionales del reviewer son los candidatos).
-- Luego Phase 6 cierre: cerrar fase en project-tracker.
+- Luego Phase 6 cierre: cerrar fase en <otro-proyecto>.
 
 ---
 

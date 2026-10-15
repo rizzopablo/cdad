@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (flaky) / C3 — distinción no-alarma",
+  "description": "Test flaky: MISMO comando (go test) con clase de resultado que alterna (tool-error/ok) y progreso que avanza al lograr el pase. A nivel llamada parece repetición, pero la huella canónica incluye la clase de resultado (D2): tool-error y ok son huellas DISTINTAS, y hay progreso observable -> NO es repetición equivalente, sin alerta ni escalada.",
+  "session_id": "sess-sim-flaky-go-test",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "tool-error", "progress_token": "p1", "at": "2026-10-06T00:10:00Z"},
+    {"i": 4, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "ok", "progress_token": "p2", "at": "2026-10-06T00:15:00Z"}
+  ]
+}

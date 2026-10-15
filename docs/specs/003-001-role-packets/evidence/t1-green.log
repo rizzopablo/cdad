@@ -1,0 +1,7 @@
+test_p6_dry_run_confines_every_destination_to_explicit_install_root (tests.test_role_packets.TestInstallRootDryRun.test_p6_dry_run_confines_every_destination_to_explicit_install_root) ... ok
+test_p4_p5_state_binding_matrix_or_report_interface_blocked (tests.test_role_packets.TestStateBindingMatrixWhenCliAvailable.test_p4_p5_state_binding_matrix_or_report_interface_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 4.837s
+
+OK

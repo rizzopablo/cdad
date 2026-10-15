@@ -1,26 +1,26 @@
 ---
 name: "odoo-test-writer"
 description: >
-  Framework de tests Odoo para el rol test-writer de CDAD en proyectos Odoo.
-  TransactionCase, @tagged obligatorio, Form→web, freeze_time para fechas,
-  fixtures self-contained sin demo data (OCA), make test-one para RED / make
-  test para AUDIT, new_test_user para permisos, post_install para cross-module.
-  Usar en la etapa 3 (TDD) de cualquier feature sobre un addon Odoo.
+  Odoo test framework for the CDAD test-writer role on Odoo projects.
+  TransactionCase, mandatory @tagged, Form→web, freeze_time for dates,
+  self-contained fixtures without demo data (OCA), make test-one for RED /
+  make test for AUDIT, new_test_user for permissions, post_install for
+  cross-module. Use in stage 3 (TDD) of any feature on an Odoo addon.
 ---
 
-# odoo-test-writer — framework de tests en addons Odoo
+# odoo-test-writer — test framework in Odoo addons
 
-> Reglas OCA + docs oficiales Odoo (testing framework). El contrato de
-> ejecución (`make test` / `make test-one` / `make test-clean`) vive en el
-> skill `odoo-make-env`; acá está el contenido del test, no el runner.
+> OCA rules + official Odoo docs (testing framework). The execution contract
+> (`make test` / `make test-one` / `make test-clean`) lives in the
+> `odoo-make-env` skill; here is the test content, not the runner.
 
-## Clase de test: TransactionCase (clase única moderna)
+## Test class: TransactionCase (the modern single class)
 
-Usá **`TransactionCase`** como clase base. Es la clase recomendada por Odoo
-17+ (los tests corren dentro de una transacción que se revierte al final, una
-`SavepointCase` que no crea DB propia). Evitá la fragmentación innecesaria en
-varias clases heredadas de márgenes viejas; una sola clase TransactionCase por
-archivo salvo que haya una razón real de agrupar.
+Use **`TransactionCase`** as the base class. It is the class recommended by
+Odoo 17+ (tests run inside a transaction that is rolled back at the end, a
+`SavepointCase` that does not create its own DB). Avoid unnecessary
+fragmentation into several classes inherited from old margins; a single
+TransactionCase class per file unless there is a real reason to group.
 
 ```python
 from odoo.tests import TransactionCase, tagged
@@ -30,124 +30,122 @@ class TestIdeaLog(TransactionCase):
     ...
 ```
 
-## `@tagged` es OBLIGATORIO
+## `@tagged` is MANDATORY
 
-Los tests **sin tag no corren** en la suite por `--test-enable` estándar de
-Odoo (los tags son el filtro de selección). Todo test que quieras que corra
-debe llevar un decorador `@tagged(...)` con al menos un tag. El tag también
-permite seleccionar con `--test-tags` y marcar `post_install`.
+Tests **without a tag do not run** in the suite under Odoo's standard
+`--test-enable` (tags are the selection filter). Every test you want to run
+must carry a `@tagged(...)` decorator with at least one tag. The tag also
+allows selecting with `--test-tags` and marking `post_install`.
 
 ```python
-@tagged("cdad")          # corre en la suite default
-@tagged("post_install", "-at_install")  # corre después de instalar todos los addons (cross-module)
+@tagged("cdad")          # runs in the default suite
+@tagged("post_install", "-at_install")  # runs after installing all addons (cross-module)
 ```
 
-## `Form[...]->web`: el helper Form exige la dependencia `web`
+## `Form[...]->web`: the Form helper requires the `web` dependency
 
-El objeto `Form` (UI mock para armar registros como un formulario) requiere
-que el addon declare el módulo `web` en `depends` del `__manifest__.py`. Sin
-esa dependencia, `Form` no está disponible en el entorno de test.
+The `Form` object (UI mock for building records as a form) requires the
+addon to declare the `web` module in `depends` of the `__manifest__.py`.
+Without that dependency, `Form` is not available in the test environment.
 
 ```
-Form[self.model_name]->web   # el iterador autoenvía en la versión 17+
+Form[self.model_name]->web   # the iterator auto-sends in version 17+
 ```
 
-En Odoo 17+ `Form` es un iterable que agrega el registro al autoenvío; la
-construcción se valida al `env["..."]` con `web` presente.
+In Odoo 17+ `Form` is an iterable that adds the record to the auto-send; the
+construction is validated against `env["..."]` with `web` present.
 
-## Fechas: `freeze_time` (no reloj real)
+## Dates: `freeze_time` (no real clock)
 
-Para aserciones sobre fechas, congelá el reloj con `freeze_time` de
-`odoo.tests` (envuelve el cuerpo del test con una fecha fija) en vez de
-depender del reloj real del runner. Esto hace el test determinista.
+For assertions over dates, freeze the clock with `freeze_time` from
+`odoo.tests` (wraps the test body with a fixed date) instead of depending on
+the runner's real clock. This makes the test deterministic.
 
 ```python
 from odoo.tests import freeze_time
 
-def test_pago_fecha(self):
+def test_payment_date(self):
     with freeze_time("2026-01-15"):
-        record.action_registrar()
-        self.assertEqual(record.fecha, "2026-01-15")
+        record.action_register()
+        self.assertEqual(record.date, "2026-01-15")
 ```
 
-## Fixtures self-contained — PROHIBIDO depender de demo data
+## Self-contained fixtures — DEPENDENCE ON DEMO DATA FORBIDDEN
 
-Los fixtures de un test deben ser **self-contained**: creá los datos que el
-test necesita dentro del propio test (registros de partners, productos, etc.)
-**sin depender de la demo data** del addon o de datos preexistentes. Regla OCA:
-un test no debe asumir que la demo data está cargada ni que un registro
-"siempre existe". Si el módulo necesita crear un partner, lo creás vos en el
-setUp con `env["res.partner"].create(...)`.
+A test's fixtures must be **self-contained**: create the data the test needs
+inside the test itself (partner records, products, etc.) **without depending
+on the addon's demo data** or on pre-existing data. OCA rule: a test must
+not assume that demo data is loaded or that a record "always exists". If the
+module needs to create a partner, you create it in the setUp with
+`env["res.partner"].create(...)`.
 
-**Caso crítico — facturación/contabilidad:** en Odoo 19 el CLI crea las DB de
-test SIN demo data (`config.py:233`). Todo test que facturee o toque
-contabilidad configura sus propios diarios/cuentas (chart template genérico)
-en el fixture. Sin esto: pasa en DB caliente (diarios de historias previas) y
-falla en la DB fresca del gate con `UserError: No journal could be found`,
-un fallo que aparece lejos de la causa.
+**Critical case — invoicing/accounting:** in Odoo 19 the CLI creates test
+DBs WITHOUT demo data (`config.py:233`). Every test that invoices or touches
+accounting configures its own journals/accounts (generic chart template) in
+its fixture. Without this: it passes on the warm DB (journals from previous
+stories) and fails on the gate's fresh DB with `UserError: No journal could
+be found`, a failure that appears far from the cause.
 
-## Ubicación: tests/ del addon con __init__.py
+## Location: addon's tests/ with __init__.py
 
-- Los tests viven en `**/tests/` del addon, cada archivo con su
-  `__init__.py`.
-- El `__init__.py` de `tests/` importa los módulos de test.
-- El `__init__.py` del addon importa `tests` (o declara el paquete).
-- Un archivo de test por área/caso; nombres `test_<descripcion>.py`.
+- Tests live in the addon's `**/tests/`, each file with its `__init__.py`.
+- The `tests/__init__.py` imports the test modules.
+- The addon's `__init__.py` imports `tests` (or declares the package).
+- One test file per area/case; names `test_<description>.py`.
 
-## Runner: `make test-one` para RED, `make test` para AUDIT
+## Runner: `make test-one` for RED, `make test` for AUDIT
 
-- **RED** (test nuevo que debe fallar): corré SOLO ese test con
-  `make test-one TEST=mod:Clase.metodo` y verificá que falle por la razón
-  correcta. Dos formas válidas de RED en Odoo (verificado 2026-08-28):
-  * Postcondición sobre comportamiento existente (método presente, lógica
-    incompleta/cambiada) → falla con **AssertionError**.
-  * Feature nueva (el método NO existe aún) → falla con **AttributeError**
-    (`'x.y' object has no attribute '...'`). También es RED válido: el
-    método genuinamente no está implementado.
-  * Inválido como RED: **ImportError** o error de carga del módulo (indica
-    que el test o el `tests/__init__.py` está roto, no la feature).
-- **AUDIT / suite completa**: `make test` corre toda la suite sobre la DB
-  caliente.
-- **Gate de instalación**: `make test-clean` (o `test-all` en multi-módulo)
-  instala desde cero en DB fresca — única corrida completa del gate.
-- Evidencia = output pegado con la línea `0 failed, 0 error(s) of N tests`.
+- **RED** (new test that must fail): run ONLY that test with
+  `make test-one TEST=mod:Class.method` and verify it fails for the right
+  reason. Two valid forms of RED in Odoo (verified 2026-08-28):
+  * Postcondition over existing behavior (method present, logic
+    incomplete/changed) → fails with **AssertionError**.
+  * New feature (the method does NOT exist yet) → fails with
+    **AttributeError** (`'x.y' object has no attribute '...'`). This is also
+    valid RED: the method genuinely is not implemented.
+  * Invalid as RED: **ImportError** or module load error (indicates the
+    test or `tests/__init__.py` is broken, not the feature).
+- **AUDIT / full suite**: `make test` runs the whole suite on the warm DB.
+- **Install gate**: `make test-clean` (or `test-all` in multi-module)
+  installs from scratch on a fresh DB — the gate's only full run.
+- Evidence = pasted output with the `0 failed, 0 error(s) of N tests` line.
 
-**Presupuesto de corridas:** RED e iteración SOLO con `test-one` sobre DB
-caliente (suite completa = gate, no depuración). Ciclo anti-loop: leer fallo
-completo → hipótesis escrita → UN cambio → UNA corrida; max 2 sin
-convergencia → STOP y reportar. Protocolo completo:
+**Run budget:** RED and iteration ONLY with `test-one` on the warm DB (full
+suite = gate, not debugging). Anti-loop cycle: read the full failure →
+written hypothesis → ONE change → ONE run; max 2 without convergence → STOP
+and report. Full protocol:
 `odoo-make-env/references/run-budget-protocol.md`.
 
-## Property tests: N como calibración, no contrato
+## Property tests: N as calibration, not contract
 
-El spec define QUÉ invariante (postcondición); el N de escenarios aleatorios
-es presupuesto de runtime, no semántica. Default del ciclo de feature: chico
-(8-10), con **seed fija** y N explícito como constante del archivo. Reducir N
-se documenta en el commit como calibración (nunca como debilitamiento del
-test); subir N pertenece al hardening, sin tocar postcondiciones.
+The spec defines WHAT invariant (postcondition); the N of random scenarios
+is a runtime budget, not semantics. Feature-cycle default: small (8-10),
+with a **fixed seed** and explicit N as a file constant. Reducing N is
+documented in the commit as calibration (never as weakening the test);
+raising N belongs to hardening, without touching postconditions.
 
-## Permisos: `new_test_user`
+## Permissions: `new_test_user`
 
-Para tests que ejercitan **permisos/seguridad**, creá el usuario de test con
-`env["res.users"].new_test_user(...)` (helper Odoo 17+) con los grupos que el
-escenario requiere, en vez de usuarios reales o disparos manuales de
-`_check_access`. Verificá que el usuario sin el grupo falle (AccessError) y el
-que lo tiene pase.
+For tests that exercise **permissions/security**, create the test user with
+`env["res.users"].new_test_user(...)` (Odoo 17+ helper) with the groups the
+scenario requires, instead of real users or manual `_check_access` calls.
+Verify that the user without the group fails (AccessError) and the one with
+it passes.
 
 ```python
-user = self.env["res.users"].new_test_user(login="operario", groups="base.group_user")
+user = self.env["res.users"].new_test_user(login="operator", groups="base.group_user")
 ```
 
 ## Cross-module: `post_install`
 
-Cuando el test valida un flujo **cross-module** (involucra otros addons más
-allá del bajo test), marcá el test con `@tagged("post_install",
-"-at_install")` para que corra después de instalar todos los addons de la DB.
+When the test validates a **cross-module** flow (involves other addons
+beyond the one under test), mark the test with `@tagged("post_install",
+"-at_install")` so it runs after all the DB's addons are installed.
 
-## Anti-patrones a evitar
+## Anti-patterns to avoid
 
-- Test que depende de demo data o de registros asumidos (rompe en `test-clean`).
-- Test sin `@tagged` (nunca corre en la suite).
-- Usar `Form` en un addon que no declara `web` (ImportError en runtime).
-- Fechas dependientes del reloj real del runner.
-- `pass` o asserts que no verifican nada (test que no es oráculo).
+- Test that depends on demo data or assumed records (breaks in `test-clean`).
+- Test without `@tagged` (never runs in the suite).
+- Using `Form` in an addon that does not declare `web` (ImportError at runtime).
+- Dates dependent on the runner's real clock.
+- `pass` or asserts that verify nothing (a test that is not an oracle).

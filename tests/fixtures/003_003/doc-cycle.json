@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P8 (generalidad — ciclo sin código) / P7",
+  "description": "Generalidad (P8/D9): ciclo SIN CÓDIGO (documental) — solo ediciones de documentación con progreso observable que avanza. El guard no debe asumir un proyecto de software: trabajo legítimo y progresivo -> sin incidentes, sin escalada, SIN INTERVENCIÓN (P7), y classify read-only (invariante 1).",
+  "session_id": "sess-sim-doc-cycle",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "edit", "args": ["docs/guide.md"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "edit", "args": ["docs/guide.md"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "edit", "args": ["docs/README.md"], "result_class": "ok", "progress_token": "p2", "at": "2026-10-06T00:10:00Z"},
+    {"i": 4, "kind": "tool_call", "tool": "edit", "args": ["docs/guide.md"], "result_class": "ok", "progress_token": "p3", "at": "2026-10-06T00:15:00Z"}
+  ]
+}

@@ -29,7 +29,7 @@ Odoo base/enterprise already solves it.
    installable from scratch. **How tests are run is defined by the project's
    environment, not by this skill** — if it exposes the `odoo-make-env` contract,
    use `make test` / `make test-one` / `make test-clean`, never raw `odoo-bin` in
-   a gate (see `references/evidencia-y-calidad.md`).
+   a gate (see `references/evidence-and-quality.md`).
 
 ## Module Structure (canonical)
 
@@ -153,9 +153,9 @@ Load these as needed for detailed guidance:
 - **`references/security.md`** — ACLs, groups, record rules, compute_sudo, security patterns
 - **`references/standards.md`** — pylint-odoo rules, OCA patterns, coding conventions, validation workflow
 - **`references/module-structure.md`** — Complete module anatomy, manifest fields, data loading, tests
-- **`references/oca-contributing.md`** — Qué exige OCA para publicar: commits, nombres, manifest, README, tests, dependencias, proceso de revisión y política del repositorio
-- **`references/oca-migration.md`** — Migrar un módulo entre versiones: procedimiento git que preserva la historia, convención `[MIG]`, qué actualizar y qué no tocar
-- **`references/evidencia-y-calidad.md`** — Evidencia requerida antes de dar algo por listo, tabla anti-racionalización, y setup de `pre-commit`
+- **`references/oca-contributing.md`** — What OCA requires to publish: commits, names, manifest, README, tests, dependencies, review process and repository policy
+- **`references/oca-migration.md`** — Migrate a module between versions: git procedure that preserves history, `[MIG]` convention, what to update and what not to touch
+- **`references/evidence-and-quality.md`** — Required evidence before considering something done, anti-rationalization table, and `pre-commit` setup
 
 ## Limitations
 

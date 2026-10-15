@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kinds": {
+    "architect-spec-draft": "docs/specs/<feature>/",
+    "architect-plan-draft": "docs/specs/<feature>/",
+    "role-report": "docs/specs/<feature>/",
+    "test-audit": "docs/specs/<feature>/",
+    "review": "docs/specs/<feature>/",
+    "plan-review": "docs/specs/<feature>/",
+    "test-writer-role-report": "docs/specs/<feature>/",
+    "implementer-role-report": "docs/specs/<feature>/",
+    "scribe-projectbrief": "docs/projectbrief.md",
+    "scribe-systemPatterns": "docs/systemPatterns.md",
+    "scribe-activeContext": "docs/activeContext.md",
+    "scribe-progress": "docs/progress.md"
+  }
+}

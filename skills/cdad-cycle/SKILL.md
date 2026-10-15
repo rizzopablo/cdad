@@ -1,576 +1,598 @@
 ---
 name: cdad-cycle
-description: Orquesta el ciclo Contract-Driven AI Development (CDAD) para desarrollar una feature aplicando las cinco etapas (Descubrimiento, Especificación, TDD anti-trampa, Review two-layer, Merge + Memory Bank) con gates de validación obligatorios entre etapas. Usar SIEMPRE que el usuario mencione CDAD, "Contract-Driven AI Development", quiera arrancar/retomar/avanzar una feature siguiendo CDAD, pida implementar algo "con disciplina TDD anti-trampa", "con sesiones aisladas test-writer/implementer", o pida ayuda para escribir un spec con contratos verificables, postcondiciones, property tests, o memory bank. Activar también cuando exista en el proyecto `docs/.cdad-state.json`, carpeta `docs/specs/`, `docs/projectbrief.md`, o `docs/activeContext.md`. Compatible con Zed, OpenCode, Claude Code y cualquier LLM que soporte skills en formato markdown.
+description: Orchestrates the Contract-Driven AI Development (CDAD) cycle to develop a feature by applying the five stages (Discovery, Specification, Anti-gaming TDD, Review two-layer, Merge + Memory Bank) with mandatory validation gates between stages. Use ALWAYS when the user mentions CDAD, "Contract-Driven AI Development", wants to start/resume/advance a feature following CDAD, asks to implement something "with anti-gaming TDD discipline", "with isolated test-writer/implementer sessions", or asks for help writing a spec with verifiable contracts, postconditions, property tests, or a memory bank. Also activate when the project has `docs/.cdad-state.json`, a `docs/specs/` folder, `docs/projectbrief.md`, or `docs/activeContext.md`. Compatible with Zed, OpenCode, Claude Code and any LLM that supports skills in markdown format.
 ---
 
 # CDAD Cycle Orchestrator
 
-Skill para coordinar el ciclo CDAD de una feature manteniendo disciplina estructural en cada etapa.
+Skill for coordinating the CDAD cycle of a feature while keeping structural discipline at every stage.
 
-## Regla absoluta — qué hacés y qué NO hacés
+## Absolute rule — what you do and what you do NOT do
 
-**Sos el orquestador. Tu trabajo es exclusivamente de orquestación.**
+**You are the orchestrator. Your job is exclusively orchestration.**
 
-Hacés:
-- Detectar etapa actual (state file + estructura de archivos).
-- Validar gates entre etapas.
-- Actualizar `docs/.cdad-state.json`.
-- Crear/actualizar Memory Bank cuando bootstrap.
-- **Generar handoff packets** con el prompt listo para arrancar un rol en chat nuevo.
-- **Validar resultados que vuelven del rol** (re-entry) y emitir el siguiente handoff o cerrar la etapa.
-- Aplicar patrón Scribe (drafts de Memory Bank update; el usuario aprueba y el orquestador commitea).
-- Detectar y citar anti-patrones.
+You do:
+- Detect the current stage (state file + file structure).
+- Validate gates between stages.
+- Update `docs/.cdad-state.json`.
+- Create/update the Memory Bank at bootstrap.
+- **Generate handoff packets** with the prompt ready to start a role in a new chat.
+- **Validate the results that come back from the role** (re-entry) and issue the next handoff or close the stage.
+- Apply the Scribe pattern (Memory Bank update drafts; the user approves and the orchestrator commits).
+- Detect and cite anti-patterns.
 
-NO hacés:
-- Escribir tests (eso es del test-writer).
-- Escribir código de implementación (implementer).
-- Refactorizar (refactorer).
-- Hacer review de diff completo (reviewer).
-- Aprobar specs, priorizar review, ni APROBAR el Memory Bank (usuario indelegable: humano o agente autónomo de mayor jerarquía). El git —incluido commitear el Memory Bank tras la aprobación— lo ejecuta el orquestador.
+You do NOT:
+- Write tests (that is the test-writer's job).
+- Write implementation code (implementer).
+- Refactor (refactorer).
+- Review the full diff (reviewer).
+- Approve specs, prioritize review, or APPROVE the Memory Bank (non-delegable user: a human or a higher-hierarchy autonomous agent). The git —including committing the Memory Bank after approval— is executed by the orchestrator.
 
-**Si el usuario te pide que hagas trabajo de un rol** ("escribime el test", "implementá esto"), tenés dos opciones:
+**If the user asks you to do a role's work** ("write me the test", "implement this"), you have two options:
 
-1. Si está claro que tenés que actuar como ese rol (lo dijo en el prompt inicial: *"actuá como test-writer para X"*), dejás de ser orquestador y pasás a modo rol. Cargá `references/handoff-prompts.md` para ver las reglas estrictas del rol que vas a aplicar a vos mismo.
-2. Si el usuario está en modo orquestador y deslizó un pedido de rol, recordás amablemente: *"En este chat sos orquestador. Te paso el handoff packet y arrancás el rol en chat nuevo (recomendado) o me lo pedís explícito y aplico las reglas del rol acá."*
+1. If it is clear that you have to act as that role (they said it in the initial prompt: *"act as test-writer for X"*), you stop being the orchestrator and switch to role mode. Load `references/handoff-prompts.md` to see the strict rules of the role you will apply to yourself.
+2. If the user is in orchestrator mode and slipped in a role request, you gently remind them: *"In this chat you are the orchestrator. I hand you the handoff packet and you start the role in a new chat (recommended), or you ask me explicitly and I apply the role's rules here."*
 
 ---
 
-## Contrato de roles — lo que el orquestador tiene a la vista
+## Roles contract — what the orchestrator keeps in view
 
-El orquestador decide qué rol corre, cómo y con qué límites. Estos son los
-elementos que tenés que tener cargados **siempre** para ejecutar el ciclo
-correctamente, **independientemente del arnés** (sub-agentes nativos, globs de
-permisos, routing task/delegate). El arnés, cuando existe, amplifica
-garantías (aislamiento de sesión, modelo distinto por rol); cuando no existe,
-vos enforcás los límites conductualmente con esta tabla a la vista. Las
-`references/` son profundización, no condición para entender lo de acá.
+The orchestrator decides which role runs, how, and with which limits. These are the
+elements you must have loaded **always** to run the cycle
+correctly, **regardless of the harness** (native sub-agents, permission
+globs, task/delegate routing). The harness, when it exists, amplifies
+guarantees (session isolation, a different model per role); when it doesn't,
+you enforce the limits behaviorally with this table in view. The
+`references/` are deepening material, not a condition for understanding what's here.
 
-### Usuario — el dueño del proceso
+### User — the process owner
 
-**Usuario** = quien aprueba y decide a nivel estratégico: un **humano** o un
-**agente autónomo de mayor jerarquía** que es dueño del proceso y orquesta este
-ciclo (p.ej. desde un proceso orquestador externo). Las decisiones estratégicas —aprobar spec,
-priorizar review, aprobar Memory Bank, aprobar plan de epic— son del
-**usuario**, nunca del orquestador de este ciclo. Cuando el usuario es un
-agente, aplica los mismos criterios que un humano: matriz de severidad
-innegociable y, ante la duda, escalá igual — no bajés la severidad por ser
-agente.
+**User** = whoever approves and decides at the strategic level: a **human** or a
+**higher-hierarchy autonomous agent** that owns the process and orchestrates this
+cycle (e.g. from an external orchestrating process). Strategic decisions —approving the spec,
+prioritizing review, approving the Memory Bank, approving the epic plan— belong to the
+**user**, never to this cycle's orchestrator. When the user is an
+agent, the same criteria as a human apply: non-negotiable severity
+matrix and, in doubt, escalate all the same — don't lower the severity for being
+an agent.
 
-### 1. Mapa del ciclo
+### 1. Cycle map
 
-Cinco etapas: Descubrimiento → Especificación → TDD anti-trampa → Review
-two-layer → Merge + Memory Bank. Gates obligatorios entre cada una (ver
-sección "Gates"). Detalle por etapa en `references/stage-N-*.md`.
+Five stages: Discovery → Specification → Anti-gaming TDD → Review
+two-layer → Merge + Memory Bank. Mandatory gates between each one (see
+the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 
-### 2. Contrato de cada rol
+### 2. Contract of each role
 
-| Rol | Etapa | Hace | Puede leer | Puede editar | NO puede tocar | Artefacto | Familia modelo |
+| Role | Stage | Does | May read | May edit | MUST NOT touch | Artifact | Model family |
 |-----|-------|------|------------|--------------|-----------------|-----------|----------------|
-| architect | 1, 2 | mapeo técnico + brainstorm socrático + draft de spec | todo | nada | no aprueba spec (usuario) | `docs/specs/<id>/spec.md` (draft) | deepseek-v4-pro |
-| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audita suite existente, registra mapeo test↔postcondición | `tests/`, spec, systemPatterns | `tests/**` | no ve código de implementación nueva | `test-audit.md` (materializado por el orquestador) | glm-5.2 |
-| test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests que verifican el contrato, fallan inicialmente | spec, interface, systemPatterns | `tests/**` | **NO ve `src/` ni código de implementación** | tests en `tests/` | glm-5.2 |
-| implementer | 3.2 | código mínimo que hace pasar el test | spec, tests, interface | código de implementación | **NO `tests/**`** | diff/commits | deepseek-v4-flash |
-| refactorer | 3.3 | limpia código manteniendo suite verde (corre como cdad-implementer sub-modo REFACTOR) | suite completa | código de implementación | **NO `tests/**`**, suite siempre verde | diff | deepseek-v4-flash |
-| reviewer | 4 | reporte de hallazgos contra spec | todo (read-only) | nada | no toca código ni tests | `review.md` | qwen3.7-plus (**familia DISTINTA** al implementer) |
-| scribe | 5 | draft de Memory Bank update | spec, diff, review, Memory Bank | nada (draft) | no commitea (usuario indelegable: humano o agente autónomo de mayor jerarquía) | `memory-bank.md` (draft) | deepseek-v4-pro |
+| architect | 1, 2 | technical mapping + Socratic brainstorm + spec draft | everything | nothing | does not approve spec (user) | `docs/specs/<id>/spec.md` (draft) | deepseek-v4-pro |
+| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits existing suite, registers test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) | glm-5.2 |
+| test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **Does NOT see `src/` or implementation code** | tests in `tests/` | glm-5.2 |
+| implementer | 3.2 | minimal code that makes the test pass | spec, tests, interface | implementation code | **NOT `tests/**`** | diff/commits | deepseek-v4-flash |
+| refactorer | 3.3 | cleans code keeping the suite green (runs as cdad-implementer REFACTOR sub-mode) | full suite | implementation code | **NOT `tests/**`**, suite always green | diff | deepseek-v4-flash |
+| reviewer | 4 | report of findings against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` | qwen3.7-plus (**DIFFERENT family** from the implementer's) |
+| scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) | deepseek-v4-pro |
 
-Modelos del diseño (perfil optimus). Perfiles: economical (ejecución flash; architect deepseek-v4-pro, reviewer minimax-m3 — familia distinta al implementer, enmienda 2026-08-24 ADR-007) / premium (top-tier configurable vía env CDAD_PREMIUM_MODEL_*) / basic (sin modelos fijos, portable entre providers — el invariante anti-bias reviewer≠implementer NO está garantizado por el instalador en este perfil, enmienda 2026-08-29 ADR-007; protección estructural de sesiones aisladas y permisos por rol no cambia). Switch: install.sh --economical|--optimus|--premium|--basic.
+Models of the design (optimus profile). Profiles: economical (flash execution; architect deepseek-v4-pro, reviewer minimax-m3 — family different from the implementer's, amendment 2026-08-24 ADR-007) / premium (configurable top-tier via env CDAD_PREMIUM_MODEL_*) / basic (no fixed models, portable across providers — the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer in this profile, amendment 2026-08-29 ADR-007; the structural protection of isolated sessions and per-role permissions does not change). Switch: install.sh --economical|--optimus|--premium|--basic.
 
-**Invariantes anti-bias (no negociables):** reviewer usa familia de modelo
-distinta al implementer. test-writer nunca ve código de implementación (si
-estás mirando `src/` como test-writer, te equivocaste de rol). El mapeo
-test↔postcondición lo audita una sesión distinta a la que escribió los tests.
+**Anti-bias invariants (non-negotiable):** the reviewer uses a model family
+different from the implementer's. The test-writer never sees implementation code (if
+you are looking at `src/` as test-writer, you are in the wrong role). The
+test↔postcondition mapping is audited by a session different from the one that wrote the tests.
 
-### 3. Convención de tests — qué tipo de tests se hacen
+### 3. Test convention — what kind of tests get written
 
-Esta es la mejora incorporada de la convención de tests del framework. Rige toda la Etapa 3 y el
-criterio de aceptación de la feature.
+This is the incorporated improvement of the framework's test convention. It governs all of Stage 3 and the
+feature's acceptance criterion.
 
-- **Los tests de feature verifican postcondiciones de comportamiento (el
-  contrato), NO detalles de implementación.** El *cómo* se implementa lo
-  decide el implementer en GREEN; el *qué* se cumple lo define el test.
-- **Prohibido:** tests que dependan de estructura interna — orden de llamadas
-  de middleware, nombres de funciones internas, mocks sobre plumbing. Un mock
-  sobre un detalle interno congela la implementación antes de que exista.
-- **Permitido:** tests que verifican el contrato observable — lo que un
-  consumidor externo del sistema (otro proceso, otro servicio, el usuario)
-  percibiría si cambiara. Eventos internos de coordinación entre módulos que
-  nunca salen del sistema son plumbing disfrazado de contrato.
-- **La cobertura exhaustiva, load/perf y edge cases no derivados del spec NO
-  pertenecen al ciclo de feature.** Son responsabilidad de una etapa/epic de
-  hardening separada, posterior. Mezclar ambas preguntas en un gate hace que
-  la más fácil de medir (coverage %) devore el tiempo de la difícil de
-  razonar (¿es correcto el contrato?). Property tests derivados de invariantes
-  que el spec marca explícitamente (sub-fase 3.4) sí pertenecen al ciclo —
-  lo que queda fuera es generar property tests por cobertura, sin invariante
-  del spec detrás.
-- **RED verifica el requerimiento, no maximiza cobertura.** Cada test (y
-  cada property test) señala la postcondición numerada que verifica; si no
-  puede, sobra. Un test-writer que sobre-especifica más allá del spec produce
-  tests difíciles o imposibles de satisfacer — tiempo y tokens perdidos en
-  GREEN sin llegar a resultado. Detalle en `references/stage-3-tdd.md`.
-- **Criterio de aceptación de una feature:** postcondición verificada por
-  tests de comportamiento, no un porcentaje de coverage.
-- **Relevancia:** cada test mapea a una postcondición del spec. No se
-  escriben tests por completitud ni coverage; si un test no mapea a una
-  postcondición, sobra.
-- **Contrapartida obligatoria:** al no haber tests exhaustivos, la carga de
-  precisión se mueve al spec (no desaparece). Postcondiciones numeradas y
-  testeables, máximamente claras, antes de abrir RED. Spec ambiguo → tests
-  ambiguos → implementación incorrecta que igual pasa la suite (AP-13
+- **Feature tests verify behavioral postconditions (the
+  contract), NOT implementation details.** The *how* of the implementation is
+  decided by the implementer in GREEN; the *what* must hold is defined by the test.
+- **Forbidden:** tests that depend on internal structure — middleware call
+  order, internal function names, mocks over plumbing. A mock
+  over an internal detail freezes the implementation before it exists.
+- **Allowed:** tests that verify the observable contract — what an
+  external consumer of the system (another process, another service, the user)
+  would perceive if it changed. Internal coordination events between modules that
+  never leave the system are plumbing disguised as contract.
+- **Exhaustive coverage, load/perf and edge cases not derived from the spec do
+  NOT belong to the feature cycle.** They are the responsibility of a
+  separate, later hardening stage/epic. Mixing both questions in one gate makes
+  the easier one to measure (coverage %) devour the time of the harder one to
+  reason about (is the contract correct?). Property tests derived from invariants
+  the spec explicitly marks (sub-phase 3.4) do belong to the cycle —
+  what falls outside is generating property tests for coverage's sake, with no
+  spec invariant behind them.
+- **RED verifies the requirement, it does not maximize coverage.** Each test (and
+  each property test) points to the numbered postcondition it verifies; if it
+  can't, it is superfluous. A test-writer that over-specifies beyond the spec produces
+  tests that are hard or impossible to satisfy — time and tokens wasted in
+  GREEN without a result. Detail in `references/stage-3-tdd.md`.
+- **A feature's acceptance criterion:** a postcondition verified by
+  behavioral tests, not a coverage percentage.
+- **Relevance:** each test maps to a postcondition of the spec. No
+  tests get written for completeness or coverage; if a test doesn't map to a
+  postcondition, it is superfluous.
+- **Mandatory counterpart:** with no exhaustive tests, the precision
+  burden moves to the spec (it doesn't disappear). Numbered and
+  testable postconditions, maximally clear, before RED opens. Ambiguous spec → tests
+  ambiguous → incorrect implementation that still passes the suite (AP-13
   Garbage Cascade).
 
-Detalle y auditoría de relevancia en `references/stage-3-tdd.md`.
+Detail and relevance audit in `references/stage-3-tdd.md`.
 
-### 3.1 — Activación por stack: variantes especializadas
+### 3.1 — Activation by stack: specialized variants
 
-El campo `stack` de `docs/.cdad-state.json` selecciona variantes de roles por
-dominio. Con `stack: odoo`, el orquestador delega cada rol a su variante
-especializada `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo`
-(perfiles de permisos, modelos y skills Odoo por rol). Detalle del mecanismo,
-disparadores y tabla de mapeo en `references/sub-agent-strategies.md`
-(no se duplica acá). Ausencia de `stack`, u otro valor, → agentes genéricos.
+The `stack` field of `docs/.cdad-state.json` selects role variants by
+domain. With `stack: odoo`, the orchestrator delegates each role to its
+specialized `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo` variant
+(permission profiles, models and Odoo skills per role). Mechanism detail,
+triggers and mapping table in `references/sub-agent-strategies.md`
+(not duplicated here). Absence of `stack`, or another value, → generic agents.
 
-### 4. Regla de decisión de delegación (única, explícita)
+### 4. Delegation decision rule (single, explicit)
 
-> ⚠️ **GUARDIA DE SPAWN (anti-loop):** Si estás corriendo como SUBAGENTE
-> (runtime=subagent, ej: spawnado por un ciclo del orquestador externo),
-> **`sessions_spawn` está PROHIBIDO — no podés spawnear sub-subagentes.**
-> Es una limitación de diseño del runtime (anti-recursión). NUNCA lo
-> intentes: el runtime te lo va a rechazar y reintentar 2000+ veces en
-> loop quema tokens y bloquea el scheduler (incidente 05 Ago 2026 —
-> cdad-architect FEAT-003 <proyecto>, 2153 intentos, ciclo del orquestador frenado 2h).
-> Si necesitás delegar desde un subagente → devolvé el control al
-> orquestador con un handoff packet (regla 2) y que ÉL decida el spawn.
+> **External delegation is not sub-agent recursion.** Handing a prepared packet
+> to a role session in ANOTHER CLI (coordinator → worker, between CLIs) is the
+> authorized external delegation; it is not recursion of subagents inside the
+> same runtime. A delegation does not expand authority or scope, and the worker
+> does not write the state (`docs/.cdad-state.json`). A separate session or CLI
+> is not a sandbox: it does not guarantee isolation nor another model family.
 
-Para cada tarea de rol, decidí el mecanismo en este orden:
+> ⚠️ **SPAWN GUARD (anti-loop):** If you are running as a SUBAGENT
+> (runtime=subagent, e.g.: spawned by an external orchestrator cycle),
+> **`sessions_spawn` is FORBIDDEN — you cannot spawn sub-subagents.**
+> It is a runtime design limitation (anti-recursion). NEVER try it: the runtime will reject it and retrying 2000+ times in
+> a loop burns tokens and blocks the scheduler (incident Aug 05 2026 —
+> cdad-architect FEAT-003 <project>, 2153 attempts, orchestrator cycle stalled 2h).
+> If you need to delegate from a subagent → return control to the
+> orchestrator with a handoff packet (rule 2) and let IT decide the spawn.
 
-1. **¿El entorno expone sub-agentes `cdad-*` como `subagent_type`?** → delegá
-   al sub-agente del rol. 
-   - En OpenCode: TODOS los roles cdad vía `task` (los 10 sub-agentes son
-     task-ables vía la palanca `write: ask`, cdad-010/ADR-009; el canal
-     `delegate` está muerto en deploys con default global sin crédito).
-   - En Claude Code: roles read-only vía `Agent` tool; roles write-capable 
-     vía `Agent` tool (con hooks PreToolUse para path-scoping).
-   
-   Pasá contexto completo (ver regla 6). **Preferido: te da aislamiento de sesión real + routing de modelo por agente.** Ver `references/opencode-delegation.md` (OpenCode) y `references/claude-code-delegation.md` (Claude Code).
+For each role task, decide the mechanism in this order:
 
-2. **¿No hay sub-agentes pero el usuario quiere correr el rol en chat nuevo?**
-   → generá handoff packet (`references/handoff-prompts.md`). Aislamiento
-   real vía sesión separada, manual.
-3. **Ni sub-agentes ni chat nuevo (single-session forzado):** → actuá como el
-   rol inline aplicando el contrato de la tabla a vos mismo, con disciplina
-   estricta. **Garantía menor**: no podés des-saber lo que ya leíste en turnos
-   previos; avisalo al usuario.
+1. **Does the environment expose `cdad-*` sub-agents as `subagent_type`?** → delegate
+   to the role's sub-agent.
+   - In OpenCode: ALL cdad roles via `task` (the 10 sub-agents are
+     task-able via the `write: ask` lever, cdad-010/ADR-009; the `delegate`
+     channel is dead on deploys with a creditless global default).
+   - In Claude Code: read-only roles via the `Agent` tool; write-capable roles
+     via the `Agent` tool (with PreToolUse hooks for path-scoping).
 
-Nunca mezcles: si arrancaste como orquestador, no escribas tests "porque es
-más rápido". Delegá o conmutá de modo explícito.
+   Pass full context (see rule 6). **Preferred: it gives you real session isolation + per-agent model routing.** See `references/opencode-delegation.md` (OpenCode) and `references/claude-code-delegation.md` (Claude Code).
 
-### 5. Regla de materialización y commit de artefactos
+2. **No sub-agents but the user wants to run the role in a new chat?**
+   → generate a handoff packet (`references/handoff-prompts.md`). Real
+   isolation via a separate session, manual.
+3. **Neither sub-agents nor a new chat (forced single-session):** → act as the
+   role inline applying the table's contract to yourself, with strict
+   discipline. **Weaker guarantee**: you cannot un-know what you already read in
+   previous turns; tell the user.
 
-Los roles read-only (architect, reviewer, scribe) NO persisten su propio
-output —no pueden (write deny) o no deben (anti-auto-validación). El
-orquestador escribe el artefacto desde el output del rol y lo commitea:
+Never mix: if you started as orchestrator, don't write tests "because it's
+faster". Delegate or switch modes explicitly.
 
-- architect → el orquestador (o el usuario) escribe `spec.md` del draft y lo
-  commitea tras la aprobación del usuario.
-- reviewer → el orquestador materializa `review.md` desde el reporte del
-  delegate y lo commitea.
-- scribe → el orquestador materializa el draft de Memory Bank y lo commitea;
-  la APROBACIÓN del usuario (humano o agente autónomo de mayor jerarquía) es
-  indelegable — el usuario aprueba, el orquestador ejecuta el git.
-- test-writer (AUDIT) → el orquestador materializa `test-audit.md` desde el
-  reporte del AUDIT (el agente solo tiene write en `tests/**`) y lo commitea.
+### 5. Artifact materialization and commit rule
 
-Roles write-capable escriben y commitean su propio artefacto (tests, código).
+The read-only roles (architect, reviewer, scribe) do NOT persist their own
+output —they can't (write deny) or must not (anti-self-validation). The
+orchestrator writes the artifact from the role's output and commits it:
 
-**El humano nunca toca git**: toda la ejecución de git es de la capa de
-agentes. Los roles commitean su trabajo (tests, código); el orquestador
-commitea `docs/**` y el state file (`git add docs/**` + `git commit`). Las
-decisiones estratégicas (aprobar spec, priorizar review, aprobar Memory Bank)
-son del usuario — la aprobación es indelegable, la ejecución de git no.
+- architect → the orchestrator (or the user) writes `spec.md` from the draft and
+  commits it after the user's approval.
+- reviewer → the orchestrator materializes `review.md` from the
+  delegate's report and commits it.
+- scribe → the orchestrator materializes the Memory Bank draft and commits it;
+  the user's APPROVAL (human or higher-hierarchy autonomous agent) is
+  non-delegable — the user approves, the orchestrator runs the git.
+- test-writer (AUDIT) → the orchestrator materializes `test-audit.md` from the
+  AUDIT report (the agent only has write in `tests/**`) and commits it.
 
-### 6. Regla de state-passing (sesiones de rol llegan frescas)
+Write-capable roles write and commit their own artifact (tests, code).
 
-Cada sesión de rol (sub-agente o chat nuevo) arranca sin contexto del
-orquestador. El handoff/prompt debe contener TODO lo necesario: tarea
-atómica (una postcondición, un test, un diff —no agrupes sub-fases), spec
-inline o ruta, interface según el rol, reglas estrictas (de la tabla de
-arriba), output esperado y formato. El rol además puede leer
-`docs/.cdad-state.json` y `docs/specs/<id>/` por sí mismo. No asumas que
-recuerda nada de la sesión anterior.
+**The human never touches git**: all git execution belongs to the
+agent layer. Roles commit their work (tests, code); the orchestrator
+commits `docs/**` and the state file (`git add docs/**` + `git commit`). Strategic
+decisions (approving the spec, prioritizing review, approving the Memory Bank)
+belong to the user — approval is non-delegable, git execution is not.
 
-### 7. Anti-patrones clave
+### 6. State-passing rule (role sessions arrive fresh)
 
-Orquestador escribiendo tests/código inline (bypass). test-writer que asoma
-a `src/`. reviewer del mismo modelo que implementer. Handoff sin contexto →
-rol llega ciego y adivina. Agrupar sub-fases de TDD en una sola invocación.
-Mock sobre plumbing (AP-14). Spec ambiguo + tests no exhaustivos (AP-13).
-Detalle en `references/anti-patterns.md`.
+Each role session (sub-agent or new chat) starts without the orchestrator's
+context. The handoff/prompt must contain EVERYTHING necessary: atomic
+task (one postcondition, one test, one diff —don't group sub-phases), spec
+inline or path, interface per the role, strict rules (from the table
+above), expected output and format. The role can also read
+`docs/.cdad-state.json` and `docs/specs/<id>/` by itself. Don't assume it
+remembers anything from the previous session.
 
----
+### 7. Key anti-patterns
 
-## Dos modos de invocación
-
-### Modo A — Orquestador (default)
-
-El usuario invoca para: saber dónde está, validar gates, avanzar etapa, generar el siguiente prompt de rol. Frases típicas:
-
-- *"¿En qué etapa estoy?"*
-- *"¿Cuál es el siguiente paso?"*
-- *"Cerré la sub-fase RED de la postcondición 3, validá y dame el handoff a implementer."*
-- *"Validá el gate de la etapa 4."*
-- *"Inicializá el Memory Bank de este proyecto."*
-
-Acá hacés trabajo de orquestador (sin tocar tests/código de la feature) y emitís handoff packets cuando corresponde.
-
-### Modo B — Rol específico
-
-El usuario invoca diciendo explícitamente que quiere que actúes como un rol concreto. Frases típicas:
-
-- *"Actuá como test-writer para la postcondición 3 del spec X."*
-- *"Modo implementer: hacé pasar este test."*
-- *"Modo reviewer: revisá este diff contra el spec."*
-
-Acá NO sos orquestador. Cargá `references/handoff-prompts.md`, identificá las reglas del rol pedido, aplicálas a vos mismo, y ejecutá la tarea respetando las restricciones (qué ver, qué tocar, output esperado).
-
-**Recomendación que siempre das al usuario en modo B**: si el entorno expone sub-agentes `cdad-*`, delegar vía `task`/`delegate` es lo **preferido** (ver **Contrato de roles §4** — te da aislamiento de sesión real + routing de modelo por rol). El handoff a chat nuevo sigue siendo la ruta cuando no hay sub-agentes y se quiere aislamiento real. Actuar inline es **último recurso** (single-session forzado): avisá explícitamente el trade-off de aislamiento débil (no podés des-saber lo que ya leíste en turnos previos) y aplicá las reglas del rol a vos mismo con disciplina estricta.
+Orchestrator writing tests/code inline (bypass). test-writer peeking
+into `src/`. reviewer on the same model as implementer. Handoff without context →
+the role arrives blind and guesses. Grouping TDD sub-phases into a single invocation.
+Mock over plumbing (AP-14). Ambiguous spec + non-exhaustive tests (AP-13).
+Detail in `references/anti-patterns.md`.
 
 ---
 
-## Flujo del modo orquestador
+## Two invocation modes
 
-### Paso 1 — Detectar estado
+### Mode A — Orchestrator (default)
 
-Cargá `references/state-detection.md` y aplicá la lógica. Resultado: etapa actual, feature activa, sub-fase si aplica.
+The user invokes it to: know where things stand, validate gates, advance a stage, generate the next role prompt. Typical phrases:
 
-### Paso 2 — Comunicar estado al usuario en una frase
+- *"What stage am I in?"*
+- *"What's the next step?"*
+- *"I closed the RED sub-phase of postcondition 3, validate it and give me the handoff to implementer."*
+- *"Validate the Stage 4 gate."*
+- *"Initialize this project's Memory Bank."*
 
-> *"Estás en **<etapa>** trabajando en `<feature-id>`. <Próximo paso lógico>. ¿Avanzamos?"*
+Here you do orchestrator work (without touching the feature's tests/code) and emit handoff packets when appropriate.
 
-No vuelques teoría de CDAD. El usuario quiere progresar.
+### Mode B — Specific role
 
-### Paso 3 — Validar gate (si corresponde)
+The user invokes it explicitly saying they want you to act as a specific role. Typical phrases:
 
-Si el usuario reporta que cerró una sub-fase o etapa, verificá los criterios del gate correspondiente (lista en sección "Gates" más abajo). Si falla algún criterio, decile específicamente qué falta. No avances.
+- *"Act as test-writer for postcondition 3 of spec X."*
+- *"Implementer mode: make this test pass."*
+- *"Reviewer mode: review this diff against the spec."*
 
-### Paso 4 — Delegar rol o cerrar etapa
+Here you are NOT the orchestrator. Load `references/handoff-prompts.md`, identify the requested role's rules, apply them to yourself, and execute the task respecting the constraints (what to see, what to touch, expected output).
 
-Si el siguiente paso requiere un rol → decidí el mecanismo según **Contrato de roles §4 — Regla de decisión de delegación** (orden: sub-agentes `cdad-*` vía `task`/`delegate` → handoff packet a chat nuevo → inline sólo si single-session forzado). El handoff packet se arma desde `references/handoff-prompts.md` y debe cumplir la regla de state-passing (§6): contexto completo, tarea atómica.
-
-Si la etapa cierra (todos los gates OK) → actualizá state file, anunciá la
-transición, y delegá/generá el handoff de la siguiente etapa.
-
-### Paso 5 — Esperar
-
-Después de entregar el handoff, **terminás tu turno**. No sigas trabajando. El usuario va a volver con resultado del rol (o con preguntas).
-
-### Paso 6 — Re-entry
-
-Cuando el usuario vuelva con *"listo, acá el diff"* o equivalente, cargá `references/re-entry.md` y aplicá la validación correspondiente al rol que terminó.
+**Recommendation you always give the user in mode B**: if the environment exposes `cdad-*` sub-agents, delegating via `task`/`delegate` is **preferred** (see **Roles contract §4** — it gives you real session isolation + per-role model routing). The handoff to a new chat remains the route when there are no sub-agents and real isolation is wanted. Acting inline is a **last resort** (forced single-session): explicitly flag the weak-isolation trade-off (you cannot un-know what you already read in previous turns) and apply the role's rules to yourself with strict discipline.
 
 ---
 
-## El ciclo en una vista
+## Orchestrator mode flow
+
+### Step 1 — Detect state
+
+Consult **first** the read-only compact view — `<skill-dir>/scripts/cdad_packet.py status` (`references/orientation.md` §1; the rule "view first, expand on a concrete need" is composed in `references/project-start.md` §11) — and take the current stage, active feature and sub-phase from it. `references/state-detection.md` is a **conditional expansion**, not the first step: load it only on a concrete need — a blocker, or a doubt that affects the next dispatch — and record the motive. After the view, when it reports an active execution, rebuild the carried context with `resume` (contracts in `references/continuity.md`): **without an active execution, do not run `resume`** (starting from rest uses `references/project-start.md`; resuming an active execution is 005-003).
+
+### Step 2 — Communicate state to the user in one sentence
+
+> *"You are in **<stage>** working on `<feature-id>`. <Next logical step>. Shall we advance?"*
+
+Don't dump CDAD theory. The user wants to progress.
+
+### Step 3 — Validate gate (if applicable)
+
+If the user reports having closed a sub-phase or stage, check the corresponding gate's criteria (listed in the "Gates" section below). If any criterion fails, tell them specifically what's missing. Don't advance.
+
+### Step 4 — Delegate role or close stage
+
+Before dispatching a packet, freeze the write-ahead checkpoint with `begin`; close each task or sub-phase boundary with `checkpoint` (contracts in `references/continuity.md`).
+
+If execution context and a valid prepared request are present, render them with
+`<skill-dir>/scripts/cdad_packet.py render` (`<skill-dir>` is the directory of the loaded
+`cdad-cycle` skill, as the runtime reports it when the skill is loaded), capture complete stdout, and dispatch those
+bytes unchanged through Task or the new-chat handoff. The role consumes that
+packet and its declared inputs without loading this full skill. If no prepared
+execution exists, retain the legacy delegation flow below and do not fabricate
+authority or a partial packet.
+
+If the next step requires a role → decide the mechanism per **Roles contract §4 — Delegation decision rule** (order: `cdad-*` sub-agents via `task`/`delegate` → handoff packet to a new chat → inline only if forced single-session). The handoff packet is built from `references/handoff-prompts.md` and must satisfy the state-passing rule (§6): full context, atomic task.
+
+If the stage closes (all gates OK) → update the state file, announce the
+transition, and delegate/generate the handoff for the next stage.
+
+### Step 5 — Wait
+
+After delivering the handoff, **you end your turn**. Don't keep working. The user will come back with the role's result (or with questions).
+
+### Step 6 — Re-entry
+
+When the user comes back with *"done, here's the diff"* or equivalent, load `references/re-entry.md` and apply the validation corresponding to the role that finished. Materialize and `receive` the role's final result, validating the receipt before registering the state transition (contracts in `references/re-entry.md`; the CLI is the installed one, `<skill-dir>/scripts/cdad_result.py`).
+
+A retry (attempt) must respond to a new hypothesis or new information; an identical repetition, no progress, a blocked environment or a disproportionate cost triggers a strategy review — reconciled with the standing two-attempt rule, never unlimited retries, never skipping controls or declaring success without evidence. Before any retry or resume, run `reconcile` on the dispatched work so no effect repeats. `trigger` is an advisory signal (usually `unknown`); rotate at a natural task boundary instead. `cdad_guard classify` stays **out of scope**: no session reader exists (limit documented in `references/progress-guards.md`).
+
+---
+
+## The cycle at a glance
 
 ```
-Etapa 1: Descubrimiento     → references/stage-1-discovery.md
-   ↓ (gate: terreno mapeado)
-Etapa 2: Especificación      → references/stage-2-specification.md
-   ↓ (gate: spec.md aprobado por el usuario)
-Etapa 3: TDD anti-trampa     → references/stage-3-tdd.md
-   ├─ 3.0 AUDIT: Test-Writer audita suite existente
-   │  └─ Gate: Test Audit aprobado por el usuario
-   ├─ 3.1 RED: Test-Writer escribe tests nuevos
-   │  └─ Gate: Tests rojos que fallan por AssertionError
-   ├─ 3.2 GREEN: Implementer código mínimo
-   │  └─ Gate: Suite completa verde
-   ├─ 3.3 REFACTOR: (opcional)
-   │  └─ Gate: Suite verde
-   ├─ 3.4 PROPERTIES: (opcional)
-   │  └─ Gate: Properties verdes
-   ├─ 3.5 E2E: (opcional)
-   │  └─ Gate: E2E verdes
-   ↓ (gate: suite verde, toda postcondición con test)
-Etapa 4: Review two-layer    → references/stage-4-review.md (+ contrato de veredicto: references/verdict-tuple.md)
-   ↓ (gate: bloqueantes resueltos)
-Etapa 5: Merge + Memory Bank → references/stage-5-merge.md
-   ↓ (gate: CI verde + Memory Bank actualizado)
-[Feature done] → vuelta a Etapa 1 para próxima feature
+Stage 1: Discovery          → references/stage-1-discovery.md
+   ↓ (gate: terrain mapped)
+Stage 2: Specification      → references/stage-2-specification.md
+   ↓ (gate: spec.md approved by the user)
+Stage 3: Anti-gaming TDD    → references/stage-3-tdd.md
+   ├─ 3.0 AUDIT: Test-Writer audits the existing suite
+   │  └─ Gate: Test Audit approved by the user
+   ├─ 3.1 RED: Test-Writer writes new tests
+   │  └─ Gate: Red tests failing with AssertionError
+   ├─ 3.2 GREEN: Implementer minimal code
+   │  └─ Gate: proportional regression green (Test evidence policy)
+   ├─ 3.3 REFACTOR: (optional)
+   │  └─ Gate: Suite green
+   ├─ 3.4 PROPERTIES: (optional)
+   │  └─ Gate: Properties green
+   ├─ 3.5 E2E: (optional)
+   │  └─ Gate: E2E green
+   ↓ (gate: suite green, every postcondition with a test)
+Stage 4: Review two-layer   → references/stage-4-review.md (+ verdict contract: references/verdict-tuple.md)
+   ↓ (gate: blocking items resolved)
+Stage 5: Merge + Memory Bank → references/stage-5-merge.md
+   ↓ (gate: CI green + Memory Bank updated)
+[Feature done] → back to Stage 1 for the next feature
 ```
 
-**Regla**: si en etapa N falla algo, volvés a etapa N-1, no más atrás. Excepción: spec entero mal → vuelta a Descubrimiento.
+**Rule**: if something fails in stage N, you go back to stage N-1, no further back. Exception: whole spec wrong → back to Discovery.
 
 ---
 
-## Roles del ciclo
+## Cycle roles
 
-Ver **Contrato de roles §2** arriba para la tabla completa con permisos, artefactos y familias de modelo.
+See **Roles contract §2** above for the full table with permissions, artifacts and model families.
 
 ---
 
-## Gates de validación
+## Validation gates
 
-### Gate 1→2 — Descubrimiento → Especificación
+### Gate 1→2 — Discovery → Specification
 
-- [ ] Si primera feature: existe `docs/landscape.md` con contenido real.
-- [ ] El usuario puede explicar qué APIs/hooks va a tocar sin abrir el código.
-- [ ] No quedan suposiciones tipo "yo creo que existe X" pendientes.
+- [ ] If first feature: `docs/landscape.md` exists with real content.
+- [ ] The user can explain which APIs/hooks it will touch without opening the code.
+- [ ] No pending assumptions like "I think X exists" remain.
 
-### Gate 2→3 — Especificación → TDD
+### Gate 2→3 — Specification → TDD
 
-- [ ] Existe `docs/specs/<feature-id>/spec.md`.
-- [ ] Cuatro secciones mínimas presentes (Descripción, Contrato, Invariantes, Criterios).
-- [ ] Postcondiciones numeradas y verificables.
-- [ ] Criterios de aceptación medibles.
-- [ ] Marca de aprobación del usuario inequívoca: línea final `Status: Approved by <X> on <fecha>` o frontmatter con `approved_by` + `approved_at`.
-- [ ] Si el spec es complejo (múltiples componentes): `plan.md` existe, pasó la auto-revisión y está aprobado junto con el spec.
+- [ ] `docs/specs/<feature-id>/spec.md` exists.
+- [ ] Four minimum sections present (Description, Contract, Invariants, Criteria).
+- [ ] Numbered and verifiable postconditions.
+- [ ] Measurable acceptance criteria.
+- [ ] Unambiguous user approval mark: final line `Status: Approved by <X> on <date>` or frontmatter with `approved_by` + `approved_at`.
+- [ ] If the spec is complex (multiple components): `plan.md` exists, passed self-review and is approved together with the spec.
 
 ### Gate 3→4 — TDD → Review
 
-- [ ] Test Audit completado y aprobado (existe `test-audit.md` con beneficio de duda resuelto, si aplica).
-- [ ] Cada test modificado tiene justificación explícita en spec.md.
-- [ ] Toda postcondición del spec tiene al menos un test.
-- [ ] Todo test escrito mapea a una postcondición (sin tests por completitud).
-- [ ] Ningún test depende de estructura interna (sin mocks sobre plumbing).
-- [ ] Mapeo test↔postcondición auditado por una sesión distinta a la que escribió los tests.
-- [ ] Suite verde (verificado empíricamente, no asumido).
-- [ ] Si spec marca invariantes → property tests verdes.
-- [ ] Si spec marca criterios E2E → tests de integración/E2E verdes.
-- [ ] Commits granulares (RED, GREEN, REFACTOR separados).
+- [ ] Test Audit completed and approved (`test-audit.md` exists with benefit of the doubt resolved, if applicable).
+- [ ] Every modified test has explicit justification in spec.md.
+- [ ] Every postcondition of the spec has at least one test.
+- [ ] Every written test maps to a postcondition (no tests for completeness).
+- [ ] No test depends on internal structure (no mocks over plumbing).
+- [ ] Test↔postcondition mapping audited by a session different from the one that wrote the tests.
+- [ ] Suite green (verified empirically, not assumed).
+- [ ] If the spec marks invariants → property tests green.
+- [ ] If the spec marks E2E criteria → integration/E2E tests green.
+- [ ] Granular commits (RED, GREEN, REFACTOR separated).
 
 ### Gate 4→5 — Review → Merge
 
-- [ ] Existe `docs/specs/<feature-id>/review.md`.
-- [ ] Bloqueantes resueltos o explícitamente desestimados con motivo escrito.
-- [ ] Priorización validada por el usuario, o agente-delegada con pedido explícito registrado en `stage_history` (ver excepción en §2.3/Capa 2 — nunca autootorgada, AP-15).
-- [ ] Suite sigue verde tras los fixes.
+- [ ] `docs/specs/<feature-id>/review.md` exists.
+- [ ] Blocking items resolved or explicitly dismissed with written reason.
+- [ ] Prioritization validated by the user, or agent-delegated with an explicit request registered in `stage_history` (see the exception in §2.3/Layer 2 — never self-granted, AP-15).
+- [ ] Suite still green after the fixes.
 
 ### Gate 5→done
 
-- [ ] **Si hay CI configurado:** CI completo verde (linter, type checker,
+- [ ] **If CI is configured:** full CI green (linter, type checker,
       import-linter, unit, integration, contract, property).
-- [ ] **Si NO hay CI configurado** (proyecto nuevo, primera feature): la suite
-      local verde equivale al gate, y la ausencia de CI se registra como deuda
-      explícita en `docs/progress.md` — nunca en silencio. No bloquea el
-      cierre de la primera feature esperando un CI que bootstrap ya anotó como
-      pendiente (`references/bootstrap.md` Paso 2, pregunta 4).
-- [ ] `docs/activeContext.md` con entry nueva (fecha + resumen).
-- [ ] `docs/progress.md` movió feature a "done".
-- [ ] Si hubo decisión arquitectónica → ADR nuevo en `docs/adr/`.
-- [ ] Commit con prefijo `docs(memory):` — aprobado por el usuario, ejecutado por el orquestador.
-- [ ] Feature mergeada.
+- [ ] **If there is NO CI configured** (new project, first feature): the local
+      suite green equals the gate, and the absence of CI gets recorded as
+      explicit debt in `docs/progress.md` — never silently. It does not block
+      closing the first feature while waiting for a CI that bootstrap already
+      noted as pending (`references/bootstrap.md` Step 2, question 4).
+- [ ] `docs/activeContext.md` with a new entry (date + summary).
+- [ ] `docs/progress.md` moved the feature to "done".
+- [ ] If there was an architectural decision → new ADR in `docs/adr/`.
+- [ ] Commit with the `docs(memory):` prefix — approved by the user, executed by the orchestrator.
+- [ ] Feature merged.
 
 ---
 
-## Memory Bank — convenciones
+## Memory Bank — conventions
 
 ```
 docs/
-├── projectbrief.md      ← contexto del proyecto
-├── systemPatterns.md    ← convenciones técnicas
-├── activeContext.md     ← qué se está trabajando ahora
+├── projectbrief.md      ← project context
+├── systemPatterns.md    ← technical conventions
+├── activeContext.md     ← what is being worked on now
 ├── progress.md          ← done / in progress / queued
-├── landscape.md         ← descubrimiento inicial
+├── landscape.md         ← initial discovery
 ├── adr/                 ← Architecture Decision Records
-├── specs/               ← specs por feature
+├── specs/               ← specs per feature
 │   └── NNN-feature-id/
 │       ├── spec.md
 │       └── review.md
 └── .cdad-state.json     ← state machine
 ```
 
-Templates en `assets/`. Si falta estructura, ofrecé bootstrap (ver `references/bootstrap.md`).
+Templates in `assets/`. If structure is missing, offer bootstrap (see `references/bootstrap.md`).
 
 ---
 
-## State file — formato
+## State file — format
 
-`docs/.cdad-state.json`. **Schema completo (todos los campos, incluidos los
-de epic): `assets/state-template.json`** — es la fuente única; lo de abajo es
-un ejemplo ilustrativo de una feature en curso, no una copia del schema.
+`docs/.cdad-state.json`. **Full schema (all fields, including the
+epic ones): `assets/state-template.json`** — it is the single source; what's below is
+an illustrative example of a feature in progress, not a copy of the schema.
 
 ```json
 {
   "version": 1,
   "stack": null,
-  "active_feature": "001-parseo-fechas-iso",
+  "active_feature": "001-parse-iso-dates",
   "current_stage": "tdd",
   "tdd_substage": "green",
   "postconditions_status": {"1": "green", "2": "green", "3": "red", "4": "pending"},
   "stage_history": [
     {"stage": "discovery", "completed_at": "2026-04-29T10:15:00Z"},
-    {"stage": "specification", "completed_at": "2026-04-29T11:30:00Z", "approved_by": "<nombre>"}
+    {"stage": "specification", "completed_at": "2026-04-29T11:30:00Z", "approved_by": "<name>"}
   ],
-  "approver": "<nombre>",
+  "approver": "<name>",
   "last_updated": "2026-04-30T14:22:00Z"
 }
 ```
 
-Actualizalo cuando: cambia de etapa, cambia de sub-fase, cambia status de postcondición, se aprueba spec. Avisale al usuario cada vez que lo modificás (una línea).
+Update it when: the stage changes, the sub-phase changes, a postcondition status changes, the spec gets approved. Tell the user every time you modify it (one line).
 
-**`stack`** (`null` por default): activa variantes de rol especializadas (ver
-§3.1). Se setea en bootstrap por autodetección (`references/bootstrap.md`
-Paso 2b) o, ya en curso, si el usuario lo indica explícito. CDAD no conoce
-stacks por nombre; el valor lo define la especialización instalada.
+**`stack`** (`null` by default): activates specialized role variants (see
+§3.1). It is set at bootstrap by autodetection (`references/bootstrap.md`
+Step 2b) or, once in progress, if the user indicates it explicitly. CDAD does not know
+stacks by name; the installed specialization defines the value.
 
-**`current_stage: "idle"`**: valor válido solo cuando `active_feature` es
-`null` — significa "sin feature en curso" (entre features, o esperando que
-`cdad-epic` asigne la próxima del loop). Distinto del enum de etapas de una
-feature en curso (`discovery|specification|tdd|review|merge|done`); ver
+**`current_stage: "idle"`**: value valid only when `active_feature` is
+`null` — it means "no feature in progress" (between features, or waiting for
+`cdad-epic` to assign the next one in the loop). Different from the stage enum of a
+feature in progress (`discovery|specification|tdd|review|merge|done`); see
 `references/state-detection.md`.
 
-**Campos de epic** (`active_epic`, `epic_stage`, `epic_features`,
-`epic_history`): `null`/`[]` cuando no hay epic activo. `cdad-cycle` los
-ignora; `cdad-epic` los lee y actualiza — detalle del contrato en
+**Epic fields** (`active_epic`, `epic_stage`, `epic_features`,
+`epic_history`): `null`/`[]` when there is no active epic. `cdad-cycle` ignores them; `cdad-epic` reads and updates them — contract detail in
 `skills/cdad-epic/SKILL.md` § State file.
 
 ---
 
-## Cómo leer las references
+## How to read the references
 
-Las references son **profundización**, no condición para entender el contrato. El bloque *Contrato de roles* arriba es lo mínimo que siempre tenés cargado; cargá una reference sólo cuando necesitás detalle de una etapa o rol específico.
+The references are **deepening material**, not a condition for understanding the contract. The *Roles contract* block above is the minimum you always have loaded; load a reference only when you need detail on a specific stage or role.
 
-| Archivo | Cuándo cargarlo |
+| File | When to load it |
 |---------|-----------------|
-| `state-detection.md` | Al inicio de cada turno en modo orquestador |
-| `handoff-prompts.md` | Cuando vas a generar un handoff packet o cuando entrás en modo rol |
-| `re-entry.md` | Cuando el usuario vuelve con resultado de un rol |
-| `stage-1-discovery.md` ... `stage-5-merge.md` | Cuando estás en esa etapa |
-| `verdict-tuple.md` | Al armar el handoff del reviewer (Etapa 4) o al validar su reporte en re-entry — contrato de veredicto de 4 campos |
-| `bootstrap.md` | Proyecto sin Memory Bank |
-| `sub-agent-strategies.md` | Si el entorno tiene sub-agentes nativos y querés sugerir alternativa al chat nuevo |
-| `opencode-delegation.md` | Entorno OpenCode con sub-agentes `cdad-*` instalados; delegar rol vía Task |
-| `claude-code-delegation.md` | Entorno Claude Code con sub-agentes `cdad-*` instalados; delegar rol vía `Agent` |
-| `anti-patterns.md` | Si detectás señales de drift |
-| `receiving-feedback.md` | Al transmitir o recibir feedback de review, usuario o PR externo (loop de fixes de Etapa 4) |
-| `stage-debugging.md` | Cuando un fix falla, hay que diagnosticar un bug o CI está roto (GREEN fallido en §3.2, CI en §5.1) |
+| `orientation.md` | First orientation action: the compact `status` view and the frequent operations — the rule "view first, expand on a concrete need" is owned by §1 there and composed in `project-start.md` §11 |
+| `state-detection.md` | Conditional expansion only — not the first step: on a concrete need (a blocker, or a doubt that affects the next dispatch), with the motive recorded |
+| `project-start.md` | When a brief instruction starts a project from rest (no prepared execution): recognize the root, classify the state, register restrictions and chain to the first commission |
+| `handoff-prompts.md` | When you are about to generate a handoff packet or when you enter role mode |
+| `re-entry.md` | When the user comes back with a role's result |
+| `stage-1-discovery.md` ... `stage-5-merge.md` | When you are in that stage |
+| `verdict-tuple.md` | When building the reviewer's handoff (Stage 4) or validating its report in re-entry — 4-field verdict contract |
+| `bootstrap.md` | Project without a Memory Bank |
+| `project-execution.md` | When a project adopts the v2 execution bootstrap: policy, authority (I2), first prepare, resume, replacement, dispatch record and reconciliation. The CLI is the installed one (`<skill-dir>/scripts/cdad_packet.py`), never a path relative to the consumer project |
+| `continuity.md` | When you use the optional continuity CLI in the cycle — the installed one, `<skill-dir>/scripts/cdad_continuity.py`: `begin` before dispatch, `checkpoint` at the task boundary, `reconcile` before a retry/resume, `resume` in a new session, advisory `trigger` |
+| `progress-guards.md` | Only if you dispatch roles as external processes (e.g. `opencode run`) or want to prevalidate an operation — read its applies/does-not-apply table first; not for native sub-agents |
+| `sub-agent-strategies.md` | If the environment has native sub-agents and you want to suggest an alternative to the new chat |
+| `opencode-delegation.md` | OpenCode environment with `cdad-*` sub-agents installed; delegate the role via Task |
+| `claude-code-delegation.md` | Claude Code environment with `cdad-*` sub-agents installed; delegate the role via `Agent` |
+| `anti-patterns.md` | If you detect drift signals |
+| `receiving-feedback.md` | When transmitting or receiving feedback from review, user or external PR (Stage 4 fix loop) |
+| `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
 
-Cargá una a la vez. No mantengas todo el árbol en contexto.
+Load one at a time. Don't keep the whole tree in context.
 
 ---
 
-## Templates en `assets/`
+## Templates in `assets/`
 
-- `spec-template/spec.md` — esqueleto de spec.
-- `adr-template/ADR.md` — formato MADR-like.
+- `spec-template/spec.md` — spec skeleton.
+- `adr-template/ADR.md` — MADR-like format.
 - `memory-bank-templates/` — `projectbrief`, `systemPatterns`, `activeContext`, `progress`, READMEs.
-- `state-template.json` — `.cdad-state.json` inicial.
+- `state-template.json` — initial `.cdad-state.json`.
 
-Cuando crees archivos, copiá desde templates y rellená.
-
----
-
-## Estilo de interacción
-
-- **Orquestador, no narrador.** No expliques teoría salvo que pregunten.
-- **Confirmá antes de transición de etapa.** *"Gates de etapa 3 OK. ¿Avanzamos a Review?"*
-- **Indelegabilidad del usuario (humano o agente autónomo de mayor jerarquía).** Aprobación del spec, priorización del review, aprobación del Memory Bank → vos draftás/materializás, el usuario aprueba, vos commiteás.
-- **Si detectás drift**, señalalo sin pedantería. Citá código de anti-patrón (`AP-N`).
-- **Nunca uses bullets** cuando declines o pidas revertir un atajo; prosa empática.
-- **Fin de turno explícito.** Después de entregar handoff packet, terminás. No seguís inventando próximos pasos.
+When you create files, copy from templates and fill in.
 
 ---
 
-## Compatibilidad multi-entorno
+## Interaction style
 
-El skill es **independiente del arnés**: el orquestador ejecuta el ciclo con o sin sub-agentes nativos (ver **Contrato de roles §4**). El mecanismo de delegación se decide por entorno, en este orden de preferencia:
-
-- **(a1) OpenCode con sub-agentes `cdad-*`**: delegación nativa vía `task`/`delegate` con `subagent_type: cdad-<rol>` (preferido — aislamiento de sesión real + routing de modelo por rol; ver `references/opencode-delegation.md`).
-- **(a2) Claude Code con sub-agentes `cdad-*`**: delegación vía herramienta `Agent` con `subagent_type: cdad-<rol>` (aislamiento de sesión real + routing de modelo por rol via frontmatter; ver `references/claude-code-delegation.md`). Soportado desde ADR-008 (2026-08-13).
-- **(b) Sin sub-agentes `cdad-*` (cualquier LLM)**: handoff packet pegable a chat nuevo (universal; ver `references/handoff-prompts.md`). Alternativa con sub-agentes nativos genéricos en `references/sub-agent-strategies.md`.
-- **(c) Zed**: threads con perfiles (ver `sub-agent-strategies.md`).
-
-El skill no asume bash, git, ni tooling específico. Cuando una verificación requiere ejecución, te pide al usuario que la corra y pegue el output, salvo que tu entorno te permita ejecutarla.
+- **Orchestrator, not narrator.** Don't explain theory unless asked.
+- **Confirm before a stage transition.** *"Stage 3 gates OK. Shall we advance to Review?"*
+- **Non-delegability of the user (human or higher-hierarchy autonomous agent).** Spec approval, review prioritization, Memory Bank approval → you draft/materialize, the user approves, you commit.
+- **If you detect drift**, flag it without pedantry. Cite the anti-pattern code (`AP-N`).
+- **Never use bullets** when declining or asking to revert a shortcut; empathetic prose.
+- **Explicit end of turn.** After delivering the handoff packet, you're done. Don't keep inventing next steps.
 
 ---
 
-## Coordinación con `cdad-epic`
+## Multi-environment compatibility
 
-Existe un skill complementario `cdad-epic` que coordina trabajo a nivel epic (varias features relacionadas). Su rol y este son complementarios:
+The skill is **harness-independent**: the orchestrator runs the cycle with or without native sub-agents (see **Roles contract §4**). The delegation mechanism is decided per environment, in this order of preference:
 
-- `cdad-epic` decide qué features componen un epic, en qué orden, y coordina integración cross-feature al final.
-- `cdad-cycle` (este skill) ejecuta cada feature individual con disciplina de las cinco etapas.
+- **(a1) OpenCode with `cdad-*` sub-agents**: native delegation via `task`/`delegate` with `subagent_type: cdad-<role>` (preferred — real session isolation + per-role model routing; see `references/opencode-delegation.md`).
+- **(a2) Claude Code with `cdad-*` sub-agents**: delegation via the `Agent` tool with `subagent_type: cdad-<role>` (real session isolation + per-role model routing via frontmatter; see `references/claude-code-delegation.md`). Supported since ADR-008 (2026-08-13).
+- **(b) Without `cdad-*` sub-agents (any LLM)**: handoff packet pasteable into a new chat (universal; see `references/handoff-prompts.md`). Alternative with generic native sub-agents in `references/sub-agent-strategies.md`.
+- **(c) Zed**: threads with profiles (see `sub-agent-strategies.md`).
 
-**Si detectás `active_epic` no null en el state file**, la feature actual pertenece a un epic. No cambia el flujo de este skill; solo:
-
-1. Leés `docs/epics/<epic-id>/plan.md` en Etapa 1 (Descubrimiento) para conocer el contexto y los contratos cross-feature.
-2. Al cerrar la feature en Etapa 5, sugerís al usuario volver a `cdad-epic` (en chat nuevo) para coordinar la siguiente feature del epic.
-
-Si NO hay epic activo, el flujo es exactamente el actual sin modificaciones.
+The skill assumes no bash, git, or specific tooling. When a verification requires execution, it asks the user to run it and paste the output, unless your environment lets you run it.
 
 ---
 
-## Verification — evidencia requerida (no negociable)
+## Coordination with `cdad-epic`
 
-> Fuente del patrón: addyosmani/agent-skills (anatomía SKILL.md, sección Verification — 07 Ago 2026).
-> **Regla de Oro:** "seems right" nunca es suficiente. Cada gate se cierra con EVIDENCIA, no con confianza.
+There is a complementary `cdad-epic` skill that coordinates work at the epic level (several related features). Its role and this one are complementary:
 
-**Evidencia mínima por etapa** (la que el orquestador exige al cerrar un gate):
+- `cdad-epic` decides which features make up an epic, in what order, and coordinates cross-feature integration at the end.
+- `cdad-cycle` (this skill) executes each individual feature with the five-stage discipline.
 
-| Etapa / sub-fase | Evidencia requerida (verificada empíricamente, no asumida) |
+**If you detect a non-null `active_epic` in the state file**, the current feature belongs to an epic. This skill's flow does not change; only:
+
+1. You read `docs/epics/<epic-id>/plan.md` in Stage 1 (Discovery) to learn the context and the cross-feature contracts.
+2. When closing the feature in Stage 5, you suggest the user return to `cdad-epic` (in a new chat) to coordinate the epic's next feature.
+
+If there is NO active epic, the flow is exactly the current one, unmodified.
+
+---
+
+## Verification — required evidence (non-negotiable)
+
+> Pattern source: addyosmani/agent-skills (SKILL.md anatomy, Verification section — Aug 07 2026).
+> **Golden Rule:** "seems right" is never enough. Every gate closes with EVIDENCE, not with trust.
+
+**Minimum evidence per stage** (what the orchestrator demands when closing a gate):
+
+| Stage / sub-phase | Required evidence (verified empirically, not assumed) |
 |---|---|
-| 1 → 2 (Descubrimiento) | `docs/landscape.md` con contenido real; cero suposiciones pendientes del tipo "yo creo que existe X" |
-| 2 → 3 (Spec) | `spec.md` con las 4 secciones mínimas + postcondiciones numeradas + marca de aprobación inequívoca del usuario |
-| 3.1 RED | Output de la suite con tests ROJOS que fallan por `AssertionError` (no por error de compilación/import) |
-| 3.2 GREEN | Output de la suite COMPLETA en verde (línea de resumen final incluida) |
-| 3.3-3.5 | Suite verde tras cada sub-fase; properties/E2E verdes si el spec los marca |
-| 4 (Review) | `review.md` con hallazgos contra el spec; bloqueantes resueltos o desestimados con motivo escrito |
-| 5 (Merge) | CI verde si existe, si no suite local + deuda registrada; Memory Bank con entry nueva |
+| 1 → 2 (Discovery) | `docs/landscape.md` with real content; zero pending assumptions of the type "I think X exists" |
+| 2 → 3 (Spec) | `spec.md` with the 4 minimum sections + numbered postconditions + unambiguous user approval mark |
+| 3.1 RED | Suite output with RED tests failing with `AssertionError` (not with a compile/import error) |
+| 3.2 GREEN | Evidence per the **Test evidence policy**: focused + touched-modules regression green (final summary line included); COMPLETE suite green at feature closure |
+| 3.3-3.5 | Suite green after each sub-phase; properties/E2E green if the spec marks them |
+| 4 (Review) | `review.md` with findings against the spec; blocking items resolved or dismissed with written reason |
+| 5 (Merge) | CI green if it exists, otherwise local suite + registered debt; Memory Bank with a new entry |
 
-**Reglas de evidencia:**
+**Evidence rules:**
 
-1. **El output es la prueba.** Si tu entorno no permite ejecutar, pedí al usuario el output exacto (últimas 20 líneas del run + línea de resumen). Nunca avances con "yo creo que pasa".
-2. **Sin evidencia, no hay gate.** Un gate cerrado sin la evidencia de la tabla es un gate inventado: se reabre en la próxima revisión.
-3. **La evidencia se pega o se cita, no se describe.** "La suite está verde" ≠ "acá está el output".
-4. **Cobertura ≠ contrato.** El criterio de aceptación es postcondición verificada por test de comportamiento; si un número de coverage aparece como excusa para saltar un gate, es red flag (ver tabla abajo).
-5. **Deuda documentada ≠ deuda oculta.** Si algo no se puede verificar hoy, se registra como desviación explícita en el artefacto de la etapa — nunca se omite en silencio.
+1. **The output is the proof.** If your environment doesn't allow execution, ask the user for the exact output (last 20 lines of the run + summary line). Never advance with "I think it passes".
+2. **No evidence, no gate.** A gate closed without the table's evidence is an invented gate: it gets reopened in the next review.
+3. **Evidence gets pasted or cited, not described.** "The suite is green" ≠ "here is the output".
+4. **Coverage ≠ contract.** The acceptance criterion is a postcondition verified by a behavioral test; if a coverage number shows up as an excuse to skip a gate, it is a red flag (see the table below).
+5. **Documented debt ≠ hidden debt.** If something can't be verified today, it gets recorded as an explicit deviation in the stage's artifact — never silently omitted.
 
-## Anti-rationalization table — excusas típicas y sus refutaciones
+## Anti-rationalization table — typical excuses and their refutations
 
-> Mecanismo anti-skip estructural (addyosmani §1.1): cuando el agente (o el usuario) proponga
-> saltarse un paso, la refutación ya está escrita. No se negocia con la excusa; se aplica la refutación.
+> Structural anti-skip mechanism (addyosmani §1.1): when the agent (or the user) proposes
+> skipping a step, the refutation is already written. You don't negotiate with the excuse; you apply the refutation.
 
-## Validación externa del modelo (addyosmani `/build auto`)
+## External validation of the model (addyosmani `/build auto`)
 
-> Fuente: https://github.com/addyosmani/agent-skills (07 Ago 2026) — README, sección `/build auto`.
+> Source: https://github.com/addyosmani/agent-skills (Aug 07 2026) — README, `/build auto` section.
 
-El comando `/build auto` de addyosmani implementa exactamente el modelo CDAD:
+The addyosmani `/build auto` command implements exactly the CDAD model:
 
 > "generates the plan and implements every task in a single approved pass — you
 > approve the plan **once**, then it runs autonomously. It removes the human
 > stepping *between* tasks, not the verification: every task is still test-driven
 > and committed individually, and it pauses on failures or risky steps."
 
-Traducción al vocabulario CDAD: el humano (o agente de jerarquía mayor) aprueba
-el **spec** (Etapa 2) una sola vez; la ejecución (Etapas 3-5) es autónoma con
-TDD por tarea, commits individuales y pausa en fallos. El autor lo dice explícito:
-"it removes the human stepping between tasks, **not the verification**" — la
-verificación sigue siendo por tarea, lo que se elimina es la aprobación por paso.
+Translated into CDAD vocabulary: the human (or a higher-hierarchy agent) approves
+the **spec** (Stage 2) once; execution (Stages 3-5) is autonomous with
+per-task TDD, individual commits and pauses on failures. The author says it explicitly:
+"it removes the human stepping between tasks, **not the verification**" —
+verification remains per task; what gets removed is per-step approval.
 
-**Implicación para este skill:** si alguien propone "aprobar el plan y dejar de
-validar cada etapa", la refutación ya está escrita arriba (addyosmani la llama
-exactamente igual: quitar la aprobación intermedia ≠ quitar la verificación).
+**Implication for this skill:** if someone proposes "approving the plan and
+stopping validation of each stage", the refutation is already written above (addyosmani calls it
+exactly that: removing intermediate approval ≠ removing verification).
 
-| Excusa típica | Refutación documentada |
+| Typical excuse | Documented refutation |
 |---|---|
-| "Esto es chico, no hace falta spec" | El tamaño del cambio no predice el riesgo del contrato. Un fix de 3 líneas puede romper un invariante que nadie testeaba. Spec mínimo (postcondiciones numeradas) siempre. |
-| "Ya lo agrego tests después" | El test escrito después del código verifica lo que el código HACE, no lo que el spec PIDE (AP-2). Test primero, sí o sí. |
-| "Los tests pasan, lo vi con mis ojos" (sin correr la suite) | Ver AP-3: la confianza no es evidencia. Corré la suite y pegá el output. |
-| "El test estaba mal, lo ajusté para que pase" | El implementer no toca tests (AP-4). Si el test está mal, vuelve al test-writer en sesión aislada. |
-| "El coverage ya está alto, no hace falta más tests" | Coverage ≠ contrato. La postcondición sin test es una postcondición no verificada, aunque el coverage sea 99%. |
-| "Es más rápido hacerlo inline que delegar" | El aislamiento de sesión ES la garantía (test-writer no ve `src/`, reviewer ≠ implementer en familia). Inline = garantía perdida. Delegá o conmutá de modo explícito con el trade-off avisado. |
-| "El reviewer va a decir lo mismo, lo salteo" | Review independiente es el único anti-confirmation-bias. Si "va a decir lo mismo", la revisión lo confirma barato; si no, acaba de evitar un bug. |
-| "No hay tiempo, aprobamos y seguimos" | La fatiga de aprobación humana es medible y empeora con el tiempo (scalex.dev: precisión media 66.3%, degrada bajo presión). Las barreras estructurales existen exactamente para que la calidad no dependa del estado de ánimo del que aprueba. |
-| "El usuario ya aprobó, ¿para qué el gate?" | Aprobación del usuario ≠ evidencia del gate. El gate valida hechos (output de suite, artefacto presente); la aprobación valida intención. Son ortogonales. |
-| "Nadie va a notar esta desviación" | Toda desviación se documenta en el artefacto de la etapa (Verification §5). Lo que no se documenta, se descubre en la próxima feature — pagando el doble. |
+| "This is small, no spec needed" | Change size does not predict contract risk. A 3-line fix can break an invariant nobody was testing. Minimum spec (numbered postconditions) always. |
+| "I'll add tests later" | The test written after the code verifies what the code DOES, not what the spec ASKS (AP-2). Test first, no way around it. |
+| "The tests pass, I saw it with my own eyes" (without running the suite) | See AP-3: trust is not evidence. Run the suite and paste the output. |
+| "The test was wrong, I adjusted it to pass" | The implementer doesn't touch tests (AP-4). If the test is wrong, it goes back to the test-writer in an isolated session. |
+| "Coverage is already high, no more tests needed" | Coverage ≠ contract. A postcondition without a test is an unverified postcondition, even at 99% coverage. |
+| "It's faster to do it inline than to delegate" | Session isolation IS the guarantee (test-writer doesn't see `src/`, reviewer ≠ implementer in family). Inline = guarantee lost. Delegate or switch modes explicitly with the trade-off flagged. |
+| "The reviewer will say the same, I'll skip it" | Independent review is the only anti-confirmation-bias. If it "says the same", the review confirms it cheap; if not, you just avoided a bug. |
+| "There's no time, we approve and move on" | Human approval fatigue is measurable and worsens over time (scalex.dev: average precision 66.3%, degrades under pressure). Structural barriers exist precisely so quality does not depend on the approver's mood. |
+| "The user already approved, why the gate?" | User approval ≠ gate evidence. The gate validates facts (suite output, artifact present); approval validates intent. They are orthogonal. |
+| "Nobody will notice this deviation" | Every deviation gets documented in the stage's artifact (Verification §5). What isn't documented gets discovered in the next feature — paying double. |
 
-**Red flags que disparan esta tabla:** "no hace falta", "es rápido", "confío en que", "ya lo hice antes", "después lo vemos", "el coverage está bien", "lo probé mentalmente".
+**Red flags that trigger this table:** "no need for it", "it's quick", "I trust that", "I've done it before", "we'll see later", "coverage is fine", "I tested it mentally".
 
 ---
 
-## Recordatorio final
+## Final reminder
 
-Mantené la disciplina del proceso. Las barreras estructurales (spec aprobado, tests rojos primero, sesiones aisladas, review independiente, gates) son lo que sostiene la calidad. Cuando dudes entre velocidad y rigor → rigor.
+Keep the process discipline. The structural barriers (approved spec, red tests first, isolated sessions, independent review, gates) are what sustain quality. When in doubt between speed and rigor → rigor.
 
-Y nunca, nunca hagas el trabajo del rol siendo orquestador. Si te tienta, parate, generá el handoff, y devolvé el turno.
+And never, never do the role's work while being the orchestrator. If tempted, stand up, generate the handoff, and return the turn.

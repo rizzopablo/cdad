@@ -1,0 +1,59 @@
+# Spec — OpenCode read-map fix + per-agent step ceiling (light cycle, 2026-09-29)
+
+context: >
+  Review of the OpenCode sessions of 2026-09-24 22:00 -> 2026-09-29 (opencode.db,
+  table session_v2; scan script in evidence/) found two defects that the
+  permissive-bash change (80f9b90) does not remove:
+  (1) The generator prepends a catch-all deny to the test-writer's `read` map
+  (scripts/cdad-generate.py, read_pairs = [("*", "deny")] + ...), contradicting
+  the canonical source (sources/roles/test-writer.md: "read src/** + lib/** deny
+  with colocated-test exceptions"). Result: the OpenCode `read` tool is denied for
+  EVERY path (36 denied, 0 ok in the window; reads worked on 2026-08-28..09-13),
+  including the approved contract. The agent routes around it with the grep tool
+  (pattern ".", 1004 grep calls on 2026-09-28 in one session). With permissive bash
+  the deny is pure friction without protection. The map was correct on 2026-08-24
+  (deny src/lib only); the "catch-all first" pattern was copied from the `edit`
+  map (an allow-list, where it is right) into `read` (a deny-list, where it inverts
+  the intent).
+  (2) No agent declares `steps`. One implementer session made 2073 identical retries
+  over ~20 h (OpenCode `cost` field: 15.86 USD; a normal implementer session:
+  ~0.14 USD). The packet already said "always end with a report"; instructions alone
+  did not stop it. OpenCode 1.18.32 supports `steps` per agent ("maximum number of
+  agentic iterations before forcing text-only response", verified in the binary
+  schema), which forces the final report mechanically.
+
+resolution: >
+  (1) Remove the catch-all deny from the test-writer read map (generic and odoo
+  stacks): read = deny the implementation globs, allow the colocated-test
+  exceptions; everything else (contract, docs, tests) is readable by default.
+  (2) Declare the step ceiling ONCE in sources/agents/adapters/opencode.md
+  (frontmatter section, machine-readable line `steps: 300`); the generator reads it
+  and emits `steps: N` in the frontmatter of the 10 OpenCode subagent roles, and
+  fails loudly (PD-3) if the declaration is absent or malformed. The orchestrator
+  (mode all, long-running) gets none. 300 = ~1.5x the highest legitimate session
+  observed (203) and far below the two runaway loops (996, 2167); it is a runaway
+  guard, not a work budget.
+
+postcondition: >
+  A delegated OpenCode test-writer can read the approved contract with the read tool,
+  still cannot read implementation paths, and every OpenCode role subagent stops with
+  a forced text-only report after at most 300 agentic iterations.
+
+verification:
+  - "P1 read map (behavioral oracle, findLast semantics): for test-writer and test-writer-odoo, probe paths docs/specs/x/spec.md, tests/test_a.py, README.md resolve to ALLOW; src/app.py and lib/x.py (generic) / addons/m/models/a.py, addons/m/views/v.xml (odoo) resolve to DENY; a colocated test under src/ (src/pkg/test_a.py) resolves to ALLOW; the read map has no rule whose pattern is exactly '*'"
+  - "P2 steps: the 10 generated OpenCode role agents (5 roles x base/odoo) contain `steps: 300` in the frontmatter; the orchestrator contains no `steps:` line; the value equals the one declared in sources/agents/adapters/opencode.md"
+  - "P3 fail-loud (PD-3): with the `steps:` line removed or non-numeric in the adapter source, scripts/cdad-generate.py --runtime opencode exits non-zero with a diagnostic naming sources/agents/adapters/opencode.md"
+  - "P4 no regression: full pytest (env -u TMPDIR), tests/validate-consistency.sh, tests/validate-odoo-specialization.sh, scripts/validate-subagents.sh PASS; make staging twice is byte-identical (PD-2); install.sh --check PASS on an isolated root; install preserves `steps:` (the model rewrite must not drop it)"
+  - "P5 live: after installing to ~/.config/opencode/agents, a delegated cdad-test-writer (via cdad-orchestrator, opencode run) reads docs/specs/permissive-bash-policy-2026-09-29/spec.yaml with the read tool with 0 permission denials; before/after recorded in evidence/"
+
+out_of_scope:
+  - "grep map / implementation roots derived from the project path_policy (this repo's implementation lives in scripts/, agents/, skills/, not src/ or lib/): belongs to 004-002 bootstrap; recorded as follow-up"
+  - "Claude Code equivalent of a step ceiling (maxTurns) and its verification: not evidenced as a problem; follow-up"
+  - "global ~/.config/opencode `/tmp` bash denies being overridden by the agents' catch-all allow: owner decision pending"
+  - "opencode run --agent <mode: subagent role> hangs silently: entry must be a mode:all/primary agent (orchestrator) that delegates; documented in evidence/"
+
+process: >
+  Light cycle. Analysis + spec: Claude. RED tests: cdad-test-writer (OpenCode, GLM,
+  delegated through cdad-orchestrator via `opencode run`). GREEN: cdad-implementer
+  likewise. Independent review: Claude (different session from the implementer).
+  Legacy handoff (no packet): the contract is this file, not an approved-feature-spec.

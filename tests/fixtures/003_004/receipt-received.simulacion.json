@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "execution_id": "@EXECUTION_ID@",
+  "packet_id": "@PACKET_ID@",
+  "feature_id": "003-004-context-continuity",
+  "role": "test-writer",
+  "substage": "red",
+  "parts": [
+    {
+      "name": "role-report",
+      "sha256": "@REPORT_SHA256@",
+      "bytes": "@REPORT_BYTES@"
+    }
+  ],
+  "bundle_sha256": "@BUNDLE_SHA256@",
+  "packet_validation": "passed",
+  "identity_validation": "passed",
+  "scope_validation": "passed",
+  "run_evidence_status": "not-provided",
+  "state_transition_requested": "received",
+  "semantic_status": "pending",
+  "received_at": "2026-10-07T00:00:00Z",
+  "source": "SIMULACION fixture 003-004 (matriz T2, dato suplente, no incidente real)"
+}

@@ -1,0 +1,28 @@
+# Live smoke BEFORE the fix — 2026-09-29 (installed agents = commit 80f9b90)
+Runtime: opencode v2.0.16 (~/.opencode/bin/opencode; the runtime that runs the real cycles; the PATH 'opencode' is a stale 1.18.32).
+Command (from the repo root): opencode run --agent cdad-test-writer --title smoke-before-read-fix "$(cat smoke-prompt.txt)"
+
+## smoke-prompt.txt
+Smoke test, do not modify any file. Do exactly these three things and report the result of each in one line:
+1. Run the shell command `echo hi`.
+2. Use the read tool to read the first 3 lines of docs/specs/permissive-bash-policy-2026-09-29/spec.yaml.
+3. Use the shell to run `wc -l docs/specs/permissive-bash-policy-2026-09-29/spec.yaml | cat`.
+Then stop.
+
+## output (ANSI stripped)
+> cdad-test-writer · deepseek-v4-flash
+I'll run the three smoke test items.
+✗ Read docs/specs/permissive-bash-policy-2026-09-29/spec.yaml failed
+Error: Permission denied: read
+$ echo hi
+hi
+$ wc -l docs/specs/permissive-bash-policy-2026-09-29/spec.yaml | cat
+35 docs/specs/permissive-bash-policy-2026-09-29/spec.yaml
+> cdad-test-writer · deepseek-v4-flash
+Smoke test results:
+1. `echo hi` → `hi` (exit 0).
+2. read of first 3 lines of `docs/specs/permissive-bash-policy-2026-09-29/spec.yaml` → Permission denied (read rejected).
+3. `wc -l ... | cat` → `35 docs/specs/permissive-bash-policy-2026-09-29/spec.yaml`.
+real	0m10.946s
+user	0m0.195s
+sys	0m0.080s

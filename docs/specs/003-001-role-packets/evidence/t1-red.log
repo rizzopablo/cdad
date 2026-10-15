@@ -1,0 +1,30 @@
+test_p6_dry_run_confines_every_destination_to_explicit_install_root (tests.test_role_packets.TestInstallRootDryRun.test_p6_dry_run_confines_every_destination_to_explicit_install_root) ... FAIL
+test_p4_p5_state_binding_matrix_or_report_interface_blocked (tests.test_role_packets.TestStateBindingMatrixWhenCliAvailable.test_p4_p5_state_binding_matrix_or_report_interface_blocked) ... BLOCKED (not semantic RED): public CLI unavailable at <repo>/scripts/cdad_packet.py
+ok
+
+======================================================================
+FAIL: test_p6_dry_run_confines_every_destination_to_explicit_install_root (tests.test_role_packets.TestInstallRootDryRun.test_p6_dry_run_confines_every_destination_to_explicit_install_root)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<repo>/tests/test_role_packets.py", line 173, in test_p6_dry_run_confines_every_destination_to_explicit_install_root
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        outside,
+        ^^^^^^^^
+    ...<2 lines>...
+        + ", ".join(outside),
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Lists differ: ['<user-home>/.config/opencode/skills/cdad-[2354 chars]ile'] != []
+
+First list contains 48 additional elements.
+First extra element 0:
+'<user-home>/.config/opencode/skills/cdad-cycle'
+
+Diff is 2550 characters long. Set self.maxDiff to None to see it. : dry-run ignored CDAD_INSTALL_ROOT; destinations escaped it: <user-home>/.config/opencode/skills/cdad-cycle, <user-home>/.agents/skills/cdad-cycle, <user-home>/.config/opencode/skills/cdad-epic, <user-home>/.agents/skills/cdad-epic, <user-home>/.config/opencode/skills/cdad-spec-and-test, <user-home>/.agents/skills/cdad-spec-and-test, <user-home>/.config/opencode/skills/odoo-architect, <user-home>/.agents/skills/odoo-architect, <user-home>/.config/opencode/skills/odoo-test-writer, <user-home>/.agents/skills/odoo-test-writer, <user-home>/.config/opencode/skills/odoo-reviewer, <user-home>/.agents/skills/odoo-reviewer, <user-home>/.config/opencode/skills/odoo-make-env, <user-home>/.agents/skills/odoo-make-env, <user-home>/.config/opencode/skills/odoo-expert, <user-home>/.agents/skills/odoo-expert, <user-home>/.config/opencode/agents/cdad-architect-odoo.md, <user-home>/.config/opencode/agents/cdad-architect.md, <user-home>/.config/opencode/agents/cdad-implementer-odoo.md, <user-home>/.config/opencode/agents/cdad-implementer.md, <user-home>/.config/opencode/agents/cdad-orchestrator.md, <user-home>/.config/opencode/agents/cdad-reviewer-odoo.md, <user-home>/.config/opencode/agents/cdad-reviewer.md, <user-home>/.config/opencode/agents/cdad-scribe-odoo.md, <user-home>/.config/opencode/agents/cdad-scribe.md, <user-home>/.config/opencode/agents/cdad-test-writer-odoo.md, <user-home>/.config/opencode/agents/cdad-test-writer.md, <user-home>/.claude/cdad-scripts/path-guard.sh, <user-home>/.claude/agents/cdad-architect-odoo.md, <user-home>/.claude/agents/cdad-architect.md, <user-home>/.claude/agents/cdad-implementer-odoo.md, <user-home>/.claude/agents/cdad-implementer.md, <user-home>/.claude/agents/cdad-orchestrator.md, <user-home>/.claude/agents/cdad-reviewer-odoo.md, <user-home>/.claude/agents/cdad-reviewer.md, <user-home>/.claude/agents/cdad-scribe-odoo.md, <user-home>/.claude/agents/cdad-scribe.md, <user-home>/.claude/agents/cdad-test-writer-odoo.md, <user-home>/.claude/agents/cdad-test-writer.md, <user-home>/.claude/skills/cdad-cycle, <user-home>/.claude/skills/cdad-epic, <user-home>/.claude/skills/cdad-spec-and-test, <user-home>/.claude/skills/odoo-architect, <user-home>/.claude/skills/odoo-test-writer, <user-home>/.claude/skills/odoo-reviewer, <user-home>/.claude/skills/odoo-make-env, <user-home>/.claude/skills/odoo-expert, <user-home>/.config/opencode/agents/.cdad-models-profile
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.467s
+
+FAILED (failures=1)

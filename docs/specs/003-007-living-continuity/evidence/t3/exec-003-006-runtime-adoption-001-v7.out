@@ -1,0 +1,131 @@
+{
+  "attempt": 1,
+  "body_sha256": "74dfa7387a16e3f92bb8679a3779b54b9b4557e37ebf1b41814cedc7036921f9",
+  "bytes": 2566,
+  "execution_id": "exec-003-006-runtime-adoption-001",
+  "max_bytes": 16384,
+  "packet_id": "003-006-runtime-adoption-scribe-memory-002",
+  "prev_checkpoint_sha256": "594e7b52be9da71383341c8269947d5cee9fbcb0f43e82e84b0f924db47f7d43",
+  "projection": {
+    "authority": {
+      "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
+      "expires_on": null,
+      "state": "active"
+    },
+    "decisions": [
+      {
+        "decision": "Spec P1-P12 y plan T1-T4 aprobados bajo delegación HITL",
+        "rationale": "review-draft-001-decision.md; el usuario dijo 'ok' a la feature el 2026-10-07"
+      },
+      {
+        "decision": "T1, T2 y T3 cerradas tras review GLM; B-1 de T2 corregido",
+        "rationale": "dispatch-ledger filas 6, 15 y 21"
+      },
+      {
+        "decision": "RU-1: el hook emitido fija CDAD_PACKET_CLI a la raíz adoptada",
+        "rationale": "t4-ru1-decision.md: el guard busca el clasificador en HOME (copia vieja) y falla cerrado"
+      },
+      {
+        "decision": "La activación real del repo y la confianza de Claude Code quedan para el dueño",
+        "rationale": "el clasificador de permisos denegó la activación del repo real; la confianza es un cambio de seguridad en HOME"
+      },
+      {
+        "decision": "RU-1 GREEN 5c09770 aceptado; hook emitido verificado por bash -c",
+        "rationale": "adoption-ledger.md Paso 3"
+      },
+      {
+        "decision": "RU-1 cerrado por re-review focal recibida con cdad_result receive y materializada",
+        "rationale": "review-ru1-rereview.md; reconcile = received, repeat_effect false"
+      },
+      {
+        "decision": "La rotación 1 se bloqueó por integridad de referencias; se registra como deuda T4-REF y se repite tras un begin nuevo sin escrituras intermedias",
+        "rationale": "adoption-ledger.md Paso 5"
+      },
+      {
+        "decision": "RU-2: un begin/checkpoint rechazado no escribe nada; corregido en abcd4d3 y cuerpo huérfano retirado del store",
+        "rationale": "t4-ru2-decision.md; rotación 2 cayó en split-brain por ese cuerpo"
+      },
+      {
+        "decision": "Rotación 3 correcta y RU-2 cerrado con receive real; v6 abcd4d3 instalada (activación pendiente del dueño)",
+        "rationale": "adoption-ledger.md intento 3; runtime-adopted-version.md"
+      }
+    ],
+    "goal": "Cerrar 003-006-runtime-adoption: cablear y activar en OpenCode, Claude Code y Codex lo construido en 003-001..004. T4: re-adopción v5 (d958672), recorrido real por runtime, receive y continuidad reales, borrador de enmienda de cierre del epic para el dueño. Sin push.",
+    "next_action": "Recibir los borradores del scribe; suite de cierre en worktree fijado; Memory Bank + closure.md; state; presentar al dueño enmienda y decisiones.",
+    "uncertainties": [
+      "Claude Code: las skills de usuario ganan a las de proyecto; hay que despachar con --setting-sources project,local o retirar las copias de HOME (decisión del dueño)",
+      "Codex: el catálogo lista las dos copias; en la sonda usó la de proyecto",
+      "trigger sigue dando unknown (sin lector de contexto)",
+      "T4-REF/T4-CKPT: los documentos vivos referenciados invalidan resume al cambiar"
+    ]
+  },
+  "record": "active-record-v1",
+  "references": [
+    {
+      "class": "contract",
+      "current_sha256": "dc485e80aa86b545c75c86f71a3fa590321c1ca6a66221e1115c69b75a7d7cb7",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/spec.md",
+      "sha256": "dc485e80aa86b545c75c86f71a3fa590321c1ca6a66221e1115c69b75a7d7cb7",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "fca4be822bd4463377799559be5f49b9fcc7ec22c7f978619b1da5e4e85cd5b4",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/plan.md",
+      "sha256": "fca4be822bd4463377799559be5f49b9fcc7ec22c7f978619b1da5e4e85cd5b4",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "1fcd4b71a4cfc244f48fb7954249380b27461bb8d2f4ec21e448df3db7f7dca3",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/dispatch-ledger.md",
+      "sha256": "f2ec1c1e94a42469458a78e2f5dbfcca9a00cfdbbbad36aae19a01ed82b2bdd9",
+      "state": "changed"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "0903c597f473e8b964cdb5bba517f1746966895a56f8d9092389799591b41bf4",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/adoption-ledger.md",
+      "sha256": "0903c597f473e8b964cdb5bba517f1746966895a56f8d9092389799591b41bf4",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "c9184a7da8a369a28b81b4a98448c54a11795b86322318821044e780a2cad3ff",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/debt.md",
+      "sha256": "c9184a7da8a369a28b81b4a98448c54a11795b86322318821044e780a2cad3ff",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "f01d8bf69537f76b249bee187746e2c8dc99c0089cdc49c2a8c5aa1921894655",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/t4-ru1-decision.md",
+      "sha256": "f01d8bf69537f76b249bee187746e2c8dc99c0089cdc49c2a8c5aa1921894655",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "13178d986a81fc5ca5056436c3611a4a762099648ca96a70be01d05613005cc8",
+      "legacy": true,
+      "path": "docs/specs/003-006-runtime-adoption/review-ru1-rereview.md",
+      "sha256": "13178d986a81fc5ca5056436c3611a4a762099648ca96a70be01d05613005cc8",
+      "state": "unchanged"
+    },
+    {
+      "class": "contract",
+      "current_sha256": "8e843410b7ffe5ef52b5dc1b834380eab93e617ad9609f31f8b822c8d7bfbdfd",
+      "legacy": true,
+      "path": "docs/epics/epic-003-context-efficiency/closure-amendment-draft.md",
+      "sha256": "0cee948f8d498d79fa2f96945e06223d36a4f7ce23f92c3d8281b01c261930fa",
+      "state": "changed"
+    }
+  ],
+  "schema_version": 1,
+  "seq": 5
+}

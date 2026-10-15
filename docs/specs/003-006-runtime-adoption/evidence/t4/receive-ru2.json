@@ -1,0 +1,29 @@
+{
+  "bundle_sha256": "28152195bcd69754065747974a977b6280b111acdd038a81984cd958a90168ab",
+  "execution_id": "exec-003-006-runtime-adoption-001",
+  "feature_id": "003-006-runtime-adoption",
+  "identity_validation": "passed",
+  "packet_id": "003-006-runtime-adoption-reviewer-review-006",
+  "packet_validation": "passed",
+  "parts": [
+    {
+      "artifact_kind": "review",
+      "bytes": 8816,
+      "name": "review",
+      "sha256": "a45a581bfb8d2e02667ff4e4642d07f00a9b1e2673fc84315a7b5a2c7d2ced27",
+      "stored_ref": ".cdad/runtime/results/exec-003-006-runtime-adoption-001/003-006-runtime-adoption-reviewer-review-006/parts/review.utf8"
+    }
+  ],
+  "received_at": "2026-10-08T06:27:04.927901Z",
+  "role": "reviewer",
+  "run_evidence_status": "not-provided",
+  "schema_version": 1,
+  "scope_validation": "passed",
+  "semantic_status": "pending",
+  "source": {
+    "kind": "staged-file",
+    "sdk_message_ref": null
+  },
+  "state_transition_requested": "received",
+  "substage": "review"
+}

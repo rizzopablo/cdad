@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "continuity-checkpoint-v1",
+  "title": "continuity-checkpoint-v1",
+  "description": "L2 immutable checkpoint envelope written by cdad_continuity.py begin/checkpoint and verified by resume (003-004, P1/P7, D2/D11).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "checkpoint",
+    "execution_id",
+    "packet_id",
+    "attempt",
+    "seq",
+    "body_sha256",
+    "prev_checkpoint_sha256",
+    "references",
+    "bytes",
+    "max_bytes",
+    "no_op"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "checkpoint": {
+      "const": "continuity-checkpoint-v1"
+    },
+    "execution_id": {
+      "type": "string"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "attempt": {
+      "type": "integer"
+    },
+    "record": {
+      "description": "003-007 (P6/D5): which command wrote this checkpoint body/link — `begin` or `checkpoint`. Absent in legacy bodies (pre-003-007), the legacy discriminator (O-1).",
+      "enum": ["begin", "checkpoint"]
+    },
+    "seq": {
+      "description": "Monotonic chain position (no `generation`, D7).",
+      "type": "integer",
+      "minimum": 1
+    },
+    "body_sha256": {
+      "description": "sha256 of the canonical body; the body is content-addressed under continuity/bodies/<body_sha256>.json.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prev_checkpoint_sha256": {
+      "description": "body_sha256 of the preceding link, or null for the first checkpoint.",
+      "type": ["string", "null"]
+    },
+    "references": {
+      "description": "L3 references to existing history, each with the digest of its real content. 003-007: each entry also carries the resolved `class` (contract/living) and, when declared, the `fields` projection (D2/D4).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "class": {
+            "description": "003-007 (P3/D2): the DECLARED reference class; `contract` blocks on divergence, `living` only informs. Absent/unknown falls closed to `contract`.",
+            "enum": ["contract", "living"]
+          },
+          "fields": {
+            "description": "003-007 (P4/BL-3): top-level JSON keys the frozen digest projects over (canonical V2 projection). Absent → the complete file bytes are digested.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "bytes": {
+      "description": "Size in bytes of the canonical projection (<= max_bytes).",
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_bytes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "no_op": {
+      "description": "true when begin found an identical head and persisted nothing (P3).",
+      "type": "boolean"
+    }
+  }
+}

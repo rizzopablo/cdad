@@ -1,61 +1,61 @@
 # Epic <NNN> — Closure
 
-**Cerrado**: <YYYY-MM-DD>
-**Duración**: <inicio> → <cierre> (<N días/semanas>)
+**Closed**: <YYYY-MM-DD>
+**Duration**: <start> → <closure> (<N days/weeks>)
 
-## Resumen
+## Summary
 
-<2-3 líneas: qué se entregó, contra qué problema.>
+<2-3 lines: what was delivered, against what problem.>
 
-## Features entregadas
+## Features delivered
 
-| ID | Nombre | Cerrada |
+| ID | Name | Closed |
 |----|--------|---------|
-| <epic-num>-001-<slug> | <nombre> | <YYYY-MM-DD> |
-| <epic-num>-002-<slug> | <nombre> | <YYYY-MM-DD> |
-| <epic-num>-003-<slug> | <nombre> | <YYYY-MM-DD> |
+| <epic-num>-001-<slug> | <name> | <YYYY-MM-DD> |
+| <epic-num>-002-<slug> | <name> | <YYYY-MM-DD> |
+| <epic-num>-003-<slug> | <name> | <YYYY-MM-DD> |
 
-## Criterios de aceptación
+## Acceptance criteria
 
-<Cada criterio del plan + estado.>
+<Each criterion from the plan + status.>
 
-- [x] <criterio 1> — verificado en <test E2E>
-- [x] <criterio 2> — verificado en <test E2E>
-- [ ] <criterio que NO se cumplió> — motivo: <explicación>
+- [x] <criterion 1> — verified in <E2E test>
+- [x] <criterion 2> — verified in <E2E test>
+- [ ] <criterion that was NOT met> — reason: <explanation>
 
-## Retrospectiva breve
+## Brief retrospective
 
-### Lo que funcionó bien
-- <punto 1>
-- <punto 2>
-- <punto 3>
+### What worked well
+- <point 1>
+- <point 2>
+- <point 3>
 
-### Lo que se complicó
-- <punto 1>
-- <punto 2>
+### What got complicated
+- <point 1>
+- <point 2>
 
-### Aprendizajes para futuros epics
-- <punto 1>
-- <punto 2>
+### Lessons for future epics
+- <point 1>
+- <point 2>
 
-<Si genuinamente no hay nada para retrospectar en alguna sección: "Sin hallazgos relevantes.">
+<If genuinely there is nothing to retrospect on in any section: "No relevant findings.">
 
-## Deuda técnica que se llevó
+## Technical debt carried forward
 
-<Lista corta: cosas que se decidió no hacer en este epic y por qué. Sirve para futuros epics o features standalone.>
+<Short list: things it was decided not to do in this epic and why. Useful for future epics or standalone features.>
 
-- <ítem 1, con motivo>
-- <ítem 2>
+- <item 1, with reason>
+- <item 2>
 
-## Decisiones arquitectónicas tomadas
+## Architectural decisions made
 
-<Lista de ADRs creados durante el epic (en features individuales o en cierre).>
+<List of ADRs created during the epic (in individual features or at closure).>
 
-- ADR-NNN: <título> ([link](../adr/ADR-NNN-<slug>.md))
-- ADR-NNN: <título> ([link](../adr/ADR-NNN-<slug>.md))
+- ADR-NNN: <title> ([link](../adr/ADR-NNN-<slug>.md))
+- ADR-NNN: <title> ([link](../adr/ADR-NNN-<slug>.md))
 
-<O "Sin ADRs nuevos durante este epic." si aplica.>
+<Or "No new ADRs during this epic." if applicable.>
 
-## Notas finales
+## Final notes
 
-<Opcional. Cualquier contexto que valga preservar: decisiones de producto, comunicaciones con stakeholders externos, etc.>
+<Optional. Any context worth preserving: product decisions, communications with external stakeholders, etc.>

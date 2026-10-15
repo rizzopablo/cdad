@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (bucle) / P1",
+  "description": "Bucle equivalente: 5 llamadas de herramienta con la MISMA huella (tool + args + result_class 'tool-error') y token de progreso congelado -> cero progreso observable. Referencia de senal real: incidente de 2.073 reintentos identicos (~20 h) de opencode-read-map-and-steps-2026-09-29; aqui 5 replicas con etiqueta simulation (P6: fallo provocado, nunca en vivo).",
+  "session_id": "sess-sim-loop-2073",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:01:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:02:00Z"},
+    {"i": 4, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:03:00Z"},
+    {"i": 5, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "tool-error", "progress_token": "p0", "at": "2026-10-06T00:04:00Z"}
+  ]
+}

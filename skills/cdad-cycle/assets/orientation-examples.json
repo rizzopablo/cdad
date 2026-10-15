@@ -1,0 +1,87 @@
+{
+  "examples": [
+    {
+      "id": "dispatch-record",
+      "kind": "dispatch-attempt-input",
+      "target": "docs/attempt.json",
+      "input": {
+        "runtime": "agent-runtime",
+        "model_configured": "configured-model-id",
+        "model_reported": "reported-model-id",
+        "session": "session-ref-hashed",
+        "started_at": "2026-10-12T00:00:00Z",
+        "provenance": {
+          "runtime": "declared by the runtime",
+          "model_configured": "declared by the runtime configuration",
+          "model_reported": "reported by the running session",
+          "session": "session reference",
+          "started_at": "recorded at dispatch"
+        }
+      }
+    },
+    {
+      "id": "dispatch-record-invalid",
+      "kind": "dispatch-attempt-input-invalid",
+      "target": "docs/attempt-invalid.json",
+      "input": {
+        "model_configured": "configured-model-id",
+        "model_reported": "reported-model-id",
+        "session": "session-ref-hashed",
+        "started_at": "2026-10-12T00:00:00Z",
+        "provenance": {
+          "runtime": "declared by the runtime",
+          "model_configured": "declared by the runtime configuration",
+          "model_reported": "reported by the running session",
+          "session": "session reference",
+          "started_at": "recorded at dispatch"
+        }
+      },
+      "expects": {
+        "rc_nonzero": true,
+        "diagnostic_names_field": "runtime"
+      }
+    },
+    {
+      "id": "continuity-update",
+      "kind": "continuity-update",
+      "target": "docs/update.json",
+      "input": {
+        "packet_id": "005-003-fixture-packet-001",
+        "attempt": 1,
+        "goal": "orient the next session with bounded context",
+        "decisions": [
+          {
+            "decision": "run the compact view first",
+            "rationale": "bounded context"
+          }
+        ],
+        "uncertainties": [],
+        "next_action": "dispatch the next unit"
+      }
+    },
+    {
+      "id": "status-view",
+      "kind": "compact-view-invocation",
+      "target": "stdout",
+      "command": [
+        "python3",
+        "<skill-dir>/scripts/cdad_packet.py",
+        "status",
+        "--project-root",
+        "<ABS>"
+      ]
+    },
+    {
+      "id": "open-unit",
+      "kind": "unit-open-invocation",
+      "target": "docs/.cdad-state.json",
+      "command": [
+        "python3",
+        "<skill-dir>/scripts/cdad_packet.py",
+        "open-unit",
+        "--project-root",
+        "<ABS>"
+      ]
+    }
+  ]
+}

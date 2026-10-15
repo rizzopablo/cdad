@@ -1,0 +1,31 @@
+{
+  "authority": {
+    "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
+    "expires_on": null,
+    "state": "active"
+  },
+  "classification": "dispatched-unknown",
+  "escalate": false,
+  "execution_id": "exec-003-006-runtime-adoption-001",
+  "head": {
+    "body_sha256": "89652deba326387f31ca18b95ca09cba0ced9765dd3f6251d002b52bc6279ef3",
+    "seq": 1
+  },
+  "packet_id": "003-006-runtime-adoption-implementer-green-005",
+  "reasons": [
+    "a dispatch is recorded with no receipt: the session is not classified as a failure and repeating is not authorized (invariant 3)"
+  ],
+  "reconcile": "reconcile-v1",
+  "repeat_effect": false,
+  "schema_version": 1,
+  "signals": {
+    "dispatch": "dispatched",
+    "materialization": "open",
+    "receipt": {
+      "effect": null,
+      "semantic_status": null,
+      "state": "absent"
+    }
+  },
+  "unknowns": []
+}

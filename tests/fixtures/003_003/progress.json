@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (progreso real) / P7",
+  "description": "Trabajo legítimo y progresivo: 6 llamadas equivalentes (misma huella) cuyo token de progreso avanza en cada tramo de 3 — ejecución larga pero saludable. Distinción no-alarma: sin incidentes, sin intervención (P7).",
+  "session_id": "sess-sim-progress-healthy",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:01:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:02:00Z"},
+    {"i": 4, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:03:00Z"},
+    {"i": 5, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p2", "at": "2026-10-06T00:04:00Z"},
+    {"i": 6, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest"], "result_class": "ok", "progress_token": "p2", "at": "2026-10-06T00:05:00Z"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "attempt": 1,
+  "decisions": [
+    {
+      "decision": "Clase declarada en la referencia; sin clasificacion por rutas",
+      "rationale": "D2/D3 de la spec 003-007"
+    }
+  ],
+  "goal": "T1 de 003-007: clases de referencia y proyeccion de autoridad",
+  "next_action": "Pasar a GREEN con los focales declarados",
+  "packet_id": "003-007-living-continuity-implementer-red-001",
+  "references": [
+    "fixture/legacy-note.md"
+  ],
+  "uncertainties": [
+    "V2: canonicalizacion de fields fijada por este RED"
+  ]
+}

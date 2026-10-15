@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P8 (generalidad — proyecto Go con tests co-ubicados) / P7",
+  "description": "Generalidad (P8/D9): proyecto GO (companión en go-project/: tests co-ubicados junto al código, convención Go) — ciclo TDD: escribir código, test rojo, arreglo, test verde; token de progreso avanza. Trabajo legítimo y progresivo -> sin incidentes, sin escalada, sin intervención (P7); classify determinista (invariante 1).",
+  "session_id": "sess-sim-go-kata",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "write", "args": ["kata/kata.go"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "tool-error", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "edit", "args": ["kata/kata.go"], "result_class": "ok", "progress_token": "p2", "at": "2026-10-06T00:10:00Z"},
+    {"i": 4, "kind": "tool_call", "tool": "bash", "args": ["go", "test", "./kata/"], "result_class": "ok", "progress_token": "p3", "at": "2026-10-06T00:15:00Z"}
+  ]
+}

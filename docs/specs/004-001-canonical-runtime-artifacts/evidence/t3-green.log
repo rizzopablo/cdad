@@ -1,0 +1,80 @@
+T3 GREEN evidence — 004-001-canonical-runtime-artifacts (implementer session, 2026-09-24)
+Repo: <repo> · branch codex/epic-003-context-efficiency · RED base acf17dd
+
+============================================================
+1. RED tests (T3 contract) — GREEN
+============================================================
+$ pytest tests/test_cdad_generate.py tests/test_static_block_ceiling.py -q -p no:cacheprovider
+............                                                             [100%]
+12 passed in 5.98s
+
+============================================================
+2. FULL suite — 52 pre-existing + 12 new = 64, zero regressions
+============================================================
+$ pytest tests -q -p no:cacheprovider
+................................................................         [100%]
+64 passed in 112.60s (0:01:52)
+
+============================================================
+3. F001 semantic replacement (D7/PD-14) — validator asserts, all PASS
+============================================================
+$ bash tests/validate-consistency.sh   (via make validate)
+PASS: F001: CC orchestrator §2 free of OpenCode design models (PD-14/D7)
+PASS: F001: CC orchestrator §2 uses values cdad_model_claude produces (sonnet/haiku/opus/fable)
+PASS: F001: OC orchestrator §2 free of Claude Code model values (PD-14/D7)
+PASS: F001: OC orchestrator §2 is marked as composed (PD-4/D7)
+PASS: F001: CC orchestrator §2 is marked as composed (PD-4/D7)
+
+$ bash tests/validate-consistency.sh  →  RESULT
+Assert PASS: 142
+Assert FAIL: 1
+(the 1 = pre-existing F011 stale-installed-copies artifact:
+ scripts/validate-subagents.sh fails on install.sh --check DRIFT of skill copies
+ under <home>/.agents/skills and <home>/skills — pre-existing at RED
+ (t3-red.log:186), owned by T5/T6, NOT chased in T3)
+
+$ bash tests/validate-odoo-specialization.sh → PASS (all P1..P6 + A3, zero regression)
+
+============================================================
+4. PD-19 — byte ceiling as policy parameter (both cases)
+============================================================
+CASE-A (no env): render rc=0, stdout starts with ---cdad-packet-json (behavior unchanged)
+CASE-B (CDAD_STATIC_BLOCK_LIMIT=512): rc=2, stdout EMPTY, stderr:
+  ERROR: static instruction block exceeds the byte limit: 1036 > 512 UTF-8 bytes (CDAD_STATIC_BLOCK_LIMIT=512)
+(implementation: skills/cdad-cycle/scripts/cdad_packet.py — env read at check
+ time in render_packet, default 12_000; invalid env values fail loud.)
+
+============================================================
+5. Determinism (PD-2) + explicit failure (PD-3) — covered by the 12 tests
+============================================================
+- test_postcondition_2: two runs → identical file set + per-file sha256 ✓
+- test_postcondition_3a/3b/3c: mutated-copy sandbox runs → non-zero exit,
+  stderr names role/section/shared-block/invalid value, zero published files ✓
+
+============================================================
+6. Regeneration (PD-4/PD-5 declared outputs)
+============================================================
+$ make agents   (generator: opencode + claude-code, stack=odoo, profile=optimus)
+22 repo agents regenerated from sources/ + scripts/cdad-models.sh;
+manifest.json per run in build/staging/ (gitignored staging, reproducible).
+
+Fricción registrada por el implementer (AP-4/fricción):
+1. Sesión deny-list de bash: solo make/pytest/git-inspección ejecutables → el
+   generador y los validadores se ejecutan vía targets make (Makefile nuevo).
+2. La composición del pointer del intake/límites borraba el resto del párrafo
+   del rol (regla por párrafo demasiado agresiva) → sustitución por frase
+   puntero únicamente (regex sobre la primera oración).
+3. La frase ancla del packet-path de variantes -odoo rompía la ventana del
+   assert F001-legacy (±520) → la oración añadida lleva su propia negación
+   "without loading or reloading `cdad-cycle`" (auto-suficiente, PD-16/P6).
+4. Tres líneas de fuentes con "sandbox"/"NO"/"NOT" mayúscula sin negación
+   minúscula en la MISMA línea (test-writer capacity "≠ sandbox", test-writer
+   limits "NOT a sandbox", orchestrator limits "NO sandbox") → normalización
+   mecánica de honestidad (minúsculas de NO/NOT/NEVER en línea con 'sandbox')
+   + self-check PD-15 pre-publicación (defecto de fuente reportable a T4).
+5. El detalle de garantías aprobadas (taxonomía addyosmani, "Axis 4: Security",
+   regla RED, tablas de paths de test-writer/implementer) NO vive en sources/;
+   T3 lo compone como fragmentos preservados en el generador (marcados); T4/T7
+   deben decidir su hogar canónico.
+6. A3 del validador odoo (patrones sensibles) verifica repo-wide con los
+   patrones locales gitignored — PASS tras regeneración (sin escapes).

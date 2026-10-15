@@ -1,0 +1,609 @@
+============================================================
+BASELINE (before T3 test edits) — 2026-09-24, test-writer RED session
+$ bash tests/validate-consistency.sh
+############################################
+# epic-002-cdad-audit-fixes — validate-consistency
+############################################
+(sections are filled in feature by feature; see plan.md)
+
+############################################
+# F002 — single-source state schema (B9)
+############################################
+PASS: F002: state-template.json declares the field 'stack' (skills/cdad-cycle/assets/state-template.json contains '"stack"')
+PASS: F002: state-template.json declares the field 'active_epic' (skills/cdad-cycle/assets/state-template.json contains '"active_epic"')
+PASS: F002: state-template.json declares the field 'epic_stage' (skills/cdad-cycle/assets/state-template.json contains '"epic_stage"')
+PASS: F002: state-template.json declares the field 'epic_features' (skills/cdad-cycle/assets/state-template.json contains '"epic_features"')
+PASS: F002: state-template.json declares the field 'epic_history' (skills/cdad-cycle/assets/state-template.json contains '"epic_history"')
+PASS: F002: state-template.json declares the field 'audit_status' (skills/cdad-cycle/assets/state-template.json contains '"audit_status"')
+PASS: F002: state-template.json declares the field 'postconditions_status' (skills/cdad-cycle/assets/state-template.json contains '"postconditions_status"')
+PASS: F002: state-template.json declares the field 'stage_history' (skills/cdad-cycle/assets/state-template.json contains '"stage_history"')
+PASS: F002: state-template.json declares the field 'active_feature' (skills/cdad-cycle/assets/state-template.json contains '"active_feature"')
+PASS: F002: state-template.json declares the field 'current_stage' (skills/cdad-cycle/assets/state-template.json contains '"current_stage"')
+PASS: F002: state-template.json declares the field 'tdd_substage' (skills/cdad-cycle/assets/state-template.json contains '"tdd_substage"')
+PASS: F002: state-template.json declares the field 'approver' (skills/cdad-cycle/assets/state-template.json contains '"approver"')
+PASS: F002: state-template.json declares the field 'last_updated' (skills/cdad-cycle/assets/state-template.json contains '"last_updated"')
+PASS: F002: state-template.json declares the field 'version' (skills/cdad-cycle/assets/state-template.json contains '"version"')
+PASS: F002: state-detection.md documents the current_stage value 'idle' (skills/cdad-cycle/references/state-detection.md contains 'idle')
+PASS: F002: SKILL.md § State file references assets/state-template.json as the full schema (skills/cdad-cycle/SKILL.md contains 'assets/state-template\.json')
+PASS: F002: bootstrap.md Step 4 references assets/state-template.json instead of reproducing the schema (skills/cdad-cycle/references/bootstrap.md contains 'assets/state-template\.json')
+PASS: F002: cdad-epic/SKILL.md references the cdad-cycle base schema instead of duplicating it (skills/cdad-epic/SKILL.md contains 'cdad-cycle/assets/state-template\.json')
+
+############################################
+# F004 — verdict-tuple in the 4 reviewer agents (B3) + load table (M5)
+############################################
+PASS: F004: agents/cdad-reviewer.md includes the Bucket field in the finding format (agents/cdad-reviewer.md contains 'Bucket')
+PASS: F004: agents/cdad-reviewer.md includes an Abstentions section (agents/cdad-reviewer.md contains 'Abstenti')
+PASS: F004: agents/claude-code/cdad-reviewer.md includes the Bucket field in the finding format (agents/claude-code/cdad-reviewer.md contains 'Bucket')
+PASS: F004: agents/claude-code/cdad-reviewer.md includes an Abstentions section (agents/claude-code/cdad-reviewer.md contains 'Abstenti')
+PASS: F004: agents/cdad-reviewer-odoo.md includes the Bucket field in the finding format (agents/cdad-reviewer-odoo.md contains 'Bucket')
+PASS: F004: agents/cdad-reviewer-odoo.md includes an Abstentions section (agents/cdad-reviewer-odoo.md contains 'Abstenti')
+PASS: F004: agents/claude-code/cdad-reviewer-odoo.md includes the Bucket field in the finding format (agents/claude-code/cdad-reviewer-odoo.md contains 'Bucket')
+PASS: F004: agents/claude-code/cdad-reviewer-odoo.md includes an Abstentions section (agents/claude-code/cdad-reviewer-odoo.md contains 'Abstenti')
+PASS: F004: the 'How to read the references' table includes verdict-tuple.md
+PASS: F004: the 'How to read the references' table includes claude-code-delegation.md
+
+############################################
+# F009 — calibrated bash allowlist (B1, M3, M4)
+############################################
+PASS: F009: agents/cdad-test-writer.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-test-writer.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-implementer.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-implementer.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-test-writer-odoo.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-implementer-odoo.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-architect-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-architect-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-architect-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-reviewer-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-scribe-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-architect.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-architect.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-architect.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-reviewer.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-reviewer.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-scribe.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-scribe.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: base emission (architect): 'wc *' allow present
+PASS: F009: base emission (architect): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (architect): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (test-writer): 'wc *' allow present
+PASS: F009: base emission (test-writer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (test-writer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (implementer): 'wc *' allow present
+PASS: F009: base emission (implementer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (implementer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (reviewer): 'wc *' allow present
+PASS: F009: base emission (reviewer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (reviewer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (scribe): 'wc *' allow present
+PASS: F009: base emission (scribe): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (scribe): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: cdad-test-writer (Claude Code) has a PreToolUse hook with a Bash matcher (agents/claude-code/cdad-test-writer.md contains 'matcher:[[:space:]]*Bash')
+PASS: F009: cdad-implementer (Claude Code) has a PreToolUse hook with a Bash matcher (agents/claude-code/cdad-implementer.md contains 'matcher:[[:space:]]*Bash')
+PASS: F009: path-guard.sh implements a guard mode for Bash (scripts/claude-code-path-guard.sh contains 'bash-content-guard|BASH_CONTENT')
+PASS: F009: path-guard.sh documents or fixes the fail-open for external absolute paths (scripts/claude-code-path-guard.sh contains 'outside.*PWD|outside the project')
+
+############################################
+# F010 — agent hygiene (M2, M6, M7, M8)
+############################################
+PASS: F010 (M2): cdad-scribe (Claude Code) no longer references docs/memory-bank.md (agents/claude-code/cdad-scribe.md does NOT contain 'docs/memory-bank\.md')
+PASS: F010 (M2): cdad-scribe (Claude Code) references activeContext.md (the real Memory Bank) (agents/claude-code/cdad-scribe.md contains 'activeContext\.md')
+PASS: F010 (M6): claude-code-delegation.md no longer has the invented Python API (skills/cdad-cycle/references/claude-code-delegation.md does NOT contain 'from Agent import agent')
+PASS: F010 (M6): claude-code-delegation.md no longer cites AP-7 for the isolation invariant (it is AP-1/AP-2) (skills/cdad-cycle/references/claude-code-delegation.md does NOT contain '\(AP-7')
+PASS: F010 (M7): skills/handoff-prompts.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/re-entry.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/feature-handoff.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/epic-planning.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M8): verdict-tuple.md without a reference to 'my arXiv pipeline' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'my arXiv pipeline')
+PASS: F010 (M8): verdict-tuple.md without a reference to 'fb-012' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'fb-012')
+PASS: F010 (M8): verdict-tuple.md without the owner's proper name (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'Approved by Pablo')
+
+############################################
+# F001 — honest profiles note + §2 block drift (B7)
+############################################
+PASS: F001: skills/cdad-cycle/SKILL.md mentions the --basic profile in the switch (skills/cdad-cycle/SKILL.md contains '\-\-basic')
+PASS: F001: skills/cdad-cycle/SKILL.md caveats the anti-bias invariant for the basic profile (skills/cdad-cycle/SKILL.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+PASS: F001: agents/cdad-orchestrator.md mentions the --basic profile in the switch (agents/cdad-orchestrator.md contains '\-\-basic')
+PASS: F001: agents/cdad-orchestrator.md caveats the anti-bias invariant for the basic profile (agents/cdad-orchestrator.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+PASS: F001: agents/claude-code/cdad-orchestrator.md mentions the --basic profile in the switch (agents/claude-code/cdad-orchestrator.md contains '\-\-basic')
+PASS: F001: agents/claude-code/cdad-orchestrator.md caveats the anti-bias invariant for the basic profile (agents/claude-code/cdad-orchestrator.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+PASS: F001: §2 block (Roles Contract + profiles note) identical in SKILL.md and the 2 orchestrators
+
+############################################
+# F003 — SKILL.md ↔ stage-N gates synchronized + B11
+############################################
+PASS: F003: SKILL.md's Gate 2→3 includes the plan.md item (previously only in stage-2) (skills/cdad-cycle/SKILL.md contains 'plan\.md.*exists.*self-review|If the spec is complex')
+PASS: F003: Gate 3→4 of stage-3-tdd.md includes 'Test Audit completed and approved' (previously only in SKILL.md) (skills/cdad-cycle/references/stage-3-tdd.md contains 'Test Audit completed and approved')
+PASS: F003: Gate 3→4 of stage-3-tdd.md includes 'explicit justification in spec.md' (previously only in SKILL.md) (skills/cdad-cycle/references/stage-3-tdd.md contains 'explicit justification in spec\.md')
+PASS: F003: Gate 5→done of stage-5-merge.md includes the CI carve-out (previously only in SKILL.md) (skills/cdad-cycle/references/stage-5-merge.md contains 'If NO CI is configured')
+PASS: F003: Gate 5→done of SKILL.md includes 'Feature merged' (previously only in stage-5-merge.md) (skills/cdad-cycle/SKILL.md contains 'Feature merged')
+PASS: F003 (B11): skills/cdad-cycle/SKILL.md no longer has the absolute wording of the 4→5 gate (skills/cdad-cycle/SKILL.md does NOT contain '\[ \] User approved prioritization \(not delegated to the LLM\)\.')
+PASS: F003 (B11): skills/cdad-cycle/SKILL.md mentions the explicit-delegation exception in the gate (skills/cdad-cycle/SKILL.md contains 'agent-delegated with an explicit request')
+PASS: F003 (B11): skills/cdad-cycle/references/stage-4-review.md no longer has the absolute wording of the 4→5 gate (skills/cdad-cycle/references/stage-4-review.md does NOT contain '\[ \] User approved prioritization \(not delegated to the LLM\)\.')
+PASS: F003 (B11): skills/cdad-cycle/references/stage-4-review.md mentions the explicit-delegation exception in the gate (skills/cdad-cycle/references/stage-4-review.md contains 'agent-delegated with an explicit request')
+PASS: F003 (B11): the short AP-10 in stage-2 is no longer absolute without the exception (skills/cdad-cycle/references/stage-2-specification.md does NOT contain '\*\*AP-10\*\*: delegating approval to the LLM\. Non-delegable\.')
+
+############################################
+# F007 — Claude Code orchestrator repaired (B6)
+############################################
+PASS: F007: agents/claude-code/cdad-orchestrator.md instructs delegating via a tool (not task/delegate) (agents/claude-code/cdad-orchestrator.md contains '`Agent` tool')
+PASS: F007: agents/claude-code/cdad-orchestrator.md mentions the Agent tool with subagent_type (agents/claude-code/cdad-orchestrator.md contains 'Agent.{0,10}subagent_type')
+PASS: F007: agents/claude-code/cdad-orchestrator.md no longer instructs 'delegate' as the per-role invocation mechanism (agents/claude-code/cdad-orchestrator.md does NOT contain 'via `delegate`; roles write-capable')
+PASS: F007: agents/claude-code/cdad-orchestrator.md resolves the stack suffix before delegating (parity with OpenCode) (agents/claude-code/cdad-orchestrator.md contains 'resolve the stack')
+PASS: F007: agents/claude-code/cdad-orchestrator.md mentions the cdad-<role>-<stack> pattern for specialized variants (agents/claude-code/cdad-orchestrator.md contains 'cdad-<role>-<stack>')
+
+############################################
+# F008 — anti-bias guard also for cdad_model_claude (B2)
+############################################
+PASS: F008: cdad_model_claude profile 'economical' — reviewer (opus) != implementer (haiku)
+PASS: F008: cdad_model_claude profile 'optimus' — reviewer (opus) != implementer (haiku)
+PASS: F008: cdad_model_claude profile 'premium' — reviewer (opus) != implementer (sonnet)
+PASS: F008: validate-subagents.sh evaluates cdad_model_claude (previously only OpenCode's cdad_model) (scripts/validate-subagents.sh contains 'cdad_model_claude')
+
+############################################
+# F005 — reviewer taxonomy unified (B4)
+############################################
+PASS: F005: agents/claude-code/cdad-reviewer.md no longer uses the CRITICAL/MAJOR/MINOR/TRIVIAL taxonomy (agents/claude-code/cdad-reviewer.md does NOT contain '\*\*CRITICAL\*\*|\*\*MAJOR\*\*|\*\*MINOR\*\*|\*\*TRIVIAL\*\*')
+PASS: F005: agents/claude-code/cdad-reviewer.md uses the addyosmani taxonomy (Critical/Required/Nit/Optional/FYI) (agents/claude-code/cdad-reviewer.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/claude-code/cdad-reviewer.md includes the Security axis (previously absent — the only one of the 4 reviewers without it) (agents/claude-code/cdad-reviewer.md contains 'Axis 4: Security')
+PASS: F005: agents/cdad-reviewer.md already used the addyosmani taxonomy (no changes, parity verification) (agents/cdad-reviewer.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/cdad-reviewer-odoo.md already used the addyosmani taxonomy (no changes, parity verification) (agents/cdad-reviewer-odoo.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/claude-code/cdad-reviewer-odoo.md already used the addyosmani taxonomy (no changes, parity verification) (agents/claude-code/cdad-reviewer-odoo.md contains 'Critical:.*Blocks merge')
+
+############################################
+# F006 — property tests contradiction + RED discipline (B5 + decision 3)
+############################################
+PASS: F006: skills/cdad-cycle/SKILL.md no longer groups property tests inside the cycle's exclusion phrase (skills/cdad-cycle/SKILL.md does NOT contain 'Exhaustive coverage, property tests, load')
+PASS: F006: skills/cdad-cycle/SKILL.md clarifies that property tests derived from the spec's invariants do belong to the cycle (skills/cdad-cycle/SKILL.md contains 'Property tests are NOT the same question|Property tests derived from invariants')
+PASS: F006: skills/cdad-cycle/SKILL.md declares the RED-verifies-the-requirement rule (skills/cdad-cycle/SKILL.md contains 'RED verifies the requirement, it does not maximize coverage')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md no longer groups property tests inside the cycle's exclusion phrase (skills/cdad-cycle/references/stage-3-tdd.md does NOT contain 'Exhaustive coverage, property tests, load')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md clarifies that property tests derived from the spec's invariants do belong to the cycle (skills/cdad-cycle/references/stage-3-tdd.md contains 'Property tests are NOT the same question|Property tests derived from invariants')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md declares the RED-verifies-the-requirement rule (skills/cdad-cycle/references/stage-3-tdd.md contains 'RED verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/cdad-test-writer.md — the RED Procedure includes the no-over-specification rule (agents/cdad-test-writer.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/claude-code/cdad-test-writer.md — the RED Procedure includes the no-over-specification rule (agents/claude-code/cdad-test-writer.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/cdad-test-writer-odoo.md — the RED Procedure includes the no-over-specification rule (agents/cdad-test-writer-odoo.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/claude-code/cdad-test-writer-odoo.md — the RED Procedure includes the no-over-specification rule (agents/claude-code/cdad-test-writer-odoo.md contains 'verifies the requirement, it does not maximize coverage')
+
+############################################
+# F011 — consolidated validator (B8)
+############################################
+PASS: F011 (B8): validate-subagents.sh no longer requires impl.diff to still apply against the tree (self-invalidating assertion retired) (scripts/validate-subagents.sh does NOT contain 'git apply --check --reverse')
+PASS: F011 (B8): validate-subagents.sh still verifies impl.diff's format (well-formed diff) (scripts/validate-subagents.sh contains 'diff --git')
+FAIL: F011: scripts/validate-subagents.sh (active profile) → FAIL — run it directly to see details
+PASS: F011: tests/validate-odoo-specialization.sh → PASS (zero regression over cdad-003/004)
+
+############################################
+# F012 — epic dogfood (M9 fixed, M10)
+############################################
+PASS: F012 (M9): retrospective closure.md of epic-001-superpowers-gaps exists (docs/epics/epic-001-superpowers-gaps/closure.md exists)
+PASS: F012 (M9): closure.md has a closure date (docs/epics/epic-001-superpowers-gaps/closure.md contains 'Cerrado|Closed')
+PASS: F012 (M10): documented decision about the absence of a cdad-epic-* sub-agent (skills/cdad-epic/SKILL.md contains 'Why there is no .cdad-epic-.* sub-agent')
+############################################
+# RESULT
+############################################
+Assert PASS: 138
+Assert FAIL: 1
+FAIL: 1 assert(s) failed.
+[probe] returncode: 1
+============================================================
+
+
+==================================== ERRORS ====================================
+________________ ERROR collecting tests/test_packet_prepare.py _________________
+ImportError while importing test module '<repo>/tests/test_packet_prepare.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_packet_prepare.py:24: in <module>
+    from tests.test_role_packet_render import PACKET_BEGIN, PacketFixture, parse_packet
+E   ModuleNotFoundError: No module named 'tests'
+_____________ ERROR collecting tests/test_role_packet_consumers.py _____________
+ImportError while importing test module '<repo>/tests/test_role_packet_consumers.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_role_packet_consumers.py:14: in <module>
+    from tests.test_role_packet_render import PacketFixture
+E   ModuleNotFoundError: No module named 'tests'
+______________ ERROR collecting tests/test_role_packet_render.py _______________
+ImportError while importing test module '<repo>/tests/test_role_packet_render.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_role_packet_render.py:16: in <module>
+    from tests.test_role_packets import (
+E   ModuleNotFoundError: No module named 'tests'
+________ ERROR collecting tests/test_role_packet_review_regressions.py _________
+ImportError while importing test module '<repo>/tests/test_role_packet_review_regressions.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_role_packet_review_regressions.py:16: in <module>
+    from tests.test_role_packet_render import PacketFixture
+E   ModuleNotFoundError: No module named 'tests'
+=========================== short test summary info ============================
+ERROR tests/test_packet_prepare.py
+ERROR tests/test_role_packet_consumers.py
+ERROR tests/test_role_packet_render.py
+ERROR tests/test_role_packet_review_regressions.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+4 errors in 0.15s
+============================================================
+DIAGNOSTIC (pre-existing, not caused by T3 edits): why scripts/validate-subagents.sh fails
+$ bash scripts/validate-subagents.sh
+== cdad-001 validate-subagents ==
+[runtime] agents in <home>/.config/opencode/agents
+✅ 10/10 runtime agents present (5 base + 5 Odoo variants; frontmatter OK)
+[repo] cross-check: install.sh --check
+DRIFT: differs <home>/.agents/skills/cdad-epic/references/state-detection.md
+DRIFT: differs <home>/skills/cdad-epic/references/state-detection.md
+[2026-09-24 19:53:26] Check: FAIL — <home>/.config/opencode/skills/cdad-cycle <home>/.agents/skills/cdad-cycle <home>/skills/cdad-cycle <home>/.config/opencode/skills/cdad-epic <home>/.agents/skills/cdad-epic <home>/skills/cdad-epic (profile basic)
+[artifacts] <repo>/docs/specs/cdad-001-validate-subagents/artifacts
+✅ architect -> OK
+✅ test-writer -> OK
+✅ implementer -> OK
+✅ reviewer -> OK
+✅ scribe -> OK
+[models] expected model per agent
+[models] active profile: basic
+[models] basic profile: no fixed models — agents inherit the runtime's model; the reviewer≠implementer anti-bias is NOT verified in this profile (ADR-007)
+== RESULT: FAIL (see the ❌ messages above) ==
+[stderr]
+❌ install.sh --check failed (rc=1)
+[probe] returncode: 1
+============================================================
+
+....................................................                     [100%]
+52 passed in 114.37s (0:01:54)
+============================================================
+AFTER T3 test edits: F001-replacement semantic asserts (expected RED: CC model leakage + missing composed marker)
+$ bash tests/validate-consistency.sh
+############################################
+# epic-002-cdad-audit-fixes — validate-consistency
+############################################
+(sections are filled in feature by feature; see plan.md)
+
+############################################
+# F002 — single-source state schema (B9)
+############################################
+PASS: F002: state-template.json declares the field 'stack' (skills/cdad-cycle/assets/state-template.json contains '"stack"')
+PASS: F002: state-template.json declares the field 'active_epic' (skills/cdad-cycle/assets/state-template.json contains '"active_epic"')
+PASS: F002: state-template.json declares the field 'epic_stage' (skills/cdad-cycle/assets/state-template.json contains '"epic_stage"')
+PASS: F002: state-template.json declares the field 'epic_features' (skills/cdad-cycle/assets/state-template.json contains '"epic_features"')
+PASS: F002: state-template.json declares the field 'epic_history' (skills/cdad-cycle/assets/state-template.json contains '"epic_history"')
+PASS: F002: state-template.json declares the field 'audit_status' (skills/cdad-cycle/assets/state-template.json contains '"audit_status"')
+PASS: F002: state-template.json declares the field 'postconditions_status' (skills/cdad-cycle/assets/state-template.json contains '"postconditions_status"')
+PASS: F002: state-template.json declares the field 'stage_history' (skills/cdad-cycle/assets/state-template.json contains '"stage_history"')
+PASS: F002: state-template.json declares the field 'active_feature' (skills/cdad-cycle/assets/state-template.json contains '"active_feature"')
+PASS: F002: state-template.json declares the field 'current_stage' (skills/cdad-cycle/assets/state-template.json contains '"current_stage"')
+PASS: F002: state-template.json declares the field 'tdd_substage' (skills/cdad-cycle/assets/state-template.json contains '"tdd_substage"')
+PASS: F002: state-template.json declares the field 'approver' (skills/cdad-cycle/assets/state-template.json contains '"approver"')
+PASS: F002: state-template.json declares the field 'last_updated' (skills/cdad-cycle/assets/state-template.json contains '"last_updated"')
+PASS: F002: state-template.json declares the field 'version' (skills/cdad-cycle/assets/state-template.json contains '"version"')
+PASS: F002: state-detection.md documents the current_stage value 'idle' (skills/cdad-cycle/references/state-detection.md contains 'idle')
+PASS: F002: SKILL.md § State file references assets/state-template.json as the full schema (skills/cdad-cycle/SKILL.md contains 'assets/state-template\.json')
+PASS: F002: bootstrap.md Step 4 references assets/state-template.json instead of reproducing the schema (skills/cdad-cycle/references/bootstrap.md contains 'assets/state-template\.json')
+PASS: F002: cdad-epic/SKILL.md references the cdad-cycle base schema instead of duplicating it (skills/cdad-epic/SKILL.md contains 'cdad-cycle/assets/state-template\.json')
+
+############################################
+# F004 — verdict-tuple in the 4 reviewer agents (B3) + load table (M5)
+############################################
+PASS: F004: agents/cdad-reviewer.md includes the Bucket field in the finding format (agents/cdad-reviewer.md contains 'Bucket')
+PASS: F004: agents/cdad-reviewer.md includes an Abstentions section (agents/cdad-reviewer.md contains 'Abstenti')
+PASS: F004: agents/claude-code/cdad-reviewer.md includes the Bucket field in the finding format (agents/claude-code/cdad-reviewer.md contains 'Bucket')
+PASS: F004: agents/claude-code/cdad-reviewer.md includes an Abstentions section (agents/claude-code/cdad-reviewer.md contains 'Abstenti')
+PASS: F004: agents/cdad-reviewer-odoo.md includes the Bucket field in the finding format (agents/cdad-reviewer-odoo.md contains 'Bucket')
+PASS: F004: agents/cdad-reviewer-odoo.md includes an Abstentions section (agents/cdad-reviewer-odoo.md contains 'Abstenti')
+PASS: F004: agents/claude-code/cdad-reviewer-odoo.md includes the Bucket field in the finding format (agents/claude-code/cdad-reviewer-odoo.md contains 'Bucket')
+PASS: F004: agents/claude-code/cdad-reviewer-odoo.md includes an Abstentions section (agents/claude-code/cdad-reviewer-odoo.md contains 'Abstenti')
+PASS: F004: the 'How to read the references' table includes verdict-tuple.md
+PASS: F004: the 'How to read the references' table includes claude-code-delegation.md
+
+############################################
+# F009 — calibrated bash allowlist (B1, M3, M4)
+############################################
+PASS: F009: agents/cdad-test-writer.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-test-writer.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-implementer.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-implementer.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-test-writer-odoo.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-test-writer-odoo.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does NOT have "*": allow
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'cat *' (arbitrary content reading) (does not contain '"cat \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'head *' (does not contain '"head \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: bash does not allow 'tail *' (does not contain '"tail \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-implementer-odoo.md: preserves git commit/add (contract §5, write-capable roles commit their artifact) (agents/cdad-implementer-odoo.md contains '"git commit\*?":[[:space:]]*allow|"git add')
+PASS: F009: agents/cdad-architect-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-architect-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-architect-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-reviewer-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe-odoo.md: bash has NO unscoped 'git *': allow (AP-17) (does not contain '"git \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe-odoo.md: preserves git diff (non-mutating inspection) (agents/cdad-scribe-odoo.md contains '"git diff\*?":[[:space:]]*allow')
+PASS: F009: agents/cdad-architect.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-architect.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-architect.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-reviewer.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-reviewer.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-reviewer.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: agents/cdad-scribe.md: the bash allowlist is no longer Go-only (does not contain 'go test\*')
+PASS: F009: agents/cdad-scribe.md: the agnostic allowlist includes 'make *' (the methodology's AGENTS.md convention) (agents/cdad-scribe.md contains '"make \*":[[:space:]]*allow')
+PASS: F009: base emission (architect): 'wc *' allow present
+PASS: F009: base emission (architect): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (architect): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (test-writer): 'wc *' allow present
+PASS: F009: base emission (test-writer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (test-writer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (implementer): 'wc *' allow present
+PASS: F009: base emission (implementer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (implementer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (reviewer): 'wc *' allow present
+PASS: F009: base emission (reviewer): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (reviewer): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: base emission (scribe): 'wc *' allow present
+PASS: F009: base emission (scribe): 'rtk wc *' allow present (complete pair)
+PASS: F009: base emission (scribe): catch-all deny stays (unlisted effects remain denied)
+PASS: F009: cdad-test-writer (Claude Code) has a PreToolUse hook with a Bash matcher (agents/claude-code/cdad-test-writer.md contains 'matcher:[[:space:]]*Bash')
+PASS: F009: cdad-implementer (Claude Code) has a PreToolUse hook with a Bash matcher (agents/claude-code/cdad-implementer.md contains 'matcher:[[:space:]]*Bash')
+PASS: F009: path-guard.sh implements a guard mode for Bash (scripts/claude-code-path-guard.sh contains 'bash-content-guard|BASH_CONTENT')
+PASS: F009: path-guard.sh documents or fixes the fail-open for external absolute paths (scripts/claude-code-path-guard.sh contains 'outside.*PWD|outside the project')
+
+############################################
+# F010 — agent hygiene (M2, M6, M7, M8)
+############################################
+PASS: F010 (M2): cdad-scribe (Claude Code) no longer references docs/memory-bank.md (agents/claude-code/cdad-scribe.md does NOT contain 'docs/memory-bank\.md')
+PASS: F010 (M2): cdad-scribe (Claude Code) references activeContext.md (the real Memory Bank) (agents/claude-code/cdad-scribe.md contains 'activeContext\.md')
+PASS: F010 (M6): claude-code-delegation.md no longer has the invented Python API (skills/cdad-cycle/references/claude-code-delegation.md does NOT contain 'from Agent import agent')
+PASS: F010 (M6): claude-code-delegation.md no longer cites AP-7 for the isolation invariant (it is AP-1/AP-2) (skills/cdad-cycle/references/claude-code-delegation.md does NOT contain '\(AP-7')
+PASS: F010 (M7): skills/handoff-prompts.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/re-entry.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/feature-handoff.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M7): skills/epic-planning.md is a short stub (≤10 lines) or was removed
+PASS: F010 (M8): verdict-tuple.md without a reference to 'my arXiv pipeline' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'my arXiv pipeline')
+PASS: F010 (M8): verdict-tuple.md without a reference to 'fb-012' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'fb-012')
+PASS: F010 (M8): verdict-tuple.md without the owner's proper name (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'Approved by Pablo')
+
+############################################
+# F001 — honest profiles note + §2 block drift (B7)
+############################################
+PASS: F001: skills/cdad-cycle/SKILL.md mentions the --basic profile in the switch (skills/cdad-cycle/SKILL.md contains '\-\-basic')
+PASS: F001: skills/cdad-cycle/SKILL.md caveats the anti-bias invariant for the basic profile (skills/cdad-cycle/SKILL.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+PASS: F001: agents/cdad-orchestrator.md mentions the --basic profile in the switch (agents/cdad-orchestrator.md contains '\-\-basic')
+PASS: F001: agents/cdad-orchestrator.md caveats the anti-bias invariant for the basic profile (agents/cdad-orchestrator.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+PASS: F001: agents/claude-code/cdad-orchestrator.md mentions the --basic profile in the switch (agents/claude-code/cdad-orchestrator.md contains '\-\-basic')
+PASS: F001: agents/claude-code/cdad-orchestrator.md caveats the anti-bias invariant for the basic profile (agents/claude-code/cdad-orchestrator.md contains 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic')
+FAIL: F001: CC orchestrator §2 mentions OpenCode design models that cdad_model_claude does not produce (PD-14/D7)
+FAIL: F001: CC orchestrator §2 lacks any cdad_model_claude-produced model value (PD-14/D7)
+PASS: F001: OC orchestrator §2 free of Claude Code model values (PD-14/D7)
+FAIL: F001: OC orchestrator §2 lacks the composed marker — §2 is a composed artifact of the generator (PD-4/D7)
+FAIL: F001: CC orchestrator §2 lacks the composed marker — §2 is a composed artifact of the generator (PD-4/D7)
+
+############################################
+# F003 — SKILL.md ↔ stage-N gates synchronized + B11
+############################################
+PASS: F003: SKILL.md's Gate 2→3 includes the plan.md item (previously only in stage-2) (skills/cdad-cycle/SKILL.md contains 'plan\.md.*exists.*self-review|If the spec is complex')
+PASS: F003: Gate 3→4 of stage-3-tdd.md includes 'Test Audit completed and approved' (previously only in SKILL.md) (skills/cdad-cycle/references/stage-3-tdd.md contains 'Test Audit completed and approved')
+PASS: F003: Gate 3→4 of stage-3-tdd.md includes 'explicit justification in spec.md' (previously only in SKILL.md) (skills/cdad-cycle/references/stage-3-tdd.md contains 'explicit justification in spec\.md')
+PASS: F003: Gate 5→done of stage-5-merge.md includes the CI carve-out (previously only in SKILL.md) (skills/cdad-cycle/references/stage-5-merge.md contains 'If NO CI is configured')
+PASS: F003: Gate 5→done of SKILL.md includes 'Feature merged' (previously only in stage-5-merge.md) (skills/cdad-cycle/SKILL.md contains 'Feature merged')
+PASS: F003 (B11): skills/cdad-cycle/SKILL.md no longer has the absolute wording of the 4→5 gate (skills/cdad-cycle/SKILL.md does NOT contain '\[ \] User approved prioritization \(not delegated to the LLM\)\.')
+PASS: F003 (B11): skills/cdad-cycle/SKILL.md mentions the explicit-delegation exception in the gate (skills/cdad-cycle/SKILL.md contains 'agent-delegated with an explicit request')
+PASS: F003 (B11): skills/cdad-cycle/references/stage-4-review.md no longer has the absolute wording of the 4→5 gate (skills/cdad-cycle/references/stage-4-review.md does NOT contain '\[ \] User approved prioritization \(not delegated to the LLM\)\.')
+PASS: F003 (B11): skills/cdad-cycle/references/stage-4-review.md mentions the explicit-delegation exception in the gate (skills/cdad-cycle/references/stage-4-review.md contains 'agent-delegated with an explicit request')
+PASS: F003 (B11): the short AP-10 in stage-2 is no longer absolute without the exception (skills/cdad-cycle/references/stage-2-specification.md does NOT contain '\*\*AP-10\*\*: delegating approval to the LLM\. Non-delegable\.')
+
+############################################
+# F007 — Claude Code orchestrator repaired (B6)
+############################################
+PASS: F007: agents/claude-code/cdad-orchestrator.md instructs delegating via a tool (not task/delegate) (agents/claude-code/cdad-orchestrator.md contains '`Agent` tool')
+PASS: F007: agents/claude-code/cdad-orchestrator.md mentions the Agent tool with subagent_type (agents/claude-code/cdad-orchestrator.md contains 'Agent.{0,10}subagent_type')
+PASS: F007: agents/claude-code/cdad-orchestrator.md no longer instructs 'delegate' as the per-role invocation mechanism (agents/claude-code/cdad-orchestrator.md does NOT contain 'via `delegate`; roles write-capable')
+PASS: F007: agents/claude-code/cdad-orchestrator.md resolves the stack suffix before delegating (parity with OpenCode) (agents/claude-code/cdad-orchestrator.md contains 'resolve the stack')
+PASS: F007: agents/claude-code/cdad-orchestrator.md mentions the cdad-<role>-<stack> pattern for specialized variants (agents/claude-code/cdad-orchestrator.md contains 'cdad-<role>-<stack>')
+
+############################################
+# F008 — anti-bias guard also for cdad_model_claude (B2)
+############################################
+PASS: F008: cdad_model_claude profile 'economical' — reviewer (opus) != implementer (haiku)
+PASS: F008: cdad_model_claude profile 'optimus' — reviewer (opus) != implementer (haiku)
+PASS: F008: cdad_model_claude profile 'premium' — reviewer (opus) != implementer (sonnet)
+PASS: F008: validate-subagents.sh evaluates cdad_model_claude (previously only OpenCode's cdad_model) (scripts/validate-subagents.sh contains 'cdad_model_claude')
+
+############################################
+# F005 — reviewer taxonomy unified (B4)
+############################################
+PASS: F005: agents/claude-code/cdad-reviewer.md no longer uses the CRITICAL/MAJOR/MINOR/TRIVIAL taxonomy (agents/claude-code/cdad-reviewer.md does NOT contain '\*\*CRITICAL\*\*|\*\*MAJOR\*\*|\*\*MINOR\*\*|\*\*TRIVIAL\*\*')
+PASS: F005: agents/claude-code/cdad-reviewer.md uses the addyosmani taxonomy (Critical/Required/Nit/Optional/FYI) (agents/claude-code/cdad-reviewer.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/claude-code/cdad-reviewer.md includes the Security axis (previously absent — the only one of the 4 reviewers without it) (agents/claude-code/cdad-reviewer.md contains 'Axis 4: Security')
+PASS: F005: agents/cdad-reviewer.md already used the addyosmani taxonomy (no changes, parity verification) (agents/cdad-reviewer.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/cdad-reviewer-odoo.md already used the addyosmani taxonomy (no changes, parity verification) (agents/cdad-reviewer-odoo.md contains 'Critical:.*Blocks merge')
+PASS: F005: agents/claude-code/cdad-reviewer-odoo.md already used the addyosmani taxonomy (no changes, parity verification) (agents/claude-code/cdad-reviewer-odoo.md contains 'Critical:.*Blocks merge')
+
+############################################
+# F006 — property tests contradiction + RED discipline (B5 + decision 3)
+############################################
+PASS: F006: skills/cdad-cycle/SKILL.md no longer groups property tests inside the cycle's exclusion phrase (skills/cdad-cycle/SKILL.md does NOT contain 'Exhaustive coverage, property tests, load')
+PASS: F006: skills/cdad-cycle/SKILL.md clarifies that property tests derived from the spec's invariants do belong to the cycle (skills/cdad-cycle/SKILL.md contains 'Property tests are NOT the same question|Property tests derived from invariants')
+PASS: F006: skills/cdad-cycle/SKILL.md declares the RED-verifies-the-requirement rule (skills/cdad-cycle/SKILL.md contains 'RED verifies the requirement, it does not maximize coverage')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md no longer groups property tests inside the cycle's exclusion phrase (skills/cdad-cycle/references/stage-3-tdd.md does NOT contain 'Exhaustive coverage, property tests, load')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md clarifies that property tests derived from the spec's invariants do belong to the cycle (skills/cdad-cycle/references/stage-3-tdd.md contains 'Property tests are NOT the same question|Property tests derived from invariants')
+PASS: F006: skills/cdad-cycle/references/stage-3-tdd.md declares the RED-verifies-the-requirement rule (skills/cdad-cycle/references/stage-3-tdd.md contains 'RED verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/cdad-test-writer.md — the RED Procedure includes the no-over-specification rule (agents/cdad-test-writer.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/claude-code/cdad-test-writer.md — the RED Procedure includes the no-over-specification rule (agents/claude-code/cdad-test-writer.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/cdad-test-writer-odoo.md — the RED Procedure includes the no-over-specification rule (agents/cdad-test-writer-odoo.md contains 'verifies the requirement, it does not maximize coverage')
+PASS: F006: agents/claude-code/cdad-test-writer-odoo.md — the RED Procedure includes the no-over-specification rule (agents/claude-code/cdad-test-writer-odoo.md contains 'verifies the requirement, it does not maximize coverage')
+
+############################################
+# F011 — consolidated validator (B8)
+############################################
+PASS: F011 (B8): validate-subagents.sh no longer requires impl.diff to still apply against the tree (self-invalidating assertion retired) (scripts/validate-subagents.sh does NOT contain 'git apply --check --reverse')
+PASS: F011 (B8): validate-subagents.sh still verifies impl.diff's format (well-formed diff) (scripts/validate-subagents.sh contains 'diff --git')
+FAIL: F011: scripts/validate-subagents.sh (active profile) → FAIL — run it directly to see details
+PASS: F011: tests/validate-odoo-specialization.sh → PASS (zero regression over cdad-003/004)
+
+############################################
+# F012 — epic dogfood (M9 fixed, M10)
+############################################
+PASS: F012 (M9): retrospective closure.md of epic-001-superpowers-gaps exists (docs/epics/epic-001-superpowers-gaps/closure.md exists)
+PASS: F012 (M9): closure.md has a closure date (docs/epics/epic-001-superpowers-gaps/closure.md contains 'Cerrado|Closed')
+PASS: F012 (M10): documented decision about the absence of a cdad-epic-* sub-agent (skills/cdad-epic/SKILL.md contains 'Why there is no .cdad-epic-.* sub-agent')
+############################################
+# RESULT
+############################################
+Assert PASS: 138
+Assert FAIL: 5
+FAIL: 5 assert(s) failed.
+[probe] returncode: 1
+============================================================
+
+FFFFFFFFFF.....................................................F         [100%]
+=================================== FAILURES ===================================
+_ TestDeterministicGenerator.test_postcondition_14_cc_agents_do_not_mention_opencode_design_models _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_14_cc_agents_do_not_mention_opencode_design_models>
+
+    def test_postcondition_14_cc_agents_do_not_mention_opencode_design_models(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:364: AssertionError
+_ TestDeterministicGenerator.test_postcondition_14_orchestrator_contract_section_models_belong_to_runtime_map _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_14_orchestrator_contract_section_models_belong_to_runtime_map>
+
+    def test_postcondition_14_orchestrator_contract_section_models_belong_to_runtime_map(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:386: AssertionError
+_ TestDeterministicGenerator.test_postcondition_15_generated_agents_make_no_unbacked_sandbox_promises _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_15_generated_agents_make_no_unbacked_sandbox_promises>
+
+    def test_postcondition_15_generated_agents_make_no_unbacked_sandbox_promises(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:409: AssertionError
+_ TestDeterministicGenerator.test_postcondition_16_generated_agents_declare_legacy_loads_and_dual_path _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_16_generated_agents_declare_legacy_loads_and_dual_path>
+
+    def test_postcondition_16_generated_agents_declare_legacy_loads_and_dual_path(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:428: AssertionError
+_ TestDeterministicGenerator.test_postcondition_2_identical_runs_are_byte_identical _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_2_identical_runs_are_byte_identical>
+
+    def test_postcondition_2_identical_runs_are_byte_identical(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:196: AssertionError
+_ TestDeterministicGenerator.test_postcondition_3a_incomplete_or_duplicated_section_fails_cleanly _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_3a_incomplete_or_duplicated_section_fails_cleanly>
+
+    def test_postcondition_3a_incomplete_or_duplicated_section_fails_cleanly(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:219: AssertionError
+_ TestDeterministicGenerator.test_postcondition_3b_duplicated_shared_block_fails _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_3b_duplicated_shared_block_fails>
+
+    def test_postcondition_3b_duplicated_shared_block_fails(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:251: AssertionError
+_ TestDeterministicGenerator.test_postcondition_3c_unsupported_combinations_fail _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_3c_unsupported_combinations_fail>
+
+    def test_postcondition_3c_unsupported_combinations_fail(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:284: AssertionError
+_ TestDeterministicGenerator.test_postcondition_4_manifest_hashes_sources_and_regeneration_command _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_4_manifest_hashes_sources_and_regeneration_command>
+
+    def test_postcondition_4_manifest_hashes_sources_and_regeneration_command(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:311: AssertionError
+_ TestDeterministicGenerator.test_postcondition_4_orchestrator_contract_is_composed_once_with_all_role_rows _
+
+self = <test_cdad_generate.TestDeterministicGenerator testMethod=test_postcondition_4_orchestrator_contract_is_composed_once_with_all_role_rows>
+
+    def test_postcondition_4_orchestrator_contract_is_composed_once_with_all_role_rows(self) -> None:
+>       self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+E       AssertionError: False is not true : T3 contract: scripts/cdad-generate.py is a declared artifact of this feature (PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored
+
+tests/test_cdad_generate.py:338: AssertionError
+_ TestStaticBlockCeilingParameterized.test_postcondition_19_lowered_ceiling_fails_explicitly_without_mixed_output _
+
+self = <test_static_block_ceiling.TestStaticBlockCeilingParameterized testMethod=test_postcondition_19_lowered_ceiling_fails_explicitly_without_mixed_output>
+
+    def test_postcondition_19_lowered_ceiling_fails_explicitly_without_mixed_output(self) -> None:
+        """PD-19 (b): a lowered ceiling + a block over it → explicit error, no mixing."""
+        with tempfile.TemporaryDirectory(prefix="cdad-t3-ceiling-lowered-") as tmp:
+            fixture = PacketFixture(Path(tmp), "test-writer", "red")
+            fixture.write()
+            os.environ[CEILING_ENV] = LOWER_CEILING
+            try:
+                result = fixture.render()
+            finally:
+                os.environ.pop(CEILING_ENV, None)
+>           self.assertNotEqual(
+                result.returncode,
+                0,
+                "PD-19: the ceiling was ignored — %s is not respected as a policy parameter" % CEILING_ENV,
+            )
+E           AssertionError: 0 == 0 : PD-19: the ceiling was ignored — CDAD_STATIC_BLOCK_LIMIT is not respected as a policy parameter
+
+tests/test_static_block_ceiling.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_14_cc_agents_do_not_mention_opencode_design_models
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_14_orchestrator_contract_section_models_belong_to_runtime_map
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_15_generated_agents_make_no_unbacked_sandbox_promises
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_16_generated_agents_declare_legacy_loads_and_dual_path
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_2_identical_runs_are_byte_identical
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_3a_incomplete_or_duplicated_section_fails_cleanly
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_3b_duplicated_shared_block_fails
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_3c_unsupported_combinations_fail
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_4_manifest_hashes_sources_and_regeneration_command
+FAILED tests/test_cdad_generate.py::TestDeterministicGenerator::test_postcondition_4_orchestrator_contract_is_composed_once_with_all_role_rows
+FAILED tests/test_static_block_ceiling.py::TestStaticBlockCeilingParameterized::test_postcondition_19_lowered_ceiling_fails_explicitly_without_mixed_output
+11 failed, 53 passed in 127.85s (0:02:07)

@@ -1,0 +1,22 @@
+window: 2026-09-24 22:00 -> 2026-09-29 00:00; sessions: 19
+per tool  [ok, denied]: {'skill': (1, 0), 'shell': (331, 2409), 'edit': (194, 0), 'subagent': (36, 0), 'write': (22, 0), 'read': (287, 36), 'execute': (49, 0), 'grep': (1392, 0), 'glob': (89, 0), 'question': (7, 0)}
+per agent [ok, denied]: {'cdad-orchestrator': (235, 2), 'cdad-test-writer': (1438, 128), 'cdad-implementer': (735, 2315)}
+shell verbs [ok, denied] (top 15 by volume):
+  git            ok=31    denied=2103
+  cd             ok=189   denied=31
+  echo           ok=0     denied=108
+  ls             ok=51    denied=18
+  cat            ok=1     denied=24
+  bash           ok=0     denied=23
+  python3        ok=1     denied=19
+  grep           ok=1     denied=19
+  pwd            ok=15    denied=5
+  sed            ok=4     denied=8
+  pytest         ok=8     denied=4
+  make           ok=9     denied=2
+  timeout        ok=9     denied=0
+  true           ok=0     denied=8
+  rg             ok=6     denied=0
+assistant steps per subagent session:
+  cdad-implementer       n=11  median=85   max=2167
+  cdad-test-writer       n=7   median=82   max=996

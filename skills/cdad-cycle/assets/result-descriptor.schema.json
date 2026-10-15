@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CDAD result descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "execution_id", "packet_id", "feature_id", "source", "parts", "run_evidence_ref"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "execution_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "packet_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "feature_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"const": "staged-file"},
+        "sdk_message_ref": {"type": ["string", "null"]}
+      }
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "artifact_kind", "staged_path"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+          "artifact_kind": {"type": "string", "minLength": 1},
+          "staged_path": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "observed_changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_status", "baseline_ref", "baseline_sha256", "manifest_path"],
+      "properties": {
+        "observation_status": {"enum": ["trusted", "unknown"]},
+        "baseline_ref": {"type": "string", "minLength": 1},
+        "baseline_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "manifest_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "run_evidence_ref": {"type": ["string", "null"]}
+  }
+}

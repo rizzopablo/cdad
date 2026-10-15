@@ -1,0 +1,1 @@
+Audit existing tests before RED. Identify changed behavior, justified modifications, new tests, explicitly untouched tests, and regression risks. Produce the audit for user approval; do not alter tests in this substage.

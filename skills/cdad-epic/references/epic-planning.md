@@ -1,143 +1,152 @@
-# Etapa E2 — Planning del epic (light)
+# Stage E2 — Epic planning (light)
 
-Producir un `plan.md` corto con la decomposición en features, contratos cross-feature, y criterios de aceptación del epic. Output aprobado por el usuario (humano o agente autónomo de mayor jerarquía).
+Produce a short `plan.md` with the decomposition into features, cross-feature contracts, and the epic's acceptance criteria. Output approved by the user (human or a higher-hierarchy autonomous agent).
 
-## Tu rol
+## Your role
 
-Coordinás. Hacés draft del plan basado en el discovery + tus preguntas; el usuario (humano o agente autónomo de mayor jerarquía) aprueba; el orquestador commitea el plan.
+You coordinate. You draft the plan based on the discovery + your questions; the user (human or a higher-hierarchy autonomous agent) approves; the orchestrator commits the plan.
 
-## Filosofía light (recordatorio)
+## Light philosophy (reminder)
 
-- Plan de 1-3 páginas.
-- Lista de features con orden y dependencias, no especificación detallada de cada una (eso es trabajo de la feature en `cdad-cycle`).
-- Contratos cross-feature solo para interfaces que varias features comparten.
-- Sin ADRs especulativos. ADRs surgen feature por feature cuando son necesarios.
-- Sin RFC formal ni gobernanza pesada.
+- Plan of 1-3 pages.
+- List of features with order and dependencies, not a detailed specification of each one (that is the feature's work in `cdad-cycle`).
+- Cross-feature contracts only for interfaces shared by several features.
+- No speculative ADRs. ADRs emerge feature by feature when they are needed.
+- No formal RFC or heavy governance.
 
-Si el plan supera 3 páginas y no es porque el epic es genuinamente grande (10+ features), está pesado.
+If the plan exceeds 3 pages and it is not because the epic is genuinely large (10+ features), it is heavy.
 
-## Pasos
+## Steps
 
-### Paso 1 — Decomposición en features
+### Step 1 — Decomposition into features
 
-Conversación con el usuario. No emitís handoff a un rol; lo hacés vos + usuario (humano o agente dueño del proceso) directamente, similar al brainstorm socrático en `cdad-cycle`.
+Conversation with the user. You do not issue a handoff to a role; you do it yourself + user (human or the agent owning the process) directly, similar to the Socratic brainstorm in `cdad-cycle`.
 
-Hacé preguntas:
+Ask questions:
 
-- ¿Qué unidades funcionales vas a entregar? (cada una es una feature)
-- ¿En qué orden tienen sentido?
-- ¿Cuáles dependen de cuáles?
-- ¿Cuáles podrían hacerse en paralelo?
+- What functional units are you going to deliver? (each one is a feature)
+- In what order do they make sense?
+- Which ones depend on which?
+- Which ones could be done in parallel?
 
-Capturás la decomposición como tabla:
+You capture the decomposition as a table:
 
-| # | Feature | Descripción (1 línea) | Dependencias | Paralelizable |
+| # | Feature | Description (1 line) | Dependencies | Parallelizable |
 |---|---------|-----------------------|--------------|---------------|
-| 001 | validar-cuit | Validador de formato CUIT con dígito verificador | — | Sí |
-| 002 | generar-xml | Generación del XML AFIP a partir de objeto factura | 001 | No |
-| 003 | enviar-ws | Envío al webservice AFIP con manejo de timeouts | 002 | No |
-| 004 | cola-reintentos | Cola persistente para reintentar envíos fallidos | 003 | No |
-| 005 | respuestas | Parseo de respuestas AFIP y mapeo a estados | 003 | Con 004 |
+| 001 | validar-cuit | CUIT format validator with check digit | — | Yes |
+| 002 | generar-xml | Generation of the AFIP XML from an invoice object | 001 | No |
+| 003 | enviar-ws | Submission to the AFIP webservice with timeout handling | 002 | No |
+| 004 | cola-reintentos | Persistent queue to retry failed submissions | 003 | No |
+| 005 | respuestas | Parsing of AFIP responses and mapping to states | 003 | With 004 |
 
-Naming: cada feature usa el prefijo `<epic-num>-<feat-num>-<slug>`. Ej: `001-002-generar-xml`.
+Naming: each feature uses the prefix `<epic-num>-<feat-num>-<slug>`. E.g.: `001-002-generar-xml`.
 
-### Paso 2 — Identificar contratos cross-feature
+### Step 2 — Identify cross-feature contracts
 
-Si hay interfaces compartidas entre features (ej. una clase `Invoice` que tres features manipulan), documentá las firmas mínimas. NO el detalle implementacional, solo el contrato:
+If there are interfaces shared between features (e.g. an `Invoice` class that three features manipulate), document the minimal signatures. NOT the implementation detail, only the contract:
 
-> *"Contrato `Invoice`: dataclass con campos cuit (str), fecha (date), items (list[Item]), total (Decimal). Usado por: 002, 003, 004."*
+> *"Contract `Invoice`: dataclass with fields cuit (str), date (date), items (list[Item]), total (Decimal). Used by: 002, 003, 004."*
 
-Si NO hay contratos cross-feature evidentes (cada feature es independiente con interfaces propias), saltás esta sección.
+If there are NO evident cross-feature contracts (each feature is independent with its own interfaces), you skip this section.
 
-### Paso 3 — Criterios de aceptación del epic completo
+### Step 3 — Acceptance criteria for the complete epic
 
-Criterios medibles, igual que en specs de feature, pero sobre el epic:
+Measurable criteria, just like in feature specs, but about the epic:
 
-> *"El epic está done cuando:*
-> *1. Las 5 features están done individualmente (cada una con su gate de Etapa 5 cerrado).*
-> *2. Test E2E cross-feature: dado una factura válida, se genera XML, se envía al WS de testing, se recibe respuesta, se persiste estado. Pasa.*
-> *3. Test E2E de fallo: dado un envío fallido, la cola de reintentos lo levanta y reintenta hasta éxito o timeout. Pasa.*
-> *4. Cobertura del módulo `facturacion/` ≥ 90%."*
+> *"The epic is done when:*
+> *1. The 5 features are done individually (each one with its Stage 5 gate closed).*
+> *2. Cross-feature E2E test: given a valid invoice, XML is generated, sent to the testing WS, a response is received, and state is persisted. Passes.*
+> *3. Failure E2E test: given a failed submission, the retry queue picks it up and retries until success or timeout. Passes.*
+> *4. Coverage of the `facturacion/` module ≥ 90%."*
 
-### Paso 4 — Riesgos y deuda técnica esperada (opcional, breve)
+### Step 4 — Risks and expected technical debt (optional, brief)
 
-Una sección corta:
+A short section:
 
-> *"Riesgos: latencia del WS AFIP en producción puede ser variable; mitigación: timeouts configurables.*
-> *Deuda esperada: el XML generation usa lxml; si el equipo prefiere stdlib, considerar refactor en epic posterior."*
+> *"Risks: the AFIP WS latency in production can be variable; mitigation: configurable timeouts.*
+> *Expected debt: the XML generation uses lxml; if the team prefers stdlib, consider a refactor in a later epic."*
 
-Si no tenés nada relevante, omitir esta sección.
+If you have nothing relevant, omit this section.
 
-### Paso 5 — Producir `plan.md`
+### Step 5 — Produce `plan.md`
 
-Cargá `assets/epic-plan-template.md` y rellenalo con lo trabajado. Estructura mínima:
+Load `assets/epic-plan-template.md` and fill it in with what was worked out. Minimum structure:
 
 ```markdown
-# Epic <id>: <nombre>
+# Epic <id>: <name>
 
-## Resumen
-<1-3 líneas: problema, resultado>
+## Summary
+<1-3 lines: problem, result>
 
 ## Scope
-- In: <lista>
-- Out: <lista>
+- In: <list>
+- Out: <list>
 
-## Decomposición
-<tabla de features con orden y dependencias>
+## Decomposition
+<table of features with order and dependencies>
 
-## Contratos cross-feature
-<si aplica>
+## Cross-feature contracts
+<if applicable>
 
-## Criterios de aceptación del epic
-<lista medible>
+## Epic acceptance criteria
+<measurable list>
 
-## Riesgos / deuda esperada
-<si aplica>
+## Risks / expected debt
+<if applicable>
 
 ## Stakeholders
-- Aprobador del plan: <nombre>
-- Aprobador de specs de features: <nombre>
-- Operador del resultado: <nombre>
+- Plan approver: <name>
+- Feature spec approver: <name>
+- Result operator: <name>
 
 ---
 
 Status: <Pending approval | Approved by <X> on <YYYY-MM-DD>>
 ```
 
-### Paso 6 — Aprobación del usuario (indelegable)
+### Step 6 — User approval (non-delegable)
 
-> *"Plan en `docs/epics/<id>/plan.md`. Revisalo: (a) decomposición correcta y completa, (b) orden y dependencias bien definidos, (c) criterios de aceptación medibles. Si está OK, agregá la marca de aprobación al final. Avisame cuando esté."*
+> *"Plan in `docs/epics/<id>/plan.md`. Review it: (a) decomposition correct and complete, (b) order and dependencies well defined, (c) measurable acceptance criteria. If it's OK, add the approval mark at the end. Let me know when it's done."*
 
-**Si el usuario te pide aprobar vos**: declinás amablemente.
+**If the user asks you to approve it**: you politely decline.
 
-> *"La aprobación del plan requiere tu juicio sobre prioridades y compromiso de entrega. Yo te puedo proponer cambios si querés, pero la marca va con tu nombre."*
+> *"Plan approval requires your judgment on priorities and delivery commitment. I can propose changes if you want, but the mark goes with your name."*
 
-## 🛑 Gate de salida (E2 → Loop de features)
+## 🛑 Exit gate (E2 → Feature loop)
 
-- [ ] Existe `docs/epics/<epic-id>/plan.md`.
-- [ ] Plan contiene: scope, decomposición con orden y dependencias, criterios de aceptación medibles.
-- [ ] Marca de aprobación del usuario inequívoca.
-- [ ] State file actualizado con `epic_features` (lista derivada de la decomposición).
+- [ ] `docs/epics/<epic-id>/plan.md` exists.
+- [ ] Plan contains: scope, decomposition with order and dependencies, measurable acceptance criteria.
+- [ ] Unambiguous user approval mark.
+- [ ] State file updated with `epic_features` (list derived from the decomposition).
 
-Cuando todos OK: actualizá state (`epic_stage: features-loop`, populá `epic_features` desde el plan). Anunciá transición. Cargá `references/feature-handoff.md` para preparar el delegado a `cdad-cycle` para la primera feature.
+When all OK: update the state (`epic_stage: features-loop`, populate `epic_features` from the plan). Announce the transition. Load `references/feature-handoff.md` to prepare the delegation to `cdad-cycle` for the first feature.
 
-## Anti-patrones
+## Anti-patterns
 
-- **EAP-1**: plan kilométrico que nunca cierra. Si llevás más de 90 minutos en planning, el plan está pesado: cortá donde estás, marcá el resto como TBD a definir cuando arranquen las features correspondientes.
-- **EAP-2**: cada feature en el plan tiene su mini-spec adentro. Eso duplica el trabajo de `cdad-cycle`. En el plan: descripción de 1 línea por feature. La spec real se hace cuando la feature se arranca.
-- **EAP-3**: ADRs especulativos en el plan. Si el plan tiene una sección "Decisiones arquitectónicas", probablemente sea overkill. ADRs surgen feature por feature.
+- **EAP-1**: kilometer-long plan that never closes. If you've spent more than 90 minutes planning, the plan is heavy: cut where you are, mark the rest as TBD to be defined when the corresponding features start.
+- **EAP-2**: each feature in the plan has its mini-spec inside. That duplicates `cdad-cycle`'s work. In the plan: a 1-line description per feature. The real spec is done when the feature is started.
+- **EAP-3**: speculative ADRs in the plan. If the plan has an "Architectural decisions" section, it is probably overkill. ADRs emerge feature by feature.
 
-## Si el plan necesita actualizarse durante el loop de features
+## If the plan needs to be updated during the feature loop
 
-Es esperable. A medida que se implementan features, aparece info nueva: orden óptimo cambia, alguna feature se subdivide, otra se elimina, surge una nueva.
+It is expected. As features are implemented, new info appears: the optimal order changes, some feature gets subdivided, another is dropped, a new one emerges.
 
-Cuando pase: actualizás `plan.md`, registrás el cambio en una sección "Cambios al plan" con fecha y motivo, y commiteás:
+When that happens: update `plan.md`, record the change in a "Plan changes" section with date and reason, and commit:
 
 ```
 docs(epic): update plan — split feature 003 into 003a/003b
 
-Motivo: durante implementación se detectó que enviar-ws tiene 
-dos responsabilidades distintas que conviene separar.
+Reason: during implementation we detected that enviar-ws has 
+two distinct responsibilities that are worth separating.
 ```
 
-NO requiere reaprobación formal salvo que el cambio modifique scope o criterios de aceptación del epic. Si lo hace, sí: reaprobación del usuario.
+It does NOT require formal re-approval unless the change modifies the epic's scope or acceptance criteria. If it does, then yes: user re-approval.
+
+Applying an approved plan change also **synchronizes `epic_features`**: the feature
+list in the state must stay aligned with the approved `plan.md`. The **epic
+coordinator** is the **responsible** for synchronizing `epic_features` whenever an
+approved change is applied — this keeps the state's feature list matching the plan.
+
+The coordinator routes and proposes the synchronization, but the **sole writer of
+the state file remains the orchestrator** (INV-3): the coordinator does not mutate
+the state by itself.

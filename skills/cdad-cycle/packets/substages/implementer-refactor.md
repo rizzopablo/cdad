@@ -1,0 +1,1 @@
+Improve clarity and simplicity without changing observable behavior. Keep the proportional regression the change requires green throughout and revert any refactor that changes the contract. Evidence policy: `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".

@@ -1,79 +1,79 @@
 # Test Audit Report — <feature-id>
 
-**Feature**: <nombre>
-**Spec version**: <version o fecha>
-**Test Writer**: <nombre/rol>
-**Audit completed**: <fecha>
+**Feature**: <name>
+**Spec version**: <version or date>
+**Test Writer**: <name/role>
+**Audit completed**: <date>
 
-## Comportamiento que cambia (resumen)
+## Behavior that changes (summary)
 
-(Párrafo corto con los cambios principales listados. Referencia a líneas en spec.md)
+(Short paragraph listing the main changes. Reference to lines in spec.md)
 
-Ejemplo:
-- Descuento por cliente frecuente ahora valida período de 6 meses (antes 12 meses)
-- Descuento es mutualmente excluyente con cupones (comportamiento nuevo)
-- Cálculo de descuento en % se mantiene igual
+Example:
+- Frequent-customer discount now validates a 6-month period (previously 12 months)
+- Discount is mutually exclusive with coupons (new behavior)
+- Percentage discount calculation stays the same
 
 ---
 
-## Tests modificados
+## Modified tests
 
-Cada entrada tiene esta estructura:
+Each entry has this structure:
 
 ```
 ### <test-name>
-- **Cambio**: [descripción breve]
-- **Spec ref**: [línea/sección donde se justifica el cambio]
-- **Nueva expectativa**: [qué verifica ahora]
-- **Porqué**: [Justificación breve]
+- **Change**: [brief description]
+- **Spec ref**: [line/section where the change is justified]
+- **New expectation**: [what it verifies now]
+- **Why**: [brief justification]
 ```
 
-**Ejemplo:**
+**Example:**
 
 ```
 ### test_descuento_aplicado_a_cliente_frecuente
-- **Cambio**: Actualizar ventana temporal de 12 a 6 meses
-- **Spec ref**: Section "Elegibilidad", línea "últimos 6 meses"
-- **Nueva expectativa**: Cliente con compras >$10k en últimos 6 meses califica para descuento
-- **Porqué**: Feature nuevo requiere período más restrictivo para control de presupuesto Q2
+- **Change**: Update the time window from 12 to 6 months
+- **Spec ref**: Section "Eligibility", line "last 6 months"
+- **New expectation**: Customer with purchases >$10k in the last 6 months qualifies for the discount
+- **Why**: New feature requires a more restrictive period for Q2 budget control
 ```
 
 ---
 
-## Tests nuevos a escribir
+## New tests to write
 
-Lista de tests que no existían y esta feature requiere:
+List of tests that did not exist and this feature requires:
 
 - `test_descuento_incompatible_con_cupones`
 - `test_cupones_validos_sin_descuento_por_cliente_frecuente`
 
 ---
 
-## Tests sin cambios (untouched)
+## Unchanged tests (untouched)
 
-**Estos tests se mantienen EXACTAMENTE como están** porque validan comportamiento que sigue siendo válido:
+**These tests stay EXACTLY as they are** because they validate behavior that remains valid:
 
-- `test_aplicar_descuento_si_criterio_cumple` (el cálculo % es igual)
-- `test_sin_descuento_si_cliente_nuevo` (regla de cliente nuevo se mantiene)
-- `test_descuento_maximo_permitido` (límite máximo no cambia)
+- `test_aplicar_descuento_si_criterio_cumple` (the % calculation is the same)
+- `test_sin_descuento_si_cliente_nuevo` (the new-customer rule stays)
+- `test_descuento_maximo_permitido` (the maximum limit does not change)
 
-**Importancia**: listarlos explícitamente confirma que el implementer NO debe tocar estos tests.
+**Importance**: listing them explicitly confirms that the implementer must NOT touch these tests.
 
 ---
 
 ## Regression Risk Assessment
 
-¿Hay comportamiento descrito en spec nuevo que NO tiene cobertura de test?
+Is there behavior described in the new spec that has NO test coverage?
 
-- ✅ Cobertura completa
-- ⚠️ Riesgo: [listar qué falta]
+- ✅ Full coverage
+- ⚠️ Risk: [list what is missing]
 
 ---
 
-## Gate de Test Audit
+## Test Audit Gate
 
-- [ ] Cada test modificado está justificado en spec.md con referencia explícita
-- [ ] No hay test modificado sin justificación documentada
-- [ ] Tests untouched están listados (confirma que se conocen las implicaciones)
-- [ ] Regression risk assessment completado
-- [ ] El usuario (humano o agente de mayor jerarquía) aprobó este report antes de pasar a RED
+- [ ] Every modified test is justified in spec.md with an explicit reference
+- [ ] There is no modified test without documented justification
+- [ ] Untouched tests are listed (confirms the implications are known)
+- [ ] Regression risk assessment completed
+- [ ] The user (human or higher-hierarchy agent) approved this report before moving to RED

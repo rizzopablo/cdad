@@ -7,3 +7,9 @@ cdad.toml
 cdad-cli
 logs/
 tests/.sensitive-patterns.local
+__pycache__/
+.cdad/
+build/
+.opencode/
+/.claude/
+/.agents/

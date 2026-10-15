@@ -1,0 +1,32 @@
+# Dispatch ledger — 005-005-adoption-coherence
+
+Versión de ejecución del ciclo: **instalación global v8 `9396394`** (perfil `basic`,
+desplegada 2026-10-09). El ciclo corre con el CLI instalado
+(`~/.config/opencode/skills/cdad-cycle/scripts/…`); el repo se **desarrolla** y su CLI
+**no** se usa para operar (handoff §1). Los valores de esta instalación viven en el
+registro local `.cdad/local/handoff-005-005.local.md` (fuera de git).
+
+Agentes de proyecto: `prepare` los publica desde la instalación global **sin** variable de
+entorno; `.opencode/agents/.cdad-derived.json` → `source_dir: <home>/.config/opencode/agents`.
+
+Gate de tests: **focales + módulos tocados** durante el trabajo; **suite completa al cierre**
+de la feature (toca el renderer/CLI, el instalador y docs) + `make validate` al cierre.
+
+| # | Fecha | Rol | Modelo | Sesión / título | Resultado |
+|---|---|---|---|---|---|
+| — | 2026-10-09 | orquestador | — | transición del state | 005-005 abierta: `epic_features` `in-progress` (orden del plan, tras 005-001), `active_feature: 005-005-adoption-coherence`, `current_stage: discovery`; `review_status` heredado de 005-001 limpiado. Ejecución nueva `exec-005-005-adoption-coherence-001`. |
+| — | 2026-10-09 | orquestador | — | sonda de versión (3 delegaciones chicas, sesiones `ses_eddfc191…`, `ses_eddfa1f3…`, `ses_eddf9ad3…`) | Confirmación previa a la primera delegación real (handoff §1): la skill `cdad-cycle` carga desde la ruta instalada (sha `32fd5edf…`); la definición cargada contiene el bloque `Honest limitations (PD-15` (ausente en el global viejo del 2026-10-03) y **no** fija el modelo v7 `glm-5.2`; sin `model` explícito el subagente hereda `mofgw/deepseek-v4.1-flash`. Queda **abierto** (T3) si el servidor permanente relee agentes/skills por sesión: los procesos `opencode serve` son del 2026-10-02/03, anteriores al despliegue v8. |
+| 1 | 2026-10-09 | architect | `mofgw/deepseek-v4.1-flash` | `…-architect-discovery-001` (sesión `<ses-80>`) | **Discovery** (`docs/specs/005-005-adoption-coherence/discovery.md`): mapa verificado con archivo:línea de T1/T2/T3 + documentación; VERIFYs declarados. Paquete con `record-dispatch` (I8) `at-005-005-architect-discovery-001`. |
+| 2 | 2026-10-09 | architect | `mofgw/deepseek-v4.1-flash` | `…-architect-draft-001` (sesión `<ses-319>`) | **Draft** de spec + plan (18 PD, 8 INV, D1–D8; T1–T4 con `plan-tasks`). Entregados como archivos de transporte; materializados con el flujo: `receive` rc=0 (spec 29846 B sha `37401ab7…`; plan 13558 B sha `f130b758…`) + `materialize` CAS rc=0 (create-only). Aprobados por el orquestador (HITL delegada epic-005): marca de aprobación aplicada y pin re-registrado en `stage_history` con los bytes finales. |
+| — | 2026-10-09 | orquestador | — | **Estado** | Spec y plan aprobados; `current_stage: tdd`. Próximo: T1/T2/T3 RED→GREEN (T4 al final). T1 y T3 comparten `skills/cdad-cycle/scripts/cdad_packet.py`: se **serializan** aunque el plan los marque paralelos. |
+| 3 | 2026-10-09 | test-writer | `mofgw/glm-5.3-flash` | `…-test-writer-red-001` (sesión `<ses-81>`) | **T1 RED**: `tests/test_005_005_t1_replace_conserved.py` (803 l.). 3 fallas de comportamiento: el reemplazo **publicaba** el sucesor con un input conservado inexistente (PD-2/PD-4) y el rechazo de un scope conservado no nombraba campo/opción (PD-3). Commit `dc66cb2` (solo `tests/`). |
+| 4 | 2026-10-09 | implementer | `mofgw/deepseek-v4.1-flash` | `…-implementer-green-001` (sesión `<ses-82>`) | **T1 GREEN**: `_validate_corrections` valida el encargo resultante completo (conservado+corregido); se eliminó el set `corrected`; el camino normal no cambia. Focal 6/6; 53 passed con regresiones. Commit `65e887f` (+43/−50; 0 en `tests/`). |
+| 5 | 2026-10-09 | test-writer | `mofgw/glm-5.3-flash` | `…-test-writer-red-002` (sesión `<ses-83>`) | **T2 RED**: `tests/test_005_005_t2_docs_policy.py` (265 l.), 6 fallas (política ausente; frecuencia por GREEN; `required full regression suite`; PD-17 sin enmendar). Commit `3d9e854`. |
+| 6 | 2026-10-09 | implementer | `mofgw/deepseek-v4.1-flash` | `…-implementer-green-002` (sesión `<ses-84>`) | **T2 GREEN** (doc-only, 14 archivos): sección única «Test evidence policy» + consumidores alineados + PD-17 de 005-001 enmendada. Focal 6/6; 29 passed. Commit `4b990bb`. Pin de 005-001 re-registrado por el orquestador. |
+| 7 | 2026-10-09 | test-writer | `mofgw/glm-5.3-flash` | `…-test-writer-red-003` (sesión `<ses-85>`) | **T3a RED**: `tests/test_005_005_t3_provenance.py` (549 l.), 3 fallas (no consulta `.cdad/activation.json`; contradicción silenciosa; manifiesto sin versión). Commit `fd1aaa3`. |
+| 8 | 2026-10-09 | implementer | `mofgw/deepseek-v4.1-flash` | `…-implementer-green-003` (sesión `<ses-86>`) | **T3a GREEN**: variable > registro de activación > global; contradicción diagnosticada; `source_version` en el manifiesto; adaptador documentado. Focal 3/3; 65 passed. Commit `6f7363c`. PD-15 verificada en aislamiento (el CLI instalado no tiene `reload`; servidor aislado 401; agente de proyecto sombrea al global en proceso nuevo). |
+| 9 | 2026-10-09 | implementer | `mofgw/deepseek-v4.1-flash` | `…-implementer-green-004` (sesión `<ses-87>`) | **T3b** (doc-only): `review.md` normalizada sin repetir la revisión (2 pasadas en la misma sesión) y rutas personales fuera del epic-005. Commits `b4ce4d9` + `1f1cc63`. Originales en `.cdad/local/`. |
+| 10 | 2026-10-09 | test-writer | `mofgw/glm-5.3-flash` | `…-test-writer-red-004` (sesión `<ses-88>`) | **T4 RED**: `tests/test_005_005_t4_integration.py` (786 l.). Walk-through PD-18 **verde** desde una instalación real aislada; **PD-14 in situ rojo** (la instalación no declara su versión). Commit `012ccac`. |
+| 11 | 2026-10-09 | test-writer | `mofgw/glm-5.3-flash` | `…-test-writer-red-005` (sesión `<ses-89>`) | **T4 RED-FIX**: el oráculo `_is_versionish` acepta commit/id hex 7–64 y etiqueta `v<N>` (antes rechazaba commits, contra PD-14). RED preservado. Commit `eda293c`. |
+| 12 | 2026-10-09 | implementer | `mofgw/deepseek-v4.1-flash` | `…-implementer-green-005` (sesión `<ses-90>`) | **T4 GREEN**: `install.sh` declara la versión en la raíz (`version.txt` + `source_version` en el manifiesto de propiedad). Focal 5/5; regresiones 47+23+22. Commit `9e5215f`. **PD-18 verde end-to-end**. |
+| — | 2026-10-09 | orquestador | — | **Estado** | T1..T4 técnicamente completas; `current_stage: review`. Próximo: la **única review formal** de la feature, luego stage 5 (suite completa + `make validate` + Memory Bank/cierre). |

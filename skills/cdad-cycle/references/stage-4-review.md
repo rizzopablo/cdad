@@ -1,119 +1,176 @@
-# Etapa 4 — Review en dos capas
+# Stage 4 — Two-layer review
 
-Capa 1: reviewer hace pasada exhaustiva con spec en contexto. Capa 2: el usuario (humano o agente autónomo de mayor jerarquía) valida priorización.
+Layer 1: the reviewer does a proportional pass with the contract in context (see "Review calibration" below). Layer 2: the user (human or higher-hierarchy autonomous agent) validates the prioritization.
 
-## Tu rol como orquestador
+## Review calibration (proportionality, class-closure, usability — single canonical owner)
 
-NO hacés review. Coordinás:
+The review is proportional to the system's declared purpose, not to adversarial
+exhaustiveness. This section is the **single canonical owner** of the calibration
+rule; the reviewer role source (`sources/roles/reviewer.md`) and any other
+consumer reference it and never copy it.
 
-1. Emitís handoff a **reviewer** (capa 1) con diff + spec + boundaries + convenciones.
-2. Validás reporte en re-entry.
-3. Pasás reporte al **usuario para validar priorización** (capa 2, por defecto indelegable; ver excepción más abajo si el usuario pidió explícitamente delegarla a un agente para esta feature).
-4. Si hay bloqueantes a aplicar: handoff de vuelta a implementer.
-5. Cierre de etapa cuando todos los bloqueantes resueltos o desestimados.
+1. **Weight by the contract, the relevant uses and usability.** The review weighs
+   each finding's impact on the contract, on realistic uses of the system
+   (including careless or good-faith use) and on usability. It does not pursue
+   unlimited exhaustiveness: enumerating every logically possible case is not the
+   goal.
+2. **Every blocking finding carries evidence, consequence and a verifiable
+   closure condition.** A finding is **BLOCKING** only when it (a) provides
+   evidence — exact `file:lines` provenance plus the violated postcondition or
+   convention — (b) explains the consequence (what breaks, for whom, under which
+   real use) and (c) states a **verifiable closure condition** (an observable
+   check that confirms the fix). Without all three, it is not blocking.
+3. **A failure family is fixed as a family, in one round.** When several findings
+   reveal a family (not a single case), the reviewer asks for one **proportionate
+   general solution** — structural and fail-closed where demonstration is
+   impossible — not successive patches per variant. The reviewer rules on the
+   class and its remedy; it does not produce the next variant.
+4. **The closing re-review verifies the agreed findings and the regressions
+   introduced.** A closing re-review checks the agreed findings (against their
+   closure conditions) and the regressions introduced by the fixes. It reopens
+   the closure only with **new evidence** of a material breach of the contract or
+   a relevant risk; it does not open a new variant hunt on an already-closed axis.
+5. **A new variant is neither automatically blocking nor automatically debt.** It
+   is evaluated by its effect: blocking if it has a realistic path and a material
+   impact under the contract; optional/debt otherwise, recording its reason for
+   non-realism.
+6. **Optional improvements do not prolong the cycle.** Applying or discarding an
+   optional is the user's call; it never holds the cycle's closure open and never
+   becomes blocking by inertia.
+7. **Fail-closed is appropriate to certify undemonstrable evidence, not a
+   mandatory solution to every defect.** Degrading what cannot be demonstrated is
+   the right remedy when the contract requires certified evidence; it is not the
+   automatic remedy for any defect, and it must not be imposed where a
+   proportionate fix is enough.
+8. **An adversarial scenario is evaluated against the contract and real
+   exposure.** A scenario is judged by whether it breaches the contract under
+   real exposure; covering every imaginable attack is not required.
 
-## Capa 1 — Handoff al reviewer
+Scope: applies to every CDAD review (any feature, any epic). It does not relax
+the invariants or the severity of defects **observable in real use** — an escape
+reachable by normal use is still blocking. It does not authorize the reviewer to
+abstain from searching; it authorizes it to **weigh**, to **close by class** and
+to **state the closure condition**.
+Decision record: `docs/owner-decision-review-calibration-2026-10-05.md`.
 
-Cargá `references/handoff-prompts.md` sección "Reviewer (Etapa 4)".
+## Your role as orchestrator
 
-Generá packet con:
+You do NOT do the review. You coordinate:
 
-- **Contrato de veredicto (verdict-tuple.md):** referenciá el tuple de 4 campos — cada hallazgo del reviewer emite Veredicto (BLOQUEANTE|OPCIONAL|ABSTENER) + Bucket h|m|l por observables + rationale + provenance. El bucket lo deriva el reviewer por regla determinística (familia de modelo, diff completo, rationale grounded, spec en contexto), nunca por confianza elicitada. La sección Abstenciones se reporta siempre (vacía si no aplica).
-- Diff completo de la feature (`git diff <base>..HEAD`).
-- Spec aprobado (`docs/specs/<feat>/spec.md`).
-- Interface / contrato.
-- `.importlinter` o equivalente.
-- Convenciones (`AGENTS.md`, `CONTRIBUTING.md`, `docs/systemPatterns.md`).
-- Pedido explícito de auditoría test↔postcondición: cada test del diff debe mapear a una postcondición del spec (marcar sobrantes) y ninguno debe depender de estructura interna (marcar mocks sobre plumbing, ver AP-14 en `anti-patterns.md`). Esta auditoría la hace el reviewer precisamente porque es una sesión distinta a la que escribió los tests — no delegar de vuelta al test-writer.
+1. Emit handoff to the **reviewer** (layer 1) with diff + spec + boundaries + conventions.
+2. Validate the report at re-entry.
+3. Pass the report to the **user to validate the prioritization** (layer 2, by default non-delegable; see the exception below if the user explicitly requested delegating it to an agent for this feature).
+4. If there are blockings to apply: handoff back to implementer.
+5. Stage closure when all blockings are resolved or dismissed.
 
-**Recomendación al usuario antes del packet**: *"Idealmente el reviewer corre con un modelo distinto al implementer. Si tu entorno te lo permite (cambiar modelo en chat nuevo), aprovechalo. Si no, igual sirve."*
+## Layer 1 — Handoff to the reviewer
 
-Entregás packet, terminás turno.
+Load `references/handoff-prompts.md` section "Reviewer (Stage 4)".
+
+Generate the packet with:
+
+- **Verdict contract (verdict-tuple.md):** reference the 4-field tuple — every reviewer finding emits a Verdict (BLOCKING|OPTIONAL|ABSTAIN) + Bucket h|m|l by observables + rationale + provenance. The bucket is derived by the reviewer by deterministic rule (model family, full diff, grounded rationale, spec in context), never by elicited confidence. The Abstentions section is always reported (empty if not applicable).
+- Full diff of the feature (`git diff <base>..HEAD`).
+- Approved spec (`docs/specs/<feat>/spec.md`).
+- Interface / contract.
+- `.importlinter` or equivalent.
+- Conventions (`AGENTS.md`, `CONTRIBUTING.md`, `docs/systemPatterns.md`).
+- Explicit request for the test↔postcondition audit: every test in the diff must map to a postcondition of the spec (flag the superfluous ones) and none may depend on internal structure (flag mocks over plumbing, see AP-14 in `anti-patterns.md`). The reviewer does this audit precisely because it is a session other than the one that wrote the tests — do not delegate it back to the test-writer.
+
+**Recommendation to the user before the packet**: *"Ideally the reviewer runs with a model different from the implementer's. If your environment allows it (changing the model in a new chat), take advantage of it. If not, it still works."*
+
+Deliver the packet, end the turn.
 
 ### Re-entry
 
-Cargá `re-entry.md` sección "Reviewer". Validá estructura del reporte.
+Load `re-entry.md` section "Reviewer". Validate the report structure.
 
-Si pasa: pasás al usuario para capa 2.
+If it passes: pass it to the user for layer 2.
 
-## Capa 2 — Validación (del usuario por defecto; delegable solo bajo pedido explícito)
+## Layer 2 — Validation (by the user by default; delegable only under an explicit request)
 
-**Regla general: la priorización la valida el usuario** (humano o agente autónomo de mayor jerarquía dueño del proceso). Decile al usuario:
+**General rule: the user validates the prioritization** (human or higher-hierarchy autonomous agent owning the process). Tell the user:
 
-> *"Reporte en `docs/specs/<feat>/review.md`: <X> bloqueantes, <Y> opcionales. Tu trabajo: leé el reporte (no el diff completo) y validá la priorización. Para cada bloqueante: ¿genuinamente bloqueante o hay contexto que el reviewer no tiene? Para cada opcional: ¿aplicar o descartar? Cuando termines, pasame las decisiones."*
+> *"Report at `docs/specs/<feat>/review.md`: <X> blockings, <Y> optionals. Your job: read the report (not the full diff) and validate the prioritization. For each blocking: is it genuinely blocking, or is there context the reviewer doesn't have? For each optional: apply or discard? When you're done, send me the decisions."*
 
-**Cuando el usuario ES un agente autónomo de mayor jerarquía** (dueño del
-proceso que orquesta este ciclo, p.ej. desde un proceso orquestador externo), valida
-directamente — no hay ceremonia de delegación explícita que cumplir: es el
-dueño. PERO la matriz de severidad de abajo es innegociable: **riesgo de
-seguridad y bug funcional son bloqueantes sin excepciones**, aunque el que
-valida sea un agente — la delegación da autoridad para *priorizar*, no para
-bajar la severidad de lo que la matriz marca como innegociable. Y ante la
-duda, se pide al usuario igual (no se baja severidad por ser agente).
+**When the user IS a higher-hierarchy autonomous agent** (owner of the
+process that orchestrates this cycle, e.g. from an external orchestrating
+process), it validates directly — there is no explicit delegation
+ceremony to fulfill: it is the owner. BUT the severity matrix below is
+non-negotiable: **security risk and functional bug are blockings without exceptions**,
+even if the one validating is an agent — delegation grants authority to
+*prioritize*, not to lower the severity of what the matrix marks as
+non-negotiable. And when in doubt, the user is asked anyway (severity is not lowered for being an agent).
 
-### Excepción: delegación explícita a agente experto
+### Exception: explicit delegation to an expert agent
 
-Igual que en Etapa 2 (ver `stage-2-specification.md`, "Excepción: delegación explícita a agente experto"), esto solo aplica si el usuario, **para esta feature o etapa puntual**, pidió explícitamente que un agente valide la priorización en su lugar. No se asume, no se activa por defecto, no la iniciás vos.
+As in Stage 2 (see `stage-2-specification.md`, "Exception: explicit delegation to an expert agent"), this applies only if the user, **for this feature or specific stage**, explicitly requested that an agent validate the prioritization on their behalf. It is not assumed, not activated by default, and you do not initiate it.
 
-Con el pedido explícito, antes de validar corré la autoevaluación: ¿tenés contexto de cliente/producto que te falta para juzgar si un bloqueante es genuino? ¿hay algo en el reporte que preferís que vea el usuario (seguridad, breaking change, algo que afecta a un cliente final)? Notá que la matriz de severidad de abajo ya trata **riesgo de seguridad y bug funcional como bloqueante sin excepciones** — eso no lo cambia la delegación; la delegación te da autoridad para *priorizar*, no para bajar la severidad de algo que la matriz marca como innegociable.
+With the explicit request, before validating run the self-assessment: do you lack client/product context to judge whether a blocking is genuine? is there anything in the report you would prefer the user to see (security, breaking change, something affecting a final client)? Note that the severity matrix below already treats **security risk and functional bug as blockings without exceptions** — delegation does not change that; delegation gives you authority to *prioritize*, not to lower the severity of something the matrix marks as non-negotiable.
 
-Si tenés dudas: no validás vos, pedís al usuario igual. Si validás: marcá en `review.md` y en `stage_history` que la priorización fue agente-delegada, con quién la pidió y cuándo — mismo estándar de trazabilidad que en Etapa 2.
+If you have doubts: you don't validate, the user is asked anyway. If you validate: mark in `review.md` and in `stage_history` that the prioritization was agent-delegated, who requested it and when — the same traceability standard as in Stage 2.
 
-### Cuando el usuario vuelve con priorización
+### When the user comes back with the prioritization
 
-Aplicá la matriz de severidad por defecto para sanity-check:
+Apply the default severity matrix as a sanity check:
 
-| Tipo | Severidad por defecto | Excepción |
+| Type | Default severity | Exception |
 |------|----------------------|-----------|
-| Divergencia del spec | Bloqueante | Solo si spec estaba desactualizado |
-| Violación de boundary | Bloqueante | Solo si ADR autoriza |
-| Riesgo de seguridad | Bloqueante | Sin excepciones |
-| Bug funcional | Bloqueante | Sin excepciones |
-| Inconsistencia de estilo | Opcional | Bloqueante si masiva |
-| Simplificación | Opcional | Bloqueante si complejidad problemática |
-| Feature adicional sugerida | Descartar | — |
+| Spec divergence | Blocking | Only if the spec was outdated |
+| Boundary violation | Blocking | Only if an ADR authorizes it |
+| Security risk | Blocking | No exceptions |
+| Functional bug | Blocking | No exceptions |
+| Style inconsistency | Optional | Blocking if massive |
+| Simplification | Optional | Blocking if problematic complexity |
+| Suggested additional feature | Discard | — |
 
-Si el usuario marcó como "no bloqueante" algo que la matriz dice bloqueante (ej. divergencia del spec), preguntale el motivo y registralo en `review.md` como nota.
+If the user marked as "non-blocking" something the matrix says is blocking (e.g. spec divergence), ask for the reason and record it in `review.md` as a note.
 
-Si detectás sesgo (usuario queriendo cerrar rápido, marcando bloqueantes como opcionales sistemáticamente):
+If you detect bias (user wanting to close quickly, systematically marking blockings as optional):
 
-> *"Si dudás de si un bloqueante es genuino, errate del lado de tratarlo como bloqueante. El costo de una iteración extra es bajo; el costo de mergear un bug es alto."*
+> *"Weigh each finding by its real effect under the contract (Review calibration). A defect observable in real use is not downgraded — it stays blocking and the matrix above applies without exceptions. But a blocking requires evidence, its consequence and a verifiable closure condition (rule 2); do not turn a variant with no realistic path into a blocking just to be safe."*
 
-### Transmisión del feedback al implementer (R1)
+### Transmitting the feedback to the implementer (R1)
 
-Cuando la priorización produce fixes, el orquestador TRANSMITE el feedback **íntegro** del reviewer y del usuario en el handoff packet: los hallazgos viajan pegados tal como fueron escritos (con su rationale y provenance), **sin editar que suavice** — parafrasear en tono amable, recortar la evidencia o "resumir" el hallazgo suaviza exactamente la señal que el receptor necesita para verificar. El feedback del usuario (contexto que motivó la priorización) viaja en el mismo packet.
+When the prioritization produces fixes, the orchestrator TRANSMITS the **full** feedback of the reviewer and of the user in the handoff packet: the findings travel attached exactly as they were written (with their rationale and provenance), **with no editing that softens** — paraphrasing in a friendly tone, trimming the evidence, or "summarizing" the finding softens exactly the signal the receiver needs in order to verify. The user's feedback (the context that motivated the prioritization) travels in the same packet.
 
-El packet ordena al receptor aplicar `references/receiving-feedback.md` **antes de tocar código**: secuencia leer completo sin reaccionar → restatear el requisito → verificar contra el código real → implementar de a un fix (bloqueantes → simples → complejos, suite verde tras cada uno). Si el receptor emite push-back técnico con evidencia, el reviewer lo reconsidera (`verdict-tuple.md`); desacuerdo persistente → media el usuario. La sesión de fix llega fresca — esa es la ventaja estructural del ciclo: el packet re-invoca el protocolo con tokens frescos y el receptor llega sin emotional investment.
+The packet instructs the receiver to apply `references/receiving-feedback.md` **before touching code**: the sequence read it fully without reacting → restate the requirement → verify against the real code → implement one fix at a time (blockings → simple → complex, suite green after each). If the receiver issues technical push-back with evidence, the reviewer reconsiders it (`verdict-tuple.md`); persistent disagreement → the user mediates. The fix session arrives fresh — that is the structural advantage of the cycle: the packet re-invokes the protocol with fresh tokens and the receiver arrives without emotional investment.
 
-## Reutilización de evidencia (presupuesto 0 del reviewer)
+## Evidence reuse (the reviewer's budget of 0 runs)
 
-Si el árbol de código es idéntico al de la corrida de evidencia del gate
-(verificable: `git diff --stat <commit-de-la-corrida>..HEAD` muestra solo
-commits `[STATE]`/docs), el reviewer **cita el log registrado (ruta + línea)
-en vez de re-corrida la suite** — presupuesto de corridas 0. Solo si el árbol
-cambió corresponde UNA corrida completa nueva. Los analizadores estáticos
-(lint, import-linter) no consumen presupuesto. Requisito: cada corrida de
-gate queda registrada con su log y su commit (state file o mensaje de
-commit). En Odoo, detalle en `odoo-make-env/references/run-budget-protocol.md`.
+If the code tree is identical to the one from the gate's evidence run
+(verifiable: `git diff --stat <commit-of-the-run>..HEAD` shows only
+`[STATE]`/docs commits), the reviewer **cites the recorded log (path + line)
+instead of re-running the suite** — run budget of 0. Only if the tree
+changed does ONE new full run apply. Static analyzers
+(lint, import-linter) do not consume budget. Requirement: every gate
+run is recorded with its log and its commit (state file or commit
+message). In Odoo, details in `odoo-make-env/references/run-budget-protocol.md`.
+Scope note: this rule fixes *how evidence is reused*, not what the review may
+pursue — the Review calibration governs the review's scope (proportionality,
+class closure); optional improvements do not prolong the cycle (rule 6). The
+evidence policy (owner: `stage-3-tdd.md` §"Test evidence policy") and the
+equivalence rule (owner: `re-entry.md` §"Equivalence of a registered run") are
+**referenced**, not copied.
 
-## Loop con Etapa 3
+## Loop with Stage 3
 
-Si hay bloqueantes a aplicar (o opcionales aceptados):
+If there are blockings to apply (or accepted optionals):
 
-1. Anotá la lista priorizada de fixes.
-2. Emití handoff a implementer con la lista.
-3. Suite debe seguir verde tras cada fix. Si un fix requiere cambio de comportamiento, eso significa que el **spec necesita actualizarse** → vuelta a Etapa 2.
-4. Tras los fixes: idealmente otra pasada del reviewer. En features chicas con fixes mecánicos, podés saltar (criterio del usuario).
+1. Note the prioritized list of fixes.
+2. Emit handoff to implementer with the list.
+3. The suite must stay green after every fix. If a fix requires a behavior change, that means the **spec needs updating** → back to Stage 2.
+4. After the fixes: ideally another pass by the reviewer, scoped by the Review calibration (rule 4) — it verifies the agreed findings and the regressions introduced, and reopens the closure only with new evidence of a material breach or a relevant risk. In small features with mechanical fixes, you can skip it (the user's call).
 
-## 🛑 Gate de salida (Etapa 4 → Etapa 5)
+## 🛑 Exit gate (Stage 4 → Stage 5)
 
-- [ ] Existe `docs/specs/<feat>/review.md`.
-- [ ] Bloqueantes resueltos o explícitamente desestimados con motivo escrito.
-- [ ] Priorización validada por el usuario, o agente-delegada con pedido explícito registrado en `stage_history` (ver excepción en §2.3/Capa 2 — nunca autootorgada, AP-15).
-- [ ] Suite sigue verde tras los fixes.
+- [ ] `docs/specs/<feat>/review.md` exists.
+- [ ] Blockings resolved or explicitly dismissed with a written reason.
+- [ ] Prioritization validated by the user, or agent-delegated with an explicit request registered in `stage_history` (see the exception in §2.3/Layer 2 — never self-granted, AP-15).
+- [ ] Suite still green after the fixes.
 
-Cuando todos OK: actualizá state (`current_stage: merge`). Anunciá transición. Emití handoff a scribe (Etapa 5).
+When all OK: update state (`current_stage: merge`). Announce the transition. Emit handoff to scribe (Stage 5).
 
-## Anti-patrón principal
+## Main anti-pattern
 
-**Skipear el review en features pequeñas.** Aunque sea review breve sobre 30 líneas, vale.
+**Skipping the review on small features.** Even a brief review over 30 lines is worth it.

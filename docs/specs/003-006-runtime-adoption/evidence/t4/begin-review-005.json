@@ -1,0 +1,39 @@
+{
+  "attempt": 1,
+  "body_sha256": "f703ca13c8c20a7aa00c52763aa0cff0ce800a1b396e74781f10569d5474c383",
+  "bytes": 2788,
+  "checkpoint": "continuity-checkpoint-v1",
+  "execution_id": "exec-003-006-runtime-adoption-001",
+  "max_bytes": 16384,
+  "no_op": false,
+  "packet_id": "003-006-runtime-adoption-reviewer-review-005",
+  "prev_checkpoint_sha256": "89652deba326387f31ca18b95ca09cba0ced9765dd3f6251d002b52bc6279ef3",
+  "references": [
+    {
+      "path": "docs/specs/003-006-runtime-adoption/spec.md",
+      "sha256": "dc485e80aa86b545c75c86f71a3fa590321c1ca6a66221e1115c69b75a7d7cb7"
+    },
+    {
+      "path": "docs/specs/003-006-runtime-adoption/plan.md",
+      "sha256": "fca4be822bd4463377799559be5f49b9fcc7ec22c7f978619b1da5e4e85cd5b4"
+    },
+    {
+      "path": "docs/specs/003-006-runtime-adoption/dispatch-ledger.md",
+      "sha256": "63fb39f1657ad29b807cc63652cbde616b3bdd1b9ce154206fc4332bd49b92e5"
+    },
+    {
+      "path": "docs/specs/003-006-runtime-adoption/adoption-ledger.md",
+      "sha256": "a2e62535c5d069b00b41eac70c781098ee5197dfa8580f54e7aa353168394550"
+    },
+    {
+      "path": "docs/specs/003-006-runtime-adoption/debt.md",
+      "sha256": "db03412b6ef07847a343ce233669fb3a40bc98e8ce8809661d14dc3bfc662690"
+    },
+    {
+      "path": "docs/specs/003-006-runtime-adoption/t4-ru1-decision.md",
+      "sha256": "f01d8bf69537f76b249bee187746e2c8dc99c0089cdc49c2a8c5aa1921894655"
+    }
+  ],
+  "schema_version": 1,
+  "seq": 2
+}

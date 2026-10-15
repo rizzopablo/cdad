@@ -1,0 +1,31 @@
+{
+  "authority": {
+    "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
+    "expires_on": null,
+    "state": "active"
+  },
+  "classification": "received",
+  "escalate": false,
+  "execution_id": "exec-003-006-runtime-adoption-001",
+  "head": {
+    "body_sha256": "f703ca13c8c20a7aa00c52763aa0cff0ce800a1b396e74781f10569d5474c383",
+    "seq": 2
+  },
+  "packet_id": "003-006-runtime-adoption-reviewer-review-005",
+  "reasons": [
+    "a valid receipt exists: the effect is already received and must not be duplicated (D10); a receipt is not semantic approval (invariant 4)"
+  ],
+  "reconcile": "reconcile-v1",
+  "repeat_effect": false,
+  "schema_version": 1,
+  "signals": {
+    "dispatch": "dispatched",
+    "materialization": "open",
+    "receipt": {
+      "effect": "received",
+      "semantic_status": "pending",
+      "state": "readable"
+    }
+  },
+  "unknowns": []
+}

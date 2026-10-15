@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "authorization_sha256": "@AUTH_SHA256@",
+  "execution_id": "@EXECUTION_ID@",
+  "packet_id": "@PACKET_ID@",
+  "receipt": {
+    "execution_id": "@EXECUTION_ID@",
+    "packet_id": "@PACKET_ID@",
+    "bundle_sha256": "@BUNDLE_SHA256@"
+  },
+  "targets": [
+    {
+      "path": "fixture/closed-target.md",
+      "sha256": "@TARGET_SHA256@"
+    }
+  ],
+  "approval_effect": false,
+  "applied_at": "2026-10-07T00:00:00Z",
+  "source": "SIMULACION fixture 003-004 (journal de materializacion de 002, matriz T2, no incidente real)"
+}

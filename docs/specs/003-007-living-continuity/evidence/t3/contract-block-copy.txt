@@ -1,0 +1,1 @@
+cdad_continuity: reference 'docs/specs/003-007-living-continuity/spec.md' (class contract) changed since the checkpoint (P1, fail closed): expected 3b4e8c4ad7fefc49faa6086786cee1ac63bdeed6c41aec692cd686a0a3afa07c, got 38661a55816f58a96d8e87d9df2dcbfe7858f159517250fd8ecaef9818a84d3d

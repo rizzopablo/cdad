@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "trace": "trace-v1",
+  "simulation": true,
+  "label": "simulation",
+  "feature_id": "003-003-progress-guards",
+  "task": "T4",
+  "postcondition": "P6 (crash) / P5 + invariante 4",
+  "description": "Crash simulado: trabajo progresivo y luego una llamada IN-FLIGHT cuyo resultado nunca se observa (result_class 'unknown' — la sesión muere a mitad de llamada). Sin señal fiable ⇒ unknown explícito + escalada al orquestador; NUNCA éxito ni fracaso fabricado (invariante 4). Límite declarado (C1): el runtime no expone el exit del proceso ni distingue 'viva pero estancada' de 'terminada'.",
+  "session_id": "sess-sim-crash-midflight",
+  "entries": [
+    {"i": 1, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest", "-k", "t1"], "result_class": "ok", "progress_token": "p0", "at": "2026-10-06T00:00:00Z"},
+    {"i": 2, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest", "-k", "t2"], "result_class": "ok", "progress_token": "p1", "at": "2026-10-06T00:05:00Z"},
+    {"i": 3, "kind": "tool_call", "tool": "bash", "args": ["python", "-m", "pytest", "-k", "t3"], "result_class": "unknown", "progress_token": "p1", "at": "2026-10-06T00:10:00Z"}
+  ]
+}

@@ -1,0 +1,1 @@
+Expose behavioral ambiguity through concise questions about inputs, outputs, errors, boundaries, permissions, persistence, and exclusions. Do not propose or draft a design until product choices are resolved.

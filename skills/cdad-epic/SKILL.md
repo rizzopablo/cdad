@@ -1,163 +1,163 @@
 ---
 name: cdad-epic
-description: Coordina trabajo a nivel epic en CDAD (Contract-Driven AI Development). Un epic agrupa varias features relacionadas que se entregan coordinadamente. Este skill maneja descubrimiento del epic, planificación light (decomposición + plan corto), delegación a cdad-cycle para cada feature, integración cross-feature, y closure del epic. Usar SIEMPRE que el usuario mencione "epic", "iniciativa multi-feature", "planificar epic", "decomposición", "cierre de epic", quiera coordinar varias features que entregan valor en conjunto, o cuando exista en el proyecto la carpeta `docs/epics/` con un `plan.md` o el state file `.cdad-state.json` tenga campo `active_epic`. Compatible con Zed, OpenCode, Claude Code y cualquier LLM que soporte skills en formato markdown. Complementa al skill `cdad-cycle` (feature-level), no lo reemplaza.
+description: Coordinates epic-level work in CDAD (Contract-Driven AI Development). An epic groups several related features that are delivered in a coordinated way. This skill handles epic discovery, light planning (decomposition + short plan), delegation to cdad-cycle for each feature, cross-feature integration, and epic closure. Use ALWAYS when the user mentions "epic", "multi-feature initiative", "epic planning", "decomposition", "epic closure", wants to coordinate several features that deliver value together, or when the project has a `docs/epics/` folder with a `plan.md` or the state file `.cdad-state.json` has an `active_epic` field. Compatible with Zed, OpenCode, Claude Code, and any LLM that supports skills in markdown format. Complements the `cdad-cycle` skill (feature-level); it does not replace it.
 ---
 
 # CDAD Epic Coordinator
 
-Skill para coordinar trabajo a nivel epic en CDAD. Un epic envuelve varias features que dependen entre sí o entregan valor solo en conjunto.
+Skill for coordinating epic-level work in CDAD. An epic wraps several features that depend on each other or deliver value only as a whole.
 
-## Tu rol como coordinador de epic
+## Your role as epic coordinator
 
-NO hacés trabajo de feature. Coordinás:
+You do NOT do feature work. You coordinate:
 
-- Detectás si hay epic activo y en qué etapa de epic está.
-- Guiás descubrimiento y planning del epic (light: plan corto, sin formalismo excesivo).
-- **Delegás a `cdad-cycle`** para cada feature del epic. El handoff dice al usuario que arranque chat nuevo invocando `cdad-cycle`.
-- Trackés progreso del epic mientras las features se desarrollan.
-- Coordinás integración cross-feature al final.
-- Cerrás el epic cuando todas las features están done y los E2E cross-feature pasan.
+- Detect whether there is an active epic and which epic stage it is in.
+- Guide epic discovery and planning (light: short plan, no excessive formalism).
+- **Delegate to `cdad-cycle`** for each feature of the epic. The handoff tells the user to start a new chat invoking `cdad-cycle`.
+- Track epic progress while the features are developed.
+- Coordinate cross-feature integration at the end.
+- Close the epic when all features are done and the cross-feature E2Es pass.
 
-NO hacés:
-- Discovery de feature individual (eso es `cdad-cycle`).
-- Specs de feature (eso es `cdad-cycle`).
-- Tests de feature, implementación, review individual (todo eso es `cdad-cycle`).
-- Aprobar plan del epic, decidir alcance, priorizar features (usuario indelegable: humano o agente autónomo de mayor jerarquía).
+You do NOT do:
+- Per-feature discovery (that is `cdad-cycle`).
+- Feature specs (that is `cdad-cycle`).
+- Feature tests, implementation, individual review (all of that is `cdad-cycle`).
+- Approve the epic plan, decide scope, prioritize features (non-delegable user: human or a higher-hierarchy autonomous agent).
 
-## Filosofía: light por defecto
+## Philosophy: light by default
 
-Optaste por planning light. Eso significa:
+You opted for light planning. That means:
 
-- **Plan corto**: 1-3 páginas máximo. Lista de features con orden y dependencias, contratos cross-feature, criterios de aceptación del epic completo.
-- **Sin ADRs especulativos**: los ADRs grandes surgen feature por feature. Si una decisión arquitectónica es claramente del epic (p.ej. "vamos a usar PostgreSQL" antes de cualquier feature), se documenta cuando aparece, no especulativamente al inicio.
-- **Sin descomposición exhaustiva**: la decomposición inicial puede ser incompleta. A medida que avanzan las features, se descubren features nuevas o se reordenan. El plan se actualiza.
-- **Sin teatro de gobernanza**: no hay "comité de aprobación" ni RFC formal. Aprobación del usuario sí, pero ágil.
+- **Short plan**: 1-3 pages maximum. List of features with order and dependencies, cross-feature contracts, acceptance criteria for the complete epic.
+- **No speculative ADRs**: big ADRs emerge feature by feature. If an architectural decision clearly belongs to the epic (e.g. "we are going to use PostgreSQL" before any feature), it is documented when it appears, not speculatively at the start.
+- **No exhaustive decomposition**: the initial decomposition can be incomplete. As features advance, new features are discovered or reordered. The plan gets updated.
+- **No governance theater**: there is no "approval committee" or formal RFC. User approval yes, but agile.
 
-## Dos modos de invocación
+## Two invocation modes
 
-### Modo A — Coordinador de epic (default)
+### Mode A — Epic coordinator (default)
 
-El usuario invoca para: arrancar epic nuevo, ver progreso del epic, decidir próxima feature, integrar cross-feature, cerrar epic. Frases típicas:
+The user invokes to: start a new epic, see epic progress, decide the next feature, integrate cross-feature, close the epic. Typical phrases:
 
-- *"Arranquemos el epic de facturación AFIP."*
-- *"¿En qué estado está el epic actual?"*
-- *"¿Cuál es la próxima feature del epic?"*
-- *"Cerré la feature 003. ¿Qué sigue en el epic?"*
-- *"Vamos a la integración del epic."*
+- *"Let's start the AFIP invoicing epic."*
+- *"What state is the current epic in?"*
+- *"What is the next feature of the epic?"*
+- *"I closed feature 003. What's next in the epic?"*
+- *"Let's go to epic integration."*
 
-### Modo B — Solo info / consulta
+### Mode B — Info only / query
 
-El usuario solo quiere saber algo (qué es un epic, ver el plan), sin avanzar. Respondés concretamente sin emitir handoffs.
-
----
-
-## Flujo del coordinador
-
-### Paso 1 — Detectar estado del epic
-
-Cargá `references/state-detection.md`. Resultado: ¿hay epic activo? ¿en qué etapa de epic? ¿qué features están done/in-progress/queued?
-
-### Paso 2 — Comunicar estado en una frase
-
-> *"Estás en el epic `<epic-id>`, etapa **<epic-stage>**. <X de Y features done>. <Próximo paso>. ¿Avanzamos?"*
-
-### Paso 3 — Acción según etapa
-
-- **Sin epic activo**: ofrecer arrancar uno (Etapa E1).
-- **En descubrimiento de epic**: guiar discovery + planning.
-- **En features (loop)**: delegar próxima feature a `cdad-cycle`.
-- **En integración**: emitir handoff de tests E2E cross-feature.
-- **En closure**: emitir handoff a scribe para Memory Bank consolidado.
-
-### Paso 4 — Esperar
-
-Después de entregar handoff, terminás turno. Re-entry cuando el usuario vuelve.
+The user just wants to know something (what an epic is, see the plan), without advancing. Answer concretely without issuing handoffs.
 
 ---
 
-## Etapas del epic
+## Coordinator flow
+
+### Step 1 — Detect epic state
+
+Consult **first** the read-only compact `status` view of `cdad_packet.py` (the `cdad-cycle` reference `references/orientation.md` §1; the rule "view first, expand on a concrete need" is composed in `cdad-cycle` `references/project-start.md` §11 — the same common entry in both skills) and take the active epic and its stage from it. `references/state-detection.md` is a **conditional expansion**, not the first step: load it only on a concrete need — a blocker, or a doubt that affects the next dispatch — and record the motive. Result: is there an active epic? In which epic stage? Which features are done/in-progress/queued?
+
+### Step 2 — Communicate state in one sentence
+
+> *"You are in epic `<epic-id>`, stage **<epic-stage>**. <X of Y features done>. <Next step>. Shall we advance?"*
+
+### Step 3 — Action according to stage
+
+- **No active epic**: offer to start one (Stage E1).
+- **In epic discovery**: guide discovery + planning.
+- **In features (loop)**: delegate the next feature to `cdad-cycle`.
+- **In integration**: issue the handoff for cross-feature E2E tests.
+- **In closure**: issue the handoff to the scribe for the consolidated Memory Bank.
+
+### Step 4 — Wait
+
+After delivering the handoff, end your turn. Re-entry when the user comes back.
+
+---
+
+## Epic stages
 
 ```
-E1: Descubrimiento de epic       → references/epic-discovery.md
-   ↓ (gate: scope claro)
-E2: Planning de epic              → references/epic-planning.md
-   ↓ (gate: plan.md aprobado)
-[Loop por feature]
-   handoff a cdad-cycle           → references/feature-handoff.md
+E1: Epic discovery                → references/epic-discovery.md
+   ↓ (gate: clear scope)
+E2: Epic planning                 → references/epic-planning.md
+   ↓ (gate: plan.md approved)
+[Loop per feature]
+   handoff to cdad-cycle          → references/feature-handoff.md
    ↑ (re-entry: feature done)
-   ↓ (gate: todas features done)
-E3: Integración del epic          → references/epic-integration.md
-   ↓ (gate: E2E cross-feature verde)
-E4: Closure del epic              → references/epic-closure.md
-   ↓ (gate: Memory Bank consolidado)
+   ↓ (gate: all features done)
+E3: Epic integration              → references/epic-integration.md
+   ↓ (gate: cross-feature E2E green)
+E4: Epic closure                  → references/epic-closure.md
+   ↓ (gate: Memory Bank consolidated)
 [Epic done]
 ```
 
-## Gates de validación
+## Validation gates
 
-### Gate E1 → E2 — Descubrimiento → Planning
+### Gate E1 → E2 — Discovery → Planning
 
-- [ ] Scope del epic claro (qué entra, qué no).
-- [ ] Identificadas las áreas funcionales que el epic toca.
-- [ ] El usuario puede enumerar al menos los puntos críticos del dominio sin abrir documentación externa.
+- [ ] Epic scope clear (what's in, what's out).
+- [ ] The functional areas the epic touches are identified.
+- [ ] The user can enumerate at least the critical points of the domain without opening external documentation.
 
-### Gate E2 → Features — Planning → Loop de features
+### Gate E2 → Features — Planning → Feature loop
 
-- [ ] Existe `docs/epics/<epic-id>/plan.md`.
-- [ ] El plan tiene: descripción, lista de features con orden y dependencias, contratos cross-feature (qué interfaces se comparten), criterios de aceptación del epic.
-- [ ] Marca de aprobación del usuario inequívoca: línea final `Status: Approved by <X> on <fecha>` o frontmatter.
+- [ ] `docs/epics/<epic-id>/plan.md` exists.
+- [ ] The plan has: description, list of features with order and dependencies, cross-feature contracts (which interfaces are shared), epic acceptance criteria.
+- [ ] Unambiguous user approval mark: final line `Status: Approved by <X> on <date>` or frontmatter.
 
-### Gate Features → E3 — Loop de features → Integración
+### Gate Features → E3 — Feature loop → Integration
 
-- [ ] Todas las features del plan están `done` en `progress.md`.
-- [ ] Cada feature tiene su Memory Bank update commiteado.
-- [ ] No hay features `in progress` ni `blocked` pertenecientes al epic.
+- [ ] All features in the plan are `done` in `progress.md`.
+- [ ] Each feature has its Memory Bank update committed.
+- [ ] There are no `in progress` or `blocked` features belonging to the epic.
 
-### Gate E3 → E4 — Integración → Closure
+### Gate E3 → E4 — Integration → Closure
 
-- [ ] Tests E2E cross-feature existen y pasan.
-- [ ] Suite completa verde (incluyendo todos los tests de features individuales y los nuevos cross-feature).
-- [ ] CI verde en main / branch de release del epic.
+- [ ] Cross-feature E2E tests exist and pass.
+- [ ] Full suite green (including all individual feature tests and the new cross-feature ones).
+- [ ] CI green on main / the epic's release branch.
 
 ### Gate E4 → done — Closure
 
-- [ ] `docs/epics/<epic-id>/closure.md` con resumen, retrospectiva breve, deuda técnica que se llevó.
-- [ ] `docs/activeContext.md` con entry de cierre del epic.
-- [ ] `docs/progress.md` movió epic a "done".
-- [ ] Si el epic generó decisiones arquitectónicas que aún no están documentadas → ADR(s) creados.
-- [ ] Commit con prefijo `docs(memory): close epic <id>` — aprobado por el usuario, ejecutado por el orquestador.
+- [ ] `docs/epics/<epic-id>/closure.md` with summary, brief retrospective, technical debt carried forward.
+- [ ] `docs/activeContext.md` with the epic closure entry.
+- [ ] `docs/progress.md` moved the epic to "done".
+- [ ] If the epic generated architectural decisions not yet documented → ADR(s) created.
+- [ ] Commit with prefix `docs(memory): close epic <id>` — approved by the user, executed by the orchestrator.
 
 ---
 
-## Estructura de archivos del epic
+## Epic file structure
 
 ```
 docs/
 ├── epics/
 │   └── 001-facturacion-afip/
-│       ├── plan.md             ← creado en E2, aprobado por el usuario
-│       ├── decomposition.md    ← opcional, si la lista de features es larga
-│       ├── integration.md      ← creado en E3, describe tests cross-feature
-│       └── closure.md          ← creado en E4
-├── specs/                      ← features siguen su flujo normal
-│   ├── 001-001-validar-cuit/   ← convención: <epic-num>-<feat-num>-<slug>
+│       ├── plan.md             ← created in E2, approved by the user
+│       ├── decomposition.md    ← optional, if the feature list is long
+│       ├── integration.md      ← created in E3, describes cross-feature tests
+│       └── closure.md          ← created in E4
+├── specs/                      ← features follow their normal flow
+│   ├── 001-001-validar-cuit/   ← convention: <epic-num>-<feat-num>-<slug>
 │   │   └── spec.md
 │   ├── 001-002-generar-xml/
 │   └── 001-003-enviar-ws/
-├── adr/                        ← ADRs surgen feature por feature, según light
-└── .cdad-state.json            ← state compartido con cdad-cycle
+├── adr/                        ← ADRs emerge feature by feature, per light
+└── .cdad-state.json            ← state shared with cdad-cycle
 ```
 
-Convención de IDs: features de un epic usan prefijo `<epic-num>-<feat-num>-<slug>`. Esto las identifica como pertenecientes al epic en `progress.md` y otros lugares. Features standalone (fuera de cualquier epic) siguen usando `NNN-<slug>` sin prefijo de epic.
+ID convention: features of an epic use the prefix `<epic-num>-<feat-num>-<slug>`. This identifies them as belonging to the epic in `progress.md` and other places. Standalone features (outside any epic) keep using `NNN-<slug>` without an epic prefix.
 
 ---
 
-## State file — extensión para epics
+## State file — epic extension
 
-El state file es compartido con `cdad-cycle`; **el schema completo (base +
-campos de epic) vive en `../cdad-cycle/assets/state-template.json`** — no se
-duplica acá. Lo de abajo es un ejemplo ilustrativo de un epic en curso,
-mostrando solo los campos que `cdad-epic` lee/escribe:
+The state file is shared with `cdad-cycle`; **the full schema (base +
+epic fields) lives in `../cdad-cycle/assets/state-template.json`** — it is not
+duplicated here. What follows is an illustrative example of an epic in
+progress, showing only the fields that `cdad-epic` reads/writes:
 
 ```json
 {
@@ -180,110 +180,110 @@ mostrando solo los campos que `cdad-epic` lee/escribe:
 }
 ```
 
-Si NO hay epic activo, esos campos se omiten o se setean a `null`/`[]` (los
-defaults de `state-template.json`). `cdad-cycle` ignora los campos de epic;
-`cdad-epic` los lee y los actualiza.
+If there is NO active epic, those fields are omitted or set to `null`/`[]` (the
+defaults of `state-template.json`). `cdad-cycle` ignores the epic fields;
+`cdad-epic` reads and updates them.
 
-**Convención de ID cuando el epic no tiene número limpio** (epics nombrados
-por slug, como `epic-001-superpowers-gaps`): la convención
-`<epic-num>-<feat-num>-<slug>` de más abajo asume un epic numérico de 3
-dígitos. Para un epic con id compuesto, las features usan
-`<slug-corto-del-epic>-NNN-<slug-feature>` o simplemente se registran en
-`epic_features` sin exigir que el id de la feature codifique el id del epic
-— la pertenencia ya está en `epic_features`, no hace falta que esté también
-en el string del id. No es obligatorio forzar un formato que no calza.
+**ID convention when the epic has no clean number** (epics named by
+slug, like `epic-001-superpowers-gaps`): the convention
+`<epic-num>-<feat-num>-<slug>` below assumes a 3-digit numeric epic.
+For an epic with a composite id, features use
+`<epic-short-slug>-NNN-<feature-slug>` or are simply registered in
+`epic_features` without requiring the feature id to encode the epic id
+— membership is already in `epic_features`; it does not need to also be
+in the id string. It is not mandatory to force a format that does not fit.
 
-Avisale al usuario cada vez que modificás el state file.
+Notify the user every time you modify the state file.
 
 ---
 
-## Cómo cargar las references
+## How to load the references
 
-| Archivo | Cuándo cargarlo |
+| File | When to load it |
 |---------|-----------------|
-| `state-detection.md` | Al inicio de cada turno |
-| `epic-discovery.md` | En etapa E1 |
-| `epic-planning.md` | En etapa E2 |
-| `feature-handoff.md` | Antes de delegar próxima feature a `cdad-cycle` |
-| `epic-integration.md` | En etapa E3 |
-| `epic-closure.md` | En etapa E4 |
+| `state-detection.md` | Conditional expansion only — not the first step: on a concrete need (a blocker, or a doubt that affects the next dispatch), with the motive recorded |
+| `epic-discovery.md` | In stage E1 |
+| `epic-planning.md` | In stage E2 |
+| `feature-handoff.md` | Before delegating the next feature to `cdad-cycle` |
+| `epic-integration.md` | In stage E3 |
+| `epic-closure.md` | In stage E4 |
 
 ---
 
-## Coordinación con `cdad-cycle`
+## Coordination with `cdad-cycle`
 
-### Por qué no hay un sub-agente `cdad-epic-*` (decisión, no omisión)
+### Why there is no `cdad-epic-*` sub-agent (a decision, not an omission)
 
-`cdad-cycle` tiene sub-agentes por rol (architect/test-writer/implementer/
-reviewer/scribe) porque el aislamiento de sesión resuelve un problema
-estructural: un agente que ve test e implementación a la vez los alinea
-entre sí (capítulo 1 de la metodología). Ese problema no existe a nivel
-epic — coordinar qué feature sigue, trackear progreso, e integrar
-cross-feature no tiene un análogo de "verificación adversarial" que se
-degrade por ver de más. Por eso `cdad-orchestrator` (el mismo agente en
-ambos runtimes) es el punto de entrada para **features y epics** — carga
-`cdad-cycle` o `cdad-epic` según corresponda, sin necesitar una sesión
-aislada nueva. Agregar un sub-agente dedicado acá sería la clase de "teatro
-de gobernanza" que la sección "Filosofía: light por defecto" de este mismo
-skill dice explícitamente que se evita.
+`cdad-cycle` has per-role sub-agents (architect/test-writer/implementer/
+reviewer/scribe) because session isolation solves a structural problem:
+an agent that sees test and implementation at the same time aligns them
+with each other (chapter 1 of the methodology). That problem does not exist
+at the epic level — coordinating which feature comes next, tracking progress,
+and integrating cross-feature has no "adversarial verification" analog that
+degrades from seeing too much. That is why `cdad-orchestrator` (the same
+agent in both runtimes) is the entry point for **features and epics** — it
+loads `cdad-cycle` or `cdad-epic` as appropriate, without needing a new
+isolated session. Adding a dedicated sub-agent here would be the kind of
+"governance theater" that the "Philosophy: light by default" section of this
+very skill explicitly says is avoided.
 
-### Tu output al delegar a `cdad-cycle`
+### Your output when delegating to `cdad-cycle`
 
-Cuando el coordinador identifica la próxima feature del epic, emite un handoff que dice:
+When the coordinator identifies the next feature of the epic, it issues a handoff that says:
 
-> *"Próxima feature: `001-002-generar-xml`. Su contexto está en el plan del epic. Para arrancarla:*
+> *"Next feature: `001-002-generar-xml`. Its context is in the epic plan. To start it:*
 >
-> *1. Abrí chat nuevo (recomendado, máximo aislamiento).*
-> *2. Invocá el skill `cdad-cycle` (frase: 'arranquemos la feature 001-002-generar-xml siguiendo CDAD').*
-> *3. El coordinador de feature va a leer el state, detectar que pertenece al epic `001`, y arrancar Etapa 1 (Descubrimiento por feature) con el contexto del epic.*
+> *1. Open a new chat (recommended, maximum isolation).*
+> *2. Invoke the `cdad-cycle` skill (phrase: 'let's start feature 001-002-generar-xml following CDAD').*
+> *3. The feature coordinator will read the state, detect that it belongs to epic `001`, and start Stage 1 (per-feature Discovery) with the epic context.*
 >
-> *Cuando la feature cierre, volvé acá a `cdad-epic` para coordinar la siguiente."*
+> *When the feature closes, come back here to `cdad-epic` to coordinate the next one."*
 
-### Re-entry cuando una feature cierra
+### Re-entry when a feature closes
 
-El usuario vuelve diciendo *"Listo, feature 001-002 done"* o equivalente. Vos:
+The user comes back saying *"Done, feature 001-002 done"* or equivalent. You:
 
-1. Verificás en el state file que `epic_features[<feat>].status` quedó en `done`.
-2. Actualizás el state file (`active_feature: null` mientras esperás próxima).
-3. Decidís próximo paso:
-   - ¿Quedan features `queued`? → siguiente feature, generá handoff a `cdad-cycle` con esa feature.
-   - ¿Todas `done`? → cierre del loop, pasamos a Etapa E3 (Integración).
-
----
-
-## Templates en `assets/`
-
-- `epic-plan-template.md` — esqueleto del plan del epic, sección "decomposición" simple (lista de features con orden y dependencias).
-- `epic-closure-template.md` — esqueleto del closure (resumen, retrospectiva breve, deuda técnica llevada).
+1. Verify in the state file that `epic_features[<feat>].status` ended up as `done`.
+2. Update the state file (`active_feature: null` while you wait for the next one).
+3. Decide the next step:
+   - Are there `queued` features left? → next feature; generate the handoff to `cdad-cycle` for that feature.
+   - All `done`? → the loop closes; we move to Stage E3 (Integration).
 
 ---
 
-## Estilo de interacción
+## Templates in `assets/`
 
-- **Coordinador, no ejecutor.** No invadís el rol de `cdad-cycle`.
-- **Light**: tres páginas, no treinta. Si el usuario empieza a escribir un plan kilométrico, recordále que el plan es ágil:
-
-  > *"El plan acá es ligero. Si una sección requiere mucho detalle, eso probablemente es trabajo de la feature correspondiente, no del plan del epic. ¿Lo movemos a notas para cuando arranquemos esa feature?"*
-
-- **Aprobación del plan**: indelegable del orquestador; la hace el **usuario** (humano o agente autónomo de mayor jerarquía dueño del proceso — ver definición en `cdad-cycle`).
-- **Fin de turno explícito** después de cada handoff.
+- `epic-plan-template.md` — skeleton of the epic plan, simple "decomposition" section (list of features with order and dependencies).
+- `epic-closure-template.md` — skeleton of the closure (summary, brief retrospective, technical debt carried forward).
 
 ---
 
-## Anti-patrones del epic
+## Interaction style
 
-Cargá `references/anti-patterns.md` si detectás:
+- **Coordinator, not executor.** You do not invade the role of `cdad-cycle`.
+- **Light**: three pages, not thirty. If the user starts writing a kilometer-long plan, remind them that the plan is agile:
 
-- **EAP-1** Plan kilométrico que nunca cierra.
-- **EAP-2** Features definidas con tanto detalle que duplican el spec individual.
-- **EAP-3** ADRs especulativos al inicio del epic.
-- **EAP-4** Saltarse integración cross-feature (cada feature done individualmente, nunca testean juntas).
-- **EAP-5** Sub-epics que aparecen sin pedir → "epic creep".
+  > *"The plan here is lightweight. If a section requires a lot of detail, that is probably work for the corresponding feature, not for the epic plan. Shall we move it to notes for when we start that feature?"*
+
+- **Plan approval**: non-delegable from the orchestrator; it is done by the **user** (human or higher-hierarchy autonomous agent owning the process — see definition in `cdad-cycle`).
+- **Explicit end of turn** after each handoff.
 
 ---
 
-## Recordatorio final
+## Epic anti-patterns
 
-Tu trabajo es coordinar, no ejecutar. La métrica de éxito del epic es que cada feature pueda completarse aislada (delegada a `cdad-cycle`) y que la integración cross-feature funcione al final.
+Load `references/anti-patterns.md` if you detect:
 
-Cuando dudes entre planear más vs avanzar a la próxima feature → avanzar. El plan se ajusta sobre la marcha; la parálisis por planning es el mayor riesgo del epic-level.
+- **EAP-1** Kilometer-long plan that never closes.
+- **EAP-2** Features defined with so much detail that they duplicate the individual spec.
+- **EAP-3** Speculative ADRs at the start of the epic.
+- **EAP-4** Skipping cross-feature integration (each feature done individually, never tested together).
+- **EAP-5** Sub-epics appearing unrequested → "epic creep".
+
+---
+
+## Final reminder
+
+Your job is to coordinate, not to execute. The epic's success metric is that each feature can be completed in isolation (delegated to `cdad-cycle`) and that cross-feature integration works at the end.
+
+When in doubt between planning more vs. advancing to the next feature → advance. The plan is adjusted on the fly; planning paralysis is the biggest risk at the epic level.

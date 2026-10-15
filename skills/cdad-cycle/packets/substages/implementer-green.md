@@ -1,0 +1,1 @@
+Make the current RED tests pass with the minimum production change. Run the focused test and the proportional regression the change requires (the commands the project declares); the full-suite policy is declared once in the common part of this instruction. Preserve the outputs. Evidence policy: `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".

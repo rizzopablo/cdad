@@ -1,140 +1,140 @@
-# Etapa E3 — Integración del epic
+# Stage E3 — Epic integration
 
-Verificar que las features del epic funcionan **juntas**, no solo cada una por su lado. Output: tests E2E cross-feature verdes + `integration.md` documentando qué se integró y qué se aprendió.
+Verify that the epic's features work **together**, not just each one on its own. Output: cross-feature E2E tests green + `integration.md` documenting what was integrated and what was learned.
 
-## Por qué esta etapa existe
+## Why this stage exists
 
-Cada feature pasó su propio ciclo CDAD con tests E2E individuales. Pero los tests E2E individuales solo cubren el flujo de UNA feature. La integración del epic verifica que las features compuestas dan el resultado prometido en los criterios de aceptación del epic.
+Each feature went through its own CDAD cycle with individual E2E tests. But individual E2E tests only cover the flow of ONE feature. Epic integration verifies that the composed features deliver the result promised in the epic's acceptance criteria.
 
-Ejemplo: epic facturación AFIP. Features individuales tienen tests:
-- 001 valida CUIT.
-- 002 genera XML.
-- 003 envía al WS.
-- 004 maneja cola de reintentos.
-- 005 parsea respuestas.
+Example: AFIP invoicing epic. Individual features have tests:
+- 001 validates the CUIT.
+- 002 generates the XML.
+- 003 sends to the WS.
+- 004 handles the retry queue.
+- 005 parses responses.
 
-Pero ningún test individual verifica el flujo completo: factura entra → CUIT validado → XML generado → enviado al WS → respuesta parseada → estado persistido. Eso es trabajo de E3.
+But no individual test verifies the complete flow: invoice comes in → CUIT validated → XML generated → sent to the WS → response parsed → state persisted. That is E3's work.
 
-## Tu rol
+## Your role
 
-Coordinás. Identificás los flujos cross-feature que hay que testear (los que están en los criterios de aceptación del epic), emitís handoff a **test-writer modo E2E cross-feature**, validás resultado.
+You coordinate. You identify the cross-feature flows that need to be tested (the ones in the epic's acceptance criteria), you issue the handoff to the **test-writer in E2E cross-feature mode**, you validate the result.
 
-## Pasos
+## Steps
 
-### Paso 1 — Identificar flujos a testear
+### Step 1 — Identify flows to test
 
-Releé los **Criterios de aceptación del epic** del `plan.md`. Cada criterio que requiere flujo cross-feature es un test E2E del epic.
+Re-read the **Epic acceptance criteria** from `plan.md`. Each criterion that requires a cross-feature flow is an epic E2E test.
 
-Ejemplo:
+Example:
 
-| Criterio | Test E2E cross-feature |
+| Criterion | Cross-feature E2E test |
 |----------|------------------------|
-| "Dado factura válida, se genera XML, se envía, se persiste estado" | Test que ejerce 001 + 002 + 003 + 005 |
-| "Dado envío fallido, cola reintenta hasta éxito o timeout" | Test que ejerce 003 + 004 con WS mock que falla N veces |
+| "Given a valid invoice, XML is generated, sent, and state is persisted" | Test that exercises 001 + 002 + 003 + 005 |
+| "Given a failed submission, the queue retries until success or timeout" | Test that exercises 003 + 004 with a WS mock that fails N times |
 
-### Paso 2 — Handoff a test-writer modo E2E cross-feature
+### Step 2 — Handoff to the test-writer in E2E cross-feature mode
 
-Es una variante del E2E que `cdad-cycle` ya tiene, pero con scope ampliado: cubre múltiples features.
+It is a variant of the E2E that `cdad-cycle` already has, but with an expanded scope: it covers multiple features.
 
-Cargá `cdad-cycle/references/handoff-prompts.md` (sí, del otro skill — el patrón es el mismo) y adaptá la sección "Test-writer (Etapa 3 — Integración / E2E)" para cross-feature:
+Load `cdad-cycle/references/handoff-prompts.md` (yes, from the other skill — the pattern is the same) and adapt the section "Test-writer (Stage 3 — Integration / E2E)" for cross-feature:
 
 ```
-Sos un sub-agente test-writer en CDAD modo E2E cross-feature del epic.
+You are a test-writer sub-agent in CDAD epic E2E cross-feature mode.
 
-Tarea: traducir UN criterio de aceptación del epic a test E2E que ejerce 
-múltiples features juntas.
+Task: translate ONE epic acceptance criterion into an E2E test that exercises 
+multiple features together.
 
-Contexto:
-1. Plan del epic: pegar docs/epics/<id>/plan.md
-2. Criterio específico a verificar: <pegar>
-3. Specs de las features involucradas: pegar docs/specs/<feat-i>/spec.md por cada una
-4. API pública de cada feature (las interfaces que se usan desde afuera)
-5. Convenciones de tests E2E del proyecto
+Context:
+1. Epic plan: paste docs/epics/<id>/plan.md
+2. Specific criterion to verify: <paste>
+3. Specs of the involved features: paste docs/specs/<feat-i>/spec.md for each one
+4. Public API of each feature (the interfaces used from the outside)
+5. Project's E2E test conventions
 
-Reglas estrictas:
-- Permisos: edit SOLO en tests/ (en una carpeta tests/integration/ o tests/epic/)
-- Llamada vía API pública de las features. NO accedés a internals.
-- Setup con fixtures realistas, no mocks que conviertan el test en unit.
-- Mocks SOLO para sistemas externos del epic (servicios de terceros, APIs externas).
-- Asserts derivados del criterio del epic, uno por uno.
+Strict rules:
+- Permissions: edit ONLY in tests/ (in a tests/integration/ or tests/epic/ folder)
+- Calls via the features' public API. You do NOT access internals.
+- Setup with realistic fixtures, no mocks that turn the test into a unit test.
+- Mocks ONLY for external systems of the epic (third-party services, external APIs).
+- Asserts derived from the epic criterion, one by one.
 
-Output esperado: archivo de test E2E + commit "test(epic): add E2E for <criterio>".
-Cuando termines:
-"LISTO. E2E en <archivo>. Output del run:
-<pegar output mostrando E2E verde>
+Expected output: E2E test file + commit "test(epic): add E2E for <criterion>".
+When done:
+"READY. E2E in <file>. Run output:
+<paste output showing E2E green>
 Commit: <hash>"
 ```
 
-Generá el packet con todo el contexto inline. Entregá al usuario, terminá turno.
+Generate the packet with all the context inline. Deliver to the user, end your turn.
 
-### Paso 3 — Re-entry
+### Step 3 — Re-entry
 
-Validá:
+Validate:
 
-- [ ] Test E2E existe en `tests/integration/` o equivalente del proyecto.
-- [ ] Output del run pegado por el usuario muestra verde.
-- [ ] Suite completa sigue verde (incluyendo tests previos de cada feature).
-- [ ] Commit con prefijo `test(epic):` o similar consistente.
+- [ ] E2E test exists in `tests/integration/` or the project's equivalent.
+- [ ] The run output pasted by the user shows green.
+- [ ] Full suite still green (including previous tests of each feature).
+- [ ] Commit with prefix `test(epic):` or a similar consistent one.
 
-Si pasa: marcá ese criterio como cubierto. Si quedan más criterios cross-feature, emití siguiente handoff. Si no, avanzás.
+If it passes: mark that criterion as covered. If there are more cross-feature criteria left, issue the next handoff. If not, you move forward.
 
-### Paso 4 — Documentar `integration.md`
+### Step 4 — Document `integration.md`
 
-Cuando todos los criterios cross-feature tienen E2E verde, draftéa `docs/epics/<id>/integration.md`:
+When all the cross-feature criteria have green E2Es, draft `docs/epics/<id>/integration.md`:
 
 ```markdown
 # Epic <id> — Integration
 
-## Tests E2E cross-feature
+## Cross-feature E2E tests
 
-| Criterio | Test | Estado |
+| Criterion | Test | Status |
 |----------|------|--------|
-| <criterio 1> | tests/integration/test_epic_<id>_flow.py::test_full_flow | ✅ verde |
-| <criterio 2> | tests/integration/test_epic_<id>_retry.py::test_retry_until_success | ✅ verde |
+| <criterion 1> | tests/integration/test_epic_<id>_flow.py::test_full_flow | ✅ green |
+| <criterion 2> | tests/integration/test_epic_<id>_retry.py::test_retry_until_success | ✅ green |
 
-## Hallazgos durante integración
+## Findings during integration
 
-<Cualquier cosa aprendida durante la fase de integración: bugs cross-feature 
-que emergieron, ajustes a contratos, refactors que se hicieron a features ya 
-done para que jueguen bien juntas, etc.>
+<Anything learned during the integration phase: cross-feature bugs 
+that emerged, adjustments to contracts, refactors made to already 
+done features so they play well together, etc.>
 
-## Deuda técnica detectada
+## Technical debt detected
 
-<Si la integración reveló deuda que no se resolvió en este epic, documentarla 
-para futuros epics o features standalone.>
+<If the integration revealed debt that was not resolved in this epic, document it 
+for future epics or standalone features.>
 ```
 
-Pasale el draft al usuario para aprobación final del archivo (no es indelegable, pero conviene que el usuario (humano o agente de mayor jerarquía) lo revise antes de que el orquestador commitee).
+Pass the draft to the user for final approval of the file (it is not non-delegable, but it is advisable that the user (human or a higher-hierarchy agent) review it before the orchestrator commits it).
 
-## 🛑 Gate de salida (E3 → E4)
+## 🛑 Exit gate (E3 → E4)
 
-- [ ] Cada criterio de aceptación cross-feature del epic tiene su test E2E.
-- [ ] Todos los E2E cross-feature pasan.
-- [ ] Suite completa verde (E2E individuales + cross-feature + unit + properties + linter + type checker).
-- [ ] CI verde en main / branch del epic.
-- [ ] `docs/epics/<id>/integration.md` existe y está commiteado.
+- [ ] Each cross-feature acceptance criterion of the epic has its E2E test.
+- [ ] All cross-feature E2Es pass.
+- [ ] Full suite green (individual E2Es + cross-feature + unit + properties + linter + type checker).
+- [ ] CI green on main / the epic's branch.
+- [ ] `docs/epics/<id>/integration.md` exists and is committed.
 
-Cuando todos OK: actualizá state (`epic_stage: epic-closure`). Anunciá transición. Cargá `epic-closure.md`.
+When all OK: update the state (`epic_stage: epic-closure`). Announce the transition. Load `epic-closure.md`.
 
-## Anti-patrón principal (EAP-4)
+## Main anti-pattern (EAP-4)
 
-**Saltar E3 porque "cada feature pasó sus E2E"**. Tests individuales NO sustituyen tests cross-feature. Bugs típicos que solo aparecen en integración:
+**Skipping E3 because "each feature passed its E2Es"**. Individual tests do NOT substitute cross-feature tests. Typical bugs that only appear in integration:
 
-- Feature A genera output que feature B espera con formato ligeramente distinto.
-- Timing entre features (race conditions).
-- Recursos compartidos (DB, archivos, locks) que individualmente funcionan pero juntos chocan.
-- Errores que en feature A son "manejados" tirando una excepción que feature B no contempla.
+- Feature A generates output that feature B expects in a slightly different format.
+- Timing between features (race conditions).
+- Shared resources (DB, files, locks) that work individually but clash together.
+- Errors that in feature A are "handled" by throwing an exception that feature B does not account for.
 
-Si el usuario intenta saltar:
+If the user tries to skip it:
 
-> *"Las features individuales pasaron sus E2E pero ninguno verifica el flujo completo del epic. La integración cross-feature es justamente donde aparecen los bugs que ningún test individual detecta. ¿Cuántos criterios cross-feature te quedan? Si son pocos, salimos rápido."*
+> *"The individual features passed their E2Es but none of them verifies the epic's complete flow. Cross-feature integration is precisely where the bugs that no individual test detects appear. How many cross-feature criteria do you have left? If few, we'll be done quickly."*
 
-## Si E3 falla — bug cross-feature
+## If E3 fails — cross-feature bug
 
-Si un test cross-feature falla, identificá qué feature(s) tienen el bug. Es probable que el bug esté en una feature ya `done`, lo cual significa:
+If a cross-feature test fails, identify which feature(s) have the bug. It is likely the bug is in a feature already `done`, which means:
 
-1. La feature que tiene el bug vuelve a `in-progress` en el state.
-2. Se aplica el fix con disciplina CDAD (test rojo primero, etc.) — sí, requiere otro mini-ciclo.
-3. Si el bug revela que el spec de la feature estaba incompleto, se actualiza el spec y se reaprueba.
+1. The feature with the bug goes back to `in-progress` in the state.
+2. The fix is applied with CDAD discipline (red test first, etc.) — yes, it requires another mini-cycle.
+3. If the bug reveals that the feature's spec was incomplete, the spec is updated and re-approved.
 
-NO mergeás un fix cross-feature como "patch en el test E2E" sin ir a la feature responsable. Eso ensucia los specs y los rompe a futuro.
+You do NOT merge a cross-feature fix as "a patch in the E2E test" without going to the responsible feature. That dirties the specs and breaks them in the future.

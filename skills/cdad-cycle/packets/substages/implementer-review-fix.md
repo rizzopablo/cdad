@@ -1,0 +1,1 @@
+Verify each review finding against its original evidence before changing code. Apply only grounded fixes, preserve the full feedback provenance, and rerun the affected tests and the proportional regression the change requires (the commands the project declares). Evidence policy: `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".

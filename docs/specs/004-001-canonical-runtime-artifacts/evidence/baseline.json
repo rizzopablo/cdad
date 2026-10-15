@@ -1,0 +1,119 @@
+{
+  "pd13_baseline": {
+    "date": "2026-09-24",
+    "repo_head": "cc16495",
+    "branch": "codex/epic-003-context-efficiency",
+    "byte_semantics": "archivos completos UTF-8 (bytes de archivo, NO tokens, NO contexto observado, NO suma de cargas)",
+    "line_semantics": "líneas (rg -c '^'); equivalente a wc -l salvo archivo sin newline final (VERIFY ±1)",
+    "canonical_method": "rtk wc -l/-c",
+    "canonical_method_status": "BLOCKED_IN_SESSION",
+    "effective_method": "rtk rg -c '^' --stats (mecánico, por archivo + totales del comando)",
+    "rtk_version": "VERIFY (rtk --version denegado)",
+    "runtime_version": "VERIFY",
+    "config_profile": {"stack": null, "allowlist_generator": "scripts/cdad-bash-allowlist.sh", "cc_model_pins": "stripped en instalado"},
+    "executor_role": "cdad-architect",
+    "scope_repo": {
+      "opencode": {
+        "files": 11,
+        "lines_total": 1572, "bytes_total": 79127,
+        "per_file": {
+          "cdad-architect.md": {"lines": 120, "bytes": 6006},
+          "cdad-architect-odoo.md": {"lines": 112, "bytes": 5218},
+          "cdad-implementer.md": {"lines": 147, "bytes": 6226},
+          "cdad-implementer-odoo.md": {"lines": 132, "bytes": 5796},
+          "cdad-orchestrator.md": {"lines": 214, "bytes": 13521},
+          "cdad-reviewer.md": {"lines": 165, "bytes": 9895},
+          "cdad-reviewer-odoo.md": {"lines": 107, "bytes": 5509},
+          "cdad-scribe.md": {"lines": 101, "bytes": 4783},
+          "cdad-scribe-odoo.md": {"lines": 97, "bytes": 4283},
+          "cdad-test-writer.md": {"lines": 204, "bytes": 9704},
+          "cdad-test-writer-odoo.md": {"lines": 173, "bytes": 8186}
+        }
+      },
+      "claude_code": {
+        "files": 11,
+        "lines_total": 1125, "bytes_total": 61034,
+        "per_file": {
+          "cdad-architect.md": {"lines": 72, "bytes": 3819},
+          "cdad-architect-odoo.md": {"lines": 61, "bytes": 3680},
+          "cdad-implementer.md": {"lines": 115, "bytes": 4841},
+          "cdad-implementer-odoo.md": {"lines": 82, "bytes": 4154},
+          "cdad-orchestrator.md": {"lines": 220, "bytes": 13630},
+          "cdad-reviewer.md": {"lines": 115, "bytes": 6198},
+          "cdad-reviewer-odoo.md": {"lines": 55, "bytes": 3825},
+          "cdad-scribe.md": {"lines": 81, "bytes": 4450},
+          "cdad-scribe-odoo.md": {"lines": 46, "bytes": 2671},
+          "cdad-test-writer.md": {"lines": 180, "bytes": 7884},
+          "cdad-test-writer-odoo.md": {"lines": 98, "bytes": 5882}
+        }
+      },
+      "grand_total": {"files": 22, "lines": 2697, "bytes": 140161}
+    },
+    "scope_installed": {
+      "opencode": {
+        "path": "~/.config/opencode/agents/",
+        "files": 11,
+        "lines_total": 1568, "bytes_total": 79086,
+        "per_file": {
+          "cdad-architect.md": {"lines": 126, "bytes": 6259},
+          "cdad-architect-odoo.md": {"lines": 111, "bytes": 5189},
+          "cdad-implementer.md": {"lines": 140, "bytes": 6000},
+          "cdad-implementer-odoo.md": {"lines": 131, "bytes": 5765},
+          "cdad-orchestrator.md": {"lines": 214, "bytes": 13521},
+          "cdad-reviewer.md": {"lines": 171, "bytes": 10151},
+          "cdad-reviewer-odoo.md": {"lines": 106, "bytes": 5483},
+          "cdad-scribe.md": {"lines": 107, "bytes": 5036},
+          "cdad-scribe-odoo.md": {"lines": 96, "bytes": 4254},
+          "cdad-test-writer.md": {"lines": 194, "bytes": 9263},
+          "cdad-test-writer-odoo.md": {"lines": 172, "bytes": 8165}
+        }
+      },
+      "claude_code": {
+        "path": "~/.claude/agents/",
+        "files": 11,
+        "lines_total": 1114, "bytes_total": 60888,
+        "per_file": {
+          "cdad-architect.md": {"lines": 71, "bytes": 3805},
+          "cdad-architect-odoo.md": {"lines": 60, "bytes": 3666},
+          "cdad-implementer.md": {"lines": 114, "bytes": 4828},
+          "cdad-implementer-odoo.md": {"lines": 81, "bytes": 4141},
+          "cdad-orchestrator.md": {"lines": 219, "bytes": 13618},
+          "cdad-reviewer.md": {"lines": 114, "bytes": 6186},
+          "cdad-reviewer-odoo.md": {"lines": 54, "bytes": 3813},
+          "cdad-scribe.md": {"lines": 80, "bytes": 4436},
+          "cdad-scribe-odoo.md": {"lines": 45, "bytes": 2657},
+          "cdad-test-writer.md": {"lines": 179, "bytes": 7870},
+          "cdad-test-writer-odoo.md": {"lines": 97, "bytes": 5868}
+        }
+      },
+      "grand_total": {"files": 22, "lines": 2682, "bytes": 139974}
+    },
+    "pd19_byte_ceiling": {"value": 12000, "unit": "UTF-8 bytes del bloque estático", "source": "skills/cdad-cycle/scripts/cdad_packet.py:411-412", "status": "hardcoded (constante 12_000)"},
+    "packet_static_block_example": {
+      "assets": {"common.md": 593, "roles/architect.md": 224, "architect-discovery": 254, "architect-brainstorm": 208, "architect-draft": 202},
+      "derived_static_sizes": {"architect-discovery": 1073, "architect-brainstorm": 1027, "architect-draft": 1021},
+      "rendered_packet_size": "VERIFY (método: cdad_packet.py render; no ejecutable en sesión)"
+    },
+    "skill_sizes_if_loaded": {
+      "cdad-cycle/SKILL.md": {"lines": 581, "bytes": 35124},
+      "cdad-spec-and-test/SKILL.md": {"lines": 102, "bytes": 3612},
+      "odoo-architect": {"lines": 137, "bytes": 6341},
+      "odoo-expert": {"lines": 163, "bytes": 7236},
+      "odoo-test-writer": {"lines": 151, "bytes": 6630},
+      "odoo-reviewer": {"lines": 95, "bytes": 5362},
+      "odoo-make-env": {"lines": 143, "bytes": 7964},
+      "odoo-sandbox-env": {"lines": 165, "bytes": 7249},
+      "cdad-epic": {"lines": 289, "bytes": 13425},
+      "load_actuality": "VERIFY (comportamiento de runtime)"
+    },
+    "paths_per_role_note": "Branching dual (paquete/clásico) presente en repo CC 10/11 (falta orchestrator), repo OC 5/11 (faltan orquestador + 5 odoo), instalado OC 5/11. Las variantes odoo OC quedan sin camino de paquete declarado — hallazgo para la generación canónica (T2).",
+    "external_contrast": {"source": "docs/epics/epic-004-single-source-planning/c0-review-gpt-2026-09-24.md:87-90", "gpt": {"files": 22, "lines": 2697, "bytes": 140161, "oc": [1572, 79127], "cc": [1125, 61034]}, "reproduced": true},
+    "findings": {
+      "stale_session_policy": "F2: sesión architect cargó instantánea de permisos previa a cc16495; el fix aterrizó en disco, no en la sesión viva (causa raíz candidata de F1/F2: snapshot de permisos al arranque de sesión)",
+      "unattributed_denials": "F1/F4: wc/ls denegados pese a reglas allow en el volcado (regla ganadora no identificable desde el error)",
+      "silent_semantic_failures": "F6: rtk find -printf 'ignored' con exit aparente OK; F7: rtk git diff --no-index salida vacía para archivos de tamaño distinto (defecto de producto, nuevo)",
+      "repo_stale_vs_installed": "agentes OC de repo sin el par rtk wc (la emisión derivada sí lo tiene); verificación de comportamiento de instalación requerida en T2/T4 (no se observa regresión real: el bloque instalado se deriva del generador, no del repo)",
+      "odoo_variants_no_pair": "variantes -odoo instaladas conservan bloque handwritten sin el par — subsumido en T4"
+    }
+  }
+}

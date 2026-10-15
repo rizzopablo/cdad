@@ -1,81 +1,92 @@
 ---
 epic_id: <NNN-epic-id>
-epic_name: <nombre corto>
+epic_name: <short name>
 created_at: <YYYY-MM-DD>
-approved_by: <pendiente>
-approved_at: <pendiente>
+approved_by: <pending>
+approved_at: <pending>
 ---
 
-# Epic <NNN>: <nombre>
+<!-- 005-013 PD-3: product anchor declaration. `history` = the plan change log
+     (its sections are EXCLUDED from the unit projection); `authorization` = the
+     epic authority section (INCLUDED as a shared part, no verdict effect). The
+     declaration lists the English title of this template and the Spanish form of
+     the product's plans; a `##` section is the anchor when its normalized title
+     equals the declared title or starts with it followed by a non-alphanumeric
+     separator. -->
+<!-- cdad:plan-anchors
+{"history": ["Plan changes", "Cambios al plan"], "authorization": ["Stakeholders", "Autoridad"]}
+-->
 
-## Resumen
+# Epic <NNN>: <name>
 
-<2-3 líneas: qué problema resuelve, qué se entrega cuando esté done.>
+## Summary
+
+<2-3 lines: what problem it solves, what is delivered when it is done.>
 
 ## Scope
 
 **In scope:**
-- <punto 1>
-- <punto 2>
+- <point 1>
+- <point 2>
 
 **Out of scope:**
-- <punto 1>
-- <punto 2>
+- <point 1>
+- <point 2>
 
-## Decomposición en features
+## Decomposition into features
 
-| # | Feature ID | Descripción (1 línea) | Dependencias | Paralelizable |
+| # | Feature ID | Description (1 line) | Dependencies | Parallelizable |
 |---|-----------|------------------------|--------------|---------------|
-| 1 | <epic-num>-001-<slug> | <descripción> | — | Sí |
-| 2 | <epic-num>-002-<slug> | <descripción> | 001 | No |
-| 3 | <epic-num>-003-<slug> | <descripción> | 002 | No |
+| 1 | <epic-num>-001-<slug> | <description> | — | Yes |
+| 2 | <epic-num>-002-<slug> | <description> | 001 | No |
+| 3 | <epic-num>-003-<slug> | <description> | 002 | No |
 
-## Contratos cross-feature
+## Cross-feature contracts
 
-<Si aplica: interfaces compartidas entre features. Mantener mínimo, solo firmas.>
+<If applicable: interfaces shared between features. Keep minimal, signatures only.>
 
-```<lenguaje>
-<firma del contrato compartido>
+```<language>
+<signature of the shared contract>
 ```
 
-Usado por: <lista de features>.
+Used by: <list of features>.
 
-<O eliminar esta sección si no aplica.>
+<Or delete this section if it does not apply.>
 
-## Criterios de aceptación del epic
+## Epic acceptance criteria
 
-<Medibles, cubren el flujo cross-feature completo.>
+<Measurable, covering the complete cross-feature flow.>
 
-- [ ] Las <N> features están done individualmente.
-- [ ] Test E2E cross-feature: <descripción del flujo principal>. Pasa.
-- [ ] Test E2E de fallo: <descripción del path de error>. Pasa.
-- [ ] <Otros criterios específicos del epic>.
+- [ ] The <N> features are done individually.
+- [ ] Cross-feature E2E test: <description of the main flow>. Passes.
+- [ ] Failure E2E test: <description of the error path>. Passes.
+- [ ] <Other epic-specific criteria>.
 
-## Riesgos / deuda esperada
+## Risks / expected debt
 
-<Opcional. Riesgos identificados al planificar, mitigaciones previstas, deuda que se sabe que va a quedar.>
+<Optional. Risks identified while planning, planned mitigations, debt that is known will remain.>
 
-- Riesgo: <...>. Mitigación: <...>.
-- Deuda esperada: <...>.
+- Risk: <...>. Mitigation: <...>.
+- Expected debt: <...>.
 
-<O eliminar esta sección si no aplica.>
+<Or delete this section if it does not apply.>
 
 ## Stakeholders
 
-- **Aprobador del plan del epic**: <nombre>
-- **Aprobador de specs de features**: <nombre>
-- **Operador del resultado**: <nombre>
+- **Epic plan approver**: <name>
+- **Feature spec approver**: <name>
+- **Result operator**: <name>
 
-## Cambios al plan
+## Plan changes
 
-<Sección que se actualiza durante el loop de features si el plan cambia. Inicialmente vacía.>
+<Section updated during the feature loop if the plan changes. Initially empty.>
 
-<!-- Ejemplo de entry:
+<!-- Example entry:
 ### YYYY-MM-DD — Split feature 003
-Motivo: durante implementación detectamos que enviar-ws tiene dos responsabilidades que conviene separar.
-Cambio: feature 003 se divide en 003a (envío) y 003b (manejo de respuestas síncronas).
+Reason: during implementation we detected that enviar-ws has two responsibilities that are worth separating.
+Change: feature 003 is split into 003a (submission) and 003b (synchronous response handling).
 -->
 
 ---
 
-Status: <Pending approval | Approved by <nombre> on <YYYY-MM-DD>>
+Status: <Pending approval | Approved by <name> on <YYYY-MM-DD>>

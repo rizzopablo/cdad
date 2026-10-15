@@ -1,0 +1,1 @@
+cdad_continuity: reference 'docs/.cdad-state.json' (class contract) changed since the checkpoint (P1, fail closed): expected 5eb1ae8b7dc24fc840ba03e7de52b9c655adb13dcaca810c1911f0dc3c638fe9, got 4ad488e54918ce7b54c117cef7f98a7344d8ee9e0c9f48aee2c6b8b9450cf09b

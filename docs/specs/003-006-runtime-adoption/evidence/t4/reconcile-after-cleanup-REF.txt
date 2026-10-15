@@ -1,0 +1,1 @@
+cdad_continuity: reference digest mismatch: docs/specs/003-006-runtime-adoption/dispatch-ledger.md changed since the checkpoint (expected 1a7e196deea7a10dfeee4264a19ed591297f6c63a2982ad422a9776859d08252, got 51597ac83dda6d5d5d6834c2db2e24894c00f4493a6d30996b991a52e3074d28)

@@ -1,210 +1,210 @@
 # Contract-Driven AI Development (CDAD)
 
-**Una metodología disciplinada para construir software con agentes de IA**
+**A disciplined methodology for building software with AI agents**
 
 ---
 
-## Sobre este documento
+## About this document
 
-Este documento enseña una metodología de desarrollo de software pensada específicamente para trabajar con agentes de inteligencia artificial como implementadores. La metodología se llama **Contract-Driven AI Development** (CDAD).
+This document teaches a software development methodology designed specifically for working with artificial intelligence agents as implementers. The methodology is called **Contract-Driven AI Development** (CDAD).
 
-CDAD parte de una observación incómoda: los modelos de lenguaje son brillantes pero inconsistentes. Pueden generar código excelente o código defectuoso, y la diferencia muchas veces no es predecible. Si dejás que un agente trabaje sin restricciones —el patrón conocido como *vibe coding*— vas a obtener resultados que oscilan entre asombrosos y catastróficos. CDAD propone una respuesta: introducir barreras estructurales (specs explícitos, contratos verificables, separación de fases en sub-agentes con permisos limitados, contract tests automatizados) que *fuerzan* que el resultado sea correcto, independientemente de la consistencia del modelo subyacente.
+CDAD starts from an uncomfortable observation: language models are brilliant but inconsistent. They can generate excellent code or defective code, and the difference is often not predictable. If you let an agent work without constraints —the pattern known as *vibe coding*— you will get results ranging from amazing to catastrophic. CDAD combines explicit specs, verifiable contracts, separate role contexts, automated checks and independent review. Agents choose how to work within an authorized assignment; the orchestrator verifies outcomes and resolves deviations. These mechanisms reduce and expose errors; none guarantees correctness independently of the model, contract or environment.
 
-El documento está organizado en trece capítulos. Los primeros tres son conceptuales: por qué CDAD existe, sus principios fundacionales, y comparación con alternativas. Los capítulos cuatro al nueve son operativos: cómo se ejecuta cada fase del ciclo, paso a paso, con ejemplos concretos. Los capítulos diez al doce profundizan en aspectos específicos: configuración de herramientas, adaptación a frameworks opinados, anti-patrones a evitar. El capítulo trece es referencia: glosario, checklist, recursos.
+The document is organized into thirteen chapters. The first three are conceptual: why CDAD exists, its foundational principles, and a comparison with alternatives. Chapters four through nine are operational: how each phase of the cycle is executed, step by step, with concrete examples. Chapters ten through twelve go deeper into specific aspects: tool configuration, adaptation to opinionated frameworks, anti-patterns to avoid. Chapter thirteen is reference: glossary, checklist, resources.
 
-**Cómo leer el documento.** Si nunca trabajaste con agentes de IA en serio, leelo lineal. Si ya tenés experiencia y querés solo el método, podés saltar al capítulo cuatro y volver atrás cuando algo no calce. Las cajas marcadas como **Para lectores avanzados** ofrecen profundidad técnica adicional sobre temas específicos; podés saltarlas en una primera lectura sin perder el hilo.
+**How to read this document.** If you have never worked with AI agents seriously, read it linearly. If you already have experience and want only the method, you can jump to chapter four and come back when something does not fit. The boxes marked as **For advanced readers** offer additional technical depth on specific topics; you can skip them on a first read without losing the thread.
 
-**Qué hace falta saber para aprovecharlo.** Asumimos que sabés programar en algún lenguaje moderno (Python, JavaScript, Java, Go, Rust, lo que sea), que entendés qué es Git y un test unitario, y que tenés cierta exposición a herramientas de IA generativa para código. No hace falta haber usado un agente de IA estructuradamente antes; eso es justamente lo que vas a aprender acá.
-
----
-
-## Tabla de contenidos
-
-1. [Por qué CDAD existe](#1-por-qué-cdad-existe)  
-2. [Los cinco principios fundacionales](#2-los-cinco-principios-fundacionales)  
-3. [CDAD comparado con alternativas](#3-cdad-comparado-con-alternativas)  
-4. [El ciclo: visión general](#4-el-ciclo-visión-general)  
-5. [Etapa 1 — Descubrimiento](#5-etapa-1--descubrimiento)  
-6. [Etapa 2 — Especificación](#6-etapa-2--especificación)  
-7. [Etapa 3 — TDD anti-trampa con sesiones aisladas](#7-etapa-3--tdd-anti-trampa-con-sesiones-aisladas)  
-8. [Etapa 4 — Review en dos capas](#8-etapa-4--review-en-dos-capas)  
-9. [Etapa 5 — Merge y Memory Bank](#9-etapa-5--merge-y-memory-bank)  
-10. [Configuración de herramientas](#10-configuración-de-herramientas)  
-11. [CDAD en frameworks opinados](#11-cdad-en-frameworks-opinados)  
-12. [Anti-patrones documentados](#12-anti-patrones-documentados)  
-13. [Referencia rápida y glosario](#13-referencia-rápida-y-glosario)
+**What you need to know to make the most of it.** We assume you know how to program in some modern language (Python, JavaScript, Java, Go, Rust, whatever it is), that you understand what Git and a unit test are, and that you have some exposure to generative AI tools for code. You do not need to have used an AI agent in a structured way before; that is exactly what you are going to learn here.
 
 ---
 
-## 1\. Por qué CDAD existe
+## Table of contents
 
-### 1.1 El problema de los agentes de IA sin restricciones
+1. [Why CDAD exists](#1-why-cdad-exists)  
+2. [The five foundational principles](#2-the-five-foundational-principles)  
+3. [CDAD compared with alternatives](#3-cdad-compared-with-alternatives)  
+4. [The cycle: an overview](#4-the-cycle-an-overview)  
+5. [Stage 1 — Discovery](#5-stage-1--discovery)  
+6. [Stage 2 — Specification](#6-stage-2--specification)  
+7. [Stage 3 — Anti-gaming TDD with isolated sessions](#7-stage-3--anti-gaming-tdd-with-isolated-sessions)  
+8. [Stage 4 — Two-layer review](#8-stage-4--two-layer-review)  
+9. [Stage 5 — Merge and Memory Bank](#9-stage-5--merge-and-memory-bank)  
+10. [Tool configuration](#10-tool-configuration)  
+11. [CDAD in opinionated frameworks](#11-cdad-in-opinionated-frameworks)  
+12. [Documented anti-patterns](#12-documented-anti-patterns)  
+13. [Quick reference and glossary](#13-quick-reference-and-glossary)
 
-Trabajemos sobre un escenario concreto. Imaginá que le pedís a un agente de IA: *"Implementá una función que parsee fechas en formato ISO 8601 y devuelva un objeto datetime, manejando los casos típicos."*
+---
 
-En el mejor escenario, el agente devuelve algo correcto: una función robusta, con manejo de timezones, validación de inputs, mensajes de error claros, y tests que cubren casos típicos y bordes. En el peor escenario —y este es el que la mayoría de la gente experimenta más seguido de lo que admite— el agente devuelve algo plausible pero defectuoso: una función que funciona para los casos obvios, falla silenciosamente cuando el input incluye un timezone no estándar, no maneja microsegundos correctamente, y los tests que escribe son los que pasan para su propia implementación, no los que verifican el spec real.
+## 1\. Why CDAD exists
 
-El problema no es que el modelo sea malo. El problema es estructural: cuando le das a un agente la libertad de hacer todo (entender el problema, decidir qué hacer, escribir tests, escribir código, validar), el agente optimiza por *coherencia interna* (que su test pase para su código) en lugar de *corrección externa* (que el código resuelva el problema real).
+### 1.1 The problem of unconstrained AI agents
 
-**Por qué esto pasa**
+Let's work on a concrete scenario. Imagine you ask an AI agent: *"Implement a function that parses dates in ISO 8601 format and returns a datetime object, handling the typical cases."*
 
-Los modelos de lenguaje son entrenados para generar continuaciones plausibles del texto que ven. Si en su contexto está tanto el test que tienen que satisfacer como el código que están escribiendo, naturalmente tienden a alinear ambos: ajustan el código para que el test pase, o ajustan mentalmente el test para que sea lo que su código va a satisfacer. Es la opción de menor energía en el espacio de posibilidades. Esto no es un defecto de modelos específicos; es una propiedad emergente del paradigma de generación.
+In the best scenario, the agent returns something correct: a robust function, with timezone handling, input validation, clear error messages, and tests covering typical and edge cases. In the worst scenario —and this is the one most people experience more often than they admit— the agent returns something plausible but defective: a function that works for the obvious cases, silently fails when the input includes a non-standard timezone, does not handle microseconds correctly, and the tests it writes are the ones that pass for its own implementation, not the ones that verify the real spec.
 
-### 1.2 La respuesta intuitiva (que no funciona)
+The problem is not that the model is bad. The problem is structural: when you give an agent the freedom to do everything (understand the problem, decide what to do, write tests, write code, validate), the agent optimizes for *internal coherence* (that its test passes for its code) instead of *external correctness* (that the code solves the real problem).
 
-La respuesta intuitiva al problema es: *"que el humano revise todo cuidadosamente antes de aceptarlo."* Esta respuesta tiene tres problemas serios.
+**Why this happens**
 
-Primero, el humano se cansa. Después de revisar diffs de cientos de líneas durante horas, la atención decae y los errores se cuelan. La fatiga de review es un fenómeno real y bien documentado.
+Language models are trained to generate plausible continuations of the text they see. If their context contains both the test they must satisfy and the code they are writing, they naturally tend to align both: they adjust the code so the test passes, or mentally adjust the test to be what their code will satisfy. It is the lowest-energy option in the space of possibilities. This is not a defect of specific models; it is an emergent property of the generation paradigm.
 
-Segundo, el humano no es necesariamente mejor que el agente para detectar errores sutiles. Si el código está bien estructurado y los tests pasan, un revisor humano cansado o apurado va a aprobarlo aunque tenga bugs sutiles que solo se manifiestan en producción.
+### 1.2 The intuitive answer (which does not work)
 
-Tercero, el cuello de botella humano elimina el principal beneficio de usar agentes: la velocidad. Si cada línea de código requiere review humano cuidadoso, terminás trabajando más lento que si hubieras codificado vos solo.
+The intuitive answer to the problem is: *"have the human carefully review everything before accepting it."* This answer has three serious problems.
 
-CDAD propone una respuesta diferente: en lugar de confiar en review humano post-hoc, **insertá barreras estructurales antes y durante** el proceso de implementación. Estas barreras son automatizadas, no requieren atención humana sostenida, y *fuerzan* que el resultado tenga ciertas propiedades verificables. El humano sigue interviniendo en momentos clave (aprobación de specs, validación de priorización del review, decisiones arquitectónicas), pero no es el guardián principal de la calidad.
+First, the human gets tired. After reviewing diffs of hundreds of lines for hours, attention decays and errors slip in. Review fatigue is a real and well-documented phenomenon.
 
-### 1.3 La idea central de CDAD
+Second, the human is not necessarily better than the agent at detecting subtle errors. If the code is well structured and the tests pass, a tired or rushed human reviewer will approve it even if it has subtle bugs that only manifest in production.
 
-La idea central de CDAD se puede resumir en una frase: **el agente nunca debe ser el único responsable de verificar que su trabajo es correcto.**
+Third, the human bottleneck eliminates the main benefit of using agents: speed. If every line of code requires careful human review, you end up working slower than if you had coded it alone.
 
-Esta idea se materializa en cinco principios estructurales que veremos en detalle en el próximo capítulo, pero que en términos generales son: especificar con contratos verificables antes de codear, separar las fases del trabajo en sub-agentes con permisos limitados, escribir el test antes que el código (de verdad, no como ritual), validar la implementación contra el contrato (no contra el test que el mismo agente escribió), y mantener un memoria persistente del proyecto que sobrevive a las sesiones individuales.
+CDAD combines preparation of contracts and role contexts with automated verification and orchestrator review at meaningful task boundaries. Agents retain discretion over methods and tools inside their assignment. Preventive controls focus on consequential effects and information exposure that cannot simply be undone. The human or explicitly authorized process owner handles strategic decisions; neither a human nor the orchestrator needs to supervise every command.
+
+### 1.3 The central idea of CDAD
+
+The central idea of CDAD can be summarized in one sentence: **the agent must never be the only one responsible for verifying that its work is correct.**
+
+This idea materializes in five structural principles that we will see in detail in the next chapter, but which in general terms are: specify with verifiable contracts before coding, separate the phases of the work into sub-agents with limited permissions, write the test before the code (for real, not as a ritual), validate the implementation against the contract (not against the test the same agent wrote), and maintain a persistent memory of the project that survives individual sessions.
 
 flowchart LR
 
-    A\[Idea funcional\] \--\> B\[Spec con\<br/\>contrato verificable\]
+    A\[Working idea\] \--\> B\[Spec with\<br/\>verifiable contract\]
 
-    B \--\> C\[Test escrito\<br/\>en sesión aislada\]
+    B \--\> C\[Test written\<br/\>in isolated session\]
 
-    C \--\> D\[Implementación\<br/\>en sesión aislada\]
+    C \--\> D\[Implementation\<br/\>in isolated session\]
 
     D \--\> E\[Review\<br/\>two-layer\]
 
-    E \--\> F\[Merge con\<br/\>contract tests\]
+    E \--\> F\[Merge with\<br/\>contract tests\]
 
-    F \--\> G\[Memory Bank\<br/\>actualizado\]
+    F \--\> G\[Memory Bank\<br/\>updated\]
 
-    G \-.próxima feature.-\> A
+    G \-.next feature.-\> A
 
-Cada flecha en este diagrama es una *barrera estructural*. El agente que escribe el test no ve el código. El agente que implementa no ve el razonamiento del que escribió el test. El reviewer usa un modelo distinto al implementer para tener perspectiva independiente. Los contract tests parametrizados verifican automáticamente que cualquier implementación cumple las postcondiciones del contrato, no solo el caso particular que el agente probó. Y el Memory Bank captura aprendizajes para que la próxima sesión arranque con contexto.
+Each arrow in this diagram is a *structural barrier*. The agent that writes the test does not see the code. The agent that implements does not see the reasoning of the one who wrote the test. The reviewer uses a different model from the implementer to have an independent perspective. The parameterized contract tests automatically verify that any implementation satisfies the contract's postconditions, not just the particular case the agent tried. And the Memory Bank captures learnings so the next session starts with context.
 
-### 1.4 Cuándo CDAD vale la pena
+### 1.4 When CDAD is worth it
 
-Antes de avanzar, vale aclarar que CDAD no es para todo. La metodología tiene un costo operativo: requiere disciplina, documentación, configuración de herramientas, y más sesiones de agente que un flujo libre. Para tareas chicas y desechables —un script de migración de datos one-off, un experimento exploratorio, un proof of concept que se va a tirar a la basura en una semana— la disciplina de CDAD es overkill.
+Before moving on, it is worth clarifying that CDAD is not for everything. The methodology has an operational cost: it requires discipline, documentation, tool configuration, and more agent sessions than a free-form workflow. For small and disposable tasks —a one-off data migration script, an exploratory experiment, a proof of concept that will be thrown away in a week— the discipline of CDAD is overkill.
 
-CDAD vale la pena cuando se cumplen al menos dos de las siguientes condiciones:
+CDAD is worth it when at least two of the following conditions hold:
 
-- El código va a vivir mucho tiempo (meses o años), va a evolucionar, y otros van a leerlo y modificarlo después.  
-- La corrección del código importa más allá de "compila y pasa tests": tiene consecuencias económicas, de seguridad, de reputación, o regulatorias si falla.  
-- El proyecto es lo suficientemente grande como para que ningún humano pueda mantener todo el contexto en la cabeza.  
-- El equipo que trabaja en el proyecto va a usar agentes de IA como parte regular del flujo, no como herramienta ocasional.  
-- La calidad debe ser sostenible: no es solo "que ande hoy" sino "que siga siendo mantenible dentro de seis meses cuando vuelva a tocar este código."
+- The code will live a long time (months or years), will evolve, and others will read and modify it later.  
+- The correctness of the code matters beyond "it compiles and passes tests": there are economic, security, reputation, or regulatory consequences if it fails.  
+- The project is large enough that no human can keep all the context in their head.  
+- The team working on the project will use AI agents as a regular part of the workflow, not as an occasional tool.  
+- Quality must be sustainable: it is not just "it works today" but "it remains maintainable six months from now when I come back to this code."
 
-**Matriz observable de activación.** La lista de arriba es un buen filtro intuitivo, pero cuando estás en el día a día y necesitás decidir rápido si una tarea concreta justifica el overhead, conviene tener un criterio más operacional. La siguiente matriz puntúa la tarea en tres ejes y sugiere qué nivel de CDAD aplicar:
+**Observable activation matrix.** The list above is a good intuitive filter, but when you are in the day-to-day and need to decide quickly whether a concrete task justifies the overhead, it helps to have a more operational criterion. The following matrix scores the task on three axes and suggests what level of CDAD to apply:
 
-| Eje | Bajo (1) | Medio (2) | Alto (3) |
+| Axis | Low (1) | Medium (2) | High (3) |
 | :---- | :---- | :---- | :---- |
-| **Vida útil esperada del código** | \< 1 mes (script one-off, spike) | 1–12 meses (módulo de proyecto puntual) | \> 12 meses (core de producto, infraestructura compartida) |
-| **Costo de bug en producción** | Cosmético (UI no crítica, log mal formateado) | Operativo (re-trabajo manual, fricción para el usuario) | Económico/legal (pérdida monetaria directa, datos corruptos, exposición regulatoria) |
-| **Probabilidad de evolución** | Estable (no se va a tocar) | Cambios menores esperados | Cambios mayores esperados (varios desarrolladores, varias features encima) |
+| **Expected lifespan of the code** | \< 1 month (one-off script, spike) | 1–12 months (single-project module) | \> 12 months (product core, shared infrastructure) |
+| **Cost of a bug in production** | Cosmetic (non-critical UI, badly formatted log) | Operational (manual rework, friction for the user) | Economic/legal (direct monetary loss, corrupted data, regulatory exposure) |
+| **Probability of evolution** | Stable (will not be touched) | Minor changes expected | Major changes expected (several developers, several features on top) |
 
-Sumás los puntajes (rango 3–9) y aplicás el siguiente criterio:
+You add up the scores (range 3–9) and apply the following criterion:
 
-| Puntaje | Modo recomendado | Qué se aplica |
+| Score | Recommended mode | What gets applied |
 | :---- | :---- | :---- |
-| 3–4 | **Vibe coding** | Pedís lo que necesitás, revisás el resultado, lo usás. Sin spec, sin sesiones aisladas. |
-| 5–6 | **CDAD light** | Spec breve (un párrafo \+ criterios de aceptación), TDD con sesiones aisladas para los componentes críticos solamente, review opcional. Memory Bank si el proyecto ya lo tiene. |
-| 7–9 | **CDAD completo** | Las cinco etapas como las describe el documento, sin atajos. |
+| 3–4 | **Vibe coding** | You ask for what you need, review the result, use it. No spec, no isolated sessions. |
+| 5–6 | **CDAD light** | Brief spec (one paragraph \+ acceptance criteria), TDD with isolated sessions for the critical components only, optional review. Memory Bank if the project already has one. |
+| 7–9 | **Full CDAD** | The five stages as described in the document, no shortcuts. |
 
-**Cómo usar la matriz.** No es para sacar el papelito y puntuar cada tarea de cinco minutos; es para los casos donde dudás. Si una tarea cae claramente en "es un experimento exploratorio" o claramente en "es el core que mantenemos cinco años", la matriz no aporta. Aporta cuando la tarea está en la zona gris: un script que pensabas tirar pero al cliente le gustó y se quedó en producción, una integración con un servicio externo que parece simple pero toca un flujo crítico, un fix de bug que empieza chico y revela problemas estructurales. En esos casos, puntuar los tres ejes te da defensa cuando alguien te pregunta "¿por qué tanto proceso para esto?" o "¿por qué tan poco proceso para esto?".
+**How to use the matrix.** It is not for pulling out the form and scoring every five-minute task; it is for the cases where you have doubts. If a task clearly falls into "it's an exploratory experiment" or clearly into "it's the core we maintain for five years", the matrix adds nothing. It adds value when the task is in the gray zone: a script you thought you would throw away but the client liked and it stayed in production, an integration with an external service that seems simple but touches a critical flow, a bug fix that starts small and reveals structural problems. In those cases, scoring the three axes gives you a defense when someone asks you "why so much process for this?" or "why so little process for this?".
 
-**Defensa frente a presión externa.** La matriz también sirve para conversaciones con clientes, project managers, o vos mismo en modo apurado. Si un PM presiona por entregar rápido y la tarea puntúa 8/9 en la matriz, tenés un argumento concreto para no saltarte el proceso: el costo de un bug en producción supera por mucho el costo de una iteración cuidadosa. Inversamente, si vos tenés tendencia a sobre-diseñar y la tarea puntúa 4/9, la matriz es el recordatorio de que CDAD completo sería sobreingeniería.
+**Defense against external pressure.** The matrix also serves for conversations with clients, project managers, or yourself in rushed mode. If a PM pushes for fast delivery and the task scores 8/9 on the matrix, you have a concrete argument for not skipping the process: the cost of a bug in production far exceeds the cost of a careful iteration. Conversely, if you tend to over-engineer and the task scores 4/9, the matrix is the reminder that full CDAD would be over-engineering.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. ¿Por qué un agente que escribe el test y la implementación en la misma sesión tiende a producir tests débiles?  
-2. ¿Cuál es la diferencia entre confiar en review humano post-hoc y confiar en barreras estructurales pre-hoc?  
-3. ¿En qué tipo de proyectos NO conviene usar CDAD?
+1. Why does an agent that writes the test and the implementation in the same session tend to produce weak tests?  
+2. What is the difference between relying on post-hoc human review and relying on pre-hoc structural barriers?  
+3. In what kind of projects is it NOT advisable to use CDAD?
 
-Ver respuestas 
+View answers 
 
-1. Porque el agente optimiza por coherencia interna (que su test pase para su código) en lugar de corrección externa (que el código resuelva el problema real). Como el agente ve ambos al mismo tiempo, naturalmente los alinea entre sí, perdiendo la propiedad de que el test verifica el spec independientemente de la implementación.  
+1. Because the agent optimizes for internal coherence (that its test passes for its code) instead of external correctness (that the code solves the real problem). Since the agent sees both at the same time, it naturally aligns them with each other, losing the property that the test verifies the spec independently of the implementation.  
      
-2. Review humano post-hoc depende de atención sostenida que se cansa, criterio que puede fallar bajo presión, y se convierte en cuello de botella. Las barreras estructurales pre-hoc son automatizadas (specs explícitos, contract tests, import-linter, sesiones aisladas con permisos limitados), no requieren atención sostenida del humano para funcionar, y son consistentes en cada ejecución.  
+2. Human review of every action becomes a bottleneck. CDAD combines clear contracts, prepared role contexts and automated checks with orchestrator verification at task boundaries; preventive controls and post-hoc evidence are complementary and their guarantees must be tested.
      
-3. En tareas chicas, desechables, exploratorias, o donde la corrección no tiene consecuencias serias. Por ejemplo: un script one-off de migración, un experimento que se va a tirar, un proof of concept rápido. La disciplina de CDAD agrega overhead que solo se justifica cuando el código va a vivir mucho tiempo, evolucionar, o tener consecuencias serias si falla.
+3. In small, disposable, exploratory tasks, or where correctness has no serious consequences. For example: a one-off migration script, an experiment that will be thrown away, a quick proof of concept. The discipline of CDAD adds overhead that is only justified when the code will live a long time, evolve, or have serious consequences if it fails.
 
 ---
 
-## 2\. Los cinco principios fundacionales
+## 2\. The five foundational principles
 
-CDAD se sostiene sobre cinco principios que, juntos, conforman la columna vertebral de la metodología. Cada uno responde a un fallo específico del paradigma "dejar al agente trabajar libremente". En este capítulo los exploramos en detalle, con la justificación de por qué cada uno existe.
+CDAD rests on five principles that, together, form the backbone of the methodology. Each one responds to a specific failure of the "let the agent work freely" paradigm. In this chapter we explore them in detail, with the justification of why each one exists.
 
-### 2.1 Principio 1 — Spec antes que código (siempre)
+### 2.1 Principle 1 — Spec before code (always)
 
-**El principio.** Antes de que cualquier agente toque una sola línea de código de implementación, debe existir un documento escrito que defina qué hace la feature, con contratos verificables y criterios de aceptación.
+**The principle.** Before any agent touches a single line of implementation code, there must exist a written document that defines what the feature does, with verifiable contracts and acceptance criteria.
 
-**Por qué.** El acto de escribir un spec antes de codear cumple tres funciones distintas que muchas veces se confunden. Primera función: *forzar la formalización del requisito*. Cuando intentás escribir qué tiene que hacer una función con precisión suficiente como para que otra persona (o un agente) lo implemente correctamente, descubrís ambigüedades que tu intuición original no había detectado. Segunda función: *crear un punto de aprobación humana antes del trabajo costoso*. El spec es el momento donde vos validás que entendiste el problema y que el agente entendió el problema, antes de gastar tiempo y tokens implementando algo equivocado. Tercera función: *establecer el oráculo de verdad contra el cual se va a verificar la implementación*. El test no verifica que el código compile; verifica que el código satisface las postcondiciones del spec.
+**Why.** The act of writing a spec before coding fulfills three distinct functions that are often confused. First function: *force the formalization of the requirement*. When you try to write what a function must do with enough precision for another person (or an agent) to implement it correctly, you discover ambiguities that your original intuition had not detected. Second function: *create a human approval point before the expensive work*. The spec is the moment where you validate that you understood the problem and that the agent understood the problem, before spending time and tokens implementing the wrong thing. Third function: *establish the oracle of truth against which the implementation will be verified*. The test does not verify that the code compiles; it verifies that the code satisfies the spec's postconditions.
 
-**Qué incluye un spec en CDAD.** Un spec mínimo tiene cuatro secciones:
+**What a spec includes in CDAD.** A minimal spec has four sections:
 
-\# Spec: parseo de fechas ISO 8601
+\# Spec: ISO 8601 date parsing
 
-\#\# Descripción funcional
+\#\# Functional description
 
-Función que recibe un string en formato ISO 8601 y devuelve un objeto
+Function that receives a string in ISO 8601 format and returns a native
 
-datetime nativo del lenguaje, con timezone explícito.
+datetime object of the language, with explicit timezone.
 
-\#\# Contrato (firma e invariantes)
+\#\# Contract (signature and invariants)
 
-Función: parse\_iso\_date(s: str) \-\> DateTime
+Function: parse\_iso\_date(s: str) \-\> DateTime
 
-Postcondiciones:
+Postconditions:
 
-1\. Si s es un string ISO 8601 válido, retorna DateTime correspondiente.
+1\. If s is a valid ISO 8601 string, it returns the corresponding DateTime.
 
-2\. Si s no es válido, lanza InvalidDateError con mensaje descriptivo.
+2\. If s is not valid, it raises InvalidDateError with a descriptive message.
 
-3\. La precisión preservada es al menos hasta milisegundos.
+3\. The preserved precision is at least down to milliseconds.
 
-4\. Si s tiene timezone offset (ej "+05:30"), DateTime resultante refleja ese offset.
+4\. If s has a timezone offset (e.g. "+05:30"), the resulting DateTime reflects that offset.
 
-5\. Si s no tiene timezone, DateTime resultante es UTC explícito.
+5\. If s has no timezone, the resulting DateTime is explicit UTC.
 
-6\. La función es pura: no tiene side effects.
+6\. The function is pure: it has no side effects.
 
-\#\# Invariantes verificables (serán property tests)
+\#\# Verifiable invariants (they will become property tests)
 
-\- ∀s válido: parse\_iso\_date(s).to\_iso\_string() es ISO 8601 válido
+\- ∀s valid: parse\_iso\_date(s).to\_iso\_string() is valid ISO 8601
 
-\- ∀s válido: parse\_iso\_date(s) es determinístico (mismo input → mismo output)
+\- ∀s valid: parse\_iso\_date(s) is deterministic (same input → same output)
 
-\#\# Criterios de aceptación
+\#\# Acceptance criteria
 
-\- Test unitario para cada caso de la postcondición pasa
+\- Unit test for each case of each postcondition passes
 
-\- Property test con 1000 strings random pasa
+\- Property test with 1000 random strings passes
 
-\- Cobertura de líneas en archivo del solver ≥95%
+\- Line coverage in the solver's file ≥95%
 
-\#\# Out of scope (qué NO hace)
+\#\# Out of scope (what it does NOT do)
 
-\- No parsea formatos no estándar como "MM/DD/YYYY"
+\- Does not parse non-standard formats like "MM/DD/YYYY"
 
-\- No infiere timezones desde el contexto
+\- Does not infer timezones from context
 
-**Variante: spec más liviano para features simples.** Para features muy chicas (un fix de bug puntual, un campo computado simple), el spec puede ser de un párrafo \+ un test que falla. Lo importante es que existe *algo escrito* antes del código, no que tenga un formato específico.
+**Variant: lighter spec for simple features.** For very small features (a one-off bug fix, a simple computed field), the spec can be one paragraph \+ one failing test. What matters is that *something written* exists before the code, not that it has a specific format.
 
-**Para lectores avanzados — Specs ejecutables**
+**For advanced readers — Executable specs**
 
-Una variante avanzada del principio es escribir specs en lenguajes ejecutables como Gherkin (Cucumber, behave), TLA+ (verificación formal), o property-based test specifications (Hypothesis stateful). Estos specs no solo describen qué hace la feature; *son* la verificación de que la feature lo hace. Es el ideal del principio llevado al extremo. En la práctica, para la mayoría de proyectos, specs en markdown bien escritos \+ tests Python regulares logran el 80% del valor con el 20% del costo de mantenimiento.
+An advanced variant of the principle is to write specs in executable languages like Gherkin (Cucumber, behave), TLA+ (formal verification), or property-based test specifications (Hypothesis stateful). These specs do not only describe what the feature does; they *are* the verification that the feature does it. It is the ideal of the principle taken to the extreme. In practice, for most projects, well-written markdown specs \+ regular Python tests achieve 80% of the value at 20% of the maintenance cost.
 
-### 2.2 Principio 2 — Contratos verificables como guardián
+### 2.2 Principle 2 — Verifiable contracts as guardian
 
-**El principio.** Los contratos entre componentes deben ser definidos como tipos formales (interfaces, protocols, traits, según el lenguaje) con postcondiciones explícitas, y verificados automáticamente por tests parametrizados que iteran sobre todas las implementaciones registradas.
+**The principle.** Contracts between components must be defined as formal types (interfaces, protocols, traits, depending on the language) with explicit postconditions, and verified automatically by parameterized tests that iterate over all registered implementations.
 
-**Por qué.** Cuando hay múltiples implementaciones de la misma interfaz (varios solvers para el mismo problema, varios adapters para el mismo servicio externo, varios storage backends para el mismo modelo), el agente puede satisfacer el test de una implementación y romper otra sin darse cuenta. Los contract tests parametrizados son la red de seguridad que detecta esto automáticamente: si el contrato dice "todas las implementaciones deben satisfacer la postcondición X", y un test parametrizado prueba la postcondición X contra todas las implementaciones registradas, agregar una nueva implementación o modificar una existente que rompa la postcondición se detecta inmediatamente en CI.
+**Why.** When there are multiple implementations of the same interface (several solvers for the same problem, several adapters for the same external service, several storage backends for the same model), the agent can satisfy the test of one implementation and break another without noticing. Parameterized contract tests are the safety net that detects this automatically: if the contract says "all implementations must satisfy postcondition X", and a parameterized test checks postcondition X against all registered implementations, adding a new implementation or modifying an existing one that breaks the postcondition is detected immediately in CI.
 
-**Ejemplo en Python con typing.Protocol.**
+**Example in Python with typing.Protocol.**
 
 \# interfaces/optimizer.py
 
@@ -236,11 +236,11 @@ class Solution:
 
 class IKnapsackSolver(Protocol):
 
-    """Solver para el problema de la mochila 0/1.
+    """Solver for the 0/1 knapsack problem.
 
     
 
-    Postcondiciones contractuales (verificadas por contract tests):
+    Contractual postconditions (verified by contract tests):
 
     1\. selected\_items ⊆ {item.id for item in items}
 
@@ -248,11 +248,11 @@ class IKnapsackSolver(Protocol):
 
     3\. total\_value \= sum(item.value for item.id in selected\_items)
 
-    4\. Si capacity ≥ sum(item.weight for item in items), 
+    4\. If capacity ≥ sum(item.weight for item in items), 
 
-       todos los items son seleccionados
+       all items are selected
 
-    5\. Determinismo: misma entrada → misma salida
+    5\. Determinism: same input → same output
 
     """
 
@@ -286,7 +286,7 @@ from algorithms.dp\_solver import DynamicProgrammingSolver
 
 from algorithms.milp\_solver import MILPSolver
 
-\# Cada vez que se agrega una implementación, va acá
+\# Every time an implementation is added, it goes here
 
 IMPLEMENTATIONS: list\[IKnapsackSolver\] \= \[
 
@@ -296,7 +296,7 @@ IMPLEMENTATIONS: list\[IKnapsackSolver\] \= \[
 
     MILPSolver(),
 
-\]
+]
 
 @pytest.fixture
 
@@ -316,7 +316,7 @@ def sample\_items():
 
 def test\_contract\_selected\_items\_subset(solver, sample\_items):
 
-    """Postcondición 1: selected\_items ⊆ items"""
+    """Postcondition 1: selected\_items ⊆ items"""
 
     solution \= solver.solve(sample\_items, capacity=5.0)
 
@@ -328,7 +328,7 @@ def test\_contract\_selected\_items\_subset(solver, sample\_items):
 
 def test\_contract\_capacity\_respected(solver, sample\_items):
 
-    """Postcondición 2: total\_weight ≤ capacity"""
+    """Postcondition 2: total\_weight ≤ capacity"""
 
     solution \= solver.solve(sample\_items, capacity=5.0)
 
@@ -338,7 +338,7 @@ def test\_contract\_capacity\_respected(solver, sample\_items):
 
 def test\_contract\_total\_value\_consistent(solver, sample\_items):
 
-    """Postcondición 3: total\_value es la suma correcta"""
+    """Postcondition 3: total\_value is the correct sum"""
 
     solution \= solver.solve(sample\_items, capacity=5.0)
 
@@ -352,84 +352,99 @@ def test\_contract\_total\_value\_consistent(solver, sample\_items):
 
     assert solution.total\_value \== pytest.approx(expected)
 
-Cuando un agente agrega una cuarta implementación (digamos `BranchAndBoundSolver`), debe registrarla en la lista `IMPLEMENTATIONS`. Automáticamente el contract test parametrizado corre las tres postcondiciones contra ella. Si rompe alguna, CI falla y el merge se bloquea.
+When an agent adds a fourth implementation (say `BranchAndBoundSolver`), it must register it in the `IMPLEMENTATIONS` list. Automatically, the parameterized contract test runs the three postconditions against it. If it breaks any, CI fails and the merge is blocked.
 
-**Tabla: contratos verificables en distintos lenguajes**
+**Table: verifiable contracts in different languages**
 
-| Lenguaje | Mecanismo de contrato | Verificación de postcondiciones |
+| Language | Contract mechanism | Postcondition verification |
 | :---- | :---- | :---- |
-| Python | `typing.Protocol` con `@runtime_checkable` | pytest parametrizado |
-| TypeScript | `interface` \+ `satisfies` operator | jest con `describe.each` |
-| Java | `interface` con métodos default | JUnit 5 con `@ParameterizedTest` |
-| Go | `interface` (structural typing) | tests con table-driven approach |
-| Rust | `trait` con métodos | `#[test]` con macros para parametrización |
-| C\# | `interface` con `[Required]` | xUnit con `[Theory]` y `[MemberData]` |
+| Python | `typing.Protocol` with `@runtime_checkable` | parameterized pytest |
+| TypeScript | `interface` \+ `satisfies` operator | jest with `describe.each` |
+| Java | `interface` with default methods | JUnit 5 with `@ParameterizedTest` |
+| Go | `interface` (structural typing) | tests with table-driven approach |
+| Rust | `trait` with methods | `#[test]` with macros for parameterization |
+| C\# | `interface` with `[Required]` | xUnit with `[Theory]` and `[MemberData]` |
 
-**Por qué esto es el guardián real de la arquitectura**
+**Why this is the real guardian of the architecture**
 
-Sin contratos verificables, el guardián de la consistencia entre implementaciones es la disciplina del developer (que el agente no tiene) o la atención del reviewer (que se cansa). Los contract tests son disciplina automatizada: corren en cada PR, detectan inconsistencias inmediatamente, no se cansan, no tienen mal día. El costo de escribirlos una vez se amortiza enormemente porque cada nueva implementación queda automáticamente cubierta.
+Without verifiable contracts, the guardian of consistency between implementations is the developer's discipline (which the agent does not have) or the reviewer's attention (which gets tired). Contract tests are automated discipline: they run on every PR, detect inconsistencies immediately, do not get tired, do not have a bad day. The cost of writing them once is hugely amortized because every new implementation is automatically covered.
 
-### 2.3 Principio 3 — Sesiones aisladas con permisos granulares
+### 2.3 Principle 3 — Separate role contexts with supervised autonomy
 
-**El principio.** Las distintas fases del trabajo (escribir test, escribir código, refactorizar, revisar) se ejecutan en sub-agentes diferentes con permisos de archivo distintos, en sesiones que no comparten contexto.
+**The principle.** Test writing, implementation, refactoring and review use
+separate role sessions, explicit inputs and clear responsibility. Agents have
+sufficient capabilities to complete their assignments and choose their methods
+within scope. The orchestrator verifies contracts, changes and evidence at
+handoff and resolves deviations proportionally.
 
-**Por qué.** Los modelos de lenguaje, cuando ven en su contexto tanto el test como el código que están implementando, naturalmente tienden a alinearlos entre sí. Esto es el problema central que vimos en el capítulo 1, expresado como propiedad emergente: el modelo optimiza coherencia interna sobre corrección externa. La única solución estructural es que el agente que escribe el test *no vea* el código de implementación, y que el agente que implementa *no vea el razonamiento* del que escribió el test.
+**Policy update, 2026-09-24.**
+[ADR-011](docs/adr/ADR-011-autonomia-supervisada-limites-proporcionales.md)
+is authoritative for the control model. Preserve the test-writer's separation
+from implementation and the implementer's responsibility to preserve tests.
+Use a few justified preventive boundaries, not exhaustive command restrictions.
+A separate session or worktree is not a filesystem sandbox. Explain the actual
+guarantee of each runtime. Role instructions, resource isolation and evidence
+checks serve different purposes. Installed adapters are being migrated through
+epic 004; the examples below illustrate role scope, not a certified security
+configuration or a requirement to preserve the old allowlists.
+
+**Why.** Language models, when they see in their context both the test and the code they are implementing, naturally tend to align them with each other. This is the central problem we saw in chapter 1, expressed as an emergent property: the model optimizes internal coherence over external correctness. CDAD addresses this by keeping the test author's context independent of implementation and passing the implementer the contract and tests rather than the test author's private reasoning. This requires appropriate inputs and an honest account of the access controls actually available.
 
 flowchart TB
 
-    subgraph "Sesión 1: test-writer"
+    subgraph "Session 1: test-writer"
 
-        S1A\[Lee spec ✓\]
+        S1A\[Reads spec ✓\]
 
-        S1B\[Lee interface ✓\]
+        S1B\[Reads interface ✓\]
 
-        S1C\[NO lee algorithms ✗\]
+        S1C\[Does NOT read algorithms ✗\]
 
-        S1D\[NO lee adapters ✗\]
+        S1D\[Does NOT read adapters ✗\]
 
-        S1E\[Escribe test que falla\]
-
-    end
-
-    
-
-    subgraph "Sesión 2: implementer"
-
-        S2A\[Lee spec ✓\]
-
-        S2B\[Lee interface ✓\]
-
-        S2C\[Lee test escrito ✓\]
-
-        S2D\[NO lee razonamiento sesión 1 ✗\]
-
-        S2E\[Escribe código que pasa\]
+        S1E\[Writes failing test\]
 
     end
 
     
 
-    subgraph "Sesión 3: refactorer"
+    subgraph "Session 2: implementer"
 
-        S3A\[Lee código verde ✓\]
+        S2A\[Reads spec ✓\]
 
-        S3B\[Lee suite completa ✓\]
+        S2B\[Reads interface ✓\]
 
-        S3C\[Refactoriza manteniendo tests verdes\]
+        S2C\[Reads written test ✓\]
+
+        S2D\[Does NOT read session 1 reasoning ✗\]
+
+        S2E\[Writes passing code\]
 
     end
 
     
 
-    subgraph "Sesión 4: reviewer"
+    subgraph "Session 3: refactorer"
 
-        S4A\[Lee diff completo ✓\]
+        S3A\[Reads green code ✓\]
 
-        S4B\[Lee spec original ✓\]
+        S3B\[Reads full suite ✓\]
 
-        S4C\[Lee import-linter ✓\]
+        S3C\[Refactors keeping tests green\]
 
-        S4D\[Genera reporte priorizado\]
+    end
+
+    
+
+    subgraph "Session 4: reviewer"
+
+        S4A\[Reads full diff ✓\]
+
+        S4B\[Reads original spec ✓\]
+
+        S4C\[Reads import-linter ✓\]
+
+        S4D\[Generates prioritized report\]
 
     end
 
@@ -441,9 +456,9 @@ flowchart TB
 
     S3C \--\> S4A
 
-**Cómo se materializa.** En herramientas modernas como OpenCode, Claude Code, Cursor, y otros entornos agénticos, esto se hace mediante *sub-agentes* configurados con permisos granulares por glob patterns. Por ejemplo:
+**How it materializes.** Prepare role-specific context and sufficient capabilities, then map justified boundaries to the mechanisms available in the selected runtime. Verify those mechanisms rather than assuming that every tool enforces the same glob semantics. The following is illustrative pseudo-configuration of role scope; use the tested runtime adapters for executable configuration:
 
-// opencode.jsonc (ejemplo simplificado)
+// Role-scope pseudo-configuration (not an executable OpenCode config)
 
 {
 
@@ -485,59 +500,59 @@ flowchart TB
 
 }
 
-La regla operativa es estricta: la sesión del test-writer termina antes de que arranque la del implementer, y el implementer no recibe el contexto de pensamiento del test-writer. Solo recibe el spec, la interface, y el test ya escrito.
+The operational rule is strict: the test-writer session ends before the implementer session starts, and the implementer does not receive the test-writer's thinking context. It only receives the spec, the interface, and the already-written test.
 
-**Variante: fallback manual sin sub-agentes formales.** Muchos entornos reales no tienen orquestadores con permisos granulares por glob pattern. Trabajás con un IDE agéntico genérico, una interfaz web de chat con el modelo, o una herramienta que indexa todo el repo automáticamente. En esos casos no podés enforcar la separación a nivel de herramienta, pero podés simularla con disciplina y técnicas concretas:
+**Variant: manual fallback without formal sub-agents.** Many real environments do not have orchestrators with granular permissions by glob pattern. You work with a generic agentic IDE, a web chat interface with the model, or a tool that indexes the whole repo automatically. In those cases you cannot enforce the separation at the tool level, but you can simulate it with discipline and concrete techniques:
 
-1. **Conversaciones separadas por fase.** Cada fase del ciclo (test-writer, implementer, refactorer, reviewer) arranca en una conversación nueva, no en una continuación. Cerrás explícitamente la anterior antes de abrir la siguiente. La pereza acá es el enemigo: la tentación de "seguir en la misma conversación porque ya tiene el contexto cargado" rompe el principio.  
+1. **Conversations separated by phase.** Each phase of the cycle (test-writer, implementer, refactorer, reviewer) starts in a new conversation, not in a continuation. You explicitly close the previous one before opening the next. Laziness here is the enemy: the temptation to "keep going in the same conversation because it already has the context loaded" breaks the principle.  
      
-2. **Carga manual de contexto mínimo.** En lugar de dejar que la herramienta autocomplete con todo el repo, le pasás explícitamente al agente solo los archivos que ese sub-agente debería ver. Para el test-writer: el spec, la interface, los tests existentes. Para el implementer: el spec, la interface, el test recién escrito. Para el reviewer: el diff, el spec, los archivos de configuración de QA. La selección manual reemplaza al permission system.  
+2. **Manual loading of minimal context.** Instead of letting the tool autocomplete with the whole repo, you explicitly pass the agent only the files that sub-agent should see. For the test-writer: the spec, the interface, the existing tests. For the implementer: the spec, the interface, the freshly written test. For the reviewer: the diff, the spec, the QA configuration files. Manual selection controls what is supplied initially; it does not prevent additional tool reads. Record that limitation when no access boundary is enforced.
      
-3. **Prompts de "ceguera contextual" explícita.** Al inicio de cada sesión, le decís al agente algo como: *"Para esta tarea vas a actuar como test-writer. NO leas archivos en `src/` ni `algorithms/`. Si la herramienta te muestra esos archivos, ignorálos. Tu tarea es escribir tests que verifiquen el spec adjunto, no validar que mi implementación funcione."* Es ritual, sí, pero los modelos modernos suelen respetar este tipo de instrucciones cuando se ponen al inicio.  
+3. **Prompts of explicit "contextual blindness".** At the start of each session, you tell the agent something like: *"For this task you will act as test-writer. Do NOT read files in `src/` or `algorithms/`. If implementation is exposed, report the contamination and return the affected work for reassignment to a fresh session; do not claim to forget it. Your task is to write tests that verify the attached spec, not to validate that my implementation works."* This is a behavioral instruction with a stated purpose, not a guarantee of enforced isolation.
      
-4. **Repos o ramas temporales como sandbox.** Una técnica más fuerte: hacés un clon del repo (o creás una rama temporal con `.aiignore` o equivalente) donde *físicamente* no existen los archivos que el sub-agente no debería ver. El test-writer trabaja en un repo donde solo está el spec, la interface, y la carpeta de tests. Cuando termina, copiás el test al repo principal y abrís la sesión del implementer ahí. El costo es de fricción (mantener dos checkouts), pero el aislamiento es real.  
+4. **Restricted input workspaces.** A prepared workspace can contain only the spec, interfaces and authorized tests. A branch, worktree, clone or ignore file alone does not prevent access to other paths or repository history. When enforced isolation is required, the execution environment must actually limit access to those resources. Otherwise describe the workspace as context preparation and record the weaker guarantee. Preserve the ability to run the required tests through an appropriate runner.
      
-5. **Verificación explícita post-hoc.** Cuando termines la sesión del test-writer, antes de pasar al implementer, verificás manualmente que el test no asume nada de la implementación. Una pregunta útil: *"¿Este test seguiría siendo válido si el código se reescribe completamente con otro algoritmo?"* Si la respuesta es no, el test está acoplado a una implementación particular y hay que reescribirlo.
+5. **Explicit post-hoc verification.** When the test-writer session ends, before moving to the implementer, you manually verify that the test assumes nothing about the implementation. A useful question: *"Would this test still be valid if the code were completely rewritten with a different algorithm?"* If the answer is no, the test is coupled to a particular implementation and must be rewritten.
 
-**Cuándo elegir cada nivel del fallback.** Si tu herramienta soporta sub-agentes con permisos granulares (OpenCode, Claude Code, etc.), usalos: es el camino más limpio. Si no los soporta pero sí soporta múltiples conversaciones independientes, usá la técnica 1+2+3 combinadas. Si trabajás con una sola conversación que persiste todo el contexto del proyecto (algunos IDEs agénticos), tu única defensa real es la técnica 4 (repos temporales). En ningún caso es aceptable saltarse el principio simplemente porque "la herramienta no me lo facilita": la consecuencia es regresar al modo "una sesión para todo" con tests que no detectan bugs.
+**When to choose each fallback level.** If your tool supports sub-agents with granular permissions (OpenCode, Claude Code, etc.), use them: it is the cleanest path. If it does not support them but does support multiple independent conversations, use techniques 1+2+3 combined. If you work with a single conversation that persists the whole project context (some agentic IDEs), your only real defense is technique 4 (temporary repos). In no case is it acceptable to skip the principle simply because "the tool does not make it easy for me": the consequence is going back to "one session for everything" mode with tests that do not detect bugs.
 
-### 2.4 Principio 4 — TDD con la "Ley de Hierro"
+### 2.4 Principle 4 — TDD with the "Iron Law"
 
-**El principio.** Nunca se escribe código de implementación sin antes tener un test que falla por la razón correcta. Sin excepciones, sin atajos, sin "después agrego el test."
+**The principle.** Implementation code is never written without first having a test that fails for the right reason. No exceptions, no shortcuts, no "I'll add the test later."
 
-**Por qué.** Esto puede sonar como TDD clásico (Test-Driven Development de Kent Beck), y es. La diferencia es que en CDAD la regla se aplica con rigor extra porque el implementador es un agente, no un humano disciplinado. Un humano que se salta el test puede recordar el spec y escribir código correcto. Un agente que se salta el test no tiene oráculo: implementa lo que el modelo "cree" que el spec dice, sin verificación.
+**Why.** This may sound like classic TDD (Test-Driven Development by Kent Beck), and it is. The difference is that in CDAD the rule is applied with extra rigor because the implementer is an agent, not a disciplined human. A human who skips the test can remember the spec and write correct code. An agent that skips the test has no oracle: it implements what the model "believes" the spec says, without verification.
 
-La regla tiene tres partes:
+The rule has three parts:
 
-Primero, *el test debe fallar antes de la implementación*. No basta con que el test exista; debe correr y fallar. Esto verifica que el test efectivamente está probando algo. Si un test pasa antes de que exista la implementación, hay algo mal: o el test no verifica lo que dice verificar, o la implementación ya existía.
+First, *the test must fail before the implementation*. It is not enough for the test to exist; it must run and fail. This verifies that the test is actually testing something. If a test passes before the implementation exists, something is wrong: either the test does not verify what it claims to verify, or the implementation already existed.
 
-Segundo, *el test debe fallar por la razón correcta*. Si el test falla porque el módulo no se importa, eso no cuenta. Si falla porque el método no existe todavía, eso no cuenta. El test debe fallar porque el comportamiento que verifica no está implementado, con un mensaje de error claro que indica qué se esperaba y qué se obtuvo.
+Second, *the test must fail for the right reason*. If the test fails because the module does not import, that does not count. If it fails because the method does not exist yet, that does not count. The test must fail because the behavior it verifies is not implemented, with a clear error message indicating what was expected and what was obtained.
 
-Tercero, *el código que se escribe debe ser el mínimo que hace pasar el test*. Si el test verifica el caso de un solo elemento, el código no debe ya manejar el caso de múltiples elementos. Esa funcionalidad llega cuando llegue el test que la verifica. Esto se llama YAGNI ("You Aren't Gonna Need It") y es crítico para mantener al agente enfocado.
+Third, *the code that is written must be the minimum that makes the test pass*. If the test verifies the single-element case, the code must not already handle the multiple-element case. That functionality arrives when the test that verifies it arrives. This is called YAGNI ("You Aren't Gonna Need It") and is critical to keep the agent focused.
 
-**Ejemplo del ciclo.** Volvamos al parser de fechas.
+**Example of the cycle.** Let's go back to the date parser.
 
-\# Sesión 1: test-writer escribe el primer test
+\# Session 1: test-writer writes the first test
 
 \# tests/test\_parse\_iso\_date.py
 
 import pytest
 
-from src.date\_parser import parse\_iso\_date  \# Falla acá: módulo no existe
+from src.date\_parser import parse\_iso\_date  \# Fails here: module does not exist
 
 from datetime import datetime, timezone
 
 def test\_parse\_simple\_date\_with\_z\_timezone():
 
-    """Postcondición 1: string ISO válido con Z retorna UTC."""
+    """Postcondition 1: valid ISO string with Z returns UTC."""
 
     result \= parse\_iso\_date("2026-04-29T15:30:00Z")
 
     assert result \== datetime(2026, 4, 29, 15, 30, 0, tzinfo=timezone.utc)
 
-Ejecutamos: `pytest tests/test_parse_iso_date.py`. Falla con `ModuleNotFoundError: No module named 'src.date_parser'`. Eso no es un fallo válido todavía: falta crear el módulo.
+We run: `pytest tests/test_parse_iso_date.py`. It fails with `ModuleNotFoundError: No module named 'src.date_parser'`. That is not a valid failure yet: the module still needs to be created.
 
-\# Sesión 1 sigue: crea el archivo con stub que falla por razón correcta
+\# Session 1 continues: creates the file with a stub that fails for the right reason
 
 \# src/date\_parser.py
 
@@ -545,9 +560,9 @@ def parse\_iso\_date(s: str):
 
     raise NotImplementedError("not yet")
 
-Ejecutamos otra vez: ahora falla con `NotImplementedError: not yet`. Esto sí es un fallo válido. El test prueba que `parse_iso_date` debe retornar un datetime específico, y la implementación actual no lo hace.
+We run again: now it fails with `NotImplementedError: not yet`. This is a valid failure. The test proves that `parse_iso_date` must return a specific datetime, and the current implementation does not do it.
 
-\# Sesión 2: implementer escribe el código mínimo
+\# Session 2: implementer writes the minimal code
 
 \# src/date\_parser.py
 
@@ -561,13 +576,13 @@ def parse\_iso\_date(s: str) \-\> datetime:
 
     raise NotImplementedError("only Z timezone supported in this iteration")
 
-Ejecutamos: `pytest tests/test_parse_iso_date.py`. Pasa. Verde.
+We run: `pytest tests/test_parse_iso_date.py`. It passes. Green.
 
-Ahora el siguiente test cubre el caso del offset explícito:
+Now the next test covers the explicit offset case:
 
 def test\_parse\_date\_with\_explicit\_offset():
 
-    """Postcondición 4: offset preservado en datetime."""
+    """Postcondition 4: offset preserved in datetime."""
 
     result \= parse\_iso\_date("2026-04-29T15:30:00+05:30")
 
@@ -575,36 +590,36 @@ def test\_parse\_date\_with\_explicit\_offset():
 
     assert result \== datetime(2026, 4, 29, 15, 30, 0, tzinfo=expected\_tz)
 
-Falla con `NotImplementedError: only Z timezone supported`. El implementer extiende el código mínimo para satisfacer este nuevo test, sin tocar lo que ya funciona. Y así sucesivamente, postcondición por postcondición.
+It fails with `NotImplementedError: only Z timezone supported`. The implementer extends the minimal code to satisfy this new test, without touching what already works. And so on, postcondition by postcondition.
 
-**Tabla comparativa: TDD clásico vs TDD anti-trampa de CDAD**
+**Comparative table: classic TDD vs CDAD anti-gaming TDD**
 
-| Aspecto | TDD clásico | TDD anti-trampa (CDAD) |
+| Aspect | Classic TDD | Anti-gaming TDD (CDAD) |
 | :---- | :---- | :---- |
-| Quién escribe el test | El developer | Sub-agente test-writer aislado |
-| Quién escribe el código | El mismo developer | Sub-agente implementer aislado |
-| Información compartida | El developer ve todo en su cabeza | Cada sub-agente ve solo lo que necesita |
-| Riesgo de "trampa" | Moderado (depende de disciplina) | Bajo (estructural) |
-| Velocidad inicial | Más rápido (una sola "sesión") | Más lento (cambios de contexto) |
-| Calidad de tests resultantes | Variable | Más alta consistentemente |
+| Who writes the test | The developer | Isolated test-writer sub-agent |
+| Who writes the code | The same developer | Isolated implementer sub-agent |
+| Shared information | The developer sees everything in their head | Each sub-agent sees only what it needs |
+| Risk of "gaming" | Moderate (depends on discipline) | Low (structural) |
+| Initial speed | Faster (a single "session") | Slower (context switches) |
+| Resulting test quality | Variable | Consistently higher |
 
-### 2.5 Principio 5 — Memory Bank persistente
+### 2.5 Principle 5 — Persistent Memory Bank
 
-**El principio.** El proyecto mantiene un conjunto de archivos versionados que capturan el estado actual, las decisiones tomadas, los aprendizajes acumulados, y el contexto que las próximas sesiones de cualquier agente necesitan para arrancar productivos.
+**The principle.** The project maintains a set of versioned files that capture the current state, the decisions made, the accumulated learnings, and the context that the next sessions of any agent need in order to start being productive.
 
-**Por qué.** Los agentes de IA no tienen memoria entre sesiones. Cada vez que iniciás una conversación nueva, el agente empieza desde cero. Si no hay nada que documente el estado del proyecto, el agente o reinventa la rueda (ineficiente) o asume cosas incorrectas basándose en patrones generales que no aplican a tu proyecto (peligroso). El Memory Bank resuelve esto: es lo primero que cualquier agente lee al arrancar una sesión.
+**Why.** AI agents have no memory between sessions. Every time you start a new conversation, the agent starts from scratch. If nothing documents the state of the project, the agent either reinvents the wheel (inefficient) or assumes incorrect things based on general patterns that do not apply to your project (dangerous). The Memory Bank solves this: it is the first thing any agent reads when starting a session.
 
-**Estructura típica del Memory Bank.**
+**Typical Memory Bank structure.**
 
 docs/
 
-├── projectbrief.md         \# Qué es el proyecto, alcance, restricciones
+├── projectbrief.md         \# What the project is, scope, constraints
 
-├── systemPatterns.md       \# Patrones técnicos consolidados
+├── systemPatterns.md       \# Consolidated technical patterns
 
-├── activeContext.md        \# Estado actual: qué se está trabajando ahora
+├── activeContext.md        \# Current state: what is being worked on now
 
-├── progress.md             \# Estado de cada feature (in progress, done, blocked)
+├── progress.md             \# Status of each feature (in progress, done, blocked)
 
 ├── adr/                    \# Architecture Decision Records
 
@@ -612,7 +627,7 @@ docs/
 
 │   └── 002-arquitectura-hexagonal.md
 
-└── specs/                  \# Specs de features
+└── specs/                  \# Feature specs
 
     ├── 001-feature-A/
 
@@ -626,176 +641,176 @@ docs/
 
         └── ...
 
-**Diferencia entre specs y ADRs.** Los specs describen *qué hace* una feature: vivientes mientras la feature está en desarrollo, eventualmente convergiendo a documentación de la feature. Los ADRs (Architecture Decision Records) describen *por qué tomamos* una decisión arquitectónica: son inmutables una vez aceptados. Si más tarde la decisión se revisa, se crea un ADR nuevo que supersede al anterior, pero el ADR original queda como histórico.
+**Difference between specs and ADRs.** Specs describe *what a feature does*: they live while the feature is in development, eventually converging into documentation of the feature. ADRs (Architecture Decision Records) describe *why we made* an architectural decision: they are immutable once accepted. If the decision is later revisited, a new ADR is created that supersedes the previous one, but the original ADR remains as history.
 
-**Ejemplo de ADR.**
+**Example ADR.**
 
-\# ADR-003: Usar PostgreSQL en lugar de MongoDB
+\# ADR-003: Using PostgreSQL instead of MongoDB
 
 \*\*Status:\*\* Accepted  
 
-\*\*Fecha:\*\* 2026-03-15  
+\*\*Date:\*\* 2026-03-15  
 
-\#\# Contexto
+\#\# Context
 
-Necesitamos persistencia para \[...\]. Las opciones consideradas son
+We need persistence for \[...\]. The options considered are
 
-PostgreSQL, MongoDB, y SQLite.
+PostgreSQL, MongoDB, and SQLite.
 
-\#\# Opciones consideradas
+\#\# Options considered
 
-\#\#\# Opción A: PostgreSQL
+\#\#\# Option A: PostgreSQL
 
-\- Pros: ACID strong, queries SQL maduras, ecosistema rico, \[...\]
+\- Pros: strong ACID, mature SQL queries, rich ecosystem, \[...\]
 
-\- Contras: Requiere setup explícito de schema, \[...\]
+\- Cons: Requires explicit schema setup, \[...\]
 
-\#\#\# Opción B: MongoDB
+\#\#\# Option B: MongoDB
 
-\- Pros: Schema flexible, escalado horizontal nativo, \[...\]
+\- Pros: Flexible schema, native horizontal scaling, \[...\]
 
-\- Contras: ACID weak, queries menos expresivas, \[...\]
+\- Cons: weak ACID, less expressive queries, \[...\]
 
-\#\#\# Opción C: SQLite
+\#\#\# Option C: SQLite
 
-\- Pros: Zero config, embebido, \[...\]
+\- Pros: Zero config, embedded, \[...\]
 
-\- Contras: Concurrencia limitada, \[...\]
+\- Cons: Limited concurrency, \[...\]
 
-\#\# Decisión
+\#\# Decision
 
 PostgreSQL.
 
-\#\# Razones
+\#\# Reasons
 
-1\. ACID strong es crítico para nuestros casos de uso financieros.
+1\. Strong ACID is critical for our financial use cases.
 
-2\. El equipo ya tiene experiencia con SQL.
+2\. The team already has experience with SQL.
 
-3\. Las queries que necesitamos hacer (joins complejos) son nativas en SQL.
+3\. The queries we need to run (complex joins) are native in SQL.
 
-\#\# Consecuencias
+\#\# Consequences
 
-\- Necesitamos definir schema explícitamente con migraciones.
+\- We need to define the schema explicitly with migrations.
 
-\- Costo operativo de mantener un Postgres en producción.
+\- Operational cost of maintaining a Postgres in production.
 
-\- Ganancia de poder usar herramientas SQL maduras.
+\- Benefit of being able to use mature SQL tooling.
 
-**Cómo el agente usa el Memory Bank.** En cada nueva sesión, el primer comando del agente debería ser leer (en orden) `projectbrief.md` para entender el contexto general, `systemPatterns.md` para conocer las convenciones técnicas, `activeContext.md` para saber qué se está trabajando ahora, y los ADRs relevantes a la feature. Después de completar la feature, el agente (o vos, validando) actualiza `activeContext.md` y `progress.md` antes de cerrar la sesión.
+**How the agent uses the Memory Bank.** In each new session, the agent's first action should be to read (in order) `projectbrief.md` to understand the general context, `systemPatterns.md` to learn the technical conventions, `activeContext.md` to know what is being worked on now, and the ADRs relevant to the feature. After completing the feature, the agent (or you, validating) updates `activeContext.md` and `progress.md` before closing the session.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. ¿Por qué los contract tests parametrizados son más confiables que tests escritos a mano para cada implementación?  
-2. Si un test pasa antes de escribir la implementación, ¿qué está mal?  
-3. ¿Cuál es la diferencia entre un spec y un ADR?
+1. Why are parameterized contract tests more reliable than hand-written tests for each implementation?  
+2. If a test passes before the implementation is written, what is wrong?  
+3. What is the difference between a spec and an ADR?
 
-Ver respuestas 
+View answers 
 
-1. Porque los contract tests parametrizados verifican automáticamente que *todas* las implementaciones registradas cumplen las postcondiciones, no solo una particular. Cuando agregás una nueva implementación, automáticamente queda cubierta sin escribir tests adicionales. Tests escritos a mano para cada implementación pueden quedar olvidados o desactualizados.  
+1. Because parameterized contract tests automatically verify that *all* registered implementations satisfy the postconditions, not just one particular one. When you add a new implementation, it is automatically covered without writing additional tests. Hand-written tests for each implementation can be forgotten or become outdated.  
      
-2. Hay tres posibilidades: el test no verifica lo que dice verificar (es trivial), el test verifica algo que ya estaba implementado (no era una feature nueva), o el test tiene un bug que lo hace siempre pasar. En cualquier caso, el test no está cumpliendo su función de oráculo.  
+2. There are three possibilities: the test does not verify what it claims to verify (it is trivial), the test verifies something that was already implemented (it was not a new feature), or the test has a bug that makes it always pass. In any case, the test is not fulfilling its function as an oracle.  
      
-3. Un spec describe qué hace una feature (mutable durante desarrollo, eventualmente converge a documentación). Un ADR describe por qué tomamos una decisión arquitectónica (inmutable una vez aceptado; si la decisión se revisa, se crea un ADR nuevo que supersede).
+3. A spec describes what a feature does (mutable during development, eventually converging into documentation). An ADR describes why we made an architectural decision (immutable once accepted; if the decision is revisited, a new ADR that supersedes it is created).
 
 ---
 
-## 3\. CDAD comparado con alternativas
+## 3\. CDAD compared with alternatives
 
-Para entender CDAD en su contexto, vale comparar sus características con las de otras metodologías y enfoques. Esto ayuda a ver qué problemas resuelve CDAD que otras no, y qué pierde con respecto a alternativas más simples.
+To understand CDAD in its context, it is worth comparing its characteristics with those of other methodologies and approaches. This helps to see which problems CDAD solves that others do not, and what is lost compared to simpler alternatives.
 
-### 3.1 Tabla comparativa de enfoques
+### 3.1 Comparative table of approaches
 
-| Aspecto | Vibe coding | TDD clásico | BDD | DDD | CDAD |
+| Aspect | Vibe coding | Classic TDD | BDD | DDD | CDAD |
 | :---- | :---- | :---- | :---- | :---- | :---- |
-| **Quién implementa** | Agente sin restricciones | Developer humano | Developer humano | Developer humano | Sub-agentes con permisos limitados |
-| **Spec antes de código** | No | Implícito (en cabeza) | Sí (Gherkin features) | Sí (modelo de dominio) | Sí (markdown estructurado) |
-| **Tests primero** | A veces (depende del prompt) | Sí (Ley de Beck) | Sí (escenarios Gherkin) | No prescriptivo | Sí (con sesiones aisladas) |
-| **Contratos formales entre componentes** | No | Opcional | No central | Sí (boundaries) | Sí (Protocols \+ contract tests) |
-| **Memoria persistente del proyecto** | No | No prescriptivo | No prescriptivo | Sí (modelo) | Sí (Memory Bank) |
-| **Costo inicial** | Bajísimo | Medio | Medio-alto | Alto | Medio-alto |
-| **Calidad sostenible a largo plazo** | Variable, frecuentemente baja | Alta si hay disciplina | Alta | Alta para dominio complejo | Alta consistentemente |
-| **Funciona bien con agentes de IA** | "Funciona" pero impredecible | Parcialmente (riesgo de trampa) | Sí, pero pesado | No prescriptivo sobre IA | Diseñado para esto |
+| **Who implements** | Unconstrained agent | Human developer | Human developer | Human developer | Sub-agents with limited permissions |
+| **Spec before code** | No | Implicit (in one's head) | Yes (Gherkin features) | Yes (domain model) | Yes (structured markdown) |
+| **Tests first** | Sometimes (depends on the prompt) | Yes (Beck's Iron Law) | Yes (Gherkin scenarios) | Not prescriptive | Yes (with isolated sessions) |
+| **Formal contracts between components** | No | Optional | Not central | Yes (boundaries) | Yes (Protocols \+ contract tests) |
+| **Persistent project memory** | No | Not prescriptive | Not prescriptive | Yes (model) | Yes (Memory Bank) |
+| **Initial cost** | Very low | Medium | Medium-high | High | Medium-high |
+| **Long-term sustainable quality** | Variable, frequently low | High if there is discipline | High | High for complex domains | Consistently high |
+| **Works well with AI agents** | "Works" but unpredictable | Partially (gaming risk) | Yes, but heavy | Not prescriptive about AI | Designed for this |
 
-### 3.2 Cuándo elegir qué
+### 3.2 When to choose what
 
-**Elegí vibe coding cuando:** estás en exploración pura, prototipando algo desechable, aprendiendo una tecnología nueva sin compromiso de calidad, o haciendo un script one-off que vas a tirar en una semana.
+**Choose vibe coding when:** you are in pure exploration, prototyping something disposable, learning a new technology with no quality commitment, or doing a one-off script you will throw away in a week.
 
-**Elegí TDD clásico cuando:** trabajás solo o en equipo pequeño humano, sin agentes de IA significativos en el flujo, y la disciplina de no saltarse el test es asumible. TDD clásico bien aplicado es muy poderoso y CDAD básicamente lo extiende para resolver el problema específico de los agentes de IA.
+**Choose classic TDD when:** you work alone or in a small human team, without significant AI agents in the workflow, and the discipline of not skipping the test is manageable. Classic TDD well applied is very powerful, and CDAD basically extends it to solve the specific problem of AI agents.
 
-**Elegí BDD cuando:** los stakeholders no técnicos son parte central del proceso de definir comportamiento, y los escenarios Gherkin son herramientas reales de comunicación con ellos. BDD agrega ceremonia que solo se justifica si la usás genuinamente.
+**Choose BDD when:** non-technical stakeholders are a central part of the process of defining behavior, and Gherkin scenarios are real communication tools with them. BDD adds ceremony that is only justified if you genuinely use it.
 
-**Elegí DDD cuando:** estás modelando un dominio complejo con muchas reglas de negocio, varios bounded contexts, y la complejidad del dominio domina la complejidad técnica. DDD se puede combinar con CDAD perfectamente: el modelo DDD se documenta en el Memory Bank, los bounded contexts se enforce con import-linter al estilo CDAD.
+**Choose DDD when:** you are modeling a complex domain with many business rules, several bounded contexts, and domain complexity dominates technical complexity. DDD can be combined with CDAD perfectly: the DDD model is documented in the Memory Bank, the bounded contexts are enforced with import-linter in CDAD style.
 
-**Elegí CDAD cuando:** vas a usar agentes de IA como implementadores principales, el código va a vivir mucho tiempo, y la calidad sostenible importa más que la velocidad inicial.
+**Choose CDAD when:** you will use AI agents as primary implementers, the code will live a long time, and sustainable quality matters more than initial speed.
 
-### 3.3 CDAD no es exclusivo
+### 3.3 CDAD is not exclusive
 
-Una observación importante: CDAD no excluye a las otras metodologías. Podés combinar CDAD con DDD perfectamente (de hecho, los bounded contexts de DDD se materializan muy bien como capas enforceadas con import-linter en CDAD). Podés combinar CDAD con BDD si tus specs son escenarios Gherkin ejecutables. Podés combinar CDAD con metodologías ágiles como Scrum o Kanban, porque CDAD habla del proceso técnico de implementación, no de cómo organizás iteraciones.
+An important observation: CDAD does not exclude the other methodologies. You can combine CDAD with DDD perfectly (in fact, DDD's bounded contexts materialize very well as layers enforced with import-linter in CDAD). You can combine CDAD with BDD if your specs are executable Gherkin scenarios. You can combine CDAD with agile methodologies like Scrum or Kanban, because CDAD is about the technical process of implementation, not about how you organize iterations.
 
-Lo que CDAD reemplaza explícitamente es vibe coding. Si estás usando agentes de IA y querés calidad sostenible, no podés simplemente dejar al agente trabajar libre. La disciplina estructural es lo que hace la diferencia.
+What CDAD explicitly replaces is vibe coding. If you are using AI agents and want sustainable quality, you cannot simply let the agent work free. The structural discipline is what makes the difference.
 
 ---
 
-## 4\. El ciclo: visión general
+## 4\. The cycle: an overview
 
-Antes de profundizar en cada etapa, vale tener una vista panorámica del ciclo completo. CDAD organiza el trabajo en cinco etapas secuenciales por feature, con feedback loops específicos cuando algo falla.
+Before going deeper into each stage, it is worth having a panoramic view of the full cycle. CDAD organizes the work into five sequential stages per feature, with specific feedback loops when something fails.
 
-### 4.1 El ciclo en un diagrama
+### 4.1 The cycle in a diagram
 
 flowchart TD
 
-    Start(\[Idea de feature\]) \--\> E1
+    Start(\[Feature idea\]) \--\> E1
 
     
 
-    E1\[Etapa 1\<br/\>Descubrimiento\]
+    E1\[Stage 1\<br/\>Discovery\]
 
     E1 \--\> E2
 
     
 
-    E2\[Etapa 2\<br/\>Especificación\]
+    E2\[Stage 2\<br/\>Specification\]
 
-    E2 \--\> ApprovalSpec{¿Spec\<br/\>aprobado?}
+    E2 \--\> ApprovalSpec{Spec\<br/\>approved?}
 
     ApprovalSpec \--\>|No| E2
 
-    ApprovalSpec \--\>|Sí| E3
+    ApprovalSpec \--\>|Yes| E3
 
     
 
-    E3\[Etapa 3\<br/\>TDD anti-trampa\]
+    E3\[Stage 3\<br/\>Anti-gaming TDD\]
 
-    E3 \--\> TestsPass{¿Tests\<br/\>pasan?}
+    E3 \--\> TestsPass{Tests\<br/\>pass?}
 
     TestsPass \--\>|No| E3
 
-    TestsPass \--\>|Sí| E4
+    TestsPass \--\>|Yes| E4
 
     
 
-    E4\[Etapa 4\<br/\>Review two-layer\]
+    E4\[Stage 4\<br/\>Review two-layer\]
 
-    E4 \--\> ReviewOk{¿Bloqueantes\<br/\>resueltos?}
+    E4 \--\> ReviewOk{Blocking\<br/\>resolved?}
 
     ReviewOk \--\>|No| E3
 
-    ReviewOk \--\>|Sí| E5
+    ReviewOk \--\>|Yes| E5
 
     
 
-    E5\[Etapa 5\<br/\>Merge \+ Memory Bank\]
+    E5\[Stage 5\<br/\>Merge \+ Memory Bank\]
 
-    E5 \--\> CIPass{¿CI\<br/\>pasa?}
+    E5 \--\> CIPass{CI\<br/\>passes?}
 
     CIPass \--\>|No| E3
 
-    CIPass \--\>|Sí| Done(\[Feature done\])
+    CIPass \--\>|Yes| Done(\[Feature done\])
 
     
 
-    Done \-.próxima feature.-\> Start
+    Done \-.next feature.-\> Start
 
     
 
@@ -809,197 +824,197 @@ flowchart TD
 
     style E5 fill:\#fff9c4
 
-### 4.2 Las cinco etapas en una tabla
+### 4.2 The five stages in a table
 
-| Etapa | Nombre | Quién hace qué | Output | Tiempo típico |
+| Stage | Name | Who does what | Output | Typical time |
 | :---- | :---- | :---- | :---- | :---- |
-| 1 | Descubrimiento | Vos manualmente o con agente architect read-only | Conocimiento del terreno (APIs, hooks, convenciones) | Variable: minutos a días |
-| 2 | Especificación | Brainstorm con agente architect, vos editás y aprobás | `docs/specs/NNN-feature/spec.md` aprobado | 30 min a 2 hs por feature |
-| 3 | TDD anti-trampa | Sub-agentes test-writer e implementer en sesiones separadas | Código verde con tests pasando | 1-8 hs por feature |
-| 4 | Review two-layer | Sub-agente reviewer \+ vos validando priorización | Reporte de hallazgos clasificados | 15-30 min por feature |
-| 5 | Merge \+ Memory Bank | CI automatizado \+ vos actualizando contexto | Feature en main, Memory Bank actualizado | 10-20 min por feature |
+| 1 | Discovery | You manually or with a read-only architect agent | Knowledge of the terrain (APIs, hooks, conventions) | Variable: minutes to days |
+| 2 | Specification | Brainstorm with the architect agent, you edit and approve | `docs/specs/NNN-feature/spec.md` approved | 30 min to 2 hs per feature |
+| 3 | Anti-gaming TDD | test-writer and implementer sub-agents in separate sessions | Green code with tests passing | 1-8 hs per feature |
+| 4 | Two-layer review | reviewer sub-agent \+ you validating the prioritization | Report of classified findings | 15-30 min per feature |
+| 5 | Merge \+ Memory Bank | Automated CI \+ you updating context | Feature in main, Memory Bank updated | 10-20 min per feature |
 
-### 4.3 Reglas operativas del ciclo
+### 4.3 Operational rules of the cycle
 
-Antes de profundizar en cada etapa individual, conviene internalizar tres reglas operativas que aplican a todas:
+Before going deeper into each individual stage, it is worth internalizing three operational rules that apply to all of them:
 
-**Regla 1: nunca saltes etapas.** La tentación de saltarte el spec porque "es una feature simple" es real y peligrosa. Las features que parecen simples al principio frecuentemente revelan ambigüedades en la fase de implementación que un spec habría detectado. La disciplina del proceso es lo que hace que el resultado sea sostenible. Si genuinamente la feature es trivial (una sola línea de código), entonces el spec puede ser de un párrafo, pero existe.
+**Rule 1: never skip stages.** The temptation to skip the spec because "it's a simple feature" is real and dangerous. Features that look simple at the beginning frequently reveal ambiguities during the implementation phase that a spec would have detected. The discipline of the process is what makes the result sustainable. If the feature is genuinely trivial (a single line of code), then the spec can be one paragraph long, but it exists.
 
-**Regla 2: si una etapa falla, volvés a la etapa anterior, no más atrás.** Si los tests fallan en la etapa 3, no volvés al spec; ajustás la implementación. Si el reviewer detecta divergencias del spec en la etapa 4, vas a la etapa 3 con instrucciones específicas; no rehacés el spec. Si el spec entero estaba mal, sí volvés a la etapa 1 (descubrimiento) y rehacés. La regla minimiza retrabajo manteniendo la integridad del proceso.
+**Rule 2: if a stage fails, you go back to the previous stage, not further back.** If the tests fail in stage 3, you do not go back to the spec; you adjust the implementation. If the reviewer detects divergences from the spec in stage 4, you go to stage 3 with specific instructions; you do not redo the spec. If the whole spec was wrong, then you do go back to stage 1 (discovery) and redo it. The rule minimizes rework while keeping the process intact.
 
-**Regla 3: la aprobación humana en momentos clave es indelegable.** Vos aprobás el spec antes de que arranque la implementación. Vos validás la priorización del review antes del merge. Vos editás y commiteás las actualizaciones del Memory Bank. Estos tres puntos son donde tu juicio sobre el dominio, el cliente, y el producto importa más que la velocidad de ejecución del agente.
-
----
-
-## 5\. Etapa 1 — Descubrimiento
-
-### 5.1 Qué hace y por qué existe
-
-La etapa de descubrimiento existe para destruir las suposiciones que cualquier modelo de IA arrastra desde su entrenamiento sobre el sistema en el que vas a trabajar. Los modelos vieron millones de líneas de código durante su entrenamiento, pero no vieron *tu* código, *tu* configuración, ni *tu* versión específica del framework. Si los dejás trabajar sin esta etapa, inventan APIs que no existen, asumen convenciones que no aplican, o usan patrones de versiones anteriores del framework que ya no son válidos.
-
-La etapa tiene dos modalidades: el **descubrimiento inicial** del proyecto completo (que se hace una vez al arrancar) y el **descubrimiento por feature** (mini-fase que precede a cada spec).
-
-### 5.2 Descubrimiento inicial del proyecto
-
-Cuando arrancás un proyecto nuevo, antes de involucrar agentes IA en serio, vale invertir tiempo en mapear el terreno. La idea es producir un documento `docs/landscape.md` (el nombre es flexible) que captura conocimiento de primera mano sobre el sistema en el que vas a trabajar.
-
-**Cómo se hace.** Levantás una instancia limpia del sistema. Configurás un escenario realista representativo de los casos de uso que el proyecto va a cubrir. Activás modo desarrollador y debugger. Trazás manualmente flujos importantes. Anotás los hooks reales, las APIs disponibles, las convenciones de naming, las superficies de extensión que vas a usar. Si es un framework, identificás qué métodos están pensados para `_inherit`, qué clases son extensibles, qué patrones recomienda la documentación oficial.
-
-Este conocimiento se vuelca a `docs/landscape.md` con secciones por componente o módulo. Por ejemplo, en un proyecto que extiende un framework web, el documento podría tener secciones como "Modelos disponibles", "Hooks de ciclo de vida", "Convenciones de migraciones", "Sistema de plugins", "Cambios respecto a la versión anterior", etc.
-
-**Por qué importa.** Sin esto, los agentes inventan nombres de campos que no existen y escriben código que falla en la primera carga. Con esto, la tasa de aciertos a la primera sube dramáticamente porque los agentes tienen contexto factual concreto sobre el que basarse.
-
-**Caso de estudio: parser de fechas**
-
-Imaginá que vas a construir el parser de fechas que usamos como ejemplo. ¿Qué descubrimiento inicial tiene sentido?
-
-- Verificar qué módulos de fecha provee el lenguaje (`datetime` en Python, `Date` en JS, `time` en Go)  
-- Verificar qué formatos ISO 8601 cubre el parser estándar y cuáles no (Python `fromisoformat` cubre menos casos que `dateutil`)  
-- Investigar si hay librerías populares para casos no cubiertos (`python-dateutil`, `arrow`, `pendulum`)  
-- Mapear cómo el lenguaje representa timezones (Python tiene `timezone`, `pytz`, `zoneinfo`)  
-- Identificar gotchas específicos de versión (Python 3.11+ tiene `fromisoformat` mejorado vs versiones anteriores)
-
-Esto se vuelca al `landscape.md`: "El parser estándar de Python 3.11+ cubre \[...\], no cubre \[...\]. Para cubrir \[...\] usaremos `dateutil` como fallback, importado solo cuando el parser estándar falla."
-
-### 5.3 Descubrimiento por feature
-
-Antes de cada feature, hay una mini-etapa de descubrimiento más liviana. Su objetivo es verificar que las suposiciones del agente sobre la API que va a tocar son correctas.
-
-**Cómo se hace.** Abrís una sesión read-only con un agente architect (modelo grande, permisos solo de lectura). Le pasás el contexto general (Memory Bank) y le pedís que mapee qué hooks, métodos, y campos relevantes existen para la feature que vas a hacer. El agente explora el código, lee documentación si está disponible, y produce un mapeo. Vos validás que el mapeo coincide con tu intuición y con lo que ves en el código real. Si hay discrepancias, las investigás.
-
-El output de esta mini-etapa se incorpora al spec de la feature como sección "Contexto técnico" o similar.
-
-**Para lectores avanzados — Spike de exploración con código real**
-
-Para features riesgosas o donde la API a usar es poco conocida, vale ejecutar un *spike* exploratorio: una sesión donde tu objetivo no es implementar la feature sino aprender suficiente sobre la API para poder especificarla. El spike puede involucrar escribir código exploratorio en una rama temporal que después tirás. La regla: el código del spike nunca se merge a main; lo que se merge es el conocimiento aprendido, vuelto al `landscape.md` o al spec.
-
-### 5.4 Cómo gestionar esta etapa operativamente
-
-**Vos hacés el descubrimiento inicial manualmente.** No delegás esto al agente porque es la oportunidad de ganar conocimiento de primera mano que después usarás para criticar lo que los agentes propongan. Si saltás esto, te quedás sin la base sobre la que evaluar críticamente las propuestas posteriores.
-
-**El descubrimiento por feature lo hace un agente architect read-only**, supervisado por vos. Vos lanzás la sesión con un prompt como "explorá la sección X del código y mapeáme los hooks disponibles para hacer Y". Validás el output antes de incorporarlo al spec.
-
-**Cuándo dar por terminada la etapa.** El descubrimiento inicial termina cuando podés explicarle a otra persona los conceptos centrales del sistema sin abrir el código. El descubrimiento por feature termina cuando podés escribir el spec sin tener que ir a buscar nombres de APIs al código.
+**Rule 3: human approval at key moments is non-delegable.** You approve the spec before implementation starts. You validate the review's prioritization before the merge. You edit and commit the Memory Bank updates. These three points are where your judgment about the domain, the client, and the product matters more than the agent's execution speed.
 
 ---
 
-## 6\. Etapa 2 — Especificación
+## 5\. Stage 1 — Discovery
 
-### 6.1 El proceso en tres pasos
+### 5.1 What it does and why it exists
 
-La especificación es donde una idea funcional se convierte en un documento técnico que puede ser implementado por un agente sin ambigüedad. El proceso tiene tres pasos: brainstorm socrático, redacción del spec, aprobación humana.
+The discovery stage exists to destroy the assumptions that any AI model carries from its training about the system you are going to work on. Models saw millions of lines of code during their training, but they did not see *your* code, *your* configuration, or *your* specific version of the framework. If you let them work without this stage, they invent APIs that do not exist, assume conventions that do not apply, or use patterns from earlier framework versions that are no longer valid.
 
-### 6.2 Paso 1: brainstorm socrático
+The stage has two modes: the **initial discovery** of the whole project (done once at the start) and the **per-feature discovery** (a mini-phase that precedes each spec).
 
-**Cómo se hace.** Iniciás una sesión con un agente architect en modo plan-only (sin permisos de edit). Le pedís: *"vamos a diseñar la feature X. Hacéme las preguntas que necesites para entender exactamente qué quiero, antes de proponer un diseño."*
+### 5.2 Initial discovery of the project
 
-El agente, si está bien configurado, empieza a hacer preguntas socráticas. Preguntas típicas para nuestro ejemplo del parser de fechas serían:
+When you start a new project, before seriously involving AI agents, it is worth investing time in mapping the terrain. The idea is to produce a document `docs/landscape.md` (the name is flexible) that captures first-hand knowledge about the system you are going to work on.
 
-- ¿Qué pasa si el string es `null` o vacío? ¿Excepción, default, o `None`?  
-- ¿Qué nivel de precisión interesa preservar? ¿Milisegundos? ¿Microsegundos? ¿Nanosegundos?  
-- ¿Hay formatos no estándar que debemos aceptar? Por ejemplo, ¿`"2026-04-29 15:30:00"` (espacio en lugar de T)?  
-- ¿Qué hace si el offset de timezone es inválido (`"+99:99"`)?  
-- ¿La función debe ser thread-safe? ¿Reentrante?  
-- ¿Hay restricciones de performance? ¿Latencia máxima por llamada? ¿Throughput esperado?
+**How it is done.** You bring up a clean instance of the system. You configure a realistic scenario representative of the use cases the project will cover. You enable developer mode and the debugger. You manually trace important flows. You note the real hooks, the available APIs, the naming conventions, the extension surfaces you are going to use. If it is a framework, you identify which methods are meant for `_inherit`, which classes are extensible, which patterns the official documentation recommends.
 
-Vos respondés. El agente refina. Pueden surgir preguntas que vos no habías considerado y que requieren consultar al cliente, ver datos reales, o investigar más. Esto es exactamente la función del brainstorm: detectar ambigüedades antes de que se conviertan en bugs.
+This knowledge goes into `docs/landscape.md` with sections per component or module. For example, in a project that extends a web framework, the document could have sections like "Available models", "Lifecycle hooks", "Migration conventions", "Plugin system", "Changes from the previous version", etc.
 
-**Cuándo terminar el brainstorm.** El brainstorm termina cuando el agente deja de hacer preguntas significativas (las que quedan son ya de detalle de implementación) y vos sentís que la feature está lo suficientemente clara como para empezar a escribir el spec. Esto puede tomar veinte minutos para una feature simple o dos horas para una compleja.
+**Why it matters.** Without this, agents invent field names that do not exist and write code that fails on first load. With this, the first-shot hit rate rises dramatically because the agents have concrete factual context to base themselves on.
 
-### 6.3 Paso 2: redacción del spec
+**Case study: date parser**
 
-Con el brainstorm completo, escribís (o pedís al agente que escriba y vos editás) el documento del spec. La estructura mínima es la que vimos en el capítulo 2:
+Imagine you are going to build the date parser we use as an example. What initial discovery makes sense?
 
-\# Spec: \[nombre de la feature\]
+- Check which date modules the language provides (`datetime` in Python, `Date` in JS, `time` in Go)  
+- Check which ISO 8601 formats the standard parser covers and which it does not (Python's `fromisoformat` covers fewer cases than `dateutil`)  
+- Research whether there are popular libraries for uncovered cases (`python-dateutil`, `arrow`, `pendulum`)  
+- Map how the language represents timezones (Python has `timezone`, `pytz`, `zoneinfo`)  
+- Identify version-specific gotchas (Python 3.11+ has an improved `fromisoformat` vs earlier versions)
 
-\#\# Descripción funcional
+This goes into the `landscape.md`: "The standard parser of Python 3.11+ covers \[...\], does not cover \[...\]. To cover \[...\] we will use `dateutil` as a fallback, imported only when the standard parser fails."
 
-\[Qué hace, en lenguaje no técnico\]
+### 5.3 Per-feature discovery
 
-\#\# Contrato (firma e invariantes)
+Before each feature, there is a lighter mini-stage of discovery. Its goal is to verify that the agent's assumptions about the API it is going to touch are correct.
 
-\[Tipos formales con postcondiciones explícitas\]
+**How it is done.** You open a read-only session with an architect agent (large model, read-only permissions). You pass it the general context (Memory Bank) and ask it to map which hooks, methods, and fields relevant to the feature you are going to do exist. The agent explores the code, reads documentation if available, and produces a mapping. You validate that the mapping matches your intuition and what you see in the real code. If there are discrepancies, you investigate them.
 
-\#\# Invariantes verificables
+The output of this mini-stage is incorporated into the feature's spec as a "Technical context" section or similar.
 
-\[Que se convertirán en property tests\]
+**For advanced readers — Exploration spike with real code**
 
-\#\# Criterios de aceptación
+For risky features or where the API to be used is not well known, it is worth running an exploratory *spike*: a session where your goal is not to implement the feature but to learn enough about the API to be able to specify it. The spike may involve writing exploratory code in a temporary branch that you throw away afterwards. The rule: spike code is never merged to main; what gets merged is the learned knowledge, folded back into the `landscape.md` or the spec.
 
-\[Métricas medibles para considerar la feature done\]
+### 5.4 How to manage this stage operationally
+
+**You do the initial discovery manually.** You do not delegate this to the agent because it is the opportunity to gain first-hand knowledge that you will later use to critique what the agents propose. If you skip this, you are left without the foundation on which to critically evaluate later proposals.
+
+**Per-feature discovery is done by a read-only architect agent**, supervised by you. You launch the session with a prompt like "explore section X of the code and map the available hooks for doing Y". You validate the output before incorporating it into the spec.
+
+**When to consider the stage finished.** The initial discovery ends when you can explain to another person the central concepts of the system without opening the code. Per-feature discovery ends when you can write the spec without having to go look up API names in the code.
+
+---
+
+## 6\. Stage 2 — Specification
+
+### 6.1 The three-step process
+
+Specification is where a working idea becomes a technical document that can be implemented by an agent without ambiguity. The process has three steps: Socratic brainstorm, spec writing, human approval.
+
+### 6.2 Step 1: Socratic brainstorm
+
+**How it is done.** You start a session with an architect agent in plan-only mode (no edit permissions). You ask it: *"we are going to design feature X. Ask me the questions you need in order to understand exactly what I want, before proposing a design."*
+
+The agent, if well configured, starts asking Socratic questions. Typical questions for our date parser example would be:
+
+- What happens if the string is `null` or empty? Exception, default, or `None`?  
+- What level of precision is worth preserving? Milliseconds? Microseconds? Nanoseconds?  
+- Are there non-standard formats we must accept? For example, `"2026-04-29 15:30:00"` (space instead of T)?  
+- What does it do if the timezone offset is invalid (`"+99:99"`)?  
+- Should the function be thread-safe? Reentrant?  
+- Are there performance constraints? Maximum latency per call? Expected throughput?
+
+You answer. The agent refines. Questions may arise that you had not considered and that require consulting the client, looking at real data, or doing more research. This is exactly the function of the brainstorm: detecting ambiguities before they become bugs.
+
+**When to end the brainstorm.** The brainstorm ends when the agent stops asking meaningful questions (the ones left are already implementation details) and you feel the feature is clear enough to start writing the spec. This can take twenty minutes for a simple feature or two hours for a complex one.
+
+### 6.3 Step 2: spec writing
+
+With the brainstorm complete, you write (or ask the agent to write and you edit) the spec document. The minimal structure is the one we saw in chapter 2:
+
+\# Spec: \[feature name\]
+
+\#\# Functional description
+
+\[What it does, in non-technical language\]
+
+\#\# Contract (signature and invariants)
+
+\[Formal types with explicit postconditions\]
+
+\#\# Verifiable invariants
+
+\[Which will become property tests\]
+
+\#\# Acceptance criteria
+
+\[Measurable metrics for considering the feature done\]
 
 \#\# Out of scope
 
-\[Qué NO hace, para evitar scope creep\]
+\[What it does NOT do, to avoid scope creep\]
 
-\#\# Notas de implementación (opcional)
+\#\# Implementation notes (optional)
 
-\[Decisiones técnicas tomadas durante el brainstorm\]
+\[Technical decisions made during the brainstorm\]
 
-**Variantes según tamaño de la feature.**
+**Variants depending on the size of the feature.**
 
-Para features triviales (un fix, un cambio de configuración), el spec puede ser un párrafo \+ un test que falla. Lo importante es que existe algo escrito.
+For trivial features (a fix, a configuration change), the spec can be one paragraph \+ one failing test. What matters is that something written exists.
 
-Para features medianas (la mayoría), el formato anterior funciona perfecto.
+For medium features (the majority), the previous format works perfectly.
 
-Para features complejas que abarcan múltiples componentes, el spec puede dividirse en `spec.md` (qué hace), `plan.md` (cómo se va a implementar, en qué orden), y `tasks.md` (lista de tareas concretas con dependencias). Esta separación es valiosa cuando la feature requiere coordinación.
+For complex features spanning multiple components, the spec can be split into `spec.md` (what it does), `plan.md` (how it will be implemented, in what order), and `tasks.md` (list of concrete tasks with dependencies). This separation is valuable when the feature requires coordination.
 
-### 6.4 Paso 3: aprobación humana
+### 6.4 Step 3: human approval
 
-**Cómo se hace.** Leés el spec completo. Marcás dudas. Pedís ajustes al agente si algo no está claro. Cuando estás conforme, lo aprobás explícitamente. La aprobación se materializa de alguna forma verificable: agregar al final del spec una línea `Status: Approved by [tu nombre] on [fecha]`, hacer un commit con mensaje `docs: approve spec for feature X`, o cualquier marca que indique inequívocamente que vos aprobaste.
+**How it is done.** You read the complete spec. You mark doubts. You ask the agent for adjustments if something is unclear. When you are satisfied, you approve it explicitly. The approval is materialized in some verifiable way: adding at the end of the spec a line `Status: Approved by [your name] on [date]`, making a commit with message `docs: approve spec for feature X`, or any mark that unambiguously indicates that you approved it.
 
-**Por qué la aprobación es indelegable.** Esta es la etapa donde tu juicio sobre el dominio importa más. Vos sabés cosas que el agente no sabe: qué necesita el cliente realmente, qué le va a sorprender, qué le va a frustrar, qué encaja con el resto del producto. Si saltás este paso, vas a debuggear durante horas implementaciones que resolvieron un problema que no era el tuyo.
+**Why approval is non-delegable.** This is the stage where your judgment about the domain matters most. You know things the agent does not know: what the client really needs, what will surprise them, what will frustrate them, what fits with the rest of the product. If you skip this step, you will spend hours debugging implementations that solved a problem that was not yours.
 
-**Caso de estudio: API REST de inventario**
+**Case study: inventory REST API**
 
-Imaginá que estás especificando un endpoint `POST /api/v1/products` que crea un producto. Algunas preguntas que el brainstorm debería sacar a la luz:
+Imagine you are specifying an endpoint `POST /api/v1/products` that creates a product. Some questions the brainstorm should surface:
 
-- ¿El producto tiene SKU único? ¿Se valida unicidad? ¿En qué scope (global, por tenant)?  
-- ¿Qué campos son obligatorios y cuáles opcionales?  
-- ¿El precio puede ser cero o negativo? ¿Cuál es el caso de uso si sí?  
-- ¿Hay un campo `created_at` automático? ¿Y `updated_at`? ¿Qué pasa con ellos en el body del request?  
-- ¿Qué status code retorna en éxito? ¿201 con el producto creado? ¿200 con confirmación?  
-- ¿Qué status code en validación fallida? ¿400 genérico o 422 con detalles por campo?  
-- ¿Hay rate limiting? ¿Idempotencia con header `Idempotency-Key`?  
-- ¿Autorización? ¿Quién puede crear productos?
+- Does the product have a unique SKU? Is uniqueness validated? In what scope (global, per tenant)?  
+- Which fields are mandatory and which optional?  
+- Can the price be zero or negative? What is the use case if so?  
+- Is there an automatic `created_at` field? And `updated_at`? What happens with them in the request body?  
+- What status code does it return on success? 201 with the created product? 200 with confirmation?  
+- What status code on failed validation? Generic 400 or 422 with per-field details?  
+- Is there rate limiting? Idempotency with the `Idempotency-Key` header?  
+- Authorization? Who can create products?
 
-Cada pregunta no respondida en el spec se convierte en una decisión que el agente toma sin tu input. Vale la pena la inversión de tiempo.
+Every unanswered question in the spec becomes a decision the agent makes without your input. The time investment is worth it.
 
-### 6.5 Cómo gestionar esta etapa operativamente
+### 6.5 How to manage this stage operationally
 
-**Vos guiás el brainstorm con tus preguntas y conocimiento del dominio.** El agente formula preguntas socráticas y redacta drafts. Vos editás y aprobás.
+**You guide the brainstorm with your questions and domain knowledge.** The agent formulates Socratic questions and writes drafts. You edit and approve.
 
-**Mantén el spec en el repo.** No es un Google Doc, no es un Notion. Es un archivo `.md` versionado en `docs/specs/NNN-feature/`. Esto permite que se referencie desde el código, que se vea su historial, que las próximas sesiones del agente lo lean.
+**Keep the spec in the repo.** It is not a Google Doc, it is not Notion. It is a versioned `.md` file in `docs/specs/NNN-feature/`. This allows it to be referenced from the code, its history to be visible, and the agent's next sessions to read it.
 
-**Si en plena implementación detectás algo no contemplado en el spec**, no lo agregás silenciosamente al código. Volvés al spec, lo actualizás, y commiteás el cambio del spec antes de implementarlo. Esto mantiene el spec como fuente de verdad.
+**If in the middle of implementation you detect something not contemplated in the spec**, you do not silently add it to the code. You go back to the spec, update it, and commit the spec change before implementing it. This keeps the spec as the source of truth.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. ¿Cuál es la diferencia entre el brainstorm socrático y simplemente "pensar la feature antes de codear"?  
-2. ¿Por qué la aprobación humana del spec es indelegable?  
-3. ¿Qué hacés si en plena implementación descubrís un caso no cubierto en el spec?
+1. What is the difference between the Socratic brainstorm and simply "thinking about the feature before coding"?  
+2. Why is human approval of the spec non-delegable?  
+3. What do you do if in the middle of implementation you discover a case not covered in the spec?
 
-Ver respuestas 
+View answers 
 
-1. La diferencia principal es la externalización del razonamiento. Pensar a solas tiende a saltarse las preguntas que vos ya tenés "asumidas". El brainstorm socrático con un agente fuerza explicitar esos supuestos porque el agente no los tiene asumidos. Detecta ambigüedades que tu intuición había suprimido.  
+1. The main difference is the externalization of reasoning. Thinking alone tends to skip the questions you already have "assumed". The Socratic brainstorm with an agent forces those assumptions to be made explicit because the agent does not have them assumed. It detects ambiguities that your intuition had suppressed.  
      
-2. Porque vos tenés conocimiento del dominio, del cliente, y del producto que el agente no tiene. Si delegás la aprobación, perdés la oportunidad de verificar que la feature resuelve el problema correcto. Las consecuencias se manifiestan después, cuando ya gastaste tiempo implementando algo que no era lo que querías.  
+2. Because you have knowledge of the domain, of the client, and of the product that the agent does not have. If you delegate the approval, you lose the opportunity to verify that the feature solves the right problem. The consequences manifest later, when you have already spent time implementing something that was not what you wanted.  
      
-3. Volvés al spec, lo actualizás explícitamente, commiteás el cambio del spec, y recién entonces implementás el caso. Si el spec no captura algo, agregar el caso silenciosamente al código sin actualizar el spec rompe el principio de spec como fuente de verdad y degrada el valor del proceso.
+3. You go back to the spec, update it explicitly, commit the spec change, and only then implement the case. If the spec does not capture something, adding the case silently to the code without updating the spec breaks the spec-as-source-of-truth principle and degrades the value of the process.
 
 ---
 
-## 7\. Etapa 3 — TDD anti-trampa con sesiones aisladas
+## 7\. Stage 3 — Anti-gaming TDD with isolated sessions
 
-Esta es la etapa más larga y donde la disciplina importa más. Vamos paso a paso con un ejemplo completo.
+This is the longest stage and the one where discipline matters most. Let's go step by step with a complete example.
 
-### 7.1 La estructura de cinco sub-fases
+### 7.1 The structure of five sub-phases
 
-La etapa 3 se divide internamente en cinco sub-fases. Las tres primeras corresponden al ciclo TDD clásico (RED → GREEN → REFACTOR). Se agregan dos sub-fases adicionales: property tests para componentes algorítmicos con invariantes claras, y tests de integración / E2E para verificar los flujos cross-componente derivados de los criterios de aceptación.
+Stage 3 is internally divided into five sub-phases. The first three correspond to the classic TDD cycle (RED → GREEN → REFACTOR). Two additional sub-phases are added: property tests for algorithmic components with clear invariants, and integration / E2E tests to verify the cross-component flows derived from the acceptance criteria.
 
 sequenceDiagram
 
-    participant Vos
+    participant You
 
     participant TW as test-writer
 
@@ -1009,69 +1024,69 @@ sequenceDiagram
 
     
 
-    Vos-\>\>TW: Sesión 1: "Escribí test para postcondición X"
+    You-\>\>TW: Session 1: "Write test for postcondition X"
 
-    TW-\>\>TW: Lee spec \+ interface (no ve código)
+    TW-\>\>TW: Reads spec \+ interface (does not see code)
 
-    TW-\>\>Vos: Test escrito que falla (RED)
+    TW-\>\>You: Failing test written (RED)
 
-    Vos-\>\>Vos: Verifica que falla por razón correcta
-
-    
-
-    Vos-\>\>Imp: Sesión 2: "Hacé pasar este test"
-
-    Imp-\>\>Imp: Lee spec \+ test \+ interface
-
-    Imp-\>\>Vos: Código mínimo (GREEN)
-
-    Vos-\>\>Vos: Verifica que pasa
+    You-\>\>You: Verify it fails for the right reason
 
     
 
-    Vos-\>\>Ref: Sesión 3: "Refactorizá manteniendo verde"
+    You-\>\>Imp: Session 2: "Make this test pass"
 
-    Ref-\>\>Ref: Lee código \+ suite completa
+    Imp-\>\>Imp: Reads spec \+ test \+ interface
 
-    Ref-\>\>Vos: Código refactorizado (REFACTOR)
+    Imp-\>\>You: Minimal code (GREEN)
+
+    You-\>\>You: Verify it passes
 
     
 
-    Note over Vos,Ref: Cuando el algoritmo está estable
+    You-\>\>Ref: Session 3: "Refactor keeping green"
 
-    Vos-\>\>TW: Sesión 4: "Property tests para invariantes"
+    Ref-\>\>Ref: Reads code \+ full suite
 
-    TW-\>\>Vos: Property tests (con Hypothesis o equiv.)
+    Ref-\>\>You: Refactored code (REFACTOR)
 
-**Granularidad del ciclo: agrupación de postcondiciones ortogonales.** El diagrama muestra el ciclo aplicado a una postcondición. Si una feature tiene diez postcondiciones, ¿hay que repetir el ciclo diez veces? La respuesta corta es: no necesariamente. La respuesta larga requiere distinguir entre postcondiciones *ortogonales* y postcondiciones *acopladas*.
+    
 
-Dos postcondiciones son **ortogonales** cuando se implementan en paths de código que no se pisan: tocan distintas funciones, distintas ramas de un condicional, distintos campos de un modelo. Para postcondiciones ortogonales, podés agrupar varias en un mismo ciclo: el test-writer escribe los tests de varias postcondiciones en una sesión (siempre que ninguno de esos tests requiera ver código de implementación), el implementer las cubre todas en una iteración GREEN, y el refactor cierra el ciclo. Acelera el ritmo significativamente sin perder la red de seguridad, porque la separación de fases (test antes que código) y el aislamiento de sesiones (test-writer ciego al código) se mantienen.
+    Note over You,Ref: When the algorithm is stable
 
-Dos postcondiciones son **acopladas** cuando comparten lógica: implementar la segunda obliga a tocar el código que satisface la primera, o cambiar el approach algorítmico para acomodar ambas. Para postcondiciones acopladas, el ciclo de a una sigue siendo la opción correcta: si las metés juntas, el implementer puede tomar una decisión arquitectónica que después invalida cuando aparezca la siguiente postcondición, y terminás reescribiendo.
+    You-\>\>TW: Session 4: "Property tests for invariants"
 
-**Heurística práctica.** Antes de arrancar la etapa, mirás la lista de postcondiciones del spec y las agrupás en clusters. Postcondiciones que tocan diferentes campos del mismo modelo, distintos códigos de error, distintos formatos de input, distintos endpoints: típicamente ortogonales, agrupables. Postcondiciones que cambian el algoritmo central, modifican la estructura de datos compartida, o agregan lógica transversal (logging, transacciones, auth): típicamente acopladas, una a la vez.
+    TW-\>\>You: Property tests (with Hypothesis or equiv.)
 
-**Ejemplo del parser de fechas.** De las cinco postcondiciones del spec original, las postcondiciones 1 (string válido → datetime), 2 (string inválido → InvalidDateError) y 6 (función pura) son ortogonales: la primera y la sexta no se pisan en absoluto, la segunda agrega un branch de validación independiente. Se pueden agrupar en un solo ciclo. La postcondición 3 (precisión hasta milisegundos) y la 4 (offset preservado) tocan el mismo path de parsing y suelen requerir decisiones algorítmicas conjuntas: vale la pena hacerlas en ciclos separados o como un cluster acoplado.
+**Cycle granularity: grouping orthogonal postconditions.** The diagram shows the cycle applied to one postcondition. If a feature has ten postconditions, do you have to repeat the cycle ten times? The short answer is: not necessarily. The long answer requires distinguishing between *orthogonal* postconditions and *coupled* postconditions.
 
-### 7.2 Sub-fase RED: escribir el test que falla
+Two postconditions are **orthogonal** when they are implemented in code paths that do not overlap: they touch different functions, different branches of a conditional, different fields of a model. For orthogonal postconditions, you can group several in the same cycle: the test-writer writes the tests for several postconditions in one session (as long as none of those tests require seeing implementation code), the implementer covers them all in one GREEN iteration, and the refactor closes the cycle. It significantly speeds up the pace without losing the safety net, because the separation of phases (test before code) and the isolation of sessions (test-writer blind to the code) are preserved.
 
-**Setup.** Iniciás sesión nueva con el sub-agente `test-writer`. Le pasás:
+Two postconditions are **coupled** when they share logic: implementing the second forces touching the code that satisfies the first, or changing the algorithmic approach to accommodate both. For coupled postconditions, one-at-a-time cycles remain the correct option: if you put them together, the implementer can make an architectural decision that it later invalidates when the next postcondition shows up, and you end up rewriting.
 
-- El spec aprobado (`docs/specs/NNN-feature/spec.md`)  
-- La definición de la interface si existe (`interfaces/[component].py`)  
-- Eventualmente el `landscape.md` si la feature toca código existente
+**Practical heuristic.** Before starting the stage, you look at the spec's list of postconditions and group them into clusters. Postconditions that touch different fields of the same model, different error codes, different input formats, different endpoints: typically orthogonal, groupable. Postconditions that change the central algorithm, modify the shared data structure, or add cross-cutting logic (logging, transactions, auth): typically coupled, one at a time.
 
-Le pedís: *"Escribí el test que verifica la postcondición \[N\] del spec. El test debe fallar porque la implementación no existe todavía."*
+**Example with the date parser.** Of the five postconditions of the original spec, postconditions 1 (valid string → datetime), 2 (invalid string → InvalidDateError) and 6 (pure function) are orthogonal: the first and the sixth do not overlap at all, the second adds an independent validation branch. They can be grouped in a single cycle. Postcondition 3 (precision down to milliseconds) and 4 (offset preserved) touch the same parsing path and usually require joint algorithmic decisions: it is worth doing them in separate cycles or as a coupled cluster.
 
-**Lo que el test-writer NO ve.** No ve la carpeta de algoritmos, no ve los adapters, no ve el código de implementación que pueda ya existir parcialmente. Sus permisos de read son explícitamente limitados.
+### 7.2 Sub-phase RED: writing the failing test
 
-**Lo que produce.** Un test que verifica la postcondición de manera independiente de cómo se va a implementar.
+**Setup.** You start a new session with the `test-writer` sub-agent. You pass it:
 
-**Ejemplo recurrente — caso parser de fechas**
+- The approved spec (`docs/specs/NNN-feature/spec.md`)  
+- The interface definition if it exists (`interfaces/[component].py`)  
+- Eventually the `landscape.md` if the feature touches existing code
 
-Spec: postcondición 4 dice "Si s tiene timezone offset (+05:30), DateTime resultante refleja ese offset."
+You ask it: *"Write the test that verifies postcondition \[N\] of the spec. The test must fail because the implementation does not exist yet."*
 
-El test-writer produce:
+**What the test-writer does NOT see.** It does not see the algorithms folder, does not see the adapters, does not see implementation code that may already partially exist. Its read permissions are explicitly limited.
+
+**What it produces.** A test that verifies the postcondition independently of how it will be implemented.
+
+**Recurring example — date parser case**
+
+Spec: postcondition 4 says "If s has a timezone offset (+05:30), the resulting DateTime reflects that offset."
+
+The test-writer produces:
 
 \# tests/test\_parse\_iso\_date.py
 
@@ -1083,9 +1098,9 @@ from src.date\_parser import parse\_iso\_date
 
 def test\_postcondition\_4\_explicit\_offset\_preserved():
 
-    """Postcondición 4: offset explícito se preserva en el datetime resultante."""
+    """Postcondition 4: explicit offset is preserved in the resulting datetime."""
 
-    \# Caso simple: offset positivo
+    \# Simple case: positive offset
 
     result\_pos \= parse\_iso\_date("2026-04-29T15:30:00+05:30")
 
@@ -1101,7 +1116,7 @@ def test\_postcondition\_4\_explicit\_offset\_preserved():
 
     
 
-    \# Caso simétrico: offset negativo
+    \# Symmetric case: negative offset
 
     result\_neg \= parse\_iso\_date("2026-04-29T15:30:00-03:00")
 
@@ -1115,30 +1130,30 @@ def test\_postcondition\_4\_explicit\_offset\_preserved():
 
     assert result\_neg \== expected\_neg
 
-El test verifica que el offset se preserva. No asume nada sobre cómo el parser hace el parsing internamente.
+The test verifies that the offset is preserved. It assumes nothing about how the parser does the parsing internally.
 
-**Verificación obligatoria antes de cerrar la sesión.** Corrés `pytest` y confirmás que el test falla por la razón correcta (el método retorna algo distinto a lo esperado, o lanza `NotImplementedError`, no por error de import o sintaxis). Si falla por una razón equivocada, el test no es válido y hay que arreglarlo dentro de esta misma sesión antes de pasar a la siguiente.
+**Mandatory verification before closing the session.** You run `pytest` and confirm the test fails for the right reason (the method returns something different from what is expected, or raises `NotImplementedError`, not an import or syntax error). If it fails for the wrong reason, the test is not valid and must be fixed within this same session before moving to the next one.
 
-### 7.3 Sub-fase GREEN: implementar el código mínimo
+### 7.3 Sub-phase GREEN: implementing the minimal code
 
-**Setup.** Sesión nueva con el sub-agente `implementer`. Le pasás:
+**Setup.** New session with the `implementer` sub-agent. You pass it:
 
-- El spec  
-- El test que el test-writer escribió (visible)  
-- La interface  
-- Permisos de edit en `src/`, `algorithms/`, `adapters/`
+- The spec  
+- The test the test-writer wrote (visible)  
+- The interface  
+- Edit permissions on `src/`, `algorithms/`, `adapters/`
 
-Le pedís: *"Hacé pasar este test escribiendo el mínimo código necesario. No agregues funcionalidad que el test no requiera."*
+You ask it: *"Make this test pass by writing the minimum code necessary. Do not add functionality the test does not require."*
 
-**Lo que el implementer NO ve.** No recibe el contexto de pensamiento del test-writer (la conversación previa). Solo recibe el artefacto final: el test escrito. Esto evita que el implementer "hereede" el approach mental del test-writer y termine con código demasiado parecido a la mente del test-writer.
+**What the implementer does NOT see.** It does not receive the test-writer's thinking context (the previous conversation). It only receives the final artifact: the written test. This prevents the implementer from "inheriting" the test-writer's mental approach and ending up with code too similar to the test-writer's mind.
 
-**Lo que produce.** Código que hace pasar el test específico, sin más.
+**What it produces.** Code that makes the specific test pass, nothing more.
 
-**Continuando el caso parser de fechas**
+**Continuing the date parser case**
 
-El implementer recibe el test del paso anterior. Su tarea es agregar al `parse_iso_date` el soporte para offsets explícitos. Si el código actual maneja solo `Z`:
+The implementer receives the test from the previous step. Its task is to add support for explicit offsets to `parse_iso_date`. If the current code only handles `Z`:
 
-\# src/date\_parser.py (ANTES)
+\# src/date\_parser.py (BEFORE)
 
 from datetime import datetime, timezone
 
@@ -1150,9 +1165,9 @@ def parse\_iso\_date(s: str) \-\> datetime:
 
     raise NotImplementedError("only Z timezone supported")
 
-El implementer extiende para satisfacer el nuevo test, sin tocar lo que ya funciona:
+The implementer extends it to satisfy the new test, without touching what already works:
 
-\# src/date\_parser.py (DESPUÉS)
+\# src/date\_parser.py (AFTER)
 
 from datetime import datetime, timezone
 
@@ -1166,37 +1181,37 @@ def parse\_iso\_date(s: str) \-\> datetime:
 
         return datetime.fromisoformat(s\[:-1\]).replace(tzinfo=timezone.utc)
 
-    \# Python 3.11+ fromisoformat ya maneja offsets, pero ilustramos
+    \# Python 3.11+ fromisoformat already handles offsets, but we illustrate
 
-    \# el approach explícito para versiones anteriores
+    \# the explicit approach for earlier versions
 
     return datetime.fromisoformat(s)
 
-El implementer NO agrega funcionalidad para timestamps sin timezone (postcondición 5), porque no hay test que la requiera todavía. Esa postcondición vendrá en su propia iteración del ciclo.
+The implementer does NOT add functionality for timestamps without timezone (postcondition 5), because there is no test requiring it yet. That postcondition will come in its own iteration of the cycle.
 
-**Verificación.** Corrés `pytest` y confirmás que el nuevo test pasa Y que todos los tests que ya estaban pasando siguen pasando. Si algún test anterior se rompió, el implementer hizo cambios que afectaron lo que ya funcionaba; volvé al implementer en la misma sesión con el reporte de fallas.
+**Verification.** You run `pytest` and confirm the new test passes AND that all the tests that were already passing keep passing. If a previous test broke, the implementer made changes that affected what already worked; go back to the implementer in the same session with the failure report.
 
-### 7.4 Sub-fase REFACTOR: mejorar manteniendo verde
+### 7.4 Sub-phase REFACTOR: improving while keeping green
 
-**Setup.** Sesión nueva con el sub-agente `refactorer` (puede ser el mismo `implementer` con un prompt distinto, o un sub-agente dedicado). Le pasás:
+**Setup.** New session with the `refactorer` sub-agent (it can be the same `implementer` with a different prompt, or a dedicated sub-agent). You pass it:
 
-- El código que ya pasa los tests  
-- La suite de tests completa visible  
-- Permisos de edit en código
+- The code that already passes the tests  
+- The full test suite visible  
+- Edit permissions on code
 
-Le pedís: *"Refactorizá este código para mejorar legibilidad, mantenibilidad, y consistencia con el resto del codebase. Todos los tests deben seguir pasando. No cambies el comportamiento observable."*
+You ask it: *"Refactor this code to improve readability, maintainability, and consistency with the rest of the codebase. All tests must keep passing. Do not change observable behavior."*
 
-**Lo que el refactorer hace.** Renombra variables para mayor claridad, extrae funciones cuando hay duplicación, consolida estructuras de control, agrega docstrings, ajusta tipos. Lo que NO hace es cambiar funcionalidad, agregar features, o tocar tests.
+**What the refactorer does.** It renames variables for clarity, extracts functions when there is duplication, consolidates control structures, adds docstrings, adjusts types. What it does NOT do is change functionality, add features, or touch tests.
 
-**Cuándo no hacer refactor.** Si el código quedó simple y claro después del GREEN, esta sub-fase puede ser skippable. La regla es honesta: refactorizá cuando aporta, no por compulsión de proceso.
+**When not to refactor.** If the code came out simple and clear after the GREEN, this sub-phase can be skippable. The rule is honest: refactor when it adds value, not out of process compulsion.
 
-### 7.5 Sub-fase Property Tests: invariantes con generación aleatoria
+### 7.5 Sub-phase Property Tests: invariants with random generation
 
-Para componentes algorítmicos (donde la corrección no se reduce a casos discretos sino que tiene propiedades generales), agregamos una sub-fase final donde generamos property tests usando herramientas como Hypothesis (Python), QuickCheck (Haskell), fast-check (TypeScript), o equivalentes en otros lenguajes.
+For algorithmic components (where correctness is not reduced to discrete cases but has general properties), we add a final sub-phase where we generate property tests using tools like Hypothesis (Python), QuickCheck (Haskell), fast-check (TypeScript), or equivalents in other languages.
 
-**Cómo funciona.** En lugar de escribir casos específicos, escribís *propiedades* que el algoritmo debe satisfacer para *todos* los inputs válidos. La librería genera cientos o miles de inputs aleatorios y verifica la propiedad en cada uno. Si encuentra un input donde falla, te lo reporta minimizado.
+**How it works.** Instead of writing specific cases, you write *properties* the algorithm must satisfy for *all* valid inputs. The library generates hundreds or thousands of random inputs and checks the property on each one. If it finds an input where it fails, it reports it to you minimized.
 
-**Ejemplo: property tests del parser de fechas**
+**Example: property tests of the date parser**
 
 \# tests/test\_parse\_iso\_date\_properties.py
 
@@ -1206,7 +1221,7 @@ from datetime import datetime, timezone, timedelta
 
 from src.date\_parser import parse\_iso\_date
 
-\# Estrategia que genera datetimes aleatorios con timezone
+\# Strategy that generates random datetimes with timezone
 
 aware\_datetimes \= st.datetimes(
 
@@ -1222,7 +1237,7 @@ aware\_datetimes \= st.datetimes(
 
 def test\_round\_trip\_property(dt):
 
-    """Invariante: parse(format(dt)) \== dt para todo dt."""
+    """Invariant: parse(format(dt)) \== dt for all dt."""
 
     iso\_string \= dt.isoformat()
 
@@ -1238,7 +1253,7 @@ def test\_round\_trip\_property(dt):
 
 def test\_z\_timezone\_is\_utc\_property(s):
 
-    """Invariante: cualquier string con Z al final se parsea como UTC."""
+    """Invariant: any string with Z at the end is parsed as UTC."""
 
     try:
 
@@ -1248,51 +1263,51 @@ def test\_z\_timezone\_is\_utc\_property(s):
 
     except ValueError:
 
-        pass  \# strings inválidos pueden lanzar ValueError, eso está OK
+        pass  \# invalid strings may raise ValueError, that is OK
 
-Hypothesis va a generar miles de strings y datetimes, y si encuentra alguno donde la propiedad no se cumple, lo reporta. Frecuentemente encuentra edge cases que tests determinísticos no detectan: fechas en el límite del rango aceptado, timezones inusuales, fechas en años bisiestos, etc.
+Hypothesis is going to generate thousands of strings and datetimes, and if it finds any where the property does not hold, it reports it. It frequently finds edge cases that deterministic tests do not detect: dates at the limit of the accepted range, unusual timezones, leap-year dates, etc.
 
-**Cuándo agregar property tests.** No para todo. Funcionan especialmente bien para:
+**When to add property tests.** Not for everything. They work especially well for:
 
-- Algoritmos puros (parsers, codificadores, solvers, transformaciones de datos)  
-- Componentes con invariantes claras (round-trip, idempotencia, asociatividad)  
-- Código crítico donde tests determinísticos pueden tener blind spots
+- Pure algorithms (parsers, encoders, solvers, data transformations)  
+- Components with clear invariants (round-trip, idempotence, associativity)  
+- Critical code where deterministic tests can have blind spots
 
-Funcionan menos bien para:
+They work less well for:
 
-- Código con muchos side effects  
-- Lógica de negocio compleja con muchas condiciones  
+- Code with many side effects  
+- Complex business logic with many conditions  
 - UI
 
-### 7.6 Sub-fase de tests de integración y E2E
+### 7.6 Sub-phase of integration and E2E tests
 
-Los unit tests, contract tests y property tests cubren componentes individuales y sus invariantes. Pero los clientes no usan componentes; usan flujos completos. Si la feature toca varias capas (DB, lógica de negocio, API, UI), un test que verifica que cada componente funciona aislado puede pasar al 100% mientras el flujo end-to-end falla porque la integración entre las piezas no es la esperada.
+Unit tests, contract tests and property tests cover individual components and their invariants. But clients do not use components; they use complete flows. If the feature touches several layers (DB, business logic, API, UI), a test verifying that each component works in isolation can pass 100% while the end-to-end flow fails because the integration between the pieces is not the expected one.
 
-**El riesgo del agente que se "alinea" sigue presente acá.** A primera vista, los tests E2E son la fase donde uno se siente tentado a relajar la disciplina: son lentos, son pocos, "ya tenemos cobertura unitaria". Pero el riesgo de que el agente alinee test E2E con su implementación es exactamente el mismo que en los unit tests. Si el implementer escribe el test E2E, va a verificar que el flujo "anda como yo lo construí", no que cumpla los criterios de aceptación del spec.
+**The risk of the agent that "aligns" is still present here.** At first sight, E2E tests are the phase where one feels tempted to relax the discipline: they are slow, they are few, "we already have unit coverage". But the risk of the agent aligning the E2E test with its implementation is exactly the same as with unit tests. If the implementer writes the E2E test, it will verify that the flow "works the way I built it", not that it satisfies the spec's acceptance criteria.
 
-**La salida limpia: derivar tests E2E del spec, no del código.** Los criterios de aceptación de un spec bien escrito son, en gran medida, tests E2E en lenguaje natural. *"Al confirmar la venta, el stock disminuye y se genera factura draft"* es un test E2E. *"Si el usuario no tiene permisos de aprobación, el endpoint retorna 403"* es un test E2E. La regla operativa es: los tests E2E se escriben en una sesión `test-writer` que ve el spec (incluyendo criterios de aceptación) y la API pública del sistema, pero no ve la implementación de la feature en curso.
+**The clean way out: derive E2E tests from the spec, not from the code.** The acceptance criteria of a well-written spec are, to a large extent, E2E tests in natural language. *"When the sale is confirmed, stock decreases and a draft invoice is generated"* is an E2E test. *"If the user does not have approval permissions, the endpoint returns 403"* is an E2E test. The operational rule is: E2E tests are written in a `test-writer` session that sees the spec (including acceptance criteria) and the public API of the system, but does not see the implementation of the feature in progress.
 
-**Cómo encaja en el ciclo.** Hay dos modalidades válidas, según la naturaleza de la feature:
+**How it fits into the cycle.** There are two valid modes, depending on the nature of the feature:
 
-*Modalidad A — E2E primero (outside-in).* El test E2E se escribe antes que cualquier unit test. Se escribe del spec hacia abajo, expresando un flujo completo. Este test queda rojo durante todo el ciclo de implementación, hasta que las piezas individuales (cubiertas por unit tests) se conectan y el flujo completo pasa. Es el approach de Acceptance Test-Driven Development clásico. Funciona bien cuando el flujo es claro desde el inicio y querés tener una métrica continua de progreso ("¿cuánto falta para que el E2E pase?").
+*Mode A — E2E first (outside-in).* The E2E test is written before any unit test. It is written from the spec downward, expressing a complete flow. This test stays red during the whole implementation cycle, until the individual pieces (covered by unit tests) connect and the full flow passes. It is the approach of classic Acceptance Test-Driven Development. It works well when the flow is clear from the start and you want a continuous progress metric ("how much is left until the E2E passes?").
 
-*Modalidad B — E2E al final como cierre.* El test E2E se escribe después de que las unidades están implementadas y verdes, pero antes del merge. Funciona como verificación de que el ensamblaje es correcto. Es más simple operativamente y menos pesado en CI durante el desarrollo, pero te perdés la métrica continua del approach A.
+*Mode B — E2E at the end as closure.* The E2E test is written after the units are implemented and green, but before the merge. It works as verification that the assembly is correct. It is operationally simpler and less heavy on CI during development, but you lose the continuous metric of approach A.
 
-**Cuál elegir.** Para features con un flujo claro y central (un endpoint nuevo, un proceso de negocio definido), preferí modalidad A. Para features que son agregados a múltiples flujos existentes (un campo nuevo que aparece en cinco vistas, una validación que se aplica en varios endpoints), modalidad B es más práctica.
+**Which to choose.** For features with a clear and central flow (a new endpoint, a defined business process), prefer mode A. For features that are additions to multiple existing flows (a new field that appears in five views, a validation applied on several endpoints), mode B is more practical.
 
-**Estructura de un test E2E en CDAD.** El test E2E sigue el mismo principio que los unit tests: arrange, act, assert, con assertions específicas de los criterios de aceptación. La diferencia es la granularidad del setup (fixtures de datos completas, no mocks puntuales) y el alcance del act (un flujo completo, no una llamada a función).
+**Structure of an E2E test in CDAD.** The E2E test follows the same principle as unit tests: arrange, act, assert, with assertions specific to the acceptance criteria. The difference is the granularity of the setup (complete data fixtures, not point mocks) and the scope of the act (a complete flow, not a function call).
 
-**Ejemplo: feature "confirmación de venta"**
+**Example: feature "sale confirmation"**
 
-Spec con criterio de aceptación: *"Al confirmar una orden de venta con productos en stock, (a) el estado de la orden pasa a 'sale', (b) el stock de los productos disminuye en la cantidad correspondiente, (c) se genera una factura draft con los líneas de la orden, (d) si el cliente no tiene crédito disponible, la confirmación falla con mensaje específico."*
+Spec with acceptance criterion: *"When confirming a sales order with products in stock, (a) the order state changes to 'sale', (b) the stock of the products decreases by the corresponding quantity, (c) a draft invoice is generated with the order's lines, (d) if the client has no available credit, the confirmation fails with a specific message."*
 
-El test-writer, en sesión aislada del implementer, traduce esto a algo como:
+The test-writer, in a session isolated from the implementer, translates this into something like:
 
 \# tests/integration/test\_sale\_confirmation\_e2e.py
 
 def test\_confirm\_sale\_with\_stock\_succeeds(self):
 
-    \# Arrange: cliente con crédito, productos con stock
+    \# Arrange: customer with credit, products with stock
 
     customer \= self.\_create\_customer(credit\_limit=10000)
 
@@ -1302,13 +1317,13 @@ def test\_confirm\_sale\_with\_stock\_succeeds(self):
 
     
 
-    \# Act: confirmar la orden via la API pública
+    \# Act: confirm the order via the public API
 
     result \= self.client.post(f"/api/orders/{order.id}/confirm")
 
     
 
-    \# Assert: cuatro postcondiciones del criterio de aceptación
+    \# Assert: four postconditions of the acceptance criterion
 
     assert result.status\_code \== 200
 
@@ -1342,222 +1357,222 @@ def test\_confirm\_sale\_without\_credit\_fails(self):
 
     assert result.status\_code \== 422
 
-    assert "crédito" in result.json()\["error"\].lower()  \# (d)
+    assert "credit" in result.json()\["error"\].lower()  \# (d)
 
     order.refresh()
 
-    assert order.state \== "draft"  \# estado no cambió
+    assert order.state \== "draft"  \# state did not change
 
-El test-writer escribe estos casos viendo solo el spec y la API pública del sistema. No mira el código del confirmador. El implementer recibe estos tests y los hace pasar. La integración correcta se verifica automáticamente.
+The test-writer writes these cases seeing only the spec and the public API of the system. It does not look at the code of the confirmer. The implementer receives these tests and makes them pass. Correct integration is verified automatically.
 
-**Cuándo NO agregar tests E2E.** Para features puramente algorítmicas sin side effects (un parser, un transformador de datos), los unit tests \+ property tests cubren todo lo que necesitás. Agregar un E2E es ceremonia sin valor. La regla: E2E cuando hay flujo cross-componente con efectos observables; unit \+ property cuando no.
+**When NOT to add E2E tests.** For purely algorithmic features without side effects (a parser, a data transformer), unit tests \+ property tests cover everything you need. Adding an E2E is ceremony without value. The rule: E2E when there is a cross-component flow with observable effects; unit \+ property when there is not.
 
-### 7.7 Cómo gestionar esta etapa operativamente
+### 7.7 How to manage this stage operationally
 
-**Vos sos el orquestador.** Abrís y cerrás sesiones. Verificás que cada paso pasa antes de avanzar. Hacés commits intermedios entre sub-fases para tener checkpoints.
+**You are the orchestrator.** You open and close sessions. You verify each step passes before moving forward. You make intermediate commits between sub-phases to have checkpoints.
 
-**El ritmo típico.** Para una postcondición con ciclo completo (RED → GREEN → REFACTOR): entre 30 y 90 minutos según complejidad. Para una feature con cinco postcondiciones, calculá entre 3 y 8 horas en total. Esto incluye los inevitables idas y vueltas cuando algún test falla por motivo equivocado o el implementer hace algo no pedido. Si agrupás postcondiciones ortogonales, el tiempo total baja sustancialmente.
+**The typical pace.** For a postcondition with a full cycle (RED → GREEN → REFACTOR): between 30 and 90 minutes depending on complexity. For a feature with five postconditions, estimate between 3 and 8 hours in total. This includes the inevitable back-and-forth when some test fails for the wrong reason or the implementer does something unrequested. If you group orthogonal postconditions, the total time drops substantially.
 
-**La tentación a resistir: "una sola sesión para todo."** Es la trampa principal de la etapa. Cuando el implementer también escribe el test, perdés el oráculo independiente. La velocidad aparente que ganás (no tener que cambiar de contexto) se paga con tests débiles que no detectan bugs reales.
+**The temptation to resist: "a single session for everything."** It is the main trap of the stage. When the implementer also writes the test, you lose the independent oracle. The apparent speed you gain (not having to switch context) is paid for with weak tests that do not detect real bugs.
 
-**Commits granulares.** Cada paso del ciclo termina en un commit. Mensajes típicos: `test: add failing test for postcondition 4`, `feat: implement parsing of explicit offsets`, `refactor: extract offset parsing helper`. Esto da historial limpio y permite hacer `git bisect` cuando algo se rompe después.
+**Granular commits.** Each step of the cycle ends in a commit. Typical messages: `test: add failing test for postcondition 4`, `feat: implement parsing of explicit offsets`, `refactor: extract offset parsing helper`. This gives clean history and allows `git bisect` when something breaks later.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. ¿Por qué el test-writer no debe ver el código de implementación?  
-2. ¿Qué hace específicamente el implementer cuando un test falla por una razón equivocada (ej: ImportError)?  
-3. ¿Cuándo conviene saltarse la sub-fase REFACTOR?  
-4. ¿En qué tipo de código los property tests son más valiosos?
+1. Why should the test-writer not see the implementation code?  
+2. What does the implementer specifically do when a test fails for the wrong reason (e.g. ImportError)?  
+3. When is it advisable to skip the REFACTOR sub-phase?  
+4. In what kind of code are property tests most valuable?
 
-Ver respuestas 
+View answers 
 
-1. Porque si lo viera, su test tendería a alinearse con la implementación particular en lugar de verificar el spec independientemente. Esto haría que el test pase no porque el código sea correcto, sino porque el test fue escrito para que pase con ese código específico. La separación garantiza que el test sea un oráculo genuino.  
+1. Because if it saw it, its test would tend to align with the particular implementation instead of verifying the spec independently. This would make the test pass not because the code is correct, but because the test was written to pass with that specific code. The separation guarantees that the test is a genuine oracle.  
      
-2. Vuelve al test-writer para arreglar el test, no al implementer. Si el test falla por ImportError u otro error técnico, el test no está verificando lo que dice verificar. Hay que arreglar el test antes de pasar al implementer.  
+2. It goes back to the test-writer to fix the test, not to the implementer. If the test fails with an ImportError or another technical error, the test is not verifying what it claims to verify. The test must be fixed before moving to the implementer.  
      
-3. Cuando el código que salió del GREEN ya es claro, conciso, y consistente con el resto del codebase. La sub-fase REFACTOR no es obligatoria; es una oportunidad. Si no aporta, no la hagas. La regla es: refactorizá cuando aporta valor, no por ritualismo.  
+3. When the code that came out of the GREEN is already clear, concise, and consistent with the rest of the codebase. The REFACTOR sub-phase is not mandatory; it is an opportunity. If it adds nothing, do not do it. The rule is: refactor when it adds value, not out of ritualism.  
      
-4. En código algorítmico con invariantes claras: parsers, encoders/decoders, solvers, transformaciones de datos. Donde podés expresar propiedades generales que deben cumplirse para todos los inputs válidos (round-trip, idempotencia, asociatividad). Funciona menos bien en código con muchos side effects o lógica de negocio con muchas condiciones específicas.
+4. In algorithmic code with clear invariants: parsers, encoders/decoders, solvers, data transformations. Where you can express general properties that must hold for all valid inputs (round-trip, idempotence, associativity). It works less well on code with many side effects or business logic with many specific conditions.
 
 ---
 
-## 8\. Etapa 4 — Review en dos capas
+## 8\. Stage 4 — Two-layer review
 
-### 8.1 Por qué dos capas
+### 8.1 Why two layers
 
-El review tradicional en equipos humanos tiene dos problemas en proyectos donde los agentes implementan: el reviewer humano se cansa rápido frente a diffs grandes, y muchas veces no detecta divergencias del spec porque no recuerda el spec en detalle. CDAD propone un modelo de dos capas: primero un agente reviewer hace pasada exhaustiva con el spec en contexto y produce un reporte priorizado; después vos validás la priorización (no el diff completo).
+Traditional review in human teams has two problems on projects where agents implement: the human reviewer gets tired quickly in front of large diffs, and often does not detect divergences from the spec because they do not remember the spec in detail. CDAD proposes a two-layer model: first a reviewer agent does an exhaustive pass with the spec in context and produces a prioritized report; then you validate the prioritization (not the full diff).
 
 flowchart LR
 
-    Diff\[Diff completo\<br/\>de la feature\] \--\> AReviewer\[Capa 1\<br/\>Agente reviewer\]
+    Diff\[Full diff\<br/\>of the feature\] \--\> AReviewer\[Layer 1\<br/\>Reviewer agent\]
 
-    Spec\[Spec aprobado\] \--\> AReviewer
+    Spec\[Approved spec\] \--\> AReviewer
 
     Linter\[import-linter\<br/\>boundaries\] \--\> AReviewer
 
     
 
-    AReviewer \--\> Reporte\[Reporte priorizado\<br/\>Bloqueantes / Opcionales\]
+    AReviewer \--\> Report\[Prioritized report\<br/\>Blocking / Optional\]
 
     
 
-    Reporte \--\> Humano\[Capa 2\<br/\>Vos\]
+    Report \--\> Human\[Layer 2\<br/\>You\]
 
     
 
-    Humano \--\> Decision{¿Priorización\<br/\>correcta?}
+    Human \--\> Decision{Is the\<br/\>prioritization correct?}
 
-    Decision \--\>|Sí| Done\[Lista de fixes\<br/\>para implementer\]
+    Decision \--\>|Yes| Done\[List of fixes\<br/\>for the implementer\]
 
-    Decision \--\>|Ajustar| Manual\[Agregás bloqueantes\<br/\>o desestimás opcionales\]
+    Decision \--\>|Adjust| Manual\[You add blocking ones\<br/\>or discard optional ones\]
 
     Manual \--\> Done
 
-### 8.2 Capa 1: agente reviewer
+### 8.2 Layer 1: reviewer agent
 
-**Setup.** Sesión nueva con sub-agente `reviewer` con permisos de read-only. Le pasás:
+**Setup.** New session with the `reviewer` sub-agent with read-only permissions. You pass it:
 
-- El diff completo de la feature  
-- El spec aprobado  
-- La interface que la feature implementa  
-- El archivo `.importlinter` con los boundaries arquitectónicos  
-- Convenciones del proyecto si existen (`AGENTS.md` o `CONTRIBUTING.md`)
+- The full diff of the feature  
+- The approved spec  
+- The interface the feature implements  
+- The `.importlinter` file with the architectural boundaries  
+- Project conventions if they exist (`AGENTS.md` or `CONTRIBUTING.md`)
 
-**Idealmente, usás un modelo distinto al que implementó.** Esta es una práctica importante: si el implementer fue Claude Sonnet, el reviewer puede ser GPT-5 o Qwen. La razón es que distintos modelos tienen blind spots distintos; usar uno diferente para review da una segunda perspectiva real, no un eco. Si solo tenés un modelo, igual funciona, pero perdés esa diversidad.
+**Ideally, you use a different model from the one that implemented.** This is an important practice: if the implementer was Claude Sonnet, the reviewer can be GPT-5 or Qwen. The reason is that different models have different blind spots; using a different one for review gives a real second perspective, not an echo. If you only have one model, it still works, but you lose that diversity.
 
-**El prompt al reviewer.** Algo como:
+**The prompt to the reviewer.** Something like:
 
-\*"Revisá este diff contra el spec adjunto. Reportá hallazgos en estas categorías:
+\*"Review this diff against the attached spec. Report findings in these categories:
 
-1. **Divergencias del spec**: el código no implementa lo que el spec pide, o agrega cosas que el spec no pide.  
-2. **Violaciones de boundaries**: imports prohibidos por el import-linter, capas que no respetan las dependencias permitidas.  
-3. **Riesgos de seguridad**: SQL injection, command injection, secretos hardcodeados, validación faltante.  
-4. **Problemas de consistencia**: el código no sigue las convenciones del resto del proyecto.  
-5. **Sugerencias de simplificación**: oportunidades de hacer el código más simple sin cambiar comportamiento.
+1. **Spec divergences**: the code does not implement what the spec asks for, or adds things the spec does not ask for.  
+2. **Boundary violations**: imports forbidden by the import-linter, layers that do not respect the allowed dependencies.  
+3. **Security risks**: SQL injection, command injection, hardcoded secrets, missing validation.  
+4. **Consistency problems**: the code does not follow the conventions of the rest of the project.  
+5. **Simplification suggestions**: opportunities to make the code simpler without changing behavior.
 
-Para cada hallazgo, marcá: **Bloqueante** (debe arreglarse antes del merge) u **Opcional** (sugerencia, no bloquea).
+For each finding, mark: **Blocking** (must be fixed before the merge) or **Optional** (a suggestion, does not block).
 
-Producí un reporte estructurado en markdown."\*
+Produce a structured report in markdown."\*
 
-**El output.** Un reporte estructurado, algo así:
+**The output.** A structured report, something like this:
 
-\# Review de feature: parseo de fechas con offsets
+\# Feature review: date parsing with offsets
 
-\#\# Bloqueantes
+\#\# Blocking
 
-\#\#\# 1\. Divergencia del spec — Postcondición 5 no cubierta
+\#\#\# 1\. Spec divergence — Postcondition 5 not covered
 
-Ubicación: src/date\_parser.py:8-12
+Location: src/date\_parser.py:8-12
 
-Problema: La postcondición 5 del spec dice "Si s no tiene timezone, 
+Problem: Postcondition 5 of the spec says "If s has no timezone, 
 
-DateTime resultante es UTC explícito". El código actual usa 
+the resulting DateTime is explicit UTC". The current code uses 
 
-fromisoformat() que en Python \<3.11 retorna naive datetime, no UTC.
+fromisoformat() which in Python \<3.11 returns a naive datetime, not UTC.
 
-Sugerencia: agregar branch explícito para detectar ausencia de 
+Suggestion: add an explicit branch to detect absence of 
 
-timezone offset y forzar UTC.
+timezone offset and force UTC.
 
-\#\#\# 2\. Violación de boundary — import desde algorithms a adapters
+\#\#\# 2\. Boundary violation — import from algorithms to adapters
 
-Ubicación: algorithms/parser\_helpers.py:3
+Location: algorithms/parser\_helpers.py:3
 
-Problema: import-linter contract "algorithms-pure" prohíbe imports 
+Problem: import-linter contract "algorithms-pure" forbids imports 
 
-desde algorithms/ hacia adapters/. La línea 3 viola este contrato.
+from algorithms/ to adapters/. Line 3 violates this contract.
 
-Sugerencia: mover el helper a interfaces/ o duplicar la lógica si 
+Suggestion: move the helper to interfaces/ or duplicate the logic if 
 
-es trivial.
+it is trivial.
 
-\#\# Opcionales
+\#\# Optional
 
-\#\#\# 3\. Sugerencia de simplificación — regex precompilado innecesario
+\#\#\# 3\. Simplification suggestion — unnecessary precompiled regex
 
-Ubicación: src/date\_parser.py:5
+Location: src/date\_parser.py:5
 
-Problema: El regex compilado en módulo no se usa en el código actual.
+Problem: The regex compiled at module level is not used in the current code.
 
-Sugerencia: removerlo si no se va a usar.
+Suggestion: remove it if it will not be used.
 
-\#\#\# 4\. Estilo — docstring formato no consistente
+\#\#\# 4\. Style — docstring format not consistent
 
-Ubicación: src/date\_parser.py:7
+Location: src/date\_parser.py:7
 
-Problema: el docstring usa formato distinto al resto del proyecto.
+Problem: the docstring uses a format different from the rest of the project.
 
-Sugerencia: ajustar al formato del resto.
+Suggestion: adjust to the format of the rest.
 
-### 8.3 Capa 2: validación humana
+### 8.3 Layer 2: human validation
 
-**Cómo se hace.** Leés el reporte, no el diff completo. El reviewer ya hizo el trabajo de filtrar y priorizar; tu trabajo es validar esa priorización.
+**How it is done.** You read the report, not the full diff. The reviewer already did the work of filtering and prioritizing; your job is to validate that prioritization.
 
-Para cada bloqueante, decidís si genuinamente es bloqueante. La mayoría de las veces vas a estar de acuerdo, pero hay casos en que vos sabés algo que el reviewer no: tal vez la "divergencia del spec" es porque el spec cambió y todavía no se actualizó, tal vez la "violación de boundary" tiene una excepción legítima documentada en un ADR.
+For each blocking finding, you decide whether it is genuinely blocking. Most of the time you will agree, but there are cases where you know something the reviewer does not: maybe the "spec divergence" is because the spec changed and has not been updated yet, maybe the "boundary violation" has a legitimate exception documented in an ADR.
 
-Para cada opcional, decidís si lo aplicás ahora o lo descartás. Algunas opcionales son francamente buenas y vale aprovechar el momentum; otras son sobre-ingenierización que no aporta.
+For each optional finding, you decide whether to apply it now or discard it. Some optionals are frankly good and it is worth riding the momentum; others are over-engineering that adds nothing.
 
-**El output de la capa 2\.** Una lista priorizada de fixes que va al implementer en una nueva ronda. Algo como:
+**The output of layer 2.** A prioritized list of fixes that goes to the implementer in a new round. Something like:
 
-\*"Aplicá estos cambios al código:
+\*"Apply these changes to the code:
 
-1. \[Bloqueante\] Agregar branch en parse\_iso\_date para casos sin timezone, retornando UTC explícito.  
-2. \[Bloqueante\] Mover parser\_helpers a interfaces/ y actualizar imports.  
-3. \[Aceptado opcional\] Remover el regex no usado.
+1. \[Blocking\] Add a branch in parse\_iso\_date for cases without timezone, returning explicit UTC.  
+2. \[Blocking\] Move parser\_helpers to interfaces/ and update imports.  
+3. \[Accepted optional\] Remove the unused regex.
 
-Ignoramos por ahora:
+We ignore for now:
 
-- Cambio de docstring (lo haré yo después en una pasada de cleanup)."\*
+- Docstring change (I will do it myself later in a cleanup pass)."\*
 
-### 8.4 El feedback loop con la etapa 3
+### 8.4 The feedback loop with stage 3
 
-Si hay bloqueantes, volvés a la etapa 3 con la lista de fixes. El implementer aplica los cambios, los tests deben seguir pasando (si los fixes requieren cambios de comportamiento, eso significa que el spec necesita actualizarse y volver a la etapa 2). Después de los fixes, opcionalmente otra pasada del reviewer para verificar.
+If there are blocking findings, you go back to stage 3 with the list of fixes. The implementer applies the changes, the tests must keep passing (if the fixes require behavior changes, that means the spec needs updating and going back to stage 2). After the fixes, optionally another pass of the reviewer to verify.
 
-**Tabla: matriz de severidad de hallazgos**
+**Table: severity matrix of findings**
 
-| Tipo de hallazgo | Severidad por defecto | Excepción |
+| Finding type | Default severity | Exception |
 | :---- | :---- | :---- |
-| Divergencia del spec | Bloqueante | Solo si vos validás que el spec estaba desactualizado |
-| Violación de boundary | Bloqueante | Solo si hay ADR explícito autorizando |
-| Riesgo de seguridad | Bloqueante | Sin excepciones |
-| Bug funcional | Bloqueante | Sin excepciones |
-| Inconsistencia de estilo | Opcional | Bloqueante si es masiva |
-| Oportunidad de simplificación | Opcional | Bloqueante si la complejidad actual es problemática |
-| Sugerencia de feature adicional | Descartar | Esto es scope creep |
+| Spec divergence | Blocking | Only if you validate that the spec was outdated |
+| Boundary violation | Blocking | Only if there is an explicit ADR authorizing it |
+| Security risk | Blocking | No exceptions |
+| Functional bug | Blocking | No exceptions |
+| Style inconsistency | Optional | Blocking if it is massive |
+| Simplification opportunity | Optional | Blocking if the current complexity is problematic |
+| Suggestion of an additional feature | Discard | That is scope creep |
 
-### 8.5 Cómo gestionar esta etapa operativamente
+### 8.5 How to manage this stage operationally
 
-**Mantén el reporte del reviewer en el PR o en un archivo temporal.** Útil cuando el implementer aplica fixes, para verificar que se cubrieron todos los bloqueantes.
+**Keep the reviewer's report in the PR or in a temporary file.** Useful when the implementer applies fixes, to verify all blocking findings were covered.
 
-**El review NO es opcional.** La tentación de saltarse el review en features pequeñas es fuerte. Resistila. Aunque sea un review breve de un agente reviewer corriendo sobre un diff de 30 líneas, vale la pena: detecta inconsistencias que en el momento parecen menores pero que se acumulan.
+**Review is NOT optional.** The temptation to skip review on small features is strong. Resist it. Even a brief review by a reviewer agent running over a 30-line diff is worth it: it detects inconsistencies that seem minor in the moment but accumulate.
 
-**Revisá tu propia priorización con escepticismo sano.** Es fácil rechazar un bloqueante porque te cuesta volver al implementer. Si lo hacés sistemáticamente, estás minando la calidad. Una heurística útil: si dudás de si un bloqueante es genuino, errate del lado de tratarlo como bloqueante. El costo de una iteración extra es bajo; el costo de mergear un bug es alto.
+**Check your own prioritization with healthy skepticism.** It is easy to reject a blocking finding because going back to the implementer is costly. If you do it systematically, you are mining quality. A useful heuristic: if you doubt whether a blocking finding is genuine, err on the side of treating it as blocking. The cost of an extra iteration is low; the cost of merging a bug is high.
 
 ---
 
-## 9\. Etapa 5 — Merge y Memory Bank
+## 9\. Stage 5 — Merge and Memory Bank
 
-### 9.1 Verificación CI antes del merge
+### 9.1 CI verification before the merge
 
-Antes de mergear, una suite completa de verificaciones automatizadas debe pasar. Esto NO es opcional, y NO se puede skipear porque "tengo confianza en este cambio". Las verificaciones son:
+Before merging, a full suite of automated verifications must pass. This is NOT optional, and it cannot be skipped because "I trust this change". The verifications are:
 
-**Linter completo.** Ejecuta sobre todos los archivos modificados, no solo los del diff. Detecta violaciones de estilo, bugs comunes (variable no usada, import no usado), y patrones problemáticos.
+**Full linter.** It runs over all modified files, not just the diff's. It detects style violations, common bugs (unused variable, unused import), and problematic patterns.
 
-**Type checker.** Si el lenguaje soporta tipos estáticos (Python con mypy, TypeScript con tsc, etc.), corre sobre el código. En CDAD, recomendamos modo strict al menos para los archivos de interfaces y contratos.
+**Type checker.** If the language supports static types (Python with mypy, TypeScript with tsc, etc.), it runs over the code. In CDAD, we recommend strict mode at least for the interface and contract files.
 
-**Import-linter (o equivalente).** Verifica que los boundaries arquitectónicos no se violaron. Si hay contratos de capas (presentation no importa de domain, algorithms no importa de framework), import-linter los enforce.
+**Import-linter (or equivalent).** It verifies that the architectural boundaries were not violated. If there are layer contracts (presentation does not import from domain, algorithms does not import from framework), import-linter enforces them.
 
-**Tests unitarios y de integración.** La suite completa, no solo los nuevos. La razón es que los nuevos pueden haber roto cosas que ya funcionaban.
+**Unit and integration tests.** The full suite, not just the new tests. The reason is that the new ones may have broken things that already worked.
 
-**Contract tests parametrizados.** Si la feature agrega una implementación de un Protocol, los contract tests automáticamente la verifican. Si rompe alguna postcondición, falla acá.
+**Parameterized contract tests.** If the feature adds an implementation of a Protocol, the contract tests automatically verify it. If it breaks any postcondition, it fails here.
 
-**Tests de propiedades.** Para código algorítmico con property tests configurados, corren con el seed configurado y verifican que las invariantes se cumplen.
+**Property tests.** For algorithmic code with property tests configured, they run with the configured seed and verify the invariants hold.
 
-**Verificaciones específicas del proyecto.** Cualquier check custom que el proyecto haya configurado (verificar que el manifest no se modificó sin justificación, verificar que no hay TODOs sin issue asociado, etc.)
+**Project-specific verifications.** Any custom check the project has configured (verify the manifest was not modified without justification, verify there are no TODOs without an associated issue, etc.)
 
 flowchart LR
 
-    PR\[PR listo para merge\] \--\> CI{CI pipeline}
+    PR\[PR ready for merge\] \--\> CI{CI pipeline}
 
     CI \--\> L\[Linter\]
 
@@ -1575,7 +1590,7 @@ flowchart LR
 
     
 
-    L \--\> All\[Todo pasa\]
+    L \--\> All\[Everything passes\]
 
     T \--\> All
 
@@ -1595,73 +1610,73 @@ flowchart LR
 
     
 
-    L \-.falla.-\> Back\[Volver a etapa 3\]
+    L \-.fails.-\> Back\[Go back to stage 3\]
 
-    T \-.falla.-\> Back
+    T \-.fails.-\> Back
 
-    I \-.falla.-\> Back
+    I \-.fails.-\> Back
 
-    U \-.falla.-\> Back
+    U \-.fails.-\> Back
 
-    Int \-.falla.-\> Back
+    Int \-.fails.-\> Back
 
-    CT \-.falla.-\> Back
+    CT \-.fails.-\> Back
 
-    P \-.falla.-\> Back
+    P \-.fails.-\> Back
 
-### 9.2 La actualización del Memory Bank
+### 9.2 Updating the Memory Bank
 
-Después del merge, actualizás el Memory Bank. Esto NO es trabajo busy-work; es lo que asegura que la próxima sesión arranque con contexto fresco.
+After the merge, you update the Memory Bank. This is NOT busy-work; it is what ensures the next session starts with fresh context.
 
-**Qué actualizar.**
+**What to update.**
 
-`activeContext.md`: agregás una entrada con la fecha, qué feature se cerró, decisiones técnicas relevantes que afectan el futuro, deuda técnica detectada (si aplica). Por ejemplo:
+`activeContext.md`: you add an entry with the date, what feature was closed, relevant technical decisions that affect the future, technical debt detected (if any). For example:
 
-\#\# 2026-04-29 — Feature: parseo de fechas con offsets
+\#\# 2026-04-29 — Feature: date parsing with offsets
 
-Cerrada feature de parseo ISO 8601 con soporte para offsets explícitos.
+Closed the ISO 8601 parsing feature with explicit offset support.
 
-Decisiones relevantes:
+Relevant decisions:
 
-\- Usamos fromisoformat() de stdlib en lugar de dateutil para minimizar
+\- We use stdlib fromisoformat() instead of dateutil to minimize
 
-  dependencias. Trade-off: en Python \<3.11 hay edge cases no cubiertos
+  dependencies. Trade-off: in Python \<3.11 there are uncovered edge cases
 
-  documentados en spec out-of-scope.
+  documented in the spec's out-of-scope.
 
-Deuda técnica detectada:
+Technical debt detected:
 
-\- El parser asume strings ASCII; para soportar Unicode dates en otros
+\- The parser assumes ASCII strings; supporting Unicode dates in other
 
-  scripts (japonés/árabe) necesitaríamos cambios. Por ahora out of scope.
+  scripts (Japanese/Arabic) would require changes. Out of scope for now.
 
-Próxima feature en cola: formateo inverso (datetime → ISO string).
+Next feature in the queue: inverse formatting (datetime → ISO string).
 
-`progress.md`: movés la feature de "in progress" a "done", actualizás el estado general del proyecto.
+`progress.md`: you move the feature from "in progress" to "done", you update the overall project status.
 
-**ADR si corresponde.** Si la feature involucró una decisión arquitectónica nueva que no estaba documentada, creás el ADR ahora. La regla es: si dentro de 6 meses, alguien (vos o un agente) podría preguntar "¿por qué hicimos X de esta forma?", esa decisión merece un ADR.
+**ADR if applicable.** If the feature involved a new architectural decision that was not documented, you create the ADR now. The rule is: if in 6 months someone (you or an agent) could ask "why did we do X this way?", that decision deserves an ADR.
 
-**Quién hace la actualización: el patrón Scribe.** Hay una tensión real acá. Por un lado, el principio dice que la actualización del Memory Bank es responsabilidad humana, porque define el contexto que la próxima sesión va a leer y delegarlo al agente sin supervisión degrada la calidad. Por otro lado, escribir desde cero la entrada de `activeContext.md` después de cada feature toma 15-20 minutos, y bajo presión de entrega es uno de los primeros pasos que el humano se salta. El resultado neto es Memory Bank desactualizado, que es peor que cualquier alternativa.
+**Who does the update: the Scribe pattern.** There is a real tension here. On the one hand, the principle says that updating the Memory Bank is a human responsibility, because it defines the context the next session will read and delegating it to the agent without supervision degrades quality. On the other hand, writing from scratch the `activeContext.md` entry after each feature takes 15-20 minutes, and under delivery pressure it is one of the first steps the human skips. The net result is an outdated Memory Bank, which is worse than any alternative.
 
-La solución que recomendamos es separar la generación del draft de la aprobación final, materializada como un sub-agente **Scribe**:
+The solution we recommend is to separate draft generation from final approval, materialized as a **Scribe** sub-agent:
 
-1. **El Scribe drafta.** Sub-agente con permisos read-only que recibe en su contexto: el spec aprobado de la feature, el diff completo del PR, el reporte del reviewer (etapa 4), y los archivos actuales del Memory Bank. Su tarea es producir tres outputs estructurados: una entrada propuesta para `activeContext.md`, las modificaciones propuestas para `progress.md`, y un draft de ADR si detecta que hubo decisión arquitectónica relevante (con un campo "confianza" indicando qué tan seguro está de que merece ADR).  
+1. **The Scribe drafts.** A read-only sub-agent that receives in its context: the feature's approved spec, the full diff of the PR, the reviewer's report (stage 4), and the current Memory Bank files. Its task is to produce three structured outputs: a proposed entry for `activeContext.md`, the proposed changes for `progress.md`, and a draft ADR if it detects there was a relevant architectural decision (with a "confidence" field indicating how sure it is that it merits an ADR).  
      
-2. **Vos validás y editás.** Leés el draft. Corregís lo que el Scribe entendió mal. Agregás lo que el Scribe no podía saber (por ejemplo, contexto del cliente, decisiones de producto que se tomaron fuera del PR). Descartás el draft de ADR si la decisión no era tan arquitectónica como el Scribe creyó, o lo expandís si sí lo era.  
+2. **You validate and edit.** You read the draft. You correct what the Scribe understood wrong. You add what the Scribe could not know (for example, client context, product decisions made outside the PR). You discard the ADR draft if the decision was not as architectural as the Scribe believed, or expand it if it was.  
      
-3. **Vos commiteás.** El commit final lleva tu autoría y refleja tu juicio. La marca distintiva de los commits que actualizan el Memory Bank es el prefijo `docs(memory):` para que el historial sea fácil de auditar.
+3. **You commit.** The final commit carries your authorship and reflects your judgment. The distinctive mark of Memory Bank commits is the `docs(memory):` prefix so the history is easy to audit.
 
-**Por qué este patrón preserva el principio.** El argumento original ("si delegás esto al agente sin revisar, eventualmente pierde calidad") sigue siendo válido: el problema no era que el agente generara texto, sino que el humano dejara de revisar. El patrón Scribe explicita que la generación es asistida pero la aprobación es indelegable, igual que ya hacés en el review (etapa 4\) donde el reviewer drafta hallazgos y vos validás priorización. La fricción cae de 15-20 minutos a 3-5 minutos por feature, lo que hace mucho más probable que se haga consistentemente.
+**Why this pattern preserves the principle.** The original argument ("if you delegate this to the agent without reviewing, quality eventually degrades") remains valid: the problem was not that the agent generated text, but that the human stopped reviewing. The Scribe pattern makes explicit that generation is assisted but approval is non-delegable, just as you already do in review (stage 4) where the reviewer drafts findings and you validate the prioritization. Friction drops from 15-20 minutes to 3-5 minutes per feature, which makes it far more likely to be done consistently.
 
-**Configuración mínima del Scribe.**
+**Minimal Scribe configuration.**
 
 "scribe": {
 
-  "default\_model": "claude-sonnet",  // modelo grande para síntesis
+  "default\_model": "claude-sonnet",  // large model for synthesis
 
   "permissions": {
 
-    "edit": \[\],  // read-only, solo propone
+    "edit": \[\],  // read-only, only proposes
 
     "read": \["docs/\*\*", "src/\*\*", "tests/\*\*", ".git/\*\*"\]
 
@@ -1671,55 +1686,61 @@ La solución que recomendamos es separar la generación del draft de la aprobaci
 
 }
 
-El prompt del Scribe en `instructions/scribe.md` es algo como:
+The Scribe prompt in `instructions/scribe.md` is something like:
 
-*"Tu tarea es producir un draft del update de Memory Bank después de un PR mergeado. Recibís el spec aprobado, el diff del PR, y el reporte del reviewer. Producís tres outputs en bloques markdown separados:*
+*"Your task is to produce a draft of the Memory Bank update after a merged PR. You receive the approved spec, the PR diff, and the reviewer's report. You produce three outputs in separate markdown blocks:*
 
-*1\. **Entrada para activeContext.md**: fecha, nombre de la feature, decisiones técnicas relevantes (con énfasis en las que afectan futuro código), deuda técnica detectada (si aplica), próxima feature en cola si la sabés.*
+*1\. **Entry for activeContext.md**: date, feature name, relevant technical decisions (with emphasis on those affecting future code), technical debt detected (if any), next feature in the queue if you know it.*
 
-*2\. **Cambios para progress.md**: qué entradas mover de in-progress a done, qué actualizar.*
+*2\. **Changes for progress.md**: which entries to move from in-progress to done, what to update.*
 
-*3\. **Posible ADR**: si detectás una decisión arquitectónica que merece ADR, producí el draft completo con título, contexto, opciones consideradas, decisión, y consecuencias. Indicá tu confianza (alta/media/baja) de que esto realmente amerita un ADR.*
+*3\. **Possible ADR**: if you detect an architectural decision that merits an ADR, produce the full draft with title, context, options considered, decision, and consequences. State your confidence (high/medium/low) that this really merits an ADR.*
 
-*Sé conciso. Escribí en el tono del resto del Memory Bank existente. NO inventes contexto que no esté en los inputs."*
+*Be concise. Write in the tone of the rest of the existing Memory Bank. Do NOT invent context that is not in the inputs."*
 
-**Variante automatizada vía CI.** Una alternativa más liviana que el sub-agente Scribe es un script de CI que extrae datos estructurados del PR (mensaje de commit, archivos modificados, hallazgos del reviewer si están en un comentario estandarizado) y genera un esqueleto de entrada que vos completás. Pierde la capacidad sintética del LLM (no te va a sintetizar "esta feature implica un cambio de approach en X"), pero gana en velocidad y predictibilidad. Funciona bien para proyectos donde las features son repetitivas.
+**Automated variant via CI.** A lighter alternative to the Scribe sub-agent is a CI script that extracts structured data from the PR (commit message, modified files, reviewer findings if they are in a standardized comment) and generates a skeleton entry that you fill in. It loses the LLM's synthetic capability (it will not synthesize for you "this feature implies an approach change in X"), but gains in speed and predictability. It works well for projects where features are repetitive.
 
-### 9.3 Cómo gestionar esta etapa operativamente
+### 9.3 How to manage this stage operationally
 
-**El merge en sí es trivial.** Si CI pasa, hacés el merge a main (idealmente con squash para tener historial limpio). El trabajo está en los pasos previos.
+**The merge itself is trivial.** If CI passes, you merge to main (ideally with squash to keep history clean). The work is in the previous steps.
 
-**La actualización del Memory Bank con Scribe toma 3-5 minutos.** Sin Scribe, toma 15-20 minutos. La diferencia es lo que hace que el paso se haga consistentemente o no se haga, lo que a su vez determina si el Memory Bank se mantiene útil o se degrada.
+**The Memory Bank update with Scribe takes 3-5 minutes.** Without Scribe, it takes 15-20 minutes. The difference is what makes the step get done consistently or not get done, which in turn determines whether the Memory Bank stays useful or degrades.
 
-**Reseteá las sesiones del agente después del merge.** No reuses una sesión vieja para la próxima feature. Cada feature arranca con sesión nueva, leyendo el Memory Bank actualizado. Esto evita drift de contexto.
+**Reset the agent sessions after the merge.** Do not reuse an old session for the next feature. Each feature starts with a new session, reading the updated Memory Bank. This avoids context drift.
 
-**Para lectores avanzados — Versionado del Memory Bank**
+**For advanced readers — Versioning the Memory Bank**
 
-El Memory Bank vive en el repo, versionado con Git. Cada actualización es un commit. Esto te permite ver la evolución del proyecto, hacer `git blame` para entender por qué una decisión se tomó, y eventualmente hacer rollback si una decisión se demuestra equivocada. Una práctica útil: en commits que actualizan el Memory Bank, usar prefijo `docs(memory):` para distinguir de commits de código.
+The Memory Bank lives in the repo, versioned with Git. Every update is a commit. This lets you see the project's evolution, do `git blame` to understand why a decision was made, and eventually roll back if a decision proves wrong. A useful practice: in commits that update the Memory Bank, use the `docs(memory):` prefix to distinguish them from code commits.
 
 ---
 
-## 10\. Configuración de herramientas
+## 10\. Tool configuration
 
-CDAD es agnóstico del modelo de IA específico que uses, pero requiere herramientas que soporten ciertas capacidades. En este capítulo discutimos qué características buscar y configuraciones típicas.
+CDAD is agnostic about the specific AI model you use, but requires tools that support certain capabilities. In this chapter we discuss what features to look for and typical configurations.
 
-### 10.1 Capacidades que el orquestador debe soportar
+### 10.1 Capabilities the orchestrator must support
 
-Independientemente de la herramienta concreta, el orquestador (la pieza de software con la que vos interactuás para coordinar agentes) debe soportar:
+Regardless of the concrete tool, the orchestrator (the piece of software you interact with to coordinate agents) must support:
 
-- **Sub-agentes con permisos granulares por glob patterns** (qué archivos puede leer, qué puede editar). Esto materializa el principio de sesiones aisladas.  
-- **Configuración por modelo por agente** (el test-writer puede usar un modelo, el implementer otro). Esto permite usar modelos distintos para review independiente.  
-- **Lectura jerárquica de instrucciones** (un `AGENTS.md` en raíz que se carga siempre, instrucciones específicas por sub-agente). Esto evita repetir contexto.  
-- **Integración con Language Server Protocol** (linter, type checker en tiempo real disponible para los agentes). Esto les da feedback técnico inmediato.  
-- **MCP (Model Context Protocol) o equivalente**: capacidad de conectar al agente con herramientas externas (DB queries, fetching de docs, etc.).
+- **Separate role contexts and sufficient scoped capabilities.** Prepare appropriate inputs, support necessary tools and expose evidence for orchestrator verification. Use tested access controls where they protect a justified boundary; a command-name allowlist is not a substitute for a resource boundary.
+- **Per-model configuration per agent** (the test-writer can use one model, the implementer another). This makes it possible to use different models for independent review.  
+- **Hierarchical loading of instructions** (a root `AGENTS.md` that is always loaded, per-sub-agent specific instructions). This avoids repeating context.  
+- **Language Server Protocol integration** (linter, real-time type checker available to the agents). This gives them immediate technical feedback.  
+- **MCP (Model Context Protocol) or equivalent**: the ability to connect the agent to external tools (DB queries, docs fetching, etc.).
 
-Herramientas que actualmente cumplen estas capacidades en distintos grados incluyen OpenCode, Claude Code, Cursor, Aider (parcialmente), entre otras. La elección entre ellas depende de tus preferencias de UI, presupuesto, y modelos disponibles. Lo importante es que **CDAD funciona con cualquier orquestador que cumpla las capacidades centrales**.
+Tools that currently fulfill these capabilities to varying degrees include OpenCode, Claude Code, Cursor, Aider (partially), among others. Choosing between them depends on your UI preferences, budget, and available models. What matters is that **CDAD works with any orchestrator that fulfills the core capabilities**.
 
-### 10.2 Configuración típica del orquestador
+### 10.2 Typical orchestrator configuration
 
-Independientemente de la herramienta concreta, la configuración suele tener una estructura similar:
+These sketches are illustrative. Before copying a restrictive profile, apply
+ADR-011: define the role's legitimate operations, the few effects requiring
+prevention, and the evidence checked at re-entry. Test both permitted work and
+retained boundaries. The migration must update agent sources, adapters and
+validators together; do not silently bypass an installed deny.
 
-// Pseudo-config del orquestador (sintaxis adaptada según herramienta)
+Regardless of the concrete tool, the configuration usually has a similar structure:
+
+// Pseudo-config of the orchestrator (syntax adapted per tool)
 
 {
 
@@ -1785,7 +1806,7 @@ Independientemente de la herramienta concreta, la configuración suele tener una
 
     "reviewer": {
 
-      "default\_model": "kimi-k2",  // distinto al implementer
+      "default\_model": "kimi-k2",  // different from the implementer
 
       "permissions": {
 
@@ -1813,83 +1834,83 @@ Independientemente de la herramienta concreta, la configuración suele tener una
 
 }
 
-### 10.3 El AGENTS.md raíz
+### 10.3 The root AGENTS.md
 
-Una pieza central de la configuración es el `AGENTS.md` en raíz del proyecto. Este archivo se carga automáticamente por todos los sub-agentes y contiene contexto que aplica al proyecto entero.
+A central piece of the configuration is the `AGENTS.md` at the project root. This file is loaded automatically by all sub-agents and contains context that applies to the whole project.
 
-**Estructura típica.**
+**Typical structure.**
 
-\# AGENTS.md — convenciones del proyecto X
+\# AGENTS.md — conventions of project X
 
 \#\# Tech stack
 
 \- Python 3.12, Postgres 16, FastAPI, SQLAlchemy
 
-\- Tests con pytest, property tests con Hypothesis
+\- Tests with pytest, property tests with Hypothesis
 
-\#\# Comandos importantes
+\#\# Important commands
 
-\- \`make test\`: corre suite completa
+\- \`make test\`: runs the full suite
 
-\- \`make test-fast\`: corre solo tests unitarios
+\- \`make test-fast\`: runs only unit tests
 
-\- \`make lint\`: corre ruff \+ mypy \+ import-linter
+\- \`make lint\`: runs ruff \+ mypy \+ import-linter
 
-\- \`make check\`: lint \+ tests, debe pasar antes de cada commit
+\- \`make check\`: lint \+ tests, must pass before each commit
 
 \#\# Coding standards
 
-\- Errores con clases específicas, no Exception genérico
+\- Errors with specific classes, not generic Exception
 
-\- Type hints completos en funciones públicas
+\- Complete type hints on public functions
 
-\- Docstrings en formato Google style
+\- Docstrings in Google style format
 
-\- Imports ordenados con isort
+\- Imports sorted with isort
 
 \#\# Don't touch list
 
-\- \`migrations/\`: solo modificar mediante alembic, nunca a mano
+\- \`migrations/\`: modify only via alembic, never by hand
 
-\- \`\_\_manifest\_\_.py\`: requiere comentario \`\# AGENT-REVIEWED:\` antes de cambios
+\- \`\_\_manifest\_\_.py\`: requires a \`\# AGENT-REVIEWED:\` comment before changes
 
-\- \`secrets/\`: nunca leer ni modificar
+\- \`secrets/\`: never read nor modify
 
-\#\# Boundaries arquitectónicos (enforced por import-linter)
+\#\# Architectural boundaries (enforced by import-linter)
 
-\- \`algorithms/\` no importa de \`adapters/\`, \`models/\`, ni framework
+\- \`algorithms/\` does not import from \`adapters/\`, \`models/\`, or the framework
 
-\- \`domain/\` no importa de \`infrastructure/\`
+\- \`domain/\` does not import from \`infrastructure/\`
 
-\- \`presentation/\` puede importar de cualquier capa más profunda
+\- \`presentation/\` may import from any deeper layer
 
-\#\# Workflow de agentes
+\#\# Agent workflow
 
-\- Antes de codear: leer \`docs/activeContext.md\`, leer spec relevante
+\- Before coding: read \`docs/activeContext.md\`, read the relevant spec
 
-\- TDD obligatorio: test que falla antes que código
+\- TDD mandatory: failing test before code
 
-\- Nunca usar /compact; cuando context \> 70%, hacer handoff fresco
+\- Never use /compact; when context \> 70%, do a fresh handoff
 
-\- Al terminar feature: actualizar \`docs/activeContext.md\` y \`docs/progress.md\`
+\- At the end of a feature: update \`docs/activeContext.md\` and \`docs/progress.md\`
 
-\#\# Convenciones de commits
+\#\# Commit conventions
 
-\- Prefijos: feat, fix, docs, refactor, test, chore
+\- Prefixes: feat, fix, docs, refactor, test, chore
 
-\- Mensajes en presente: "agrega validación", no "agregada validación"
+\- Messages in present tense: "add validation", not "added validation"
 
-\- Referencia a spec/issue cuando aplica
+\- Reference the spec/issue when applicable
 
-\#\# Cambios críticos en versión actual del framework
+\#\# Critical changes in the current framework version
 
-\[Lista de cambios entre versiones que los modelos no conocen\]
+\[List of changes between versions the models do not know\]
 
-### 10.4 Configuración de herramientas QA
+### 10.4 QA tool configuration
 
-CDAD requiere ciertas herramientas QA configuradas. En Python típicamente:
+CDAD requires certain QA tools configured. In Python, typically:
 
-**ruff** (linter \+ formatter) en `pyproject.toml`:
+**ruff** (linter \+ formatter) in `pyproject.toml`:
 
 \[tool.ruff\]
 
@@ -1901,23 +1922,23 @@ target-version \= "py312"
 
 select \= \["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"\]
 
-ignore \= \["E501"\]  \# line length manejado por formatter
+ignore \= \["E501"\]  \# line length handled by the formatter
 
-**mypy** (type checker) en `pyproject.toml`:
+**mypy** (type checker) in `pyproject.toml`:
 
 \[tool.mypy\]
 
 python\_version \= "3.12"
 
-strict \= false  \# globalmente flexible
+strict \= false  \# globally lenient
 
 \[\[tool.mypy.overrides\]\]
 
 module \= "interfaces.\*"
 
-strict \= true  \# interfaces son strict
+strict \= true  \# interfaces are strict
 
-**import-linter** en `.importlinter`:
+**import-linter** in `.importlinter`:
 
 \[importlinter\]
 
@@ -1949,7 +1970,7 @@ layers \=
 
     src.infrastructure
 
-**pre-commit** en `.pre-commit-config.yaml`:
+**pre-commit** in `.pre-commit-config.yaml`:
 
 repos:
 
@@ -1987,67 +2008,67 @@ repos:
 
         pass\_filenames: false
 
-### 10.5 Equivalentes en otros lenguajes
+### 10.5 Equivalents in other languages
 
-| Capacidad | Python | TypeScript | Java | Go | Rust |
+| Capability | Python | TypeScript | Java | Go | Rust |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | Linter | ruff | eslint | checkstyle | golangci-lint | clippy |
 | Type checker | mypy | tsc | (built-in) | (built-in) | (built-in) |
 | Boundaries | import-linter | dependency-cruiser | ArchUnit | go-cleanarch | (manual via crates) |
 | Tests | pytest | jest, vitest | JUnit | testing | cargo test |
 | Property tests | hypothesis | fast-check | jqwik | rapid | proptest |
-| Pre-commit | pre-commit | husky | (varios) | pre-commit | pre-commit |
+| Pre-commit | pre-commit | husky | (various) | pre-commit | pre-commit |
 
 ---
 
-## 11\. CDAD en frameworks opinados
+## 11\. CDAD in opinionated frameworks
 
-Hasta acá el documento describe CDAD asumiendo arquitecturas relativamente desacopladas: módulos con responsabilidades claras, capas que se pueden enforzar con `import-linter`, contratos formales entre componentes. Eso funciona bien para servicios construidos con FastAPI, microservicios stateless, librerías puras, frontends bien estructurados. Pero gran parte del trabajo real de software ocurre dentro de **frameworks fuertemente opinados**: Odoo, Django, Rails, Webmin, WordPress, Drupal, Spring Boot, Laravel, y muchos otros. Estos frameworks imponen su propia forma de organizar el código, sus propios mecanismos de extensión, su propio ORM acoplado (cuando aplica), sus propios patrones de testing. CDAD funciona perfectamente bien adentro de estos frameworks, pero requiere algunas adaptaciones a la materialización concreta de los principios.
+So far the document describes CDAD assuming relatively decoupled architectures: modules with clear responsibilities, layers that can be enforced with `import-linter`, formal contracts between components. That works well for services built with FastAPI, stateless microservices, pure libraries, well-structured frontends. But much of the real work of software happens inside **strongly opinionated frameworks**: Odoo, Django, Rails, Webmin, WordPress, Drupal, Spring Boot, Laravel, and many others. These frameworks impose their own way of organizing code, their own extension mechanisms, their own coupled ORM (when applicable), their own testing patterns. CDAD works perfectly well inside these frameworks, but requires some adaptations to the concrete materialization of the principles.
 
-Este capítulo discute primero qué características de los frameworks opinados rompen las suposiciones del documento "estándar", después presenta cuatro casos de estudio en distintos frameworks y lenguajes (Odoo en Python, Django en Python, Rails en Ruby, Webmin en Perl), y cierra con una heurística general para adaptar CDAD a frameworks que el documento no cubre explícitamente. Todos los frameworks usados como ejemplo son software libre.
+This chapter first discusses which characteristics of opinionated frameworks break the assumptions of the "standard" document, then presents four case studies in different frameworks and languages (Odoo in Python, Django in Python, Rails in Ruby, Webmin in Perl), and closes with a general heuristic for adapting CDAD to frameworks the document does not explicitly cover. All the frameworks used as examples are free software.
 
-### 11.1 Qué se rompe y qué se mantiene
+### 11.1 What breaks and what is preserved
 
-Los frameworks opinados tienen, casi por definición, las siguientes propiedades:
+Opinionated frameworks have, almost by definition, the following properties:
 
-- **ORM acoplado al modelo de dominio.** El modelo no es una clase pura que después se mapea a la base de datos; el modelo *es* una entidad ORM que conoce la base de datos por construcción. Heredar de `models.Model` (Django, Odoo), `ApplicationRecord` (Rails) o equivalente trae automáticamente conexión a DB, validaciones, ciclo de vida, y una superficie de API enorme.  
+- **ORM coupled to the domain model.** The model is not a pure class that is later mapped to the database; the model *is* an ORM entity that knows the database by construction. Inheriting from `models.Model` (Django, Odoo), `ApplicationRecord` (Rails) or equivalent automatically brings DB connection, validations, lifecycle, and an enormous API surface.  
     
-- **Mecanismos de extensión ad-hoc.** En lugar de inyección de dependencias por interfaz, hay `_inherit` (Odoo), `class_eval` y monkey-patching (Rails), middleware y signals (Django), hooks y filtros (WordPress). Estos mecanismos son perfectamente válidos en su contexto, pero no se prestan a contratos verificables vía `Protocol` o `interface`.  
+- **Ad-hoc extension mechanisms.** Instead of dependency injection by interface, there is `_inherit` (Odoo), `class_eval` and monkey-patching (Rails), middleware and signals (Django), hooks and filters (WordPress). These mechanisms are perfectly valid in their context, but do not lend themselves to verifiable contracts via `Protocol` or `interface`.  
     
-- **Convenciones implícitas que el framework asume.** Rails tiene convention over configuration; Django asume cierta organización de apps; Odoo asume cierta estructura de manifest. Saltarse las convenciones es técnicamente posible pero pelearse con el framework.  
+- **Implicit conventions the framework assumes.** Rails has convention over configuration; Django assumes a certain organization of apps; Odoo assumes a certain manifest structure. Breaking the conventions is technically possible but fighting the framework.  
     
-- **Testing infrastructure provista por el framework.** En lugar de pytest puro, usás `TestCase` de Django con su test runner, `Minitest`/`RSpec` con fixtures de Rails, `TransactionCase`/`HttpCase` de Odoo. Estas clases traen setup/teardown, transacciones automáticas, fixtures, y patrones específicos.
+- **Testing infrastructure provided by the framework.** Instead of pure pytest, you use Django's `TestCase` with its test runner, `Minitest`/`RSpec` with Rails fixtures, Odoo's `TransactionCase`/`HttpCase`. These classes bring setup/teardown, automatic transactions, fixtures, and specific patterns.
 
-**Qué cambia en CDAD ante estas propiedades.** Tres principios necesitan adaptarse:
+**What changes in CDAD in the face of these properties.** Three principles need adaptation:
 
-*Principio 2 (contratos verificables).* No siempre es viable expresar contratos como `Protocol` o `interface` formal. La adaptación es expresar los contratos como **tests sobre comportamiento del modelo extendido o el endpoint expuesto**: en lugar de "todas las implementaciones de `IKnapsackSolver` cumplen postcondición X", el contrato se vuelve "todas las extensiones de `sale.order` que agregan método `confirm()` cumplen postcondición Y, verificado por test parametrizado sobre la herencia".
+*Principle 2 (verifiable contracts).* It is not always viable to express contracts as a formal `Protocol` or `interface`. The adaptation is to express the contracts as **tests over the behavior of the extended model or the exposed endpoint**: instead of "all implementations of `IKnapsackSolver` satisfy postcondition X", the contract becomes "all extensions of `sale.order` that add a `confirm()` method satisfy postcondition Y, verified by a parameterized test over the inheritance".
 
-*Principio 3 (sesiones aisladas).* La idea se mantiene, pero los permisos por glob pattern son más finos. En Odoo, querés que el `test-writer` lea solo `models/`, `tests/`, y el manifest, pero no las views XML donde se podría inferir comportamiento. En Django, querés que lea `models.py`, `serializers.py`, `tests/`, pero no `views.py`.
+*Principle 3 (isolated sessions).* The idea is preserved, but the permissions by glob pattern are finer. In Odoo, you want the `test-writer` to read only `models/`, `tests/`, and the manifest, but not the XML views where behavior could be inferred. In Django, you want it to read `models.py`, `serializers.py`, `tests/`, but not `views.py`.
 
-*Principio 4 (TDD con Ley de Hierro).* Se mantiene literal, pero el "test que falla por la razón correcta" tiene un ritual más pesado: levantar la base de datos de test, correr migraciones, instanciar el framework. Las herramientas QA del framework (pylint-odoo, django-stubs, rubocop-rails) toman el rol que en CDAD genérico cumple `import-linter`.
+*Principle 4 (TDD with the Iron Law).* It is preserved literally, but the "test that fails for the right reason" has a heavier ritual: bringing up the test database, running migrations, instantiating the framework. The framework's QA tools (pylint-odoo, django-stubs, rubocop-rails) take the role that `import-linter` plays in generic CDAD.
 
-**Qué se mantiene intacto.** Los otros tres principios no requieren adaptación:
+**What stays intact.** The other three principles require no adaptation:
 
-- Principio 1 (spec antes que código): igual de válido, igual de necesario.  
-- Principio 5 (Memory Bank persistente): igual de válido, igual de necesario; el Memory Bank de un proyecto Odoo o Django se ve idéntico al de cualquier otro proyecto.  
-- Las cinco etapas del ciclo (descubrimiento, spec, TDD anti-trampa, review, merge) se aplican igual.
+- Principle 1 (spec before code): equally valid, equally necessary.  
+- Principle 5 (persistent Memory Bank): equally valid, equally necessary; the Memory Bank of an Odoo or Django project looks identical to that of any other project.  
+- The five stages of the cycle (discovery, spec, anti-gaming TDD, review, merge) are applied the same way.
 
-Y todos los anti-patrones del capítulo 12 siguen siendo anti-patrones acá.
+And all the anti-patterns of chapter 12 are still anti-patterns here.
 
-### 11.2 Caso de estudio 1 — Odoo
+### 11.2 Case study 1 — Odoo
 
-Odoo es un framework ERP de Python con una arquitectura particular: todo el dominio se modela como clases que heredan de `models.Model`, con un ORM propietario, mecanismo de herencia múltiple por nombre (`_inherit`), descriptors específicos para campos, vistas declarativas en XML, sistema de permisos basado en records y grupos, y un manifest por módulo. El uso típico es construir módulos custom que extienden modelos del core o módulos OCA (Odoo Community Association).
+Odoo is a Python ERP framework with a particular architecture: the whole domain is modeled as classes that inherit from `models.Model`, with a proprietary ORM, a multiple-inheritance-by-name mechanism (`_inherit`), specific field descriptors, declarative XML views, a permission system based on records and groups, and a manifest per module. The typical use is building custom modules that extend core models or OCA modules (Odoo Community Association).
 
-**Qué rompe las suposiciones del documento estándar.**
+**What breaks the assumptions of the standard document.**
 
-- No hay manera limpia de aplicar `import-linter` ortodoxo. Los modelos importan del ORM del core constantemente; las vistas referencian modelos por string; el `self.env` es ubicuo y atraviesa todas las capas.  
-- Las "interfaces" no son Python `Protocol`; son patrones de `_inherit` que extienden modelos existentes. La superficie de extensión está definida por los métodos públicos de los modelos del core.  
-- Los tests usan `TransactionCase` o `HttpCase`, con setup que depende del registry de Odoo. No se pueden correr como pytest puro sin levantar el framework.  
-- El manifest (`__manifest__.py`) declara dependencias entre módulos; cambios mal hechos rompen el orden de carga.
+- There is no clean way to apply orthodox `import-linter`. Models import from the core ORM constantly; views reference models by string; `self.env` is ubiquitous and crosses all layers.  
+- The "interfaces" are not Python `Protocol`s; they are `_inherit` patterns that extend existing models. The extension surface is defined by the public methods of the core models.  
+- Tests use `TransactionCase` or `HttpCase`, with setup that depends on Odoo's registry. They cannot be run as pure pytest without bringing up the framework.  
+- The manifest (`__manifest__.py`) declares dependencies between modules; badly made changes break the loading order.
 
-**Adaptaciones recomendadas.**
+**Recommended adaptations.**
 
-*Herramienta QA esencial: pylint-odoo (OCA).* La OCA mantiene `pylint-odoo`, un plugin de pylint con checks específicos para Odoo: detección de campos sin `string`, traducciones faltantes, `sql_constraint` mal definidos, métodos `compute` sin `@api.depends`, dependencias en manifest mal declaradas, y muchos más. **En proyectos Odoo, pylint-odoo no es opcional**: cumple el rol que `import-linter` cumple en proyectos genéricos: enforzar reglas estructurales que el agente de IA no conoce de oficio. Configuración mínima:
+*Essential QA tool: pylint-odoo (OCA).* The OCA maintains `pylint-odoo`, a pylint plugin with checks specific to Odoo: detection of fields without `string`, missing translations, badly defined `sql_constraint`s, `compute` methods without `@api.depends`, badly declared manifest dependencies, and many more. **In Odoo projects, pylint-odoo is not optional**: it fulfills the role that `import-linter` fulfills in generic projects: enforcing structural rules the AI agent does not know by trade. Minimal configuration:
 
 \# pyproject.toml
 
@@ -2073,13 +2094,13 @@ enable \= \[
 
     "external-request-timeout",
 
-    \# ... (lista completa según necesidad del proyecto)
+    \# ... (complete list according to the project's needs)
 
 \]
 
-El reviewer (etapa 4\) y el CI (etapa 5\) ejecutan `pylint --load-plugins=pylint_odoo` sobre los módulos modificados como parte del pipeline obligatorio.
+The reviewer (stage 4) and CI (stage 5) run `pylint --load-plugins=pylint_odoo` over the modified modules as part of the mandatory pipeline.
 
-*Contratos verificables como tests sobre el modelo extendido.* En lugar de `Protocol`, expresás el contrato como una clase base abstracta de tests parametrizados que se ejecuta contra cualquier extensión del modelo:
+*Verifiable contracts as tests over the extended model.* Instead of `Protocol`, you express the contract as an abstract base class of parameterized tests that is executed against any extension of the model:
 
 \# tests/contracts/test\_sale\_order\_confirm\_contract.py
 
@@ -2087,13 +2108,13 @@ from odoo.tests.common import TransactionCase
 
 class SaleOrderConfirmContract(TransactionCase):
 
-    """Contrato: cualquier extensión que sobreescriba sale.order.action\_confirm()
+    """Contract: any extension that overrides sale.order.action\_confirm()
 
-    debe preservar estas postcondiciones.
+    must preserve these postconditions.
 
     
 
-    Subclases concretas: una por cada extensión que el módulo introduce.
+    Concrete subclasses: one per extension the module introduces.
 
     """
 
@@ -2103,15 +2124,15 @@ class SaleOrderConfirmContract(TransactionCase):
 
         super().setUp()
 
-        self.order \= self.\_build\_test\_order()  \# subclase puede customizar
+        self.order \= self.\_build\_test\_order()  \# subclass may customize
 
     
 
     def \_build\_test\_order(self):
 
-        \# default; las subclases pueden overridear si su extensión 
+        \# default; subclasses may override if their extension 
 
-        \# requiere setup específico
+        \# requires specific setup
 
         ...
 
@@ -2143,7 +2164,7 @@ class SaleOrderConfirmContract(TransactionCase):
 
         self.assertLess(self.\_get\_total\_available\_stock(), initial\_stock)
 
-Cada extensión registra una subclase concreta que activa los tests del contrato:
+Each extension registers a concrete subclass that activates the contract tests:
 
 \# modules/custom\_sale/tests/test\_custom\_sale\_contract.py
 
@@ -2155,13 +2176,13 @@ from odoo.addons.contracts.tests.test\_sale\_order\_confirm\_contract import (
 
 class TestCustomSaleContract(SaleOrderConfirmContract):
 
-    """Verifica que custom\_sale.action\_confirm() respeta el contrato base."""
+    """Verifies that custom\_sale.action\_confirm() respects the base contract."""
 
-    \# No necesita más; hereda los tests
+    \# Nothing else needed; it inherits the tests
 
-Cuando se agrega una nueva extensión, basta con crear su subclase y los tests del contrato se ejecutan automáticamente. Es exactamente el mismo principio de los `parametrize` en CDAD genérico, adaptado a la herencia de Odoo.
+When a new extension is added, it is enough to create its subclass and the contract tests run automatically. It is exactly the same principle as the `parametrize` in generic CDAD, adapted to Odoo's inheritance.
 
-*Permisos granulares para sub-agentes.*
+*Granular permissions for sub-agents.*
 
 "odoo-test-writer": {
 
@@ -2173,7 +2194,7 @@ Cuando se agrega una nueva extensión, basta con crear su subclase y los tests d
 
       "docs/specs/\*\*",
 
-      "modules/\*/models/\*\*",  // necesita ver firmas y herencia, no implementación
+      "modules/\*/models/\*\*",  // needs to see signatures and inheritance, not implementation
 
       "modules/\*/\_\_manifest\_\_.py",
 
@@ -2211,33 +2232,33 @@ Cuando se agrega una nueva extensión, basta con crear su subclase y los tests d
 
 }
 
-Notar que el implementer tiene `deny_edit` sobre el manifest: cambios al manifest son decisiones estructurales que requieren tu aprobación explícita, no las hace el agente solo.
+Note that the implementer has `deny_edit` on the manifest: manifest changes are structural decisions that require your explicit approval, the agent does not make them on its own.
 
-*Adaptaciones operativas.*
+*Operational adaptations.*
 
-- El AGENTS.md del proyecto incluye una sección "Convenciones Odoo" con: cómo nombrar campos (`x_` para custom, `name` para descriptivos), cómo organizar módulos, cuándo usar `_inherit` vs `_inherits` vs delegation, qué métodos del core son seguros de extender y cuáles no.  
-- El `docs/landscape.md` mapea la versión específica de Odoo en uso, módulos OCA instalados, customizaciones del cliente que afectan al core, y decisiones de hosting (Odoo.sh, on-premise, Docker).  
-- Los tests usan `TransactionCase` por default (rollback automático) y solo `HttpCase` cuando el flujo realmente requiere HTTP (tipo controllers o widgets JS).
+- The project's AGENTS.md includes a "Odoo conventions" section with: how to name fields (`x_` for custom, `name` for descriptive), how to organize modules, when to use `_inherit` vs `_inherits` vs delegation, which core methods are safe to extend and which are not.  
+- The `docs/landscape.md` maps the specific Odoo version in use, installed OCA modules, client customizations that affect the core, and hosting decisions (Odoo.sh, on-premise, Docker).  
+- Tests use `TransactionCase` by default (automatic rollback) and only `HttpCase` when the flow really requires HTTP (controllers or JS widgets).
 
-### 11.3 Caso de estudio 2 — Django
+### 11.3 Case study 2 — Django
 
-Django es un framework web de Python con una filosofía "batteries included": ORM propio (basado en active record con managers), sistema de apps modulares, middleware, signals, sistema de templates, admin generado automáticamente, autenticación incorporada. La curva de adopción es más suave que Odoo, pero comparte muchas de las mismas tensiones con CDAD genérico.
+Django is a Python web framework with a "batteries included" philosophy: its own ORM (based on active record with managers), a system of modular apps, middleware, signals, a template system, an automatically generated admin, built-in authentication. The adoption curve is smoother than Odoo's, but it shares many of the same tensions with generic CDAD.
 
-**Qué rompe las suposiciones.**
+**What breaks the assumptions.**
 
-- Los modelos heredan de `models.Model` y traen acoplamiento con la DB por construcción. Querer un dominio puro y una capa de persistencia separada es nadar contra la corriente.  
-- Las views (en sentido Django: controllers) tienen acceso directo al request, los modelos, el ORM, la session, todo. Aplicar arquitectura hexagonal estricta significa pelearse con la convención.  
-- Los tests usan `django.test.TestCase` con su propio ciclo de vida (transactional rollback, fixtures, client de pruebas). Pytest puro funciona pero requiere `pytest-django`.
+- Models inherit from `models.Model` and carry DB coupling by construction. Wanting a pure domain and a separate persistence layer is swimming against the current.  
+- The views (in the Django sense: controllers) have direct access to the request, the models, the ORM, the session, everything. Applying strict hexagonal architecture means fighting the convention.  
+- Tests use `django.test.TestCase` with its own lifecycle (transactional rollback, fixtures, test client). Pure pytest works but requires `pytest-django`.
 
-**Adaptaciones recomendadas.**
+**Recommended adaptations.**
 
-*Herramientas QA específicas:*
+*Specific QA tools:*
 
-- **`django-stubs`** para mypy: agrega type hints específicos de Django (QuerySets, Managers, fields). Sin esto, mypy no detecta errores comunes como llamar a `.filter()` en algo que no es un Manager.  
-- **`pylint-django`**: análogo a `pylint-odoo`. Detecta problemas específicos del framework: campos sin `verbose_name`, modelos sin `__str__`, `Meta` mal configurado.  
-- **`django-test-plus`**: extiende los tests con assertions específicos (assertions de status, assertions de redirects, contextos de templates).
+- **`django-stubs`** for mypy: adds Django-specific type hints (QuerySets, Managers, fields). Without this, mypy does not detect common errors like calling `.filter()` on something that is not a Manager.  
+- **`pylint-django`**: the analog of `pylint-odoo`. Detects framework-specific problems: fields without `verbose_name`, models without `__str__`, badly configured `Meta`.  
+- **`django-test-plus`**: extends the tests with specific assertions (status assertions, redirect assertions, template contexts).
 
-*Contratos verificables como tests parametrizados sobre managers o views.* Patrón análogo al de Odoo:
+*Verifiable contracts as parameterized tests over managers or views.* Pattern analogous to Odoo's:
 
 \# core/tests/contracts/test\_search\_manager\_contract.py
 
@@ -2245,15 +2266,15 @@ from django.test import TestCase
 
 class SearchManagerContract:
 
-    """Contrato: cualquier Manager que implemente .search(query) debe cumplir.
+    """Contract: any Manager implementing .search(query) must comply.
 
     
 
-    Subclases concretas: una por cada modelo que tenga search.
+    Concrete subclasses: one per model that has search.
 
     """
 
-    model\_class \= None  \# subclase setea
+    model\_class \= None  \# subclass sets it
 
     
 
@@ -2305,7 +2326,7 @@ class CategorySearchContractTest(SearchManagerContract, TestCase):
 
     model\_class \= Category
 
-*Boundaries adaptadas.* Aunque no podés enforzar arquitectura hexagonal pura, podés enforzar reglas razonables con `import-linter` (sí, funciona en Django con cuidado):
+*Adapted boundaries.* Although you cannot enforce pure hexagonal architecture, you can enforce reasonable rules with `import-linter` (yes, it works in Django with care):
 
 \[importlinter\]
 
@@ -2321,7 +2342,7 @@ source\_modules \= myproject.apps.billing
 
 forbidden\_modules \= myproject.apps.inventory.models, myproject.apps.users.models
 
-\# obliga a que apps se comuniquen vía services o signals, no imports directos
+\# forces apps to communicate via services or signals, not direct imports
 
 \[importlinter:contract:2\]
 
@@ -2333,9 +2354,9 @@ source\_modules \= myproject.apps.\*.views
 
 forbidden\_modules \= django.db.models
 
-\# fuerza a que las views usen managers/services, no .filter() directo
+\# forces views to use managers/services, not direct .filter()
 
-*Permisos granulares para sub-agentes.*
+*Granular permissions for sub-agents.*
 
 "django-test-writer": {
 
@@ -2347,7 +2368,7 @@ forbidden\_modules \= django.db.models
 
       "docs/specs/\*\*",
 
-      "myproject/apps/\*/models.py",  // ver schema, no lógica de views
+      "myproject/apps/\*/models.py",  // see schema, not view logic
 
       "myproject/apps/\*/serializers.py",
 
@@ -2361,33 +2382,33 @@ forbidden\_modules \= django.db.models
 
 }
 
-### 11.4 Caso de estudio 3 — Ruby on Rails
+### 11.4 Case study 3 — Ruby on Rails
 
-Rails es un framework web de Ruby con la filosofía más extrema de "convention over configuration": ActiveRecord como ORM, controladores RESTful por convención, callbacks de modelo, concerns para mixins, y una cultura fuerte de metaprogramación. CDAD aplica perfectamente, pero requiere las mayores adaptaciones porque el framework abraza patrones (callbacks, monkey-patching) que en CDAD genérico evitarías.
+Rails is a Ruby web framework with the most extreme "convention over configuration" philosophy: ActiveRecord as ORM, RESTful controllers by convention, model callbacks, concerns for mixins, and a strong culture of metaprogramming. CDAD applies perfectly, but requires the greatest adaptations because the framework embraces patterns (callbacks, monkey-patching) that you would avoid in generic CDAD.
 
-**Qué rompe las suposiciones.**
+**What breaks the assumptions.**
 
-- ActiveRecord acopla modelo y persistencia hasta el extremo. Todo el dominio "vive" en `app/models/`.  
-- Callbacks (`before_save`, `after_create`) introducen lógica que se ejecuta automáticamente y que no aparece explícita en los tests si no la buscás.  
-- `class_eval` y reapertura de clases hacen que la "definición de un modelo" pueda estar en cinco archivos distintos, todos cargados implícitamente.  
-- Tests usan Minitest o RSpec con fixtures (estáticas) o factories (FactoryBot). Setup más rico, semántica distinta a pytest.
+- ActiveRecord couples model and persistence to the extreme. The whole domain "lives" in `app/models/`.  
+- Callbacks (`before_save`, `after_create`) introduce logic that runs automatically and does not appear explicitly in the tests unless you look for it.  
+- `class_eval` and class reopening make it possible for the "definition of a model" to be spread across five different files, all implicitly loaded.  
+- Tests use Minitest or RSpec with fixtures (static) or factories (FactoryBot). Richer setup, different semantics from pytest.
 
-**Adaptaciones recomendadas.**
+**Recommended adaptations.**
 
-*Herramientas QA específicas:*
+*Specific QA tools:*
 
-- **`rubocop-rails`**: linter con cops específicos de Rails. Detecta callbacks pesados, queries N+1, validaciones mal escritas, migraciones reversibles.  
-- **`brakeman`**: análisis estático de seguridad específico de Rails. Detecta SQL injection, mass assignment vulnerabilities, command injection.  
-- **`bullet`**: detecta queries N+1 en runtime durante los tests.  
-- **`sorbet` o `rbs`**: type checking gradual para Ruby; equivalente conceptual a mypy.
+- **`rubocop-rails`**: linter with Rails-specific cops. Detects heavy callbacks, N+1 queries, badly written validations, reversible migrations.  
+- **`brakeman`**: Rails-specific static security analysis. Detects SQL injection, mass assignment vulnerabilities, command injection.  
+- **`bullet`**: detects N+1 queries at runtime during the tests.  
+- **`sorbet` or `rbs`**: gradual type checking for Ruby; conceptual equivalent of mypy.
 
-*Contratos verificables como shared examples (RSpec) o módulos de test (Minitest).* Patrón análogo:
+*Verifiable contracts as shared examples (RSpec) or test modules (Minitest).* Analogous pattern:
 
 \# spec/contracts/billable\_contract\_spec.rb
 
 RSpec.shared\_examples "a billable resource" do
 
-  \# Contrato: cualquier modelo que incluye Billable concern debe cumplir
+  \# Contract: any model including the Billable concern must comply
 
   
 
@@ -2441,35 +2462,35 @@ RSpec.describe Subscription do
 
 end
 
-*Boundaries con packwerk.* Rails tiene su propio equivalente a `import-linter`: `packwerk` (de Shopify), que enforce boundaries entre "packages" del monolito. Es esencial cuando el proyecto crece más allá de unas pocas decenas de modelos.
+*Boundaries with packwerk.* Rails has its own equivalent of `import-linter`: `packwerk` (from Shopify), which enforces boundaries between "packages" of the monolith. It is essential when the project grows beyond a few dozen models.
 
-*Adaptaciones operativas.*
+*Operational adaptations.*
 
-- Los callbacks de modelo se documentan explícitamente en el spec de la feature: si una postcondición se cumple por un `after_save`, el spec debe decirlo. Esto evita que el implementer agregue un callback "invisible" que el reviewer no detecta.  
-- Las migraciones siempre se hacen reversibles (`change` simétrico o `up`/`down`), enforced por `rubocop-rails`.  
-- Los tests usan FactoryBot con factories explícitas; los fixtures globales se evitan porque acoplan tests que deberían ser independientes.
+- Model callbacks are documented explicitly in the feature's spec: if a postcondition is satisfied by an `after_save`, the spec must say so. This prevents the implementer from adding an "invisible" callback the reviewer does not detect.  
+- Migrations are always made reversible (symmetric `change` or `up`/`down`), enforced by `rubocop-rails`.  
+- Tests use FactoryBot with explicit factories; global fixtures are avoided because they couple tests that should be independent.
 
-### 11.5 Caso de estudio 4 — Webmin
+### 11.5 Case study 4 — Webmin
 
-Webmin es una herramienta de administración de servidores escrita en Perl, distribuida bajo licencia BSD-like, con un sistema de módulos donde cada módulo administra un servicio del sistema (Apache, BIND, MySQL, usuarios Unix, cuotas de disco, etc.). Su arquitectura es muy distinta a los tres casos anteriores: no tiene ORM (los "datos" son archivos de configuración del sistema operativo), su mecanismo de extensión son módulos con estructura de directorios bien definida, y la mayor parte de la "lógica" son scripts CGI que renderizan HTML y manipulan archivos del sistema. El uso típico de CDAD acá aparece cuando un sysadmin o equipo construye módulos custom de Webmin para administrar servicios propios o configuraciones específicas del cliente.
+Webmin is a server administration tool written in Perl, distributed under a BSD-like license, with a module system where each module administers one system service (Apache, BIND, MySQL, Unix users, disk quotas, etc.). Its architecture is very different from the three previous cases: it has no ORM (the "data" are the operating system's configuration files), its extension mechanism is modules with a well-defined directory structure, and most of the "logic" are CGI scripts that render HTML and manipulate system files. The typical use of CDAD here appears when a sysadmin or team builds custom Webmin modules to administer their own services or client-specific configurations.
 
-**Qué rompe las suposiciones del documento estándar.**
+**What breaks the assumptions of the standard document.**
 
-- Perl como lenguaje principal: el ecosistema de tooling es maduro pero diferente al de Python, Ruby o Java. Las técnicas de typing estático están disponibles (`Type::Tiny`, `Moose` con type constraints) pero no son la norma cultural.  
-- No hay ORM ni capa de modelo: el "dominio" son archivos de configuración (`/etc/apache2/apache2.conf`, `/etc/bind/named.conf`, etc.) que se parsean, modifican y reescriben. Las "entidades" son funciones Perl que abstraen estos archivos.  
-- Mecanismo de extensión por estructura de directorios: cada módulo es un directorio con archivos `.cgi` (acciones), `*-lib.pl` (librerías compartidas), `module.info` (metadata), `config-*` (configuración por OS), y archivos de traducción en `lang/`. No hay herencia tipo `_inherit`; se extiende sobreescribiendo o agregando archivos.  
-- Privilegios elevados por construcción: Webmin corre como root (o con sudo extensivo). Cualquier bug es potencialmente un riesgo de seguridad serio. Esto eleva el costo de error y, por lo tanto, la matriz observable de la sección 1.4 casi siempre puntúa alto en módulos de Webmin.
+- Perl as the main language: the tooling ecosystem is mature but different from Python's, Ruby's or Java's. Static typing techniques are available (`Type::Tiny`, `Moose` with type constraints) but are not the cultural norm.  
+- There is no ORM or model layer: the "domain" is configuration files (`/etc/apache2/apache2.conf`, `/etc/bind/named.conf`, etc.) that get parsed, modified and rewritten. The "entities" are Perl functions that abstract these files.  
+- Extension mechanism by directory structure: each module is a directory with `.cgi` files (actions), `*-lib.pl` (shared libraries), `module.info` (metadata), `config-*` (per-OS configuration), and translation files in `lang/`. There is no `_inherit`-style inheritance; you extend by overriding or adding files.  
+- Elevated privileges by construction: Webmin runs as root (or with extensive sudo). Any bug is potentially a serious security risk. This raises the cost of error and, therefore, the observable matrix of section 1.4 almost always scores high for Webmin modules.
 
-**Adaptaciones recomendadas.**
+**Recommended adaptations.**
 
-*Herramientas QA esenciales:*
+*Essential QA tools:*
 
-- **`Perl::Critic`** con perfil estricto (`--severity 1`): linter genérico de Perl con cientos de policies. No es específico de Webmin pero es el equivalente más cercano. Permite policies custom escritas en Perl que sí pueden enforzar convenciones específicas del proyecto (ej: prohibir `system()` sin escape de argumentos, prohibir `open` sin tres argumentos, etc.).  
-- **`Perl::Tidy`** para formato consistente.  
-- **`Devel::Cover`** para coverage de tests.  
-- **Policies custom de `Perl::Critic` para convenciones Webmin específicas.** Esto cumple el rol que `pylint-odoo` cumple en Odoo: es donde encapsulás el conocimiento del framework. Por ejemplo, una policy custom que prohíba leer archivos de configuración sin pasar por las funciones `lock_file`/`unlock_file` de la librería de Webmin (`web-lib-funcs.pl`), o que verifique que cualquier archivo `.cgi` empiece con la inicialización estándar (`require './something-lib.pl'; &init_config(); &ReadParse();`).
+- **`Perl::Critic`** with a strict profile (`--severity 1`): a generic Perl linter with hundreds of policies. It is not Webmin-specific but is the closest equivalent. It allows custom policies written in Perl that can enforce project-specific conventions (e.g. forbid `system()` without argument escaping, forbid `open` without three arguments, etc.).  
+- **`Perl::Tidy`** for consistent formatting.  
+- **`Devel::Cover`** for test coverage.  
+- **Custom `Perl::Critic` policies for Webmin-specific conventions.** This fulfills the role that `pylint-odoo` fulfills in Odoo: it is where you encapsulate the knowledge of the framework. For example, a custom policy that forbids reading configuration files without going through the `lock_file`/`unlock_file` functions of Webmin's library (`web-lib-funcs.pl`), or that verifies any `.cgi` file starts with the standard initialization (`require './something-lib.pl'; &init_config(); &ReadParse();`).
 
-\# .perlcriticrc del proyecto
+\# .perlcriticrc of the project
 
 severity \= 1
 
@@ -2485,7 +2506,7 @@ verbose \= 8
 
 \[ValuesAndExpressions::ProhibitInterpolationOfLiterals\]
 
-\# Policies custom (en lib/Perl/Critic/Policy/Webmin/)
+\# Custom policies (in lib/Perl/Critic/Policy/Webmin/)
 
 \[Webmin::RequireLockFileForConfig\]
 
@@ -2493,7 +2514,7 @@ verbose \= 8
 
 \[Webmin::ProhibitDirectSystemCall\]
 
-*Contratos verificables como tests parametrizados sobre archivos de configuración.* En lugar de `Protocol` o herencia, expresás el contrato como un test que verifica que cualquier función del módulo que parsea/serializa archivos de configuración respeta el round-trip:
+*Verifiable contracts as parameterized tests over configuration files.* Instead of `Protocol` or inheritance, you express the contract as a test verifying that any module function that parses/serializes configuration files respects the round-trip:
 
 \# t/contracts/config\_roundtrip.t
 
@@ -2505,9 +2526,9 @@ use Test::More;
 
 use File::Temp qw(tempfile);
 
-\# Cualquier módulo que parsea config files debe registrar su par
+\# Any module that parses config files must register its pair
 
-\# (parser, serializer) en este array
+\# (parser, serializer) in this array
 
 my @config\_handlers \= (
 
@@ -2535,7 +2556,7 @@ my @config\_handlers \= (
 
     },
 
-    \# ... agregás handlers a medida que aparecen módulos
+    \# ... you add handlers as modules show up
 
 );
 
@@ -2561,9 +2582,9 @@ for my $handler (@config\_handlers) {
 
 done\_testing();
 
-Cuando se agrega un nuevo módulo que maneja un nuevo formato de config, registrás el handler en el array y los tests del contrato se ejecutan automáticamente. Es el mismo principio que viste en los otros casos, adaptado a la idiosincrasia Perl/Webmin.
+When a new module handling a new config format is added, you register the handler in the array and the contract tests run automatically. It is the same principle you saw in the other cases, adapted to the Perl/Webmin idiosyncrasy.
 
-*Permisos granulares para sub-agentes.*
+*Granular permissions for sub-agents.*
 
 "webmin-test-writer": {
 
@@ -2575,7 +2596,7 @@ Cuando se agrega un nuevo módulo que maneja un nuevo formato de config, registr
 
       "docs/specs/\*\*",
 
-      "modules/\*/\*-lib.pl",  // ver firmas de librerías, no implementación
+      "modules/\*/\*-lib.pl",  // see library signatures, not implementation
 
       "modules/\*/module.info",
 
@@ -2641,80 +2662,80 @@ Cuando se agrega un nuevo módulo que maneja un nuevo formato de config, registr
 
 }
 
-Como en Odoo el manifest, acá `module.info` y los archivos `config-*` (configuración por sistema operativo) son decisiones estructurales que requieren tu aprobación: el implementer no las toca solo.
+As with the manifest in Odoo, here `module.info` and the `config-*` files (per-operating-system configuration) are structural decisions that require your approval: the implementer does not touch them on its own.
 
-*Adaptaciones operativas específicas.*
+*Specific operational adaptations.*
 
-- **Tests de seguridad como ciudadanos de primera clase.** Dado que Webmin corre con privilegios elevados, cada módulo nuevo o modificado debe tener al menos un test que verifique: (a) que las inputs del usuario se escapan antes de pasar a `system()` o construir comandos shell, (b) que se respeta el sistema de ACLs de Webmin (`&foreign_available()` y `&can_access_*()`), (c) que se usa `&lock_file()` antes de modificar archivos del sistema.  
-- **El AGENTS.md del proyecto** incluye una sección "Convenciones Webmin" con: cómo nombrar funciones (`module_name::function_name`), uso obligatorio de `&error()` para terminar con error, uso de `ui_*` para generar HTML (no inline), patrón de internacionalización con `&text()` y archivos `lang/`.  
-- **El `docs/landscape.md`** mapea la versión específica de Webmin en uso (las API de `web-lib-funcs.pl` cambian entre majors), módulos del core de los que dependés, y el sistema operativo target (las funciones de manipulación de servicios cambian entre Debian/RedHat/BSD).  
-- **Spec con foco en idempotencia.** Las operaciones de un módulo Webmin típicamente modifican estado del sistema operativo. Los specs deben explicitar la postcondición de idempotencia ("ejecutar la acción dos veces produce el mismo estado final que ejecutarla una vez"), y los tests deben verificarla.
+- **Security tests as first-class citizens.** Given that Webmin runs with elevated privileges, each new or modified module must have at least one test verifying: (a) that user inputs are escaped before being passed to `system()` or used to build shell commands, (b) that Webmin's ACL system is respected (`&foreign_available()` and `&can_access_*()`), (c) that `&lock_file()` is used before modifying system files.  
+- **The project's AGENTS.md** includes a "Webmin conventions" section with: how to name functions (`module_name::function_name`), mandatory use of `&error()` to terminate with an error, use of `ui_*` to generate HTML (not inline), internationalization pattern with `&text()` and `lang/` files.  
+- **The `docs/landscape.md`** maps the specific Webmin version in use (the APIs of `web-lib-funcs.pl` change between majors), core modules you depend on, and the target operating system (the service manipulation functions change between Debian/RedHat/BSD).  
+- **Spec with focus on idempotence.** The operations of a Webmin module typically modify the operating system's state. Specs must make explicit the idempotence postcondition ("running the action twice produces the same final state as running it once"), and the tests must verify it.
 
-**Nota: por qué Webmin es un caso particularmente claro de la matriz de la sección 1.4.**
+**Note: why Webmin is a particularly clear case of the matrix in section 1.4.**
 
-Casi cualquier feature de un módulo Webmin puntúa alto en los tres ejes: vida útil larga (los módulos se mantienen años), costo de bug alto (privilegios root), probabilidad de evolución alta (los servicios que administra evolucionan). Es prácticamente siempre territorio de "CDAD completo" según la matriz. Esto hace de Webmin un buen recordatorio de que la matriz no es solo para decidir si bajar el rigor; también confirma cuándo aplicarlo en su totalidad.
+Almost any feature of a Webmin module scores high on the three axes: long lifespan (the modules are maintained for years), high bug cost (root privileges), high probability of evolution (the services it administers evolve). It is practically always "full CDAD" territory according to the matrix. This makes Webmin a good reminder that the matrix is not only for deciding whether to lower the rigor; it also confirms when to apply it in full.
 
-### 11.6 Heurística general para frameworks no cubiertos
+### 11.6 General heuristic for uncovered frameworks
 
-Si trabajás con un framework libre que el documento no cubre explícitamente (Spring Boot, Laravel, WordPress, Drupal, Plone, NestJS, ASP.NET Core con Mono, etc.), la heurística para adaptar CDAD es la siguiente:
+If you work with a free framework the document does not explicitly cover (Spring Boot, Laravel, WordPress, Drupal, Plone, NestJS, ASP.NET Core with Mono, etc.), the heuristic for adapting CDAD is the following:
 
-1. **Identificá el linter específico del framework.** Casi todos los frameworks opinados tienen una herramienta análoga a `pylint-odoo`/`pylint-django`/`rubocop-rails`/policies custom de `Perl::Critic`. Para Spring Boot: `spring-javaformat` \+ `archunit`. Para Laravel: `larastan` \+ `php-cs-fixer` con preset Laravel. Para WordPress: `phpcs` con `WordPress-Coding-Standards`. Para Drupal: `drupal-check` \+ reglas de PHPStan específicas. Para Plone: `plone.recipe.codeanalysis`. Esta herramienta cumple el rol de `import-linter` en CDAD genérico: es no opcional.  
+1. **Identify the framework-specific linter.** Almost all opinionated frameworks have a tool analogous to `pylint-odoo`/`pylint-django`/`rubocop-rails`/custom `Perl::Critic` policies. For Spring Boot: `spring-javaformat` \+ `archunit`. For Laravel: `larastan` \+ `php-cs-fixer` with the Laravel preset. For WordPress: `phpcs` with `WordPress-Coding-Standards`. For Drupal: `drupal-check` \+ PHPStan-specific rules. For Plone: `plone.recipe.codeanalysis`. This tool fulfills the role of `import-linter` in generic CDAD: it is not optional.  
      
-2. **Identificá el mecanismo de extensión nativo del framework.** En Odoo es `_inherit`, en Rails son concerns y callbacks, en Django son signals y middleware, en Webmin es estructura de directorios \+ librerías compartidas, en Spring son `@Configuration` y AOP, en WordPress son hooks/filters, en Drupal son hooks. El "contrato verificable" se materializa como tests parametrizados sobre extensiones de ese mecanismo, no como `Protocol` formal.  
+2. **Identify the framework's native extension mechanism.** In Odoo it is `_inherit`, in Rails it is concerns and callbacks, in Django it is signals and middleware, in Webmin it is directory structure \+ shared libraries, in Spring it is `@Configuration` and AOP, in WordPress it is hooks/filters, in Drupal it is hooks. The "verifiable contract" materializes as parameterized tests over extensions of that mechanism, not as a formal `Protocol`.  
      
-3. **Identificá las clases base de testing del framework.** TransactionCase/HttpCase en Odoo, TestCase de Django, ActiveSupport::TestCase en Rails, Test::More \+ módulos del proyecto en Webmin/Perl, `@SpringBootTest` en Spring, `TestCase` con `RefreshDatabase` en Laravel, `WP_UnitTestCase` en WordPress. Tus tests heredan de esas clases o usan esos módulos, no son tests "puros" del lenguaje.  
+3. **Identify the framework's base testing classes.** TransactionCase/HttpCase in Odoo, Django's TestCase, ActiveSupport::TestCase in Rails, Test::More \+ the project's modules in Webmin/Perl, `@SpringBootTest` in Spring, `TestCase` with `RefreshDatabase` in Laravel, `WP_UnitTestCase` in WordPress. Your tests inherit from those classes or use those modules; they are not the language's "pure" tests.  
      
-4. **Adaptá los permisos de sub-agentes a la estructura del framework.** Las separaciones que cumplen el principio "test-writer no ve implementación" se materializan según el framework. En Spring: `test-writer` ve interfaces y `@Service` signatures pero no `@Service` bodies. En Laravel: ve `App\Models` y signatures de `App\Services` pero no `app/Services/*` bodies. En WordPress: ve declaraciones de hooks (`add_action`/`add_filter`) registradas pero no las callbacks que implementan la lógica.  
+4. **Adapt the sub-agent permissions to the framework's structure.** The separations that fulfill the "test-writer does not see the implementation" principle materialize according to the framework. In Spring: `test-writer` sees interfaces and `@Service` signatures but not `@Service` bodies. In Laravel: it sees `App\Models` and signatures of `App\Services` but not `app/Services/*` bodies. In WordPress: it sees hook declarations (`add_action`/`add_filter`) registered but not the callbacks implementing the logic.  
      
-5. **Mantené los principios intactos.** Spec antes que código, sesiones aisladas, TDD con Ley de Hierro, Memory Bank persistente, review en dos capas, ciclo de cinco etapas. Lo que se adapta es siempre la materialización técnica, nunca el principio.
+5. **Keep the principles intact.** Spec before code, isolated sessions, TDD with the Iron Law, persistent Memory Bank, two-layer review, the five-stage cycle. What adapts is always the technical materialization, never the principle.
 
-**Para lectores avanzados — Cuando el framework imposibilita un principio**
+**For advanced readers — When the framework makes a principle impossible**
 
-Hay casos donde un principio de CDAD genuinamente no se puede aplicar de manera completa. Ejemplo común en software libre: en plataformas como Drupal con su sistema de configuración exportable (`config/sync/`), o en WordPress con el Customizer y los Block Patterns visuales, gran parte de la "lógica" de presentación y workflow no es código sino configuración declarativa serializada en YAML, JSON o entradas de base de datos. No hay manera limpia de aplicar TDD sobre esa configuración como si fuera código. La respuesta correcta no es abandonar CDAD; es aplicarlo donde el framework lo permite (custom modules, hooks, services, código PHP/Python/Perl) y aceptar que la parte declarativa requiere otras técnicas: testing manual estructurado con scripts de regresión, change sets revisados por pares, sandboxes con datos de regresión que se replayean automáticamente. El documento prefiere este pragmatismo a un purismo que no es aplicable. Lo importante es no usar la existencia de partes declarativas como excusa para relajar CDAD en las partes que sí son código.
+There are cases where a CDAD principle genuinely cannot be applied in full. Common example in free software: on platforms like Drupal with its exportable configuration system (`config/sync/`), or WordPress with the Customizer and the visual Block Patterns, much of the presentation and workflow "logic" is not code but declarative configuration serialized in YAML, JSON or database entries. There is no clean way to apply TDD over that configuration as if it were code. The right answer is not to abandon CDAD; it is to apply it where the framework allows it (custom modules, hooks, services, PHP/Python/Perl code) and accept that the declarative part requires other techniques: structured manual testing with regression scripts, change sets reviewed by peers, sandboxes with regression data replayed automatically. The document prefers this pragmatism to a purism that is not applicable. What matters is not using the existence of declarative parts as an excuse to relax CDAD in the parts that are code.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. ¿Por qué `pylint-odoo` (o el equivalente del framework que uses) es no opcional en proyectos sobre frameworks opinados?  
-2. ¿Cómo se materializa un contrato verificable en Rails sin tener `Protocol` o `interface` formal?  
-3. ¿Qué principios de CDAD se mantienen intactos al pasar a un framework opinado, y cuáles requieren adaptación?
+1. Why is `pylint-odoo` (or the equivalent of the framework you use) not optional on projects over opinionated frameworks?  
+2. How is a verifiable contract materialized in Rails without a formal `Protocol` or `interface`?  
+3. Which CDAD principles stay intact when moving to an opinionated framework, and which require adaptation?
 
-Ver respuestas 
+View answers 
 
-1. Porque cumple el rol que `import-linter` cumple en proyectos genéricos: enforzar automáticamente reglas estructurales del framework que el agente de IA no conoce de oficio (campos sin string, traducciones faltantes, queries inseguras, manifest mal definido, etc.). Sin esa herramienta, el principio de "barreras estructurales que no requieren atención humana" se debilita: muchas reglas del framework quedan dependiendo del juicio del reviewer, que se cansa y se le escapan.  
+1. Because it fulfills the role that `import-linter` fulfills in generic projects: automatically enforcing the framework's structural rules the AI agent does not know by trade (fields without string, missing translations, unsafe queries, badly defined manifest, etc.). Without that tool, the principle of "structural barriers that do not require human attention" weakens: many framework rules end up depending on the reviewer's judgment, which gets tired and lets things slip.  
      
-2. Mediante `shared examples` en RSpec o módulos de test compartidos en Minitest. Definís un set de tests parametrizados que verifican postcondiciones sobre cualquier modelo o resource que cumple el contrato; cada implementación concreta hereda esos tests con un setup específico. Es el mismo principio que `parametrize` en pytest, adaptado al ecosistema Ruby.  
+2. Through `shared examples` in RSpec or shared test modules in Minitest. You define a set of parameterized tests that verify postconditions over any model or resource that complies with the contract; each concrete implementation inherits those tests with a specific setup. It is the same principle as `parametrize` in pytest, adapted to the Ruby ecosystem.  
      
-3. Se mantienen intactos: spec antes que código (principio 1), Memory Bank persistente (principio 5), las cinco etapas del ciclo, todos los anti-patrones documentados. Requieren adaptación: contratos verificables (principio 2, se materializa con tests parametrizados sobre el mecanismo de extensión del framework), sesiones aisladas (principio 3, los permisos por glob se ajustan a la estructura del framework), TDD con Ley de Hierro (principio 4, se mantiene literal pero el ritual del "test que falla por razón correcta" es más pesado por el setup del framework).
+3. They stay intact: spec before code (principle 1), persistent Memory Bank (principle 5), the five stages of the cycle, all the documented anti-patterns. They require adaptation: verifiable contracts (principle 2, materialized as parameterized tests over the framework's extension mechanism), isolated sessions (principle 3, the glob permissions are adjusted to the framework's structure), TDD with the Iron Law (principle 4, preserved literally but the ritual of the "test that fails for the right reason" is heavier due to the framework's setup).
 
 ---
 
-## 12\. Anti-patrones documentados
+## 12\. Documented anti-patterns
 
-Los anti-patrones son tan importantes como los patrones. En este capítulo documentamos los errores más comunes que hemos visto al adoptar CDAD, con el "antes" (qué hace mal) y el "después" (cómo se hace correcto).
+Anti-patterns are as important as patterns. In this chapter we document the most common mistakes we have seen when adopting CDAD, with the "before" (what is done wrong) and the "after" (how it is done correctly).
 
-### 12.1 Anti-patrón: "una sesión para todo"
+### 12.1 Anti-pattern: "one session for everything"
 
-**Síntoma.** El developer (vos) abre una sola sesión con el agente y le pide "implementá la feature X completa, con tests". El agente escribe el spec mentalmente, escribe los tests, escribe el código, todo en la misma conversación.
+**Symptom.** The developer (you) opens a single session with the agent and asks it to "implement feature X in full, with tests". The agent writes the spec mentally, writes the tests, writes the code, all in the same conversation.
 
-**Por qué es problemático.** El agente ve test e implementación al mismo tiempo. Naturalmente los alinea entre sí. Los tests resultantes verifican lo que el código hace, no lo que el spec pide. Si hay un bug en el código, el test no lo detecta porque fue escrito para el código.
+**Why it is problematic.** The agent sees test and implementation at the same time. It naturally aligns them with each other. The resulting tests verify what the code does, not what the spec asks for. If there is a bug in the code, the test does not detect it because it was written for the code.
 
-**Cómo se hace bien.** Sesiones separadas: una para el spec, una para el test-writer, una para el implementer. Cambia de contexto, te tarda más, y produce calidad muy superior.
+**How it is done right.** Separate sessions: one for the spec, one for the test-writer, one for the implementer. It changes context, takes you longer, and produces far superior quality.
 
-### 12.2 Anti-patrón: "el test que siempre pasa"
+### 12.2 Anti-pattern: "the test that always passes"
 
-**Síntoma.** El test-writer escribe un test que pasa antes de que la implementación exista. Eso debería levantar una alarma, pero en la prisa, se da por bueno.
+**Symptom.** The test-writer writes a test that passes before the implementation exists. That should raise an alarm, but in the rush, it is taken at face value.
 
-\# ANTI-PATRÓN
+\# ANTI-PATTERN
 
 def test\_parse\_iso\_date():
 
     result \= parse\_iso\_date("2026-04-29T15:30:00Z")
 
-    assert result is not None  \# esto pasa con cualquier implementación
+    assert result is not None  \# this passes with any implementation
 
-**Por qué es problemático.** El test no verifica nada concreto. `assert result is not None` pasa con cualquier implementación que retorne algo distinto de `None`, incluso una incorrecta.
+**Why it is problematic.** The test verifies nothing concrete. `assert result is not None` passes with any implementation that returns something other than `None`, even an incorrect one.
 
-**Cómo se hace bien.**
+**How it is done right.**
 
 def test\_parse\_iso\_date():
 
@@ -2724,283 +2745,283 @@ def test\_parse\_iso\_date():
 
     assert result \== expected
 
-El test compara con un valor esperado específico. Si el código devuelve algo distinto, falla con mensaje claro de qué esperaba y qué obtuvo.
+The test compares against a specific expected value. If the code returns something different, it fails with a clear message of what was expected and what was obtained.
 
-### 12.3 Anti-patrón: "implementar más de lo que el test pide"
+### 12.3 Anti-pattern: "implement more than the test asks for"
 
-**Síntoma.** El test verifica el caso de un solo elemento, pero el implementer ya escribe código que maneja listas, edge cases, validaciones extras, optimizaciones. Por las dudas.
+**Symptom.** The test verifies the single-element case, but the implementer already writes code that handles lists, edge cases, extra validations, optimizations. Just in case.
 
-**Por qué es problemático.** El código no está cubierto por tests. Si un bug está en la parte "extra", nadie lo va a detectar. Además, agrega complejidad que probablemente no se necesita (YAGNI).
+**Why it is problematic.** The code is not covered by tests. If a bug is in the "extra" part, no one will detect it. Also, it adds complexity that is probably not needed (YAGNI).
 
-**Cómo se hace bien.** El implementer escribe el mínimo código que hace pasar el test. La funcionalidad adicional llega cuando llega el test que la verifica. Esto se llama "incremental development" en TDD clásico y es disciplina central.
+**How it is done right.** The implementer writes the minimum code that makes the test pass. The additional functionality arrives when the test that verifies it arrives. This is called "incremental development" in classic TDD and is a central discipline.
 
-### 12.4 Anti-patrón: "el reviewer solo lee el código"
+### 12.4 Anti-pattern: "the reviewer only reads the code"
 
-**Síntoma.** El reviewer recibe el diff y lo evalúa por sus méritos técnicos (es elegante, sigue convenciones, etc.) sin contrastarlo contra el spec.
+**Symptom.** The reviewer receives the diff and evaluates it on its technical merits (it is elegant, follows conventions, etc.) without contrasting it against the spec.
 
-**Por qué es problemático.** El código puede estar técnicamente impecable y aun así no resolver el problema correcto. La función principal del reviewer es verificar que el código satisface el spec, no que sea lindo.
+**Why it is problematic.** The code can be technically impeccable and still not solve the right problem. The reviewer's main function is to verify that the code satisfies the spec, not that it is pretty.
 
-**Cómo se hace bien.** El reviewer recibe explícitamente el spec en su contexto y se le pide que reporte divergencias del spec como categoría primaria. Sin el spec, el review pierde gran parte de su valor.
+**How it is done right.** The reviewer explicitly receives the spec in its context and is asked to report spec divergences as a primary category. Without the spec, the review loses much of its value.
 
-### 12.5 Anti-patrón: "skip Memory Bank because the agent already knows"
+### 12.5 Anti-pattern: "skip Memory Bank because the agent already knows"
 
-**Síntoma.** Después de varias sesiones productivas con un agente en el mismo proyecto, el developer asume que el agente "ya sabe" el contexto y deja de actualizar el Memory Bank.
+**Symptom.** After several productive sessions with an agent on the same project, the developer assumes the agent "already knows" the context and stops updating the Memory Bank.
 
-**Por qué es problemático.** Los agentes no tienen memoria entre sesiones. Lo que sabía la sesión de ayer se perdió. La próxima sesión arranca de cero. Sin Memory Bank actualizado, el agente reinventa la rueda o asume cosas incorrectas.
+**Why it is problematic.** Agents have no memory between sessions. What yesterday's session knew is gone. The next session starts from scratch. Without an updated Memory Bank, the agent reinvents the wheel or assumes incorrect things.
 
-**Cómo se hace bien.** Después de cada feature, actualizás `activeContext.md` con las decisiones relevantes. Este trabajo de consolidación de 10-20 minutos paga enormes dividendos en sesiones futuras.
+**How it is done right.** After each feature, you update `activeContext.md` with the relevant decisions. This 10-20 minute consolidation work pays enormous dividends in future sessions.
 
-### 12.6 Anti-patrón: "el spec se ajusta para que el código compile"
+### 12.6 Anti-pattern: "the spec is adjusted so the code compiles"
 
-**Síntoma.** En medio de la implementación, el agente encuentra un caso que el spec no contempla. En lugar de pausar, volver al spec, y actualizarlo, el agente "interpreta libremente" el spec para que su implementación tenga sentido.
+**Symptom.** In the middle of the implementation, the agent finds a case the spec does not contemplate. Instead of pausing, going back to the spec, and updating it, the agent "freely interprets" the spec so that its implementation makes sense.
 
-**Por qué es problemático.** El spec deja de ser fuente de verdad. La próxima vez que alguien lea el spec, va a entender algo distinto de lo que el código hace. La consistencia entre spec y código se rompe.
+**Why it is problematic.** The spec stops being the source of truth. The next time someone reads the spec, they will understand something different from what the code does. Consistency between spec and code breaks.
 
-**Cómo se hace bien.** Cuando aparece un caso no contemplado, el implementer pausa, vos volvés al spec, lo actualizás explícitamente, commiteás el cambio del spec, y recién entonces seguís con la implementación. Toma 10 minutos pero mantiene la consistencia.
+**How it is done right.** When an unconsidered case appears, the implementer pauses, you go back to the spec, update it explicitly, commit the spec change, and only then continue with the implementation. It takes 10 minutes but keeps the consistency.
 
-### 12.7 Anti-patrón: "review optional para features pequeñas"
+### 12.7 Anti-pattern: "review optional for small features"
 
-**Síntoma.** Para features pequeñas (un fix de un campo, un cambio de configuración), saltarse el review "porque es trivial".
+**Symptom.** For small features (a one-field fix, a configuration change), skipping the review "because it is trivial".
 
-**Por qué es problemático.** Las features triviales son las que menos atención tienen y donde se cuelan más bugs. El costo de review es bajo (un agente reviewer puede revisar 30 líneas en segundos). El beneficio de detectar inconsistencias es alto.
+**Why it is problematic.** Trivial features are the ones that get the least attention and where most bugs slip in. The cost of review is low (a reviewer agent can review 30 lines in seconds). The benefit of detecting inconsistencies is high.
 
-**Cómo se hace bien.** El review siempre se hace, pero su profundidad es proporcional a la complejidad. Para features triviales, el reviewer solo verifica que no hay regresión, que el spec se cumple, y que no hay riesgos de seguridad. Esto toma poco tiempo.
+**How it is done right.** The review is always done, but its depth is proportional to the complexity. For trivial features, the reviewer only verifies there is no regression, that the spec is satisfied, and that there are no security risks. This takes little time.
 
-**Caso de estudio: optimización de pricing**
+**Case study: pricing optimization**
 
-Imaginá una feature: "calcular precio final aplicando descuentos por cantidad y descuentos por categoría de cliente, con reglas de prioridad."
+Imagine a feature: "calculate the final price applying quantity discounts and customer-category discounts, with priority rules."
 
-Anti-patrón: "es solo un cálculo", el developer abre una sesión, le pide al agente "implementá pricing con descuentos", el agente escribe spec mentalmente, código, y un test rápido. Funciona. Lo merge.
+Anti-pattern: "it's just a calculation", the developer opens a session, asks the agent to "implement pricing with discounts", the agent writes the spec mentally, code, and a quick test. It works. They merge it.
 
-Tres semanas después, contabilidad detecta que para clientes corporativos con pedidos grandes, el descuento se está aplicando dos veces. El bug entró porque el "test rápido" verificaba el caso simple (un cliente, una compra), no el caso compuesto.
+Three weeks later, accounting detects that for corporate customers with large orders, the discount is being applied twice. The bug got in because the "quick test" verified the simple case (one customer, one purchase), not the compound case.
 
-Con CDAD: en el spec, el brainstorm habría preguntado: "¿qué pasa si un cliente califica para descuento por cantidad Y descuento por categoría?". La respuesta hubiera sido "se aplica el mayor de los dos, no la suma". Esa postcondición se hubiera convertido en test específico. El agente implementer no podría haber acumulado descuentos sin romper el test.
+With CDAD: in the spec, the brainstorm would have asked: "what happens if a customer qualifies for the quantity discount AND the category discount?". The answer would have been "the larger of the two is applied, not the sum". That postcondition would have become a specific test. The implementer agent could not have accumulated discounts without breaking the test.
 
-**Quiz de autoevaluación**
+**Self-assessment quiz**
 
-1. Si un test pasa antes de escribir la implementación, ¿qué tres cosas pueden estar mal?  
-2. ¿Por qué el implementer no debe agregar funcionalidad que el test no requiere?  
-3. ¿Qué hacés si en plena etapa 3 descubrís que el spec no contempla un caso?
+1. If a test passes before the implementation is written, what three things can be wrong?  
+2. Why should the implementer not add functionality the test does not require?  
+3. What do you do if in the middle of stage 3 you discover the spec does not contemplate a case?
 
-Ver respuestas 
+View answers 
 
-1. (a) El test no verifica lo que dice verificar (es trivial, como `assert result is not None`); (b) la funcionalidad ya existía y no era una feature nueva genuina; (c) el test tiene un bug que lo hace siempre pasar (ej: condicional invertido).  
+1. (a) The test does not verify what it claims to verify (it is trivial, like `assert result is not None`); (b) the functionality already existed and was not a genuinely new feature; (c) the test has a bug that makes it always pass (e.g. an inverted conditional).  
      
-2. Por dos razones: (a) la funcionalidad extra no está cubierta por tests, así que bugs ahí no se detectan; (b) agrega complejidad que probablemente no se necesita (YAGNI: You Aren't Gonna Need It). La funcionalidad debe llegar cuando llegue el test que la verifica.  
+2. For two reasons: (a) the extra functionality is not covered by tests, so bugs there are not detected; (b) it adds complexity that is probably not needed (YAGNI: You Aren't Gonna Need It). The functionality should arrive when the test that verifies it arrives.  
      
-3. Pausás la implementación. Volvés al spec en la etapa 2, lo actualizás para cubrir el caso, lo commiteás explícitamente, y recién entonces volvés a la etapa 3 con el spec actualizado. La consistencia entre spec y código es invariante; nunca lo rompas por velocidad.
+3. You pause the implementation. You go back to the spec in stage 2, update it to cover the case, commit it explicitly, and only then go back to stage 3 with the updated spec. Consistency between spec and code is an invariant; never break it for speed.
 
 ---
 
-## 13\. Referencia rápida y glosario
+## 13\. Quick reference and glossary
 
-### 13.1 Cheatsheet del ciclo
+### 13.1 Cycle cheatsheet
 
 ┌─────────────────────────────────────────────────────────────────┐
 
-│                     CDAD — Cheatsheet del ciclo                 │
+│                     CDAD — Cycle cheatsheet                     │
 
 ├─────────────────────────────────────────────────────────────────┤
 
 │                                                                 │
 
-│  0\. DECISIÓN                                                    │
+│  0\. DECISION                                                    │
 
-│     □ Puntuar la tarea (3-9) en matriz observable               │
+│     □ Score the task (3-9) on the observable matrix             │
 
-│     □ 3-4 → vibe coding;  5-6 → CDAD light;  7-9 → completo     │
+│     □ 3-4 → vibe coding;  5-6 → CDAD light;  7-9 → full         │
 
 │                                                                 │
 
-│  1\. DESCUBRIMIENTO                                              │
+│  1\. DISCOVERY                                                   │
 
-│     □ Mapear APIs/hooks relevantes                              │
+│     □ Map relevant APIs/hooks                                   │
 
-│     □ Documentar en docs/landscape.md                           │
+│     □ Document in docs/landscape.md                             │
 
 │                                                                 │
 
 │  2\. SPEC                                                        │
 
-│     □ Brainstorm socrático con architect                        │
+│     □ Socratic brainstorm with the architect                    │
 
-│     □ Redactar docs/specs/NNN-feature/spec.md                   │
+│     □ Write docs/specs/NNN-feature/spec.md                      │
 
-│     □ Postcondiciones explícitas \+ criterios de aceptación      │
+│     □ Explicit postconditions \+ acceptance criteria             │
 
-│     □ Aprobación humana obligatoria                             │
+│     □ Human approval mandatory                                  │
 
 │                                                                 │
 
-│  3\. TDD ANTI-TRAMPA                                             │
+│  3\. ANTI-GAMING TDD                                             │
 
-│     □ Identificar postcondiciones ortogonales para agrupar      │
+│     □ Identify orthogonal postconditions to group               │
 
-│     □ Sesión 1 (test-writer): test falla                        │
+│     □ Session 1 (test-writer): failing test                     │
 
-│     □ Verificar fallo por razón correcta                        │
+│     □ Verify failure for the right reason                       │
 
-│     □ Sesión 2 (implementer): código mínimo, test pasa          │
+│     □ Session 2 (implementer): minimal code, test passes        │
 
-│     □ Sesión 3 (refactorer): mejorar manteniendo verde          │
+│     □ Session 3 (refactorer): improve keeping green             │
 
-│     □ Sesión 4 (test-writer): property tests si aplica          │
+│     □ Session 4 (test-writer): property tests if applicable     │
 
-│     □ Sesión 5 (test-writer): tests E2E desde criterios accept. │
+│     □ Session 5 (test-writer): E2E tests from accept. criteria  │
 
 │                                                                 │
 
 │  4\. REVIEW TWO-LAYER                                            │
 
-│     □ Sesión reviewer (modelo distinto al implementer)          │
+│     □ Reviewer session (different model from the implementer)   │
 
-│     □ Reporte priorizado: bloqueantes / opcionales              │
+│     □ Prioritized report: blocking / optional                   │
 
-│     □ Validación humana de la priorización                      │
+│     □ Human validation of the prioritization                    │
 
-│     □ Si hay bloqueantes: volver a etapa 3                      │
+│     □ If there are blocking findings: go back to stage 3        │
 
 │                                                                 │
 
 │  5\. MERGE \+ MEMORY BANK                                         │
 
-│     □ CI completo pasa: lint, types, imports, tests, contracts  │
+│     □ Full CI passes: lint, types, imports, tests, contracts    │
 
-│     □ Merge a main                                              │
+│     □ Merge to main                                             │
 
-│     □ Sesión Scribe: drafta update de Memory Bank               │
+│     □ Scribe session: drafts the Memory Bank update             │
 
-│     □ Validar/editar y commitear con prefijo docs(memory):      │
+│     □ Validate/edit and commit with the docs(memory): prefix    │
 
-│     □ Crear ADR si hubo decisión arquitectónica                 │
+│     □ Create an ADR if there was an architectural decision      │
 
 │                                                                 │
 
 └─────────────────────────────────────────────────────────────────┘
 
-### 13.2 Checklist antes de cada feature
+### 13.2 Checklist before each feature
 
-Antes de arrancar una feature, verificá:
+Before starting a feature, check:
 
-- [ ] El Memory Bank está actualizado al estado actual (última feature reflejada)  
-- [ ] Las herramientas QA están configuradas y pasando en main  
-- [ ] El AGENTS.md raíz está al día con convenciones actuales  
-- [ ] Los sub-agentes están configurados con sus permisos correctos  
-- [ ] El landscape.md cubre el área de código que vas a tocar (si no, descubrimiento por feature)
+- [ ] The Memory Bank is up to date with the current state (last feature reflected)  
+- [ ] The QA tools are configured and passing on main  
+- [ ] The root AGENTS.md is up to date with current conventions  
+- [ ] The sub-agents are configured with their correct permissions  
+- [ ] The landscape.md covers the area of code you are going to touch (if not, per-feature discovery)
 
-### 13.3 Checklist al terminar una feature
+### 13.3 Checklist at the end of a feature
 
-Antes de cerrar la feature como done:
+Before closing the feature as done:
 
-- [ ] Todos los tests pasan localmente y en CI  
-- [ ] El review se hizo y los bloqueantes se resolvieron  
-- [ ] El spec aprobado está en el repo y refleja lo implementado  
-- [ ] `docs/activeContext.md` se actualizó con la entrada de la feature  
-- [ ] `docs/progress.md` refleja el nuevo estado  
-- [ ] Si hubo decisión arquitectónica, hay ADR creado  
-- [ ] El branch está mergeado y el PR cerrado  
-- [ ] Las sesiones de agente activas se cerraron (no reusar para próxima feature)
+- [ ] All tests pass locally and in CI  
+- [ ] The review was done and the blocking findings resolved  
+- [ ] The approved spec is in the repo and reflects what was implemented  
+- [ ] `docs/activeContext.md` was updated with the feature's entry  
+- [ ] `docs/progress.md` reflects the new state  
+- [ ] If there was an architectural decision, an ADR was created  
+- [ ] The branch is merged and the PR closed  
+- [ ] Active agent sessions were closed (do not reuse for the next feature)
 
-### 13.4 Glosario
+### 13.4 Glossary
 
-**ADR (Architecture Decision Record).** Documento que captura una decisión arquitectónica, su contexto, alternativas consideradas, decisión tomada, y consecuencias. Inmutable una vez aceptado; si la decisión se revisa, se crea un ADR nuevo que supersede al anterior.
+**ADR (Architecture Decision Record).** Document that captures an architectural decision, its context, alternatives considered, decision made, and consequences. Immutable once accepted; if the decision is revisited, a new ADR is created that supersedes the previous one.
 
-**Anti-trampa (TDD).** Variante de TDD donde la separación entre quien escribe el test y quien escribe el código es estructural (sub-agentes con permisos limitados), no solo disciplinaria. Diseñada para mitigar la tendencia de los modelos LLM a alinear test e implementación.
+**Anti-gaming (TDD).** Variant of TDD where the separation between who writes the test and who writes the code is structural (sub-agents with limited permissions), not merely disciplinary. Designed to mitigate the tendency of LLM models to align test and implementation.
 
-**Boundaries arquitectónicos.** Reglas sobre qué módulos pueden importar de cuáles. Enforceadas automáticamente por herramientas como import-linter (Python), dependency-cruiser (TypeScript), ArchUnit (Java), packwerk (Rails). En frameworks opinados, frecuentemente se delegan a herramientas QA específicas (pylint-odoo, pylint-django, rubocop-rails).
+**Architectural boundaries.** Rules about which modules may import from which. Enforced automatically by tools like import-linter (Python), dependency-cruiser (TypeScript), ArchUnit (Java), packwerk (Rails). In opinionated frameworks, they are frequently delegated to framework-specific QA tools (pylint-odoo, pylint-django, rubocop-rails).
 
-**Brainstorm socrático.** Conversación con un agente architect en modo plan-only donde el agente formula preguntas para clarificar la feature antes de escribir el spec. Análogo al método socrático filosófico, adaptado a desarrollo de software.
+**Socratic brainstorm.** Conversation with an architect agent in plan-only mode where the agent formulates questions to clarify the feature before writing the spec. Analogous to the philosophical Socratic method, adapted to software development.
 
-**CDAD (Contract-Driven AI Development).** La metodología que este documento describe.
+**CDAD (Contract-Driven AI Development).** The methodology this document describes.
 
-**CDAD light.** Variante reducida de CDAD para tareas que puntúan 5-6 en la matriz observable de activación: spec breve, TDD con sesiones aisladas para componentes críticos, review opcional, Memory Bank si el proyecto ya lo tiene.
+**CDAD light.** Reduced variant of CDAD for tasks scoring 5-6 on the observable activation matrix: brief spec, TDD with isolated sessions for critical components, optional review, Memory Bank if the project already has one.
 
-**Contract test.** Test parametrizado que verifica las postcondiciones de un Protocol/interface contra todas sus implementaciones registradas. Cuando se agrega una nueva implementación, automáticamente queda cubierta sin tests adicionales. En frameworks opinados, se materializa con `shared examples` (RSpec), módulos de test compartidos (Minitest), o clases base de TestCase parametrizadas (Odoo, Django).
+**Contract test.** Parameterized test that verifies the postconditions of a Protocol/interface against all its registered implementations. When a new implementation is added, it is automatically covered without additional tests. In opinionated frameworks, it materializes as `shared examples` (RSpec), shared test modules (Minitest), or parameterized TestCase base classes (Odoo, Django).
 
-**E2E modalidad outside-in.** Modalidad de tests E2E donde el test del flujo completo se escribe primero (antes de los unit tests) y queda rojo durante todo el ciclo de implementación, hasta que las piezas individuales se conectan. Da una métrica continua de progreso de la feature.
+**E2E outside-in mode.** Mode of E2E testing where the full-flow test is written first (before the unit tests) and stays red during the whole implementation cycle, until the individual pieces connect. It gives a continuous progress metric of the feature.
 
-**E2E modalidad cierre.** Modalidad de tests E2E donde el test del flujo se escribe después de que las unidades están verdes, como verificación final de ensamblaje correcto antes del merge. Más simple operativamente; pierde la métrica continua.
+**E2E closure mode.** Mode of E2E testing where the flow test is written after the units are green, as a final verification of correct assembly before the merge. Operationally simpler; loses the continuous metric.
 
-**Frameworks opinados.** Frameworks que imponen una forma específica de organizar el código, mecanismos de extensión propios, ORM acoplado al modelo (cuando aplica), y testing infrastructure provista. Ejemplos: Odoo, Django, Rails, Webmin, WordPress, Drupal, Spring Boot, Laravel. CDAD aplica con adaptaciones puntuales (capítulo 11).
+**Opinionated frameworks.** Frameworks that impose a specific way of organizing code, their own extension mechanisms, an ORM coupled to the model (when applicable), and provided testing infrastructure. Examples: Odoo, Django, Rails, Webmin, WordPress, Drupal, Spring Boot, Laravel. CDAD applies with point adaptations (chapter 11).
 
-**Hosting-agnostic.** Propiedad de un módulo de software de funcionar en distintos entornos de hosting sin depender de convenciones específicas de uno. Importante en proyectos donde el código se va a distribuir a clientes con setups diversos.
+**Hosting-agnostic.** Property of a software module of working across different hosting environments without depending on one's specific conventions. Important on projects where the code will be distributed to clients with diverse setups.
 
-**Implementer.** Sub-agente con permisos de edit en código de implementación, sin permisos en tests. Su tarea es hacer pasar los tests existentes con código mínimo.
+**Implementer.** Sub-agent with edit permissions on implementation code, without permissions on tests. Its task is to make the existing tests pass with minimal code.
 
-**Import-linter.** Herramienta de Python que enforce contratos sobre imports (qué módulo puede importar de cuál). Equivalentes existen en otros lenguajes con nombres distintos.
+**Import-linter.** Python tool that enforces contracts over imports (which module may import from which). Equivalents exist in other languages under different names.
 
-**Ley de Hierro (TDD).** Regla absoluta: nunca escribir código de implementación sin antes tener un test que falla por la razón correcta. Sin excepciones, sin atajos.
+**Iron Law (TDD).** Absolute rule: never write implementation code without first having a test that fails for the right reason. No exceptions, no shortcuts.
 
-**Matriz observable de activación.** Herramienta de decisión (sección 1.4) que puntúa una tarea en tres ejes (vida útil, costo de bug, probabilidad de evolución) y sugiere el nivel de CDAD a aplicar: vibe coding, light, o completo.
+**Observable activation matrix.** Decision tool (section 1.4) that scores a task on three axes (lifespan, bug cost, probability of evolution) and suggests the level of CDAD to apply: vibe coding, light, or full.
 
-**Memory Bank.** Conjunto de archivos versionados (`projectbrief.md`, `activeContext.md`, `progress.md`, `adr/*`, `specs/*`) que capturan el estado del proyecto y se cargan al inicio de cada sesión de agente.
+**Memory Bank.** Set of versioned files (`projectbrief.md`, `activeContext.md`, `progress.md`, `adr/*`, `specs/*`) that capture the state of the project and are loaded at the start of each agent session.
 
-**Postcondiciones ortogonales.** Postcondiciones que se implementan en paths de código independientes, sin pisarse entre sí. Pueden agruparse en un mismo ciclo RED-GREEN-REFACTOR para acelerar el desarrollo sin perder la red de seguridad. Contraste con postcondiciones acopladas, que requieren ciclos separados.
+**Orthogonal postconditions.** Postconditions implemented in independent code paths, without overlapping each other. They can be grouped in the same RED-GREEN-REFACTOR cycle to speed up development without losing the safety net. Contrast with coupled postconditions, which require separate cycles.
 
-**Property test.** Test que verifica una propiedad general (invariante) sobre todos los inputs válidos, generando inputs aleatorios automáticamente. Detecta edge cases que tests determinísticos pueden no encontrar.
+**Property test.** Test that verifies a general property (invariant) over all valid inputs, generating random inputs automatically. It detects edge cases that deterministic tests may not find.
 
-**Protocol (Python).** Mecanismo de typing estructural que define una interfaz por el conjunto de métodos que una clase tiene, sin requerir herencia explícita. Permite contratos verificables. Equivalentes: TypeScript `interface` con `satisfies`, Java `interface`, Go `interface`, Rust `trait`.
+**Protocol (Python).** Structural typing mechanism that defines an interface by the set of methods a class has, without requiring explicit inheritance. It enables verifiable contracts. Equivalents: TypeScript `interface` with `satisfies`, Java `interface`, Go `interface`, Rust `trait`.
 
-**pylint-odoo.** Plugin de pylint mantenido por la OCA (Odoo Community Association) con checks específicos para Odoo. En proyectos Odoo cumple el rol que `import-linter` cumple en proyectos genéricos: enforzar reglas estructurales que el agente de IA no conoce de oficio.
+**pylint-odoo.** Pylint plugin maintained by the OCA (Odoo Community Association) with checks specific to Odoo. In Odoo projects it fulfills the role that `import-linter` fulfills in generic projects: enforcing structural rules the AI agent does not know by trade.
 
-**Refactorer.** Sub-agente cuya tarea es mejorar código existente (legibilidad, consistencia, simplicidad) sin cambiar comportamiento observable. Todos los tests deben seguir pasando después del refactor.
+**Refactorer.** Sub-agent whose task is to improve existing code (readability, consistency, simplicity) without changing observable behavior. All tests must keep passing after the refactor.
 
-**Reviewer.** Sub-agente con permisos read-only que evalúa un diff completo contra el spec y produce un reporte priorizado de hallazgos. Idealmente usa un modelo distinto al implementer.
+**Reviewer.** Read-only sub-agent that evaluates a full diff against the spec and produces a prioritized report of findings. Ideally it uses a different model from the implementer.
 
-**Scribe.** Sub-agente con permisos read-only cuya tarea es draftar la actualización del Memory Bank después de un PR mergeado: entrada propuesta para `activeContext.md`, cambios para `progress.md`, y posible draft de ADR. El humano valida y commitea. Reduce la fricción del Memory Bank update de 15-20 minutos a 3-5 minutos por feature.
+**Scribe.** Read-only sub-agent whose task is to draft the Memory Bank update after a merged PR: proposed entry for `activeContext.md`, changes for `progress.md`, and a possible draft ADR. The human validates and commits. It reduces the friction of the Memory Bank update from 15-20 minutes to 3-5 minutes per feature.
 
-**Sesión aislada.** Conversación con un agente que NO comparte contexto con otras sesiones. Usada en CDAD para forzar separación de fases (test-writer no ve código, implementer no ve razonamiento del test-writer).
+**Isolated session.** Conversation with an agent that does NOT share context with other sessions. Used in CDAD to force the separation of phases (the test-writer does not see code, the implementer does not see the test-writer's reasoning).
 
-**Sub-agente.** Configuración de un agente con permisos específicos (qué archivos puede leer/editar), instrucciones específicas, y eventualmente modelo específico. Permite materializar el principio de sesiones aisladas.
+**Sub-agent.** Configuration of an agent with specific permissions (which files it can read/edit), specific instructions, and eventually a specific model. It makes it possible to materialize the isolated sessions principle.
 
-**Test-writer.** Sub-agente con permisos de edit solo en `tests/`, sin permisos en código de implementación. Su tarea es escribir tests que verifican el spec y fallan inicialmente porque no hay implementación.
+**Test-writer.** Sub-agent with edit permissions only on `tests/`, without permissions on implementation code. Its task is to write tests that verify the spec and initially fail because there is no implementation.
 
-**Vibe coding.** Patrón anti-CDAD donde se le pide al agente "implementá X" sin spec previo, sin separación de fases, sin contratos verificables. Funciona para tareas chicas pero no produce calidad sostenible para proyectos serios.
+**Vibe coding.** Anti-CDAD pattern where the agent is asked to "implement X" without a prior spec, without separation of phases, without verifiable contracts. It works for small tasks but does not produce sustainable quality for serious projects.
 
-### 13.5 Recursos para profundizar
+### 13.5 Resources for going deeper
 
-**TDD clásico.**
+**Classic TDD.**
 
-- Kent Beck — *Test-Driven Development by Example* (libro fundacional)  
-- James Shore — *The Art of Agile Development* (capítulo sobre TDD práctico)
+- Kent Beck — *Test-Driven Development by Example* (foundational book)  
+- James Shore — *The Art of Agile Development* (chapter on practical TDD)
 
-**Domain-Driven Design (complementario a CDAD).**
+**Domain-Driven Design (complementary to CDAD).**
 
-- Eric Evans — *Domain-Driven Design* (libro fundacional)  
-- Vaughn Vernon — *Implementing Domain-Driven Design* (más práctico)
+- Eric Evans — *Domain-Driven Design* (foundational book)  
+- Vaughn Vernon — *Implementing Domain-Driven Design* (more practical)
 
 **Property-based testing.**
 
-- David MacIver — documentación de Hypothesis (Python)  
-- Scott Wlaschin — *Domain Modeling Made Functional* (incluye PBT en F\#)
+- David MacIver — Hypothesis documentation (Python)  
+- Scott Wlaschin — *Domain Modeling Made Functional* (includes PBT in F\#)
 
-**Clean Architecture y boundaries.**
+**Clean Architecture and boundaries.**
 
-- Robert Martin — *Clean Architecture* (capítulos sobre layers y boundaries)  
+- Robert Martin — *Clean Architecture* (chapters on layers and boundaries)  
 - Vladimir Khorikov — *Unit Testing Principles, Practices, and Patterns*
 
 **Architecture Decision Records.**
 
-- Michael Nygard — artículo original sobre ADRs (2011)  
-- adr.github.io — patrón consolidado y plantillas
+- Michael Nygard — original article on ADRs (2011)  
+- adr.github.io — consolidated pattern and templates
 
-**Trabajo con agentes de IA.**
+**Working with AI agents.**
 
-- Anthropic — guías de prompt engineering y trabajo con Claude  
-- Documentación de herramientas: Claude Code, OpenCode, Cursor, Aider
-
----
-
-## Cierre
-
-CDAD nace de una observación pragmática: los agentes de IA son útiles pero impredecibles, y la única manera de obtener calidad sostenible al trabajar con ellos es introducir disciplina estructural que no dependa de la consistencia del modelo subyacente. Los cinco principios fundacionales (spec antes que código, contratos verificables, sesiones aisladas con permisos granulares, TDD con Ley de Hierro, Memory Bank persistente) se materializan en un ciclo de cinco etapas (descubrimiento, especificación, TDD anti-trampa, review two-layer, merge con Memory Bank) que se aplica feature por feature.
-
-La disciplina inicial es real: configurar herramientas, escribir specs, separar sesiones, mantener Memory Bank. Pero la disciplina paga dividendos crecientes a medida que el proyecto avanza: las features futuras son más rápidas porque el contexto está consolidado, los bugs son más raros porque las barreras estructurales los detectan temprano, los cambios de scope son más manejables porque el spec es la fuente de verdad. La curva de aprendizaje es de algunos días para los conceptos y algunas semanas para que el ciclo se sienta natural.
-
-El documento que estás leyendo es la versión 1.0 de CDAD. La metodología va a evolucionar con la experiencia y con la evolución de las herramientas. Los principios fundacionales son robustos, pero la materialización concreta (qué herramientas, qué patrones específicos) se va a refinar. Si la usás y descubrís mejoras, vale documentarlas y compartirlas.
-
-Buena suerte con tu próximo proyecto.
+- Anthropic — guides on prompt engineering and working with Claude  
+- Documentation of tools: Claude Code, OpenCode, Cursor, Aider
 
 ---
 
-**Sobre la versión.** Documento v1.1, redactado en abril de 2026\. Revisión 1.1 incorpora: matriz observable de activación de CDAD (1.4), variantes de fallback manual cuando el orquestador no soporta permisos granulares (2.3), agrupación de postcondiciones ortogonales (7.1), sub-fase explícita de tests de integración / E2E (7.6), patrón Scribe para asistir la actualización del Memory Bank (9.2), y capítulo nuevo sobre adaptación de CDAD a frameworks opinados con casos de estudio en Odoo (Python), Django (Python), Rails (Ruby) y Webmin (Perl) (capítulo 11). Todos los ejemplos del documento corresponden a software libre.  
+## Closing
+
+CDAD is born from a pragmatic observation: AI agents are useful but unpredictable, and the only way to obtain sustainable quality when working with them is to introduce structural discipline that does not depend on the consistency of the underlying model. The five foundational principles (spec before code, verifiable contracts, isolated sessions with granular permissions, TDD with the Iron Law, persistent Memory Bank) materialize in a five-stage cycle (discovery, specification, anti-gaming TDD, two-layer review, merge with Memory Bank) applied feature by feature.
+
+The initial discipline is real: configuring tools, writing specs, separating sessions, maintaining the Memory Bank. But the discipline pays growing dividends as the project advances: future features are faster because the context is consolidated, bugs are rarer because the structural barriers detect them early, scope changes are more manageable because the spec is the source of truth. The learning curve is a few days for the concepts and a few weeks for the cycle to feel natural.
+
+The document you are reading is version 1.0 of CDAD. The methodology will evolve with experience and with the evolution of the tools. The foundational principles are robust, but the concrete materialization (which tools, which specific patterns) will be refined. If you use it and discover improvements, it is worth documenting and sharing them.
+
+Good luck with your next project.
+
+---
+
+**About the version.** Document v1.1, written in April 2026\. Revision 1.1 incorporates: the observable activation matrix of CDAD (1.4), manual fallback variants when the orchestrator does not support granular permissions (2.3), grouping of orthogonal postconditions (7.1), an explicit sub-phase of integration / E2E tests (7.6), the Scribe pattern to assist the Memory Bank update (9.2), and a new chapter on adapting CDAD to opinionated frameworks with case studies in Odoo (Python), Django (Python), Rails (Ruby) and Webmin (Perl) (chapter 11). All the examples in the document correspond to free software.  

@@ -1,50 +1,50 @@
 # System Patterns
 
-Convenciones técnicas, patrones, y reglas estructurales del proyecto. Este archivo se carga al inicio de cada sesión de agente.
+Technical conventions, patterns, and structural rules of the project. This file is loaded at the start of every agent session.
 
-## Capas y boundaries
+## Layers and boundaries
 
-<TODO: describir las capas arquitectónicas del proyecto y qué importa de qué. Ejemplo:
+<TODO: describe the project's architectural layers and what imports what. Example:
 
-- `domain/` — lógica de negocio pura, no importa de adapters/ ni framework/
-- `adapters/` — integraciones con sistemas externos
-- `framework/` — wiring del framework, importa de domain y adapters
-- `presentation/` — controllers/views, importa de framework
+- `domain/` — pure business logic, does not import from adapters/ or framework/
+- `adapters/` — integrations with external systems
+- `framework/` — framework wiring, imports from domain and adapters
+- `presentation/` — controllers/views, imports from framework
 >
 
-## Convenciones de código
+## Code conventions
 
 ### Naming
 
 <TODO>
 
-### Organización de archivos
+### File organization
 
 <TODO>
 
-### Errores y excepciones
+### Errors and exceptions
 
-<TODO: ¿excepciones tipadas? ¿result types? ¿qué se logea?>
+<TODO: typed exceptions? result types? what gets logged?>
 
-## Patrones del framework
+## Framework patterns
 
-<TODO: cómo se usa el mecanismo de extensión del framework principal — herencia, hooks, signals, plugins. Qué patrones se prefieren y cuáles se evitan.>
+<TODO: how the main framework's extension mechanism is used — inheritance, hooks, signals, plugins. Which patterns are preferred and which are avoided.>
 
-## Convenciones de tests
+## Test conventions
 
 - **Framework**: <TODO>
-- **Estructura**: <TODO: tests unitarios en X, integración en Y, E2E en Z>
-- **Fixtures**: <TODO: cómo se construyen, qué patrón se usa>
-- **Property tests**: <TODO si aplica: librería usada, dónde van>
+- **Structure**: <TODO: unit tests in X, integration in Y, E2E in Z>
+- **Fixtures**: <TODO: how they are built, which pattern is used>
+- **Property tests**: <TODO if applicable: library used, where they go>
 
 ## Tooling enforcement
 
-<TODO: linters, type checkers, import-linter, pre-commit hooks. Qué corre en CI.>
+<TODO: linters, type checkers, import-linter, pre-commit hooks. What runs in CI.>
 
-## Anti-patrones del proyecto
+## Project anti-patterns
 
-<TODO: cosas que históricamente este proyecto evita por buenas razones. Documentar el motivo.>
+<TODO: things this project historically avoids for good reasons. Document the reason.>
 
 ---
 
-Última actualización: <YYYY-MM-DD>
+Last updated: <YYYY-MM-DD>

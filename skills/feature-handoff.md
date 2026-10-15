@@ -1,7 +1,7 @@
-# Feature Handoff — ver `skills/cdad-epic/references/feature-handoff.md`
+# Feature Handoff — see `skills/cdad-epic/references/feature-handoff.md`
 
-Este archivo quedó desactualizado respecto de su copia canónica (le faltaba
-la nota de independencia del arnés, ver
-`findings/audit-consistencia-2026-09-02.md`, M7). `install.sh` no lo instala
-nunca — es documentación de referencia, no un skill dir válido. La fuente
-vigente es `skills/cdad-epic/references/feature-handoff.md`.
+This file became outdated with respect to its canonical copy (it was missing the
+harness-independence note, see
+`findings/audit-consistencia-2026-09-02.md`, M7). `install.sh` never installs it
+— it is reference documentation, not a valid skill dir. The current
+source is `skills/cdad-epic/references/feature-handoff.md`.
