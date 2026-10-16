@@ -85,13 +85,18 @@ from pathlib import Path
 
 from test_005_009_t1_interface import dispatch_records
 from test_005_009_t2_opencode_adapter import (
+    FAKE_BINARY_VERSION,
     FOREIGN_ROW_AGENT,
     AdapterCase,
     durable_session_rows,
 )
+from test_006_001_t1_selection import FakeInfoServer
 
 EXPECTED_ROLE_AGENT = "cdad-test-writer"  # el derivado cdad-<rol> del paquete
-FIXTURE_SERVER_URL = "http://fixture.invalid:4747"  # TLD reservado (INV-7)
+# Semver del cliente FALSO ("opencode-fake 1.0.0" -> "1.0.0"), reutilizado
+# para que el `FakeInfoServer` del oráculo 1 (006-001 T1, plan §3) sirva la
+# MISMA versión que el binario falso compartido declara por `--version`.
+_FAKE_CLIENT_SEMVER = FAKE_BINARY_VERSION.rsplit(" ", 1)[-1]
 
 
 # ----------------------------------------------------------------- PD-3
@@ -362,9 +367,20 @@ class TestPd4InvocationArgvMatrix(AdapterCase):
         """PD-4 (server por config): con `server` en la config de
         ejecución, el argv incluye `--server <url>` (la URL declarada por
         la config) y NO `--standalone` (alternativas excluyentes, nunca a
-        la vez)."""
+        la vez).
+
+        Oráculo 1 de 006-001 T1 (plan §3, D-1: el preflight rige el modo
+        servidor efectivo también por compatibilidad): la URL YA NO es
+        `fixture.invalid` (inalcanzable) — sirve `/api/info` desde un
+        `FakeInfoServer` en loopback con la MISMA versión que el binario
+        falso compartido declara por `--version` (spec §2.3). Se conserva
+        la aserción de argv."""
+        info_server = FakeInfoServer(
+            body=json.dumps({"version": _FAKE_CLIENT_SEMVER}).encode())
+        self.addCleanup(info_server.stop)
+        server_url = info_server.url
         argv, _out = self._dispatch_argv(
-            "pd4-server", overrides={"server": FIXTURE_SERVER_URL})
+            "pd4-server", overrides={"server": server_url})
         self.assertIn(
             "--server", argv,
             msg=f"con `server` en la config el argv no lleva `--server` "
@@ -374,10 +390,10 @@ class TestPd4InvocationArgvMatrix(AdapterCase):
             index + 1, len(argv),
             msg=f"`--server` sin valor en el argv (PD-4): {argv!r}")
         self.assertEqual(
-            argv[index + 1], FIXTURE_SERVER_URL,
+            argv[index + 1], server_url,
             msg=f"el valor de --server no es el declarado por la config "
                 f"(PD-4/INV-7): {argv[index + 1]!r} != "
-                f"{FIXTURE_SERVER_URL!r}")
+                f"{server_url!r}")
         self.assertNotIn(
             "--standalone", argv,
             msg=f"con `server` en la config el argv lleva TAMBIÉN "

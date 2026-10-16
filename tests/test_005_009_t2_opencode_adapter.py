@@ -532,7 +532,14 @@ FAKE_BINARY_SOURCE = r'''#!/usr/bin/env python3
 #   6. sin paquete localizado: registra la entrada igual y señala en stderr
 #      que no hubo transporte (frontera honesta del fixture).
 #   7. `--version` imprime la versión declarada por la fixture y NO es
-#      despacho (la versión vive en <fake>/version.txt).
+#      despacho (la versión vive en <fake>/version.txt): responde ANTES de
+#      localizar el paquete, escribir el store o registrar la llamada
+#      (oráculo 2 de 006-001 T1, plan §3: así el preflight del modo
+#      servidor de la spec 006-001 §2.3 no crea fila ni cuenta como
+#      invocación del rol; ANTES de localizar el paquete, no solo antes de
+#      escribir/registrar, porque _locate_packet() lee stdin cuando no es
+#      una tty: un --version del preflight que heredara un pipe abierto se
+#      colgaría).
 
 import hashlib
 import json
@@ -796,6 +803,16 @@ if variant == "model-object":
     # 'providerID/id' (PD-6), no conservarlo verbatim.
     row_model = %ROW_MODEL_OBJECT%
 version_line = %FAKE_VERSION%
+if "--version" in sys.argv[1:]:
+    # Oráculo 2 de 006-001 T1 (plan §3): responde ANTES de localizar el
+    # paquete, escribir el store o registrar la llamada — un --version del
+    # preflight de modo servidor (spec 006-001 §2.3) no crea fila ni
+    # cuenta como invocación del rol. Antes de _locate_packet() también:
+    # esa función lee stdin cuando no es una tty, y un --version que
+    # heredara un pipe abierto se colgaría.
+    sys.stdout.write(version_line + "\n")
+    sys.stdout.flush()
+    sys.exit(0)
 store_path = _sessions_db_path()
 
 # Directorio del PROYECTO, como OpenCode real (hecho del orquestador contra
@@ -876,10 +893,7 @@ if packet is not None and variant in ("succeeded", "no-idle"):
 
 _append_calls(calls_path, entry)
 
-if "--version" in sys.argv[1:]:
-    sys.stdout.write(version_line + "\n")
-    sys.stdout.flush()
-elif packet is None:
+if packet is None:
     sys.stderr.write("opencode-fake: sin paquete en el transporte "
                      "(argv/env/stdin): no aplica el rol\n")
 
