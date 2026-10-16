@@ -6021,13 +6021,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-001-opencode-concurrency-reliability-architect-draft-001",
-    "role": "architect",
-    "substage": "draft",
-    "status": "completed",
+    "id": "006-001-opencode-concurrency-reliability-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "approved-unit-contract",
-    "contract_sha256": "13f7db14e491cc42d0e3056d3c2c7b9edebe19c9d07eb80bcce3934d20488d19"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
   },
   "tdd_substage": null
 }
