@@ -1,10 +1,10 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": null,
-  "epic_stage": null,
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_epic": "epic-006-opencode-concurrency",
+  "epic_stage": "features-loop",
+  "active_feature": "006-001-opencode-concurrency-reliability",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -15,7 +15,13 @@
     "disposition": "Sin bloqueantes. Los 4 opcionales (O-1 la rama cerrada no exige --closure-path y la omision cae en PD-25/PD-27c; O-2 --feature '' se trata como ausente; O-3 el limite declarado de PD-23 se extiende a los --artifact citados; O-4 el mensaje de PD-25 no nombra receive --late) van a deuda del cierre: mejora o variante sin impacto material. Actualizacion MANUAL declarada: el campo derivado no tiene dueno en la operacion de transiciones (deuda D-2 de 005-012)."
   },
   "postconditions_status": {},
-  "epic_features": [],
+  "epic_features": [
+    {
+      "id": "006-001-opencode-concurrency-reliability",
+      "status": "in-progress",
+      "opened_at": "2026-10-16T15:49:22.967379+00:00"
+    }
+  ],
   "epic_history": [
     {
       "stage": "epic-plan",
@@ -239,6 +245,17 @@
       "closure_path": "docs/epics/epic-005-real-operation/closure.md",
       "closure_sha256": "8fcacc349dd1b3cc6419ad6d9c2f41fbcac8a6a8ae5cbeb2a2383313b73543a8",
       "note": "CIERRE DEL EPIC registrado A MANO por el orquestador: NO existe operacion del CLI para el cierre de un epic (register-transition cubre clases por feature y su clase closure exige feature activa + contrato pinneado). 14/14 unidades cerradas (005-001..005-014; la lista y la evidencia de cierre por feature viven en closure.md y en el estado anterior, conservado en git en el commit padre de este). Version de referencia: commit INSTALADO en HOME 29a4805 (install.sh --check PASS, desplegado por el dueno el 2026-10-14) y commit de PRODUCTO del repo d3b9ccd, con cero diferencias de producto entre ambos (git diff --name-only 29a4805..d3b9ccd = solo docs/epics/epic-005-real-operation/execution.md); el ultimo commit que toca producto es a4028af (005-014 T1 GREEN), precedido por 6fd515d (005-012 final revisado). Suite de cierre del orquestador en un worktree fijado a d3b9ccd (armado con make staging): 1028 passed / 4 skipped, sin fallos (20 min 31 s); make validate 155 PASS / 1 FAIL, el fallo F011 preexistente y declarado (D-6 de 005-011). El barrido de saneamiento habia registrado 1024 passed / 4 skipped y esa diferencia de 4 queda declarada (sin fallos nuevos en ninguna de las dos corridas). Criterio 5 del epic (aceptacion conjunta del consumidor, el otro proyecto activo) NO ejecutado: sigue como condicion del dueno del consumidor, junto con la R2 real de 005-006 y los VERIFY 1/5/6 de 005-008; se declara, no se convierte en verde. La delegacion HITL del epic vence al cerrarlo y no se hereda: se archiva en delegation_history y hitl_delegation queda en null. Publicacion: no implica cerrar (no se publica) y la decision del dueno es publicar con historial nuevo; el historial privado se conserva para la trazabilidad de la evidencia. Prioridades de la planificacion siguiente y requisitos ya identificados (RD-a, RD-b, reduccion proporcional de instrucciones y preparacion, kind de ADR del scribe, D-10 de 005-012, E-1/E-2 de 005-014) en closure.md. El proyecto queda en reposo; con el epic cerrado status conserva la ruta 'next unit' y open-unit responde rc=2 sin unidades en cola (limite declarado, sin efectos)."
+    },
+    {
+      "epic": "epic-006-opencode-concurrency",
+      "stage": "epic-plan",
+      "completed_at": "2026-10-16",
+      "approved_by": "Pablo",
+      "requested_by": "usuario",
+      "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
+      "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
+      "plan_sha256": "a8e415f7409e85f6ff6e4a482591df62bc271ec613c6d9ffab48d60f68fabda3",
+      "note": "Plan aprobado por el duenio con delegacion HITL a Claude para este ciclo. Activacion del epic registrada A MANO por el orquestador: no existe operacion del CLI para activar un epic; epic_features sincronizado con la tabla del plan (§1)."
     }
   ],
   "stage_history": [
@@ -5752,9 +5769,19 @@
       "closure_sha256": "f8e384eaf95059eb8218896b3208ad673e010f7e5bf5bd79c357afd87c77c51c"
     }
   ],
-  "approver": "Pablo (HITL delegada al orquestador OpenCode para epic-005)",
-  "hitl_delegation": null,
-  "last_updated": "2026-10-15T01:30:00+00:00",
+  "approver": "Pablo (HITL delegada a Claude para epic-006)",
+  "hitl_delegation": {
+    "delegated_to": "Claude (sesion de Claude Code, orquestador de epic-006)",
+    "requested_by": "Pablo",
+    "requested_at": "2026-10-16",
+    "scope": "epic-006-opencode-concurrency: plan aprobado (§6), spec y plan de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
+    "expires": "al cerrar, cancelar o revocar el epic",
+    "publication": "sin push automatico",
+    "source": "docs/epics/epic-006-opencode-concurrency/execution.md",
+    "status": "active",
+    "epic_id": "epic-006-opencode-concurrency"
+  },
+  "last_updated": "2026-10-16T00:00:00+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -5839,17 +5866,36 @@
       "epic_id": "epic-005-real-operation",
       "expired_at": "2026-10-14",
       "note": "Delegacion del epic-005 ARCHIVADA al cerrar el epic (vence al cerrar, cancelar o revocar; no se hereda a otros epics). Cierre aprobado por el orquestador OpenCode bajo esta misma HITL delegada, por instruccion del dueno del 2026-10-14. Los cierres por feature, el del Memory Bank y el del epic se registraron con esta autoridad antes de archivarla."
+    },
+    {
+      "delegated_to": "Claude (sesion de Claude Code, orquestador de epic-006)",
+      "requested_by": "Pablo",
+      "requested_at": "2026-10-16",
+      "scope": "epic-006-opencode-concurrency: plan aprobado (§6), spec y plan de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
+      "expires": "al cerrar, cancelar o revocar el epic",
+      "publication": "sin push automatico",
+      "source": "docs/epics/epic-006-opencode-concurrency/execution.md",
+      "status": "active",
+      "epic_id": "epic-006-opencode-concurrency"
     }
   ],
   "execution": {
-    "id": "exec-005-014-closure-replay-001",
-    "epic_id": "epic-005-real-operation",
-    "feature_id": "005-014-closure-replay",
-    "scope": "epic-005-real-operation",
-    "authority_ref": "docs/epics/epic-005-real-operation/execution.md",
+    "id": "exec-006-001-opencode-concurrency-reliability-001",
+    "epic_id": "epic-006-opencode-concurrency",
+    "feature_id": "006-001-opencode-concurrency-reliability",
+    "scope": "epic-006-opencode-concurrency",
+    "authority_ref": "docs/epics/epic-006-opencode-concurrency/execution.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": null,
+  "active_packet": {
+    "id": "006-001-opencode-concurrency-reliability-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-unit-contract",
+    "contract_sha256": "13f7db14e491cc42d0e3056d3c2c7b9edebe19c9d07eb80bcce3934d20488d19"
+  },
   "tdd_substage": null
 }
