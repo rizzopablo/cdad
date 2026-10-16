@@ -5767,6 +5767,47 @@
       "approved_by": "orquestador OpenCode (HITL delegada epic-005, docs/epics/epic-005-real-operation/execution.md)",
       "closure_path": "docs/specs/005-014-closure-replay/closure.md",
       "closure_sha256": "f8e384eaf95059eb8218896b3208ad673e010f7e5bf5bd79c357afd87c77c51c"
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-16T16:08:55.333489+00:00",
+      "by": "architect (subagente nativo cdad-architect de Claude Code, Agent; modelo heredado de la sesion orquestadora, no reportado por el harness)",
+      "transition": "delivery",
+      "transition_key": "149f4f054a6a6edee8ba11d8c4e1f6b738f2c9b7a42908648178a871c1bf33f0",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "006-001-opencode-concurrency-reliability-architect-discovery-001",
+        "receipt_sha256": "b97162bc232a573d63a21fc4d88e9a0e258f2d35f5dc77b663dc140614e0bb37",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/discovery.md",
+            "1118e794ad842b4e17f5fb40b71e0434b4fb8f5d3a624ad2dfc6f90ca12bf57d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-architect-discovery-001/receipt.json",
+      "receipt_sha256": "b97162bc232a573d63a21fc4d88e9a0e258f2d35f5dc77b663dc140614e0bb37",
+      "artifacts": {
+        "docs/specs/006-001-opencode-concurrency-reliability/discovery.md": "1118e794ad842b4e17f5fb40b71e0434b4fb8f5d3a624ad2dfc6f90ca12bf57d"
+      },
+      "note": "Discovery recibido (receive + validate-receipt VALID + materialize create-only). La copia versionada difiere del recibo solo en la seccion final «Observaciones locales», retirada al registro local por anonimizacion (rutas, ids crudos, PIDs, nombre del consumidor); el recibo conserva los bytes originales. DESVIACION DECLARADA POR EL ROL: ademas de --help y run --help (autorizados) invoco --help de otros subcomandos y tres 'debug paths' con XDG/HOME aislados; cada invocacion agrego una linea 'cli starting' al log vivo; sin otro efecto. Sin efecto material: no se repite. Revisado por el orquestador: verifica las afirmaciones del plan §2, resuelve D1-D5 con evidencia y desconocidos declarados y propone spec PC-1..PC-14 y plan T1-T3."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -5781,7 +5822,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T00:00:00+00:00",
+  "last_updated": "2026-10-16T16:08:55.333489+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -5889,9 +5930,9 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-001-opencode-concurrency-reliability-architect-discovery-001",
+    "id": "006-001-opencode-concurrency-reliability-architect-draft-001",
     "role": "architect",
-    "substage": "discovery",
+    "substage": "draft",
     "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
