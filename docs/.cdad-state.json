@@ -6070,7 +6070,7 @@
     "id": "006-001-opencode-concurrency-reliability-implementer-green-001",
     "role": "implementer",
     "substage": "green",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
