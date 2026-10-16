@@ -71,17 +71,15 @@ built (INV-9).
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 import os
 import re
+import signal
 import sqlite3
 import subprocess
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -111,7 +109,6 @@ PACKET_INSTRUCTIONS_NAME = "common.md"
 # leaves the remaining budget to bound the destination invocation and the wait
 # (PD-5).
 WAIT_RESERVE_SECONDS = 1.0
-POLL_INTERVAL_SECONDS = 0.05
 FINAL_TEXT_PART = "final-text"
 FINAL_TEXT_ARTIFACT_KIND = "role-report"
 RECEIPT_NAME = "receipt.json"
@@ -173,6 +170,23 @@ SESSION_MESSAGE_COLUMNS = ("id", "session_id", "type", "seq", "data")
 IDLE_OUTCOME_SUCCEEDED = "succeeded"
 IDLE_OUTCOME_FAILED = "failed"
 IDLE_OUTCOME_INTERRUPTED = "interrupted"
+
+# 006-001 T2 (PD-7..PD-11, §2.4/§2.5/§2.7): the wait after the client exits,
+# the classification of the durable row, the ordered termination of the
+# adapter's OWN process group and the prior attempt check.
+IDLE_MESSAGE_TYPE = "idle"            # the durable `idle` message (PD-7)
+IDLE_ERROR_MESSAGE_LIMIT = 200        # PD-7: error.message bounded to 200 chars
+DISPATCHES_RELPATH = Path(".cdad") / "executions"
+# §2.5 (D-3): the effective grace is bounded by the reserve-relative fraction.
+TERMINATE_GRACE_FRACTION = 0.25
+# §2.5 (D-3) latency guarantee (PD-11): the share of the internal budget that
+# the CLIENT's dispatch always keeps for itself. The preflight legitimately
+# consumes part of the budget (two invocations in the service mode); without a
+# floor a slow preflight would leave the client a near-zero bound and a
+# HEALTHY client would be killed and reported as a FALSE `timeout` (PD-7/PD-8).
+# The floor comes out of the adapter's own reserve, sized for ~0.6s of measured
+# post-kill overhead out of the 1.0s `WAIT_RESERVE_SECONDS`.
+CLIENT_MIN_BUDGET_SHARE = 0.75
 
 
 class AdapterError(RuntimeError):
@@ -306,13 +320,45 @@ def _check_durable_identity(row: dict[str, Any], role: str) -> str | None:
 # ------------------------------------------------------- destination process
 
 
+def _terminate_own_group(proc: subprocess.Popen, grace: float) -> None:
+    """Ordered termination of the adapter's OWN process group (PD-8, §2.5).
+
+    SIGTERM the group, wait the effective grace `g`, then SIGKILL the group:
+    the direct client AND every process it spawned die before the adapter
+    answers (a grandchild that ignores SIGTERM does not survive). The client
+    runs in a session of its own (`start_new_session=True`), so the group
+    killed here is ONLY the adapter's own -- the background service and any
+    server are never touched (INV-2/PD-8).
+    """
+    try:
+        pgid = os.getpgid(proc.pid)
+    except OSError:
+        pgid = proc.pid
+    try:
+        os.killpg(pgid, signal.SIGTERM)
+    except OSError:
+        pass
+    deadline = time.monotonic() + max(0.0, grace)
+    while time.monotonic() < deadline and proc.poll() is None:
+        time.sleep(0.02)
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except OSError:
+        pass
+    try:
+        proc.wait(timeout=5.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+
 def _invoke_destination(binary: str, agent: str, model: str | None,
                         packet_bytes: bytes, cwd: Path,
                         timeout: float | None,
                         session_id: str, *,
                         server: str | None,
                         auto: bool,
-                        standalone: bool = True) -> subprocess.CompletedProcess:
+                        standalone: bool = True,
+                        grace: float = 0.0) -> subprocess.CompletedProcess:
     """Invoke the configured binary, transporting the packet bytes on stdin.
 
     The adapter chooses the session id and passes `--session <id>` so the
@@ -329,6 +375,11 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
     carries NO flags (`server=None`, `standalone=False`): the client uses the
     background service as the runtime designs it. `--server`/`--standalone` are
     mutually exclusive and the service dispatch is neither.
+
+    006-001 T2 (PD-8): the client runs in its OWN process group
+    (`start_new_session=True`) so that, when it does not return within the
+    bound, the adapter terminates the whole group in an ORDERED way (SIGTERM,
+    the effective grace, SIGKILL) -- never just the direct child.
     """
     argv = [binary, "run", "--agent", agent, "--session", session_id]
     if server:
@@ -348,24 +399,39 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
     env = dict(os.environ)
     env["PWD"] = str(cwd)
     try:
-        return subprocess.run(argv, input=packet_bytes, capture_output=True,
-                              cwd=str(cwd), timeout=timeout, env=env)
-    except subprocess.TimeoutExpired as exc:
-        # R1: the invocation did NOT return within the bound; the client
-        # never reported a return code (the adapter killed it). This is the
-        # material fact `timeout`, NOT a transport failure with a fabricated
-        # rc (PD-5/PD-1).
-        raise DestinationTimeoutError(
-            f"destination binary {binary!r} did not return within the bounded "
-            f"wait ({timeout} seconds); the client was killed at the bound and "
-            f"no return code was ever observed, so no rc is claimed; the "
-            f"absence of a durable signal within the bound is a timeout (no "
-            f"receipt is fabricated; reconcile before repeating)") from exc
+        proc = subprocess.Popen(argv, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, cwd=str(cwd), env=env,
+                                start_new_session=True)
     except OSError as exc:
         # R1 (contracara): the binary could not be STARTED -- a real
-        # transport failure observed before any session row (PD-5).
+        # transport failure observed before any session row (PD-5). No
+        # process was started, so the session stays `null` (PD-8).
         raise AdapterError(
             f"destination binary {binary!r} could not be started: {exc}") from exc
+    try:
+        stdout, stderr = proc.communicate(input=packet_bytes, timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        # R1: the invocation did NOT return within the bound; the client
+        # never reported a return code. The adapter terminates its OWN
+        # process group in an ordered way (PD-8) and raises the material
+        # fact `timeout`, NOT a transport failure with a fabricated rc
+        # (PD-5/PD-1).
+        _terminate_own_group(proc, grace)
+        for stream in (proc.stdin, proc.stdout, proc.stderr):
+            if stream is not None:
+                try:
+                    stream.close()
+                except OSError:
+                    pass
+        raise DestinationTimeoutError(
+            f"destination binary {binary!r} did not return within the bounded "
+            f"wait ({timeout} seconds); the client was terminated in an "
+            f"ordered way at the bound (its whole process group) and no "
+            f"return code was ever observed, so no rc is claimed; the "
+            f"absence of a durable signal within the bound is a timeout (no "
+            f"receipt is fabricated; reconcile before repeating)") from exc
+    return subprocess.CompletedProcess(argv, proc.returncode, stdout, stderr)
 
 
 # ----------------------------------------------------------- durable signal
@@ -470,13 +536,53 @@ def _last_assistant_text(conn: sqlite3.Connection,
     return _text_from_message_data(row[0])
 
 
+def _last_idle_message_error(conn: sqlite3.Connection,
+                             session_id: str) -> tuple[str | None, str | None]:
+    """The `error.type`/`error.message` of the LAST `idle` session_message.
+
+    PD-7: a durable row whose `idle_outcome` is `failed` carries the failing
+    fact in its LAST `idle` message (`data.error`). Returns
+    `(error_type, error_message)`; `(None, None)` when there is no `idle`
+    message or it carries no usable `error` object. The message is returned
+    whole here and bounded to `IDLE_ERROR_MESSAGE_LIMIT` characters by the
+    caller, so a very long durable error never floods the diagnosis.
+    """
+    cursor = _query(
+        conn,
+        f"SELECT data FROM {SESSION_MESSAGE_TABLE} "
+        "WHERE session_id = ? AND type = ? ORDER BY seq DESC LIMIT 1",
+        (session_id, IDLE_MESSAGE_TYPE))
+    row = cursor.fetchone()
+    if row is None:
+        return None, None
+    try:
+        document = json.loads(row[0]) if isinstance(row[0], str) else row[0]
+    except (TypeError, ValueError):
+        return None, None
+    if not isinstance(document, dict):
+        return None, None
+    error = document.get("error")
+    if not isinstance(error, dict):
+        return None, None
+    error_type = error.get("type")
+    error_message = error.get("message")
+    return (error_type if isinstance(error_type, str) else None,
+            error_message if isinstance(error_message, str) else None)
+
+
 def _store_state(store_path: Path, session_id: str) -> dict[str, Any]:
     """Read the correlated session state from the store READ ONLY (PD-1/PD-2).
 
-    Returns `{"kind": "idle"|"no-idle"|"no-row", "row": ..., "final_text": ...}`.
+    Returns `{"kind": "idle"|"no-idle"|"no-row", "row": ..., "final_text": ...,
+    "idle_error": ...}`.
     Raises `AdapterError` (fail closed, no waiting) when the store does not
     exist, is not readable SQLite or lacks the required schema; raises
     `_StoreBusy` on transient lock contention so the waiter can retry.
+
+    The connection sets the SQLite busy timeout to 0: a locked store fails
+    IMMEDIATELY as `_StoreBusy` instead of blocking inside SQLite's own
+    (5 s) busy handler, so the proportional schedule of §2.4 -- not SQLite --
+    decides when the store is retried (PD-10).
     """
     if not store_path.is_file():
         raise AdapterError(
@@ -487,7 +593,7 @@ def _store_state(store_path: Path, session_id: str) -> dict[str, Any]:
     try:
         # READ ONLY: URI `mode=ro`; NEVER `immutable` (it would mask the live
         # runtime's updates, R-G) and NEVER a writable connection (INV-3).
-        conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True)
+        conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True, timeout=0)
     except sqlite3.Error as exc:
         raise AdapterError(
             f"the durable session store {store_path} is not readable as "
@@ -496,11 +602,17 @@ def _store_state(store_path: Path, session_id: str) -> dict[str, Any]:
         _validate_store_schema(conn, store_path)
         row = _fetch_session_row(conn, session_id)
         if row is None:
-            return {"kind": "no-row", "row": None, "final_text": None}
+            return {"kind": "no-row", "row": None, "final_text": None,
+                    "idle_error": None}
         if row.get("idle_outcome") is None:
-            return {"kind": "no-idle", "row": row, "final_text": None}
+            return {"kind": "no-idle", "row": row, "final_text": None,
+                    "idle_error": None}
+        idle_error = None
+        if row.get("idle_outcome") == IDLE_OUTCOME_FAILED:
+            idle_error = _last_idle_message_error(conn, session_id)
         return {"kind": "idle", "row": row,
-                "final_text": _last_assistant_text(conn, session_id)}
+                "final_text": _last_assistant_text(conn, session_id),
+                "idle_error": idle_error}
     except (AdapterError, _StoreBusy):
         raise
     except sqlite3.OperationalError as exc:
@@ -518,38 +630,139 @@ def _store_state(store_path: Path, session_id: str) -> dict[str, Any]:
         conn.close()
 
 
-def _await_durable_outcome(store_path: Path, session_id: str,
-                           returncode: int, deadline: float) -> dict[str, Any]:
-    """Wait on the DURABLE signal (never the client rc) up to the bound.
+def _settle_decides(mode_effective: str, state: dict[str, Any] | None,
+                    returncode: int) -> bool:
+    """Does `settle_seconds`, not the cota, decide this non-idle outcome?
 
-    A store/schema failure is a KNOWN fact: it fails closed immediately, without
-    exhausting the wait (PD-2). While the store is valid but the correlated row
-    is not yet idle, the adapter waits up to the bounded deadline; a client
-    that already ended with a non-zero rc and left no row is a material
-    transport failure (PD-5).
+    006-001 §2.4 (PD-7): in STANDALONE a row that is not idle and a client
+    that ended with rc=0 without a row resolve to `unknown` once
+    `settle_seconds` elapses since the client exited; with the SERVER/SERVICE
+    effective mode the durable wait keeps going up to the cota (`timeout`) and
+    the settlement never decides. A store that is momentarily busy carries no
+    new material fact: the LAST known state keeps deciding.
     """
+    if state is None:
+        return False
+    if state["kind"] == "no-row":
+        return returncode == 0
+    if state["kind"] == "no-idle":
+        return mode_effective == "standalone"
+    return False
+
+
+def _await_durable_outcome(store_path: Path, session_id: str,
+                           returncode: int, *, deadline: float,
+                           settle_seconds: float, mode_effective: str,
+                           exit_ts: float, poll_initial: float,
+                           poll_max: float) -> dict[str, Any]:
+    """Wait on the DURABLE signal (never the client rc), proportionally.
+
+    006-001 §2.4 (PD-10): zero reads while the client lives -- the durable
+    wait only starts after the client exits; from then on the store is read
+    with an exponential backoff (`poll_initial_seconds` doubled up to
+    `poll_max_seconds`), so the number of reads over a window `W` stays within
+    the §2.4 bound. A store/schema failure is a KNOWN fact that fails closed
+    immediately (PD-2); a transient `locked`/`busy` store is retried on the
+    same schedule (INV-1: only reads, never a write).
+
+    Classification (PD-7): idle row -> its material outcome; no row with a
+    non-zero rc -> `transport-error`; `unknown` once `settle_seconds` decides
+    (standalone, or a rc=0 exit without a row); `timeout` when the cota is
+    reached first. Returns the classification plus `reads`, the number of
+    store reads this wait performed (PD-3: reported and contrasted).
+    """
+    interval = poll_initial
+    reads = 0
+    settle_deadline = exit_ts + settle_seconds
+    settle_applies = False
+    row_present = False
     while True:
+        reads += 1
         try:
             state = _store_state(store_path, session_id)
         except _StoreBusy:
             state = None
         if state is not None:
-            kind = state["kind"]
-            if kind == "idle":
+            if state["kind"] == "idle":
                 return {"kind": "idle", "row": state["row"],
-                        "final_text": state["final_text"]}
-            if kind == "no-row" and returncode != 0:
-                return {"kind": "transport-error"}
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            return {"kind": "timeout"}
-        time.sleep(min(POLL_INTERVAL_SECONDS, remaining))
+                        "final_text": state["final_text"],
+                        "idle_error": state.get("idle_error"), "reads": reads,
+                        "row_present": True}
+            if state["kind"] == "no-row" and returncode != 0:
+                return {"kind": "transport-error", "row": None,
+                        "final_text": None, "reads": reads,
+                        "row_present": False}
+            if _settle_decides(mode_effective, state, returncode):
+                settle_applies = True
+            row_present = state["kind"] == "no-idle"
+        now = time.monotonic()
+        if now >= deadline:
+            return {"kind": "timeout", "row": None, "final_text": None,
+                    "reads": reads, "row_present": row_present}
+        if settle_applies:
+            remaining_settle = settle_deadline - now
+            if remaining_settle <= 0:
+                return {"kind": "unknown", "row": None, "final_text": None,
+                        "reads": reads, "row_present": row_present}
+            sleep_for = min(interval, deadline - now, remaining_settle)
+        else:
+            sleep_for = min(interval, deadline - now)
+        time.sleep(max(0.0, sleep_for))
+        interval = min(interval * 2, poll_max)
 
 
-def _wait_budget(timeout: float | None) -> float | None:
+def _prior_attempt_check(store_path: Path, project_root: Path,
+                         execution_id: str | None,
+                         packet_id: str) -> dict[str, Any]:
+    """006-001 §2.7 (PD-9/D-6): a live prior attempt of the SAME packet blocks.
+
+    Reads the dispatch records of this execution and, for every record of the
+    SAME `packet_id` that declares a session, reads that session's durable row
+    (read only): a row that EXISTS and is NOT idle is a live prior attempt ->
+    `blocking_session`. A row that is idle, or absent, does not block; a store
+    that cannot be read carries no material fact and does not block either
+    (fail open on the prior check only: the check never invents an attempt).
+    No automatic retry is ever produced here (INV-3): the caller blocks, it
+    never re-dispatches and never opens a standalone next to a live writer
+    (INV-10). Returns `{"blocking_session": ..., "reads": N}`.
+    """
+    if not isinstance(execution_id, str):
+        return {"blocking_session": None, "reads": 0}
+    base = project_root / DISPATCHES_RELPATH / execution_id / "dispatches"
+    if not base.is_dir():
+        return {"blocking_session": None, "reads": 0}
+    reads = 0
+    blocking: str | None = None
+    for path in sorted(base.glob("*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(record, dict) or record.get("packet_id") != packet_id:
+            continue
+        prior_session = _as_text(record.get("session"))
+        if prior_session is None:
+            continue
+        reads += 1
+        try:
+            state = _store_state(store_path, prior_session)
+        except (_StoreBusy, AdapterError):
+            continue
+        if state["kind"] == "no-idle" and blocking is None:
+            blocking = prior_session
+    return {"blocking_session": blocking, "reads": reads}
+
+
+def _wait_budget(timeout: float | None, grace: float) -> float | None:
+    """§2.5: the internal budget is `timeout - WAIT_RESERVE - g`.
+
+    `g` (the effective terminate grace) is taken out of the bound so the
+    ordered termination of the client's group also fits INSIDE the interface's
+    own bound (PD-11).
+    """
     if timeout is None:
         return None
-    return max(0.0, timeout - WAIT_RESERVE_SECONDS)
+    return max(0.0, timeout - WAIT_RESERVE_SECONDS - grace)
 
 
 # --------------------------------------------- 006-001 T1: mode selection
@@ -719,7 +932,19 @@ def _preflight_get_info(server_url: str, password: str | None,
     server and leak the Basic credential to a third party. Returns a `kind`
     discriminant: `transport-error`/`unauthorized`/`not-found`/`no-json`/
     `no-version`/`ok` (with `version_raw` when `ok`).
+
+    The HTTP stack (`urllib.request`/`urllib.error` and `base64`, with the
+    `http.client`/`ssl`/`email`/`tempfile` subtree they pull in) is imported
+    HERE and not at module load: it is only needed by the SERVER preflight, and
+    the adapter's own startup is on the critical path of the interface's cota
+    (PD-11/D-3: measured ~0.07s of the ~0.24s module import cost, and a larger
+    share of it under host load). The standalone/service dispatch -- and every
+    pre-dispatch block -- must not pay it.
     """
+    import base64
+    import urllib.error
+    import urllib.request
+
     url = server_url.rstrip("/") + "/api/info"
     request = urllib.request.Request(url, method="GET")
     if password is not None:
@@ -1237,7 +1462,9 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
                       dispatch_flags: str = DISPATCH_FLAG_NONE,
                       service_status: str = SERVICE_STATUS_NOT_CHECKED,
                       fallback: str = FALLBACK_NONE,
-                      model_reported: str | None = None) -> str:
+                      model_reported: str | None = None,
+                      store_reads: str = "unknown",
+                      prior_check_reads: str = "unknown") -> str:
     """Persist the final text through the existing `receive` flow (PD-7).
 
     The receipt stays `semantic_status: "pending"` (delivery is not a gate,
@@ -1253,7 +1480,9 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
     # registers its own attempt after this adapter returns, so the worker's
     # attempt is recorded here first (same ledger, reused machinery). PD-6:
     # `session`/`model_reported` come from the durable row, with provenance.
-    # 006-001 §2.6: the row is present (the row we just classified from).
+    # 006-001 §2.6: the row is present (the row we just classified from), and
+    # `store_reads`/`prior_check_reads` report the counts of THIS attempt
+    # (PD-3: the I8 count is contrasted against the fixture trace, PD-10).
     observation = _observation(
         runtime, model, binary_version, session, started_at,
         mode_requested=mode_requested, mode_effective=mode_effective,
@@ -1262,7 +1491,8 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
             "durable session row (exec-config: sessions_db): session_v2.id"),
         row_state="present", model_reported=model_reported,
         dispatch_flags=dispatch_flags, service_status=service_status,
-        fallback=fallback)
+        fallback=fallback, store_reads=store_reads,
+        prior_check_reads=prior_check_reads)
     _register_dispatch(project_root, packet_id, request, attempt_id, observation)
 
     inbox = project_root / ".cdad" / "inbox"
@@ -1316,12 +1546,19 @@ def _envelope(*, session: str | None, termination: str, delivery_ref: str | None
 
 
 def _classify(row: dict[str, Any],
-              final_text: str | None) -> tuple[str, str | None, str | None, str | None]:
+              final_text: str | None,
+              idle_error: tuple[str | None, str | None] | None = None
+              ) -> tuple[str, str | None, str | None, str | None]:
     """Classify the correlated durable row into the termination vocabulary.
 
     PD-5: the termination comes from the MATERIAL fact of the row's
     `idle_outcome` (never the client rc). Only `completed` carries a final text
     (delivery); every other termination never fabricates a receipt.
+
+    006-001 T2 (PD-7): a `failed` row carries the durable `error.type` /
+    `error.message` of its LAST `idle` message -- the message is bounded to
+    `IDLE_ERROR_MESSAGE_LIMIT` characters so a very long durable error never
+    floods the diagnosis.
     """
     idle_outcome = row.get("idle_outcome")
     session = _as_text(row.get("id"))
@@ -1334,10 +1571,21 @@ def _classify(row: dict[str, Any],
                 "sufficient delivery (reconcile before repeating)")
         return "completed", session, final_text, None
     if idle_outcome == IDLE_OUTCOME_FAILED:
+        detail = ""
+        if idle_error is not None:
+            error_type, error_message = idle_error
+            parts = []
+            if error_type is not None:
+                parts.append(f"error.type={error_type}")
+            if error_message is not None:
+                parts.append(
+                    f"error.message={error_message[:IDLE_ERROR_MESSAGE_LIMIT]}")
+            if parts:
+                detail = f" ({', '.join(parts)})"
         return "blocked", session, None, (
-            "the correlated durable session row reports idle_outcome 'failed': "
-            "the role session is blocked; obtain a re-entry with changed "
-            "conditions before repeating the delegation")
+            f"the correlated durable session row reports idle_outcome 'failed'"
+            f"{detail}: the role session is blocked; obtain a re-entry with "
+            "changed conditions before repeating the delegation")
     if idle_outcome == IDLE_OUTCOME_INTERRUPTED:
         return "cancelled", session, None, (
             "the correlated durable session row reports idle_outcome "
@@ -1415,11 +1663,23 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         return _envelope(session=None, termination="blocked",
                          delivery_ref=None, diagnosis=service_keys_diagnosis)
 
+    # 006-001 §2.1: every `wait.*` value is validated above; the declared keys
+    # (or their portable defaults) drive the proportional wait of §2.4.
+    poll_initial = float(wait_dict.get(
+        "poll_initial_seconds", DEFAULT_WAIT_VALUES["poll_initial_seconds"]))
+    poll_max = float(wait_dict.get(
+        "poll_max_seconds", DEFAULT_WAIT_VALUES["poll_max_seconds"]))
+    settle_seconds = float(wait_dict.get(
+        "settle_seconds", DEFAULT_WAIT_VALUES["settle_seconds"]))
+    terminate_grace_seconds = float(wait_dict.get(
+        "terminate_grace_seconds", DEFAULT_WAIT_VALUES["terminate_grace_seconds"]))
+
     packet_dir = project_root / ".cdad" / "packets" / args.packet_id
     request = _load_json(packet_dir / "REQUEST.json", "packet request")
     role = _as_text(request.get("role"))
     if role is None:
         raise AdapterError(f"packet {args.packet_id!r} request has no role")
+    execution_id_value = _as_text(request.get("execution_id"))
 
     packet_bytes = _read_packet_stdin()
     started_at = _now()
@@ -1444,6 +1704,12 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # declared standalone fallback): it travels in the envelope's diagnosis so
     # the caller sees the cause and the declared transition (PD-13).
     dispatch_note: str | None = None
+    # 006-001 T2 (PD-3): the counters THIS attempt reports in
+    # `provenance.session`. `unknown` until the corresponding work runs
+    # (INV-9: unknown is never 0 nor empty); the prior attempt check and the
+    # durable wait (PD-10) set them to the reads they performed.
+    store_reads_value: Any = "unknown"
+    prior_check_reads_value: Any = "unknown"
 
     def register_note(*, session: str | None, session_base: str,
                       row_state: str, client_version: str | None,
@@ -1458,7 +1724,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             client_version=client_version, server_version=server_version,
             session_base=session_base, row_state=row_state,
             dispatch_flags=dispatch_flags, service_status=service_status,
-            fallback=fallback)
+            fallback=fallback, store_reads=store_reads_value,
+            prior_check_reads=prior_check_reads_value)
         try:
             _register_dispatch(project_root, args.packet_id, request,
                                attempt_id, observation)
@@ -1522,6 +1789,18 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             "fabricated (reconcile the execution configuration before "
             "repeating)")
 
+    # 006-001 §2.1 cota mínima (PD-11): `wait.timeout_seconds` must exceed the
+    # fixed reserve; at or below it there is no budget left for the
+    # invocation/wait, so the adapter BLOCKS before dispatching anything.
+    if timeout is not None and timeout <= WAIT_RESERVE_SECONDS:
+        return blocked_before_dispatch(
+            "`wait.timeout_seconds` "
+            f"({timeout}) must be greater than the fixed reserve "
+            f"WAIT_RESERVE_SECONDS ({WAIT_RESERVE_SECONDS}) (spec §2.1/PD-11): "
+            "refusing to dispatch without a usable bound -- no session is "
+            "created, no bytes are transported and no receipt is fabricated "
+            "(reconcile the execution configuration before repeating)")
+
     # 006-001 §2.2: `mode: server` (declared or by compatibility) without a
     # valid URL selects NO execution mode -- blocked before any invocation,
     # never a silent fallback (INV-2).
@@ -1531,8 +1810,29 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             "(http/https, with host, no userinfo -- spec §2.2): refusing to "
             "select an execution mode (no fallback to standalone, INV-2)")
 
-    budget = _wait_budget(timeout)
+    # 006-001 §2.5 (D-3): the effective grace and the internal budget. The
+    # grace is bounded by the reserve-relative fraction and the budget takes
+    # it out, so the ordered termination of the client's group ALSO fits
+    # inside the interface's own bound (PD-11).
+    grace = min(terminate_grace_seconds,
+                TERMINATE_GRACE_FRACTION * (timeout - WAIT_RESERVE_SECONDS))
+    budget = _wait_budget(timeout, grace)
     wait_deadline = time.monotonic() + (budget or 0.0)
+
+    # 006-001 §2.7 (PD-9/D-6): a LIVE prior attempt of the SAME packet blocks
+    # BEFORE anything is invoked -- no re-dispatch, no standalone next to a
+    # live writer (INV-10).
+    prior = _prior_attempt_check(sessions_db, project_root, execution_id_value,
+                                 args.packet_id)
+    prior_check_reads_value = prior["reads"]
+    if prior["blocking_session"] is not None:
+        return blocked_before_dispatch(
+            "a prior attempt of the same packet is still LIVE (PD-9/§2.7): the "
+            f"durable session row {prior['blocking_session']!r} of a previous "
+            "dispatch record exists without an idle outcome. No automatic "
+            "retry is produced: reconcile or wait for the prior worker before "
+            "repeating the delegation (CDAD never re-dispatches on its own and "
+            "never opens a standalone next to a live writer, INV-3/INV-10)")
 
     preflight_timeout_configured = float(
         wait_dict.get("preflight_timeout_seconds",
@@ -1587,31 +1887,49 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
 
     # PD-1: the adapter CHOOSES the session id and correlates by it.
     session_id = _choose_session_id()
-    remaining_for_invoke = max(0.0, wait_deadline - time.monotonic())
+    # §2.5 (D-3, PD-11): the client dispatch gets whatever the preflight left
+    # of the budget, but NEVER less than its declared share: a slow preflight
+    # must not kill a healthy client at a near-zero bound and report a FALSE
+    # `timeout`. A hung client is still cut inside the interface's own bound
+    # (the floor is bounded by the budget; the reserve absorbs the overdraft).
+    client_floor = (budget or 0.0) * CLIENT_MIN_BUDGET_SHARE
+    remaining_for_invoke = max(wait_deadline - time.monotonic(), client_floor)
 
     # PD-5/D6: invoke the configured binary (with `--session <id>`), then wait
     # on the DURABLE signal. The invocation is bounded by the remaining
     # budget, so a destination that never returns can never make the
     # interface the one that kills this adapter (the adapter always answers
-    # within the bound it received).
+    # within the bound it received). PD-8: the client runs in its OWN process
+    # group and, when the bound expires, the WHOLE group is terminated in an
+    # ordered way (SIGTERM, the effective grace, SIGKILL).
     try:
         proc = _invoke_destination(binary, _entry_agent_name(role), model,
                                    packet_bytes, project_root,
                                    remaining_for_invoke, session_id,
                                    server=server_for_invoke, auto=auto,
-                                   standalone=standalone_for_invoke)
+                                   standalone=standalone_for_invoke,
+                                   grace=grace)
     except DestinationTimeoutError as exc:
         # R1: the material fact is absence-of-signal within the bound ->
-        # `timeout`, never `transport-error` with a fabricated rc.
-        note = register_note(session=None, session_base="chosen by adapter",
+        # `timeout`, never `transport-error` with a fabricated rc. PD-8: the
+        # client WAS started, so the envelope carries the chosen session.
+        diagnosis = str(exc)
+        if mode_effective in ("server", "service"):
+            diagnosis += (
+                f"; the role worker may still be running in the "
+                f"{mode_effective} (CDAD terminated ONLY its own client's "
+                "process group and never touches the server or the background "
+                "service)")
+        note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="unknown", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination="timeout",
+        return _envelope(session=session_id, termination="timeout",
                          delivery_ref=None,
-                         diagnosis=_append_note(str(exc), note))
+                         diagnosis=_append_note(diagnosis, note))
     except AdapterError as exc:
         # R1 (contracara): a binary that could not be STARTED is a real
-        # transport failure (PD-5).
+        # transport failure (PD-5): no process was started, so the session
+        # stays `null` (PD-8).
         note = register_note(session=None, session_base="chosen by adapter",
                              row_state="absent", client_version=client_version,
                              server_version=server_version)
@@ -1619,21 +1937,25 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                          delivery_ref=None,
                          diagnosis=_append_note(str(exc), note))
 
-    # PD-2: a missing/unreadable/unknown-schema store is a KNOWN fact and fails
-    # closed with a diagnosis, without exhausting the wait. PD-5: otherwise the
-    # termination comes from the correlated durable row's `idle_outcome`; a
-    # client that already ended with a non-zero rc and left no row is a
-    # material transport failure; no idle within the bounded wait is `timeout`.
+    # PD-7/PD-10: the proportional wait only starts AFTER the client exits
+    # (zero reads while it lives) and classifies from the material facts.
+    exit_ts = time.monotonic()
     try:
-        outcome = _await_durable_outcome(sessions_db, session_id,
-                                         proc.returncode, wait_deadline)
+        outcome = _await_durable_outcome(
+            sessions_db, session_id, proc.returncode, deadline=wait_deadline,
+            settle_seconds=settle_seconds, mode_effective=mode_effective,
+            exit_ts=exit_ts, poll_initial=poll_initial, poll_max=poll_max)
     except AdapterError as exc:
-        note = register_note(session=None, session_base="chosen by adapter",
+        # PD-2: a missing/unreadable/unknown-schema store is a KNOWN fact and
+        # fails closed with a diagnosis, without exhausting the wait. PD-8:
+        # the client WAS started, so the chosen session travels.
+        note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="unknown", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination="blocked",
+        return _envelope(session=session_id, termination="blocked",
                          delivery_ref=None,
                          diagnosis=_append_note(str(exc), note))
+    store_reads_value = str(outcome["reads"])
 
     kind = outcome["kind"]
     if kind == "transport-error":
@@ -1644,10 +1966,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             f"the destination client failed in transport (rc="
             f"{proc.returncode}) before any durable session row: "
             f"{stderr[:300] or 'no diagnostic'}")
-        note = register_note(session=None, session_base="chosen by adapter",
+        note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="absent", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination="transport-error",
+        return _envelope(session=session_id, termination="transport-error",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
     if kind == "timeout":
@@ -1657,10 +1979,34 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             f"({timeout if timeout is not None else 'configured'} seconds); "
             "the client rc does not prove the role finished and no receipt "
             "is fabricated (reconcile before repeating)")
-        note = register_note(session=None, session_base="chosen by adapter",
-                             row_state="unknown", client_version=client_version,
+        if mode_effective in ("server", "service"):
+            diagnosis += (
+                f"; the role worker may still be running in the "
+                f"{mode_effective}: CDAD does NOT open a standalone next to it "
+                "and never touches the server or the background service "
+                "(INV-10)")
+        note = register_note(session=session_id, session_base="chosen by adapter",
+                             row_state=("present" if outcome["row_present"]
+                                        else "absent"),
+                             client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination="timeout",
+        return _envelope(session=session_id, termination="timeout",
+                         delivery_ref=None,
+                         diagnosis=_append_note(diagnosis, note))
+    if kind == "unknown":
+        # §2.4/PD-7: `settle_seconds` elapsed without a durable idle outcome.
+        diagnosis = (
+            "no durable idle outcome for the chosen session "
+            f"{session_id!r} after the settlement window "
+            f"({settle_seconds} seconds since the client exited, rc="
+            f"{proc.returncode}): the store carries no material end-of-run "
+            "fact and no receipt is fabricated (reconcile before repeating)")
+        note = register_note(session=session_id, session_base="chosen by adapter",
+                             row_state=("present" if outcome["row_present"]
+                                        else "absent"),
+                             client_version=client_version,
+                             server_version=server_version)
+        return _envelope(session=session_id, termination="unknown",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
 
@@ -1681,7 +2027,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                          diagnosis=_append_note(identity_diagnosis, note))
 
     termination, session, final_text, diagnosis = _classify(
-        row, outcome["final_text"])
+        row, outcome["final_text"], outcome.get("idle_error"))
     if termination != "completed":
         note = register_note(session=session, session_base=durable_session_base,
                              row_state="present", client_version=client_version,
@@ -1698,7 +2044,9 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             client_version=client_version, server_version=server_version,
             dispatch_flags=dispatch_flags, service_status=service_status,
             fallback=fallback,
-            model_reported=_model_reported_from_row(row.get("model")))
+            model_reported=_model_reported_from_row(row.get("model")),
+            store_reads=store_reads_value,
+            prior_check_reads=prior_check_reads_value)
     except (AdapterError, cdad_result.ResultError) as exc:
         return _envelope(
             session=session, termination="blocked", delivery_ref=None,
