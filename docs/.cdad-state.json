@@ -6209,6 +6209,52 @@
         "docs/specs/006-001-opencode-concurrency-reliability/t1b-red.md": "6a9104baf1b8e7b1067cff1c5fa8b6aafae099f7ba6374ba1354ba99709b96db"
       },
       "note": "RED de T1b. Commit 7ccedb4: solo tests/test_006_001_t1b_service_mode.py (nuevo). GATE VERIFICADO POR EL ORQUESTADOR: 16 failed / 0 passed, todas AssertionError del contrato (PD-13/PD-14, procedencia, require). Informe del rol: salida completa de opencode run materializada saneada."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "tdd-green-t1b",
+      "substage": "green",
+      "at": "2026-10-16T22:05:06.444176+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "2f5fc7b2d76da6d6079be6d915613bc7dc7e31300219818cfa8c0ed3c2f0627e",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "tdd-green-t1b",
+        "substage": "green",
+        "packet_id": "006-001-opencode-concurrency-reliability-implementer-green-002",
+        "receipt_sha256": "3f5d77e0e4bba8e58a5b90eafbf2a96bfa080bea786df173400f75e6bb1b83ef",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/t1b-green.md",
+            "1e3b0f888f036b2615e4c563100941843797e6f643ebdb9c1aab4a5889d76d59"
+          ],
+          [
+            "skills/cdad-cycle/scripts/cdad_delegate_opencode.py",
+            "71a49c1f99e11f9520bc54c76e2e5cf24a627bfed5d025835af1e4cb8f5df0ac"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-implementer-green-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-implementer-green-002/receipt.json",
+      "receipt_sha256": "3f5d77e0e4bba8e58a5b90eafbf2a96bfa080bea786df173400f75e6bb1b83ef",
+      "artifacts": {
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py": "71a49c1f99e11f9520bc54c76e2e5cf24a627bfed5d025835af1e4cb8f5df0ac",
+        "docs/specs/006-001-opencode-concurrency-reliability/t1b-green.md": "1e3b0f888f036b2615e4c563100941843797e6f643ebdb9c1aab4a5889d76d59"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6223,7 +6269,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T21:49:11.700695+00:00",
+  "last_updated": "2026-10-16T22:05:06.444176+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6334,7 +6380,7 @@
     "id": "006-001-opencode-concurrency-reliability-implementer-green-002",
     "role": "implementer",
     "substage": "green",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
