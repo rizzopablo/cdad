@@ -5991,6 +5991,52 @@
         "docs/specs/006-001-opencode-concurrency-reliability/t1-green.md": "8bc72a5bb7bf4365ab940f014b1401ee905ecb957cd8168bdfb62724e05695ae"
       },
       "note": "GREEN de T1. Commits 4bc8934 y a96c2d8 (autocorreccion: la version observada del cliente se compara siempre; binary_version es chequeo adicional). Diff 8ec3046..HEAD solo el adaptador (+515/-64); cdad_delegate.py intacto (INV-4). VERIFICADO POR EL ORQUESTADOR: focal + regresiones de la ficha T1 en tres corridas propias: 52/54 (2 fallos en modo servidor feliz que pasan aislados) y luego 54/54 y 54/54. Causa declarada por el rol y medida: el registro del worker en toda terminacion (D-5) y el preflight suman latencia y estrechan el margen de la cota de 2 s de los fixtures (carrera ya documentada). NO bloquea T1; queda como requisito explicito de T2 (D-3/PD-11: el adaptador responde dentro de la cota; gate de T2 exige regresiones estables en corridas repetidas). Interpretacion del rol a revisar en review: mode sin declarar con server presente pero URL invalida -> blocked (no standalone), por INV-2."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "tdd-red-t2",
+      "substage": "green",
+      "at": "2026-10-16T18:28:32.011263+00:00",
+      "by": "test-writer (subagente nativo cdad-test-writer de Claude Code, Agent model=sonnet)",
+      "transition": "delivery",
+      "transition_key": "d163f4335a1d4c7545c46322efc6c3de6432e7e400ffeb1b6c343b867beb75c9",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "tdd-red-t2",
+        "substage": "green",
+        "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-002",
+        "receipt_sha256": "b532ee4885923e022efd91a68fe09e7f80df4023f20bedcb8a45a51663390a6b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/t2-red.md",
+            "b9ab5926ee1952809907ee8af506753b2a53b833d6634b42b3cc3603d0e7b519"
+          ],
+          [
+            "tests/test_006_001_t2_wait_recovery.py",
+            "00a39c47edc3a524cd99b0b903f440915ca81fcb5fa0eaa89af84a332bd7acf4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-test-writer-red-002/receipt.json",
+      "receipt_sha256": "b532ee4885923e022efd91a68fe09e7f80df4023f20bedcb8a45a51663390a6b",
+      "artifacts": {
+        "tests/test_006_001_t2_wait_recovery.py": "00a39c47edc3a524cd99b0b903f440915ca81fcb5fa0eaa89af84a332bd7acf4",
+        "docs/specs/006-001-opencode-concurrency-reliability/t2-red.md": "b9ab5926ee1952809907ee8af506753b2a53b833d6634b42b3cc3603d0e7b519"
+      },
+      "note": "RED de T2. Commit 8447443: solo tests/test_006_001_t2_wait_recovery.py (nuevo, fake propio; fake compartido intacto). GATE VERIFICADO POR EL ORQUESTADOR con corrida propia: 8 failed / 4 passed, las 8 por AssertionError del contrato (PD-7 error durable y settle, PD-8 sesion en timeout, PD-9 intento previo, PD-10 backoff y store_reads, PD-11 cota minima). 4 pasan hoy por conservacion declarada. Regresiones de la ficha: 77 passed / 1 skipped (corrida del rol). RED verificado por el rol en worktree, sin stash. El GREEN de T2 espera a la enmienda 001 (modo service) por si ajusta PD de recuperacion."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6005,7 +6051,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T17:51:56.856013+00:00",
+  "last_updated": "2026-10-16T18:28:32.011263+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6116,10 +6162,10 @@
     "id": "006-001-opencode-concurrency-reliability-test-writer-red-002",
     "role": "test-writer",
     "substage": "red",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
