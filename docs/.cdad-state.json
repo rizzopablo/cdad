@@ -6037,6 +6037,41 @@
         "docs/specs/006-001-opencode-concurrency-reliability/t2-red.md": "b9ab5926ee1952809907ee8af506753b2a53b833d6634b42b3cc3603d0e7b519"
       },
       "note": "RED de T2. Commit 8447443: solo tests/test_006_001_t2_wait_recovery.py (nuevo, fake propio; fake compartido intacto). GATE VERIFICADO POR EL ORQUESTADOR con corrida propia: 8 failed / 4 passed, las 8 por AssertionError del contrato (PD-7 error durable y settle, PD-8 sesion en timeout, PD-9 intento previo, PD-10 backoff y store_reads, PD-11 cota minima). 4 pasan hoy por conservacion declarada. Regresiones de la ficha: 77 passed / 1 skipped (corrida del rol). RED verificado por el rol en worktree, sin stash. El GREEN de T2 espera a la enmienda 001 (modo service) por si ajusta PD de recuperacion."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "dispatch-disposition",
+      "substage": null,
+      "at": "2026-10-16T21:12:18.739672+00:00",
+      "by": "orquestador Claude",
+      "transition": "disposition",
+      "transition_key": "394df2d9f2e828ed5638f332b96ece3260ddfefc9f1d4cf672e0f488346989df",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "disposition",
+        "stage": "dispatch-disposition",
+        "substage": null,
+        "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-002",
+        "receipt_sha256": null,
+        "resolution": "abandoned",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-002",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "El subagente architect termino por un error de infraestructura del proveedor (HTTP 429, limite de sesion de uso; el harness lo reporto como failed) sin texto final. Rol de solo lectura: arbol limpio y sin efectos (git status vacio). reconcile: dispatched-unknown, sin recibo. Se abandona el paquete y se prepara uno nuevo con el mismo encargo: nueva informacion (el limite se restablecio), no repeticion ciega.",
+      "resolution": "abandoned"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6051,7 +6086,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T18:28:32.011263+00:00",
+  "last_updated": "2026-10-16T21:12:18.739672+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
