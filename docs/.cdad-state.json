@@ -6072,6 +6072,97 @@
       "artifacts": {},
       "note": "El subagente architect termino por un error de infraestructura del proveedor (HTTP 429, limite de sesion de uso; el harness lo reporto como failed) sin texto final. Rol de solo lectura: arbol limpio y sin efectos (git status vacio). reconcile: dispatched-unknown, sin recibo. Se abandona el paquete y se prepara uno nuevo con el mismo encargo: nueva informacion (el limite se restablecio), no repeticion ciega.",
       "resolution": "abandoned"
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-16T21:31:56.758725+00:00",
+      "by": "architect (OpenCode run --standalone, agente cdad-architect, mofgw/deepseek-v4.1-flash; intento 3)",
+      "transition": "delivery",
+      "transition_key": "a7908642ec121d6924a04c77cc58dff24d857a5424a9d9645887f377667ef1b8",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-002",
+        "receipt_sha256": "93bffac0a12c983d807d9fd595148888902922685abef2e3f1af0852679d6463",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+            "2726744566f58af88540f03b6bb1cec6a73534c6adb43bfbf466206278a1ea72"
+          ],
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+            "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-architect-draft-002/receipt.json",
+      "receipt_sha256": "93bffac0a12c983d807d9fd595148888902922685abef2e3f1af0852679d6463",
+      "artifacts": {
+        "docs/specs/006-001-opencode-concurrency-reliability/spec.md": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b",
+        "docs/specs/006-001-opencode-concurrency-reliability/plan.md": "2726744566f58af88540f03b6bb1cec6a73534c6adb43bfbf466206278a1ea72"
+      },
+      "note": "ENMIENDA 001 (modo service) recibida: receive + validate-receipt VALID + materialize CAS sobre v1. Intentos 1-2 fueron subagentes Claude (429; detenido por decision del duenio). La disposicion abandoned previa fue un error del orquestador: el paquete se entrego."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "specification",
+      "substage": "green",
+      "at": "2026-10-16T21:31:57.091899+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "e4c56a9c277e12571f112f596ef04fcb80ca3bf70c3da8c275168c4a104407e2",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+        "contract": {
+          "path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
+        },
+        "plan": {
+          "path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+          "sha256": "2726744566f58af88540f03b6bb1cec6a73534c6adb43bfbf466206278a1ea72"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "RE-APROBACION del contrato (enmienda 001, spec v2 con PD-13/PD-14 y plan v2 con T1b): bytes cambiados, el pin v1 queda reemplazado. D-11 (A) ratificada, D-9 compat v1. Oraculos T1/T2 sin cambios.",
+      "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+      "contract_path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+      "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b",
+      "plan_path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+      "plan_sha256": "2726744566f58af88540f03b6bb1cec6a73534c6adb43bfbf466206278a1ea72"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6086,7 +6177,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T21:12:18.739672+00:00",
+  "last_updated": "2026-10-16T21:31:57.091899+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6197,7 +6288,7 @@
     "id": "006-001-opencode-concurrency-reliability-architect-draft-002",
     "role": "architect",
     "substage": "draft",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "13f7db14e491cc42d0e3056d3c2c7b9edebe19c9d07eb80bcce3934d20488d19"
