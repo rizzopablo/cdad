@@ -4,7 +4,7 @@
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
   "active_feature": "006-001-opencode-concurrency-reliability",
-  "current_stage": "discovery",
+  "current_stage": "tdd",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -5808,6 +5808,97 @@
         "docs/specs/006-001-opencode-concurrency-reliability/discovery.md": "1118e794ad842b4e17f5fb40b71e0434b4fb8f5d3a624ad2dfc6f90ca12bf57d"
       },
       "note": "Discovery recibido (receive + validate-receipt VALID + materialize create-only). La copia versionada difiere del recibo solo en la seccion final «Observaciones locales», retirada al registro local por anonimizacion (rutas, ids crudos, PIDs, nombre del consumidor); el recibo conserva los bytes originales. DESVIACION DECLARADA POR EL ROL: ademas de --help y run --help (autorizados) invoco --help de otros subcomandos y tres 'debug paths' con XDG/HOME aislados; cada invocacion agrego una linea 'cli starting' al log vivo; sin otro efecto. Sin efecto material: no se repite. Revisado por el orquestador: verifica las afirmaciones del plan §2, resuelve D1-D5 con evidencia y desconocidos declarados y propone spec PC-1..PC-14 y plan T1-T3."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-16T16:35:01.512563+00:00",
+      "by": "architect (subagente nativo cdad-architect de Claude Code, Agent; modelo heredado de la sesion orquestadora, no reportado)",
+      "transition": "delivery",
+      "transition_key": "1ecf2acd78a44aa4fda43e82bb8cbe64cb5a58f2c6477dd50047f5ec0ebb6b45",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-001",
+        "receipt_sha256": "f884c7ca0ca1bd3c6f8bd0a4398790865ac813b3ed747676a276a10377a8b9bc",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+            "0d03d5fef32e79b6502748d75f43c494de1bad955da661d984c45d12b5397c8f"
+          ],
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+            "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-architect-draft-001/receipt.json",
+      "receipt_sha256": "f884c7ca0ca1bd3c6f8bd0a4398790865ac813b3ed747676a276a10377a8b9bc",
+      "artifacts": {
+        "docs/specs/006-001-opencode-concurrency-reliability/spec.md": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453",
+        "docs/specs/006-001-opencode-concurrency-reliability/plan.md": "0d03d5fef32e79b6502748d75f43c494de1bad955da661d984c45d12b5397c8f"
+      },
+      "note": "Draft recibido (receive + validate-receipt VALID + materialize create-only). Partes separadas mecanicamente por los marcadores pedidos en el encargo (los bytes de cada parte son subcadenas exactas del texto final; texto completo en el registro local). Las copias versionadas agregan solo la seccion de decision del orquestador al final."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-16T16:35:01.787007+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "00008a5da7cb2645025997f8ab30234ce2b75555897d1493d641410aabc7aec2",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+        "contract": {
+          "path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
+        },
+        "plan": {
+          "path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+          "sha256": "0d03d5fef32e79b6502748d75f43c494de1bad955da661d984c45d12b5397c8f"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "GATE 2->3 de 006-001: spec (PD-1..PD-12, INV-1..INV-9) y plan (T1..T3, bloque plan-tasks) APROBADOS por el orquestador bajo la HITL delegada de epic-006, con verificacion propia de referencias contra el codigo (spec §14). Gate en la misma familia (architect y orquestador Claude), declarado; la review de codigo sera de otra familia. Oraculos autorizados a cambiar: solo los dos del plan §3.",
+      "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+      "contract_path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+      "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453",
+      "plan_path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
+      "plan_sha256": "0d03d5fef32e79b6502748d75f43c494de1bad955da661d984c45d12b5397c8f"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -5822,7 +5913,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T16:08:55.333489+00:00",
+  "last_updated": "2026-10-16T16:35:01.787007+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -5933,7 +6024,7 @@
     "id": "006-001-opencode-concurrency-reliability-architect-draft-001",
     "role": "architect",
     "substage": "draft",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "13f7db14e491cc42d0e3056d3c2c7b9edebe19c9d07eb80bcce3934d20488d19"
