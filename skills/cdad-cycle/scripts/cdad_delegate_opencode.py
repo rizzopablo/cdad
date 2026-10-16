@@ -59,12 +59,17 @@ built (INV-9).
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -98,6 +103,24 @@ POLL_INTERVAL_SECONDS = 0.05
 FINAL_TEXT_PART = "final-text"
 FINAL_TEXT_ARTIFACT_KIND = "role-report"
 RECEIPT_NAME = "receipt.json"
+
+# 006-001 T1 (PD-1/PD-2): execution-mode selection and the server preflight.
+OPENCODE_PASSWORD_ENV = "OPENCODE_PASSWORD"
+OPENCODE_SERVER_PASSWORD_ENV = "OPENCODE_SERVER_PASSWORD"
+VALID_MODE_VALUES = ("server", "standalone")
+WAIT_NUMERIC_KEYS = (
+    "poll_initial_seconds", "poll_max_seconds", "settle_seconds",
+    "terminate_grace_seconds", "preflight_timeout_seconds",
+)
+DEFAULT_WAIT_VALUES = {
+    "poll_initial_seconds": 1.0,
+    "poll_max_seconds": 15.0,
+    "settle_seconds": 30.0,
+    "terminate_grace_seconds": 5.0,
+    "preflight_timeout_seconds": 5.0,
+}
+# Spec §2.3 point 1: the first semver token in the (acotada) `--version` output.
+SEMVER_RE = re.compile(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?")
 
 # PD-1/PD-2: the durable signal is the runtime's OWN session store, opened
 # READ ONLY (URI `mode=ro`, never `immutable`, never written). The adapter
@@ -488,19 +511,299 @@ def _wait_budget(timeout: float | None) -> float | None:
     return max(0.0, timeout - WAIT_RESERVE_SECONDS)
 
 
+# --------------------------------------------- 006-001 T1: mode selection
+
+
+def _validate_wait_keys(wait: dict[str, Any]) -> str | None:
+    """Validate the new `wait.*` keys (spec §2.1), if present.
+
+    Returns an actionable diagnosis naming the offending key, or `None` when
+    every declared key is a positive number and `poll_max_seconds >=
+    poll_initial_seconds`. Called BEFORE the packet request is loaded: a
+    malformed config never reaches the point where a worker attempt could be
+    registered (nothing is invoked, nothing is dispatched).
+    """
+    values: dict[str, float] = {}
+    for key in WAIT_NUMERIC_KEYS:
+        if key not in wait:
+            continue
+        raw_value = wait[key]
+        if (isinstance(raw_value, bool)
+                or not isinstance(raw_value, (int, float))
+                or raw_value <= 0):
+            return (
+                f"invalid `wait.{key}`: expected a positive number, got "
+                f"{raw_value!r} (spec §2.1)")
+        values[key] = float(raw_value)
+    poll_initial = values.get(
+        "poll_initial_seconds", DEFAULT_WAIT_VALUES["poll_initial_seconds"])
+    poll_max = values.get(
+        "poll_max_seconds", DEFAULT_WAIT_VALUES["poll_max_seconds"])
+    if poll_max < poll_initial:
+        return (
+            f"invalid `wait.poll_max_seconds` ({poll_max!r}): must be >= "
+            f"`wait.poll_initial_seconds` ({poll_initial!r}) (spec §2.1)")
+    return None
+
+
+def _validate_mode_value(raw_mode: Any) -> tuple[str, str | None]:
+    """Validate the `mode` config key (spec §2.1/§2.2).
+
+    Returns (`mode_requested`, diagnosis). `mode_requested` is one of
+    `server`/`standalone`/`undeclared`; a non-`None` diagnosis means the
+    declared value is outside the set and the caller must block before the
+    packet request is loaded (no registration possible or needed).
+    """
+    if raw_mode is None:
+        return "undeclared", None
+    if raw_mode not in VALID_MODE_VALUES:
+        return "undeclared", (
+            f"invalid `mode` value {raw_mode!r}: expected one of "
+            f"{VALID_MODE_VALUES!r} (spec §2.1)")
+    return raw_mode, None
+
+
+def _valid_server_url(value: str) -> bool:
+    """URL válida (spec §2.2): http/https, con host, sin userinfo."""
+    try:
+        parsed = urllib.parse.urlsplit(value)
+    except ValueError:
+        return False
+    if parsed.scheme not in ("http", "https"):
+        return False
+    if not parsed.hostname:
+        return False
+    if parsed.username or parsed.password:
+        return False
+    return True
+
+
+def _resolve_mode_effective(mode_requested: str, server_raw: str | None) -> str:
+    """Spec §2.2 selection table. Returns `server`/`standalone`/`none`.
+
+    `none` means `mode: server` (declared or by compatibility, since a
+    `server` key present with `mode` undeclared is treated as an intended
+    server mode, INV-2: no silent fallback to standalone on a bad URL) was
+    requested without a valid URL: `blocked` before any invocation.
+    """
+    if mode_requested == "standalone":
+        return "standalone"
+    server_valid = server_raw is not None and _valid_server_url(server_raw)
+    if mode_requested == "server":
+        return "server" if server_valid else "none"
+    # undeclared (compatibility, D-1): a declared (even if invalid) `server`
+    # is treated as an intended server mode, never a silent standalone
+    # fallback (INV-2); only its TRUE absence keeps the standalone default.
+    if server_raw is None:
+        return "standalone"
+    return "server" if server_valid else "none"
+
+
+def _parse_semver(text: str | None) -> str | None:
+    """First semver token (spec §2.3 point 1), or `None` if unparseable."""
+    if not text:
+        return None
+    match = SEMVER_RE.search(text)
+    return match.group(0) if match else None
+
+
+def _preflight_password() -> str | None:
+    """Spec §2.3 point 2: `OPENCODE_PASSWORD`, then `OPENCODE_SERVER_PASSWORD`.
+
+    The first one PRESENT in the environment wins, even if it later turns out
+    to be wrong (never falls through to the second once the first is set).
+    `None` means no credential is sent (no header), never an empty string.
+    """
+    value = os.environ.get(OPENCODE_PASSWORD_ENV)
+    if value is not None:
+        return value
+    return os.environ.get(OPENCODE_SERVER_PASSWORD_ENV)
+
+
+def _invoke_version(binary: str, timeout: float) -> tuple[str | None, str | None]:
+    """`binary --version` (D-2: only in server mode), bounded.
+
+    Returns (raw_output, diagnosis); a non-`None` diagnosis means the client
+    version could not be observed (binary could not be started, or did not
+    answer within the bound) -- a transport fact (PD-2 row 1).
+    """
+    try:
+        proc = subprocess.run(
+            [binary, "--version"], capture_output=True,
+            stdin=subprocess.DEVNULL, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return None, (
+            f"destination binary {binary!r} did not answer `--version` "
+            f"within the preflight bound ({timeout} seconds)")
+    except OSError as exc:
+        return None, f"destination binary {binary!r} could not be started: {exc}"
+    output = (proc.stdout or b"").decode("utf-8", errors="replace")
+    output += "\n" + (proc.stderr or b"").decode("utf-8", errors="replace")
+    return output, None
+
+
+def _preflight_get_info(server_url: str, password: str | None,
+                        timeout: float) -> dict[str, Any]:
+    """`GET <server>/api/info` (spec §2.3 point 2), bounded, Basic auth.
+
+    Never honors a host HTTP(S) proxy: a proxy would both break the loopback
+    server and leak the Basic credential to a third party. Returns a `kind`
+    discriminant: `transport-error`/`unauthorized`/`not-found`/`no-json`/
+    `no-version`/`ok` (with `version_raw` when `ok`).
+    """
+    url = server_url.rstrip("/") + "/api/info"
+    request = urllib.request.Request(url, method="GET")
+    if password is not None:
+        token = base64.b64encode(
+            f"opencode:{password}".encode("utf-8")).decode("ascii")
+        request.add_header("Authorization", f"Basic {token}")
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open(request, timeout=timeout) as response:
+            status = response.status
+            body = response.read()
+    except urllib.error.HTTPError as exc:
+        status = exc.code
+        try:
+            body = exc.read()
+        except OSError:
+            body = b""
+    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        return {"kind": "transport-error", "detail": str(exc)}
+    if status in (401, 403):
+        return {"kind": "unauthorized"}
+    if status != 200:
+        return {"kind": "not-found"}
+    try:
+        document = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return {"kind": "no-json"}
+    if not isinstance(document, dict):
+        return {"kind": "no-json"}
+    version_value = document.get("version")
+    if not isinstance(version_value, str) or not version_value:
+        return {"kind": "no-version"}
+    return {"kind": "ok", "version_raw": version_value}
+
+
+def _preflight_server(binary: str, server_raw: str, timeout: float,
+                      binary_version_configured: str | None) -> dict[str, Any]:
+    """Spec §2.3: client version, then `GET /api/info`, within `timeout`.
+
+    Returns {"ok", "termination", "diagnosis", "client_version",
+    "server_version"}. `client_version` is always the OBSERVED `--version`
+    fact (I8 provenance); the comparison against the server also considers
+    `binary_version` when the config declares it and it is parseable (spec
+    §2.3 row 4).
+    """
+    version_output, version_diag = _invoke_version(binary, timeout)
+    if version_diag is not None:
+        return {"ok": False, "termination": "transport-error",
+                "diagnosis": version_diag, "client_version": None,
+                "server_version": None}
+    observed_client_version = _parse_semver(version_output)
+    configured_client_version = _parse_semver(binary_version_configured)
+    effective_client_version = configured_client_version or observed_client_version
+
+    info = _preflight_get_info(server_raw, _preflight_password(), timeout)
+    kind = info["kind"]
+    if kind == "transport-error":
+        return {"ok": False, "termination": "transport-error",
+                "diagnosis": (
+                    "the configured server is not reachable (servidor "
+                    "configurado no alcanzable): prepare a compatible server "
+                    "or declare `mode: standalone`"),
+                "client_version": observed_client_version,
+                "server_version": None}
+    if kind == "unauthorized":
+        return {"ok": False, "termination": "blocked",
+                "diagnosis": (
+                    "the server rejected or required a credential (401/403; "
+                    "credencial ausente o rechazada): the password is read "
+                    f"from {OPENCODE_PASSWORD_ENV}, then "
+                    f"{OPENCODE_SERVER_PASSWORD_ENV} (never its value)"),
+                "client_version": observed_client_version,
+                "server_version": None}
+    if kind in ("not-found", "no-json", "no-version"):
+        return {"ok": False, "termination": "blocked",
+                "diagnosis": (
+                    "the configured server has no compatible V2 info "
+                    "(servidor sin información V2 compatible, GET "
+                    "/api/info)"),
+                "client_version": observed_client_version,
+                "server_version": None}
+    server_version = _parse_semver(info["version_raw"])
+    if effective_client_version is None or server_version is None:
+        return {"ok": False, "termination": "blocked",
+                "diagnosis": (
+                    "versión no verificable: client version "
+                    f"{effective_client_version!r}, server version "
+                    f"{info['version_raw']!r} is not a parseable semver"),
+                "client_version": observed_client_version,
+                "server_version": server_version}
+    if effective_client_version != server_version:
+        return {"ok": False, "termination": "blocked",
+                "diagnosis": (
+                    f"server version {server_version!r} does not match the "
+                    f"client version {effective_client_version!r}: prepare "
+                    "a matching server or declare `mode: standalone`"),
+                "client_version": observed_client_version,
+                "server_version": server_version}
+    return {"ok": True, "termination": None, "diagnosis": None,
+            "client_version": observed_client_version,
+            "server_version": server_version}
+
+
+def _redact_server_url(text: str, server_url: str | None) -> str:
+    """PD-5: a client stderr mentioning the configured URL is redacted to
+    «servidor configurado» BEFORE entering any diagnosis (spec §2.3 note)."""
+    if not text or not server_url:
+        return text
+    return text.replace(server_url, "servidor configurado")
+
+
+def _append_note(diagnosis: str | None, note: str | None) -> str | None:
+    if note is None:
+        return diagnosis
+    if diagnosis:
+        return f"{diagnosis}; {note}"
+    return note
+
+
 # ------------------------------------------------------------ I8 dispatch
 
 
 def _observation(runtime: str | None, model: str | None, binary_version: str | None,
-                 session: str | None, started_at: str,
-                 model_reported: str | None = None) -> dict[str, Any]:
+                 session: str | None, started_at: str, *,
+                 mode_requested: str, mode_effective: str,
+                 client_version: str | None, server_version: str | None,
+                 session_base: str, row_state: str,
+                 model_reported: str | None = None,
+                 store_reads: str = "unknown",
+                 prior_check_reads: str = "unknown") -> dict[str, Any]:
     """Build the closed-key I8 observation document (PD-3/PD-8).
 
     PD-6: when the adapter wrote this record for the WORKER attempt, `session`
     and `model_reported` come from the correlated durable row
     (`session_v2.id` / `session_v2.model`) and the provenance declares it;
     `runtime` / `model_configured` keep coming from the execution config.
+
+    006-001 §2.6 (PD-3): the provenance text carries the new pairs in free
+    text (the I8 schema stays closed, INV-4). `session_base` is one of the
+    three literal alternatives the spec names (`durable session row
+    (exec-config: sessions_db): session_v2.id` | `chosen by adapter` | `not
+    dispatched`); `row_state` is `present`/`absent`/`unknown` (INV-9: unknown
+    is never 0 nor empty). `store_reads`/`prior_check_reads` stay `unknown`
+    here: the exact count is T2 scope.
     """
+    runtime_provenance = (
+        "execution config (--exec-config): runtime; "
+        f"mode_requested={mode_requested}; mode_effective={mode_effective}; "
+        f"client_version={client_version or 'unknown'}; "
+        f"server_version={server_version or 'unknown'}")
+    session_provenance = (
+        f"{session_base}; store=configured sessions_db; row={row_state}; "
+        f"store_reads={store_reads}; prior_check_reads={prior_check_reads}")
     return {
         "runtime": runtime,
         "model_configured": model,
@@ -508,13 +811,12 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
         "session": session,
         "started_at": started_at,
         "provenance": {
-            "runtime": "execution config (--exec-config): runtime",
+            "runtime": runtime_provenance,
             "model_configured": "execution config (--exec-config): model",
             "model_reported": (
                 "durable session row (exec-config: sessions_db): "
                 "session_v2.model"),
-            "session": (
-                "durable session row (exec-config: sessions_db): session_v2.id"),
+            "session": session_provenance,
             "started_at": (
                 "destination adapter clock (UTC); "
                 f"binary_version {binary_version or 'unknown'}"
@@ -623,7 +925,9 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
                       attempt_id: str, session: str | None,
                       runtime: str | None, model: str | None,
                       binary_version: str | None, started_at: str,
-                      final_text: str,
+                      final_text: str, *,
+                      mode_requested: str, mode_effective: str,
+                      client_version: str | None, server_version: str | None,
                       model_reported: str | None = None) -> str:
     """Persist the final text through the existing `receive` flow (PD-7).
 
@@ -640,8 +944,14 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
     # registers its own attempt after this adapter returns, so the worker's
     # attempt is recorded here first (same ledger, reused machinery). PD-6:
     # `session`/`model_reported` come from the durable row, with provenance.
-    observation = _observation(runtime, model, binary_version, session,
-                               started_at, model_reported)
+    # 006-001 §2.6: the row is present (the row we just classified from).
+    observation = _observation(
+        runtime, model, binary_version, session, started_at,
+        mode_requested=mode_requested, mode_effective=mode_effective,
+        client_version=client_version, server_version=server_version,
+        session_base=(
+            "durable session row (exec-config: sessions_db): session_v2.id"),
+        row_state="present", model_reported=model_reported)
     _register_dispatch(project_root, packet_id, request, attempt_id, observation)
 
     inbox = project_root / ".cdad" / "inbox"
@@ -766,16 +1076,29 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     model = _as_text(config.get("model"))
     binary_version = _as_text(config.get("binary_version"))
     sessions_db_raw = _as_text(config.get("sessions_db"))
-    # PD-4: server/permission mode at the right level (execution config); the
-    # profile decides. `server` (alternative to `--standalone`) and `auto`
-    # (non-interactive permissions, enabled by default) are never hardcoded.
-    server = _as_text(config.get("server"))
+    # PD-4/PD-1 (006-001): server/permission mode at the right level
+    # (execution config); the profile decides. `server` (alternative to
+    # `--standalone`) and `auto` (non-interactive permissions, enabled by
+    # default) are never hardcoded.
+    server_raw = _as_text(config.get("server"))
     auto = config.get("auto", True) is not False
     wait = config.get("wait")
-    timeout = (float(wait["timeout_seconds"])
-               if isinstance(wait, dict)
-               and isinstance(wait.get("timeout_seconds"), (int, float))
-               and wait["timeout_seconds"] > 0 else None)
+    wait_dict = wait if isinstance(wait, dict) else {}
+    timeout = (float(wait_dict["timeout_seconds"])
+               if isinstance(wait_dict.get("timeout_seconds"), (int, float))
+               and wait_dict["timeout_seconds"] > 0 else None)
+
+    # 006-001 §2.1: a malformed `wait.*`/`mode` value blocks BEFORE the
+    # packet request is even loaded -- nothing is invoked, nothing is
+    # registered (there is no execution_id to register against yet).
+    wait_keys_diagnosis = _validate_wait_keys(wait_dict)
+    if wait_keys_diagnosis is not None:
+        return _envelope(session=None, termination="blocked",
+                         delivery_ref=None, diagnosis=wait_keys_diagnosis)
+    mode_requested, mode_value_diagnosis = _validate_mode_value(config.get("mode"))
+    if mode_value_diagnosis is not None:
+        return _envelope(session=None, termination="blocked",
+                         delivery_ref=None, diagnosis=mode_value_diagnosis)
 
     packet_dir = project_root / ".cdad" / "packets" / args.packet_id
     request = _load_json(packet_dir / "REQUEST.json", "packet request")
@@ -786,28 +1109,65 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     packet_bytes = _read_packet_stdin()
     started_at = _now()
     attempt_id = f"opencode-{uuid.uuid4().hex[:12]}"
+    mode_effective = _resolve_mode_effective(mode_requested, server_raw)
+
+    def register_note(*, session: str | None, session_base: str,
+                      row_state: str, client_version: str | None,
+                      server_version: str | None) -> str | None:
+        """006-001 §2.6 (PD-3): register the WORKER's own attempt in the
+        SAME I8 ledger in EVERY termination posterior to loading
+        REQUEST.json. A registration failure never changes the
+        termination (D-5): it only adds a bounded note to the diagnosis."""
+        observation = _observation(
+            runtime, model, binary_version, session, started_at,
+            mode_requested=mode_requested, mode_effective=mode_effective,
+            client_version=client_version, server_version=server_version,
+            session_base=session_base, row_state=row_state)
+        try:
+            _register_dispatch(project_root, args.packet_id, request,
+                               attempt_id, observation)
+        except AdapterError as exc:
+            return f"worker record not written: {str(exc)[:200]}"
+        return None
+
+    def pre_dispatch_termination(termination: str, diagnosis: str | None, *,
+                                 client_version: str | None,
+                                 server_version: str | None) -> dict[str, Any]:
+        """A termination before any session was chosen (PD-1/PD-2/PD-3 of
+        005-009's own pre-dispatch checks): `session_base` is `not
+        dispatched`, the row is (truthfully) `absent` -- no session was ever
+        created, so no row could ever exist."""
+        note = register_note(session=None, session_base="not dispatched",
+                             row_state="absent", client_version=client_version,
+                             server_version=server_version)
+        return _envelope(session=None, termination=termination,
+                         delivery_ref=None,
+                         diagnosis=_append_note(diagnosis, note))
+
+    def blocked_before_dispatch(diagnosis: str, *,
+                                client_version: str | None = "unknown",
+                                server_version: str | None = "unknown"
+                                ) -> dict[str, Any]:
+        return pre_dispatch_termination(
+            "blocked", diagnosis, client_version=client_version,
+            server_version=server_version)
 
     # PD-3: verify the derived agent is published BEFORE dispatching anything.
     # A missing derived agent fails closed here; the CLI `mode:` no longer
     # conditions the dispatch (the durable identity is the barrier instead).
     unpublished_diagnosis = _check_derived_agent_published(project_root, role)
     if unpublished_diagnosis is not None:
-        return _envelope(session=None, termination="blocked",
-                         delivery_ref=None, diagnosis=unpublished_diagnosis)
+        return blocked_before_dispatch(unpublished_diagnosis)
 
     binary = _as_text(config.get("binary"))
     if binary is None:
-        return _envelope(
-            session=None, termination="blocked", delivery_ref=None,
-            diagnosis=(
-                "execution configuration has no destination binary; cannot "
-                "dispatch a session (no fallback to a generic non-Cdad agent)"))
+        return blocked_before_dispatch(
+            "execution configuration has no destination binary; cannot "
+            "dispatch a session (no fallback to a generic non-Cdad agent)")
     if sessions_db_raw is None:
-        return _envelope(
-            session=None, termination="blocked", delivery_ref=None,
-            diagnosis=(
-                "execution configuration has no durable signal surface "
-                "(sessions_db); cannot wait on a material signal"))
+        return blocked_before_dispatch(
+            "execution configuration has no durable signal surface "
+            "(sessions_db); cannot wait on a material signal")
     sessions_db = Path(sessions_db_raw)
 
     # R4/INV-4: the wait on the durable signal MUST be bounded. A config that
@@ -817,41 +1177,87 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # bound the wait would be unbounded (fail-open) and the invocation could
     # never be killed at a declared bound.
     if timeout is None:
-        return _envelope(
-            session=None, termination="blocked", delivery_ref=None,
-            diagnosis=(
-                "the execution configuration does not declare a positive "
-                "`wait.timeout_seconds`; the wait on the durable signal must "
-                "be bounded (INV-4). Refusing to dispatch without a positive "
-                "bound declared in the `wait.timeout_seconds` key: no session "
-                "is created, no bytes are transported and no receipt is "
-                "fabricated (reconcile the execution configuration before "
-                "repeating)"))
+        return blocked_before_dispatch(
+            "the execution configuration does not declare a positive "
+            "`wait.timeout_seconds`; the wait on the durable signal must "
+            "be bounded (INV-4). Refusing to dispatch without a positive "
+            "bound declared in the `wait.timeout_seconds` key: no session "
+            "is created, no bytes are transported and no receipt is "
+            "fabricated (reconcile the execution configuration before "
+            "repeating)")
 
-    # PD-1: the adapter CHOOSES the session id and correlates by it.
-    session_id = _choose_session_id()
+    # 006-001 §2.2: `mode: server` (declared or by compatibility) without a
+    # valid URL selects NO execution mode -- blocked before any invocation,
+    # never a silent fallback (INV-2).
+    if mode_effective == "none":
+        return blocked_before_dispatch(
+            "`mode: server` was requested without a valid `server` URL "
+            "(http/https, with host, no userinfo -- spec §2.2): refusing to "
+            "select an execution mode (no fallback to standalone, INV-2)")
+
     budget = _wait_budget(timeout)
     wait_deadline = time.monotonic() + (budget or 0.0)
 
+    # 006-001 §2.3 (PD-2): the preflight only runs in the SERVER effective
+    # mode (D-2); `--version` is the client's OWN observed fact, used for
+    # the I8 provenance regardless of whether it gates the comparison.
+    server_for_invoke: str | None = None
+    if mode_effective == "server":
+        preflight_timeout_configured = float(
+            wait_dict.get("preflight_timeout_seconds",
+                         DEFAULT_WAIT_VALUES["preflight_timeout_seconds"]))
+        remaining = max(0.0, wait_deadline - time.monotonic())
+        preflight_timeout = (
+            min(preflight_timeout_configured, remaining)
+            if remaining > 0 else preflight_timeout_configured)
+        preflight = _preflight_server(binary, server_raw, preflight_timeout,
+                                      binary_version)
+        client_version = preflight["client_version"]
+        server_version = preflight["server_version"]
+        if not preflight["ok"]:
+            return pre_dispatch_termination(
+                preflight["termination"], preflight["diagnosis"],
+                client_version=client_version, server_version=server_version)
+        server_for_invoke = server_raw
+    else:
+        # D-2 (standalone): never invokes `--version` (would break the
+        # call-count oracles); registers the configured `binary_version` (or
+        # `unknown`) and the literal `same-binary(standalone)`.
+        client_version = binary_version
+        server_version = "same-binary(standalone)"
+
+    # PD-1: the adapter CHOOSES the session id and correlates by it.
+    session_id = _choose_session_id()
+    remaining_for_invoke = max(0.0, wait_deadline - time.monotonic())
+
     # PD-5/D6: invoke the configured binary (with `--session <id>`), then wait
-    # on the DURABLE signal. The invocation is bounded by the SAME budget that
-    # bounds the wait, so a destination that never returns can never make the
+    # on the DURABLE signal. The invocation is bounded by the remaining
+    # budget, so a destination that never returns can never make the
     # interface the one that kills this adapter (the adapter always answers
     # within the bound it received).
     try:
         proc = _invoke_destination(binary, _entry_agent_name(role), model,
-                                   packet_bytes, project_root, budget, session_id,
-                                   server=server, auto=auto)
+                                   packet_bytes, project_root,
+                                   remaining_for_invoke, session_id,
+                                   server=server_for_invoke, auto=auto)
     except DestinationTimeoutError as exc:
         # R1: the material fact is absence-of-signal within the bound ->
         # `timeout`, never `transport-error` with a fabricated rc.
+        note = register_note(session=None, session_base="chosen by adapter",
+                             row_state="unknown", client_version=client_version,
+                             server_version=server_version)
         return _envelope(session=None, termination="timeout",
-                         delivery_ref=None, diagnosis=str(exc))
+                         delivery_ref=None,
+                         diagnosis=_append_note(str(exc), note))
     except AdapterError as exc:
         # R1 (contracara): a binary that could not be STARTED is a real
         # transport failure (PD-5).
+        note = register_note(session=None, session_base="chosen by adapter",
+                             row_state="absent", client_version=client_version,
+                             server_version=server_version)
         return _envelope(session=None, termination="transport-error",
-                         delivery_ref=None, diagnosis=str(exc))
+                         delivery_ref=None,
+                         diagnosis=_append_note(str(exc), note))
 
     # PD-2: a missing/unreadable/unknown-schema store is a KNOWN fact and fails
     # closed with a diagnosis, without exhausting the wait. PD-5: otherwise the
@@ -862,47 +1268,74 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         outcome = _await_durable_outcome(sessions_db, session_id,
                                          proc.returncode, wait_deadline)
     except AdapterError as exc:
+        note = register_note(session=None, session_base="chosen by adapter",
+                             row_state="unknown", client_version=client_version,
+                             server_version=server_version)
         return _envelope(session=None, termination="blocked",
-                         delivery_ref=None, diagnosis=str(exc))
+                         delivery_ref=None,
+                         diagnosis=_append_note(str(exc), note))
 
     kind = outcome["kind"]
     if kind == "transport-error":
-        stderr = proc.stderr.decode("utf-8", errors="replace").strip()
-        return _envelope(
-            session=None, termination="transport-error", delivery_ref=None,
-            diagnosis=(
-                f"the destination client failed in transport (rc="
-                f"{proc.returncode}) before any durable session row: "
-                f"{stderr[:300] or 'no diagnostic'}"))
+        stderr = _redact_server_url(
+            proc.stderr.decode("utf-8", errors="replace").strip(),
+            server_for_invoke)
+        diagnosis = (
+            f"the destination client failed in transport (rc="
+            f"{proc.returncode}) before any durable session row: "
+            f"{stderr[:300] or 'no diagnostic'}")
+        note = register_note(session=None, session_base="chosen by adapter",
+                             row_state="absent", client_version=client_version,
+                             server_version=server_version)
+        return _envelope(session=None, termination="transport-error",
+                         delivery_ref=None,
+                         diagnosis=_append_note(diagnosis, note))
     if kind == "timeout":
-        return _envelope(
-            session=None, termination="timeout", delivery_ref=None,
-            diagnosis=(
-                "no durable session row with an idle outcome for the chosen "
-                f"session {session_id!r} within the bounded wait "
-                f"({timeout if timeout is not None else 'configured'} seconds); "
-                "the client rc does not prove the role finished and no receipt "
-                "is fabricated (reconcile before repeating)"))
+        diagnosis = (
+            "no durable session row with an idle outcome for the chosen "
+            f"session {session_id!r} within the bounded wait "
+            f"({timeout if timeout is not None else 'configured'} seconds); "
+            "the client rc does not prove the role finished and no receipt "
+            "is fabricated (reconcile before repeating)")
+        note = register_note(session=None, session_base="chosen by adapter",
+                             row_state="unknown", client_version=client_version,
+                             server_version=server_version)
+        return _envelope(session=None, termination="timeout",
+                         delivery_ref=None,
+                         diagnosis=_append_note(diagnosis, note))
 
     row = outcome["row"]
+    durable_session_base = (
+        "durable session row (exec-config: sessions_db): session_v2.id")
     # PD-3/INV-6: the role identity is the barrier. If the durable row declares
     # another agent, fail closed with a diagnosis naming BOTH agents -- never a
     # delivery and never a fallback to a generic non-Cdad agent.
     identity_diagnosis = _check_durable_identity(row, role)
     if identity_diagnosis is not None:
+        note = register_note(session=_as_text(row.get("id")),
+                             session_base=durable_session_base,
+                             row_state="present", client_version=client_version,
+                             server_version=server_version)
         return _envelope(session=_as_text(row.get("id")), termination="blocked",
-                         delivery_ref=None, diagnosis=identity_diagnosis)
+                         delivery_ref=None,
+                         diagnosis=_append_note(identity_diagnosis, note))
 
     termination, session, final_text, diagnosis = _classify(
         row, outcome["final_text"])
     if termination != "completed":
+        note = register_note(session=session, session_base=durable_session_base,
+                             row_state="present", client_version=client_version,
+                             server_version=server_version)
         return _envelope(session=session, termination=termination,
-                         delivery_ref=None, diagnosis=diagnosis)
+                         delivery_ref=None,
+                         diagnosis=_append_note(diagnosis, note))
 
     try:
         delivery_ref = _persist_delivery(
             project_root, args.packet_id, request, attempt_id, session, runtime,
             model, binary_version, started_at, final_text,
+            mode_requested=mode_requested, mode_effective=mode_effective,
+            client_version=client_version, server_version=server_version,
             model_reported=_model_reported_from_row(row.get("model")))
     except (AdapterError, cdad_result.ResultError) as exc:
         return _envelope(
