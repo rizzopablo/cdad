@@ -6331,10 +6331,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-001-opencode-concurrency-reliability-test-writer-red-003",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "completed",
+    "id": "006-001-opencode-concurrency-reliability-implementer-green-002",
+    "role": "implementer",
+    "substage": "green",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
