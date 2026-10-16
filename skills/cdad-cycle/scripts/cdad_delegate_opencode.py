@@ -703,7 +703,6 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                 "server_version": None}
     observed_client_version = _parse_semver(version_output)
     configured_client_version = _parse_semver(binary_version_configured)
-    effective_client_version = configured_client_version or observed_client_version
 
     info = _preflight_get_info(server_raw, _preflight_password(), timeout)
     kind = info["kind"]
@@ -733,20 +732,38 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                 "client_version": observed_client_version,
                 "server_version": None}
     server_version = _parse_semver(info["version_raw"])
-    if effective_client_version is None or server_version is None:
+    # Row 5 (§2.3): unparseable somewhere -- the PRIMARY comparands (the
+    # observed client version and the server version) must each parse.
+    # `binary_version` not parsing only means that extra check (below) is
+    # skipped, never a block by itself (spec: "si ... es parseable").
+    if observed_client_version is None or server_version is None:
         return {"ok": False, "termination": "blocked",
                 "diagnosis": (
                     "versión no verificable: client version "
-                    f"{effective_client_version!r}, server version "
+                    f"{observed_client_version!r}, server version "
                     f"{info['version_raw']!r} is not a parseable semver"),
                 "client_version": observed_client_version,
                 "server_version": server_version}
-    if effective_client_version != server_version:
+    if observed_client_version != server_version:
         return {"ok": False, "termination": "blocked",
                 "diagnosis": (
                     f"server version {server_version!r} does not match the "
-                    f"client version {effective_client_version!r}: prepare "
-                    "a matching server or declare `mode: standalone`"),
+                    f"observed client version {observed_client_version!r}: "
+                    "prepare a matching server or declare "
+                    "`mode: standalone`"),
+                "client_version": observed_client_version,
+                "server_version": server_version}
+    # Row 4 (§2.3, second clause): ALSO compared against `binary_version`
+    # when the config declares it and it parses -- an inconsistent
+    # configuration blocks even when the observed client matches the server.
+    if (configured_client_version is not None
+            and configured_client_version != server_version):
+        return {"ok": False, "termination": "blocked",
+                "diagnosis": (
+                    f"server version {server_version!r} does not match the "
+                    f"configured `binary_version` {configured_client_version!r}"
+                    ": prepare a matching server, correct `binary_version` "
+                    "or declare `mode: standalone`"),
                 "client_version": observed_client_version,
                 "server_version": server_version}
     return {"ok": True, "termination": None, "diagnosis": None,
@@ -1207,9 +1224,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             wait_dict.get("preflight_timeout_seconds",
                          DEFAULT_WAIT_VALUES["preflight_timeout_seconds"]))
         remaining = max(0.0, wait_deadline - time.monotonic())
-        preflight_timeout = (
-            min(preflight_timeout_configured, remaining)
-            if remaining > 0 else preflight_timeout_configured)
+        # §2.3: bounded by the REMAINING budget, never by the configured
+        # value alone (an exhausted budget must not fall back to the
+        # largest timeout).
+        preflight_timeout = min(preflight_timeout_configured, remaining)
         preflight = _preflight_server(binary, server_raw, preflight_timeout,
                                       binary_version)
         client_version = preflight["client_version"]
