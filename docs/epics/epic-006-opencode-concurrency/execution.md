@@ -34,3 +34,30 @@ despacho se registran en su intento.
 **Cierre previsto:** AC-7 necesita un despliegue autorizado por el dueño y la reanudación por el
 orquestador del consumidor. Si falta, el ciclo entrega candidato, review, evidencia y receta de
 despliegue y rollback, y deja AC-7 pendiente con dueño y siguiente acción (plan §7).
+
+## Cambio de alcance aprobado por el dueño — 2026-10-16
+
+**Propuesta del orquestador.** Usar el runtime como fue diseñado: el servicio de fondo es dueño del store y corre las sesiones concurrentes. CDAD gana un modo `service` configurado, que pasa a ser el camino normal:
+- antes de despachar, comprueba con `opencode service status` que el servicio esté corriendo y que su versión sea compatible;
+- si lo está, despacha sin flags y el runtime se conecta como está diseñado;
+- si el servicio no corre, CDAD **no lo arranca**: despacha `--standalone` y registra el fallback (solicitado `service` → efectivo `standalone`);
+- si la config lo exige de forma estricta, termina en `blocked`.
+
+`server` (URL explícita) y `standalone` se conservan. La invariante «nunca el modo por defecto» pasa a ser «nunca arrancar ni gestionar el servicio».
+
+**Verificación en este ciclo.** Además del recorrido aislado:
+- un despacho real desde un proyecto descartable contra el servicio vivo;
+- después, dos despachos concurrentes con un encargo mínimo;
+- en ambos, uso normal del servicio, sin reiniciarlo ni cambiar su configuración.
+
+Que esto elimine los bloqueos **no se demuestra**: queda como observación empírica en la recepción y después (errores de bloqueo, reintentos y tiempos frente al incidente).
+
+**Respuestas del dueño:** «Si, de acuerdo, me parece lo mas confiable como dices: configurado.» (Pablo, 2026-10-16). El dueño evalúa por su lado que OpenChamber use el mismo servicio. Esa topología queda fuera de este ciclo y reservada al dueño.
+
+**Hechos verificados por el orquestador (solo lectura):**
+- `opencode service status` imprime la URL o `stopped` con rc=0 y no arranca nada; lo confirma una prueba con estado aislado;
+- `/api/info` del servicio exige autenticación y sin ella responde 401.
+
+**Aplicación:**
+- enmienda de la spec y el plan de 006-001, con una unidad T1b encima de T1;
+- el RED de T2, en curso, no cambia, porque espera y recuperación son independientes del modo.
