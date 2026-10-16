@@ -5899,6 +5899,52 @@
       "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453",
       "plan_path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
       "plan_sha256": "0d03d5fef32e79b6502748d75f43c494de1bad955da661d984c45d12b5397c8f"
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "tdd-red-t1",
+      "substage": "green",
+      "at": "2026-10-16T17:07:45.350647+00:00",
+      "by": "test-writer (subagente nativo cdad-test-writer de Claude Code, Agent model=sonnet)",
+      "transition": "delivery",
+      "transition_key": "1fba046c2688eb8030f3353260962164d99829cfd798bf8a2433320a7987e421",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "tdd-red-t1",
+        "substage": "green",
+        "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-001",
+        "receipt_sha256": "4cf90c1bddd09e0edbc3204c712afc1b017452f80afd0be6f256a0a7f84e1eaf",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/t1-red.md",
+            "37d77af9e5a3de577bfcb12a76b9a85343d208550c3ecc58d83012521f1d7ebf"
+          ],
+          [
+            "tests/test_006_001_t1_selection.py",
+            "da607d43a0a446b3d33167158d0d25e56f5b36624bb5586509cbabd4509e3c0b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-test-writer-red-001/receipt.json",
+      "receipt_sha256": "4cf90c1bddd09e0edbc3204c712afc1b017452f80afd0be6f256a0a7f84e1eaf",
+      "artifacts": {
+        "tests/test_006_001_t1_selection.py": "da607d43a0a446b3d33167158d0d25e56f5b36624bb5586509cbabd4509e3c0b",
+        "docs/specs/006-001-opencode-concurrency-reliability/t1-red.md": "37d77af9e5a3de577bfcb12a76b9a85343d208550c3ecc58d83012521f1d7ebf"
+      },
+      "note": "RED de T1. Commit 91f7e98: tests/test_006_001_t1_selection.py (nuevo, 18 tests PD-1..PD-5) y los DOS oraculos autorizados del plan §3 (servidor /api/info de fixture en test_005_010_t2; --version antes de todo en el fake compartido); ningun otro test tocado. GATE VERIFICADO POR EL ORQUESTADOR con corrida propia: 15 failed / 3 passed, 14 lineas E AssertionError del contrato; el test extra que fallo (pd5 happy path) pasa 2/2 aislado: flake de la carrera de margen ya documentada (D-3, la corrige T2). 4 tests pasan hoy por conservacion declarada en su docstring. Regresiones de la ficha: 36 passed (corrida del rol). Informe materializado sin la ruta absoluta del repo."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -5913,7 +5959,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-16T16:35:01.787007+00:00",
+  "last_updated": "2026-10-16T17:07:45.350647+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6024,10 +6070,10 @@
     "id": "006-001-opencode-concurrency-reliability-test-writer-red-001",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
   },
-  "tdd_substage": null
+  "tdd_substage": "green"
 }
