@@ -49,6 +49,18 @@ What this adapter does, and why (contract decisions D5/D6):
    flow (its CLI and the packet instructions it renders from) is resolved from
    the CDAD skill tree the adapter ships in. The state is never written here
    beyond the reused dispatch mechanism.
+5. 006-001 T1b (PD-13/PD-14): the `mode: service` selection checks the
+   background service with the read-only `service status` (the ONLY invocation
+   of `service`, never management: never `serve`, `service
+   start|stop|restart|get|set|unset` or `reload`), dispatches WITHOUT
+   `--server`/`--standalone` when the service runs with a compatible version
+   (the version is projected from the single `version` key of the service
+   registry, D-11: never the document, never its password, never the URL and
+   with no network), declares and counts the `service` -> `standalone` fallback
+   when the service does not run (`service.require: false`), and blocks -- never
+   a standalone next to a running service (INV-10) -- when the status is
+   unexpected, the strict variant requires the service, or the version differs
+   or is unverifiable.
 
 Honest limits: a separate process/session is not a sandbox (INV-8); the durable
 signal surface implemented here is the session store the execution
@@ -107,7 +119,7 @@ RECEIPT_NAME = "receipt.json"
 # 006-001 T1 (PD-1/PD-2): execution-mode selection and the server preflight.
 OPENCODE_PASSWORD_ENV = "OPENCODE_PASSWORD"
 OPENCODE_SERVER_PASSWORD_ENV = "OPENCODE_SERVER_PASSWORD"
-VALID_MODE_VALUES = ("server", "standalone")
+VALID_MODE_VALUES = ("server", "service", "standalone")
 WAIT_NUMERIC_KEYS = (
     "poll_initial_seconds", "poll_max_seconds", "settle_seconds",
     "terminate_grace_seconds", "preflight_timeout_seconds",
@@ -121,6 +133,29 @@ DEFAULT_WAIT_VALUES = {
 }
 # Spec §2.3 point 1: the first semver token in the (acotada) `--version` output.
 SEMVER_RE = re.compile(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?")
+
+# 006-001 T1b (PD-13/PD-14, §2.3b): the background-service preflight. The ONLY
+# invocation of `service` CDAD ever makes is the read-only `service status`
+# (INV-2: never `serve`, `service start|stop|restart|get|set|unset` or
+# `reload`). Its output is a single line -- the service URL or `stopped` -- and
+# is discarded to a discriminant: the URL never leaves the interpreter.
+SERVICE_STATUS_ARGV = ("service", "status")
+SERVICE_STATUS_STOPPED_LITERAL = "stopped"
+# The service registry (D-11) is an OBSERVED fact, not a public contract (debt
+# DT-6); it lives under the state directory. The fixture writes both candidates
+# so the gate is asserted by BEHAVIOUR, not by the internal path the adapter
+# picks.
+SERVICE_REGISTRY_RELPATHS = (("opencode", "service.json"), ("service.json",))
+# Provenance literals (spec §2.6).
+DISPATCH_FLAG_SERVER = "--server"
+DISPATCH_FLAG_STANDALONE = "--standalone"
+DISPATCH_FLAG_NONE = "none"
+SERVICE_STATUS_RUNNING = "running"
+SERVICE_STATUS_STOPPED = "stopped"
+SERVICE_STATUS_UNEXPECTED = "unexpected"
+SERVICE_STATUS_NOT_CHECKED = "not-checked"
+FALLBACK_NONE = "none"
+FALLBACK_SERVICE_UNAVAILABLE = "service-unavailable"
 
 # PD-1/PD-2: the durable signal is the runtime's OWN session store, opened
 # READ ONLY (URI `mode=ro`, never `immutable`, never written). The adapter
@@ -276,7 +311,8 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
                         timeout: float | None,
                         session_id: str, *,
                         server: str | None,
-                        auto: bool) -> subprocess.CompletedProcess:
+                        auto: bool,
+                        standalone: bool = True) -> subprocess.CompletedProcess:
     """Invoke the configured binary, transporting the packet bytes on stdin.
 
     The adapter chooses the session id and passes `--session <id>` so the
@@ -288,11 +324,16 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
     default (private server; never the owner's background service), and `--auto`
     (non-interactive permissions; auto-approval of non-denied permissions, NOT
     a sandbox -- INV-8) enabled by default.
+
+    006-001 §2.3b point 4 (PD-13): in the SERVICE effective mode the dispatch
+    carries NO flags (`server=None`, `standalone=False`): the client uses the
+    background service as the runtime designs it. `--server`/`--standalone` are
+    mutually exclusive and the service dispatch is neither.
     """
     argv = [binary, "run", "--agent", agent, "--session", session_id]
     if server:
         argv += ["--server", server]
-    else:
+    elif standalone:
         argv += ["--standalone"]
     if auto:
         argv += ["--auto"]
@@ -578,14 +619,42 @@ def _valid_server_url(value: str) -> bool:
     return True
 
 
+def _validate_service_keys(service: Any) -> str | None:
+    """Validate the `service.*` keys (spec §2.1), unconditionally.
+
+    Returns an actionable diagnosis naming the offending key, or `None` when
+    every declared key is well-typed. Called BEFORE the packet request is
+    loaded: an invalid `service.require` type blocks before anything is invoked
+    or registered. The TYPE is validated in every mode; the EFFECT of a valid
+    value outside the service mode is to be ignored and recorded (D-10).
+    """
+    if service is None:
+        return None
+    if not isinstance(service, dict):
+        return (f"invalid `service` key: expected an object, got "
+                f"{type(service).__name__} (spec §2.1)")
+    if "require" in service and not isinstance(service["require"], bool):
+        return (f"invalid `service.require`: expected a boolean, got "
+                f"{service['require']!r} (spec §2.1)")
+    return None
+
+
 def _resolve_mode_effective(mode_requested: str, server_raw: str | None) -> str:
-    """Spec §2.2 selection table. Returns `server`/`standalone`/`none`.
+    """Spec §2.2 selection table. Returns `server`/`service`/`standalone`/`none`.
 
     `none` means `mode: server` (declared or by compatibility, since a
     `server` key present with `mode` undeclared is treated as an intended
     server mode, INV-2: no silent fallback to standalone on a bad URL) was
     requested without a valid URL: `blocked` before any invocation.
+
+    `service` is PROVISIONAL: the effective mode is decided by the service
+    preflight (§2.3b), which can keep `service`, declare the counted
+    `standalone` fallback or resolve to `none` (`blocked`). `service` ignores
+    any declared `server` (like `standalone`): it is the client that finds the
+    service, without a URL.
     """
+    if mode_requested == "service":
+        return "service"
     if mode_requested == "standalone":
         return "standalone"
     server_valid = server_raw is not None and _valid_server_url(server_raw)
@@ -771,6 +840,216 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
             "server_version": server_version}
 
 
+# ------------------------------------------- 006-001 T1b: service preflight
+
+
+def _invoke_service_status(binary: str, timeout: float
+                           ) -> tuple[str | None, int, str | None]:
+    """`binary service status` (spec §2.3b point 1), bounded and read-only.
+
+    The ONLY invocation of `service` CDAD ever makes (INV-2): the subcommand
+    prints the service URL or `stopped` and starts nothing (observed fact).
+    Returns `(stdout, rc, diagnosis)`; a `None` stdout means the subcommand
+    could not be observed (timeout, or the binary could not be started) -- a
+    fail-closed `unexpected` answer, never a standalone.
+    """
+    try:
+        proc = subprocess.run(
+            [binary, *SERVICE_STATUS_ARGV], capture_output=True,
+            stdin=subprocess.DEVNULL, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return None, -1, (
+            f"`service status` did not answer within the preflight bound "
+            f"({timeout} seconds)")
+    except OSError as exc:
+        return None, -1, f"destination binary {binary!r} could not be started: {exc}"
+    output = (proc.stdout or b"").decode("utf-8", errors="replace")
+    return output, proc.returncode, None
+
+
+def _interpret_service_status(output: str | None, rc: int) -> str:
+    """Closed interpretation of `service status` (spec §2.3b point 1).
+
+    One line that is a valid `http`/`https` URL (host, no userinfo) -> the
+    service RUNS; the literal `stopped` -> it does NOT run; anything else
+    (empty output, several lines, unrecognized text, rc != 0 or a missing
+    answer) -> `unexpected`: CDAD cannot affirm the service is stopped. The URL
+    output is discarded here and never stored or emitted (PD-5/INV-6).
+    """
+    if output is None or rc != 0:
+        return SERVICE_STATUS_UNEXPECTED
+    text = output.strip()
+    if not text or "\n" in text:
+        return SERVICE_STATUS_UNEXPECTED
+    if text == SERVICE_STATUS_STOPPED_LITERAL:
+        return SERVICE_STATUS_STOPPED
+    if _valid_server_url(text):
+        return SERVICE_STATUS_RUNNING
+    return SERVICE_STATUS_UNEXPECTED
+
+
+def _service_state_dir() -> Path:
+    """The state directory the service registry lives under (D-11).
+
+    Resolved from `XDG_STATE_HOME` (the runtime's own XDG convention), falling
+    back to the XDG default `~/.local/state`. The path is an OBSERVED fact, not
+    a public contract (debt DT-6); the fixture fixes `XDG_STATE_HOME` to a
+    disposable directory, so no real HOME registry is read in the suite.
+    """
+    xdg_state = os.environ.get("XDG_STATE_HOME")
+    if xdg_state:
+        return Path(xdg_state)
+    return Path.home() / ".local" / "state"
+
+
+def _service_registry_path() -> Path | None:
+    """First existing service-registry candidate under the state dir, or None."""
+    base = _service_state_dir()
+    for rel in SERVICE_REGISTRY_RELPATHS:
+        candidate = base.joinpath(*rel)
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _read_service_version(registry_path: Path) -> str | None:
+    """Project ONLY the `version` key of the service registry (D-11).
+
+    A ONE-KEY projection: the document (with its password and URL) never leaves
+    this function; the caller receives the version text or `None` (absent file,
+    not parseable, or key absent/non-textual). Fail closed: an unverifiable
+    version never degrades into opening a standalone next to a running service.
+    """
+    try:
+        raw = registry_path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    try:
+        document = json.loads(raw)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(document, dict):
+        return None
+    version = document.get("version")
+    if not isinstance(version, str) or not version.strip():
+        return None
+    return version.strip()
+
+
+def _preflight_service(binary: str, timeout: float, require: bool,
+                       binary_version_configured: str | None) -> dict[str, Any]:
+    """Spec §2.3b: `service status` once, then -- only if it RUNS -- the D-11
+    version gate and the client `--version`.
+
+    Returns a decision dict. `termination` is `None` when the caller must
+    continue (service dispatch, or the counted `standalone` fallback); otherwise
+    it is the pre-dispatch termination with its actionable diagnosis. The dict
+    carries the provenance values (`mode_effective`, `dispatch_flags`,
+    `service_status`, `fallback`, `client_version`, `server_version`).
+    """
+    output, rc, status_diag = _invoke_service_status(binary, timeout)
+    status = _interpret_service_status(output, rc)
+    if status == SERVICE_STATUS_UNEXPECTED:
+        detail = status_diag or "salida no reconocible de `service status`"
+        return {
+            "termination": "blocked",
+            "diagnosis": (
+                "the background service status could not be asserted "
+                f"({detail}): CDAD cannot affirm that the service is stopped "
+                "and refuses to open a standalone next to it (INV-10). Check "
+                "`opencode service status` manually; CDAD never starts, "
+                "restarts or reconfigures the service"),
+            "mode_effective": "none", "dispatch_flags": DISPATCH_FLAG_NONE,
+            "service_status": SERVICE_STATUS_UNEXPECTED,
+            "fallback": FALLBACK_NONE,
+            "client_version": None, "server_version": None,
+        }
+    if status == SERVICE_STATUS_STOPPED:
+        if require:
+            return {
+                "termination": "blocked",
+                "diagnosis": (
+                    "el servicio de fondo no corre (`service status` reports "
+                    "stopped) and `service.require` is true: have the operator "
+                    "or the owner start the service, or declare `mode: "
+                    "standalone` explicitly (CDAD never runs `service start`)"),
+                "mode_effective": "none", "dispatch_flags": DISPATCH_FLAG_NONE,
+                "service_status": SERVICE_STATUS_STOPPED,
+                "fallback": FALLBACK_NONE,
+                "client_version": binary_version_configured,
+                "server_version": None,
+            }
+        return {
+            "termination": None,
+            "diagnosis": (
+                "servicio no disponible (`service status` reports stopped): "
+                "declared fallback `service` -> `standalone` "
+                f"({FALLBACK_SERVICE_UNAVAILABLE})"),
+            "mode_effective": "standalone",
+            "dispatch_flags": DISPATCH_FLAG_STANDALONE,
+            "service_status": SERVICE_STATUS_STOPPED,
+            "fallback": FALLBACK_SERVICE_UNAVAILABLE,
+            "client_version": binary_version_configured,
+            "server_version": "same-binary(standalone)",
+        }
+    # The service RUNS: observe the client version (D-2: `--version` only when
+    # it runs) BEFORE the D-11 version gate.
+    version_output, version_diag = _invoke_version(binary, timeout)
+    if version_diag is not None:
+        return {
+            "termination": "blocked",
+            "diagnosis": version_diag,
+            "mode_effective": "none", "dispatch_flags": DISPATCH_FLAG_NONE,
+            "service_status": SERVICE_STATUS_RUNNING,
+            "fallback": FALLBACK_NONE,
+            "client_version": None, "server_version": None,
+        }
+    client_version = _parse_semver(version_output)
+    registry_path = _service_registry_path()
+    service_version_raw = (
+        _read_service_version(registry_path)
+        if registry_path is not None else None)
+    service_version = _parse_semver(service_version_raw)
+    if client_version is None or service_version is None:
+        return {
+            "termination": "blocked",
+            "diagnosis": (
+                "versión del servicio no verificable: the running service "
+                "registry carries no parseable `version` (D-11); prepare a "
+                "compatible service, or declare `mode: standalone` or "
+                "`mode: server` explicitly. Never a standalone next to a "
+                "running service (INV-10)"),
+            "mode_effective": "none", "dispatch_flags": DISPATCH_FLAG_NONE,
+            "service_status": SERVICE_STATUS_RUNNING,
+            "fallback": FALLBACK_NONE,
+            "client_version": client_version,
+            "server_version": service_version_raw,
+        }
+    if client_version != service_version:
+        return {
+            "termination": "blocked",
+            "diagnosis": (
+                f"service version {service_version!r} does not match the "
+                f"observed client version {client_version!r}: prepare a "
+                "compatible service, or declare `mode: standalone` or "
+                "`mode: server` explicitly. Never a standalone next to a "
+                "running service (INV-10)"),
+            "mode_effective": "none", "dispatch_flags": DISPATCH_FLAG_NONE,
+            "service_status": SERVICE_STATUS_RUNNING,
+            "fallback": FALLBACK_NONE,
+            "client_version": client_version, "server_version": service_version,
+        }
+    return {
+        "termination": None,
+        "diagnosis": None,
+        "mode_effective": "service",
+        "dispatch_flags": DISPATCH_FLAG_NONE,
+        "service_status": SERVICE_STATUS_RUNNING,
+        "fallback": FALLBACK_NONE,
+        "client_version": client_version, "server_version": service_version,
+    }
+
+
 def _redact_server_url(text: str, server_url: str | None) -> str:
     """PD-5: a client stderr mentioning the configured URL is redacted to
     «servidor configurado» BEFORE entering any diagnosis (spec §2.3 note)."""
@@ -796,6 +1075,9 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
                  client_version: str | None, server_version: str | None,
                  session_base: str, row_state: str,
                  model_reported: str | None = None,
+                 dispatch_flags: str = DISPATCH_FLAG_NONE,
+                 service_status: str = SERVICE_STATUS_NOT_CHECKED,
+                 fallback: str = FALLBACK_NONE,
                  store_reads: str = "unknown",
                  prior_check_reads: str = "unknown") -> dict[str, Any]:
     """Build the closed-key I8 observation document (PD-3/PD-8).
@@ -805,19 +1087,26 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
     (`session_v2.id` / `session_v2.model`) and the provenance declares it;
     `runtime` / `model_configured` keep coming from the execution config.
 
-    006-001 §2.6 (PD-3): the provenance text carries the new pairs in free
-    text (the I8 schema stays closed, INV-4). `session_base` is one of the
-    three literal alternatives the spec names (`durable session row
-    (exec-config: sessions_db): session_v2.id` | `chosen by adapter` | `not
-    dispatched`); `row_state` is `present`/`absent`/`unknown` (INV-9: unknown
-    is never 0 nor empty). `store_reads`/`prior_check_reads` stay `unknown`
-    here: the exact count is T2 scope.
+    006-001 §2.6 (PD-3, enmienda 001): the provenance text carries the new pairs
+    in free text (the I8 schema stays closed, INV-4): `dispatch_flags=`,
+    `service_status=` and `fallback=` are ADDED AT THE END of `provenance.runtime`
+    (v1's four pairs keep their order); the service mode registers
+    `mode_requested=service` / `mode_effective=service` and
+    `service_status=not-checked` outside the service mode.
+    `session_base` is one of the three literal alternatives the spec names
+    (`durable session row (exec-config: sessions_db): session_v2.id` | `chosen by
+    adapter` | `not dispatched`); `row_state` is `present`/`absent`/`unknown`
+    (INV-9: unknown is never 0 nor empty). `store_reads`/`prior_check_reads` stay
+    the LAST pairs of `provenance.session`: T2 parses them by substring.
     """
     runtime_provenance = (
         "execution config (--exec-config): runtime; "
         f"mode_requested={mode_requested}; mode_effective={mode_effective}; "
         f"client_version={client_version or 'unknown'}; "
-        f"server_version={server_version or 'unknown'}")
+        f"server_version={server_version or 'unknown'}; "
+        f"dispatch_flags={dispatch_flags}; "
+        f"service_status={service_status}; "
+        f"fallback={fallback}")
     session_provenance = (
         f"{session_base}; store=configured sessions_db; row={row_state}; "
         f"store_reads={store_reads}; prior_check_reads={prior_check_reads}")
@@ -945,6 +1234,9 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
                       final_text: str, *,
                       mode_requested: str, mode_effective: str,
                       client_version: str | None, server_version: str | None,
+                      dispatch_flags: str = DISPATCH_FLAG_NONE,
+                      service_status: str = SERVICE_STATUS_NOT_CHECKED,
+                      fallback: str = FALLBACK_NONE,
                       model_reported: str | None = None) -> str:
     """Persist the final text through the existing `receive` flow (PD-7).
 
@@ -968,7 +1260,9 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         client_version=client_version, server_version=server_version,
         session_base=(
             "durable session row (exec-config: sessions_db): session_v2.id"),
-        row_state="present", model_reported=model_reported)
+        row_state="present", model_reported=model_reported,
+        dispatch_flags=dispatch_flags, service_status=service_status,
+        fallback=fallback)
     _register_dispatch(project_root, packet_id, request, attempt_id, observation)
 
     inbox = project_root / ".cdad" / "inbox"
@@ -1116,6 +1410,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     if mode_value_diagnosis is not None:
         return _envelope(session=None, termination="blocked",
                          delivery_ref=None, diagnosis=mode_value_diagnosis)
+    service_keys_diagnosis = _validate_service_keys(config.get("service"))
+    if service_keys_diagnosis is not None:
+        return _envelope(session=None, termination="blocked",
+                         delivery_ref=None, diagnosis=service_keys_diagnosis)
 
     packet_dir = project_root / ".cdad" / "packets" / args.packet_id
     request = _load_json(packet_dir / "REQUEST.json", "packet request")
@@ -1127,6 +1425,25 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     started_at = _now()
     attempt_id = f"opencode-{uuid.uuid4().hex[:12]}"
     mode_effective = _resolve_mode_effective(mode_requested, server_raw)
+    # `service.require` (D-10) only has an EFFECT in the service mode; its TYPE
+    # is validated above in every mode.
+    service_config = config.get("service")
+    service_require = (
+        bool(service_config.get("require", False))
+        if isinstance(service_config, dict) else False)
+    # 006-001 §2.6 provenance defaults; the service preflight (§2.3b) overwrites
+    # them (late-bound closure values read at register time) and a pre-dispatch
+    # block in standalone already declares the flag it would have used.
+    dispatch_flags = (
+        DISPATCH_FLAG_SERVER if mode_effective == "server"
+        else DISPATCH_FLAG_STANDALONE if mode_effective == "standalone"
+        else DISPATCH_FLAG_NONE)
+    service_status = SERVICE_STATUS_NOT_CHECKED
+    fallback = FALLBACK_NONE
+    # A note the service preflight attaches to a NON-blocking outcome (the
+    # declared standalone fallback): it travels in the envelope's diagnosis so
+    # the caller sees the cause and the declared transition (PD-13).
+    dispatch_note: str | None = None
 
     def register_note(*, session: str | None, session_base: str,
                       row_state: str, client_version: str | None,
@@ -1139,7 +1456,9 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             runtime, model, binary_version, session, started_at,
             mode_requested=mode_requested, mode_effective=mode_effective,
             client_version=client_version, server_version=server_version,
-            session_base=session_base, row_state=row_state)
+            session_base=session_base, row_state=row_state,
+            dispatch_flags=dispatch_flags, service_status=service_status,
+            fallback=fallback)
         try:
             _register_dispatch(project_root, args.packet_id, request,
                                attempt_id, observation)
@@ -1215,14 +1534,16 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     budget = _wait_budget(timeout)
     wait_deadline = time.monotonic() + (budget or 0.0)
 
-    # 006-001 §2.3 (PD-2): the preflight only runs in the SERVER effective
-    # mode (D-2); `--version` is the client's OWN observed fact, used for
-    # the I8 provenance regardless of whether it gates the comparison.
+    preflight_timeout_configured = float(
+        wait_dict.get("preflight_timeout_seconds",
+                      DEFAULT_WAIT_VALUES["preflight_timeout_seconds"]))
+
+    # 006-001 §2.3/§2.3b (PD-2/PD-13): the preflight runs in the SERVER
+    # effective mode and in the SERVICE mode; `--version` is the client's OWN
+    # observed fact (in the service mode, D-2: only when the service runs).
     server_for_invoke: str | None = None
+    standalone_for_invoke = True
     if mode_effective == "server":
-        preflight_timeout_configured = float(
-            wait_dict.get("preflight_timeout_seconds",
-                         DEFAULT_WAIT_VALUES["preflight_timeout_seconds"]))
         remaining = max(0.0, wait_deadline - time.monotonic())
         # §2.3: bounded by the REMAINING budget, never by the configured
         # value alone (an exhausted budget must not fall back to the
@@ -1237,6 +1558,26 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                 preflight["termination"], preflight["diagnosis"],
                 client_version=client_version, server_version=server_version)
         server_for_invoke = server_raw
+        standalone_for_invoke = False
+    elif mode_effective == "service":
+        # 006-001 §2.3b (PD-13/PD-14): `service status` once, then the D-11
+        # version gate; any declared `server` is ignored and never checked.
+        remaining = max(0.0, wait_deadline - time.monotonic())
+        preflight_timeout = min(preflight_timeout_configured, remaining)
+        service = _preflight_service(binary, preflight_timeout, service_require,
+                                     binary_version)
+        mode_effective = service["mode_effective"]
+        dispatch_flags = service["dispatch_flags"]
+        service_status = service["service_status"]
+        fallback = service["fallback"]
+        client_version = service["client_version"]
+        server_version = service["server_version"]
+        if service["termination"] is not None:
+            return pre_dispatch_termination(
+                service["termination"], service["diagnosis"],
+                client_version=client_version, server_version=server_version)
+        dispatch_note = service["diagnosis"]
+        standalone_for_invoke = mode_effective == "standalone"
     else:
         # D-2 (standalone): never invokes `--version` (would break the
         # call-count oracles); registers the configured `binary_version` (or
@@ -1257,7 +1598,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         proc = _invoke_destination(binary, _entry_agent_name(role), model,
                                    packet_bytes, project_root,
                                    remaining_for_invoke, session_id,
-                                   server=server_for_invoke, auto=auto)
+                                   server=server_for_invoke, auto=auto,
+                                   standalone=standalone_for_invoke)
     except DestinationTimeoutError as exc:
         # R1: the material fact is absence-of-signal within the bound ->
         # `timeout`, never `transport-error` with a fabricated rc.
@@ -1354,6 +1696,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             model, binary_version, started_at, final_text,
             mode_requested=mode_requested, mode_effective=mode_effective,
             client_version=client_version, server_version=server_version,
+            dispatch_flags=dispatch_flags, service_status=service_status,
+            fallback=fallback,
             model_reported=_model_reported_from_row(row.get("model")))
     except (AdapterError, cdad_result.ResultError) as exc:
         return _envelope(
@@ -1362,7 +1706,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                 f"the role completed but the durable delivery could not be "
                 f"persisted through receive: {exc}"))
     return _envelope(session=session, termination="completed",
-                     delivery_ref=delivery_ref, diagnosis=None)
+                     delivery_ref=delivery_ref, diagnosis=dispatch_note)
 
 
 def main(argv: list[str] | None = None) -> int:
