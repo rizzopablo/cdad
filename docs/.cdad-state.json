@@ -4,7 +4,7 @@
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
   "active_feature": "006-002-delegation-by-layer",
-  "current_stage": "discovery",
+  "current_stage": "tdd",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -6771,6 +6771,97 @@
         "docs/specs/006-002-delegation-by-layer/discovery.md": "5af49ec422ff6b6dc1d450a0ad4f06a658accac4b0da1962824334961437c1d1"
       },
       "note": null
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "draft",
+      "substage": "draft",
+      "at": "2026-10-17T23:19:48.869337+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e770400f1f81d9001e4f48232c2a29f951e8b2f15864502f0f6aaa4072efba4e",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "draft",
+        "substage": "draft",
+        "packet_id": "006-002-delegation-by-layer-architect-draft-001",
+        "receipt_sha256": "96d8a0f791f40c29c9a9fa0dbde76c935e4c8e013aec6c29221d870d1170108a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/plan.md",
+            "5e8cda91b5d552bc9fde38b8e4e8cab3cb82a40c4a5dbc906f39a312405191db"
+          ],
+          [
+            "docs/specs/006-002-delegation-by-layer/spec.md",
+            "883880c202c562886a0548a311359c5a84c7c57340a1aac767d5b11d809acf28"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-architect-draft-001/receipt.json",
+      "receipt_sha256": "96d8a0f791f40c29c9a9fa0dbde76c935e4c8e013aec6c29221d870d1170108a",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/spec.md": "883880c202c562886a0548a311359c5a84c7c57340a1aac767d5b11d809acf28",
+        "docs/specs/006-002-delegation-by-layer/plan.md": "5e8cda91b5d552bc9fde38b8e4e8cab3cb82a40c4a5dbc906f39a312405191db"
+      },
+      "note": null
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-17T23:20:01.900021+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "ddbfb205f78c3c7724f2f815cffbede3d53ca4e503c0ac05e550f06d40ba40c9",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "orquestador Claude (HITL delegada epic-006)",
+        "contract": {
+          "path": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
+        },
+        "plan": {
+          "path": "docs/specs/006-002-delegation-by-layer/plan.md",
+          "sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "orquestador Claude (HITL delegada epic-006)",
+      "contract_path": "docs/specs/006-002-delegation-by-layer/spec.md",
+      "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5",
+      "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
+      "plan_sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6785,7 +6876,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T23:15:57.956307+00:00",
+  "last_updated": "2026-10-17T23:20:01.900021+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6896,10 +6987,10 @@
     "id": "006-002-delegation-by-layer-architect-draft-001",
     "role": "architect",
     "substage": "draft",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
   },
-  "tdd_substage": "discovery"
+  "tdd_substage": "draft"
 }
