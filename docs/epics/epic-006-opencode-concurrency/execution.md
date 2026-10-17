@@ -83,3 +83,14 @@ Que esto elimine los bloqueos **no se demuestra**: queda como observación empí
 - **Acción:** por orden del dueño («bueno matalo»), el orquestador detuvo el servicio con `opencode service stop`. Ahora `service status` responde `stopped`.
 - **Quedan:** el servidor de OpenChamber (2.0.27) y un cliente interactivo `--standalone` con su servidor privado, que el dueño no pidió tocar.
 - **Consecuencia para CDAD:** con el servicio detenido, `mode: "service"` cae a standalone de forma declarada (o queda `blocked` con `service.require`). Para usar el servidor único, el consumidor declara `mode: "server"` con la URL de OpenChamber y la contraseña en `OPENCODE_SERVER_PASSWORD` u `OPENCODE_PASSWORD`.
+
+## Recorridos reales con el servicio detenido — 2026-10-17
+
+Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store leído solo en ro.
+
+| Caso | Terminación | Tiempo | Detalle |
+|---|---|---|---|
+| `mode: service`, `require: false` | `completed` | 33,9 s | Fallback declarado `service` → `standalone` (service-unavailable). Fila durable con `agent cdad-test-writer`, `idle_outcome succeeded`, `version 2.0.27` y el token. Un solo servidor privado adicional durante el despacho, que se cerró al terminar. |
+| `mode: service`, `require: true` | `blocked` | 1,1 s | Sin despacho y sin servidor privado. El diagnóstico dice que CDAD nunca corre `service start`. |
+
+**Pendiente para PD-6:** dos despachos concurrentes contra el servidor único de OpenChamber (`mode: server`). El servidor exige autenticación (401 sin contraseña) y el orquestador no tiene la contraseña en su entorno.
