@@ -94,3 +94,11 @@ Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store 
 | `mode: service`, `require: true` | `blocked` | 1,1 s | Sin despacho y sin servidor privado. El diagnóstico dice que CDAD nunca corre `service start`. |
 
 **Pendiente para PD-6:** dos despachos concurrentes contra el servidor único de OpenChamber (`mode: server`). El servidor exige autenticación (401 sin contraseña) y el orquestador no tiene la contraseña en su entorno.
+
+## Despliegue en HOME — 2026-10-17 (orden del dueño: «Despliega»)
+
+- **Qué se instaló:** el commit `b6c2193` y siguientes (solo docs) con perfil `basic`. El respaldo previo está en el archivo del workspace (`*-cdad-pre-006-001`). El adaptador en HOME coincide con el del repo (`e90dfcb5…`) en los tres árboles.
+- **`install.sh` termina en rc=1 por dos razones ajenas a 006-001:**
+  1. **CONFLICT preservado:** `~/.config/opencode/agents/cdad-reviewer.md` tiene contenido del dueño (modelo propio, editado el 2026-10-15). El instalador no lo sobrescribe, que es lo correcto. Decide el dueño.
+  2. **Bytecode `__pycache__`:** el staging copiaba los `.pyc` que el uso deja en el árbol de la skill, y ahora el manifest los marca *pending-removal*. Queda como deuda del instalador (**DT-8**: excluir `__pycache__` del staging).
+- **Rollback:** restaurar el respaldo, o reinstalar desde `29a4805`.
