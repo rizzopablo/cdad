@@ -267,4 +267,18 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Fuera de alcance:** la config de agentes del runtime del dueño (OpenChamber) y la del consumidor.
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17
+## 10. Enmienda 003 — decisiones vigentes; feature 006-004 (2026-10-17)
+
+**Problema:** un ADR registrado no gobierna el trabajo siguiente si ningún rol lo recibe. El índice de un proyecto puede incluso afirmar que no hay decisiones.
+
+**Feature `006-004-active-decisions-table`** (después de 006-002), chica a propósito:
+1. `systemPatterns.md` (plantilla del Memory Bank) suma la sección «Decisiones vigentes»: una fila por ADR con archivo, estado (vigente u obsoleto, y cuál lo reemplaza), resumen en una línea y roles que deben consumirlo.
+2. El orquestador la mantiene: agrega la fila al aprobarse un ADR y marca el reemplazado como obsoleto. El paquete de cada rol lleva las filas vigentes que lo nombran.
+3. El reviewer revisa que la tabla coincida con los ADR del repo y que el cambio respete las decisiones vigentes de su rol.
+4. Una decisión que cambia la metodología de CDAD no está terminada hasta que su regla está en el skill o el agente instalable; la fila guarda la referencia.
+
+**Aceptación:** plantilla y referencias actualizadas (`stage-5`, re-entry, reviewer); un test de texto que fija la sección y las dos responsabilidades; `make validate` y la suite pasan.
+
+**Fuera de alcance:** índices generados, gates de cita obligatoria y cambios en `status`.
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17
