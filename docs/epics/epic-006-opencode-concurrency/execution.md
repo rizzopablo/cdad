@@ -156,3 +156,11 @@ Reviewer `cdad-reviewer` en OpenCode, familia glm. El implementer fue de la fami
 **PD-6:** queda en BLOQUEO declarado. La concurrencia real en `mode: server` contra el servidor único está pendiente de que el dueño entregue la credencial. El único `completed` real fue por el fallback a standalone y no prueba la topología con servicio.
 
 **Desvío del CLI:** el primer `receive` cerró el recibo con el tipo `review-report`, que después `materialize` rechazó por la tabla §7. El recibo es inmutable, así que el orquestador copió los bytes recibidos (sha `6f7cd682…`, iguales al recibo) a `review.md`. Queda como deuda del CLI: `receive` debería validar el tipo contra la tabla §7 antes de finalizar.
+
+## Suite completa de 006-001 — 2026-10-17
+
+`python3 -m pytest tests -q -p no:cacheprovider` sobre `c9adace`: 1074 passed, 2 failed y 5 skipped, en 23 min. Los dos fallos son ambientales:
+1. `test_pd5_no_secrets_in_successful_dispatch_outputs` falló por `timeout` contra la cota de 2 s (DT-9, carga del host).
+2. `test_review5_b4_basic_request_vs_staging_profile_labels_coherent` exige un staging generado con el perfil por defecto, y el orquestador lo había regenerado con `basic` para desplegar.
+
+Los dos pasaron al repetirlos tras `make staging`. El review-fix va a requerir una nueva corrida focal y de regresiones; la suite completa no se repite salvo que cambie el instalador.
