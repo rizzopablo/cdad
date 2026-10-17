@@ -56,4 +56,36 @@ sentences use "skill tool". Delegation: all cdad roles are task-able via the
 no-credit deploys — the orchestrator source decides the mechanism.
 <!-- /cdad-section -->
 
+<!-- cdad-section:delegation -->
+Delegation in OpenCode — the native mechanism, not the CLI adapter:
+
+- **Mechanism (native).** First, resolve the stack suffix
+  (`docs/.cdad-state.json.stack`), then dispatch with the `task` tool and
+  `subagent_type: cdad-<role>` (role→subagent mapping: `cdad-architect`,
+  `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`;
+  use `cdad-<role>-<stack>` when the variant exists, else the generic
+  `cdad-<role>`).
+- **Byte-identical packet.** Dispatch the exact bytes that
+  `cdad_packet.py render` emits (`prepare`'s stdout or `render`'s
+  re-emission) — the packet is passed byte-identical, never padded with
+  extra instructions.
+- **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
+  `cli-delegation`) MUST NOT dispatch inside the same runtime
+  (intra-runtime): it is only for another runtime or one without native
+  delegation of its own. Same-runtime dispatch is the native `task` tool.
+- **Model declaration (D-3).** Under profile `basic` the reviewer family is
+  NOT guaranteed by the installer: register the attempt with its fields
+  (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
+  `unknown` when unobserved) and write "invariant not guaranteed" at the
+  review gate instead of omitting it. The orchestrator never chooses,
+  invents or selects a model: it passes one only if it comes from the
+  environment configuration; the legitimate exit is the new-chat handoff
+  where the user picks the model.
+- **Receipt.** The native dispatch returns FINAL TEXT in this session: stage
+  the exact bytes under `.cdad/inbox` + `RESULT.json` and run the
+  Orchestrator materialization protocol (`references/re-entry.md`) —
+  `receive` → `validate-receipt` → `materialize` → transition; the receipt
+  stays `semantic_status: pending` (receiving approves nothing).
+<!-- /cdad-section -->
+
 <!-- /cdad-source -->

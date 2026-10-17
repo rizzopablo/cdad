@@ -61,7 +61,7 @@ MODELS_SH = ROOT / "scripts" / "cdad-models.sh"
 
 ROLES = ("architect", "test-writer", "implementer", "reviewer", "scribe")
 REQUIRED_ROLE_SECTIONS = ("directive", "contract", "bash", "convention", "capacity", "odoo", "limits")
-REQUIRED_ADAPTER_SECTIONS = ("frontmatter", "permissions", "tool-loading")
+REQUIRED_ADAPTER_SECTIONS = ("frontmatter", "permissions", "tool-loading", "delegation")
 
 # Shared blocks: single editable definitions (PD-4) and their host sources.
 SHARED_HOSTS = {
@@ -811,21 +811,9 @@ def compose_orchestrator_agent(
         "",
         models_note(runtime),
         "",
-        "## Delegation order and spawn guard",
+        "## Delegation (adapter)",
         "",
-        "For each role task, resolve the stack suffix BEFORE delegating — from "
-        "`docs/.cdad-state.json.stack`: if it has a value and `cdad-<role>-<stack>` "
-        "exists, delegate to that variant (more domain context, same role contract); "
-        "if the stack is absent or the variant does not exist, use the generic "
-        "`cdad-<role>`. Then decide the mechanism in this order:",
-        "1. **Sub-agent** (harness) — real session isolation + per-agent model routing. Preferred.",
-        "2. **New-chat handoff** (`references/handoff-prompts.md`) — real isolation, manual.",
-        "3. **Explicit inline switch** (forced single-session) — weakest guarantee: you "
-        "cannot un-know what you already read; announce the isolation trade-off to the user.",
-        "",
-        "Spawn guard (anti-recursion): running as a subagent, spawning sub-subagents is "
-        "prohibited by the runtime — never retry a rejected spawn in a loop; return "
-        "control with a handoff packet and let the orchestrator decide the spawn.",
+        strip_full_line_comments(ADAPTER_SECTIONS["delegation"]),
         "",
         "## Bash policy (supervisor — no allowlist is generated)",
         "",

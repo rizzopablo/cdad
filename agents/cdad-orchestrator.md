@@ -169,14 +169,37 @@ wrote the tests.
 
 Models of the design. Model cells resolve per runtime×stack×profile from `scripts/cdad-models.sh` (`cdad_model`) — the only map. Profiles: economical (cheap execution with quality at the critical points: architect moves up to deepseek-v4-pro, reviewer on minimax-m3 — a family different from the implementer's, amendment 2026-08-24 ADR-007) / premium (top-tier configurable via env CDAD_PREMIUM_MODEL_*) / basic (no fixed models — agents inherit the runtime's default model; the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer in this profile, ADR-007). Switch: install.sh --economical|--optimus|--premium|--basic.
 
-## Delegation order and spawn guard
+## Delegation (adapter)
 
-For each role task, resolve the stack suffix BEFORE delegating — from `docs/.cdad-state.json.stack`: if it has a value and `cdad-<role>-<stack>` exists, delegate to that variant (more domain context, same role contract); if the stack is absent or the variant does not exist, use the generic `cdad-<role>`. Then decide the mechanism in this order:
-1. **Sub-agent** (harness) — real session isolation + per-agent model routing. Preferred.
-2. **New-chat handoff** (`references/handoff-prompts.md`) — real isolation, manual.
-3. **Explicit inline switch** (forced single-session) — weakest guarantee: you cannot un-know what you already read; announce the isolation trade-off to the user.
+Delegation in OpenCode — the native mechanism, not the CLI adapter:
 
-Spawn guard (anti-recursion): running as a subagent, spawning sub-subagents is prohibited by the runtime — never retry a rejected spawn in a loop; return control with a handoff packet and let the orchestrator decide the spawn.
+- **Mechanism (native).** First, resolve the stack suffix
+  (`docs/.cdad-state.json.stack`), then dispatch with the `task` tool and
+  `subagent_type: cdad-<role>` (role→subagent mapping: `cdad-architect`,
+  `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`;
+  use `cdad-<role>-<stack>` when the variant exists, else the generic
+  `cdad-<role>`).
+- **Byte-identical packet.** Dispatch the exact bytes that
+  `cdad_packet.py render` emits (`prepare`'s stdout or `render`'s
+  re-emission) — the packet is passed byte-identical, never padded with
+  extra instructions.
+- **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
+  `cli-delegation`) MUST NOT dispatch inside the same runtime
+  (intra-runtime): it is only for another runtime or one without native
+  delegation of its own. Same-runtime dispatch is the native `task` tool.
+- **Model declaration (D-3).** Under profile `basic` the reviewer family is
+  NOT guaranteed by the installer: register the attempt with its fields
+  (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
+  `unknown` when unobserved) and write "invariant not guaranteed" at the
+  review gate instead of omitting it. The orchestrator never chooses,
+  invents or selects a model: it passes one only if it comes from the
+  environment configuration; the legitimate exit is the new-chat handoff
+  where the user picks the model.
+- **Receipt.** The native dispatch returns FINAL TEXT in this session: stage
+  the exact bytes under `.cdad/inbox` + `RESULT.json` and run the
+  Orchestrator materialization protocol (`references/re-entry.md`) —
+  `receive` → `validate-receipt` → `materialize` → transition; the receipt
+  stays `semantic_status: pending` (receiving approves nothing).
 
 ## Bash policy (supervisor — no allowlist is generated)
 
