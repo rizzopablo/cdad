@@ -20,7 +20,10 @@ Mapa test → postcondición/criterio (un test por afirmación observable):
 - `test_pd1_ii_no_cc_agent_declares_task_as_dispatch_tool`  → PD-1(ii) / AC-1
 - `test_pd1_ii_opencode_side_keeps_its_tool_name`           → PD-1 / AC-1 (control de no-regresión)
 - `test_pd1_iii_adapter_owns_the_cc_dispatch_tool_name`     → PD-1(iii) / AC-1
-- `test_pd1_iii_reference_and_skill_name_the_same_tool`     → PD-1(iii) / AC-1
+- `test_pd1_iii_reference_and_owners_name_the_same_tool`    → PD-1(iii) / AC-1
+  (reformulado en el RED de 006-002 U2: el tercer dueño del nombre ya no es
+  `SKILL.md`, que queda abstracto por 006-002 PD-1/PD-3; el dueño es el
+  orquestador derivado — enmienda A-1, cobertura conservada)
 - `test_pd1_iv_generator_staging_is_idempotent`             → PD-1(iv) / INV-4
 - `test_pd1_iv_ten_cc_agents_keep_their_tools_lines`        → PD-1(iv) / INV-4
   (control de no-regresión)
@@ -31,6 +34,11 @@ fallan por AssertionError porque hoy el derivado
 los tres controles (`opencode` conserva su nombre, idempotencia del generador y
 las líneas `tools:` de los diez agentes con/sin guard) quedan verdes hoy.
 Ningún fallo es ImportError/SyntaxError/NameError.
+
+Superposición declarada con 006-002 U2 (PD-1/PD-3): la aserción de coherencia
+del nombre exige `Agent` en el reference, el adaptador y el derivado, y exige
+que `SKILL.md` NO lo nombre como herramienta — esa mitad es la que el GREEN de
+006-002 U2 satisface al neutralizar §4.
 """
 
 from __future__ import annotations
@@ -131,6 +139,19 @@ def names_task_as_a_cc_tool(text: str) -> bool:
         if re.search(rf"\b{OC_DISPATCH_TOOL}\b", line):
             return True
     return False
+
+
+def names_the_cc_tool_form(text: str) -> bool:
+    """¿El documento nombra la herramienta de despacho de Claude Code en alguna
+    de sus FORMAS de herramienta (``Agent`` en code-span, «Agent tool»,
+    ``Agent`` asociada a ``subagent_type``)? La palabra suelta *Agent* en otra
+    acepción no cuenta (el oráculo apunta a formas, no a prosa).
+    """
+    return bool(
+        re.search(r"`\s*Agent\s*`", text)
+        or re.search(r"Agent\s+tool", text)
+        or re.search(r"Agent[^\n]{0,60}subagent_type", text)
+    )
 
 
 def run_generator(out: Path) -> subprocess.CompletedProcess[str]:
@@ -246,19 +267,31 @@ def test_pd1_iii_adapter_owns_the_cc_dispatch_tool_name():
     )
 
 
-def test_pd1_iii_reference_and_skill_name_the_same_tool():
-    """PD-1(iii)/AC-1: el reference de delegación de Claude Code y el
-    `SKILL.md` nombran la MISMA herramienta que el adaptador y los derivados
-    (`Agent`); se conserva lo que ya era cierto (control de coherencia)."""
+def test_pd1_iii_reference_and_owners_name_the_same_tool():
+    """PD-1(iii)/AC-1 (reformulado por 006-002 U2, PD-1/PD-3 — enmienda A-1):
+    el reference de delegación de Claude Code, el adaptador fuente y el
+    orquestador derivado nombran la MISMA herramienta (`Agent`), y la skill
+    instalable YA NO es dueña de ese nombre: el nombre runtime-específico vive
+    en la capa del agente (§4 neutral de `cdad-cycle`; antes esta aserción pedía
+    `Agent` también en `SKILL.md`)."""
     for label, path in (
         ("claude-code-delegation.md", CC_REF),
-        ("SKILL.md", SKILL),
+        ("adaptador fuente", ADAPTER),
+        ("orchestrator derivado", CC_ORCHESTRATOR),
     ):
         text = read(path, "PD-1(iii)")
         assert re.search(rf"\b{CC_DISPATCH_TOOL}\b", text), (
             f"PD-1(iii)/AC-1: {label} no nombra la herramienta de despacho "
             f"'{CC_DISPATCH_TOOL}' de Claude Code"
         )
+    # 006-002 PD-1/PD-3: la skill no nombra la herramienta de ningún runtime en
+    # contexto de delegación — el dueño del nombre es el agente del runtime.
+    skill = read(SKILL, "PD-1(iii)/006-002 PD-1")
+    assert not names_the_cc_tool_form(skill), (
+        "PD-1(iii) + 006-002 PD-1/PD-3 (U2): SKILL.md nombra la herramienta de "
+        f"despacho '{CC_DISPATCH_TOOL}' de Claude Code; el mecanismo pertenece a "
+        "la capa del agente del runtime (el §4 de la skill queda abstracto)"
+    )
 
 
 # ------------------------------- PD-1(iv) — idempotencia y no-regresión

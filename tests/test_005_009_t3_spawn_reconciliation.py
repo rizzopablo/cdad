@@ -48,6 +48,12 @@ PASAN las de CONSERVACIÓN (el SPAWN GUARD/anti-recursión y el
 escritor-único que ya existen). Todo fallo RED es AssertionError de
 comportamiento (documento sin la marca declarada por el contrato);
 nunca ImportError/SyntaxError/NameError.
+
+Reformulación declarada por 006-002 U2 (PD-1/PD-3; enmienda A-1): la mitad
+«nombre del mutador concreto» del guard en SKILL.md se invierte — la skill no
+nombra la herramienta de un runtime; el guard se conserva en forma abstracta y
+el nombre concreto vive en el orquestador del runtime. El resto del guard
+(prohibición, sub-subagentes, anti-bucle, handoff) queda intacto.
 """
 
 from __future__ import annotations
@@ -167,7 +173,15 @@ NO_SANDBOX = r"(?i)\bsandbox\b|isolat\w*|guarantee|guarant\w*"
 def test_pd9_spawn_guard_conserved_in_skillmd():
     """PD-9: el SPAWN GUARD de skills/cdad-cycle/SKILL.md (discovery §7,
     :136-143) permanece: bloque marcado, prohibición de spawn desde
-    subagente (sub-subagentes), anti-bucle, y devolución por handoff."""
+    subagente (sub-subagentes), anti-bucle, y devolución por handoff.
+
+    Reformulado en el RED de 006-002 U2 (PD-1/PD-3; enmienda A-1): el nombre
+    concreto del mutador (`sessions_spawn`) sale de la capa SKILL — el guard
+    se conserva en forma ABSTRACTA y el nombre de la herramienta lo declara el
+    orquestador del runtime (dueño de la capa de agente). La conservación del
+    guard (aserción marcada + prohibición + sub-subagentes + anti-bucle +
+    handoff) no se pierde: es el resto de esta misma aserción.
+    """
     text = load(SKILL, "PD-9/plan T3")
     ranges = guard_windows(text, r"SPAWN GUARD", 10, 45)
     block = window_text(text, ranges if ranges else [(0, len(text.splitlines()) - 1)])
@@ -179,9 +193,14 @@ def test_pd9_spawn_guard_conserved_in_skillmd():
         "PD-9/conservación SKILL.md: la ventana SPAWN GUARD no declara la "
         "prohibición del spawn desde subagente"
     )
-    assert re.search(SPAWN_MUTATOR, block), (
-        "PD-9/conservación SKILL.md: la ventana ya no nombra el mutador "
-        "prohibido del spawn (sessions_spawn) — ancla del guard"
+    # 006-002 U2 (PD-1/INV-1): la skill no nombra la herramienta de spawn de un
+    # runtime; el §4 la generaliza y el nombre concreto vive en el orquestador
+    # del runtime (adaptador fuente + agentes generados).
+    assert not re.search(SPAWN_MUTATOR, block), (
+        "PD-9/conservación SKILL.md + 006-002 PD-1 (U2): la ventana SPAWN GUARD "
+        "nombra el mutador concreto de un runtime (sessions_spawn); el guard de "
+        "la skill es abstracto — el nombre de la herramienta pertenece al "
+        "orquestador del runtime"
     )
     assert re.search(SUB_SUBAGENT, block), (
         "PD-9/conservación SKILL.md: la ventana no menciona los "
