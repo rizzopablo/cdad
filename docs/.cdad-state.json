@@ -6855,7 +6855,7 @@
     "id": "006-002-delegation-by-layer-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
