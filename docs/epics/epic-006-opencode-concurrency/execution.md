@@ -102,3 +102,17 @@ Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store 
   1. **CONFLICT preservado:** `~/.config/opencode/agents/cdad-reviewer.md` tiene contenido del dueño (modelo propio, editado el 2026-10-15). El instalador no lo sobrescribe, que es lo correcto. Decide el dueño.
   2. **Bytecode `__pycache__`:** el staging copiaba los `.pyc` que el uso deja en el árbol de la skill, y ahora el manifest los marca *pending-removal*. Queda como deuda del instalador (**DT-8**: excluir `__pycache__` del staging).
 - **Rollback:** restaurar el respaldo, o reinstalar desde `29a4805`.
+
+## Corrección del despliegue — 2026-10-17
+
+- **Error del orquestador:** el staging se generó con el perfil por defecto (`optimus`), porque `--basic` de `install.sh` solo deja la marca y no cambia el staging. Así se instalaron agentes con modelos fijos.
+- **Corrección:** `make staging PROFILE=basic` y reinstalación. Ningún agente instalado declara `model:`. `install.sh --check` da PASS, con 391 grupos.
+- **Receta correcta para desplegar:** `make staging PROFILE=basic && bash install.sh --force --basic && bash install.sh --check`.
+
+## Hallazgo: por qué el orquestador del consumidor despacha por bash — 2026-10-17
+
+- **Evidencia:** una sesión del orquestador del consumidor con 1.145 turnos, 6 compactaciones y ninguna sesión hija. Todos sus despachos van por `cdad_delegate.py --destination opencode`.
+- **Causa:** el handoff del consumidor prescribe ese comando con una exec-config por familia de modelo, una para el implementer y otra para el reviewer. Con el perfil `basic` los agentes no fijan modelo, así que `task` no garantiza que el reviewer sea de otra familia. El adaptador sí lo garantiza.
+- **Brecha en CDAD:** `cdad-cycle` §4 pone `task` primero, pero no dice qué hacer cuando el perfil no fija modelos ni cómo se elige entre `task` y el adaptador estando dentro de OpenCode.
+- **Ruido de contexto:** viene sobre todo de la orientación (volcados de state, ledger y skill: más de 1,5 M de caracteres de salida) y de reparaciones hechas por el propio orquestador (scripts en `/tmp`).
+- **Destino:** unidad aparte, fuera de 006-001, a decidir por el dueño.
