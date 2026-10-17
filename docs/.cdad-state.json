@@ -6576,6 +6576,47 @@
         "docs/specs/006-001-opencode-concurrency-reliability/rf-green.md": "09b8b01043a750509fd27fe09d2e5d302666d85b1c2a02775bfc1ee765642090"
       },
       "note": "Intento 3 (los intentos 1 y 2 cayeron por chain_exhausted del proveedor, sin efecto). 161c9ff: B1 piso del cliente acotado; B2 intento previo no afirmable -> blocked; O1 logs_dir fuera del asset. Verificado por el orquestador: solo 2 archivos de producto, sin tests; focal+regresiones 81 passed 1 skipped."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "re-review",
+      "substage": "review",
+      "at": "2026-10-17T21:47:35.841799+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "857b1b4c65549f10b2bd617f2309532d3ca804796c622f686ae630ea868fe5c6",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "re-review",
+        "substage": "review",
+        "packet_id": "006-001-opencode-concurrency-reliability-reviewer-review-002",
+        "receipt_sha256": "20905e556aa20f9bd14a499d3a494ddd5830549b18a03a0b39dae16bb3a5e523",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/rereview.md",
+            "6cc196c71d4cd1b5bab0e196c151af47595d2ef18eea970e58c4d818aca2110f"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-reviewer-review-002/receipt.json",
+      "receipt_sha256": "20905e556aa20f9bd14a499d3a494ddd5830549b18a03a0b39dae16bb3a5e523",
+      "artifacts": {
+        "docs/specs/006-001-opencode-concurrency-reliability/rereview.md": "6cc196c71d4cd1b5bab0e196c151af47595d2ef18eea970e58c4d818aca2110f"
+      },
+      "note": "Re-review glm: B1, B2, B3a, B3b y O1 CERRADOS; 0 bloqueantes; 1 opcional nuevo (banda del clamp por remaining en modo servicio sin oraculo propio -> deuda); 4 abstenciones. Materializado copiando los bytes recibidos: el receive se finalizo con kind reviewer-role-report y la tabla §7 exige 'review' (misma deuda CLI receive/kind de la review formal)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6590,7 +6631,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T21:38:34.346372+00:00",
+  "last_updated": "2026-10-17T21:47:35.841799+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6701,10 +6742,10 @@
     "id": "006-001-opencode-concurrency-reliability-reviewer-review-002",
     "role": "reviewer",
     "substage": "review",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "review"
 }
