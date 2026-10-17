@@ -164,3 +164,7 @@ Reviewer `cdad-reviewer` en OpenCode, familia glm. El implementer fue de la fami
 2. `test_review5_b4_basic_request_vs_staging_profile_labels_coherent` exige un staging generado con el perfil por defecto, y el orquestador lo había regenerado con `basic` para desplegar.
 
 Los dos pasaron al repetirlos tras `make staging`. El review-fix va a requerir una nueva corrida focal y de regresiones; la suite completa no se repite salvo que cambie el instalador.
+
+## Interrupción del proveedor — 2026-10-17
+
+Los intentos 1 y 2 del GREEN del review-fix murieron con «upstream provider error», sin efectos (reconcile limpio). Una sonda mínima a dos familias de modelo también falló. El gateway de modelos registra `chain_exhausted` (502) con el proveedor en cooldown. No es un fallo de CDAD. El review-fix queda en pausa hasta que el proveedor responda; el próximo intento va como 3.
