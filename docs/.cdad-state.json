@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": "006-001-opencode-concurrency-reliability",
-  "current_stage": "tdd",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -18,8 +18,13 @@
   "epic_features": [
     {
       "id": "006-001-opencode-concurrency-reliability",
-      "status": "in-progress",
-      "opened_at": "2026-10-16T15:49:22.967379+00:00"
+      "status": "done",
+      "opened_at": "2026-10-16T15:49:22.967379+00:00",
+      "closed_at": "2026-10-17T22:32:17.525424+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/006-001-opencode-concurrency-reliability/closure.md",
+        "sha256": "ef3324fb76eb34f73b46a6e0feb278592eb2a5cce281361d83817cbecd1cfae0"
+      }
     },
     {
       "id": "006-002-delegation-by-layer",
@@ -6617,6 +6622,102 @@
         "docs/specs/006-001-opencode-concurrency-reliability/rereview.md": "6cc196c71d4cd1b5bab0e196c151af47595d2ef18eea970e58c4d818aca2110f"
       },
       "note": "Re-review glm: B1, B2, B3a, B3b y O1 CERRADOS; 0 bloqueantes; 1 opcional nuevo (banda del clamp por remaining en modo servicio sin oraculo propio -> deuda); 4 abstenciones. Materializado copiando los bytes recibidos: el receive se finalizo con kind reviewer-role-report y la tabla §7 exige 'review' (misma deuda CLI receive/kind de la review formal)."
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-17T22:32:17.525424+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "469c6614be9c3e4de5ec80703c208aefec64b415773aa5b5a02698da49984231",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/006-001-opencode-concurrency-reliability/closure.md",
+          "sha256": "ef3324fb76eb34f73b46a6e0feb278592eb2a5cce281361d83817cbecd1cfae0"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Pablo",
+      "closure_path": "docs/specs/006-001-opencode-concurrency-reliability/closure.md",
+      "closure_sha256": "ef3324fb76eb34f73b46a6e0feb278592eb2a5cce281361d83817cbecd1cfae0"
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "late-delivery",
+      "substage": null,
+      "at": "2026-10-17T22:32:34.089266+00:00",
+      "by": null,
+      "transition": "late-delivery",
+      "transition_key": "2715c57038f3eef105c7830479abd36b9320ba3f14fbf8b237d956d00b142f10",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "late-delivery",
+        "stage": "late-delivery",
+        "substage": null,
+        "packet_id": "006-001-opencode-concurrency-reliability-scribe-memory-001",
+        "receipt_sha256": "45a1252cde38c8c0cd399b2a4c83f09e9d441b3f35c453669e4b4ef7508affe2",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "03ffa4966d0d847609c870d8ca357fd8f017995e22066c589577cf92d02119cc"
+          ],
+          [
+            "docs/adr/ADR-031-seleccion-explicita-de-modo-y-servicio-no-gestionado.md",
+            "1e1ed7b66ec1eca346487516fb52eb02c1fd855c6bc8e135a0f10f3f322f046d"
+          ],
+          [
+            "docs/progress.md",
+            "ed4b873b93d9cfaabba23846b6aa678ce930516f114d4479eb5a2e11e7b4b6f9"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "a8b4bcffede02fb0399937d5c5943920bf8ccf63faec927c02d8c819609a351d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-scribe-memory-001/receipt.json",
+      "receipt_sha256": "45a1252cde38c8c0cd399b2a4c83f09e9d441b3f35c453669e4b4ef7508affe2",
+      "artifacts": {
+        "docs/activeContext.md": "03ffa4966d0d847609c870d8ca357fd8f017995e22066c589577cf92d02119cc",
+        "docs/progress.md": "ed4b873b93d9cfaabba23846b6aa678ce930516f114d4479eb5a2e11e7b4b6f9",
+        "docs/systemPatterns.md": "a8b4bcffede02fb0399937d5c5943920bf8ccf63faec927c02d8c819609a351d",
+        "docs/adr/ADR-031-seleccion-explicita-de-modo-y-servicio-no-gestionado.md": "1e1ed7b66ec1eca346487516fb52eb02c1fd855c6bc8e135a0f10f3f322f046d"
+      },
+      "note": "Entrega del scribe (receipt valido) aplicada por el orquestador tras la aprobacion de Pablo; registrada como late-delivery porque el cierre ya estaba aplicado."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6631,7 +6732,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T21:47:35.841799+00:00",
+  "last_updated": "2026-10-17T22:32:34.089266+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6738,14 +6839,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "006-001-opencode-concurrency-reliability-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "dispatched",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
-  },
+  "active_packet": null,
   "tdd_substage": "review"
 }

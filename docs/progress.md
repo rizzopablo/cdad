@@ -8,6 +8,47 @@ _(ninguna)_
 
 ## Done
 
+- **006-001-opencode-concurrency-reliability** (2026-10-17, epic 006) — primera feature de
+  `epic-006-opencode-concurrency` y corrección del **modo de ejecución del adaptador OpenCode** ante la
+  **contención medida** del store compartido (dos despachos reales del implementer terminaron `failed` con
+  `LockTimeoutError`/`database is locked`, ≈89 s y ≈487 s). Cierra la **fila 1** del plan del epic:
+  **selección de ejecución explícita** (`server` | `service` | `standalone`), **preflight** de servidor y de
+  servicio, **procedencia por intento** dentro del esquema I8 sin cambiarlo, **espera proporcional** (cero
+  lecturas del store mientras el cliente vive) y **recuperación que conserva la correlación y no re-despacha**.
+  Contrato **spec v2** (PD-1..PD-14, `dac418b9…`) y **plan v2** (`2726744…`), aprobados el 2026-10-16 bajo la
+  HITL delegada del epic; **enmienda 001** (modo `service` configurado) aprobada por el dueño, con **INV-2
+  reescrita** e **INV-10 nueva** (con el servicio vivo ningún camino abre un `standalone` ni re-despacha solo)
+  y **D-11 (A)** ratificada (del registro del servicio se proyecta **solo** la clave `version`, sin red ni
+  contraseña, fallando cerrado). **Producto:** `cdad_delegate_opencode.py` (**+1333/−124**; 2138 líneas
+  finales), `cli-delegation.md` (+170/−19) y `assets/opencode-exec-config.example.json` (**nuevo**).
+  **Gates:** RED→GREEN por unidad —T1 `91f7e98` (14 failed / 4 passed) → `4bc8934`+`a96c2d8` (focal 18);
+  T1b `7ccedb4` (16 failed / 0 passed) → `b949849` (focal 16, regresiones 54); T2 `8447443` (8 failed /
+  4 passed) → `ddba831` (focal 12; 93 passed ×3); T3 `5e5828a` (oráculo sensible **por mutación**) →
+  `d0a7963` (focal 2; `make validate` 155 PASS / 1 FAIL, F011 preexistente)—; **review formal 3 bloqueantes /
+  5 opcionales / 3 abstenciones** (reviewer de familia glm, **distinta** a la del implementer): **B1** (piso
+  del cliente **sin tope** en la banda de cota media: el adaptador podía morir después de la cota de la
+  interfaz y perder la correlación), **B2** (el intento previo **fallaba abierto** con el store ocupado o
+  ilegible: segundo worker vivo del mismo paquete) y **B3** (sin focal de la espera ni del preflight en modo
+  servicio) — los tres **corregidos** en el review-fix (`17a7ca1` RED → `161c9ff` GREEN, +79/−14, `tests/`
+  intacto, intento 3 tras **dos intentos muertos por caída del proveedor**), con **re-review 5 de 5 cerrados,
+  0 bloqueantes y 1 opcional nuevo a deuda (O5-RF)**; **suite de cierre 1 failed / 1079 passed / 5 skipped**
+  (la falla es una **instancia de DT-9**: margen de la cota de 2 s del fixture bajo carga; aislada **5/5
+  verde** a ≈2,08 s). **Recorridos reales (PD-6):** contra el servicio vivo → **`blocked` en 1,3 s por el gate
+  de versión** (2.0.22 vs cliente 2.0.27; sin fallback, sin tokens); con el servicio detenido →
+  `require:false` **`completed` 33,9 s con fallback declarado** y `require:true` **`blocked` 1,1 s**; **la
+  concurrencia real en `mode: server` contra el servidor único queda pendiente de una credencial del dueño** ⇒
+  **PD-6 = BLOQUEO declarado** y **AC-7 pendiente del dueño**. **Desplegada en HOME el 2026-10-17** por orden
+  del dueño con **perfil `basic`** (`install.sh --check` PASS, 391 grupos; el primer intento, con el staging
+  por defecto, se corrigió con `make staging PROFILE=basic`); `install.sh` rc=1 por un **CONFLICT preservado**
+  del agente reviewer del dueño y por **DT-8** (`__pycache__` en el staging); **el despliegue es anterior al
+  review-fix ⇒ redespliegue pendiente de la orden del dueño**. **Deuda:** PD-6 (BLOQUEO), AC-7 (dueño),
+  DT-3/DT-6/DT-7/DT-8/DT-9, los opcionales **O3–O5** de la review y **O5-RF** de la re-review, y **dos deudas
+  del CLI**: `receive` finaliza el recibo con un `kind` que la tabla cerrada de `artifact-policy.json` rechaza
+  (**dos veces** en esta feature) y **no hay vía CLI para fallar un paquete despachado** (la disposición solo
+  admite `abandoned|superseded`). Decisión propuesta para registro en **ADR-031**. **El epic NO se cierra:**
+  siguen en cola **006-002-delegation-by-layer**, **006-003-installer-single-profile-delegation-config** y
+  **006-004-active-decisions-table** (las tres enmiendas al plan aprobadas por el dueño el 2026-10-17).
+  **Siguiente:** `006-002-delegation-by-layer`, que se abre al cerrar 006-001.
 - **epic-005-real-operation** (cerrado 2026-10-14, 14 features) — «Operación real y medición de
   contexto»: las **14 filas del plan en `done`** (005-001, 005-005, 005-006, 005-008, 005-009, 005-010,
   005-002, 005-003, 005-007, 005-004, 005-011, 005-013, 005-012, 005-014), cada una con su cierre en
@@ -695,6 +736,14 @@ _(ninguna)_
 
 ## Queued
 
+- **epic-006 — cola y pendientes del dueño:** **006-002-delegation-by-layer** (regla de delegación por capas
+  y principio «los modelos los fija la configuración, nunca el orquestador ni los scripts»),
+  **006-003-installer-single-profile-delegation-config** (instalador siempre `basic` y sin mapa de modelos
+  —reemplaza ADR-007—, config de delegación y verificación de familias del reviewer) y
+  **006-004-active-decisions-table** (sección «Decisiones vigentes» del Memory Bank). **Redespliegue post-fix**
+  de 006-001 en HOME (lo instalado es anterior al review-fix que cerró B1/B2), pendiente de la orden del
+  dueño; **AC-7** (recepción real del consumidor y declaración de `mode: "service"` en sus configs) y la
+  **credencial** para la concurrencia real en `mode: server`, también del dueño.
 - CI del repo (GitHub Actions) — deuda de bootstrap.
 - Dogfood pendiente: make lint (H3 cdad-004), §5.6 con worktree real,
   receiving-feedback con bloqueantes reales, stage-debugging con bug real,
@@ -747,7 +796,26 @@ _(ninguna)_
 
 ---
 
-Última actualización: 2026-10-14
+Última actualización: 2026-10-17
+
+- 2026-10-17 — 006-001-opencode-concurrency-reliability cerrada (epic 006, primera feature): **el modo de
+  ejecución de la delegación OpenCode pasa a ser explícito y verificable** —`server` | `service` |
+  `standalone`—, con preflight de servidor y de servicio, **procedencia por intento** en el I8 sin cambiar el
+  esquema, **espera proporcional** (cero lecturas con el cliente vivo) y **recuperación que conserva la
+  correlación y no re-despacha**; con el servicio vivo **ningún** camino abre un `standalone` (INV-10) y la
+  versión del servicio se comprueba por una **proyección de una sola clave** del registro (D-11: sin red, sin
+  contraseña, sin URL, fallando cerrado). Gates: RED→GREEN por unidad (T1 14/4 → focal 18; T1b 16 → focal 16;
+  T2 8/4 → focal 12; T3 probado por mutación → focal 2) y **review formal 3 bloqueantes / 5 opcionales /
+  3 abstenciones** con los tres bloqueantes **corregidos** en review-fix (`17a7ca1` / `161c9ff`) y **re-review
+  5 de 5 cerrados, 0 bloqueantes**; **suite de cierre 1 failed / 1079 passed / 5 skipped**, la falla una
+  instancia de **DT-9** (cota de 2 s del fixture bajo carga; aislada verde 5/5). **PD-6 en BLOQUEO declarado**
+  (concurrencia real en `mode: server`: falta la credencial del dueño) y **AC-7 pendiente del dueño**; la
+  **eliminación de la contención no se demuestra**. **Desplegada en HOME el 2026-10-17** con perfil `basic`
+  (`install.sh --check` PASS, 391 grupos), con **redespliegue pendiente** tras el review-fix. Deuda:
+  DT-3/DT-6/DT-7/DT-8/DT-9, O3–O5 y O5-RF, más la deuda del CLI `receive`/`kind` (dos veces) y la falta de una
+  vía para **fallar** un paquete despachado. Decisión propuesta en **ADR-031**. **epic-006 sigue abierto**
+  (`features-loop`): **1/4 en `done`**, con **006-002, 006-003 y 006-004 en cola**. **Siguiente:**
+  `006-002-delegation-by-layer` (se abre al cerrar 006-001).
 
 - 2026-10-14 — **epic-005-real-operation cerrado** (14/14 unidades, cada una con su cierre y su
   evidencia): «Operación real y medición de contexto». **Versión de referencia:** producto del repo

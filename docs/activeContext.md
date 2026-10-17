@@ -4,6 +4,189 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-17 — Feature: 006-001-opencode-concurrency-reliability (epic 006)
+
+**Cerrada el 2026-10-17 (ciclo técnico completo).** Primera unidad de `epic-006-opencode-concurrency`, nacida
+de un problema **medido**, no presupuestado: **dos despachos reales del implementer terminaron `failed` por
+contención en la base de sesiones compartida** (`LockTimeoutError` / `database is locked`, ≈89 s y ≈487 s, el
+segundo con fallo al persistir un evento del LLM) (`docs/epics/epic-006-opencode-concurrency/plan.md` §2).
+Cierra la **fila 1** del plan del epic (`:22`): **selección de ejecución explícita y verificable** —`server`,
+`service` y `standalone`—, **procedencia por intento**, **espera proporcional** y **recuperación que conserva
+la correlación**. Contrato **spec v2** (PD-1..PD-14, sha256 `dac418b9…`) y **plan v2** (sha256 `2726744…`),
+**aprobados juntos el 2026-10-16** por el orquestador Claude bajo la **HITL delegada del epic**
+(`docs/epics/epic-006-opencode-concurrency/execution.md`). **PD-6 queda en BLOQUEO declarado** y **AC-7
+pendiente del dueño**; **el epic NO se cierra**. Decisión propuesta para registro en **ADR-031** (borrador del
+cierre).
+
+**Enmienda 001 — modo `service` (aprobada por el dueño el 2026-10-16).** Cambio de alcance
+(`execution.md` §«Cambio de alcance aprobado por el dueño — 2026-10-16»): el **servicio de fondo** es dueño
+del store, así que CDAD gana un modo `service` **configurado** que pasa a ser el camino normal —
+`opencode service status` se comprueba antes de despachar y **CDAD nunca gestiona el servicio** (no lo
+arranca, no lo reinicia, no lo detiene, no lo configura). La enmienda **reescribe INV-2** («nunca el modo por
+defecto» → «nunca arrancar ni gestionar el servicio»), suma **INV-10** (con el servicio vivo ningún camino
+abre un `standalone` ni re-despacha solo) y agrega **PD-13/PD-14**, conservando PD-1..PD-12 con un diff
+conceptual por PD (§14) y sumando la unidad **T1b**. El orquestador **ratificó D-11 (A)** —un lector que
+proyecta **solo** la clave `version` del registro del servicio, **sin red, sin contraseña y sin URL**, que
+falla cerrado— y **confirmó D-9** (con `mode` sin declarar rige la **compatibilidad v1**).
+
+**Producto (T1 → T1b → T2 → T3 → review-fix).** Adaptador
+`skills/cdad-cycle/scripts/cdad_delegate_opencode.py` (**+1333/−124**; 2138 líneas finales), referencia
+`skills/cdad-cycle/references/cli-delegation.md` (+170/−19) y
+`skills/cdad-cycle/assets/opencode-exec-config.example.json` (**nuevo**). El rango completo de la feature
+(`git diff f537aa5..HEAD -- skills/ tests/`) son **11 archivos, +7563/−153**.
+
+- **T1 — selección de modo, preflight del servidor, procedencia y secretos.** RED `91f7e98` (**14 failed /
+  4 passed**, 18 tests; los 4 verdes **declarados**, no ocultos) → GREEN `4bc8934` + `a96c2d8` (**focal 18
+  passed**; regresiones 36 passed). Únicos oráculos ajustados, autorizados por el plan §3: el de modo servidor
+  de `test_005_010_t2_load_mode_invocation.py` (fixture `/api/info` en loopback con la versión del fake) y el
+  `--version` del fake compartido de `test_005_009_t2_opencode_adapter.py`.
+- **T1b — modo servicio.** RED `7ccedb4` (**16 failed / 0 passed**, todas por aserción de contrato, cero
+  import/syntax/fixture) → GREEN `b949849` (**focal 16 passed**; regresiones 54 passed). `service status` se
+  invoca **exactamente una vez** y es la **única** invocación de `service`; interpretación cerrada: URL
+  `http(s)` con host y sin userinfo → **corre**; literal `stopped` → **no corre**; cualquier otra respuesta →
+  **`blocked`**, **nunca** standalone.
+- **T2 — espera, clasificación, correlación, terminación ordenada e intento previo.** RED `8447443` (**8
+  failed / 4 passed**, las 8 por aserción) → GREEN `ddba831` (**focal 12 passed**; tres corridas combinadas de
+  regresiones **93 passed / 1 skipped**). El RED **no cambió** con la enmienda. *(Incidente de tramo: el
+  intento 1 del GREEN se cortó a los 90 min sin commit; el reconcile no encontró efectos.)*
+- **T3 — concurrencia con fixture, referencia y config de ejemplo.** RED `5e5828a` (el focal **ya pasaba** por
+  el GREEN previo de T1/T1b/T2: el oráculo se probó **por mutación** del fake propio —correlación rota →
+  `'unknown' != 'completed'`— y se revirtió) → GREEN `d0a7963` (**focal 2 passed**; regresiones 53 passed /
+  1 skipped; `make validate` **155 PASS / 1 FAIL**, el **F011 preexistente** de drift contra las copias
+  instaladas). El adaptador **no necesitó cambios**: T3 entrega la referencia y el asset.
+- **Review-fix (B1, B2, B3, O1).** RED `17a7ca1` (**2 failed / 2 passed**; B1 y B2 rojos por aserción, B3
+  declarado como **cobertura**, no como falso verde) → GREEN `161c9ff` (**+79/−14** en los dos archivos de
+  producto, `tests/` intacto; focal 4 passed; consolidado 81 passed / 1 skipped). **B1** acota el piso del
+  cliente (`CLIENT_MIN_BUDGET_SHARE` con `COMPLETION_MARGIN_SECONDS = 0.8`) para que
+  `E + cota_cliente + gracia + margen ≤ cota de la interfaz` valga **siempre**: el piso solo puede gastar el
+  *slack* de la reserva y **PD-11 manda** (con la gracia de los defaults el tope da 0 extra; declarado).
+  **B2** vuelve **innegociable** el intento previo: un store **existente** cuyo estado no se puede afirmar
+  (ocupado/ilegible) → `blocked` **antes** de cualquier invocación, con la **nuance declarada** de que un store
+  **inexistente** es un hecho determinante distinto y **no** bloquea (§2.7). **O1** saca `logs_dir` del asset
+  (PD-12 literal).
+
+**Review formal (etapa 4) — 3 bloqueantes / 5 opcionales / 3 abstenciones** (`review.md`; reviewer en OpenCode
+de familia **glm**, **distinta** a la del implementer, familia **deepseek**). Los tres bloqueantes se
+**aceptaron** y abrieron el review-fix: **B1** (banda de cota media: con el piso del cliente **sin tope** y un
+preflight lento, el adaptador podía responder **después** de la cota de la interfaz —envelope
+`did not answer within` y `session: null`, perdiendo además la correlación de PD-8—), **B2** (el chequeo del
+intento previo **fallaba abierto** con el store ocupado o ilegible: podía despachar un **segundo worker vivo
+del mismo paquete**, exactamente el doble-escritor que INV-10 prohíbe) y **B3** (sin focal de la cláusula de la
+enmienda «fila no idle en modo **servicio** → `timeout`», ni del preflight de servicio acotado por el
+presupuesto restante). Opcionales: **O1** entró en el GREEN; **O2** se corrigió (la etiqueta duplicada del flake
+es **DT-9**, no DT-7); **O3** (anonimización: nombre de modelo/proveedor en la **spec aprobada** y nombre del
+**otro proyecto activo** en la evidencia del epic), **O4** (celda indefinida de la matriz §2.2: `mode` sin
+declarar + `server` presente pero **inválida**, que el código resuelve fail-closed **sin base textual**) y
+**O5** (legibilidad: `delegate()` de ~450 líneas, docstring ambiguo de la terminación del grupo propio, fixtures
+importados entre focales) **van a deuda**.
+
+**Re-review (sólo bloqueantes) — 5 de 5 cerrados, 0 bloqueantes, 1 opcional nuevo, 4 abstenciones**
+(`rereview.md`): **B1, B2, B3a, B3b y O1 cerrados**, con la mecánica verificada en el código por el reviewer
+(el guard de B2 queda **después** del bloqueo por fila no-idle y **antes** de cualquier preflight; la rama de
+B3a pincha `_settle_decides` —un refactor a `== "server"` la dejaría en rojo—; el clamped
+`min(configured, remaining)` existe también para el preflight de servicio). **Opcional nuevo (O5-RF):** el
+focal de B3b **no discrimina** el tope *por presupuesto restante* del preflight de servicio frente al valor
+**configurado** (espejo del focal de servidor aceptado) → **a deuda**.
+
+**Suite de cierre (una vez, por quien cierra).** `python3 -m pytest tests -q -p no:cacheprovider` →
+**1 failed / 1079 passed / 5 skipped** (22:52). La falla es
+`test_b3a_service_mode_row_not_idle_times_out_at_cota_ignoring_settle` con la **carga de la suite**; aislado
+**5 de 5 verdes** a ≈2,08 s contra la cota de 2 s del fixture ⇒ **instancia de DT-9** (margen de los fixtures
+de 2 s bajo carga), con la nota de que ese caso tiene **poco margen** y la próxima feature que toque el
+adaptador lo tiene que tener en cuenta. Corrida anterior sobre `c9adace`: **1074 passed / 2 failed / 5
+skipped**, ambos fallos **ambientales** (uno por DT-9; el otro porque exigía un staging con el perfil por
+defecto y el orquestador lo había regenerado con `basic` para desplegar). El **commit de la corrida de cierre
+no queda citado** en la evidencia del epic; el **último commit de producto es `161c9ff`** y todo lo posterior
+es **sólo docs** (verificado: `git log 161c9ff..HEAD -- skills/ tests/` **sin salida**). `make validate`
+**no** se re-corrió después del review-fix (último resultado: 155 PASS / 1 FAIL F011 preexistente, en el GREEN
+de T3) ⇒ queda como **no verificado post-fix**.
+
+**Recorridos reales (PD-6) — 2 de 3 piernas no se pueden cerrar.** Contra el **servicio vivo** (2.0.22) y con
+el cliente 2.0.27, el despacho real terminó **`blocked` en 1,3 s** por el **gate de versión de D-11**, **sin
+fallback** y **sin consumir tokens**: buena evidencia del invariante funcionando en la topología real (INV-10)
+y, a la vez, prueba de que esa pierna **no se completa** así. Después el dueño **detuvo el servicio**, y los
+recorridos con el servicio detenido dieron exactamente lo declarado: `mode: service` con `require: false` →
+**`completed` en 33,9 s** con **fallback declarado** `service` → `standalone` (fila durable con
+`agent cdad-test-writer`, `idle_outcome succeeded`, `version 2.0.27`, un solo servidor privado durante el
+despacho), y `require: true` → **`blocked` en 1,1 s**, sin despacho. **La concurrencia real en `mode: server`
+contra el servidor único del otro proyecto activo sigue pendiente de una credencial que el orquestador no
+tiene** (sin contraseña el servidor responde 401) ⇒ **PD-6 = BLOQUEO declarado**. El único `completed` real
+fue en **modo efectivo standalone** y **no** prueba la topología con servicio.
+
+**Despliegue en HOME (2026-10-17, orden del dueño).** Se instaló con **perfil `basic`**. El primer intento usó
+el **staging por defecto** —error del orquestador: `--basic` de `install.sh` solo deja la marca y no cambia el
+staging— y se rehízo; **receta declarada:** `make staging PROFILE=basic && bash install.sh --force --basic &&
+bash install.sh --check`. `install.sh --check` **PASS** (391 grupos) y **ningún agente instalado declara
+`model:`**. `install.sh` termina **rc=1 por dos razones ajenas a la feature**: un **CONFLICT preservado** en
+`~/.config/opencode/agents/cdad-reviewer.md` (contenido del dueño editado el 2026-10-15; el instalador **no**
+lo sobrescribe, que es lo correcto) y el **bytecode `__pycache__`** que el staging copiaba del árbol de la
+skill. **El despliegue es anterior al review-fix** (`git log b6c2193..HEAD -- skills/ tests/` = `17a7ca1`,
+`161c9ff`) ⇒ **lo instalado no incluye B1/B2** y el **redespliegue queda pendiente de la orden del dueño**.
+Rollback: restaurar el respaldo previo o reinstalar desde `29a4805`. **Observación declarada:**
+`docs/runtime-adopted-version.md` **sigue declarando `29a4805`** (no se actualizó en esta feature): lo que
+prueba el despliegue es la evidencia del epic, no ese registro.
+
+**Decisiones relevantes.** **D-9** `mode` sin declarar **conserva la compatibilidad v1**: un cambio de
+topología hacia un servidor **compartido** es decisión del consumidor y debe ser explícita; **costo
+declarado:** las configs que hoy omiten `server`/`mode` siguen abriendo un servidor privado por despacho hasta
+que declaren `mode: "service"` (**acción de la recepción, AC-7**). **D-10** el fallback `service` →
+`standalone` es **declarado y contable** (`fallback=service-unavailable` en la procedencia) y existe **solo**
+si `service status` informa `stopped`; la variante estricta es `service.require: true` → `blocked`. **D-11 (A)**
+la versión del servicio se observa proyectando **una sola clave** del registro: sin red, sin contraseña, sin
+URL y **fallando cerrado**; **trade-off declarado:** CDAD abre un archivo que **también contiene la
+contraseña** (mitigado por la proyección; **DT-6**: ruta y esquema **no** son contrato público). **D-13** la
+**ventana de carrera** (el servicio se cae entre la comprobación y el despacho y el cliente lo arranca) **no
+tiene forma soportada de impedirse** en el runtime (no hay flag, variable de entorno ni setting que lo
+controle): se declara **riesgo residual**, con la mitigación de comprobar lo más tarde posible. **Procedencia
+sin tocar el esquema I8:** modos, causa del fallback y modo de despacho van como pares `clave=valor` **al
+final** del texto libre de `provenance.runtime`, así el fallback es **auditable por intento** sin romper el
+parseo existente. **La contención NO se elimina:** la feature **no** promete eliminar el bloqueo del store
+compartido (siguen N≥3 escritores de larga vida y un `busy_timeout` fijo en el runtime); un único éxito real es
+**observación**, no prueba.
+
+**Deuda detectada (abierta, con condición de cierre).** **PD-6 (BLOQUEO declarado):** concurrencia real en
+`mode: server` contra el servidor único ⇒ requiere **credencial del dueño**; y un servicio en la versión del
+cliente ⇒ **decisión del dueño**. **AC-7 (pendiente del dueño):** recepción real sobre una unidad del
+consumidor, **declarar `mode: "service"` en sus configs** y observar la convivencia; un éxito **no** prueba la
+eliminación de la contención. **DT-8** `__pycache__` en el staging del instalador (bytecode marcado
+*pending-removal*; excluirlo del staging). **DT-9** cotas de **2 s** de los fixtures: margen insuficiente bajo
+carga del host; el caso de B3a tiene **poco margen** y hay que tenerlo en cuenta al tocar el adaptador.
+**DT-6** (registro del servicio como hecho observado, no contrato), **DT-7** (el fallback como camino
+habitual: se vigila con el contador de la procedencia) y **DT-3** (el intento previo solo ve los registros del
+mismo paquete en el ledger) quedan abiertos en la spec §8, junto con DT-1/DT-2/DT-4/DT-5. **Deuda del CLI
+detectada dos veces en esta feature:** `receive` **finaliza el recibo con un `kind` que la tabla cerrada de
+tipos de artefacto rechaza** (`skills/cdad-cycle/assets/artifact-policy.json`, la que aplica `materialize`);
+como el recibo es **inmutable**, el orquestador copió los bytes recibidos a `review.md` (sha `6f7cd682…`,
+idéntico al recibo) y a `rereview.md` — debería validar el tipo contra la tabla **antes** de finalizar. Y **no
+hay vía CLI para *fallar* un paquete despachado**: el vocabulario cerrado de la disposición es
+`abandoned|superseded`, así que los **dos intentos** del GREEN que murieron por la **caída del proveedor**
+(`chain exhausted`, sin efectos, reconcile limpio) no tuvieron marcador propio y el reintento fue el **intento
+3 del mismo paquete**. Opcionales de la review a deuda: **O3** (anonimización), **O4** (celda indefinida de
+§2.2) y **O5** (legibilidad de `delegate()`, docstring y aislamiento de fixtures), más el **opcional nuevo de
+la re-review (O5-RF)**.
+
+**Lecciones de proceso.** (1) **La review adversarial encontró lo que el GREEN no:** B2 era un
+**fail-open** en el corazón de la invariante central (la recuperación podía reconstruir el problema) y B1 una
+**banda aritmética** que ningún focal tocaba; ambos se cerraron con **RED primero** y la re-review verificó la
+mecánica **en el código**, no en el informe del implementer. (2) **Declarar en vez de fabricar un rojo:** el RED
+de T3 declaró que su focal **ya pasaba** y probó la sensibilidad del oráculo **por mutación**; el review-fix
+declaró B3 como **cobertura**. (3) **El despliegue puede quedar por detrás de la corrección:** lo instalado es
+anterior al review-fix; la receta `make staging PROFILE=basic` (y no `--basic` sin staging) queda como la forma
+correcta de desplegar.
+
+**Estado del epic.** `epic-006-opencode-concurrency` sigue **abierto** (`features-loop`): **006-001 `done`** y
+tres features **en cola**, cada una con su enmienda al plan aprobada por el dueño el **2026-10-17**:
+**006-002-delegation-by-layer** (la delegación por capas —`skills` metodología, `agentes` comportamiento por
+runtime, `scripts` dependientes del SO—, con el principio de que **los modelos los fija la configuración y
+nunca el orquestador ni los scripts**), **006-003-installer-single-profile-delegation-config** (instalador
+**siempre `basic`**, sin mapa de modelos —reemplaza **ADR-007**—, más la config de delegación y la invariante
+del reviewer de otra familia como **verificación de configuración**) y **006-004-active-decisions-table** (la
+sección «Decisiones vigentes» del Memory Bank, que el orquestador mantiene y el reviewer revisa). **El epic NO
+se cierra.** **Siguiente:** `006-002-delegation-by-layer`, que se abre al cerrar 006-001; y el **redespliegue
+post-fix** de 006-001 en HOME, pendiente de la orden del dueño.
+
+---
+
 ## 2026-10-14 — Cierre del epic: epic-005-real-operation
 
 **Epic cerrado el 2026-10-14** con **14/14 unidades en `done`**, cada una con su cierre y su evidencia

@@ -457,6 +457,36 @@ catch-all deny o pares de comandos durante la simplificación.
   ADR-023 (**enmienda 2026-10-11**); contrato normativo en
   `docs/specs/005-010-real-opencode-delegation/spec.md`.
 
+### Delegación externa — selección de modo explícita y servicio de fondo no gestionado (epic 006, 2026-10-17)
+
+- **El modo de ejecución es explícito y no hay fallback silencioso.** `mode` ∈ {`server`, `service`,
+  `standalone`}; con `mode` **sin declarar** rige la **compatibilidad v1** (`server` presente → servidor; si
+  no, standalone) y **no** se pasa a `service` por defecto: cambiar a un servidor compartido es decisión del
+  consumidor (D-9, ADR-031). Una config inválida (tipo, signo, `mode` fuera del conjunto, `poll_max <
+  poll_initial`, `service.require` no booleano) → `blocked` **antes** de invocar nada.
+- **CDAD no gestiona el servicio de fondo ni servidores.** La **única** invocación de `service` es `service
+  status` (solo lectura, **exactamente una vez**, y sólo en modo servicio); ninguna argv lleva `serve`,
+  `service start|stop|restart|get|set|unset` ni `reload` (INV-2). El servicio lo prepara y lo mantiene el
+  **dueño/operador**; CDAD tampoco escribe el store (sólo `mode=ro`).
+- **La recuperación nunca reconstruye el problema.** El **único** cambio de modo admisible es el **fallback
+  declarado y contable** `service` → `standalone` cuando `service status` informa que **no corre**
+  (`fallback=service-unavailable`); con el servicio **corriendo**, todo fallo (versión, credencial, respuesta
+  inesperada) termina `blocked` y **nunca** standalone (INV-10). Tras un `timeout` en servicio o servidor
+  ningún camino re-despacha solo ni abre un `standalone` «para destrabar».
+- **La versión del servicio se lee como proyección de una sola clave.** El gate de compatibilidad proyecta
+  **solo** `version` del registro del servicio, **sin red, sin contraseña y sin URL**, y **falla cerrado**
+  (`blocked` con las dos versiones o «no verificable»); el registro y su esquema **no** son contrato público
+  (DT-6). La salida de `service status` se descarta salvo el discriminante: ninguna salida lleva la URL del
+  servicio.
+- **Lo no observado es `unknown`, también en la recuperación.** El chequeo del intento previo es
+  **innegociable**: un store **existente** cuya fila no se puede afirmar (ocupado o ilegible) **bloquea antes
+  de cualquier invocación**, espejo del fail-closed de `service status`; un store **inexistente** es un hecho
+  determinante distinto y **no** bloquea (§2.7).
+- **Referencia operativa:** `skills/cdad-cycle/references/cli-delegation.md` y
+  `skills/cdad-cycle/assets/opencode-exec-config.example.json`; **ADR-031**; contrato normativo en
+  `docs/specs/006-001-opencode-concurrency-reliability/spec.md` (PD-1..PD-14, INV-1..INV-10). Aviso de cota:
+  los fixtures de tiempos usan cotas de **2 s** y son frágiles bajo carga del host (**DT-9**).
+
 ### Medición de contexto — registro neutral opcional, medidor read-only que nunca aprueba (epic 005, 2026-10-11)
 
 - **El formato de medición es neutral respecto del runtime y opcional para la metodología.** El
