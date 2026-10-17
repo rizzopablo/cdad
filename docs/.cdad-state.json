@@ -6474,6 +6474,52 @@
         "docs/specs/006-001-opencode-concurrency-reliability/review.md": "6f7cd682776680bc369c4ac0bba68c2af246e627468a51acbfbaa5a5e4c7b5c0"
       },
       "note": null
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "review-fix-red",
+      "substage": "red",
+      "at": "2026-10-17T17:03:13.798481+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0696026f5e29fbb6a82324ea01bf2017f0970c3b8d1284da902fa37b3c19f64d",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "review-fix-red",
+        "substage": "red",
+        "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-005",
+        "receipt_sha256": "22e8828ceb169aab85c343c4507cf35e27fae04f443364f8caa866635b8ea606",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/rf-red.md",
+            "4c13b4e3ee5bb004dad4c34fc3bb291e9bd121d55d1c9cb355d2df8b12282cfa"
+          ],
+          [
+            "tests/test_006_001_reviewfix.py",
+            "2ae536e409616166666ada149a7a36eb682fd0c65f4097cc8435971aabe83581"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-test-writer-red-005",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-test-writer-red-005/receipt.json",
+      "receipt_sha256": "22e8828ceb169aab85c343c4507cf35e27fae04f443364f8caa866635b8ea606",
+      "artifacts": {
+        "tests/test_006_001_reviewfix.py": "2ae536e409616166666ada149a7a36eb682fd0c65f4097cc8435971aabe83581",
+        "docs/specs/006-001-opencode-concurrency-reliability/rf-red.md": "4c13b4e3ee5bb004dad4c34fc3bb291e9bd121d55d1c9cb355d2df8b12282cfa"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6488,7 +6534,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T16:49:43.747915+00:00",
+  "last_updated": "2026-10-17T17:03:13.798481+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6599,10 +6645,10 @@
     "id": "006-001-opencode-concurrency-reliability-test-writer-red-005",
     "role": "test-writer",
     "substage": "red",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
   },
-  "tdd_substage": "review"
+  "tdd_substage": "red"
 }
