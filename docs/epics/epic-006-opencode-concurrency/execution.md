@@ -61,3 +61,10 @@ Que esto elimine los bloqueos **no se demuestra**: queda como observación empí
 **Aplicación:**
 - enmienda de la spec y el plan de 006-001, con una unidad T1b encima de T1;
 - el RED de T2, en curso, no cambia, porque espera y recuperación son independientes del modo.
+
+## GREEN de T2 — 2026-10-16
+
+- **Intento 1:** se cortó a los 90 min (rc=124) sin commit. El reconcile no encontró efectos.
+- **Intento 2:** commit `ddba831`. El rol informa 3 corridas conjuntas verdes.
+- **Verificación del orquestador:** 7 corridas conjuntas (focal T2 + T1 + T1b + regresiones del adaptador). 4 pasan enteras, 3 de ellas seguidas; 3 fallan con `timeout` contra la cota de 2 s de los fixtures. Los fallos coinciden con carga alta del host compartido (load ~9) y pasan aislados.
+- **Disposición:** se acepta. El fallo de tiempos queda como deuda declarada (DT-7: margen de los fixtures de 2 s bajo carga del host) y va a la review. No se subió ninguna cota de test.
