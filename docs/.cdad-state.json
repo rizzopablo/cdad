@@ -6433,6 +6433,47 @@
         "docs/specs/006-001-opencode-concurrency-reliability/t3-green.md": "1de699660aa610c3895ffb00b20a269d7a061210672c780d716ccab1ee47921f"
       },
       "note": null
+    },
+    {
+      "feature": "006-001-opencode-concurrency-reliability",
+      "stage": "review",
+      "substage": "review",
+      "at": "2026-10-17T16:49:43.747915+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0a0e21fc8e2d2c60cddb29689eb497b892ad6fea995d6f93a95d4c2e751fa84a",
+      "transition_key_payload": {
+        "execution_id": "exec-006-001-opencode-concurrency-reliability-001",
+        "feature_id": "006-001-opencode-concurrency-reliability",
+        "transition": "delivery",
+        "stage": "review",
+        "substage": "review",
+        "packet_id": "006-001-opencode-concurrency-reliability-reviewer-review-001",
+        "receipt_sha256": "270e0288c260e9b5a9b7db1fa73e3df7fa704ee2403b06786c7dd1fcc1066974",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-001-opencode-concurrency-reliability/review.md",
+            "6f7cd682776680bc369c4ac0bba68c2af246e627468a51acbfbaa5a5e4c7b5c0"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-001-opencode-concurrency-reliability-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-001-opencode-concurrency-reliability-001/006-001-opencode-concurrency-reliability-reviewer-review-001/receipt.json",
+      "receipt_sha256": "270e0288c260e9b5a9b7db1fa73e3df7fa704ee2403b06786c7dd1fcc1066974",
+      "artifacts": {
+        "docs/specs/006-001-opencode-concurrency-reliability/review.md": "6f7cd682776680bc369c4ac0bba68c2af246e627468a51acbfbaa5a5e4c7b5c0"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6447,7 +6488,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T00:51:52.387060+00:00",
+  "last_updated": "2026-10-17T16:49:43.747915+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6558,10 +6599,10 @@
     "id": "006-001-opencode-concurrency-reliability-reviewer-review-001",
     "role": "reviewer",
     "substage": "review",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "review"
 }

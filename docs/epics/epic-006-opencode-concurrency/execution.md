@@ -67,7 +67,7 @@ Que esto elimine los bloqueos **no se demuestra**: queda como observación empí
 - **Intento 1:** se cortó a los 90 min (rc=124) sin commit. El reconcile no encontró efectos.
 - **Intento 2:** commit `ddba831`. El rol informa 3 corridas conjuntas verdes.
 - **Verificación del orquestador:** 7 corridas conjuntas (focal T2 + T1 + T1b + regresiones del adaptador). 4 pasan enteras, 3 de ellas seguidas; 3 fallan con `timeout` contra la cota de 2 s de los fixtures. Los fallos coinciden con carga alta del host compartido (load ~9) y pasan aislados.
-- **Disposición:** se acepta. El fallo de tiempos queda como deuda declarada (DT-7: margen de los fixtures de 2 s bajo carga del host) y va a la review. No se subió ninguna cota de test.
+- **Disposición:** se acepta. El fallo de tiempos queda como deuda declarada (DT-9, antes rotulada por error DT-7: margen de los fixtures de 2 s bajo carga del host; se cierra cuando los fixtures toleren la carga o se aíslen del host compartido) y va a la review. No se subió ninguna cota de test.
 
 ## Recorrido real contra el servicio vivo (spec §5.5) — 2026-10-16
 
@@ -133,3 +133,26 @@ Lo trajo el dueño. Los puntos se adoptan con las correcciones del orquestador q
 ## Enmienda 002 del plan — 2026-10-17
 
 El dueño fijó la dirección: «los modelos no los fije nunca el orquestador ni los scripts… que el instalador sea siempre basic, pero que deje un archivo de configuración para los scripts de delegación» (Pablo, 2026-10-17). El criterio de forma lo delegó antes: «confío en tu criterio». El principio va en 006-002 y se agrega la feature 006-003 (plan §9).
+
+## Review formal de 006-001 — disposición (2026-10-17)
+
+Reviewer `cdad-reviewer` en OpenCode, familia glm. El implementer fue de la familia deepseek. Resultado: 3 bloqueantes, 5 opcionales y 3 abstenciones (`docs/specs/006-001-opencode-concurrency-reliability/review.md`).
+
+**Bloqueantes:** los tres se aceptan y abren un review-fix. B1 y B2 los verificó el orquestador en el código.
+- **B1:** el piso `CLIENT_MIN_BUDGET_SHARE` no tiene tope. Con cotas medias y un preflight lento, el adaptador puede responder después de la cota de la interfaz.
+- **B2:** el chequeo del intento previo falla abierto si el store está ocupado o no se puede leer, y puede despachar un segundo worker del mismo paquete. Viola la invariante central.
+- **B3:** falta el focal de la fila no idle en modo servicio, y el de PD-11 con preflight de servicio.
+
+**Opcionales:**
+
+| Hallazgo | Disposición |
+|---|---|
+| O1 (`logs_dir` sin uso) | Entra en el GREEN del review-fix. |
+| O2 (etiqueta DT-7 duplicada) | Corregido: ahora DT-9. |
+| O3 (nombre de modelo en la spec aprobada) | Deuda. La spec está fijada por hash; se corrige en la próxima enmienda. |
+| O4 (celda de la matriz §2.2) | Deuda. |
+| O5 (legibilidad de `delegate()`) | Deuda. |
+
+**PD-6:** queda en BLOQUEO declarado. La concurrencia real en `mode: server` contra el servidor único está pendiente de que el dueño entregue la credencial. El único `completed` real fue por el fallback a standalone y no prueba la topología con servicio.
+
+**Desvío del CLI:** el primer `receive` cerró el recibo con el tipo `review-report`, que después `materialize` rechazó por la tabla §7. El recibo es inmutable, así que el orquestador copió los bytes recibidos (sha `6f7cd682…`, iguales al recibo) a `review.md`. Queda como deuda del CLI: `receive` debería validar el tipo contra la tabla §7 antes de finalizar.
