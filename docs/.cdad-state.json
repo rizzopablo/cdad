@@ -6742,7 +6742,7 @@
     "id": "006-001-opencode-concurrency-reliability-scribe-memory-001",
     "role": "scribe",
     "substage": "memory",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
