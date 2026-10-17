@@ -1,0 +1,22 @@
+{
+  "runtime": "opencode",
+  "binary": "<bin>",
+  "binary_version": "<client-semver>",
+  "model": "<provider>/<model>",
+  "logs_dir": "<log>",
+  "sessions_db": "<state>/opencode/sessions.db",
+  "server": "<url>",
+  "auto": true,
+  "mode": "service",
+  "service": {
+    "require": false
+  },
+  "wait": {
+    "timeout_seconds": "<timeout_seconds>",
+    "poll_initial_seconds": 1,
+    "poll_max_seconds": 15,
+    "settle_seconds": 30,
+    "terminate_grace_seconds": 5,
+    "preflight_timeout_seconds": 5
+  }
+}

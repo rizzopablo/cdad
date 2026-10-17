@@ -1,9 +1,11 @@
 # External CLI delegation — common interface and one adapter per destination
 
-005-009. This reference defines the **common delegation interface**
+005-009 + 006-001. This reference defines the **common delegation interface**
 (`cdad_delegate.py`) and the contract its **destination adapters** follow, so
 an authorized coordinator can hand a CDAD packet already prepared to a role
 session in ANOTHER CLI and receive its delivery through the existing CDAD flow.
+006-001 adds the **explicit execution mode** (`server` | `service` |
+`standalone`), the **service preflight** and the portable example configuration.
 
 This document **references** the owners of the reused machinery; it does not
 copy them:
@@ -135,27 +137,173 @@ never written — INV-3).
   `blocked`, without fabricating a delivery and without degrading the known
   fact into a `timeout`.
 
-### First adapter — OpenCode: server and permissions (PD-4/INV-8)
+### First adapter — OpenCode: execution mode selection (PD-1/PD-13/PD-14)
 
-The destination invocation mode is taken from the execution **configuration**,
-never hardcoded: `--standalone` by default (a private server; never the owner's
-background service), `--server <url>` when the configuration declares it (the
-alternative to `--standalone`, never both), and `--auto` (enabled by default)
-for non-interactive permissions. `--auto` auto-approves non-denied permissions
-and is **not** a sandbox: the path deny-maps remain the barrier (INV-8).
+The mode is taken from the execution **configuration** (`mode`), never inferred
+from the mere presence of `server` and never hardcoded. Three modes:
+
+| `mode` | Effective mode | Invocation of `run` |
+|---|---|---|
+| `server` | the declared server, after the server preflight (§ below) | `--server <url>` |
+| `service` | the **background service**, after the service preflight (§ below) | **no** `--server`/`--standalone` (the client uses the background service as the runtime designs it) |
+| `standalone` | a private server | `--standalone` |
+| undeclared | **backward compatibility (D-9)**: server when a valid `server` is declared, otherwise standalone | as above |
+
+- **Backward compatibility (D-9).** A configuration that declares no `mode`
+  keeps the v1 rule (server if `server` is present and valid; standalone
+  otherwise). `service` is **never** a default: moving to a shared background
+  service is a consumer decision and must be explicit.
+- **No mode change on failure (INV-2).** The **only** admissible transition is
+  the declared and counted fallback `service` → `standalone` when
+  `service status` reports that the service **does not run** (§ below).
+- An invalid `mode`, or an invalid `service.*`/`wait.*` value, **blocks** before
+  the dispatch: nothing is invoked. `--standalone` and `--server` are mutually
+  exclusive and the service dispatch is neither.
+- `--auto` (enabled by default, configurable) auto-approves non-denied
+  permissions and is **not** a sandbox: the path deny-maps remain the barrier
+  (INV-8).
+
+#### Server preflight (mode `server`)
+
+Before `run`, within the bound: the client version (`--version`) and a
+`GET <server>/api/info` with the credential in the client's own order
+(`OPENCODE_PASSWORD`, then `OPENCODE_SERVER_PASSWORD`; the value is never
+recorded). Connection refused/timeout → `transport-error`; auth/JSON/version
+mismatch → `blocked`. In this mode the only invocations of the binary are
+`--version` and `run`; `service status` is **not** invoked.
+
+#### Service preflight (mode `service`)
+
+Before `run`, within the bound, `service status` (a **read-only** subcommand —
+it starts nothing) is invoked **exactly once**:
+
+- a URL → the service **runs**; the literal `stopped` → it **does not run**;
+  any other output, empty, more than one line, rc ≠ 0 or a timeout →
+  **unexpected** → `blocked` (never standalone).
+- The URL that `service status` prints is **discarded to a discriminant**: it is
+  never used, never stored and never enters any output (CDAD does not need it:
+  the client finds the service itself).
+- **Version gate (D-11).** When the service runs, the client `--version` is
+  compared with the service's version, projected from the **single `version`
+  key** of the service's registration record (an observed fact, not a public
+  contract — debt DT-6; never the record, never its secret, never its URL, no
+  network). **Equal** → dispatch **without flags**. **Different or
+  unverifiable** → `blocked` (never standalone: a standalone next to a running
+  service would be one more writer on the same store).
+- **Service does not run.** With `service.require: true` → `blocked` (starting
+  the service is the operator/owner's decision; CDAD never runs `service
+  start`). With `service.require: false` → `standalone` with the **declared and
+  countable** fallback `service-unavailable`.
+- **`service.require`** is a boolean, default `false`. It only has effect in
+  the service mode; elsewhere it is ignored and recorded as not applicable
+  (D-10).
+- **Declared race window (D-13).** The service can stop between
+  `service status` and the dispatch, and the runtime's client would then start
+  it (`run` without flags). The runtime offers no supported way to prevent that
+  (no flag, no environment variable, and the service settings do not control
+  it). This is a **residual risk**, not an action of CDAD.
+
+> Measuring the versions in the service path is itself an act of reading a
+> service registration, which also contains a secret; the projection returns
+> only the `version` key and nothing else escapes — no key of that record
+> reaches argv, diagnosis, the I8 records or the receipt (PD-5/INV-6).
+
+## Limits — never manage the service, servers or the store (INV-2/INV-10)
+
+- The product **never starts, restarts, stops or configures** the background
+  service nor any server: no invocation carries `serve`, `service
+  start|stop|restart|get|set|unset` or `reload`. The only `service` subcommand
+  is `service status`.
+- The product **never writes or maintains the session store**: it opens it
+  read-only and its re-reads (including those retried against a lock) stay
+  read-only — they add no write pressure.
+- The **server and the background service are managed by the owner/operator**,
+  never by CDAD. Neither the interface nor the adapter installs, schedules or
+  sandboxes anything.
+
+## Concurrency and the store (PD-6)
+
+Two concurrent delegations from two disposable projects, against the same
+disposable store (and, in the server topology, the same disposable server), both
+finish `completed`; each receipt carries its own session; each durable row's
+`directory` is its own project; each packet asks for its own nonce and that
+nonce appears only in its own results. The permanent regression is the fixture
+with real transactional SQLite writes; acceptance additionally requires the real
+journeys in §*Isolation recipe* below.
+
+- **The removal of the store's lock contention is NOT demonstrated.** A
+  successful concurrent run is an **empirical observation**, not proof that
+  contention disappeared; the read-only re-reads never add write pressure. This
+  stays an observation of the reception (AC-7), not a proven property.
+
+## Isolation recipe for tests (by the test, never the live host)
+
+The real journey is launched by the **test**, never against the operating host:
+
+1. Put `XDG_DATA_HOME`, `XDG_STATE_HOME` and `XDG_CACHE_HOME` under a
+   disposable `<ROOT>` (`mktemp -d`).
+2. Guard first: run `debug paths` with that environment and abort, **without
+   dispatching**, unless `db`, `data`, `state` and `log` fall under `<ROOT>`.
+3. A disposable server on loopback, with a random password: the test launches
+   it and stops it itself (SIGTERM, grace, SIGKILL to its group). Two disposable
+   projects with their derived agents published and their packet prepared; the
+   concurrent standalone journey is complementary.
+4. **Credential by substitution, never by copying.** The provider credential is
+   injected with a config layer that substitutes `{env:<VAR>}`; the test never
+   reads nor copies the credential file. With no such variable defined the test
+   is **skipped with a reason**, and a skip is **not** a pass (it leaves PD-6 as
+   a declared BLOQUEO).
+5. Record version, anonymized config, duration, terminations and `store_reads`.
+
+The journey in the **service** topology uses the **live background service in
+normal use**, without restarting or reconfiguring it, and is run by the
+orchestrator or the owner. If it required something reserved to the owner, PD-6
+stays a declared BLOQUEO. It records the termination, effective mode (no flags),
+`mode_requested`, `service_status`, `server_version`, `fallback`, times, errors
+and `store_reads`; the attribution to the service is verified by the durable
+row's `version` and by the process inventory (no new private or service server
+during the dispatch).
+
+## Delegating inside OpenCode vs. between CLIs
+
+- An orchestrator that already runs **inside OpenCode** delegates with the
+  runtime's **native `task` tool**: the child role sessions run in the **same
+  server** as the orchestrator (see `references/opencode-delegation.md`). No
+  adapter and no second CLI is involved.
+- This interface and its adapters are for delegation **between CLIs** — e.g. a
+  coordinator in another CLI handing a prepared CDAD packet to an OpenCode role
+  session. Choosing between the two is a decision of the coordinator's
+  environment, not of the packet.
 
 ## Configuration (PD-8/INV-7)
 
-Runtime, model, binary/version, logs, servers and timeouts live in the
-**execution configuration** (`--exec-config`, local and git-ignored) or in
-flags — never hardcoded in the product nor in public contracts. The
-configuration also carries the durable signal surface: the `sessions_db` path
-of the destination's session store, and the server/permission selectors
-(`server` as the alternative to the default private server, and `auto` for
-non-interactive permissions). No value of the operating host (absolute paths,
-provider, concrete model, server, times) may appear in the product. The
-interface records **configured / observed or `unknown`**, with a `provenance`
-map field → source.
+Runtime, model, binary/version, logs, servers, timeouts and the execution mode
+live in the **execution configuration** (`--exec-config`, local and
+git-ignored) or in flags — never hardcoded in the product nor in public
+contracts. The configuration also carries the durable signal surface (the
+`sessions_db` path of the destination's session store) and the
+server/permission selectors (`server` as the alternative to the default private
+server, and `auto` for non-interactive permissions). No value of the operating
+host (absolute paths, provider, concrete model, server, times) may appear in the
+product. The interface records **configured / observed or `unknown`**, with a
+`provenance` map field → source.
+
+Keys (all optional except the required wait bound):
+
+| Key | Values | Default |
+|---|---|---|
+| `mode` | `"server"` \| `"service"` \| `"standalone"` | undeclared → the v1 compatibility rule (D-9) |
+| `service.require` | boolean | `false` |
+| `wait.timeout_seconds` | number > 0 | required |
+| `wait.poll_initial_seconds` | number > 0 | `1` |
+| `wait.poll_max_seconds` | number ≥ `poll_initial_seconds` | `15` |
+| `wait.settle_seconds` | number > 0 | `30` |
+| `wait.terminate_grace_seconds` | number > 0 | `5` |
+| `wait.preflight_timeout_seconds` | number > 0 | `5` |
+
+A portable example (only placeholders and defaults) lives in the skill's
+assets: `skills/cdad-cycle/assets/opencode-exec-config.example.json`, with
+`mode: "service"`.
 
 ## Procedure for another coordinator
 
@@ -181,3 +329,6 @@ map field → source.
   scope, and the worker never writes the state (INV-4/INV-5).
 - No scheduler, no automatic CLI installation, no sandbox; not every
   destination is implemented (INV-9).
+- **The removal of the store's lock contention is not demonstrated**: a
+  successful concurrent journey is an empirical observation, and the residual
+  contention risk of the shared store stays declared.
