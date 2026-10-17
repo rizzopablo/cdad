@@ -68,3 +68,11 @@ Que esto elimine los bloqueos **no se demuestra**: queda como observación empí
 - **Intento 2:** commit `ddba831`. El rol informa 3 corridas conjuntas verdes.
 - **Verificación del orquestador:** 7 corridas conjuntas (focal T2 + T1 + T1b + regresiones del adaptador). 4 pasan enteras, 3 de ellas seguidas; 3 fallan con `timeout` contra la cota de 2 s de los fixtures. Los fallos coinciden con carga alta del host compartido (load ~9) y pasan aislados.
 - **Disposición:** se acepta. El fallo de tiempos queda como deuda declarada (DT-7: margen de los fixtures de 2 s bajo carga del host) y va a la review. No se subió ninguna cota de test.
+
+## Recorrido real contra el servicio vivo (spec §5.5) — 2026-10-16
+
+- **Cómo se corrió:** el orquestador usó el adaptador del repo (`d0a7963`) desde un proyecto descartable, con `mode: "service"` y `service.require: true`. Encargo mínimo de token fijo; store leído solo en ro.
+- **Resultado:** `blocked` en el preflight, en 1,3 s, sin despacho ni sesión. El servicio informa versión **2.0.22** y el cliente es **2.0.27**. El gate D-11 cerró sin fallback a standalone (INV-10). No se consumieron tokens del proveedor.
+- **Atribución de procesos:** `service status` mostró la misma salida antes y después (comparada por digest, sin registrar la URL). Ningún servidor privado `serve --stdio` nuevo: el que había antes del despacho es el del cliente interactivo que registra el discovery.
+- **Hallazgo para el dueño:** con estas versiones, un `run` sin flags del runtime se conecta igual al servicio, porque resuelve con `mismatch="ignore"`. CDAD lo bloquea; otros clientes mezclarían versiones sin aviso.
+- **Estado:** la pierna c de PD-6 queda en **BLOQUEO declarado**. Llevar el servicio a la versión del cliente (actualizarlo o reiniciarlo) está reservado al dueño. La pierna b (servidor aislado) también queda bloqueada: hace falta una clave en una variable de entorno, que el orquestador no tiene ni puede extraer.
