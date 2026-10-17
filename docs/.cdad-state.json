@@ -6730,6 +6730,47 @@
         "docs/adr/ADR-031-seleccion-explicita-de-modo-y-servicio-no-gestionado.md": "1e1ed7b66ec1eca346487516fb52eb02c1fd855c6bc8e135a0f10f3f322f046d"
       },
       "note": "Entrega del scribe (receipt valido) aplicada por el orquestador tras la aprobacion de Pablo; registrada como late-delivery porque el cierre ya estaba aplicado."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "discovery",
+      "substage": "discovery",
+      "at": "2026-10-17T23:15:57.956307+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "27c892c665c9a9858b1eb65314c07278c82e7a4e325a53e17f1877633f898507",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": "discovery",
+        "packet_id": "006-002-delegation-by-layer-architect-discovery-001",
+        "receipt_sha256": "8da56ed7b5dee6e1e2a271de1ccf52b215967c0bda239a97f2bf1732ab267e46",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/discovery.md",
+            "5af49ec422ff6b6dc1d450a0ad4f06a658accac4b0da1962824334961437c1d1"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-architect-discovery-001/receipt.json",
+      "receipt_sha256": "8da56ed7b5dee6e1e2a271de1ccf52b215967c0bda239a97f2bf1732ab267e46",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/discovery.md": "5af49ec422ff6b6dc1d450a0ad4f06a658accac4b0da1962824334961437c1d1"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -6744,7 +6785,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-17T22:32:34.089266+00:00",
+  "last_updated": "2026-10-17T23:15:57.956307+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -6852,13 +6893,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-architect-discovery-001",
+    "id": "006-002-delegation-by-layer-architect-draft-001",
     "role": "architect",
-    "substage": "discovery",
-    "status": "dispatched",
+    "substage": "draft",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
   },
-  "tdd_substage": null
+  "tdd_substage": "discovery"
 }
