@@ -174,3 +174,8 @@ Los intentos 1 y 2 del GREEN del review-fix murieron con «upstream provider err
 - Review-fix GREEN intento 3 (`161c9ff`) tras la recuperación del proveedor; verificado por el orquestador: solo producto, focal y regresiones `81 passed, 1 skipped`.
 - Re-review (glm): B1, B2, B3a, B3b y O1 cerrados; 0 bloqueantes; 1 opcional nuevo a deuda (la banda del recorte por tiempo restante en modo servicio no tiene oráculo propio). Recibo con el kind equivocado: misma deuda CLI receive/kind; `rereview.md` se materializó copiando los bytes recibidos.
 - Suite completa: `1 failed, 1079 passed, 5 skipped` (22:52). La falla es `test_b3a_service_mode_row_not_idle_times_out_at_cota_ignoring_settle`, con la carga de la suite. Aislado: 5 de 5 verdes, a ≈2,08 s contra la cota de 2 s del fixture. Se declara como instancia de DT-9 (margen de los fixtures de 2 s bajo carga), con la nota de que este caso tiene poco margen y la próxima feature que toque el adaptador lo tiene que tener en cuenta.
+
+## Redespliegue post-fix (2026-10-17, orden del dueño)
+
+- Commit desplegado `6978709` (incluye el review-fix `161c9ff`), con perfil `basic` (`make staging PROFILE=basic`, corregido en el script de despliegue local) y respaldo previo.
+- Install: 11 de 11 agentes, `Verify: PASS`. `install.sh --check` da FAIL únicamente por un `.pyc` de `cdad_packet` en `__pycache__` del skill instalado, que es también el único conflicto preservado del manifiesto: DT-8, ya declarada.
