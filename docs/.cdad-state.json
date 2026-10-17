@@ -306,6 +306,17 @@
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
       "plan_sha256": "56bec1c392420e1acbfa09388a73ef5e60719b871d165cfbf4404d7511f96a85",
       "note": "Enmienda 003: feature 006-004 tabla de decisiones vigentes en systemPatterns.md (estado, resumen, archivo, roles); el orquestador la mantiene y el reviewer la revisa. Version simple pedida por el duenio."
+    },
+    {
+      "epic": "epic-006-opencode-concurrency",
+      "stage": "epic-plan-amendment",
+      "completed_at": "2026-10-17",
+      "approved_by": "Pablo",
+      "requested_by": "usuario",
+      "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
+      "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
+      "plan_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63",
+      "note": "006-003 suma la credencial del servidor OpenCode: ~/.config/cdad/opencode-server.env (600), credential_env_file y diagnostico de 401 autosuficiente."
     }
   ],
   "stage_history": [

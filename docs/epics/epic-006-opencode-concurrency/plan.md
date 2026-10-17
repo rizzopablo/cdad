@@ -259,7 +259,10 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 3. Los scripts de delegación toman los modelos solo de ese archivo.
 4. El invariante del reviewer de otra familia pasa a ser una **verificación de configuración**. Un script compara los modelos efectivos del reviewer y del implementer, avisa si son de la misma familia, y el gate de review registra «invariante no garantizado» en vez de esconderlo.
 
+5. **Credencial del servidor OpenCode (agregado 2026-10-17).** El instalador crea `~/.config/cdad/` (respetando `$XDG_CONFIG_HOME`) con la config de delegación y un `opencode-server.env.example` sin valor que explica de dónde sale la contraseña (la del `opencode serve` que se use; con OpenChamber, su configuración) y que debe estar en el entorno del proceso que despacha. El usuario lo copia a `opencode-server.env` con permisos 600. El script lo carga si existe, sin leer ni imprimir el valor, y lo rechaza con un diagnóstico claro si los permisos son más abiertos que 600. Un campo `credential_env_file` de la config de delegación apunta a otra ruta. El diagnóstico de 401/403 nombra las variables, la ruta y de dónde sale el valor.
+
 **Aceptación:**
+- con un fixture de servidor que exige credencial, el diagnóstico basta para resolverlo sin otra documentación; el `.env` con permisos abiertos se rechaza;
 - sin perfiles en `install.sh` ni en `make staging`;
 - el agente orquestador y los scripts no nombran modelos;
 - la verificación de familias está probada con fixtures;
@@ -281,4 +284,4 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Fuera de alcance:** índices generados, gates de cita obligatoria y cambios en `status`.
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17
