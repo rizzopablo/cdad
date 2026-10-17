@@ -3,7 +3,6 @@
   "binary": "<bin>",
   "binary_version": "<client-semver>",
   "model": "<provider>/<model>",
-  "logs_dir": "<log>",
   "sessions_db": "<state>/opencode/sessions.db",
   "server": "<url>",
   "auto": true,

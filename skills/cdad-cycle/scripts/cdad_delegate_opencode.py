@@ -12,7 +12,7 @@ on stdin and `--project-root`, `--packet-id`, `--destination` and
 What this adapter does, and why (contract decisions D5/D6):
 
 1. It builds the destination invocation FROM THE EXECUTION CONFIGURATION
-   (`binary`, `binary_version`, `model`, `logs_dir`, `wait.timeout_seconds`):
+   (`binary`, `binary_version`, `model`, `wait.timeout_seconds`):
    nothing about the CLI, the binary, the model or the times is hardcoded here
    (PD-8/INV-7). `runtime`/`model` also feed the I8 observation.
 2. It VERIFIES THE PUBLISHED DERIVED AGENT (PD-3) the project published under
@@ -184,9 +184,22 @@ TERMINATE_GRACE_FRACTION = 0.25
 # consumes part of the budget (two invocations in the service mode); without a
 # floor a slow preflight would leave the client a near-zero bound and a
 # HEALTHY client would be killed and reported as a FALSE `timeout` (PD-7/PD-8).
-# The floor comes out of the adapter's own reserve, sized for ~0.6s of measured
-# post-kill overhead out of the 1.0s `WAIT_RESERVE_SECONDS`.
+# The floor comes out of the adapter's own reserve and is CAPPED by it (see
+# `COMPLETION_MARGIN_SECONDS` below): PD-11 wins over the floor.
 CLIENT_MIN_BUDGET_SHARE = 0.75
+# 006-001 §2.5 (D-3, PD-11; review B1): the completion margin the client's
+# floor must always leave inside the interface's own bound. The adapter answers
+# with ITS OWN envelope (with the chosen session), so the invariant is
+#   consumed + client bound + grace + COMPLETION_MARGIN <= timeout_seconds
+# SIEMPRE. The margin covers the adapter's own pre-invoke offset (module import
+# -> the bound), the ordered kill of the client's group and the emission of the
+# envelope under host load, all of which come out of the same 1.0s
+# `WAIT_RESERVE_SECONDS`. The floor may only spend the reserve slack the
+# effective grace and this margin leave free
+# (`WAIT_RESERVE_SECONDS - grace - margin`, clamped at zero): a large grace
+# consumes the whole reserve and the floor adds nothing, while a small grace
+# still defends a HEALTHY client from a slow preflight.
+COMPLETION_MARGIN_SECONDS = 0.8
 
 
 class AdapterError(RuntimeError):
@@ -719,20 +732,38 @@ def _prior_attempt_check(store_path: Path, project_root: Path,
     Reads the dispatch records of this execution and, for every record of the
     SAME `packet_id` that declares a session, reads that session's durable row
     (read only): a row that EXISTS and is NOT idle is a live prior attempt ->
-    `blocking_session`. A row that is idle, or absent, does not block; a store
-    that cannot be read carries no material fact and does not block either
-    (fail open on the prior check only: the check never invents an attempt).
+    `blocking_session`. A row that is idle, or absent, does not block.
+
+    A store that cannot be read does NOT carry the material fact "the row is
+    absent": what is not observed is `unknown`, never absent (INV-9). A prior
+    record whose row cannot be AFFIRMED because the store EXISTS but is busy
+    with a live writer or unreadable -> `unaffirmable_session`, and the caller
+    FAILS CLOSED with `blocked` BEFORE dispatching, mirroring the closed
+    interpretation of §2.3b ("no se puede afirmar" -> `blocked`): after a
+    `timeout` the prior worker of the same packet may still be alive and
+    writing, and a second one would be the double writer INV-10 forbids. Never
+    fail open on that corner; the check never invents an attempt either.
+
+    A store that does NOT exist is a different, determinate fact (§2.7: a row
+    that is idle, or absent, does not block): no writer can be holding a store
+    SQLite has not created yet, so there is no row to affirm and this is not
+    the unaffirmable corner.
+
     No automatic retry is ever produced here (INV-3): the caller blocks, it
     never re-dispatches and never opens a standalone next to a live writer
-    (INV-10). Returns `{"blocking_session": ..., "reads": N}`.
+    (INV-10). Returns `{"blocking_session": ..., "unaffirmable_session": ...,
+    "reads": N}`.
     """
     if not isinstance(execution_id, str):
-        return {"blocking_session": None, "reads": 0}
+        return {"blocking_session": None, "unaffirmable_session": None,
+                "reads": 0}
     base = project_root / DISPATCHES_RELPATH / execution_id / "dispatches"
     if not base.is_dir():
-        return {"blocking_session": None, "reads": 0}
+        return {"blocking_session": None, "unaffirmable_session": None,
+                "reads": 0}
     reads = 0
     blocking: str | None = None
+    unaffirmable: str | None = None
     for path in sorted(base.glob("*.json")):
         try:
             record = json.loads(path.read_text(encoding="utf-8"))
@@ -744,13 +775,25 @@ def _prior_attempt_check(store_path: Path, project_root: Path,
         if prior_session is None:
             continue
         reads += 1
+        if not store_path.is_file():
+            # The durable surface ITSELF is absent: no writer can be holding
+            # it (SQLite creates it on open) and the prior row is
+            # determinately not in it -- §2.7: a row that is idle, or absent,
+            # does not block. This is NOT the unaffirmable corner below.
+            continue
         try:
             state = _store_state(store_path, prior_session)
         except (_StoreBusy, AdapterError):
+            # The store EXISTS but its row cannot be affirmed right now (a
+            # live writer holds the lock, or the store is unreadable/unknown
+            # schema): fail closed -- `unknown` is not `absent` (INV-9/INV-10).
+            if unaffirmable is None:
+                unaffirmable = prior_session
             continue
         if state["kind"] == "no-idle" and blocking is None:
             blocking = prior_session
-    return {"blocking_session": blocking, "reads": reads}
+    return {"blocking_session": blocking, "unaffirmable_session": unaffirmable,
+            "reads": reads}
 
 
 def _wait_budget(timeout: float | None, grace: float) -> float | None:
@@ -1833,6 +1876,20 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             "retry is produced: reconcile or wait for the prior worker before "
             "repeating the delegation (CDAD never re-dispatches on its own and "
             "never opens a standalone next to a live writer, INV-3/INV-10)")
+    if prior["unaffirmable_session"] is not None:
+        # B2 (PD-9/INV-9/INV-10, mirror of §2.3b): the row of the prior attempt
+        # could not be read (the store is busy with a live writer, or
+        # unreadable). `unknown` is not `absent`: fail closed BEFORE dispatch.
+        return blocked_before_dispatch(
+            "no se puede afirmar el estado del intento previo (PD-9/INV-9): "
+            f"la fila durable de la sesión {prior['unaffirmable_session']!r} "
+            "de un registro de despacho previo del mismo paquete no pudo "
+            "leerse (store ocupado por un escritor vivo o ilegible: no se "
+            "puede afirmar si el intento previo sigue vivo). Lo no observado "
+            "es `unknown`, nunca «ausente»: se bloquea ANTES del despacho en "
+            "vez de arriesgar un segundo worker del mismo paquete (sin "
+            "re-despacho automático, INV-3/INV-10). Reconciliá o esperá al "
+            "worker previo antes de repetir la delegación.")
 
     preflight_timeout_configured = float(
         wait_dict.get("preflight_timeout_seconds",
@@ -1890,10 +1947,19 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # §2.5 (D-3, PD-11): the client dispatch gets whatever the preflight left
     # of the budget, but NEVER less than its declared share: a slow preflight
     # must not kill a healthy client at a near-zero bound and report a FALSE
-    # `timeout`. A hung client is still cut inside the interface's own bound
-    # (the floor is bounded by the budget; the reserve absorbs the overdraft).
+    # `timeout`. The floor is CAPPED (review B1) so the adapter ALWAYS answers
+    # with its own envelope inside the interface's bound: the consumed time is
+    # already reflected in `remaining`, so the admissible ceiling is `remaining`
+    # plus whatever reserve slack the effective grace and the completion margin
+    # leave free (clamped at zero -- a large grace consumes the whole reserve).
+    # Without the cap a proportional floor could push the answer past the cota
+    # and let the INTERFACE kill the adapter, emitting its own envelope with
+    # `session: null` (the very result PD-11/PD-8 forbid).
     client_floor = (budget or 0.0) * CLIENT_MIN_BUDGET_SHARE
-    remaining_for_invoke = max(wait_deadline - time.monotonic(), client_floor)
+    remaining = max(0.0, wait_deadline - time.monotonic())
+    floor_ceiling = remaining + max(
+        0.0, WAIT_RESERVE_SECONDS - grace - COMPLETION_MARGIN_SECONDS)
+    remaining_for_invoke = max(remaining, min(client_floor, floor_ceiling))
 
     # PD-5/D6: invoke the configured binary (with `--session <id>`), then wait
     # on the DURABLE signal. The invocation is bounded by the remaining
