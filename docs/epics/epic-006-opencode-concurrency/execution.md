@@ -120,3 +120,12 @@ Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store 
 ## Enmienda 001 del plan — 2026-10-17
 
 El dueño aprobó agregar la feature 006-002 (delegación por capas): «Ok, confío en tu criterio para eso. adelante» (Pablo, 2026-10-17). Va en el plan, §8. Se abre al cerrar 006-001.
+
+## Insumo para 006-002: el orquestador OpenCode del consumidor — 2026-10-17
+
+Lo trajo el dueño. Los puntos se adoptan con las correcciones del orquestador que van al lado de cada uno.
+
+1. **La regla se formula por el ciclo de vida de la sesión.** Si el runtime es dueño del spawn, la espera, la recolección y la limpieza, el orquestador solo valida el resultado. Si ese ciclo lo lleva el adaptador, lo paga el contexto del orquestador. Se adopta como criterio de fondo de la regla de adaptadores.
+2. **El paquete y la reentrada son independientes del transporte.** El paquete se renderiza, se valida y se despacha byte a byte, y el state se ata igual con cualquier mecanismo. Se adopta y se dice de forma explícita.
+3. **El recibo sin adaptador.** *Corrección:* el hueco no es la capacidad, porque `re-entry.md` §Orchestrator materialization protocol ya describe cómo el orquestador escenifica el texto final y corre `receive`, y así se operó todo 006-001. Falta enlazarlo desde el camino de delegación nativa.
+4. **El modelo por rol.** *Corrección:* la garantía «por construcción» vale solo con perfiles de modelo fijo. Con `basic`, que es lo desplegado, los agentes no fijan modelo, y la familia distinta del reviewer tiene que garantizarse de otra forma. 006-002 debe resolverlo de forma explícita. La observación de fondo se mantiene: las exec-config de modelo del proyecto son una fuente de deriva.
