@@ -242,4 +242,29 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Fuera de alcance:** el handoff y la config del consumidor, que actualiza su dueño; runtimes nuevos.
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17
+
+## 9. Enmienda 002 — modelos por configuración; feature 006-003 (2026-10-17)
+
+**Principio (del dueño):** los modelos nunca los fija el orquestador ni los scripts. Dentro del runtime se usa el que esté configurado en el entorno. En los despachos a otro entorno, el modelo sale de un archivo de configuración. Elegir modelo no es una decisión de orquestación.
+
+**006-002 suma:**
+- el principio anterior;
+- la regla de despacho por dueño del ciclo de vida de la sesión;
+- el paquete y la reentrada independientes del transporte;
+- el recibo en la delegación nativa, enlazado a `re-entry.md`.
+
+**Feature `006-003-installer-single-profile-delegation-config`** (depende de 006-002):
+1. El instalador queda siempre `basic`: sin perfiles y sin mapa de modelos. ADR-007 queda reemplazado.
+2. El instalador deja una plantilla de configuración de delegación (modelo por rol y destino). La completa el usuario o la configura el agente una sola vez a pedido.
+3. Los scripts de delegación toman los modelos solo de ese archivo.
+4. El invariante del reviewer de otra familia pasa a ser una **verificación de configuración**. Un script compara los modelos efectivos del reviewer y del implementer, avisa si son de la misma familia, y el gate de review registra «invariante no garantizado» en vez de esconderlo.
+
+**Aceptación:**
+- sin perfiles en `install.sh` ni en `make staging`;
+- el agente orquestador y los scripts no nombran modelos;
+- la verificación de familias está probada con fixtures;
+- `install.sh --check`, `make validate` y la suite pasan.
+
+**Fuera de alcance:** la config de agentes del runtime del dueño (OpenChamber) y la del consumidor.
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17

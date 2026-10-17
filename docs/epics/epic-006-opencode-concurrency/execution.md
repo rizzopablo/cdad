@@ -129,3 +129,7 @@ Lo trajo el dueño. Los puntos se adoptan con las correcciones del orquestador q
 2. **El paquete y la reentrada son independientes del transporte.** El paquete se renderiza, se valida y se despacha byte a byte, y el state se ata igual con cualquier mecanismo. Se adopta y se dice de forma explícita.
 3. **El recibo sin adaptador.** *Corrección:* el hueco no es la capacidad, porque `re-entry.md` §Orchestrator materialization protocol ya describe cómo el orquestador escenifica el texto final y corre `receive`, y así se operó todo 006-001. Falta enlazarlo desde el camino de delegación nativa.
 4. **El modelo por rol.** *Corrección:* la garantía «por construcción» vale solo con perfiles de modelo fijo. Con `basic`, que es lo desplegado, los agentes no fijan modelo, y la familia distinta del reviewer tiene que garantizarse de otra forma. 006-002 debe resolverlo de forma explícita. La observación de fondo se mantiene: las exec-config de modelo del proyecto son una fuente de deriva.
+
+## Enmienda 002 del plan — 2026-10-17
+
+El dueño fijó la dirección: «los modelos no los fije nunca el orquestador ni los scripts… que el instalador sea siempre basic, pero que deje un archivo de configuración para los scripts de delegación» (Pablo, 2026-10-17). El criterio de forma lo delegó antes: «confío en tu criterio». El principio va en 006-002 y se agrega la feature 006-003 (plan §9).

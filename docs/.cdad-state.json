@@ -24,6 +24,10 @@
     {
       "id": "006-002-delegation-by-layer",
       "status": "queued"
+    },
+    {
+      "id": "006-003-installer-single-profile-delegation-config",
+      "status": "queued"
     }
   ],
   "epic_history": [
@@ -271,6 +275,17 @@
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
       "plan_sha256": "1efa6b83d798e2014122d286be5bc8d41371656718216317a3cff1e7b0c9706e",
       "note": "Enmienda 001: agrega 006-002 (delegacion por capas). Aprobacion: «Ok, confio en tu criterio para eso. adelante» (Pablo, 2026-10-17)."
+    },
+    {
+      "epic": "epic-006-opencode-concurrency",
+      "stage": "epic-plan-amendment",
+      "completed_at": "2026-10-17",
+      "approved_by": "Pablo",
+      "requested_by": "usuario",
+      "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
+      "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
+      "plan_sha256": "f16ec9f4d26191f4cb61d0a98f252a1878730e0d2938d5440f0f4449b12c0abf",
+      "note": "Enmienda 002: modelos por configuracion (principio en 006-002) y feature 006-003 (instalador basic unico + config de delegacion + verificacion de familias). Direccion del duenio 2026-10-17; delegado el criterio de forma."
     }
   ],
   "stage_history": [
