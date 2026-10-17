@@ -168,3 +168,9 @@ Los dos pasaron al repetirlos tras `make staging`. El review-fix va a requerir u
 ## Interrupción del proveedor — 2026-10-17
 
 Los intentos 1 y 2 del GREEN del review-fix murieron con «upstream provider error», sin efectos (reconcile limpio). Una sonda mínima a dos familias de modelo también falló. El gateway de modelos registra `chain_exhausted` (502) con el proveedor en cooldown. No es un fallo de CDAD. El review-fix queda en pausa hasta que el proveedor responda; el próximo intento va como 3.
+
+## Re-review y suite de cierre de 006-001 (2026-10-17)
+
+- Review-fix GREEN intento 3 (`161c9ff`) tras la recuperación del proveedor; verificado por el orquestador: solo producto, focal y regresiones `81 passed, 1 skipped`.
+- Re-review (glm): B1, B2, B3a, B3b y O1 cerrados; 0 bloqueantes; 1 opcional nuevo a deuda (la banda del recorte por tiempo restante en modo servicio no tiene oráculo propio). Recibo con el kind equivocado: misma deuda CLI receive/kind; `rereview.md` se materializó copiando los bytes recibidos.
+- Suite completa: `1 failed, 1079 passed, 5 skipped` (22:52). La falla es `test_b3a_service_mode_row_not_idle_times_out_at_cota_ignoring_settle`, con la carga de la suite. Aislado: 5 de 5 verdes, a ≈2,08 s contra la cota de 2 s del fixture. Se declara como instancia de DT-9 (margen de los fixtures de 2 s bajo carga), con la nota de que este caso tiene poco margen y la próxima feature que toque el adaptador lo tiene que tener en cuenta.
