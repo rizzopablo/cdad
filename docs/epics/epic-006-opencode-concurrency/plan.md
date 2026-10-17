@@ -213,4 +213,33 @@ La investigación puede concluir que parte de la solución es upstream. El resul
 útil sigue siendo una mitigación comprobada, selección de ejecución comprensible
 y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
-Status: Approved by Pablo on 2026-10-16
+## 8. Enmienda 001 — feature 006-002 (2026-10-17)
+
+**Por qué es de este epic.** El incidente vino de un orquestador dentro de OpenCode que delegaba a OpenCode lanzando `run --standalone` por bash. Su arnés nativo (`task`) no lo hacía. 006-001 vuelve seguro el adaptador. 006-002 corrige la regla que llevó a usarlo.
+
+**Principio de capas (del dueño):**
+- **skills:** la metodología, general y única;
+- **agentes:** el comportamiento por runtime (OpenCode, Claude Code y los que se sumen);
+- **scripts:** independientes del runtime y dependientes del SO (bash y Python en GNU/Linux).
+
+**Regla de adaptadores:** sirven para orquestar agentes de **otro** runtime o para un runtime **sin delegación propia**. En cualquier otro caso se delega con el mecanismo nativo.
+
+**Feature `006-002-delegation-by-layer`** (depende de 006-001):
+1. `cdad-cycle` §4 queda sin reglas de runtime: el principio, la regla de adaptadores y las invariantes de rol (reviewer de otra familia, aislamiento).
+2. Cada agente orquestador (OpenCode y Claude Code) declara cómo delega en su runtime y cómo garantiza la familia distinta del reviewer en cada perfil, incluido `basic`.
+3. Las referencias de delegación propias de cada runtime pasan de la skill a la capa del runtime.
+4. Disciplina de contexto del orquestador:
+   - orientarse con `status`, sin volcados;
+   - rotar la sesión en los bordes de tarea;
+   - no reparar por su cuenta (delegarlo a un rol);
+   - no usar `/tmp`.
+
+**Aceptación:**
+- ninguna skill nombra herramientas de un runtime para delegar;
+- cada agente orquestador tiene su regla;
+- los tests de referencias y `make validate` pasan;
+- un orquestador OpenCode con perfil `basic` puede resolver el despacho del reviewer sin ambigüedad.
+
+**Fuera de alcance:** el handoff y la config del consumidor, que actualiza su dueño; runtimes nuevos.
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17

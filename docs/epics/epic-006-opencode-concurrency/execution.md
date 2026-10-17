@@ -116,3 +116,7 @@ Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store 
 - **Brecha en CDAD:** `cdad-cycle` §4 pone `task` primero, pero no dice qué hacer cuando el perfil no fija modelos ni cómo se elige entre `task` y el adaptador estando dentro de OpenCode.
 - **Ruido de contexto:** viene sobre todo de la orientación (volcados de state, ledger y skill: más de 1,5 M de caracteres de salida) y de reparaciones hechas por el propio orquestador (scripts en `/tmp`).
 - **Destino:** unidad aparte, fuera de 006-001, a decidir por el dueño.
+
+## Enmienda 001 del plan — 2026-10-17
+
+El dueño aprobó agregar la feature 006-002 (delegación por capas): «Ok, confío en tu criterio para eso. adelante» (Pablo, 2026-10-17). Va en el plan, §8. Se abre al cerrar 006-001.
