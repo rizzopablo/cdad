@@ -21,7 +21,7 @@ Modo de ejecución explícito para la delegación OpenCode (`server` | `service`
 
 ## 3. Abierto al cerrar
 
-- **PD-6 en BLOQUEO declarado:** concurrencia real en `mode: server` requiere la credencial del dueño.
+- **PD-6:** al cierre estaba BLOQUEADO por falta de la credencial; resuelto después del cierre (`execution.md`, «PD-6 en `mode: server`»): 3 despachos concurrentes `completed` sin servidores privados ni locks.
 - **AC-7** pendiente del dueño.
 - **Redespliegue en HOME** posterior al review-fix, a la orden del dueño.
 - **Deuda:** DT-8, DT-9, O3–O5, opcional nuevo de la re-review, CLI `receive`/kind, falta de una vía CLI para fallar un paquete despachado.

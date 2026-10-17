@@ -179,3 +179,14 @@ Los intentos 1 y 2 del GREEN del review-fix murieron con «upstream provider err
 
 - Commit desplegado `6978709` (incluye el review-fix `161c9ff`), con perfil `basic` (`make staging PROFILE=basic`, corregido en el script de despliegue local) y respaldo previo.
 - Install: 11 de 11 agentes, `Verify: PASS`. `install.sh --check` da FAIL únicamente por un `.pyc` de `cdad_packet` en `__pycache__` del skill instalado, que es también el único conflicto preservado del manifiesto: DT-8, ya declarada.
+
+## PD-6 en `mode: server` contra el servidor vivo (2026-10-17, posterior al cierre)
+
+La credencial la puso el dueño en un archivo local fuera del repo, con permisos 600; el orquestador solo lo cargó en el entorno del proceso que despacha, sin leer ni imprimir su valor. El recorrido usó los helpers del test real de 005-010 con `mode: "server"` sobre el único servidor del host (2.0.27), con la versión desplegada `6978709`.
+
+| Corrida | Resultado |
+|---|---|
+| 1 despacho | `completed` en 124,4 s; fila durable `succeeded` con el token esperado; 2 registros del worker |
+| 3 despachos concurrentes | los 3 `completed` (32,7 s, 15,9 s, 18,1 s); filas durables `succeeded` con token; sin errores de lock |
+
+En las dos corridas: 0 servidores privados antes, durante y después; el estado del servicio no cambió; ninguna salida contiene la URL ni la credencial. **PD-6 deja de estar bloqueado en la pierna `mode: server`:** con un único servidor compartido, la concurrencia no reprodujo la contención. Es una observación de 3 concurrentes, no una prueba de carga.
