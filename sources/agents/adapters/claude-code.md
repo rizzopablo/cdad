@@ -13,22 +13,23 @@ Frontmatter shape (generated):
 - `tools:` — Read, Grep, Glob, Bash, Skill (+ Edit, Write for writer roles; Agent
   for orchestrator).
 - `model:` — NOT emitted any more (006-003 PD-1e/INV-3): the generator has no
-  model map and no profiles. The installer deploys the agents as a copy of the
+  model map. The installer deploys the agents as a copy of the
   staged bytes, verbatim and untransformed (it `cp -p`s them); `install.sh
   --help` says it: "the deployed bytes are the staged bytes ... the installer
   transforms nothing". No CC agent carries a `model:` line, before or after any
   install; the model of a role is the one configured in the runtime (see the
   model-provenance bullet below).
-- Model provenance under `basic` (PD-5): under `basic` there is no per-role
-  model — the CC agents carry no `model:` line — so the model of a critical
-  dispatch is declared per call on the dispatch tool (its `model` parameter),
-  and the dispatch records `model_configured`/`model_reported` with
-  `provenance` (`null`/`unknown` with cause when unobserved). The installer
-  therefore does NOT guarantee the reviewer≠implementer anti-bias invariant
-  under this profile; the anti-bias guard exempts `basic` explicitly and
-  visibly — the exemption is declared, never silent — and its source is the
-  single authority `scripts/validate-subagents.sh` (trade-off recorded in
-  `ADR-007`); this adapter references it and does not restate the rule.
+- Model provenance (PD-5): there is no per-role model — the CC agents carry no
+  `model:` line — so the model of a critical dispatch is declared per call on
+  the dispatch tool (its `model` parameter), and the dispatch records
+  `model_configured`/`model_reported` with `provenance` (`null`/`unknown` with
+  cause when unobserved). Each role runs the model its runtime configures;
+  CDAD does not choose it. Honest limit (PD-15): the installer
+  guarantees nothing about which model a role runs. The anti-bias guard makes
+  the exemption of a role with no declared model explicit and visible —
+  declared, never silent — and its source is the single authority
+  `scripts/validate-subagents.sh` (trade-off recorded in `ADR-007`); this
+  adapter references it and does not restate the rule.
 - `hooks:` — PreToolUse path-guard blocks per role class, timeout 5. This is
   the map, declared once here; the generator emits the frontmatter from
   `CC_GUARDS` (`scripts/cdad-generate.py`) and the generated agents carry it
@@ -93,18 +94,15 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native
   delegation of its own. Same-runtime dispatch is the native `Agent` tool.
-- **Family verification (D-3/INV-5).** The reviewer's family differs from the
-  implementer's, and that difference is a configuration verification: the
-  effective models are compared from the delegation configuration (per
-  destination and role). The orchestrator never chooses, invents or selects a
-  model. It passes one only if it comes from the environment configuration; a
-  destination or role without an entry runs the destination's own default and
-  the model is reported as not verifiable. Register the attempt with its fields
-  (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
-  `unknown` when unobserved) and, when the models cannot be verified, declare
-  "invariant not guaranteed" at the review gate instead of omitting it — never
-  silent. The legitimate exit is the new-chat handoff where the user picks the
-  model.
+- **Model provenance (I8).** CDAD does not choose, invent or select a model:
+  each role runs the model its runtime configures, and external
+  delegation takes it from the delegation configuration (per destination and
+  role). The orchestrator passes a model only if it comes from the environment
+  configuration; a destination or role without an entry runs the destination's
+  own default and the model is reported as not verifiable. Register the attempt
+  with its fields (`runtime`, `model_configured`, `model_reported`, `session`;
+  `null` or `unknown` when unobserved). The legitimate exit is the new-chat
+  handoff where the user picks the model.
 - **Receipt.** The native dispatch returns FINAL TEXT in this session, and
   every route stages that FINAL TEXT the same way. This bullet does not
   restate the steps: the re-entry wiring composed in this same body (from

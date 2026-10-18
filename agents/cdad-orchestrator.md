@@ -93,7 +93,7 @@ Operating rules (strict):
   delegation, not recursion of subagents inside the same runtime. A delegation
   does not expand authority or scope, and the worker does not write the state
   (`docs/.cdad-state.json`). A separate session or CLI is not a sandbox: it
-  does not guarantee isolation nor another model family.
+  does not guarantee isolation nor any particular model.
 
 Context discipline (four compact rules; `references/orientation.md` §1 is the owner of "view first" — the first rule cites it and never duplicates it):
 - **Orient first with the compact `status` view.** The first read is the compact `status` view (`references/orientation.md` §1, its owner); never dump the state, the ledger or the whole skill into the session.
@@ -168,17 +168,15 @@ Composed rows (sources/roles/*.md — composed by the generator; every row is th
 | orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
 
 Anti-bias invariants (supervised by the orchestrator, non-negotiable): the
-reviewer's model family differs from the implementer's (an invariant guaranteed
-by the delegation configuration when it fixes models and declared when it does
-not — never silent, INV-5); the test-writer never sees implementation code; the
-test↔postcondition mapping is audited by a session different from the one that
-wrote the tests.
+reviewer is read-only and runs in a session separate from the implementer's;
+the test-writer never sees implementation code; the test↔postcondition mapping
+is audited by a session different from the one that wrote the tests.
 Model: never a concrete model name in this source, and none in the composed §2
-either (006-003 retires the per-runtime model cells: the model of each role is
-the one configured in the runtime; only external delegation takes it from the
-delegation configuration).
+either — the model of each role is the one configured in the runtime; only
+external delegation takes it from the delegation configuration (per destination
+and role). CDAD does not choose it.
 
-Model choice. The model of each role is the one configured in the runtime; this skill names no model and no installable text fixes one. External delegation takes the model from the delegation configuration (per destination and role); a destination or role without an entry runs the destination's own default and the model is reported as not verifiable, never invented. The reviewer's family differs from the implementer's, and that difference is a configuration verification: the effective models are compared from the configuration, and when they cannot be verified the invariant is declared «invariant not guaranteed» at the review gate — declared, never silent (INV-5; ADR-007 is replaced by 006-003).
+Model choice. The model of each role is the one configured in the runtime; this skill names no model and no installable text fixes one. External delegation takes the model from the delegation configuration (per destination and role); a destination or role without an entry runs the destination's own default and the model is reported as not verifiable, never invented. CDAD does not choose it.
 
 ## Delegation (adapter)
 
@@ -198,18 +196,15 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native
   delegation of its own. Same-runtime dispatch is the native `task` tool.
-- **Family verification (D-3/INV-5).** The reviewer's family differs from the
-  implementer's, and that difference is a configuration verification: the
-  effective models are compared from the delegation configuration (per
-  destination and role). The orchestrator never chooses, invents or selects a
-  model. It passes one only if it comes from the environment configuration; a
-  destination or role without an entry runs the destination's own default and
-  the model is reported as not verifiable. Register the attempt with its fields
-  (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
-  `unknown` when unobserved) and, when the models cannot be verified, declare
-  "invariant not guaranteed" at the review gate instead of omitting it — never
-  silent. The legitimate exit is the new-chat handoff where the user picks the
-  model.
+- **Model provenance (I8).** CDAD does not choose, invent or select a model:
+  the model of each role is the one configured in the runtime, and external
+  delegation takes it from the delegation configuration (per destination and
+  role). The orchestrator passes a model only if it comes from the environment
+  configuration; a destination or role without an entry runs the destination's
+  own default and the model is reported as not verifiable. Register the attempt
+  with its fields (`runtime`, `model_configured`, `model_reported`, `session`;
+  `null` or `unknown` when unobserved). The legitimate exit is the new-chat
+  handoff where the user picks the model.
 - **Receipt.** The native dispatch returns FINAL TEXT in this session, and
   every route stages that FINAL TEXT the same way. This bullet does not
   restate the steps: the re-entry wiring composed in this same body (from

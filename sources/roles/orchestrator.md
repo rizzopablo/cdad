@@ -99,7 +99,7 @@ Operating rules (strict):
   delegation, not recursion of subagents inside the same runtime. A delegation
   does not expand authority or scope, and the worker does not write the state
   (`docs/.cdad-state.json`). A separate session or CLI is not a sandbox: it
-  does not guarantee isolation nor another model family.
+  does not guarantee isolation nor any particular model.
 
 Context discipline (four compact rules; `references/orientation.md` §1 is the owner of "view first" — the first rule cites it and never duplicates it):
 - **Orient first with the compact `status` view.** The first read is the compact `status` view (`references/orientation.md` §1, its owner); never dump the state, the ledger or the whole skill into the session.
@@ -169,15 +169,13 @@ Orchestrator row (its own contract):
 | orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
 
 Anti-bias invariants (supervised by the orchestrator, non-negotiable): the
-reviewer's model family differs from the implementer's (an invariant guaranteed
-by the delegation configuration when it fixes models and declared when it does
-not — never silent, INV-5); the test-writer never sees implementation code; the
-test↔postcondition mapping is audited by a session different from the one that
-wrote the tests.
+reviewer is read-only and runs in a session separate from the implementer's;
+the test-writer never sees implementation code; the test↔postcondition mapping
+is audited by a session different from the one that wrote the tests.
 Model: never a concrete model name in this source, and none in the composed §2
-either (006-003 retires the per-runtime model cells: the model of each role is
-the one configured in the runtime; only external delegation takes it from the
-delegation configuration).
+either — the model of each role is the one configured in the runtime; only
+external delegation takes it from the delegation configuration (per destination
+and role). CDAD does not choose it.
 <!-- /cdad-section -->
 
 <!-- cdad-section:bash -->

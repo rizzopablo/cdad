@@ -13,7 +13,7 @@ Frontmatter shape (generated):
 - `description:` — one-line role summary (from the role source).
 - `mode: subagent` (orchestrator: `mode: all` + `permission: allow`).
 - `model:` — NOT emitted any more (006-003 PD-1e/INV-3): the generator has no
-  model map and no profiles, and the installer transforms no agent bytes. No
+  model map, and the installer transforms no agent bytes. No
   OpenCode agent fixes a model; the model of each role is the one configured in
   the runtime, and external delegation takes it from the delegation
   configuration (per destination and role).
@@ -74,18 +74,15 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native
   delegation of its own. Same-runtime dispatch is the native `task` tool.
-- **Family verification (D-3/INV-5).** The reviewer's family differs from the
-  implementer's, and that difference is a configuration verification: the
-  effective models are compared from the delegation configuration (per
-  destination and role). The orchestrator never chooses, invents or selects a
-  model. It passes one only if it comes from the environment configuration; a
-  destination or role without an entry runs the destination's own default and
-  the model is reported as not verifiable. Register the attempt with its fields
-  (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
-  `unknown` when unobserved) and, when the models cannot be verified, declare
-  "invariant not guaranteed" at the review gate instead of omitting it — never
-  silent. The legitimate exit is the new-chat handoff where the user picks the
-  model.
+- **Model provenance (I8).** CDAD does not choose, invent or select a model:
+  the model of each role is the one configured in the runtime, and external
+  delegation takes it from the delegation configuration (per destination and
+  role). The orchestrator passes a model only if it comes from the environment
+  configuration; a destination or role without an entry runs the destination's
+  own default and the model is reported as not verifiable. Register the attempt
+  with its fields (`runtime`, `model_configured`, `model_reported`, `session`;
+  `null` or `unknown` when unobserved). The legitimate exit is the new-chat
+  handoff where the user picks the model.
 - **Receipt.** The native dispatch returns FINAL TEXT in this session, and
   every route stages that FINAL TEXT the same way. This bullet does not
   restate the steps: the re-entry wiring composed in this same body (from

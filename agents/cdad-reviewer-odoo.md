@@ -84,12 +84,10 @@ apply it; not duplicated here.
 | -------- | ------ | ------------------------------------------------------------------- | ---------------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
 | reviewer | 4      | systematic adversarial review of the diff against the approved spec | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003) |
 
-Anti-bias invariants (this role): a model family different from the implementer's
-is a configuration verification — the effective models are compared from the
-runtime/delegation configuration and, when they cannot be verified, the invariant
-is declared «invariant not guaranteed», never silent (INV-5); never a concrete
-name here; independent session from the author; never accepts the author's
-conclusion as proof.
+Anti-bias invariants (this role): read-only and in a session independent from the
+author; never accepts the author's conclusion as proof. The model of each role is
+the one configured in the runtime (or, in external delegation, the delegation
+configuration); CDAD does not choose it; never a concrete name here.
 
 ## Review method (5 axes) and severity (addyosmani)
 

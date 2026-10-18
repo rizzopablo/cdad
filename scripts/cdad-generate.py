@@ -535,13 +535,12 @@ def test_writer_red_fragment() -> str:
 
 
 def model_note() -> str:
-    """§2's model note (006-003 PD-1/PD-7a/INV-3): no profile matrix, no model.
+    """§2's model note (006-003 PD-1/PD-7a/INV-3; A-5, §9).
 
     One line, and it fixes nothing: the model of each role is the one
-    configured in the runtime, external delegation reads it from the
-    delegation configuration, and the reviewer's family difference is a
-    configuration verification — declared («invariant not guaranteed») when the
-    effective models cannot be verified, never silent (INV-5).
+    configured in the runtime, and external delegation reads it from the
+    delegation configuration; CDAD does not choose it. The reviewer/model
+    requirement is retired (A-5).
     """
     return (
         "Model choice. The model of each role is the one configured in the runtime; "
@@ -549,11 +548,7 @@ def model_note() -> str:
         "delegation takes the model from the delegation configuration (per "
         "destination and role); a destination or role without an entry runs the "
         "destination's own default and the model is reported as not verifiable, never "
-        "invented. The reviewer's family differs from the implementer's, and that "
-        "difference is a configuration verification: the effective models are compared "
-        "from the configuration, and when they cannot be verified the invariant is "
-        "declared «invariant not guaranteed» at the review gate — declared, never "
-        "silent (INV-5; ADR-007 is replaced by 006-003)."
+        "invented. CDAD does not choose it."
     )
 
 

@@ -75,18 +75,16 @@ the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 | scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) |
 
 **Models.** The model of each role is the one configured in the runtime: this
-skill names no model and fixes no family either. The reviewer's family is a
-different family from the implementer's. That is an invariant, and it is a
-configuration verification: the effective models are compared from the
-configuration, and when they cannot be verified the invariant is declared
-«invariant not guaranteed» at the review gate — declared, never silent. How
-that declaration is written belongs to the `delegation` section of the
+skill names no model and fixes none. CDAD does not choose it; external
+delegation takes the model from the delegation configuration (per destination
+and role). How the model is declared belongs to the `delegation` section of the
 orchestrator of each runtime, not to this skill.
 
-**Anti-bias invariants (non-negotiable):** the reviewer's family is different
-from the implementer's. The test-writer never sees implementation code (if
-you are looking at `src/` as test-writer, you are in the wrong role). The
-test↔postcondition mapping is audited by a session different from the one that wrote the tests.
+**Anti-bias invariants (non-negotiable):** the reviewer is read-only and runs
+in a session separate from the implementer's. The test-writer never sees
+implementation code (if you are looking at `src/` as test-writer, you are in
+the wrong role). The test↔postcondition mapping is audited by a session
+different from the one that wrote the tests.
 
 ### 3. Test convention — what kind of tests get written
 
@@ -167,7 +165,7 @@ Never mix: if you started as orchestrator, don't write tests "because it's faste
 
 **Adapter rule — owner of the session lifecycle.** The CLI delegation adapter (`references/cli-delegation.md`) is for delegating **outside** the runtime, or to a runtime that has no native mechanism of its own: there it owns the worker's session lifecycle (process launch, correlation, result classification). When the runtime dispatches natively, the adapter is not the mechanism and the same runtime never re-enters through it.
 
-**Role invariants.** Whatever the mechanism, the §2 limits hold: the test-writer never sees implementation code, the implementer never touches `tests/**`, the reviewer's model family differs from the implementer's — fixed by configuration when the profile fixes models and **declared** when it does not, never silently omitted — each role returns its own artifact; only the orchestrator writes the state.
+**Role invariants.** Whatever the mechanism, the §2 limits hold: the test-writer never sees implementation code, the implementer never touches `tests/**`, the reviewer is read-only and runs in a session separate from the implementer's, each role returns its own artifact; only the orchestrator writes the state.
 
 **Receipt — every route ends in the same receipt.** The worker returns its FINAL TEXT; the orchestrator stages the exact bytes under `.cdad/inbox` + `RESULT.json` and runs `receive` → `validate-receipt` → `materialize` → transition. Receiving approves nothing (the receipt stays `semantic_status: pending`).
 
@@ -581,7 +579,7 @@ exactly that: removing intermediate approval ≠ removing verification).
 | "The tests pass, I saw it with my own eyes" (without running the suite) | See AP-3: trust is not evidence. Run the suite and paste the output. |
 | "The test was wrong, I adjusted it to pass" | The implementer doesn't touch tests (AP-4). If the test is wrong, it goes back to the test-writer in an isolated session. |
 | "Coverage is already high, no more tests needed" | Coverage ≠ contract. A postcondition without a test is an unverified postcondition, even at 99% coverage. |
-| "It's faster to do it inline than to delegate" | Session isolation IS the guarantee (test-writer doesn't see `src/`, reviewer ≠ implementer in family). Inline = guarantee lost. Delegate or switch modes explicitly with the trade-off flagged. |
+| "It's faster to do it inline than to delegate" | Session isolation IS the guarantee (test-writer doesn't see `src/`, the reviewer runs read-only in a session separate from the implementer's). Inline = guarantee lost. Delegate or switch modes explicitly with the trade-off flagged. |
 | "The reviewer will say the same, I'll skip it" | Independent review is the only anti-confirmation-bias. If it "says the same", the review confirms it cheap; if not, you just avoided a bug. |
 | "There's no time, we approve and move on" | Human approval fatigue is measurable and worsens over time (scalex.dev: average precision 66.3%, degrades under pressure). Structural barriers exist precisely so quality does not depend on the approver's mood. |
 | "The user already approved, why the gate?" | User approval ≠ gate evidence. The gate validates facts (suite output, artifact present); approval validates intent. They are orthogonal. |
