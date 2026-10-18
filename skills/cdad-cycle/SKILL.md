@@ -171,7 +171,7 @@ Never mix: if you started as orchestrator, don't write tests "because it's faste
 
 **Packet and re-entry are independent of the transport.** The packet is the same bytes and the re-entry the same protocol on every route: native dispatch, a handoff packet to a new chat, or the external CLI adapter. The transport only moves the text; the Orchestrator materialization protocol (`references/re-entry.md`) is the single end of every route.
 
-**Context discipline (pointer).** The orchestrator agent's directive section owns the four compact context rules — orient first with the compact `status` view (owner: `references/orientation.md` §1), rotate the session at task boundaries, no self-repair (re-dispatch the role naming the defect), and never `/tmp` as channel or workspace; cited here, not restated.
+**Context discipline (pointer).** The orchestrator agent's directive section owns the four compact context rules — orient first with the compact `status` view (owner: `references/orientation.md` §1), rotate the session at task boundaries, no self-repair (re-dispatch the role naming the defect), and the relativized `/tmp` rule (`/tmp` is admitted for ephemeral drafts of one same process; anything that must last, leave evidence or be read by another process or role goes to stable workspace paths, `.cdad/inbox` for the receipt); cited here, not restated.
 
 ### 5. Artifact materialization and commit rule
 
