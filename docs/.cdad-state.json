@@ -7897,10 +7897,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-implementer-green-009",
-    "role": "implementer",
-    "substage": "green",
-    "status": "completed",
+    "id": "006-002-delegation-by-layer-reviewer-review-001",
+    "role": "reviewer",
+    "substage": "review",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
