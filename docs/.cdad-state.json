@@ -7417,7 +7417,7 @@
     "id": "006-002-delegation-by-layer-test-writer-red-006",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
