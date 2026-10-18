@@ -14,7 +14,9 @@
     "criterion": "criterio de review vigente 2026-10-12 (execution.md): se bloquea lo que compromete el resultado, la evidencia o el uso previsto; a deuda lo que no tiene impacto material",
     "disposition": "Sin bloqueantes. Los 4 opcionales (O-1 la rama cerrada no exige --closure-path y la omision cae en PD-25/PD-27c; O-2 --feature '' se trata como ausente; O-3 el limite declarado de PD-23 se extiende a los --artifact citados; O-4 el mensaje de PD-25 no nombra receive --late) van a deuda del cierre: mejora o variante sin impacto material. Actualizacion MANUAL declarada: el campo derivado no tiene dueno en la operacion de transiciones (deuda D-2 de 005-012)."
   },
-  "postconditions_status": {},
+  "postconditions_status": {
+    "1": "red"
+  },
   "epic_features": [
     {
       "id": "006-001-opencode-concurrency-reliability",
@@ -8178,6 +8180,50 @@
       "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419",
       "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
       "plan_sha256": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-18T12:07:08.594464+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "7d4874d3ff582068ae4722b17e272320e4f94f64e5c226d4698ba18fad94c7ad",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-test-writer-red-001",
+        "receipt_sha256": "618cdfd92dd75965aad2b33bff483e2386b0d5a85f511e1371ac35a3bffa71cb",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "1",
+          "outcome": "red"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/u1-red.md",
+            "0568715fa95d7eb8af6ed58e63483727e48e734f6ddd150869cc2e00729f2a37"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-test-writer-red-001/receipt.json",
+      "receipt_sha256": "618cdfd92dd75965aad2b33bff483e2386b0d5a85f511e1371ac35a3bffa71cb",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/u1-red.md": "0568715fa95d7eb8af6ed58e63483727e48e734f6ddd150869cc2e00729f2a37"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8192,7 +8238,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T11:57:57.341515+00:00",
+  "last_updated": "2026-10-18T12:07:08.594464+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8303,7 +8349,7 @@
     "id": "006-003-installer-single-profile-delegation-config-test-writer-red-001",
     "role": "test-writer",
     "substage": "red",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
