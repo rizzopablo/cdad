@@ -325,4 +325,28 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Aceptación:** ADR-033 aprobado; un test de texto fija la fuente única, la obligación del architect, el criterio del reviewer y el límite («la falta de abstracción no es defecto»); `make validate` y la suite pasan.
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17; enmienda 004 (006-005) approved by Pablo on 2026-10-18; enmienda 005 (principio general antes que específico, con 006-004) approved by Pablo on 2026-10-18
+## 13. Enmienda 006 — revisión independiente de spec y plan antes de RED; feature 006-006 (2026-10-18)
+
+**Problema:** la capacidad existe (`plan-review` + `draft-plan`: `cdad_packet.py:52-64`, `:797-829`, `:1461-1464`; `cdad_result.py:699`), pero no está en el recorrido habitual: Stage 2, el gate spec→TDD, el contrato del reviewer y los agentes generados no la nombran. Además solo admite planes. En 006-003, dos contradicciones de spec y plan aparecieron recién en construcción o en la review final (el test B3 acoplado y no listado; O-2/O-3, tensiones internas de la spec). Detalle: `proposal-006-006-spec-plan-review.md`.
+
+**Feature `006-006`** (después de 006-004). Reutiliza `plan-review`/`draft-plan`, sin subfase, agente, etapa ni tipo de artefacto nuevos:
+1. **Objeto:** intención, restricciones y decisiones, spec, plan si existe, contratos y capacidades, con una sola fuente (`reviewer-plan-review.md`). Una spec sin plan se revisa sin tareas artificiales: hoy el CLI exige `plan-tasks` (`cdad_packet.py:3019-3050`), así que es un cambio de código con aceptación propia.
+2. **Identidad:** la revisión fija las versiones de la spec y del plan cuando existen, reutilizando los digests que ya registra el paquete, sin congelar el repo ni planificación ajena. Ante un cambio posterior se registra qué cambió y por qué requiere re-review o queda cubierto por la comprobación proporcional; no hay regla absoluta.
+3. **Recorrido:** el architect entrega, el reviewer revisa en sesión independiente, el architect corrige, hay re-review focal si corresponde, la autoridad vigente aprueba y recién entonces viene RED. La revisión final del resultado se mantiene, en sesión nueva.
+4. **Gate:** obligación metodológica supervisada, no bloqueo duro nuevo en el CLI. El dictamen vigente queda como artefacto (`plan-review.md` en la carpeta de la spec) y como entrega registrada. Un bloqueante lo resuelve el architect o lo descarta con razón la autoridad que aprueba. No se presenta como enforcement automático.
+5. **Proporcionalidad:** la revisión ocurre siempre y con profundidad proporcional. Solo el dueño la exime, de forma explícita y registrada. Rige la calibración vigente de `stage-4-review.md`.
+6. **Fronteras:** el dictamen no aprueba ni habilita construir, y no es insumo del test-writer. Sin requisito de familia ni de modelo (A-5 de 006-003). Los nombres `plan-review`/`draft-plan` se conservan, con la deuda de nombre declarada.
+
+**Aceptación:** pruebas ejecutables de que:
+- el reviewer recibe y revisa borradores sin aprobación ficticia, incluida una spec sin plan;
+- puede rechazar una spec y un plan coherentes entre sí que no cumplen la intención;
+- el dictamen no equivale a aprobación;
+- un cambio en la spec o en el plan después de la revisión se detecta;
+- la conducta está en los artefactos instalados;
+- `make validate` y la suite pasan.
+
+La recepción real comprueba que la revisión ocurrió antes de construir, sobre la intención y los documentos pertinentes, con los hallazgos tratados, la aprobación separada y un recorrido proporcional. Encontrar un defecto real es evidencia adicional, no condición: una revisión pertinente sin bloqueantes también es buen resultado. El costo se mide, no se estima.
+
+**Orden y primera evidencia:** 006-003 → 006-005 → 006-004 → 006-006. La spec y el plan de 006-005 los revisa el reviewer con el procedimiento actual (`plan-review` sobre `draft-plan`). Eso es evidencia del procedimiento existente, no de la integración de 006-006.
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17; enmienda 004 (006-005) approved by Pablo on 2026-10-18; enmienda 005 (principio general antes que específico, con 006-004) approved by Pablo on 2026-10-18; enmienda 006 (006-006, con las precisiones de identidad doble, aceptación sin contrafactual, spec sin plan y gate supervisado) approved by Pablo on 2026-10-18
