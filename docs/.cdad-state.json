@@ -7816,6 +7816,52 @@
         "docs/specs/006-002-delegation-by-layer/review.md": "4d87a7e9581595595e1a7b83ab4da2f08f1c8469920d5b40487d0191843866bd"
       },
       "note": "U8 + review: despachada por un orquestador OpenCode con los agentes generados de 006-002 (worktree aislado) via task nativo; sesion hija cdad-reviewer glm succeeded; 0 invocaciones del adaptador u opencode run en 56 comandos (verificado por el orquestador Claude en session_v2, solo lectura). Review: 1 bloqueante (B-1 sub-agent-strategies.md:51), 4 opcionales a deuda, 4 abstenciones."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "review-fix-red",
+      "substage": "red",
+      "at": "2026-10-18T03:26:42.787014+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "126b65d85b1a034b673b5f447666255459ef19aa71f3e828cc466db9ba95df21",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "review-fix-red",
+        "substage": "red",
+        "packet_id": "006-002-delegation-by-layer-test-writer-red-010",
+        "receipt_sha256": "a419ac7a765587509b3cfe6b94da24ac368e47eee720c45741c7906794748abb",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/rf-red.md",
+            "c6dab9473d115a31aa498ace93fd50d3e2e3d045833dde0ca286fa298de19627"
+          ],
+          [
+            "tests/test_006_002_reviewfix.py",
+            "da3a2cb00f4ae8e2cd85492755e2335b8d9ea03f8aa18365db42e72c68ff075a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-test-writer-red-010",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-test-writer-red-010/receipt.json",
+      "receipt_sha256": "a419ac7a765587509b3cfe6b94da24ac368e47eee720c45741c7906794748abb",
+      "artifacts": {
+        "tests/test_006_002_reviewfix.py": "da3a2cb00f4ae8e2cd85492755e2335b8d9ea03f8aa18365db42e72c68ff075a",
+        "docs/specs/006-002-delegation-by-layer/rf-red.md": "c6dab9473d115a31aa498ace93fd50d3e2e3d045833dde0ca286fa298de19627"
+      },
+      "note": "5c85d68: B-1 rojo por asercion; 40 verdes."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7830,7 +7876,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T03:23:46.247259+00:00",
+  "last_updated": "2026-10-18T03:26:42.787014+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7938,13 +7984,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-test-writer-red-010",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-implementer-green-010",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
   },
-  "tdd_substage": "review"
+  "tdd_substage": "red"
 }
