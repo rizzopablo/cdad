@@ -4,7 +4,7 @@
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
   "active_feature": "006-003-installer-single-profile-delegation-config",
-  "current_stage": "discovery",
+  "current_stage": "tdd",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -8087,6 +8087,97 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/discovery.md": "151b42ebb5d69eabede76d070aa0a0fe422acd6cb43c157dd6a2f40bd76525f9"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "draft",
+      "substage": null,
+      "at": "2026-10-18T11:57:57.015660+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "8ad20ac1e6d10749c16fab54035d293693a9f9115afa98c6efbf2d7069409d12",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "draft",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-architect-draft-001",
+        "receipt_sha256": "bd001f54e50e30db728035ee85088b852bdd7d4befd77716ee45ddc76a48b75c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+            "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
+          ],
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+            "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-architect-draft-001/receipt.json",
+      "receipt_sha256": "bd001f54e50e30db728035ee85088b852bdd7d4befd77716ee45ddc76a48b75c",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/spec.md": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419",
+        "docs/specs/006-003-installer-single-profile-delegation-config/plan.md": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
+      },
+      "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "specification",
+      "substage": "red",
+      "at": "2026-10-18T11:57:57.341515+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "619de5d3de0d975007a774d3892d73e188de4b168b9bd3982364a82f64c6956b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "orquestador (HITL delegada por Pablo)",
+        "contract": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
+        },
+        "plan": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+          "sha256": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "orquestador (HITL delegada por Pablo)",
+      "contract_path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+      "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419",
+      "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+      "plan_sha256": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8101,7 +8192,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T11:41:37.076118+00:00",
+  "last_updated": "2026-10-18T11:57:57.341515+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8212,10 +8303,10 @@
     "id": "006-003-installer-single-profile-delegation-config-architect-draft-001",
     "role": "architect",
     "substage": "draft",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
   },
-  "tdd_substage": null
+  "tdd_substage": "red"
 }
