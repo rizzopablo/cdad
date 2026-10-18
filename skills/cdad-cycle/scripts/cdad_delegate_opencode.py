@@ -949,15 +949,18 @@ def _parse_semver(text: str | None) -> str | None:
 def _preflight_password() -> str | None:
     """Spec §2.3 point 2: `OPENCODE_PASSWORD`, then `OPENCODE_SERVER_PASSWORD`.
 
-    The first one PRESENT in the environment wins, even if it later turns out
-    to be wrong (never falls through to the second once the first is set).
-    `None` means the environment carries no credential at all; what happens
-    next is 006-003 U6/§2.3 (the credential file).
+    The first one PRESENT and NON-EMPTY in the environment wins, even if it
+    later turns out to be wrong (never falls through to the second while the
+    first carries a value). An empty value is ABSENT (§2.3, O-1): it is never
+    sent as an empty header, so the next key -- and then the credential file
+    -- still applies. `None` means the environment carries no credential at
+    all; what happens next is 006-003 U6/§2.3 (the credential file).
     """
-    value = os.environ.get(OPENCODE_PASSWORD_ENV)
-    if value is not None:
-        return value
-    return os.environ.get(OPENCODE_SERVER_PASSWORD_ENV)
+    for variable in (OPENCODE_PASSWORD_ENV, OPENCODE_SERVER_PASSWORD_ENV):
+        value = os.environ.get(variable)
+        if value:
+            return value
+    return None
 
 
 # ----------------------- 006-003 U6: the server credential file (§2.3/D5)
@@ -1057,12 +1060,13 @@ def _preflight_credential() -> dict[str, Any]:
     """Resolve the server credential (§2.3/D5): environment first, file second.
 
     Only reached in `server` mode (the server preflight is the sole
-    consumer). The environment wins when EITHER variable is present (the
-    order of `_preflight_password`); only when neither is present is the
-    credential file consulted. Returns a closed document: `source`
-    (`environment`/`file`/`absent`), `value` (the credential to send --
-    `None` means NO header, never an empty one), `path` (the resolved file
-    path, always) plus the file document. The value never leaves the caller.
+    consumer). The environment wins when EITHER variable is present with a
+    non-empty value (the order of `_preflight_password`); only when neither
+    is present is the credential file consulted. Returns a closed document:
+    `source` (`environment`/`file`/`absent`), `value` (the credential to send
+    -- `None` means NO header, never an empty one), `path` (the resolved file
+    path when the file was consulted, `None` for an environment value, O-4)
+    plus the file document. The value never leaves the caller.
     """
     env_value = _preflight_password()
     if env_value is not None:
@@ -1079,11 +1083,11 @@ def _preflight_credential() -> dict[str, Any]:
 def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
     """Self-sufficient 401/403 diagnosis (§2.3/D5, PD-5a/PD-5b), never the value.
 
-    Names the accepted variables and their order, the RESOLVED credential
-    file path, the provenance of the value (the password of the `opencode
-    serve` instance in use, which must live in the ENVIRONMENT of the process
-    that dispatches) and, when the file was refused, the path and the mode
-    found.
+    Names the accepted variables and their order, the provenance of the value
+    (the password of the `opencode serve` instance in use, which must live in
+    the ENVIRONMENT of the process that dispatches) and, when the value was
+    read from the file, the RESOLVED path -- never an unresolvable one
+    (`None`, O-4): the diagnosis names the source actually used.
     """
     path = credential["path"]
     parts = [
@@ -1093,10 +1097,17 @@ def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
         "configured there), and it must be available to the PROCESS that "
         "dispatches: in its ENVIRONMENT under "
         f"{OPENCODE_PASSWORD_ENV} (first), then "
-        f"{OPENCODE_SERVER_PASSWORD_ENV}, or in the credential file {path} "
-        "(the delegation config's `credential_env_file`, or this default) "
-        "with mode 0600 or 0400. The value is never shown here",
+        f"{OPENCODE_SERVER_PASSWORD_ENV}",
     ]
+    if credential["source"] == "environment":
+        parts.append(
+            "the value in use came FROM the ENVIRONMENT above (source: "
+            "environment) and was rejected; no credential file was consulted")
+    else:
+        parts.append(
+            f"or in the credential file {path} (the delegation config's "
+            "`credential_env_file`, or this default) with mode 0600 or 0400")
+    parts.append("The value is never shown here")
     if credential["problem"] == "insecure":
         parts.append(
             f"the credential file {path} is group/world accessible: found "

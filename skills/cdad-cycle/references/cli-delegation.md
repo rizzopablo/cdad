@@ -279,8 +279,12 @@ map field → source.
 
 A model is NOT a key of the execution configuration (006-003 D3). Its only
 source is the **delegation configuration**, which the installer creates as a
-template and the user edits (`$XDG_CONFIG_HOME/cdad/delegation.json`, or
-`<install-root>/.config/cdad/delegation.json` when `XDG_CONFIG_HOME` is unset):
+template and the user edits. Its location is ONE rule, the same for the
+installer that writes it and the interface/adapter that read it (O-2):
+`$XDG_CONFIG_HOME/cdad/delegation.json` when `XDG_CONFIG_HOME` is defined and
+non-empty; otherwise `<base>/.config/cdad/delegation.json` with `<base>` =
+`CDAD_INSTALL_ROOT` when that variable is defined and non-empty (a redirected
+install root confines every write, INV-6), and the user's HOME otherwise:
 
 ```json
 {
@@ -302,15 +306,17 @@ configuration and how to migrate.
 The same document carries the optional **`credential_env_file`** (006-003 U6,
 §2.3/D5): the `server` mode credential. It is read from the ENVIRONMENT of the
 process that dispatches first — `OPENCODE_PASSWORD`, then
-`OPENCODE_SERVER_PASSWORD` — and, only when neither is present, from that file
-(the delegation config's `credential_env_file`, or the default
+`OPENCODE_SERVER_PASSWORD` — and, only when neither is present with a
+non-empty value (an empty value is **absent**, never an empty header), from
+that file (the delegation config's `credential_env_file`, or the default
 `<config-dir>/cdad/opencode-server.env`, i.e. the location rule of
 `delegation.json`): `KEY=value` lines with `#` comments, an empty value meaning
 **absent** (never an empty header). The file's permissions are verified on the
 opened descriptor: `600`/`400` are accepted and any bit of `077` is refused.
 The installer writes the sibling `opencode-server.env.example` with no value;
 copy it to `opencode-server.env` with mode `600`. On a 401/403 the diagnosis
-names both variables, the resolved path, the provenance of the value (the
+NAMES THE SOURCE actually used — the environment, or the resolved credential
+file path (never `None`) — both variables, the provenance of the value (the
 password of the `opencode serve` instance in use) and, when the file was
 refused, the path and the mode found. The value is never printed, logged,
 passed on argv nor recorded (INV-1).

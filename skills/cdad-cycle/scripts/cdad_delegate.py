@@ -97,21 +97,35 @@ def _adapter_path(destination: str) -> Path:
     return Path(__file__).resolve().parent / f"{ADAPTER_PREFIX}{destination}.py"
 
 
-def delegation_config_path() -> Path:
-    """Resolve the delegation config (§2.2/D3), the same rule as the installer:
-    `$XDG_CONFIG_HOME/cdad/delegation.json`, or `<home>/.config/cdad/` when
-    XDG_CONFIG_HOME is unset. Read-only here: it is the user's file."""
+def cdad_config_dir() -> Path:
+    """The ONE location rule of the user configuration (§2.2/§2.3, O-2): the
+    same rule the installer applies when it WRITES these files, so the reader
+    and the writer can never diverge.
+
+    `$XDG_CONFIG_HOME/cdad/` when `XDG_CONFIG_HOME` is defined and non-empty;
+    otherwise `<base>/.config/cdad/` with `<base>` = `CDAD_INSTALL_ROOT` when
+    that variable is defined and non-empty (a redirected install root confines
+    every write, INV-6), and the user's HOME otherwise. Read-only here: these
+    are the user's files.
+    """
     xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "")
-    base = Path(xdg_config_home) if xdg_config_home else Path.home() / ".config"
-    return base / "cdad" / DELEGATION_CONFIG_NAME
+    if xdg_config_home:
+        return Path(xdg_config_home) / "cdad"
+    base = os.environ.get("CDAD_INSTALL_ROOT", "") or str(Path.home())
+    return Path(base) / ".config" / "cdad"
+
+
+def delegation_config_path() -> Path:
+    """Resolve the delegation config (§2.2/D3): the user configuration dir
+    (`cdad_config_dir`) plus `delegation.json`."""
+    return cdad_config_dir() / DELEGATION_CONFIG_NAME
 
 
 def delegation_env_file_path() -> Path:
     """Default server-credential file (§2.3/D5), sibling of the delegation
-    config: `<config-dir>/cdad/opencode-server.env` — the location rule of
-    §2.2 (`$XDG_CONFIG_HOME/cdad/`, or `<home>/.config/cdad/`). Read-only
-    here: it is the user's file."""
-    return delegation_config_path().parent / DELEGATION_ENV_FILE_NAME
+    config: `<config-dir>/cdad/opencode-server.env` — the same location rule
+    (§2.2), never its own."""
+    return cdad_config_dir() / DELEGATION_ENV_FILE_NAME
 
 
 def delegation_credential_env_file() -> str | None:
