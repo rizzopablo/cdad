@@ -26,8 +26,10 @@
 # and preserve the local bytes; files owned by a previous install that this
 # install no longer deploys are RETIRED when their bytes still match the
 # recorded sha256 (006-003 U7/D6: the install retires its own obsoletes) and
-# stay registered as pending_removal when they were modified locally (visible
-# to --check, retired by --uninstall; review-5 B3 — a reinstall never forgets).
+# stay registered as pending_removal when they were modified locally — or when
+# their record carries no digest to compare against (B-1: with no digest there
+# is no proof the bytes are still ours) — visible to --check, retired by
+# --uninstall; review-5 B3 — a reinstall never forgets.
 # This is how a pre-T6 root's public-layout copies surface after a PD-9
 # reinstall: pending_removal, retired by --uninstall. --uninstall removes
 # exactly the manifest entries (artifacts + pending records), preserving a
@@ -640,18 +642,28 @@ install_root_abs() {
 # owned_removal_state <path> <recorded-sha256> — the ONE rule that decides what a
 # registered own path is entitled to right now. Shared by --uninstall
 # (review-5 E1) and the obsolete prune (006-003 U7/D6) instead of duplicating it:
-#   removable — a symlink, or a regular file whose bytes match the recorded
-#               sha256 (also when no digest was recorded: there is no evidence of
-#               a local change to preserve — the historical --uninstall rule)
-#   absent    — nothing at that path (idempotent)
-#   modified  — a regular file whose bytes differ from a RECORDED digest: the
-#               user changed it after the install, so it is never discarded.
+#   removable    — a symlink, or a regular file whose bytes match a RECORDED
+#                  sha256: the digest was compared and the bytes are still the
+#                  ones we deployed.
+#   absent       — nothing at that path (idempotent).
+#   modified     — a regular file whose bytes differ from a RECORDED digest: the
+#                  user changed it after the install, so it is never discarded.
+#   unverifiable — the record carries NO usable digest (empty or null, B-1): with
+#                  nothing to compare against there is no evidence that the bytes
+#                  are still ours, and INV-2 only authorizes retiring OWN bytes
+#                  proven unchanged. Preserved and reported, never removed —
+#                  neither on a re-install nor on --uninstall. (Before B-1 the
+#                  empty digest fell into `removable` and the file was deleted.)
+# A symlink is not the bytes we deployed (unlinking it destroys nothing of the
+# user's), so it keeps the historical removable verdict.
 owned_removal_state() {
   local path="$1" recorded="$2" actual
+  if [ ! -L "$path" ] && [ ! -e "$path" ]; then printf 'absent'; return 0; fi
+  if [ -z "$recorded" ]; then printf 'unverifiable'; return 0; fi
   if [ -L "$path" ]; then printf 'removable'; return 0; fi
   if [ ! -f "$path" ]; then printf 'absent'; return 0; fi
   actual="$(sha256_of "$path")"
-  if [ -z "$recorded" ] || [ "$actual" = "$recorded" ]; then printf 'removable'; return 0; fi
+  if [ "$actual" = "$recorded" ]; then printf 'removable'; return 0; fi
   printf 'modified'
 }
 
@@ -754,18 +766,29 @@ staged_agent_count() {  # runtime — prints the count (empty if unresolvable)
 # install (empty when the file is not owned yet). Load once per run, BEFORE
 # any deploy: the shared stage_owned_file semantics (review-5 B2) need it for
 # the skills/guard passes too, not only for the staged agents.
+# B-1: the records are exchanged NUL-framed (never a TSV read with `IFS=$'\t'
+# read`): tab is IFS whitespace, so consecutive tabs are ONE delimiter and an
+# EMPTY field would silently shift the remaining columns into the wrong slots.
 declare -A PREV_SHA=()
 declare -A PREV_SRC=()
 load_previous_ownership() {
   local prev="$OWNERSHIP_MANIFEST"
   [ -f "$prev" ] || return 0
   local rel sha source
-  while IFS=$'\t' read -r rel sha source; do
+  while IFS= read -r -d '' rel \
+     && IFS= read -r -d '' sha \
+     && IFS= read -r -d '' source; do
     [ -n "$rel" ] || continue
     PREV_SHA[$rel]="$sha"
     PREV_SRC[$rel]="$source"
   done < <(python3 - "$prev" <<'PY'
 import json, sys
+
+def field(value):
+    # B-1: a `null` digest is published as EMPTY, never as the Python repr
+    # `None`, so no record field can carry a non-string token.
+    return value if isinstance(value, str) else ""
+
 try:
     data = json.load(open(sys.argv[1], encoding="utf-8"))
 except (OSError, ValueError):
@@ -775,7 +798,8 @@ if not isinstance(artifacts, dict):
     raise SystemExit(0)
 for rel, record in sorted(artifacts.items()):
     if isinstance(record, dict):
-        print("%s\t%s\t%s" % (rel, record.get("sha256", ""), record.get("source", "")))
+        sys.stdout.write("%s\0%s\0%s\0" % (
+            rel, field(record.get("sha256")), field(record.get("source"))))
 PY
 )
 }
@@ -1188,6 +1212,9 @@ install_user_config() {
 #       forever would leave --check reporting a PENDING-REMOVAL nobody resolves;
 #   modified -> PRESERVED, disclosed as CONFLICT and kept REGISTERED (PD-6b):
 #       a local change is never discarded by an install (INV-2);
+#   unverifiable (record with NO digest, B-1) -> PRESERVED exactly like a local
+#       change, disclosed as CONFLICT and kept REGISTERED: without a digest there
+#       is no proof the bytes are still ours, so INV-2 forbids retiring them;
 #   absent -> nothing to do (idempotent; the registered entry is left as it is).
 # A file the manifest does NOT register is never read nor written, so it cannot
 # be touched even while the prune is active (PD-6c/INV-2), and the user config
@@ -1202,8 +1229,21 @@ prune_owned_obsolete() {
   # RECORDED path against it — absolute paths stay as they are, relative ones
   # resolve under the (possibly redirected) root. The hash compares the bytes on
   # DISK, and `owned_removal_state` decides with the recorded digest.
+  # B-1: the records travel NUL-framed. A 4-column TSV read by bash
+  # (`IFS=$'\t' read`) collapses consecutive tabs — tab is IFS whitespace, so
+  # tab TAB is ONE delimiter — and an EMPTY recorded digest made the source land
+  # in the digest slot (or the record look digest-less). NUL cannot appear in a
+  # value, so every field arrives exactly as published, empty ones included.
   python3 - "$prev" "$INSTALL_ROOT" "$reg_path" <<'PY' || { rm -f "$reg_path"; die "Cannot read the ownership manifest: $prev"; }
 import json, os, sys
+
+
+def field(value):
+    """A record field as text (B-1): a `null` digest is published as EMPTY, never
+    as the Python repr `None`."""
+    return value if isinstance(value, str) else ""
+
+
 manifest_path, root, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
 try:
     data = json.load(open(manifest_path, encoding="utf-8"))
@@ -1220,11 +1260,15 @@ for section_name in ("artifacts", "pending_removal"):
 with open(out_path, "w", encoding="utf-8") as out:
     for rel, record in sorted(records.items()):
         absolute = rel if os.path.isabs(rel) else os.path.join(root, rel)
-        out.write("%s\t%s\t%s\t%s\n" % (absolute, rel, record.get("sha256", ""), record.get("source", "")))
+        out.write("%s\0%s\0%s\0%s\0" % (
+            absolute, rel, field(record.get("sha256")), field(record.get("source"))))
 PY
   local abs rel sha source state preserved=0 plan_path
   local -A pruned_abs=()
-  while IFS=$'\t' read -r abs rel sha source; do
+  while IFS= read -r -d '' abs \
+     && IFS= read -r -d '' rel \
+     && IFS= read -r -d '' sha \
+     && IFS= read -r -d '' source; do
     [ -n "$rel" ] || continue
     [ -n "${OWNED_ABS[$abs]:-}" ] && continue     # this run deploys it: not obsolete
     [ -n "${CONFLICT_ABS[$abs]:-}" ] && continue  # already reported and preserved
@@ -1240,18 +1284,27 @@ PY
         pruned_abs["$abs"]=1
         PRUNED+=("$rel")
         ;;
-      modified)
+      modified|unverifiable)
+        # `modified` (a local change) and `unverifiable` (a record with no
+        # digest to compare against, B-1) share ONE outcome: the file is never
+        # discarded by an install — it is disclosed and stays registered (PD-6b).
         preserved=$((preserved + 1))
         KEPT+=("$rel"$'\t'"$sha"$'\t'"$source")
-        add_conflict "$rel" "obsolete own file modified locally since the recorded install (registered $sha); PRESERVED and kept registered"
+        if [ "$state" = unverifiable ]; then
+          add_conflict "$rel" "obsolete own file with no recorded sha256 to compare its bytes against; PRESERVED and kept registered (explicit resolution needed)"
+        else
+          add_conflict "$rel" "obsolete own file modified locally since the recorded install (registered $sha); PRESERVED and kept registered"
+        fi
         ;;
+      *) die "Unexpected removal state $state for $abs" ;;
     esac
   done < "$reg_path"
   rm -f "$reg_path"
-  log "Obsolete prune: ${#PRUNED[@]} own file(s) retired, $preserved preserved (locally modified — explicit resolution needed)"
+  log "Obsolete prune: ${#PRUNED[@]} own file(s) retired, $preserved preserved (locally modified, or with no recorded digest — explicit resolution needed)"
   [ "$DRY_RUN" -eq 1 ] && return 0
   # The plan for write_ownership_manifest: keys to drop, then the entries that
-  # must stay REGISTERED (PD-6b).
+  # must stay REGISTERED (PD-6b). Read by PYTHON (`split("\t", maxsplit=2)`,
+  # which preserves empty fields) — never by a bash `read` (B-1).
   plan_path="$(mktemp)" || die "Cannot create the obsolete-prune plan temp file"
   if ! {
     printf '%s\n' "${PRUNED[@]}"
@@ -1338,15 +1391,25 @@ uninstall_cdad() {
 # entries are retired too (a reinstall that no longer deploys a file keeps it
 # registered until uninstall). Review-5 E1: a locally modified owned file is
 # NEVER removed by ownership alone — it is reported and preserved for explicit
-# resolution (its record stays in the manifest).
+# resolution (its record stays in the manifest). B-1: a record with NO recorded
+# digest is preserved the same way — without a digest there is no proof the bytes
+# are still ours, and INV-2 only authorizes retiring own bytes proven unchanged.
 # No confirmation prompt: the manifest IS the explicit resolution of what is ours.
 uninstall_by_manifest() {
   local reg_path keep_file status=0 total=0 removed=0 preserved=0
-  local key rel sha source path
+  local key rel sha source path state
   local -a keep_artifacts=() keep_pending=()
   reg_path="$(mktemp)" || die "Cannot create the uninstall registration temp file"
+  # B-1: NUL-framed records (never a 4-column TSV read by bash `read`, which
+  # collapses consecutive tabs and shifted an empty digest's columns).
   python3 - "$OWNERSHIP_MANIFEST" "$reg_path" <<'PY' || { rm -f "$reg_path"; die "Cannot read the ownership manifest: $OWNERSHIP_MANIFEST"; }
 import json, sys
+
+
+def field(value):
+    return value if isinstance(value, str) else ""
+
+
 try:
     data = json.load(open(sys.argv[1], encoding="utf-8"))
 except (OSError, ValueError):
@@ -1358,11 +1421,15 @@ for key in ("artifacts", "pending_removal"):
         continue
     for rel, record in sorted(section.items()):
         if isinstance(record, dict):
-            out.write("%s\t%s\t%s\t%s\n" % (key, rel, record.get("sha256", ""), record.get("source", "")))
+            out.write("%s\0%s\0%s\0%s\0" % (
+                key, rel, field(record.get("sha256")), field(record.get("source"))))
 out.close()
 PY
   log "Uninstalling per ownership manifest (artifacts + pending_removal); foreign files are never touched"
-  while IFS=$'\t' read -r key rel sha source; do
+  while IFS= read -r -d '' key \
+     && IFS= read -r -d '' rel \
+     && IFS= read -r -d '' sha \
+     && IFS= read -r -d '' source; do
     [ -n "$rel" ] || continue
     total=$((total + 1))
     path="$(install_root_abs "$rel")"
@@ -1370,21 +1437,30 @@ PY
     # discard later local changes — a modified owned file is reported and
     # PRESERVED. owned_removal_state is the ONE rule (also used by the obsolete
     # prune); a symlink or an absent path is handled exactly as before.
-    case "$(owned_removal_state "$path" "$sha")" in
+    state="$(owned_removal_state "$path" "$sha")"
+    case "$state" in
       absent)
         log "UNINSTALL (absent, idempotent) $path"
         continue
         ;;
-      modified)
+      modified|unverifiable)
+        # `modified` (a local change) and `unverifiable` (no recorded digest,
+        # B-1) share ONE outcome: PRESERVED for explicit resolution.
         preserved=$((preserved + 1))
         if [ "$key" = "artifacts" ]; then
           keep_artifacts+=("$rel"$'\t'"$sha"$'\t'"$source")
         else
           keep_pending+=("$rel"$'\t'"$sha"$'\t'"$source")
         fi
-        log "CONFLICT: $rel — modified locally since the recorded install; PRESERVED for explicit resolution (--uninstall did not remove it)"
+        if [ "$state" = unverifiable ]; then
+          log "CONFLICT: $rel — the recorded install carries no sha256 to compare the bytes against; PRESERVED for explicit resolution (--uninstall did not remove it)"
+        else
+          log "CONFLICT: $rel — modified locally since the recorded install; PRESERVED for explicit resolution (--uninstall did not remove it)"
+        fi
         continue
         ;;
+      removable) ;;   # own bytes, unchanged: retired below
+      *) die "Unexpected removal state $state for $path" ;;
     esac
     do_run "UNINSTALL $path" rm -f -- "$path"
     removed=$((removed + 1))
@@ -1407,6 +1483,8 @@ data = json.load(open(path, encoding="utf-8"))
 stream = open(keep_path, encoding="utf-8").read()
 
 def parse(blob):
+    # PYTHON-side parse (B-1): `split("\t", maxsplit=2)` keeps EMPTY fields,
+    # unlike a bash `read`. The hash never rides on bash column splitting.
     out = {}
     for line in blob.splitlines():
         if not line.strip():
@@ -1432,7 +1510,7 @@ PY
       die "Cannot update the ownership manifest after uninstall: $OWNERSHIP_MANIFEST (exit $status)"
     fi
   fi
-  log "Uninstall complete: $removed of $total registered file(s) removed, $preserved preserved (locally modified — explicit resolution needed)"
+  log "Uninstall complete: $removed of $total registered file(s) removed, $preserved preserved (locally modified, or with no recorded digest — explicit resolution needed)"
 }
 
 # ---------------------------------------------------------------------------
@@ -1608,7 +1686,9 @@ for entry in data.get("artifacts", []):
 PY
 )
 
-  while IFS=$'\t' read -r rel owned_sha source; do
+  while IFS= read -r -d '' rel \
+     && IFS= read -r -d '' owned_sha \
+     && IFS= read -r -d '' source; do
     [ -n "$rel" ] || continue
     total=$((total + 1))
     CHECK_OWNED[$rel]=1
@@ -1656,12 +1736,20 @@ PY
     esac
   done < <(python3 - "$OWNERSHIP_MANIFEST" <<'PY'
 import json, sys
+
+
+def field(value):
+    # B-1: NUL-framed fields, so an empty digest cannot shift the source column.
+    return value if isinstance(value, str) else ""
+
+
 data = json.load(open(sys.argv[1], encoding="utf-8"))
 artifacts = data.get("artifacts")
 if isinstance(artifacts, dict):
     for rel, record in sorted(artifacts.items()):
         if isinstance(record, dict):
-            print("%s\t%s\t%s" % (rel, record.get("sha256", ""), record.get("source", "")))
+            sys.stdout.write("%s\0%s\0%s\0" % (
+                rel, field(record.get("sha256")), field(record.get("source"))))
 PY
 )
 

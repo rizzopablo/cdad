@@ -1087,9 +1087,12 @@ def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
     (the password of the `opencode serve` instance in use, which must live in
     the ENVIRONMENT of the process that dispatches) and, when the value was
     read from the file, the RESOLVED path -- never an unresolvable one
-    (`None`, O-4): the diagnosis names the source actually used.
+    (`None`, O-4): the diagnosis names the source actually used. When the value
+    came from the environment, the RESOLVED credential-file path is named TOO,
+    as the documented alternative (OPT-1): a rejected environment value is
+    migrated by moving it to that file. The value is never named.
     """
-    path = credential["path"]
+    path = credential["path"] or _credential_file_path()
     parts = [
         "the server rejected or required a credential (401/403; credencial "
         "ausente o rechazada). The credential is the password of the "
@@ -1102,7 +1105,10 @@ def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
     if credential["source"] == "environment":
         parts.append(
             "the value in use came FROM the ENVIRONMENT above (source: "
-            "environment) and was rejected; no credential file was consulted")
+            "environment) and was rejected; no credential file was consulted "
+            f"-- to move the credential there, the alternative is the "
+            f"credential file {path} (the delegation config's "
+            "`credential_env_file`, or this default) with mode 0600 or 0400")
     else:
         parts.append(
             f"or in the credential file {path} (the delegation config's "
