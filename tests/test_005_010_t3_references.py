@@ -18,6 +18,17 @@ de T1/T2, paralelas):
     de modelos (`scripts/cdad-models.sh` + perfil activo), sin nombres de
     modelo concretos.
 
+REFORMULADO por 006-002 U3 (PD-9; enmienda A-1): la segunda referencia sale del
+árbol instalable (PD-9) y su detalle —modo de carga, identidad durable sin
+fallback, puntero a la tabla única de modelos— se preserva como evidencia NO
+instalable bajo `docs/**`. Las dos aserciones de la mitad OpenCode se repuntan
+a esa evidencia (localizada por el helper único `framed_evidence_documents()` de
+`tests/test_006_002_u3_runtime_references.py`) y agregan el assert de retiro; la
+mitad `cli-delegation.md` (PD-10 de esta feature) sigue igual porque ese
+documento permanece instalable. INV-7 sigue aplicando sólo a texto INSTALABLE:
+la evidencia no instalable queda fuera de su alcance por diseño (PD-9), y la
+mitad OpenCode de INV-7 la retira el mismo retiro del archivo del árbol.
+
 MARCADORES ESTRUCTURALES (elección declarada del oráculo; plan §T3
 «criterio de prosa»: no se fijan frases del prompt ni nombres internos —
 la PROSA se verifica por review en stage 4). Este módulo usa:
@@ -63,9 +74,19 @@ import re
 import unittest
 from pathlib import Path
 
+# Helper único de 006-002 U3 (PD-9): la evidencia NO instalable bajo `docs/**`
+# donde se preserva el detalle de la referencia por runtime retirada.
+from tests.test_006_002_u3_runtime_references import (
+    framed_evidence_documents,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI_REFERENCE = (REPO_ROOT / "skills" / "cdad-cycle" / "references"
                  / "cli-delegation.md")
+# Referencia por runtime RETIRADA del árbol instalable por 006-002 U3 (PD-9):
+# sigue siendo el punto de referencia del modo de carga y del puntero a la tabla
+# única de modelos, pero su superficie viva es la evidencia no instalable bajo
+# `docs/**` (helper único del RED de U3).
 OPENCODE_REFERENCE = (REPO_ROOT / "skills" / "cdad-cycle" / "references"
                       / "opencode-delegation.md")
 # Destino del puntero de la tabla ÚNICA de modelos (PD-10): existe en el
@@ -253,20 +274,44 @@ class TestPd10CliDelegationDurableSignal(ReferenceCase):
 
 
 class TestPd10OpencodeLoadMode(ReferenceCase):
-    """PD-10 (mitad 2): opencode-delegation.md documenta que en la versión
-    instalada `mode: subagent` es una entry NO interactiva válida y que la
-    identidad se verifica desde la FILA DURABLE sin fallback; y su tabla
-    de roles ya no contiene nombres de modelo concretos: es un puntero a
-    la ÚNICA tabla de modelos (scripts/cdad-models.sh + perfil activo)."""
+    """PD-10 (mitad 2, reformulada por 006-002 U3/PD-9): el modo de carga de
+    OpenCode (`mode: subagent` = entry NO interactiva válida en la versión
+    instalada) y la verificación de identidad desde la FILA DURABLE sin
+    fallback se conservan como evidencia NO instalable bajo `docs/**` (la
+    referencia por runtime salió del árbol de la skill), junto con el puntero a
+    la ÚNICA tabla de modelos (`scripts/cdad-models.sh` + perfil activo)."""
 
-    DOCUMENT = "opencode-delegation.md"
+    DOCUMENT = "opencode-delegation.md (retirada: evidencia no instalable)"
 
-    def test_pd10_opencode_reference_documents_subagent_entry_and_durable_identity(
+    def withdrawn_reference_is_gone(self) -> None:
+        self.assertFalse(
+            OPENCODE_REFERENCE.is_file(),
+            msg="006-002 PD-9/U3: la referencia por runtime sigue en el árbol "
+                "instalable de la skill — PD-9 la retira y preserva su detalle "
+                "como evidencia no instalable bajo docs/**",
+        )
+
+    def preserved_evidence_text(self) -> str:
+        """Texto de la evidencia NO instalable (PD-9) donde se conserva el
+        detalle retirado; su ausencia es aserción de contrato."""
+        documents = framed_evidence_documents()
+        self.assertTrue(
+            documents,
+            msg="006-002 PD-9/U3: no hay evidencia NO instalable bajo docs/** "
+                "que conserve el detalle de la referencia por runtime retirada",
+        )
+        return "\n\n".join(path.read_text(encoding="utf-8")
+                           for path in documents)
+
+    def test_pd10_opencode_load_mode_and_durable_identity_survive_withdrawal(
             self) -> None:
         """PD-10: la entry `mode: subagent` está documentada como válida
         (no interactiva en la versión instalada) y la identidad del rol se
-        verifica desde la fila durable, sin fallback a un agente genérico."""
-        text = self.read_reference(OPENCODE_REFERENCE)
+        verifica desde la fila durable, sin fallback a un agente genérico — y
+        ese detalle NO se pierde con el retiro: se conserva como evidencia no
+        instalable (006-002 PD-9)."""
+        self.withdrawn_reference_is_gone()
+        text = self.preserved_evidence_text()
 
         self.require_any(text, ("subagent",),
                          "modo de carga subagent", self.DOCUMENT)
@@ -284,13 +329,19 @@ class TestPd10OpencodeLoadMode(ReferenceCase):
                                 "sin fallback"),
                          "sin fallback a agente genérico", self.DOCUMENT)
 
-    def test_pd10_opencode_reference_points_to_single_model_table(
-            self) -> None:
-        """PD-10: la tabla de modelos obsoleta fue REEMPLAZADA: la
-        referencia apunta a la ÚNICA tabla de modelos
-        (scripts/cdad-models.sh + perfil activo) y NO contiene nombres de
-        modelo concretos."""
-        text = self.read_reference(OPENCODE_REFERENCE)
+    def test_pd10_opencode_model_pointer_survives_the_withdrawal(self) -> None:
+        """PD-10: el puntero a la ÚNICA tabla de modelos
+        (`scripts/cdad-models.sh` + perfil activo) se conserva con el detalle
+        retirado (evidencia no instalable; 006-002 PD-9), y el destino del
+        puntero existe.
+
+        La ausencia de nombres de modelo concretos YA NO se aserta sobre la
+        referencia retirada: la evidencia NO instalable queda fuera del alcance
+        de INV-7 por diseño (006-002 PD-9). El texto INSTALABLE sigue cubierto
+        por `TestInv7ReferencesWithoutVpsValues` (cli-delegation.md) y por el
+        oráculo de modelos de 006-002 PD-1/INV-2."""
+        self.withdrawn_reference_is_gone()
+        text = self.preserved_evidence_text()
 
         # Puntero a la tabla única + el perfil activo como selector.
         self.require_any(text, ("cdad-models.sh",),
@@ -306,24 +357,28 @@ class TestPd10OpencodeLoadMode(ReferenceCase):
                 "archivo inexistente en el repo (consistencia "
                 f"estructural): {MODELS_TABLE_SCRIPT}")
 
-        # La tabla de modelos con nombres concretos YA NO está.
-        self.forbid(text, CONCRETE_MODEL_ID_RE,
-                    "identificadores de modelo concretos", self.DOCUMENT)
-        self.forbid(text, SPACED_MODEL_LINE_RE,
-                    "nombres de modelo concretos espaciados",
-                    self.DOCUMENT)
+        # La ausencia de nombres de modelo concretos se asertaba sobre esta
+        # referencia; con el retiro (006-002 PD-9) esa mitad viaja a la
+        # evidencia NO instalable, fuera del alcance de INV-7 por diseño. El
+        # texto INSTALABLE sigue cubierto por TestInv7ReferencesWithoutVpsValues
+        # y por el oráculo de modelos de 006-002 PD-1/INV-2.
 
 
 # --------------------------------------------------------------- INV-7
 
 
 class TestInv7ReferencesWithoutVpsValues(ReferenceCase):
-    """INV-7: NINGUNA de las dos referencias contiene valores de este VPS:
-    rutas absolutas de host, proveedor concreto, modelo concreto ni
-    servidor (la configuración de ejecución los resuelve, git-ignorada)."""
+    """INV-7: la referencia INSTALABLE de la delegación no contiene valores de
+    este VPS: rutas absolutas de host, proveedor concreto, modelo concreto ni
+    servidor (la configuración de ejecución los resuelve, git-ignorada).
 
-    DOCUMENTS = (("cli-delegation.md", CLI_REFERENCE),
-                 ("opencode-delegation.md", OPENCODE_REFERENCE))
+    Reformulado por 006-002 U3 (PD-9; enmienda A-1): INV-7 gobierna texto
+    INSTALABLE; la referencia por runtime `opencode-delegation.md` sale del
+    árbol (su detalle se preserva como evidencia no instalable bajo `docs/**`,
+    que queda fuera de este alcance por diseño). La mitad que se conserva es la
+    de `cli-delegation.md`, que permanece instalable (PD-10)."""
+
+    DOCUMENTS = (("cli-delegation.md", CLI_REFERENCE),)
 
     def test_inv7_references_free_of_host_paths_providers_models_and_servers(
             self) -> None:

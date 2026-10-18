@@ -19,11 +19,15 @@ Mapa test → postcondición/criterio (un test por afirmación observable):
 - `test_pd1_i_cc_orchestrator_declares_agent_dispatch_tool` → PD-1(i) / AC-1
 - `test_pd1_ii_no_cc_agent_declares_task_as_dispatch_tool`  → PD-1(ii) / AC-1
 - `test_pd1_ii_opencode_side_keeps_its_tool_name`           → PD-1 / AC-1 (control de no-regresión)
+  (reformulado en el RED de 006-002 U3, PD-9: el dueño del nombre del lado
+  OpenCode es su capa de agente —adaptador fuente + orquestador generado—,
+  porque la referencia por runtime que lo declaraba sale del árbol instalable;
+  cobertura conservada — enmienda A-1)
 - `test_pd1_iii_adapter_owns_the_cc_dispatch_tool_name`     → PD-1(iii) / AC-1
-- `test_pd1_iii_reference_and_owners_name_the_same_tool`    → PD-1(iii) / AC-1
-  (reformulado en el RED de 006-002 U2: el tercer dueño del nombre ya no es
-  `SKILL.md`, que queda abstracto por 006-002 PD-1/PD-3; el dueño es el
-  orquestador derivado — enmienda A-1, cobertura conservada)
+- `test_pd1_iii_adapter_and_derived_orchestrator_name_the_same_tool` → PD-1(iii) / AC-1
+  (reformulado en los RED de 006-002 U2 y U3: el tercer dueño del nombre ya no
+  es `SKILL.md` ni la referencia por runtime retirada (PD-9); el dueño es la
+  capa del agente — enmienda A-1, cobertura conservada)
 - `test_pd1_iv_generator_staging_is_idempotent`             → PD-1(iv) / INV-4
 - `test_pd1_iv_ten_cc_agents_keep_their_tools_lines`        → PD-1(iv) / INV-4
   (control de no-regresión)
@@ -31,14 +35,17 @@ Mapa test → postcondición/criterio (un test por afirmación observable):
 RED esperado: `test_pd1_i_*`, `test_pd1_ii_no_cc_*` y `test_pd1_iii_adapter_*`
 fallan por AssertionError porque hoy el derivado
 `agents/claude-code/cdad-orchestrator.md` declara `Task` (spec PD-1, plan T1);
-los tres controles (`opencode` conserva su nombre, idempotencia del generador y
-las líneas `tools:` de los diez agentes con/sin guard) quedan verdes hoy.
+los tres controles (`opencode` conserva su nombre en su capa de agente,
+idempotencia del generador y las líneas `tools:` de los diez agentes con/sin
+guard) quedan verdes hoy.
 Ningún fallo es ImportError/SyntaxError/NameError.
 
-Superposición declarada con 006-002 U2 (PD-1/PD-3): la aserción de coherencia
-del nombre exige `Agent` en el reference, el adaptador y el derivado, y exige
-que `SKILL.md` NO lo nombre como herramienta — esa mitad es la que el GREEN de
-006-002 U2 satisface al neutralizar §4.
+Superposición declarada con 006-002 U2 (PD-1/PD-3) y U3 (PD-9): la aserción de
+coherencia del nombre exige `Agent` en el adaptador fuente y el derivado (dueños
+vivos) y exige que `SKILL.md` NO lo nombre como herramienta — esa mitad es la
+que el GREEN de 006-002 U2 satisface al neutralizar §4; la referencia por
+runtime `claude-code-delegation.md` ya no es una superficie de este oráculo
+porque el GREEN de U3 la retira del árbol instalable (PD-9).
 """
 
 from __future__ import annotations
@@ -67,10 +74,20 @@ REPO = Path(__file__).resolve().parents[1]
 CC_AGENTS = REPO / "agents" / "claude-code"
 CC_ORCHESTRATOR = CC_AGENTS / "cdad-orchestrator.md"
 ADAPTER = REPO / "sources" / "agents" / "adapters" / "claude-code.md"
-CC_REF = REPO / "skills" / "cdad-cycle" / "references" / "claude-code-delegation.md"
 SKILL = REPO / "skills" / "cdad-cycle" / "SKILL.md"
-OC_REF = REPO / "skills" / "cdad-cycle" / "references" / "opencode-delegation.md"
 GENERATOR = REPO / "scripts" / "cdad-generate.py"
+# Lado OpenCode (dueño de SU nombre de herramienta): el adaptador fuente y el
+# orquestador generado. La referencia por runtime
+# (`skills/cdad-cycle/references/opencode-delegation.md`) fue RETIRADA del árbol
+# instalable por 006-002 U3 (PD-9): el dueño del nombre es la capa del agente.
+OC_ORCHESTRATOR = REPO / "agents" / "cdad-orchestrator.md"
+OC_ADAPTER = REPO / "sources" / "agents" / "adapters" / "opencode.md"
+# Las dos referencias por runtime, retiradas del árbol instalable por 006-002 U3
+# (PD-9): su superficie ya no es un dueño del nombre de la herramienta.
+WITHDRAWN_OC_REFERENCE = (REPO / "skills" / "cdad-cycle" / "references"
+                          / "opencode-delegation.md")
+WITHDRAWN_CC_REFERENCE = (REPO / "skills" / "cdad-cycle" / "references"
+                          / "claude-code-delegation.md")
 
 # Parámetros con los que el repo genera `agents/claude-code/**`
 # (precedente: `tests/test_cdad_generate.py`; `Makefile` `PROFILE ?= optimus`).
@@ -139,6 +156,23 @@ def names_task_as_a_cc_tool(text: str) -> bool:
         if re.search(rf"\b{OC_DISPATCH_TOOL}\b", line):
             return True
     return False
+
+
+# Formas de herramienta del mecanismo NATIVO de OpenCode (las mismas que fija
+# 006-002 U1 para el lado OpenCode: `task` y sus formas de herramienta; nunca
+# la palabra suelta *task* en otra acepción).
+OC_TOOL_FORM_RE = re.compile(
+    r"(?i)`\s*task\s*`|\btask tool\b|\bnative task\b|\btask dispatch\b"
+    r"|\btask mechanism\b"
+)
+
+
+def names_the_oc_tool_form(text: str) -> bool:
+    """¿El documento nombra el mecanismo de despacho NATIVO de OpenCode en
+    alguna de sus formas de herramienta? (Reformulación de 005-004 PD-1(ii) por
+    006-002 U3: el dueño de la declaración es la capa del agente, no la
+    referencia por runtime retirada.)"""
+    return bool(OC_TOOL_FORM_RE.search(text))
 
 
 def names_the_cc_tool_form(text: str) -> bool:
@@ -236,13 +270,28 @@ def test_pd1_ii_no_cc_agent_declares_task_as_dispatch_tool():
 
 
 def test_pd1_ii_opencode_side_keeps_its_tool_name():
-    """PD-1/AC-1 (control de no-regresión): el lado OpenCode CONSERVA su
-    propio nombre de herramienta de despacho."""
-    text = read(OC_REF, "PD-1/AC-1 (control OpenCode)")
-    assert re.search(rf"\b{OC_DISPATCH_TOOL}\b", text), (
-        "PD-1/AC-1 (control): el reference de delegación de OpenCode ya no "
-        f"nombra '{OC_DISPATCH_TOOL}' — el cambio de T1 es sólo del lado "
-        "Claude Code"
+    """PD-1/AC-1 (control de no-regresión; reformulado por 006-002 U3, PD-9):
+    el lado OpenCode CONSERVA su propio nombre de herramienta de despacho — y lo
+    declara en su CAPA DE AGENTE (el adaptador fuente y el orquestador generado,
+    dueños del mecanismo según D-1), no en la referencia por runtime que el
+    retiro de PD-9 sacó del árbol instalable."""
+    for label, path in (
+        ("adaptador fuente OpenCode", OC_ADAPTER),
+        ("orchestrator OpenCode generado", OC_ORCHESTRATOR),
+    ):
+        text = read(path, f"PD-1/AC-1 (control OpenCode: {label})")
+        assert names_the_oc_tool_form(text), (
+            f"PD-1/AC-1 (control) + 006-002 PD-9: {label} ya no nombra el "
+            "mecanismo de despacho nativo de OpenCode (`task` en forma de "
+            "herramienta) — el cambio de T1 es sólo del lado Claude Code y el "
+            "dueño del nombre es la capa del agente"
+        )
+    assert not WITHDRAWN_OC_REFERENCE.is_file(), (
+        "PD-1/AC-1 (control) + 006-002 PD-9/U3: "
+        f"{WITHDRAWN_OC_REFERENCE.relative_to(REPO)} sigue instalable — la "
+        "referencia por runtime sale del árbol de la skill y el dueño de su "
+        "nombre pasa a ser la capa del agente (por eso este control ya no la "
+        "lee)"
     )
 
 
@@ -267,15 +316,15 @@ def test_pd1_iii_adapter_owns_the_cc_dispatch_tool_name():
     )
 
 
-def test_pd1_iii_reference_and_owners_name_the_same_tool():
-    """PD-1(iii)/AC-1 (reformulado por 006-002 U2, PD-1/PD-3 — enmienda A-1):
-    el reference de delegación de Claude Code, el adaptador fuente y el
-    orquestador derivado nombran la MISMA herramienta (`Agent`), y la skill
-    instalable YA NO es dueña de ese nombre: el nombre runtime-específico vive
-    en la capa del agente (§4 neutral de `cdad-cycle`; antes esta aserción pedía
-    `Agent` también en `SKILL.md`)."""
+def test_pd1_iii_adapter_and_derived_orchestrator_name_the_same_tool():
+    """PD-1(iii)/AC-1 (reformulado por 006-002 U2 y U3, PD-1/PD-3/PD-9 —
+    enmienda A-1): el adaptador fuente y el orquestador derivado de Claude Code
+    nombran la MISMA herramienta (`Agent`), y la skill instalable YA NO es dueña
+    de ese nombre: el nombre runtime-específico vive en la capa del agente (§4
+    neutral de `cdad-cycle`; antes esta aserción pedía `Agent` también en
+    `SKILL.md` y en la referencia por runtime `claude-code-delegation.md`, que
+    PD-9 retira del árbol instalable — sus dueños vivos son los dos de abajo)."""
     for label, path in (
-        ("claude-code-delegation.md", CC_REF),
         ("adaptador fuente", ADAPTER),
         ("orchestrator derivado", CC_ORCHESTRATOR),
     ):
@@ -284,6 +333,13 @@ def test_pd1_iii_reference_and_owners_name_the_same_tool():
             f"PD-1(iii)/AC-1: {label} no nombra la herramienta de despacho "
             f"'{CC_DISPATCH_TOOL}' de Claude Code"
         )
+    assert not WITHDRAWN_CC_REFERENCE.is_file(), (
+        "PD-1(iii)/AC-1 + 006-002 PD-9/U3: "
+        f"{WITHDRAWN_CC_REFERENCE.relative_to(REPO)} sigue instalable — la "
+        "referencia por runtime sale del árbol de la skill (su detalle se "
+        "preserva como evidencia no instalable bajo docs/**) y los dueños del "
+        "nombre quedan en la capa del agente"
+    )
     # 006-002 PD-1/PD-3: la skill no nombra la herramienta de ningún runtime en
     # contexto de delegación — el dueño del nombre es el agente del runtime.
     skill = read(SKILL, "PD-1(iii)/006-002 PD-1")

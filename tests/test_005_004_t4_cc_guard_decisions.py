@@ -40,12 +40,13 @@ Mapa test → postcondición/criterio (un test por afirmación observable):
   frontmatter de hooks generado: matcher, modo y comando) + AC-4
 - `test_pd4_generated_hook_map_matches_its_owner`         → PD-4/PD-9 (esa
   declaración COINCIDE con el mapa declarado una vez en su dueño) + AC-4
-- `test_pd4_consumer_references_the_guard_contract`       → PD-4/PD-9 (el
-  consumidor referencia el contrato del guard y no repite globs legacy como
-  mecanismo vigente) + AC-4
-- `test_pd4_exit2_claim_is_scoped_and_keeps_the_unknown`  → PD-8/§10 VERIFY 1
-  (la afirmación sobre `exit 2` acotada a su alcance observado, sin contradecir
-  el desconocido del modo no interactivo)
+- `test_pd4_withdrawn_consumer_preserves_the_guard_contract_claims` → PD-4/PD-9
+  (el consumidor instalable sale del árbol por 006-002 U3/PD-9 y sus
+  afirmaciones sobre el contrato del guard se conservan como evidencia no
+  instalable) + AC-4        [reformulado en el RED de 006-002 U3, enmienda A-1]
+- `test_pd4_exit2_claim_stays_scoped_in_the_preserved_evidence` → PD-8/§10
+  VERIFY 1 + PD-9 (la afirmación sobre `exit 2` no reaparece sin su alcance en
+  la evidencia preservada)  [reformulado en el RED de 006-002 U3, enmienda A-1]
 
 RED hoy (observado): `test_pd4_generated_hook_map_matches_its_owner` (el
 dueño declarado del mapa —el adaptador fuente— no declara los pares
@@ -59,6 +60,15 @@ frontmatter generado, y los pares de los guardados como control positivo)
 quedan verdes hoy. Ningún fallo es ImportError/SyntaxError/NameError: las
 superficies declaradas faltantes son aserción de contrato, no error de
 entorno.
+
+RED vigente tras los GREEN de 005-004 (T4) y de 006-002 U2 (2026-10-17): el
+mapa del dueño ya está reconciliado y las tres aserciones anteriores están
+verdes; los dos tests del CONSUMIDOR se reformulan en el RED de **006-002 U3**
+(PD-9; enmienda A-1) — `test_pd4_withdrawn_consumer_preserves_the_guard_contract_claims`
+y `test_pd4_exit2_claim_stays_scoped_in_the_preserved_evidence` — y fallan hoy
+por el RETIRO pendiente del consumidor instalable (PD-9), conservando la
+cobertura del contrato del guard y del alcance de `exit 2` sobre la evidencia
+no instalable que lo preserva.
 
 Declarado (PD-8, sin extrapolar): estos tests verifican las DECISIONES del
 guard y el mapa declarado; NO afirman que Claude Code honre `exit 2` ni que
@@ -85,6 +95,9 @@ from test_004_002_t2_bootstrap import SCRIPT as PACKET_CLI
 from test_004_002_t5_runtime import CLI_ENV, LayoutProject
 # Parser de frontmatter único del suite (reutilizado; no se escribe otro).
 from test_opencode_read_map_and_steps import frontmatter
+# Helper único de 006-002 U3 (PD-9): la evidencia NO instalable bajo `docs/**`
+# donde se preserva el detalle del consumidor retirado.
+from tests.test_006_002_u3_runtime_references import framed_evidence_documents
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -488,91 +501,88 @@ class TestGeneratedHookFrontmatter(unittest.TestCase):
 
 
 class TestConsumerReference(unittest.TestCase):
-    """PD-4/PD-9: el consumidor referencia el contrato del guard."""
+    """PD-4/PD-9: el consumidor instalable retirado por 006-002 U3 (PD-9) y la
+    conservación de su contenido en la evidencia no instalable bajo `docs/**`."""
 
-    def test_pd4_consumer_references_the_guard_contract(self) -> None:
-        """PD-4/PD-9/AC-4: el consumidor `claude-code-delegation.md` describe
-        el mecanismo del guard —no los globs legacy—, referenciando el
-        clasificador de la política del proyecto, las búsquedas acotadas y el
-        fail-closed sin clasificador; y no presenta `src/**`/`lib/**` como el
-        mecanismo vigente (una mención histórica debe declararse como
-        superada)."""
-        consumer = read_declared(CONSUMER, "PD-4")
-        region = hook_section_blocks(consumer)
-        self.assertTrue(
-            region,
-            msg=f"PD-4/PD-9: {CONSUMER.relative_to(REPO)} no declara el "
-                f"mecanismo de hooks del guard (ningún bloque lo trata) — el "
-                f"consumidor referencia el contrato del guard",
+    def assert_consumer_withdrawn(self) -> None:
+        self.assertFalse(
+            CONSUMER.is_file(),
+            msg="PD-4/PD-9 + 006-002 U3: el consumidor instalable "
+                f"`{CONSUMER.relative_to(REPO)}` sigue en el árbol de la skill "
+                "— PD-9 lo retira y preserva su detalle como evidencia no "
+                "instalable bajo docs/**",
         )
-        joined = "\n\n".join(region)
+
+    def evidence_text(self) -> str:
+        documents = framed_evidence_documents()
+        self.assertTrue(
+            documents,
+            msg="PD-4/PD-9 + 006-002 U3: no hay evidencia NO instalable bajo "
+                "docs/** que conserve el detalle del consumidor retirado "
+                "(006-002 PD-9)",
+        )
+        return "\n\n".join(path.read_text(encoding="utf-8")
+                           for path in documents)
+
+    def test_pd4_withdrawn_consumer_preserves_the_guard_contract_claims(
+            self) -> None:
+        """PD-4/PD-9/AC-4 (reformulado por 006-002 U3, PD-9 — enmienda A-1):
+        el consumidor instalable `claude-code-delegation.md` sale del árbol de la
+        skill (PD-9) y sus afirmaciones sobre el contrato del guard NO se
+        pierden: la evidencia preservada bajo `docs/**` sigue refiriendo el
+        clasificador de la política del proyecto, las búsquedas acotadas y el
+        fail-closed sin clasificador (el mecanismo vigente del guard v2)."""
+        self.assert_consumer_withdrawn()
+        joined = self.evidence_text()
         self.assertRegex(
             joined,
             r"clasificad|classifier|cdad-policy|pol[íi]tica|policy",
-            msg=f"PD-4/PD-9: el bloque de hooks del consumidor no referencia "
-                f"el clasificador de la política del proyecto — el guard v2 "
-                f"clasifica con la política del proyecto, no con globs fijos",
+            msg="PD-4/PD-9: la evidencia preservada del consumidor retirado no "
+                "referencia el clasificador de la política del proyecto — el "
+                "guard v2 clasifica con la política del proyecto, no con globs "
+                "fijos",
         )
         self.assertRegex(
             joined,
             r"fail[ -]?clos|falla cerrad|cerrado sin clasificador|"
             r"sin clasificador|no classifier",
-            msg=f"PD-4/PD-9: el bloque de hooks del consumidor no declara que "
-                f"sin clasificador el guard falla cerrado (INV-3)",
+            msg="PD-4/PD-9: la evidencia preservada no declara que sin "
+                "clasificador el guard falla cerrado (INV-3)",
         )
         self.assertRegex(
             joined,
             r"acot|scop|bounded|narrow",
-            msg=f"PD-4/PD-9: el bloque de hooks del consumidor no declara que "
-                f"las búsquedas (`Grep`/`Glob`) se acotan a un `path`",
+            msg="PD-4/PD-9: la evidencia preservada no declara que las "
+                "búsquedas (`Grep`/`Glob`) se acotan a un `path`",
         )
-        legacy = re.compile(r"src/\*\*|lib/\*\*")
-        superseded = re.compile(
-            r"legacy|obsolet|hist[óo]ric|retirad|superseded|ya no|antigu|v1\b",
+
+    def test_pd4_exit2_claim_stays_scoped_in_the_preserved_evidence(self) -> None:
+        """PD-8/§10 VERIFY 1 + 006-002 PD-9 (reformulado por U3 — enmienda
+        A-1): la afirmación sobre `exit 2` que traía el consumidor retirado no
+        puede reaparecer SIN su alcance en la evidencia preservada: donde el
+        detalle conservado afirme que el runtime honra/confía en `exit 2`, la
+        ventana del bloque debe declarar a la vez el alcance observado (sesión
+        interactiva), el modo no interactivo (`-p`) y el desconocido conservado.
+
+        Declarado: si la evidencia preservada no conserva esa afirmación, el
+        guard es vacuo y se declara (el assert que falla en RED es el RETIRO del
+        consumidor, PD-9) — el guard se activa sobre el texto que el GREEN
+        preserve."""
+        self.assert_consumer_withdrawn()
+        joined = self.evidence_text()
+
+        blocks = [block.strip() for block in re.split(r"\n\s*\n", joined)
+                  if block.strip()]
+        exit2_blocks = [block for block in blocks
+                        if re.search(r"exit\s*(code\s*)?2", block)]
+        honoring = re.compile(
+            r"honor|honour|trust|confiar|conf[íi]a|respet|respect|rely on|"
+            r"verified|verific|empiric",
             re.IGNORECASE,
         )
-        offenders = [
-            block for block in region
-            if legacy.search(block) and not superseded.search(block)
-        ]
-        self.assertEqual(
-            offenders, [],
-            msg=f"PD-4/PD-9/AC-4: el consumidor presenta los globs legacy "
-                f"`src/**`/`lib/**` como el mecanismo vigente del guard "
-                f"({offenders!r}) — el mecanismo vigente es el clasificador "
-                f"de la política del proyecto, declarado en su dueño",
-        )
-
-    def test_pd4_exit2_claim_is_scoped_and_keeps_the_unknown(self) -> None:
-        """PD-8/§10 VERIFY 1: la afirmación del consumidor sobre `exit 2`
-        queda acotada a su alcance observado (sesión interactiva) y declara lo
-        NO verificado en modo no interactivo, sin contradecir el desconocido
-        conservado por PD-8 (VERIFY 1). Hoy el enunciado no lleva ese alcance:
-        falla por aserción.
-
-        El oráculo es de contenido declarado: la ventana de cada bloque que
-        trata `exit 2` (el bloque y sus vecinos inmediatos) debe llevar las
-        tres marcas —alcance interactivo, modo no interactivo y desconocido
-        declarado— y ninguna afirmación de que el runtime honra/confía en
-        `exit 2` puede quedar fuera de ese alcance."""
-        consumer = read_declared(CONSUMER, "PD-8")
-        doc_blocks = blocks(consumer)
-        exit2_indexes = [
-            index for index, block in enumerate(doc_blocks)
-            if re.search(r"exit\s*(code\s*)?2", block)
-        ]
-        self.assertTrue(
-            exit2_indexes,
-            msg=f"PD-8/§10 (VERIFY 1): {CONSUMER.relative_to(REPO)} ya no "
-                f"declara el `exit 2` del guard — la afirmación que el "
-                f"contrato manda acotar no está tratada",
-        )
-
-        def window(index: int) -> str:
-            return "\n\n".join(doc_blocks[max(0, index - 1):index + 2])
-
-        def head(index: int) -> str:
-            return doc_blocks[index].splitlines()[0][:60]
+        claims = [block for block in exit2_blocks if honoring.search(block)]
+        if not claims:
+            return  # declarado: la evidencia preservada no retoma la afirmación
 
         interactive = r"interactiv"
         non_interactive = (
@@ -586,39 +596,20 @@ class TestConsumerReference(unittest.TestCase):
                  ("modo no interactivo", non_interactive),
                  ("desconocido declarado", unknown))
 
-        scoped = [
-            index for index in exit2_indexes
-            if all(re.search(pattern, window(index), re.IGNORECASE)
-                   for _label, pattern in marks)
-        ]
-        self.assertTrue(
-            scoped,
-            msg=f"PD-8/§10 (VERIFY 1): el tratamiento del `exit 2` en "
-                f"{CONSUMER.relative_to(REPO)} no está acotado: ninguna "
-                f"ventana declara a la vez el alcance observado (sesión "
-                f"interactiva), el modo no interactivo (`-p`) y el "
-                f"desconocido conservado con causa — el primer bloque con "
-                f"`exit 2` es {head(exit2_indexes[0])!r}",
-        )
-
-        honoring = re.compile(
-            r"honor|honour|trust|confiar|conf[íi]a|respet|respect|rely on|"
-            r"verified|verific|empiric",
-            re.IGNORECASE,
-        )
-        claims = [
-            index for index in exit2_indexes if honoring.search(doc_blocks[index])
-        ]
-        for index in claims:
+        for claim in claims:
+            index = blocks.index(claim)
+            window = "\n\n".join(blocks[max(0, index - 1):index + 2])
             for label, pattern in marks:
-                with self.subTest(claim=head(index), mark=label):
+                with self.subTest(claim=claim.splitlines()[0][:60],
+                                  mark=label):
                     self.assertRegex(
-                        window(index),
+                        window,
                         pattern,
-                        msg=f"PD-8/§10 (VERIFY 1): la afirmación sobre `exit 2` "
-                            f"({head(index)!r}) no declara {label} — la "
-                            f"afirmación queda acotada al alcance observado y "
-                            f"conserva el desconocido del modo no interactivo",
+                        msg=f"PD-8/§10 (VERIFY 1) + 006-002 PD-9: la "
+                            f"afirmación sobre `exit 2` conservada en la "
+                            f"evidencia no declara {label} — queda acotada al "
+                            f"alcance observado y conserva el desconocido del "
+                            f"modo no interactivo",
                     )
 
 

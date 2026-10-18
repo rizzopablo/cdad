@@ -43,6 +43,26 @@ assert_file_not_has() {
   fi
 }
 
+assert_file_missing() {
+  # assert_file_missing <path> <message>
+  # 006-002 U3 (PD-9): a file withdrawn from the installable tree is asserted by
+  # ABSENCE (assert_file_not_has on a missing file cannot distinguish).
+  if [[ ! -f "$ROOT/$1" ]]; then
+    pass "$2 ($1 does not exist)"
+  else
+    fail "$2 ($1 still exists)"
+  fi
+}
+
+assert_tree_not_has() {
+  # assert_tree_not_has <dir> <grep-pattern> <message>
+  if ! grep -rEq -e "$2" "$ROOT/$1" 2>/dev/null; then
+    pass "$3 ($1 is free of '$2')"
+  else
+    fail "$3 ($1 still contains '$2')"
+  fi
+}
+
 assert_files_identical() {
   # assert_files_identical <path1> <path2> <message>
   if [[ -f "$ROOT/$1" && -f "$ROOT/$2" ]] && diff -q "$ROOT/$1" "$ROOT/$2" >/dev/null 2>&1; then
@@ -129,10 +149,19 @@ if load_table | grep -q 'verdict-tuple\.md'; then
 else
   fail "F004: the 'How to read the references' table does NOT include verdict-tuple.md"
 fi
-if load_table | grep -q 'claude-code-delegation\.md'; then
-  pass "F004: the 'How to read the references' table includes claude-code-delegation.md"
+# 006-002 U3 (PD-9): the two runtime references leave the installable skill, so
+# the table must NOT index them any more — a row pointing to a removed file is
+# the "dangling pointer" the unit forbids (reformulated, not deleted: the table
+# itself is still required by the check above).
+if load_table | grep -q 'opencode-delegation\.md'; then
+  fail "F004 (006-002 PD-9): the 'How to read the references' table still includes opencode-delegation.md (withdrawn from the installable skill)"
 else
-  fail "F004: the 'How to read the references' table does NOT include claude-code-delegation.md"
+  pass "F004 (006-002 PD-9): the 'How to read the references' table no longer includes opencode-delegation.md (withdrawn)"
+fi
+if load_table | grep -q 'claude-code-delegation\.md'; then
+  fail "F004 (006-002 PD-9): the 'How to read the references' table still includes claude-code-delegation.md (withdrawn from the installable skill)"
+else
+  pass "F004 (006-002 PD-9): the 'How to read the references' table no longer includes claude-code-delegation.md (withdrawn)"
 fi
 
 echo
@@ -224,12 +253,16 @@ assert_file_has "agents/claude-code/cdad-scribe.md" 'activeContext\.md' \
 # M6: invented API (from Agent import agent) + AP-7 citation misattributed
 # (AP-7 is "Memory Bank out of date"; the isolation invariant is
 # AP-1/AP-2).
-assert_file_not_has "skills/cdad-cycle/references/claude-code-delegation.md" \
-  'from Agent import agent' \
-  "F010 (M6): claude-code-delegation.md no longer has the invented Python API"
-assert_file_not_has "skills/cdad-cycle/references/claude-code-delegation.md" \
-  '\(AP-7' \
-  "F010 (M6): claude-code-delegation.md no longer cites AP-7 for the isolation invariant (it is AP-1/AP-2)"
+# 006-002 U3 (PD-9): the CC runtime delegation reference is withdrawn from the
+# installable skill tree; the M6 concern is conserved on the INSTALLABLE tree
+# (no installable skill text may carry the invented API or the misattributed
+# citation) plus the withdrawal assert itself (reformulated, not deleted).
+assert_file_missing "skills/cdad-cycle/references/claude-code-delegation.md" \
+  "F010 (M6) + 006-002 PD-9: the Claude Code runtime delegation reference is withdrawn from the installable skill tree"
+assert_tree_not_has "skills" 'from Agent import agent' \
+  "F010 (M6): no installable skill text carries the invented Python API ('from Agent import agent')"
+assert_tree_not_has "skills" '\(AP-7' \
+  "F010 (M6): no installable skill text cites AP-7 for the isolation invariant (it is AP-1/AP-2)"
 
 # M7: the 4 loose skills/*.md files remain as a one-line stub (or are deleted);
 # in any case, they cannot remain a complete divergent copy.
@@ -487,9 +520,16 @@ done
 assert_file_has "agents/claude-code/cdad-orchestrator.md" '^tools:.*\bAgent\b' \
   "005-004 PD-1: the CC orchestrator declares the real dispatch tool 'Agent'"
 
-# Control de no-regresión (PD-1/AC-1): el lado OpenCode CONSERVA su nombre.
-assert_file_has "skills/cdad-cycle/references/opencode-delegation.md" '\bTask\b' \
-  "005-004 PD-1 (control): the OpenCode side keeps its own dispatch tool name"
+# Control de no-regresión (PD-1/AC-1), repuntado por 006-002 U3 (PD-9): el lado
+# OpenCode CONSERVA su nombre de herramienta — y lo declara en su CAPA DE AGENTE
+# (el adaptador fuente y el orquestador generado, dueños del mecanismo según
+# D-1), no en la referencia por runtime que sale del árbol instalable.
+assert_file_missing "skills/cdad-cycle/references/opencode-delegation.md" \
+  "006-002 PD-9: the OpenCode runtime delegation reference is withdrawn from the installable skill tree"
+assert_file_has "sources/agents/adapters/opencode.md" '`task`' \
+  "005-004 PD-1 (control): the OpenCode agent layer (source adapter) keeps its own dispatch tool name"
+assert_file_has "agents/cdad-orchestrator.md" '`task`' \
+  "005-004 PD-1 (control): the generated OpenCode orchestrator declares its own dispatch tool name"
 
 echo "############################################"
 echo "# RESULT"

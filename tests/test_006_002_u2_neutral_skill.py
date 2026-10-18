@@ -22,16 +22,18 @@ Exclusiones declaradas de esta unidad (cada una con su dueño):
 - ``references/context-meter.md`` — contrato de LECTOR/MEDICIÓN (INV-8): declara
   ``task``/``subagent`` como nombres de herramienta *reconocidos* (dato de
   medición, no instrucción de delegación).
-- ``references/opencode-delegation.md`` y ``references/claude-code-delegation.md``
-  — **exclusión TEMPORAL (U3)**: siguen instalables hoy y su retiro (PD-9) es de
-  U3; no se les exige la ausencia en esta unidad.
-- ``references/cli-delegation.md`` — contrato del ADAPTADOR (invocación CLI,
-  ``--session``, standalone/server) y su regla de elección de transporte es
-  PD-10 (U3): el oráculo de FORMAS DE HERRAMIENTA no lo cubre en U2.
 - **sección §2 de ``SKILL.md``** (columna "Model family" + párrafo de perfiles,
   ``:67-77``) — superficie de **PD-11** (plan U4): el oráculo de MODELOS la
   neutraliza (misma numeración de líneas) y su ausencia la fija el RED de esa
   unidad (enmienda A-1: cada RED cubre su superficie).
+
+Ya NO hay exclusiones temporales: el RED de **U3** (``test_006_002_u3_…``, PD-9/
+PD-10) retiró las dos referencias por runtime del árbol instalable y la regla de
+elección de transporte de ``cli-delegation.md``, así que este oráculo corre
+sobre el árbol completo (``skills/cdad-cycle/**`` y ``skills/cdad-epic/**``)
+salvo las dos exclusiones con dueño de arriba — el contrato PD-1 no distingue
+por unidad: ningún texto instalable de la skill nombra una herramienta de
+despacho de un runtime.
 
 Mapa test → postcondición (un test por afirmación observable):
   1 ``TestPd1SkillWithoutRuntimeTools::test_pd1_no_dispatch_tool_form_in_installable_skill_text``   PD-1 / INV-1
@@ -39,16 +41,20 @@ Mapa test → postcondición (un test por afirmación observable):
   3 ``TestPd3Section4NeutralCore::test_pd3_section4_keeps_the_seven_points_in_abstract_form``       PD-3
   4 ``TestPd3Section4NeutralCore::test_pd3_section4_names_no_runtime_tool_form``                    PD-3 / INV-1
 
-RED esperado (árbol actual):
-- fallan por AssertionError de CONTENIDO: (1) formas de herramienta presentes en
-  ``SKILL.md:145-160, 243, 275, 463-466, 501-502``, ``handoff-prompts.md:39-40``,
-  ``progress-guards.md:27, 38`` y ``sub-agent-strategies.md:53`` (todas dentro de
-  la superficie declarada para U2 por el spec §1/plan U2); (3) §4 sin seis de los
-  diez sub-conceptos y (4) §4 nombrando `task`/`delegate`/`Agent`/`subagent_type`/
-  `sessions_spawn`.
+RED esperado (árbol actual: U2 ya en GREEN; el RED de U3 retiró las exclusiones
+temporales de la superficie de PD-9/PD-10):
+- (1) FALLA por AssertionError de CONTENIDO: las formas de herramienta que aún
+  quedan en el texto instalable son las de las DOS referencias por runtime que
+  PD-9 retira (``references/opencode-delegation.md``: ``task``/``delegate``/
+  ``subagent_type``; ``references/claude-code-delegation.md``: ``Agent``/
+  ``Agent tool``/``subagent_type``) y la regla de elección de transporte de
+  ``cli-delegation.md`` (``task``): exactamente la superficie de U3, cuyo RED
+  (``tests/test_006_002_u3_runtime_references.py``) las baja del árbol con los
+  punteros reconciliados.
 - (2) pasa hoy: **GUARD pre-satisfecho** (el árbol no fija modelos fuera de §2 —
   superficie de PD-11); protege el GREEN contra un intercambio de nombres de
   modelo en la superficie de delegación.
+- (3)/(4): PASAN hoy (U2 GREEN); son los controles de conservación de §4.
 Ningún fallo es ImportError/SyntaxError.
 """
 
@@ -84,17 +90,12 @@ SKILL_MD = REPO_ROOT / "skills" / "cdad-cycle" / "SKILL.md"
 READER_CONTRACT_EXCLUSIONS = (
     "skills/cdad-cycle/references/context-meter.md",
 )
-# PD-9 (U3): retiro de las dos referencias runtime-específicas — TEMPORAL:
-# siguen instalables y por eso no se les exige la ausencia de esta unidad.
-TEMPORAL_U3_EXCLUSIONS = (
-    "skills/cdad-cycle/references/opencode-delegation.md",
-    "skills/cdad-cycle/references/claude-code-delegation.md",
-)
-# PD-10 (U3): cli-delegation.md es el contrato del ADAPTADOR; las FORMAS DE
-# HERRAMIENTA de la invocación CLI le pertenecen (no se le exige ausencia en U2).
-ADAPTER_CONTRACT_EXCLUSIONS = (
-    "skills/cdad-cycle/references/cli-delegation.md",
-)
+# Única exclusión vigente del oráculo de FORMAS DE HERRAMIENTA. Las exclusiones
+# TEMPORALES de U3 (PD-9: las dos referencias por runtime; PD-10: la regla de
+# elección de transporte de cli-delegation.md) se retiraron en el RED de U3
+# (tests/test_006_002_u3_runtime_references.py): hoy el oráculo corre sobre el
+# árbol instalable completo.
+TOOL_FORM_EXCLUSIONS = READER_CONTRACT_EXCLUSIONS
 
 # --------------------------------------------------------------------------
 # Oráculo de ausencia — FORMAS DE HERRAMIENTA de despacho (spec §2, cabecera)
@@ -248,11 +249,7 @@ class TestPd1SkillWithoutRuntimeTools(unittest.TestCase):
         instalable de la skill (code-span `task`/`delegate`/`Agent`,
         `subagent_type`, `opencode run`, `sessions_spawn`, «Agent tool»); la
         palabra suelta *task* NO cuenta."""
-        documents = scanned_documents(
-            READER_CONTRACT_EXCLUSIONS
-            + TEMPORAL_U3_EXCLUSIONS
-            + ADAPTER_CONTRACT_EXCLUSIONS
-        )
+        documents = scanned_documents(TOOL_FORM_EXCLUSIONS)
         self.assertGreater(
             len(documents), 0,
             "drift del oráculo PD-1: no se recolectó ningún documento instalable "
@@ -287,11 +284,7 @@ class TestPd1SkillWithoutRuntimeTools(unittest.TestCase):
         """PD-1/INV-2: ausencia de modelos concretos y de proveedores en el texto
         instalable de la skill (la familia de cada rol es la configurada en el
         runtime; la skill no nombra ninguna)."""
-        documents = scanned_documents(
-            READER_CONTRACT_EXCLUSIONS
-            + TEMPORAL_U3_EXCLUSIONS
-            + ADAPTER_CONTRACT_EXCLUSIONS
-        )
+        documents = scanned_documents(TOOL_FORM_EXCLUSIONS)
         self.assertGreater(len(documents), 0, "drift del oráculo PD-1 (modelos)")
 
         offenders: list[str] = []

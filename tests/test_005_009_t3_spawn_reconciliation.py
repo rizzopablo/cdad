@@ -17,9 +17,12 @@ cambios debe resolver el GREEN:
 
 - conservar el SPAWN GUARD / anti-recursión en
   `skills/cdad-cycle/SKILL.md` (:136-143), `sources/roles/orchestrator.md`
-  (:74-76), `references/claude-code-delegation.md` (:63-69) y los
-  generados (plan: "regenerados — salidas declaradas, nunca editadas a
-  mano");
+  (:74-76) y los generados (plan: "regenerados — salidas declaradas, nunca
+  editadas a mano"); la cuarta superficie de esa lista,
+  `references/claude-code-delegation.md`, fue RETIRADA del árbol instalable por
+  006-002 U3 (PD-9): su detalle se preserva como evidencia no instalable bajo
+  `docs/**` y la prohibición sigue viva en la capa del runtime (skill abstracta
+  + orquestador generado);
 - agregar la DISTINCIÓN: la delegación externa autorizada
   (coordinador→worker ENTRE CLIs) no es recursión de subagentes dentro
   del mismo runtime; una delegación no amplía autoridad ni permite al
@@ -54,6 +57,14 @@ Reformulación declarada por 006-002 U2 (PD-1/PD-3; enmienda A-1): la mitad
 nombra la herramienta de un runtime; el guard se conserva en forma abstracta y
 el nombre concreto vive en el orquestador del runtime. El resto del guard
 (prohibición, sub-subagentes, anti-bucle, handoff) queda intacto.
+
+Reformulación declarada por 006-002 U3 (PD-9; enmienda A-1): la superficie
+`references/claude-code-delegation.md` sale del árbol instalable, así que su
+aserción de conservación se repunta al nuevo dueño (la evidencia no instalable
+bajo `docs/**`, donde PD-9 manda preservar el detalle retirado) y el assert de
+retiro; las otras dos superficies de esa aserción (SKILL.md abstracto + los
+orquestadores generados) siguen cubiertas por los tests parametrizados de
+arriba.
 """
 
 from __future__ import annotations
@@ -66,6 +77,14 @@ import tempfile
 from pathlib import Path
 
 import pytest
+
+# Helpers de 006-002 U3 (una sola definición de «evidencia no instalable»,
+# PD-9): la superficie a la que se repunta el assert de conservación del
+# consumidor retirado.
+from tests.test_006_002_u3_runtime_references import (
+    doc_relative,
+    framed_evidence_documents,
+)
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -246,27 +265,50 @@ def test_pd9_anti_recursion_conserved(label, path, needle):
     )
 
 
-def test_pd9_spawn_guard_conserved_in_claude_code_delegation():
-    """PD-9: references/claude-code-delegation.md conserva la prohibición
-    explícita (discovery §7, :63-69: prohibición + SPAWN GUARD + incidente)."""
-    text = load(CC_REF, "PD-9/plan T3")
-    ranges = guard_windows(text, r"SPAWN GUARD", 8, 40)
-    block = window_text(text, ranges if ranges else [(0, len(text.splitlines()) - 1)])
-    assert ranges, (
-        "PD-9 violada: references/claude-code-delegation.md ya no menciona "
-        "SPAWN GUARD (conservación exigida por PD-9/plan T3)"
+def test_pd9_spawn_guard_conservation_survives_the_reference_withdrawal():
+    """PD-9 (reformulado por 006-002 U3, PD-9 — enmienda A-1): la prohibición
+    explícita que declaraba `references/claude-code-delegation.md` (discovery §7
+    :63-69: prohibición + SPAWN GUARD + incidente) NO se pierde cuando esa
+    referencia sale del árbol instalable: (i) el consumidor instalable ya no
+    está — la prohibición sigue viva donde vive el runtime (la skill abstracta y
+    el orquestador generado, cubiertos por los tests parametrizados de arriba);
+    (ii) el detalle retirado se preserva como evidencia NO instalable bajo
+    `docs/**` (006-002 PD-9), con la prohibición sub-agente→sub-agente y su
+    registro del incidente."""
+    assert not CC_REF.is_file(), (
+        "PD-9 + 006-002 U3: references/claude-code-delegation.md sigue en el "
+        "árbol instalable — la referencia por runtime sale de la skill (su "
+        "detalle se preserva como evidencia no instalable bajo docs/**)"
     )
-    subagent_lines = len(re.findall(r"(?i)sub-?agents?", block))
-    assert re.search(SPAWN_BAN_WORD, block), (
-        "PD-9/conservación claude-code-delegation.md: sin la prohibición"
+
+    evidence = framed_evidence_documents()
+    assert evidence, (
+        "PD-9 + 006-002 U3: no hay evidencia NO instalable bajo docs/** que "
+        "conserve el detalle retirado — la prohibición de spawn y su incidente "
+        "no pueden perderse con el archivo"
     )
-    assert subagent_lines >= 2, (
-        "PD-9/conservación claude-code-delegation.md: la prohibición "
-        "sub-agente→sub-agente ya no aparece (se esperaban ≥2 menciones)"
+
+    preserved: list[str] = []
+    offenders: list[str] = []
+    for path in evidence:
+        text = path.read_text(encoding="utf-8")
+        if not (re.search(SPAWN_BAN_WORD, text)
+                and re.search(SUB_SUBAGENT, text)):
+            continue
+        preserved.append(doc_relative(path))
+        if not re.search(r"(?i)incident|incidente|observad|hist[óo]ric|"
+                         r"history|evidence|evidencia", text):
+            offenders.append(doc_relative(path))
+    assert preserved, (
+        "PD-9 + 006-002 U3: la evidencia preservada no conserva la prohibición "
+        "de spawn sub-agente→sub-agente del consumidor retirado (SPAWN GUARD + "
+        "prohibición + sub-agentes) — el detalle histórico no puede "
+        "desaparecer: la retirada lo conserva bajo docs/**"
     )
-    assert re.search(r"(?i)incident", block), (
-        "PD-9/conservación claude-code-delegation.md: la referencia al "
-        "incidente del spawn no está conservada"
+    assert not offenders, (
+        "PD-9 + 006-002 U3: la evidencia que conserva la prohibición no la "
+        "declara como detalle retirado/histórico del consumidor que salió del "
+        f"árbol instalable: {offenders!r}"
     )
 
 
@@ -278,15 +320,20 @@ def test_pd9_spawn_guard_conserved_in_claude_code_delegation():
     [
         ("skills/cdad-cycle/SKILL.md", SKILL, "SPAWN GUARD", None),
         ("sources/roles/orchestrator.md", ORCH_SRC, r"(?i)recursi|spawn", None),
-        ("references/claude-code-delegation.md", CC_REF, "SPAWN GUARD", None),
     ],
-    ids=["skillmd", "source-orchestrator", "claude-code-delegation"],
+    ids=["skillmd", "source-orchestrator"],
 )
 def test_pd9_external_delegation_distinction_present_in_sources(label, path, needle, tokens):
     """PD-9/D8: la distinción entre la delegación externa autorizada
     (coordinador→worker entre CLIs) y la recursión de subagentes del mismo
     runtime EXISTE en las fuentes canónicas, cerca del SPAWN GUARD
-    (ventana ±80 líneas — marcador estructural, no frase)."""
+    (ventana ±80 líneas — marcador estructural, no frase).
+
+    Reformulado por 006-002 U3 (PD-9; enmienda A-1): la tercera superficie que
+    parametrizaba esta aserción (`references/claude-code-delegation.md`) sale
+    del árbol instalable y su conservación se verifica ahora sobre la evidencia
+    no instalable (`docs/**`) en
+    `test_pd9_spawn_guard_conservation_survives_the_reference_withdrawal`."""
     text = load(path, "PD-9 (distinción)/plan T3")
     guard_lines = [
         idx
@@ -507,11 +554,10 @@ def test_inv4_delegation_does_not_expand_worker_authority(label, path):
     [
         ("skills/cdad-cycle/SKILL.md", SKILL),
         ("sources/roles/orchestrator.md", ORCH_SRC),
-        ("references/claude-code-delegation.md", CC_REF),
         ("generado opencode", GEN_OC),
         ("generado claude-code", GEN_CC),
     ],
-    ids=["skillmd", "source-orchestrator", "claude-code-delegation", "generated-oc", "generated-cc"],
+    ids=["skillmd", "source-orchestrator", "generated-oc", "generated-cc"],
 )
 def test_inv8_no_unbacked_isolation_promise(label, path):
     """INV-8: el texto DECLARADO por T3 (la distinción de la delegación
@@ -520,7 +566,13 @@ def test_inv8_no_unbacked_isolation_promise(label, path):
     sandbox/aislamiento/garantía lleva negación (precedente
     test_cdad_generate.py PD-15). En RED la distinción no existe todavía —
     el guard se SKIPEA honestamente y se activa con el GREEN (freno de
-    no-regresión sobre el texto nuevo)."""
+    no-regresión sobre el texto nuevo).
+
+    Reformulado por 006-002 U3 (PD-9; enmienda A-1): la superficie
+    `references/claude-code-delegation.md` sale del árbol instalable y deja de
+    ser una superficie del texto VIVO; la cobertura de INV-8 sobre el texto
+    vivo (skill + fuente canónica + ambos orquestadores generados) y sobre la
+    evidencia preservada (PD-9) se conserva."""
     text = load(path, "INV-8/PD-9")
     ext_idx = first_line_of(text, DIST_EXTERNAL)
     if ext_idx is None:

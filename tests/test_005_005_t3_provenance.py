@@ -57,11 +57,17 @@ negativo con control positivo interno, exigido por spec §4):
   RED es exactamente la ausencia de la declaración de versión (hoy el
   manifiesto sólo lleva `source_dir` + hashes y los derivados no
   declaran versión).
-- PD-15 (documental, SIN test de comportamiento): `skills/cdad-cycle/
-  references/opencode-delegation.md` documenta la recarga y la
-  procedencia. NO se aserta con código — queda para la evidencia por
-  grep del audit/review (la metodología lo lee de documents, no de un
-  oráculo). Nota de mapeo: PD-15 ← evidencia documental, no test.
+- PD-15 (documental, SIN test de comportamiento): la recarga y la
+  procedencia del runtime están documentadas. Dueño original:
+  `skills/cdad-cycle/references/opencode-delegation.md`; **reformulado por
+  006-002 U3 (PD-9)**: esa referencia sale del árbol instalable y su detalle
+  histórico/verificación (recarga y versión, canal `delegate`, 429,
+  procedencia) se conserva como evidencia **no instalable** bajo `docs/**`
+  (el oráculo de esa preservación es 006-002 U3,
+  `tests/test_006_002_u3_runtime_references.py`). NO se aserta con código en
+  este módulo — queda para la evidencia por grep del audit/review (la
+  metodología lo lee de documents, no de un oráculo). Nota de mapeo:
+  PD-15 ← evidencia documental, no test.
 
 Mapa test → postcondición:
   test_pd12_prepare_resolves_origin_from_registered_adoption_without_env_var
