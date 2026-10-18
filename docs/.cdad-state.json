@@ -16,7 +16,8 @@
   },
   "postconditions_status": {
     "1": "green",
-    "7": "green"
+    "7": "green",
+    "3": "red"
   },
   "epic_features": [
     {
@@ -8493,6 +8494,50 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/u3-green.md": "14a37f6572d2c1b91b8caf982d55d98f78b0438eb7d81ba1fc85cec1deaf23a8"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-18T15:27:53.323006+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "8450d2e5f418e0a1a0c415817eeaf30fbbd494d6e88bb1b1df9b9798f4ae0799",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-test-writer-red-005",
+        "receipt_sha256": "b514c4af61f1329a277b0f3beb8f4f87516b26c3fceb91174f6cfe5046bf025e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "3",
+          "outcome": "red"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/u4-red.md",
+            "130b90e32bde7452bb369ce5a3e98d2ad77eafff8ab57ddb99f9fb00ffe1463d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-test-writer-red-005",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-test-writer-red-005/receipt.json",
+      "receipt_sha256": "b514c4af61f1329a277b0f3beb8f4f87516b26c3fceb91174f6cfe5046bf025e",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/u4-red.md": "130b90e32bde7452bb369ce5a3e98d2ad77eafff8ab57ddb99f9fb00ffe1463d"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8507,7 +8552,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T14:58:50.598497+00:00",
+  "last_updated": "2026-10-18T15:27:53.323006+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8618,7 +8663,7 @@
     "id": "006-003-installer-single-profile-delegation-config-test-writer-red-005",
     "role": "test-writer",
     "substage": "red",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
