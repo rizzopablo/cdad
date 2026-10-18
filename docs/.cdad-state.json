@@ -9575,6 +9575,47 @@
       "approved_by": "Pablo (Memory Bank y ADR-033, 2026-10-18)",
       "closure_path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
       "closure_sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-18T23:58:23.241243+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "3545c5c5b49533f2455be44d8be5315b295d6663f4b289721b7f3de8c30cf89b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-architect-discovery-001",
+        "receipt_sha256": "5765a1d45e6f209e1194e8ce6c200742f82454c292e57666c2ed8167d333836f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/discovery.md",
+            "de091be30a6afc8ec540df2dc3b89046d95af6ca02f2d449ff2b505d9fd08688"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-architect-discovery-001/receipt.json",
+      "receipt_sha256": "5765a1d45e6f209e1194e8ce6c200742f82454c292e57666c2ed8167d333836f",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/discovery.md": "de091be30a6afc8ec540df2dc3b89046d95af6ca02f2d449ff2b505d9fd08688"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9589,7 +9630,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T23:47:38.736110+00:00",
+  "last_updated": "2026-10-18T23:58:23.241243+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9700,7 +9741,7 @@
     "id": "006-005-native-path-parity-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
