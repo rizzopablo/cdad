@@ -52,7 +52,7 @@ Invocation: through the runtime's native dispatch mechanism, declared in the `de
 
 Invocation from the orchestrator through the runtime's native dispatch mechanism (declared in its `delegation` section). The sub-session does NOT see the parent agent's context.
 
-**Full detail:** see `references/claude-code-delegation.md`.
+**Full detail:** the runtime detail lives in the `delegation` section of the runtime's generated orchestrator agent (its adapter source); the historical verification detail is preserved as non-installable evidence under `docs/` (006-002 PD-9).
 
 ### Zed
 

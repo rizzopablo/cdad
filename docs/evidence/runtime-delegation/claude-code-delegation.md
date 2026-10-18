@@ -1,3 +1,30 @@
+<!-- 006-002 PD-9 — non-installable evidence. NOT part of the skill tree:
+     `install.sh` never ships `docs/**`. The rule in force lives in the
+     `delegation` section of the generated runtime orchestrator agent. -->
+
+# Historical evidence — Claude Code delegation reference (withdrawn from the skill)
+
+**Status: non-installable historical evidence (006-002 PD-9).** This document
+preserves, in full, the runtime reference `claude-code-delegation.md` that lived in the
+installable skill tree (`skills/cdad-cycle/references/`) until 006-002
+withdrew it. It is historical / verification material from 005-004 / 005-009 / 005-010; it is
+**not installed** (nothing under `docs/**` is shipped by `install.sh`), and no
+installable skill text points to it.
+
+It also preserves the sub-agent → sub-agent (sub-subagent) spawn
+prohibition (SPAWN GUARD) and the recorded incident that motivated it.
+
+The delegation rule **in force today** is not here: each runtime's orchestrator
+agent declares it in its `delegation` section (generated from
+`sources/agents/adapters/*.md`) — the native dispatch mechanism, the
+role→sub-agent mapping, the byte-identical packet pass, the intra-runtime
+adapter prohibition, the model declaration (D-3) and the receipt. The
+transport-equivalence receipt lives in the skill
+(`references/re-entry.md`). What follows is the withdrawn detail, kept as
+evidence.
+
+---
+
 # Claude Code Delegation — Role mapping to sub-agents
 
 **Companion document to `SKILL.md` §4 (Delegation decision rule).**

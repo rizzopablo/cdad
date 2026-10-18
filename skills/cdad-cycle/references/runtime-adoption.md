@@ -50,7 +50,8 @@ versión cargó una sesión. Si el origen resuelto difiere del registro o del
 `source_dir` del manifiesto anterior, `prepare` emite en **stderr** un
 diagnóstico que nombra `.cdad/activation.json` y las versiones en juego: nunca
 cambia de versión en silencio (INV-7). La recarga de una sesión ya iniciada y la
-versión cargada se documentan en `references/opencode-delegation.md`.
+versión cargada se conservan como evidencia histórica **no instalable** bajo
+`docs/` (006-002 PD-9: esa referencia por runtime salió del árbol instalable).
 
 ## Re-apuntar a otra raíz adoptada
 

@@ -1,3 +1,27 @@
+<!-- 006-002 PD-9 — non-installable evidence. NOT part of the skill tree:
+     `install.sh` never ships `docs/**`. The rule in force lives in the
+     `delegation` section of the generated runtime orchestrator agent. -->
+
+# Historical evidence — OpenCode delegation reference (withdrawn from the skill)
+
+**Status: non-installable historical evidence (006-002 PD-9).** This document
+preserves, in full, the runtime reference `opencode-delegation.md` that lived in the
+installable skill tree (`skills/cdad-cycle/references/`) until 006-002
+withdrew it. It is historical / verification material from 005-004 / 005-005 / 005-010; it is
+**not installed** (nothing under `docs/**` is shipped by `install.sh`), and no
+installable skill text points to it.
+
+The delegation rule **in force today** is not here: each runtime's orchestrator
+agent declares it in its `delegation` section (generated from
+`sources/agents/adapters/*.md`) — the native dispatch mechanism, the
+role→sub-agent mapping, the byte-identical packet pass, the intra-runtime
+adapter prohibition, the model declaration (D-3) and the receipt. The
+transport-equivalence receipt lives in the skill
+(`references/re-entry.md`). What follows is the withdrawn detail, kept as
+evidence.
+
+---
+
 # OpenCode delegation — materializing isolated sessions with native sub-agents
 
 When the environment is OpenCode and the `cdad-*` sub-agents are installed

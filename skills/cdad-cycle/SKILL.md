@@ -456,8 +456,6 @@ The references are **deepening material**, not a condition for understanding the
 | `continuity.md` | When you use the optional continuity CLI in the cycle — the installed one, `<skill-dir>/scripts/cdad_continuity.py`: `begin` before dispatch, `checkpoint` at the task boundary, `reconcile` before a retry/resume, `resume` in a new session, advisory `trigger` |
 | `progress-guards.md` | Only if you dispatch roles as processes outside the runtime (another CLI's non-interactive run) or want to prevalidate an operation — read its applies/does-not-apply table first; not for native sub-agents |
 | `sub-agent-strategies.md` | If the environment has native sub-agents and you want to suggest an alternative to the new chat |
-| `opencode-delegation.md` | OpenCode environment with `cdad-*` sub-agents installed; the runtime-specific detail of the mechanism your OpenCode orchestrator agent declares |
-| `claude-code-delegation.md` | Claude Code environment with `cdad-*` sub-agents installed; the runtime-specific detail of the mechanism your Claude Code orchestrator agent declares |
 | `anti-patterns.md` | If you detect drift signals |
 | `receiving-feedback.md` | When transmitting or receiving feedback from review, user or external PR (Stage 4 fix loop) |
 | `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
@@ -492,7 +490,7 @@ When you create files, copy from templates and fill in.
 
 The skill is **harness-independent**: the orchestrator runs the cycle with or without native sub-agents (see **Roles contract §4**). The delegation mechanism is decided per environment, in this order of preference:
 
-- **(a) With native dispatch for the `cdad-*` roles (any runtime)**: delegate through **the mechanism that the orchestrator agent of your runtime declares** (its `delegation` section: dispatch tool, role→sub-agent mapping and packet pass) — preferred: real separate session + per-role model routing. Environment-specific detail: `references/opencode-delegation.md` (OpenCode) and `references/claude-code-delegation.md` (Claude Code, supported since ADR-008, 2026-08-13).
+- **(a) With native dispatch for the `cdad-*` roles (any runtime)**: delegate through **the mechanism that the orchestrator agent of your runtime declares** (its `delegation` section: dispatch tool, role→sub-agent mapping and packet pass) — preferred: real separate session + per-role model routing. The runtime-specific detail lives in that agent's `delegation` section (generated from its adapter source), not in this skill.
 - **(b) Without native dispatch (any LLM)**: handoff packet pasteable into a new chat (universal; see `references/handoff-prompts.md`). Alternative with generic native sub-agents in `references/sub-agent-strategies.md`.
 - **(c) Zed**: threads with profiles (see `sub-agent-strategies.md`).
 

@@ -264,17 +264,6 @@ and `store_reads`; the attribution to the service is verified by the durable
 row's `version` and by the process inventory (no new private or service server
 during the dispatch).
 
-## Delegating inside OpenCode vs. between CLIs
-
-- An orchestrator that already runs **inside OpenCode** delegates with the
-  runtime's **native `task` tool**: the child role sessions run in the **same
-  server** as the orchestrator (see `references/opencode-delegation.md`). No
-  adapter and no second CLI is involved.
-- This interface and its adapters are for delegation **between CLIs** — e.g. a
-  coordinator in another CLI handing a prepared CDAD packet to an OpenCode role
-  session. Choosing between the two is a decision of the coordinator's
-  environment, not of the packet.
-
 ## Configuration (PD-8/INV-7)
 
 Runtime, model, binary/version, logs, servers, timeouts and the execution mode
