@@ -539,23 +539,21 @@ def model_note() -> str:
 
     One line, and it fixes nothing: the model of each role is the one
     configured in the runtime, external delegation reads it from the
-    delegation configuration, and the reviewer's family difference is an
-    invariant guaranteed by configuration or declared — never silent. The
-    surviving `install.sh --basic` alias (deprecated, no effect) is the
-    declared case in which the installer guarantees nothing.
+    delegation configuration, and the reviewer's family difference is a
+    configuration verification — declared («invariant not guaranteed») when the
+    effective models cannot be verified, never silent (INV-5).
     """
     return (
         "Model choice. The model of each role is the one configured in the runtime; "
         "this skill names no model and no installable text fixes one. External "
         "delegation takes the model from the delegation configuration (per "
         "destination and role); a destination or role without an entry runs the "
-        "destination's own default and the model is reported as unverifiable, never "
-        "invented. The reviewer's family differing from the implementer's is an "
-        "invariant guaranteed by configuration when the configuration fixes models "
-        "and declared when it does not. `install.sh --basic` survives only as a "
-        "deprecated alias with no effect: under it the reviewer≠implementer "
-        "anti-bias invariant is NOT guaranteed by the installer and is declared, "
-        "not hidden (INV-5; ADR-007 is replaced by 006-003)."
+        "destination's own default and the model is reported as not verifiable, never "
+        "invented. The reviewer's family differs from the implementer's, and that "
+        "difference is a configuration verification: the effective models are compared "
+        "from the configuration, and when they cannot be verified the invariant is "
+        "declared «invariant not guaranteed» at the review gate — declared, never "
+        "silent (INV-5; ADR-007 is replaced by 006-003)."
     )
 
 

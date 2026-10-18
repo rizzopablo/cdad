@@ -102,7 +102,7 @@ substages `test-writer-{audit,post-audit,red,properties,e2e}`.
 Anti-bias invariants (this role): the test-writer never sees implementation code;
 the test↔postcondition mapping is audited by a session different from the one
 that wrote the tests.
-Model: per profile from `scripts/cdad-models.sh` — never a concrete model name here.
+Model: fixed by the runtime configuration, not by this role — never a concrete model name here.
 
 ## RED discipline
 

@@ -182,7 +182,7 @@ either (006-003 retires the per-runtime model cells: the model of each role is
 the one configured in the runtime; only external delegation takes it from the
 delegation configuration).
 
-Model choice. The model of each role is the one configured in the runtime; this skill names no model and no installable text fixes one. External delegation takes the model from the delegation configuration (per destination and role); a destination or role without an entry runs the destination's own default and the model is reported as unverifiable, never invented. The reviewer's family differing from the implementer's is an invariant guaranteed by configuration when the configuration fixes models and declared when it does not. `install.sh --basic` survives only as a deprecated alias with no effect: under it the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer and is declared, not hidden (INV-5; ADR-007 is replaced by 006-003).
+Model choice. The model of each role is the one configured in the runtime; this skill names no model and no installable text fixes one. External delegation takes the model from the delegation configuration (per destination and role); a destination or role without an entry runs the destination's own default and the model is reported as not verifiable, never invented. The reviewer's family differs from the implementer's, and that difference is a configuration verification: the effective models are compared from the configuration, and when they cannot be verified the invariant is declared «invariant not guaranteed» at the review gate — declared, never silent (INV-5; ADR-007 is replaced by 006-003).
 
 ## Delegation (adapter)
 
@@ -202,14 +202,18 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native
   delegation of its own. Same-runtime dispatch is the native `Agent` tool.
-- **Model declaration (D-3).** Under profile `basic` the reviewer family is
-  NOT guaranteed by the installer: register the attempt with its fields
+- **Family verification (D-3/INV-5).** The reviewer's family differs from the
+  implementer's, and that difference is a configuration verification: the
+  effective models are compared from the delegation configuration (per
+  destination and role). The orchestrator never chooses, invents or selects a
+  model. It passes one only if it comes from the environment configuration; a
+  destination or role without an entry runs the destination's own default and
+  the model is reported as not verifiable. Register the attempt with its fields
   (`runtime`, `model_configured`, `model_reported`, `session`; `null` or
-  `unknown` when unobserved) and write "invariant not guaranteed" at the
-  review gate instead of omitting it. The orchestrator never chooses,
-  invents or selects a model: it passes one only if it comes from the
-  environment configuration; the legitimate exit is the new-chat handoff
-  where the user picks the model.
+  `unknown` when unobserved) and, when the models cannot be verified, declare
+  "invariant not guaranteed" at the review gate instead of omitting it — never
+  silent. The legitimate exit is the new-chat handoff where the user picks the
+  model.
 - **Receipt.** The native dispatch returns FINAL TEXT in this session, and
   every route stages that FINAL TEXT the same way. This bullet does not
   restate the steps: the re-entry wiring composed in this same body (from

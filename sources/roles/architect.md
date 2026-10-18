@@ -55,7 +55,7 @@ Roles-contract row (§2 — composed into the orchestrator table by the generato
 
 Anti-bias invariants (this role): never approves its own proposal; read-only on
 product/repo; no self-approval of specs/plans.
-Model: per profile from `scripts/cdad-models.sh` (the only map). Never a concrete
+Model: fixed by the runtime configuration, never by this role. Never a concrete
 design model name in this source (inventory R1/R4).
 <!-- /cdad-section -->
 

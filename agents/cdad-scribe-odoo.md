@@ -73,7 +73,7 @@ diff, reviewer report, current Memory Bank):
 
 Anti-bias invariants (this role): Scribe pattern — drafts only; official
 materialization under ADR-003 (ADR-011:101); never approves.
-Model: per profile from `scripts/cdad-models.sh` — never a concrete model name here.
+Model: fixed by the runtime configuration, not by this role — never a concrete model name here.
 
 ## Bash policy
 

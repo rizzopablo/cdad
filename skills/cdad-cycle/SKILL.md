@@ -76,10 +76,12 @@ the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 
 **Models.** The model of each role is the one configured in the runtime: this
 skill names no model and fixes no family either. The reviewer's family is a
-different family from the implementer's. That is an invariant,
-guaranteed by configuration when the profile fixes models for the roles, and
-declared when the profile does not. How that declaration is written belongs to
-the `delegation` section of the orchestrator of each runtime, not to this skill.
+different family from the implementer's. That is an invariant, and it is a
+configuration verification: the effective models are compared from the
+configuration, and when they cannot be verified the invariant is declared
+«invariant not guaranteed» at the review gate — declared, never silent. How
+that declaration is written belongs to the `delegation` section of the
+orchestrator of each runtime, not to this skill.
 
 **Anti-bias invariants (non-negotiable):** the reviewer's family is different
 from the implementer's. The test-writer never sees implementation code (if

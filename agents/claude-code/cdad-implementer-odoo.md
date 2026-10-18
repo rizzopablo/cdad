@@ -66,7 +66,7 @@ Procedure detail: packet substages `implementer-{green,refactor,review-fix}`;
 Anti-bias invariants (this role): whoever builds does not edit their validator
 (anti-gaming); refactor does not change the observable contract; the suite stays
 green at all times during refactor.
-Model: per profile from `scripts/cdad-models.sh` — never a concrete model name here.
+Model: fixed by the runtime configuration, not by this role — never a concrete model name here.
 
 ## Bash policy
 
