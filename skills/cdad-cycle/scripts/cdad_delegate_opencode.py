@@ -63,6 +63,17 @@ What this adapter does, and why (contract decisions D5/D6):
    a standalone next to a running service (INV-10) -- when the status is
    unexpected, the strict variant requires the service, or the version differs
    or is unverifiable.
+6. 006-003 U6 (PD-5a..e/INV-1): in `server` mode the credential comes from the
+   ENVIRONMENT first (`OPENCODE_PASSWORD`, then `OPENCODE_SERVER_PASSWORD`) and,
+   only when neither is present, from the credential file of the delegation
+   config (`credential_env_file`, default `<config-dir>/cdad/opencode-server.env`,
+   §2.2 location): `KEY=value` with `#` comments, an empty value meaning
+   absent, permissions verified on the OPEN fd (any bit of `077` is refused).
+   The 401/403 diagnosis is self-sufficient (both variables, the resolved
+   path, the provenance of the value -- the password of the `opencode serve`
+   in use, in the environment of the dispatching process -- and, when
+   refused, the path and the mode found). The value never leaves the Basic
+   header: never stdout/stderr/argv/ledger.
 
 Honest limits: a separate process/session is not a sandbox (INV-8); the durable
 signal surface implemented here is the session store the execution
@@ -940,12 +951,163 @@ def _preflight_password() -> str | None:
 
     The first one PRESENT in the environment wins, even if it later turns out
     to be wrong (never falls through to the second once the first is set).
-    `None` means no credential is sent (no header), never an empty string.
+    `None` means the environment carries no credential at all; what happens
+    next is 006-003 U6/§2.3 (the credential file).
     """
     value = os.environ.get(OPENCODE_PASSWORD_ENV)
     if value is not None:
         return value
     return os.environ.get(OPENCODE_SERVER_PASSWORD_ENV)
+
+
+# ----------------------- 006-003 U6: the server credential file (§2.3/D5)
+
+
+def _credential_file_path() -> Path:
+    """The RESOLVED credential file (§2.2/§2.3/D5): `credential_env_file` of
+    the delegation config when it declares one, the default
+    `<config-dir>/cdad/opencode-server.env` otherwise.
+
+    Resolved even when no credential is found: the 401/403 diagnosis must
+    name it (PD-5a/PD-5b).
+    """
+    configured = cdad_delegate.delegation_credential_env_file()
+    if configured:
+        return Path(configured)
+    return cdad_delegate.delegation_env_file_path()
+
+
+def _credential_file_value(text: str) -> str | None:
+    """`KEY=value` subset (§2.3/D5): the value of the accepted keys.
+
+    Comments (`#`) and lines without `=` are ignored. An EMPTY value means
+    ABSENT -- never an empty credential, so the other key still applies
+    (PD-5e). Precedence inside the file is the environment's: the first
+    non-empty `OPENCODE_PASSWORD` wins over `OPENCODE_SERVER_PASSWORD`.
+    """
+    declared: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, separator, value = line.partition("=")
+        key = key.strip()
+        value = value.strip()
+        if separator and value and key in (
+                OPENCODE_PASSWORD_ENV, OPENCODE_SERVER_PASSWORD_ENV):
+            declared.setdefault(key, value)
+    for key in (OPENCODE_PASSWORD_ENV, OPENCODE_SERVER_PASSWORD_ENV):
+        if key in declared:
+            return declared[key]
+    return None
+
+
+def _read_credential_file(path: Path) -> dict[str, Any]:
+    """Read the credential file, verifying the permissions of the OPEN fd.
+
+    The mode comes from `os.fstat` of the descriptor actually opened (never
+    `os.stat(path)`: the TOCTOU-safe pattern of `cdad_packet.py`'s project
+    lock), and a group/world accessible mode (`S_IMODE(st_mode) & 0o077`) is
+    REFUSED (0600 and 0400 are accepted). Returns a closed document:
+    `value` (only when a non-empty credential was read), `mode`/`mode_text`
+    (the found mode, when a file was opened), `problem`
+    (`None`/`insecure`/`unreadable`) and `detail`. A missing file is the all
+    `None` document. The value is never logged. (`stat` is imported here:
+    only the `server` preflight needs it, PD-11/D-3.)
+    """
+    import stat
+
+    try:
+        descriptor = os.open(path, os.O_RDONLY)
+    except FileNotFoundError:
+        return {"value": None, "mode": None, "mode_text": None,
+                "problem": None, "detail": None}
+    except OSError as exc:
+        return {"value": None, "mode": None, "mode_text": None,
+                "problem": "unreadable", "detail": _os_error_text(exc)}
+    try:
+        raw_mode = os.fstat(descriptor).st_mode
+        mode = stat.S_IMODE(raw_mode)
+        if mode & 0o077:
+            return {"value": None, "mode": mode,
+                    "mode_text": stat.filemode(raw_mode), "problem": "insecure",
+                    "detail": None}
+        chunks = []
+        while True:
+            chunk = os.read(descriptor, 65536)
+            if not chunk:
+                break
+            chunks.append(chunk)
+    except OSError as exc:
+        return {"value": None, "mode": None, "mode_text": None,
+                "problem": "unreadable", "detail": _os_error_text(exc)}
+    finally:
+        os.close(descriptor)
+    text = b"".join(chunks).decode("utf-8", errors="replace")
+    return {"value": _credential_file_value(text), "mode": mode,
+            "mode_text": stat.filemode(raw_mode), "problem": None, "detail": None}
+
+
+def _os_error_text(exc: OSError) -> str:
+    """Error text of an `OSError` without leaking anything else."""
+    return f"{type(exc).__name__}: {exc.strerror or exc}"
+
+
+def _preflight_credential() -> dict[str, Any]:
+    """Resolve the server credential (§2.3/D5): environment first, file second.
+
+    Only reached in `server` mode (the server preflight is the sole
+    consumer). The environment wins when EITHER variable is present (the
+    order of `_preflight_password`); only when neither is present is the
+    credential file consulted. Returns a closed document: `source`
+    (`environment`/`file`/`absent`), `value` (the credential to send --
+    `None` means NO header, never an empty one), `path` (the resolved file
+    path, always) plus the file document. The value never leaves the caller.
+    """
+    env_value = _preflight_password()
+    if env_value is not None:
+        return {"source": "environment", "value": env_value, "path": None,
+                "mode": None, "mode_text": None, "problem": None,
+                "detail": None}
+    path = _credential_file_path()
+    document = _read_credential_file(path)
+    document["source"] = "file" if document["value"] is not None else "absent"
+    document["path"] = path
+    return document
+
+
+def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
+    """Self-sufficient 401/403 diagnosis (§2.3/D5, PD-5a/PD-5b), never the value.
+
+    Names the accepted variables and their order, the RESOLVED credential
+    file path, the provenance of the value (the password of the `opencode
+    serve` instance in use, which must live in the ENVIRONMENT of the process
+    that dispatches) and, when the file was refused, the path and the mode
+    found.
+    """
+    path = credential["path"]
+    parts = [
+        "the server rejected or required a credential (401/403; credencial "
+        "ausente o rechazada). The credential is the password of the "
+        "`opencode serve` instance in use (with OpenChamber, the password "
+        "configured there), and it must be available to the PROCESS that "
+        "dispatches: in its ENVIRONMENT under "
+        f"{OPENCODE_PASSWORD_ENV} (first), then "
+        f"{OPENCODE_SERVER_PASSWORD_ENV}, or in the credential file {path} "
+        "(the delegation config's `credential_env_file`, or this default) "
+        "with mode 0600 or 0400. The value is never shown here",
+    ]
+    if credential["problem"] == "insecure":
+        parts.append(
+            f"the credential file {path} is group/world accessible: found "
+            f"mode {oct(credential['mode'])} ({credential['mode_text']}) — "
+            f"refused, no credential was sent; restrict it with `chmod 600 "
+            f"{path}`")
+    elif credential["problem"] == "unreadable":
+        parts.append(
+            f"the credential file {path} could not be read "
+            f"({credential['detail']}); no credential was sent")
+    return " — ".join(parts) + "."
 
 
 def _invoke_version(binary: str, timeout: float) -> tuple[str | None, str | None]:
@@ -1044,7 +1206,8 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
     observed_client_version = _parse_semver(version_output)
     configured_client_version = _parse_semver(binary_version_configured)
 
-    info = _preflight_get_info(server_raw, _preflight_password(), timeout)
+    credential = _preflight_credential()
+    info = _preflight_get_info(server_raw, credential["value"], timeout)
     kind = info["kind"]
     if kind == "transport-error":
         return {"ok": False, "termination": "transport-error",
@@ -1056,11 +1219,7 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                 "server_version": None}
     if kind == "unauthorized":
         return {"ok": False, "termination": "blocked",
-                "diagnosis": (
-                    "the server rejected or required a credential (401/403; "
-                    "credencial ausente o rechazada): the password is read "
-                    f"from {OPENCODE_PASSWORD_ENV}, then "
-                    f"{OPENCODE_SERVER_PASSWORD_ENV} (never its value)"),
+                "diagnosis": _unauthorized_diagnosis(credential),
                 "client_version": observed_client_version,
                 "server_version": None}
     if kind in ("not-found", "no-json", "no-version"):

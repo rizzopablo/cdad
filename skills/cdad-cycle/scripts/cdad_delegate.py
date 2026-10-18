@@ -59,6 +59,9 @@ PACKET_CLI_NAME = "cdad_packet.py"
 # dir; the installer creates a template and never overwrites it.
 DELEGATION_CONFIG_NAME = "delegation.json"
 DELEGATION_CONFIG_VERSION = 1
+# 006-003 §2.3/D5: the default server-credential file, sibling of the
+# delegation config (`credential_env_file` redirects it).
+DELEGATION_ENV_FILE_NAME = "opencode-server.env"
 
 
 class DelegateError(RuntimeError):
@@ -101,6 +104,35 @@ def delegation_config_path() -> Path:
     xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "")
     base = Path(xdg_config_home) if xdg_config_home else Path.home() / ".config"
     return base / "cdad" / DELEGATION_CONFIG_NAME
+
+
+def delegation_env_file_path() -> Path:
+    """Default server-credential file (§2.3/D5), sibling of the delegation
+    config: `<config-dir>/cdad/opencode-server.env` — the location rule of
+    §2.2 (`$XDG_CONFIG_HOME/cdad/`, or `<home>/.config/cdad/`). Read-only
+    here: it is the user's file."""
+    return delegation_config_path().parent / DELEGATION_ENV_FILE_NAME
+
+
+def delegation_credential_env_file() -> str | None:
+    """The `credential_env_file` the delegation config declares (§2.2), or
+    `None` (meaning: use the default path).
+
+    Read TOLERANTLY: the key is optional user data, so a missing, unreadable
+    or foreign document -- or a non-string value -- resolves to the default
+    path instead of blocking the dispatch. The strict v1 validation of
+    `delegation_model` guards the contract-bearing key (the model), not this
+    optional redirection.
+    """
+    path = delegation_config_path()
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(document, dict):
+        return None
+    value = document.get("credential_env_file")
+    return value if isinstance(value, str) and value else None
 
 
 def delegation_model_provenance(destination: str, role: str | None) -> str:

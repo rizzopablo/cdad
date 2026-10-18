@@ -299,6 +299,22 @@ destination argv carries no `--model` and the I8 record declares
 ignored with a one-line deprecation notice that names the delegation
 configuration and how to migrate.
 
+The same document carries the optional **`credential_env_file`** (006-003 U6,
+§2.3/D5): the `server` mode credential. It is read from the ENVIRONMENT of the
+process that dispatches first — `OPENCODE_PASSWORD`, then
+`OPENCODE_SERVER_PASSWORD` — and, only when neither is present, from that file
+(the delegation config's `credential_env_file`, or the default
+`<config-dir>/cdad/opencode-server.env`, i.e. the location rule of
+`delegation.json`): `KEY=value` lines with `#` comments, an empty value meaning
+**absent** (never an empty header). The file's permissions are verified on the
+opened descriptor: `600`/`400` are accepted and any bit of `077` is refused.
+The installer writes the sibling `opencode-server.env.example` with no value;
+copy it to `opencode-server.env` with mode `600`. On a 401/403 the diagnosis
+names both variables, the resolved path, the provenance of the value (the
+password of the `opencode serve` instance in use) and, when the file was
+refused, the path and the mode found. The value is never printed, logged,
+passed on argv nor recorded (INV-1).
+
 Keys (all optional except the required wait bound):
 
 | Key | Values | Default |
