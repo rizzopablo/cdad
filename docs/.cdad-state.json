@@ -9321,6 +9321,47 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/rf-green.md": "5fa017a69a781dff077f13ccce2db07b90115072e469d324f7d9d20765a3a21e"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-10-18T21:23:40.838211+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "717dad4d73c0ce47485bd3fd75215fff854eca8aa51976f96c27893df3ce1a1c",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "review",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-reviewer-review-002",
+        "receipt_sha256": "e4b52099e8e09c95834d64e0648c72bac72c82120d54d9fcd32435daa7591188",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/rereview.md",
+            "70a20dc9d0afddea551e945bbeb147cf5c67be3754b36c0cac3efec2b257df25"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-reviewer-review-002/receipt.json",
+      "receipt_sha256": "e4b52099e8e09c95834d64e0648c72bac72c82120d54d9fcd32435daa7591188",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/rereview.md": "70a20dc9d0afddea551e945bbeb147cf5c67be3754b36c0cac3efec2b257df25"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9335,7 +9376,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T21:14:30.477036+00:00",
+  "last_updated": "2026-10-18T21:23:40.838211+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9446,7 +9487,7 @@
     "id": "006-003-installer-single-profile-delegation-config-reviewer-review-002",
     "role": "reviewer",
     "substage": "review",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"

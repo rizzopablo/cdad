@@ -62,3 +62,7 @@ Es decir: el requisito que la disposición pide para O-5 **ya se cumple** en tod
 - Reutilicé fixtures por import declarado (`InstallerHarness`, `ServerCredentialCase`, `AdapterCase`/`FakeInfoServer`): ninguna base importada aporta métodos de test (collect-only: 4).
 - Suite completa **no** corrida (política del paquete: la corre quien cierra).
 - Modelo reportado por el runtime: `deepseek-v4.1-flash` (mofgw) — observación, `model_policy: ordinary`, sin efecto sobre permisos.
+
+---
+
+> **Corrección del orquestador (2026-10-18):** la afirmación del §4 de que O-5 «ya se cumple» quedó refutada por la re-review (`rereview.md`, B-1). Con sha y source vacíos, el registro se retira sin comparar bytes, porque el TSV que lee `read` de bash colapsa las columnas vacías. Las 7 variantes probadas no incluían ese caso.
