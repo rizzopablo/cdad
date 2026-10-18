@@ -223,3 +223,9 @@ still belongs.
 - **VERIFY-5 (added at approval).** How the acceptance run isolates the generated agents for OpenCode without touching HOME (plan amendment A-2). Unresolved → U8 closes blocked by environment.
 
 Status: Approved by orquestador Claude (HITL delegada epic-006) on 2026-10-17; VERIFY-4 is resolved by plan amendment A-1 (coupled assertions move in each unit's RED, never in GREEN).
+
+## Enmienda 001 — regla 4 de contexto (dueño, 2026-10-17)
+
+El «nunca `/tmp`» venía de una configuración de seguridad del SO que aislaba `/tmp` por proceso; el dueño la quitó y pidió relativizar la regla. **PD-6 regla (4)** e **INV-4** quedan así: `/tmp` se admite para borradores efímeros de un mismo proceso; lo que debe durar, dejar evidencia o leerlo otro proceso o rol va a rutas estables del workspace (`.cdad/inbox` para el recibo; el workspace declarado para lo demás), porque `/tmp` se limpia y no deja evidencia. El oráculo de ausencia de `/tmp` deja de prohibir toda mención: prohíbe instrucciones que usen `/tmp` como canal entre procesos o roles, o como lugar de un artefacto, recibo o evidencia.
+
+Status: enmienda 001 approved by Pablo on 2026-10-17 (pedido explícito del dueño).
