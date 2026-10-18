@@ -19,9 +19,10 @@ Destination-agnostic CLI. Given a project, a canonical packet published by
 
 It never writes `docs/.cdad-state.json` itself and never creates another ledger
 or state: the only state change is the `prepared -> dispatched` transition the
-reused machinery performs (INV-1). Execution configuration (runtime, model,
-binary, logs, timeouts) arrives by `--exec-config`/flags; no host-specific value
-is embedded here (PD-8/INV-7).
+reused machinery performs (INV-1). Execution configuration (runtime, binary,
+logs, timeouts) arrives by `--exec-config`/flags; the delegated MODEL comes only
+from the delegation config (`delegation.json`, 006-003 D3). No host-specific
+value is embedded here (PD-8/INV-7).
 
 Adapter invocation contract (also documented in
 `references/cli-delegation.md`): the adapter is run as a subprocess with the
@@ -53,6 +54,11 @@ DESTINATION_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 FLAT_NAME = re.compile(r"[A-Za-z0-9._-]+")
 ADAPTER_PREFIX = "cdad_delegate_"
 PACKET_CLI_NAME = "cdad_packet.py"
+# 006-003 D3/§2.2: the delegation configuration is the ONLY source of the
+# delegated model, by destination and role. It is USER DATA under the config
+# dir; the installer creates a template and never overwrites it.
+DELEGATION_CONFIG_NAME = "delegation.json"
+DELEGATION_CONFIG_VERSION = 1
 
 
 class DelegateError(RuntimeError):
@@ -86,6 +92,65 @@ def _adapter_path(destination: str) -> Path:
             f"invalid destination id {destination!r}: expected "
             "[A-Za-z0-9][A-Za-z0-9_-]*")
     return Path(__file__).resolve().parent / f"{ADAPTER_PREFIX}{destination}.py"
+
+
+def delegation_config_path() -> Path:
+    """Resolve the delegation config (§2.2/D3), the same rule as the installer:
+    `$XDG_CONFIG_HOME/cdad/delegation.json`, or `<home>/.config/cdad/` when
+    XDG_CONFIG_HOME is unset. Read-only here: it is the user's file."""
+    xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "")
+    base = Path(xdg_config_home) if xdg_config_home else Path.home() / ".config"
+    return base / "cdad" / DELEGATION_CONFIG_NAME
+
+
+def delegation_model_provenance(destination: str, role: str | None) -> str:
+    """I8 provenance of `model_configured` (D3: never the exec-config).
+
+    Names the delegation config, never an absolute host path (the I8 record
+    stays portable, 005-009 PD-8).
+    """
+    return (f"delegation config ({DELEGATION_CONFIG_NAME}): "
+            f"models.{destination}.{role or '<role>'}")
+
+
+def delegation_model(destination: str, role: str | None) -> str | None:
+    """The model the delegation config declares for (destination, role).
+
+    `delegation.json` is the only source (D3, no fallback): a role without an
+    entry has NO model. A missing file is an empty configuration; a malformed
+    one fails loud instead of silently delegating with no model (INV-7).
+    """
+    path = delegation_config_path()
+    if not path.is_file():
+        return None
+    document = _load_json(path, "delegation config")
+    version = document.get("version")
+    if version != DELEGATION_CONFIG_VERSION:
+        raise DelegateError(
+            f"unsupported delegation config version {version!r} in {path}: "
+            f"expected {DELEGATION_CONFIG_VERSION}")
+    models = document.get("models")
+    if not isinstance(models, dict):
+        raise DelegateError(
+            f"delegation config has no `models` object: {path}")
+    destination_models = models.get(destination)
+    if not isinstance(destination_models, dict) or not role:
+        return None
+    return _as_text(destination_models.get(role))
+
+
+def _warn_legacy_model(destination: str, role: str | None) -> None:
+    """One-line deprecation notice: the exec-config `model` is ignored (D3).
+
+    The notice names the delegation config path and how to migrate (INV-7:
+    nothing silent); it never prints the ignored value."""
+    path = delegation_config_path()
+    print(
+        f"DEPRECATED: the `model` key of the execution configuration is "
+        f"ignored (006-003 D3) — move it to "
+        f"models.{destination}.{role or '<role>'} in {path}, the only source "
+        f"of the delegated model",
+        file=sys.stderr)
 
 
 def _packet_paths(project_root: Path, packet_id: str) -> tuple[Path, dict[str, Any]]:
@@ -175,8 +240,12 @@ def _normalize_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
 
 
 def _observation(runtime: str | None, model: str | None, session: str | None,
-                 started_at: str) -> dict[str, Any]:
-    """Build the closed-key I8 observation document (PD-3/PD-8)."""
+                 started_at: str, *, model_source: str) -> dict[str, Any]:
+    """Build the closed-key I8 observation document (PD-3/PD-8).
+
+    006-003 D3: `model_configured` comes from the delegation config (never
+    from the exec-config); `model_source` is its provenance.
+    """
     return {
         "runtime": runtime,
         "model_configured": model,
@@ -185,7 +254,7 @@ def _observation(runtime: str | None, model: str | None, session: str | None,
         "started_at": started_at,
         "provenance": {
             "runtime": "execution config (--exec-config): runtime",
-            "model_configured": "execution config (--exec-config): model",
+            "model_configured": model_source,
             "model_reported": "destination adapter reported no model",
             "session": "destination adapter envelope: session",
             "started_at": "delegation interface clock (UTC)",
@@ -264,7 +333,13 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     config = (_load_json(args.exec_config, "execution config")
               if args.exec_config else {})
     runtime = _as_text(config.get("runtime"))
-    model = _as_text(config.get("model"))
+    role = _as_text(request.get("role"))
+    # 006-003 D3/§2.2: the effective model comes ONLY from the delegation
+    # config (the value is resolved by destination and role, never persisted);
+    # a `model` left in the exec-config is ignored with a one-line notice.
+    model = delegation_model(destination, role)
+    if _as_text(config.get("model")) is not None:
+        _warn_legacy_model(destination, role)
     started_at = _now()
     attempt_id = f"delegate-{destination}-{uuid.uuid4().hex[:12]}"
     packet_bytes = packet_md.read_bytes()
@@ -272,7 +347,9 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                             args.exec_config, packet_bytes,
                             _wait_timeout(config))
     normalized = _normalize_envelope(envelope)
-    observation = _observation(runtime, model, normalized["session"], started_at)
+    observation = _observation(
+        runtime, model, normalized["session"], started_at,
+        model_source=delegation_model_provenance(destination, role))
     _register_dispatch(project_root, args.packet, request, attempt_id, observation)
     return {
         "attempt": attempt_id,

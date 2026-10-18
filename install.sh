@@ -1005,6 +1005,71 @@ install_guard_script() {
 }
 
 # ---------------------------------------------------------------------------
+# User configuration (006-003 U4/D3/D5, A-3/A-4)
+# ---------------------------------------------------------------------------
+# The delegation config and the server credential example are USER DATA, not
+# install artifacts: created only when missing (never overwritten), never
+# registered in the ownership manifest, and therefore never removed by
+# --uninstall nor by the obsolete-retirement step. Location (spec §2.2/§2.3):
+# $XDG_CONFIG_HOME/cdad/ when XDG_CONFIG_HOME is defined, otherwise
+# <install-root>/.config/cdad/ (INV-6: a redirected root confines every write).
+user_config_dir() {
+  printf '%s/cdad' "${XDG_CONFIG_HOME:-$INSTALL_ROOT/.config}"
+}
+
+write_delegation_template() {  # path — v1 template, only when missing
+  local path="$1"
+  if [ -e "$path" ] || [ -L "$path" ]; then
+    log "User config: $path already exists — preserved untouched (user data; never overwritten, never owned, never removed)"
+    return 0
+  fi
+  cat > "$path" <<'JSON' || die "Cannot write the delegation config: $path"
+{
+  "version": 1,
+  "models": {
+    "opencode": {}
+  }
+}
+JSON
+  log "User config: $path (delegation config v1 template — set models.<destination-id>.<role> to choose the delegated model)"
+}
+
+write_server_env_example() {  # path — credential template with no value
+  local path="$1"
+  if [ -e "$path" ] || [ -L "$path" ]; then
+    log "User config: $path already exists — preserved untouched (user data; never overwritten, never owned, never removed)"
+    return 0
+  fi
+  cat > "$path" <<'ENV' || die "Cannot write the server credential example: $path"
+# CDAD OpenCode server credential — TEMPLATE ONLY: it carries no value.
+#
+# Copy it next to this file and keep the copy private (mode 600):
+#   cp opencode-server.env.example opencode-server.env
+#   chmod 600 opencode-server.env
+#
+# The password is the one of the `opencode serve` instance you dispatch
+# against (with OpenChamber, the password configured there). The adapter
+# reads the environment first and this file second; an empty value means
+# "absent". Never commit the filled file.
+OPENCODE_PASSWORD=
+OPENCODE_SERVER_PASSWORD=
+ENV
+  log "User config: $path (credential template with no value; copy it to opencode-server.env with mode 600)"
+}
+
+install_user_config() {
+  local config_dir
+  config_dir="$(user_config_dir)"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "DRY-RUN user config: $config_dir/delegation.json + opencode-server.env.example (templates, written only when missing)"
+    return 0
+  fi
+  ensure_dir "$config_dir"
+  write_delegation_template "$config_dir/delegation.json"
+  write_server_env_example "$config_dir/opencode-server.env.example"
+}
+
+# ---------------------------------------------------------------------------
 # Uninstall operations (cdad-owned paths only)
 # ---------------------------------------------------------------------------
 # uninstall_items — prints the paths uninstall would remove. Agents come from
@@ -1624,6 +1689,8 @@ main() {
   install_agents
   # Claude Code targets (guard script; CC agents/skills come from the staged set)
   install_guard_script
+  # 006-003 U4 (A-3/A-4): user data, created only when missing and never owned.
+  install_user_config
   INSTALL_VERSION="$(installation_version)"
   write_version_marker "$INSTALL_VERSION"
   write_ownership_manifest

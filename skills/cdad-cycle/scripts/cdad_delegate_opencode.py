@@ -12,9 +12,11 @@ on stdin and `--project-root`, `--packet-id`, `--destination` and
 What this adapter does, and why (contract decisions D5/D6):
 
 1. It builds the destination invocation FROM THE EXECUTION CONFIGURATION
-   (`binary`, `binary_version`, `model`, `wait.timeout_seconds`):
-   nothing about the CLI, the binary, the model or the times is hardcoded here
-   (PD-8/INV-7). `runtime`/`model` also feed the I8 observation.
+   (`binary`, `binary_version`, `wait.timeout_seconds`): nothing about the CLI,
+   the binary or the times is hardcoded here (PD-8/INV-7). The delegated MODEL
+   comes only from the delegation config (`delegation.json`, 006-003 D3); a
+   `model` left in the execution configuration is ignored. `runtime`/`model`
+   also feed the I8 observation.
 2. It VERIFIES THE PUBLISHED DERIVED AGENT (PD-3) the project published under
    `.opencode/agents/` (I9): the derived `cdad-<role>.md` must be published. Its
    `mode:` NO LONGER conditions the dispatch (the installed runtime accepts
@@ -91,6 +93,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
+import cdad_delegate  # noqa: E402
 import cdad_result  # noqa: E402
 
 DESTINATION_ID = "opencode"
@@ -1353,7 +1356,8 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
     PD-6: when the adapter wrote this record for the WORKER attempt, `session`
     and `model_reported` come from the correlated durable row
     (`session_v2.id` / `session_v2.model`) and the provenance declares it;
-    `runtime` / `model_configured` keep coming from the execution config.
+    `runtime` keeps coming from the execution config and `model_configured`
+    from the delegation config (006-003 D3), never from the exec-config.
 
     006-001 §2.6 (PD-3, enmienda 001): the provenance text carries the new pairs
     in free text (the I8 schema stays closed, INV-4): `dispatch_flags=`,
@@ -1386,7 +1390,9 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
         "started_at": started_at,
         "provenance": {
             "runtime": runtime_provenance,
-            "model_configured": "execution config (--exec-config): model",
+            "model_configured": (
+                "delegation config (delegation.json): "
+                f"models.{DESTINATION_ID}"),
             "model_reported": (
                 "durable session row (exec-config: sessions_db): "
                 "session_v2.model"),
@@ -1675,7 +1681,6 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     config = (_load_json(Path(args.exec_config), "execution config")
               if args.exec_config else {})
     runtime = _as_text(config.get("runtime"))
-    model = _as_text(config.get("model"))
     binary_version = _as_text(config.get("binary_version"))
     sessions_db_raw = _as_text(config.get("sessions_db"))
     # PD-4/PD-1 (006-001): server/permission mode at the right level
@@ -1797,6 +1802,16 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         return pre_dispatch_termination(
             "blocked", diagnosis, client_version=client_version,
             server_version=server_version)
+
+    # 006-003 D3/§2.2: the model comes ONLY from the delegation config, by
+    # destination and role (no fallback to the exec-config, which is now
+    # ignored). A config that cannot be parsed fails closed before anything
+    # is invoked.
+    try:
+        model = cdad_delegate.delegation_model(DESTINATION_ID, role)
+    except cdad_delegate.DelegateError as exc:
+        return blocked_before_dispatch(
+            f"the delegation config is not usable: {exc}")
 
     # PD-3: verify the derived agent is published BEFORE dispatching anything.
     # A missing derived agent fails closed here; the CLI `mode:` no longer

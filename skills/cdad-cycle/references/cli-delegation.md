@@ -266,16 +266,38 @@ during the dispatch).
 
 ## Configuration (PD-8/INV-7)
 
-Runtime, model, binary/version, logs, servers, timeouts and the execution mode
-live in the **execution configuration** (`--exec-config`, local and
-git-ignored) or in flags — never hardcoded in the product nor in public
-contracts. The configuration also carries the durable signal surface (the
-`sessions_db` path of the destination's session store) and the
-server/permission selectors (`server` as the alternative to the default private
-server, and `auto` for non-interactive permissions). No value of the operating
-host (absolute paths, provider, concrete model, server, times) may appear in the
-product. The interface records **configured / observed or `unknown`**, with a
-`provenance` map field → source.
+Runtime, binary/version, logs, servers, timeouts and the execution mode live in
+the **execution configuration** (`--exec-config`, local and git-ignored) or in
+flags — never hardcoded in the product nor in public contracts. The
+configuration also carries the durable signal surface (the `sessions_db` path of
+the destination's session store) and the server/permission selectors (`server`
+as the alternative to the default private server, and `auto` for
+non-interactive permissions). No value of the operating host (absolute paths,
+provider, concrete model, server, times) may appear in the product. The
+interface records **configured / observed or `unknown`**, with a `provenance`
+map field → source.
+
+A model is NOT a key of the execution configuration (006-003 D3). Its only
+source is the **delegation configuration**, which the installer creates as a
+template and the user edits (`$XDG_CONFIG_HOME/cdad/delegation.json`, or
+`<install-root>/.config/cdad/delegation.json` when `XDG_CONFIG_HOME` is unset):
+
+```json
+{
+  "version": 1,
+  "models": { "<destination-id>": { "<role>": "<provider>/<model>" } },
+  "credential_env_file": "<path>"
+}
+```
+
+`<destination-id>` is the id of the destination runtime (`opencode` for the
+OpenCode adapter); `<role>` is one of `architect`, `test-writer`,
+`implementer`, `reviewer`, `scribe`. A role without an entry has no model: the
+destination argv carries no `--model` and the I8 record declares
+`model_configured: null` with the delegation configuration as its provenance
+(no fallback, INV-7). A `model` key left in an execution configuration is
+ignored with a one-line deprecation notice that names the delegation
+configuration and how to migrate.
 
 Keys (all optional except the required wait bound):
 
