@@ -48,7 +48,7 @@ Invocation: through the runtime's native dispatch mechanism, declared in the `de
 **Key differences from OpenCode:**
 - Claude Code frontmatter does NOT have `permission` with globs (e.g.: `edit: {"tests/**": deny}`). Instead, it uses `tools:` as a flat allowlist (tool names: `Read`, `Grep`, `Edit`, `Write`, `Bash`, `Skill`, etc.).
 - Path-scoping is reconstructed via `hooks.PreToolUse` that runs a guard script (`~/.claude/cdad-scripts/path-guard.sh <role>`) before each `Edit`/`Write`/`Read`/`Grep`.
-- Model: `model:` accepts aliases (`haiku`, `sonnet`, `opus`, `fable`) or a full model ID — there is no `mofgw` gateway.
+- Model: the model of each role is the one configured in the environment; the concrete syntax of the `model:` field is declared by this runtime's agent layer. This skill names no model alias, provider or deployment gateway.
 
 Invocation from the orchestrator through the runtime's native dispatch mechanism (declared in its `delegation` section). The sub-session does NOT see the parent agent's context.
 
