@@ -7082,6 +7082,47 @@
         "docs/specs/006-002-delegation-by-layer/u3-red.md": "066c87a14a97ef40bbe6c350d8a6e067cfecf6bf346fb276f0b2adb897325d0e"
       },
       "note": "2665d55: 13 rojos por asercion (5 focales, 1 PD-1 sin exclusiones U3, 7 acoplados reformulados). Adjudicacion del orquestador: se conserva la cobertura; el GREEN preserva el contenido completo de las dos referencias en docs/ como evidencia."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u3-green",
+      "substage": "green",
+      "at": "2026-10-18T00:56:51.685126+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "bdfef3c0570fa3327f57587fae94fbfe78fb2a57ae9f4974abe48f7257905270",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u3-green",
+        "substage": "green",
+        "packet_id": "006-002-delegation-by-layer-implementer-green-003",
+        "receipt_sha256": "5f4a521b3ca965b63c66994e1677bf987e7aff69408b7689cd80d6f58efa1391",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u3-green.md",
+            "0ac8087abfa4da4dd4d76a3c4d7cf3f3288d909bd3fbe63346747520e1cfaa2e"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-implementer-green-003/receipt.json",
+      "receipt_sha256": "5f4a521b3ca965b63c66994e1677bf987e7aff69408b7689cd80d6f58efa1391",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/u3-green.md": "0ac8087abfa4da4dd4d76a3c4d7cf3f3288d909bd3fbe63346747520e1cfaa2e"
+      },
+      "note": "5ad04e2 PARCIAL: 59/60 focal+acoplados; falla test_pd4_exit2 por defecto del oraculo (selector de evidencia demasiado amplio) -> testfix. Regresiones de U1 detectadas: test_005_006_t6 A2 (<skill-dir>) y test_003_006_t3 P1 (cableado de receive diverge de la fuente) -> fix del implementer. Escribio en docs/evidence/ fuera del write_scope declarado, por adjudicacion del orquestador (aceptado)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7096,7 +7137,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T00:42:23.514791+00:00",
+  "last_updated": "2026-10-18T00:56:51.685126+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7204,13 +7245,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-implementer-green-003",
-    "role": "implementer",
-    "substage": "green",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-test-writer-red-004",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
