@@ -7987,7 +7987,7 @@
     "id": "006-002-delegation-by-layer-implementer-green-010",
     "role": "implementer",
     "substage": "green",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
