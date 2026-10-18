@@ -7734,6 +7734,47 @@
         "docs/specs/006-002-delegation-by-layer/u6c-red.md": "925d6e46c1e6984915cbc436258a5969c46cbe64447b045392721544269f96d2"
       },
       "note": "300a05c: 1 rojo por asercion (/tmp en texto instalable); regla de rutas estables ya presente."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u6c-green",
+      "substage": "green",
+      "at": "2026-10-18T03:05:46.735079+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "8cea6e25521d91635c742748cbaacd723b72a485517270fe22937773143c4f87",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u6c-green",
+        "substage": "green",
+        "packet_id": "006-002-delegation-by-layer-implementer-green-009",
+        "receipt_sha256": "74d5cdc8b5b48ed43cca662b51f5dfcb11a2381ce43219d949d838c0eab26618",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u6c-green.md",
+            "dd3ed3cccbe69a3eecef515e378d7502813c4e1d27c83b4940a2924659c6d83d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-implementer-green-009",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-implementer-green-009/receipt.json",
+      "receipt_sha256": "74d5cdc8b5b48ed43cca662b51f5dfcb11a2381ce43219d949d838c0eab26618",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/u6c-green.md": "dd3ed3cccbe69a3eecef515e378d7502813c4e1d27c83b4940a2924659c6d83d"
+      },
+      "note": "a3b54e6; verificado: 373 passed 2 skipped, 0 menciones de /tmp en texto instalable, make agents idempotente, validate 161/1 (F011=DT-8)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7748,7 +7789,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T02:38:32.931252+00:00",
+  "last_updated": "2026-10-18T03:05:46.735079+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7859,10 +7900,10 @@
     "id": "006-002-delegation-by-layer-implementer-green-009",
     "role": "implementer",
     "substage": "green",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
