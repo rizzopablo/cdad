@@ -7036,6 +7036,52 @@
         "docs/specs/006-002-delegation-by-layer/u2-green.md": "44eb30dc9759ca7be79b573af4a88684e8093653746ecd59eec93aff0f58f34e"
       },
       "note": "8cf2d75; verificado: 47 passed, sin tests tocados, make validate 155/1 (F011=DT-8); §4 leido por el orquestador."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u3-red",
+      "substage": "red",
+      "at": "2026-10-18T00:42:23.514791+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "3c2c57b746a8b805c18b505c40809ce2442fca83129afee62a604fcbbbbcdb8b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u3-red",
+        "substage": "red",
+        "packet_id": "006-002-delegation-by-layer-test-writer-red-003",
+        "receipt_sha256": "95300ab8af07e4acfce8a8908c3bf577cec134a7f322b5bd6eb5079cb1d84f9a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u3-red.md",
+            "066c87a14a97ef40bbe6c350d8a6e067cfecf6bf346fb276f0b2adb897325d0e"
+          ],
+          [
+            "tests/test_006_002_u3_runtime_references.py",
+            "bde650e3c2f6160bf453b1122267c92e73ba3d5578cca0ed32fc7f5ff281f58a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-test-writer-red-003/receipt.json",
+      "receipt_sha256": "95300ab8af07e4acfce8a8908c3bf577cec134a7f322b5bd6eb5079cb1d84f9a",
+      "artifacts": {
+        "tests/test_006_002_u3_runtime_references.py": "bde650e3c2f6160bf453b1122267c92e73ba3d5578cca0ed32fc7f5ff281f58a",
+        "docs/specs/006-002-delegation-by-layer/u3-red.md": "066c87a14a97ef40bbe6c350d8a6e067cfecf6bf346fb276f0b2adb897325d0e"
+      },
+      "note": "2665d55: 13 rojos por asercion (5 focales, 1 PD-1 sin exclusiones U3, 7 acoplados reformulados). Adjudicacion del orquestador: se conserva la cobertura; el GREEN preserva el contenido completo de las dos referencias en docs/ como evidencia."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7050,7 +7096,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T00:06:06.883590+00:00",
+  "last_updated": "2026-10-18T00:42:23.514791+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7158,13 +7204,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-test-writer-red-003",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-implementer-green-003",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "red"
 }
