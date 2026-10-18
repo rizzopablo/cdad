@@ -7602,6 +7602,47 @@
         "docs/specs/006-002-delegation-by-layer/u6b-red.md": "4d76e323df2fa1b9fb9e5c45b98a6271127f96825355dbd6f7f697458374a0ad"
       },
       "note": "b9d9455: 2 rojos por asercion (regla 4 relativizada)."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u6b-green",
+      "substage": "green",
+      "at": "2026-10-18T02:33:13.309849+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b5919d2521b1dbb0c29b21fa97f04edd499d2b9da119322feb84dfff3cee6293",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u6b-green",
+        "substage": "green",
+        "packet_id": "006-002-delegation-by-layer-implementer-green-008",
+        "receipt_sha256": "21f34310ddb94ce59787f370c9b55131e0bb0e9db275ae914b98b0c2053cef04",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u6b-green.md",
+            "c6908fb7377d2a375b07566014a0070ac346e5e4f40e5cfd40d6175b053a81ec"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-implementer-green-008",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-implementer-green-008/receipt.json",
+      "receipt_sha256": "21f34310ddb94ce59787f370c9b55131e0bb0e9db275ae914b98b0c2053cef04",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/u6b-green.md": "c6908fb7377d2a375b07566014a0070ac346e5e4f40e5cfd40d6175b053a81ec"
+      },
+      "note": "4c068ea; verificado: 375 passed 2 skipped, make agents idempotente, validate 161/1 (F011=DT-8)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7616,7 +7657,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T02:21:36.752455+00:00",
+  "last_updated": "2026-10-18T02:33:13.309849+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7727,10 +7768,10 @@
     "id": "006-002-delegation-by-layer-implementer-green-008",
     "role": "implementer",
     "substage": "green",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
