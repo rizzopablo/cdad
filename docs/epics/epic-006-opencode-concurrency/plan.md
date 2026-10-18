@@ -308,4 +308,21 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Fuera de alcance:** cambiar el transporte externo más allá de que consuma el núcleo; ejecutores de acciones externas; filtros de Bash; la construcción incremental (es otra propuesta).
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17; enmienda 004 (006-005) approved by Pablo on 2026-10-18
+## 12. Enmienda 005 — principio de general antes que específico (2026-10-18)
+
+**Principio:**
+> Buscar la solución más simple que cubra los casos conocidos y los requisitos declarados (los que están en una spec, un plan o un ADR aprobado). Compartir lo que responde a la misma responsabilidad y conservar las diferencias que tengan una razón real. Una solución general puede ser un contrato común con implementaciones distintas, no necesariamente código compartido; dos fragmentos parecidos no son por eso la misma responsabilidad. Evaluar tanto el costo de especializar como el de generalizar, sin convertir particularidades accidentales en reglas generales ni introducir abstracciones que todavía no aportan utilidad. Se aplica a las decisiones que crean una frontera, duplican un mecanismo o comprometen la evolución; no exige justificar cada elección.
+
+**Límite:** el principio mejora el juicio de diseño; no aumenta las justificaciones que los agentes deben producir.
+
+**Es un cambio de contrato de rol:**
+1. **ADR-033** registra el principio y su límite. Lo redacta el architect y lo aprueba el dueño.
+2. **Fuente única instalable:** el principio vive en un solo lugar del skill; los roles lo referencian.
+3. **Architect:** considera alternativas generales y específicas en las decisiones relevantes y explica el criterio elegido.
+4. **Reviewer:** evalúa consecuencias reales: duplicación que puede divergir, complejidad innecesaria, pérdida de capacidades y acoplamiento. La falta de una abstracción, por sí sola, no es un defecto.
+
+**Vehículo:** se construye junto con 006-004, que lo distribuye como primera fila de «Decisiones vigentes». El alcance de 006-004 no cambia por esto; los puntos 1 a 4 son trabajo adicional declarado.
+
+**Aceptación:** ADR-033 aprobado; un test de texto fija la fuente única, la obligación del architect, el criterio del reviewer y el límite («la falta de abstracción no es defecto»); `make validate` y la suite pasan.
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17; enmienda 004 (006-005) approved by Pablo on 2026-10-18; enmienda 005 (principio general antes que específico, con 006-004) approved by Pablo on 2026-10-18
