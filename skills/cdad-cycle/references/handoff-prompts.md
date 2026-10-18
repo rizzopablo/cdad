@@ -625,8 +625,8 @@ When the project has an expensive test suite (in Odoo: `odoo-make-env/references
 - Gate: ONE single full run on a fresh environment (Odoo: make test-all;
   single-module: make test-clean). Task budget: max ~15 minimal
   runs and 1 full one (default; the project calibrates it in systemPatterns).
-- Run logs named under ~/tmp/ (never /tmp/) so the evidence
-  is referenceable.
+- Run logs named under stable paths of the declared workspace so the
+  evidence is referenceable.
 - Gate evidence: the line "0 failed, 0 error(s) of N tests" + commit of the
   tree that was run (recorded in the state file or commit message).
 ```
