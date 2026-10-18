@@ -9014,6 +9014,51 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/u7-green-stop.md": "b891e1a4c4059cfe03d4bfffd167351f45b64d97a8c2e701f863d18be972f9bb"
       },
       "note": "detenido sin commit: B3 (review-5) se opone a PD-6a; el orquestador elige reformular B3 (opción a)"
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "specification",
+      "substage": "red",
+      "at": "2026-10-18T18:53:02.650042+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "e4a813030a2cb32d8b70225f82a72d39f3eda23387de93b5da21d55d228ed313",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "orquestador (HITL delegada; enmienda A-6 del plan)",
+        "contract": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
+        },
+        "plan": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+          "sha256": "fd4f66c1bd1fd476957629d2a4f5ea74f005d94b630d9b5d428091614a35d59d"
+        },
+        "closure": null
+      },
+      "supersedes": "f1dadce1e2beae80d876d82921600c850f20be1f40b8eaa4ec925d7e647daa20",
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "orquestador (HITL delegada; enmienda A-6 del plan)",
+      "contract_path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+      "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890",
+      "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+      "plan_sha256": "fd4f66c1bd1fd476957629d2a4f5ea74f005d94b630d9b5d428091614a35d59d"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9028,7 +9073,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T18:52:38.271461+00:00",
+  "last_updated": "2026-10-18T18:53:02.650042+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
