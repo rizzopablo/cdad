@@ -2,34 +2,42 @@
 r"""Acceptance criterion 1 of spec §4.1 (004-001 closure): the smoke matrix.
 
 Matrix: runtime (opencode, claude-code) × role (11 agents per runtime =
-5 roles × 2 stacks + orchestrator) × supported profile (basic, economical,
-optimus, premium), verified from an ISOLATED installation with synthetic
-data and zero provider calls.
+5 roles × 2 stacks + orchestrator), verified from an ISOLATED installation
+with synthetic data and zero provider calls.
 
 Packet: 004-001-canonical-runtime-artifacts-test-writer-red-011 (substage
 red). The T6 oracle (tests/test_004_001_t6.py) is FROZEN and is NOT modified
-here; this file adds the two missing axes: (a) all four supported profiles,
-(b) the orchestrator (11 agents per runtime).
+here; this file adds the two missing axes: (a) the full supported set of
+roles per runtime, (b) the orchestrator (11 agents per runtime).
+
+ORACLE REPLACEMENT (006-003 U1 — spec docs/specs/006-003-installer-single-
+profile-delegation-config/spec.md, PD-1/PD-1c/PD-1d/PD-1e/INV-3). This matrix
+was profile-coupled; what changed and why, so no assert is dropped silently:
+
+- The PROFILE axis is RETIRED. The four `--<profile>` install flags
+  (`--basic`, `--economical`, `--optimus`, `--premium`) no longer deploy
+  distinct model sets: per D1/PD-1a `--economical|--optimus|--premium` are
+  rejected and `--basic` survives only as a deprecated, no-effect alias
+  (the >=6 test recipes that pass it keep working — D1). The matrix therefore
+  runs ONE cell set with `--basic` and asserts the model axis is GONE rather
+  than varying it. The flag-rejection surface (PD-1a) belongs to the installer
+  unit of 006-003 and is not asserted here.
+- `scripts/cdad-models.sh` is NO LONGER executed as a data contract: it is
+  retired (PD-1c) and the generator has no model map. The former
+  `cdad_models_expectations()` helper is therefore DELETED, and
+  `test_acceptance_1_frontmatter_coherent_with_profile` is REPLACED by
+  `test_acceptance_1_frontmatter_fixes_no_model`, which asserts the absence
+  invariant INV-3/PD-1e: no installed agent of either runtime carries a
+  `model:` line, for every role.
 
 Black-box discipline: only public interfaces are used — the generator CLI
-(`scripts/cdad-generate.py --runtime <r> --stack odoo --profile <p> --out`),
-install.sh (`--<profile>`, `--<profile> --check`) and the OBSERVABLE deployed
-artifacts (installed frontmatter, real destinations under CDAD_INSTALL_ROOT).
-The generator/installer internals and sources/ composition are never read.
-ONE declared data exception, authorized by the packet objective:
-`scripts/cdad-models.sh` is EXECUTED as the data contract (the single source
-of the model map) to compute the expected `model:` frontmatter per
-profile × runtime × role — the test never hardcodes the map.
+(`scripts/cdad-generate.py --runtime <r> --stack odoo --out`), install.sh
+(`--basic`, `--basic --check`) and the OBSERVABLE deployed artifacts
+(installed frontmatter, real destinations under CDAD_INSTALL_ROOT). The
+generator/installer internals and sources/ composition are never read.
 
-Interpretation registered (data contract governs): the objective's
-"el orquestador sin model:" holds for OpenCode (cdad_model never fixes the
-orchestrator). For Claude Code the data contract DOES fix the orchestrator
-(`*\|orchestrator` → opus, cdad_model_claude), so the CC orchestrator cell
-expects `model: opus` for every non-basic profile and no model line for
-basic (basic returns before any case).
-
-Behavioral probes recorded while building this oracle (all logged under
-/tmp/opencode/probe-matrix):
+Behavioral probes recorded while building the original oracle (all logged
+under /tmp/opencode/probe-matrix):
 - One staging accumulates BOTH runtimes (second generator run keeps the
   first runtime's artifacts; manifest lists 22 artifacts).
 - install.sh refuses to run without an `agents/` directory next to
@@ -40,20 +48,18 @@ Behavioral probes recorded while building this oracle (all logged under
   precondition of the public interface; deployed bytes stay staged bytes.
 - install.sh requires CDAD_INSTALL_ROOT to be an EXISTING absolute
   directory (pre-created by the fixture).
-- Profile flag must match the staging profile (PROFILE MISMATCH otherwise);
-  this test always generates staging with the same profile as the flag.
 
-Test -> contract mapping (every test -> acceptance §4.1 of the spec):
+Test -> contract mapping (every test -> acceptance §4.1 of the 004-001 spec,
+kept, plus the 006-003 U1 absence invariant):
 
-- test_acceptance_1_all_cells_installed            -> §4.1 (every cell of
-    the runtime × 11-roles × profile matrix exists at its real runtime
-    destination after an isolated install)
-- test_acceptance_1_frontmatter_coherent_with_profile -> §4.1 (installed
-    frontmatter is coherent with the profile per the data contract:
-    model: present and equal where cdad-models.sh fixes it, absent where
-    it returns empty — basic fixes nothing)
-- test_acceptance_1_install_check_rc0              -> §4.1 (install.sh
-    --check exits 0 for the isolated install of each profile)
+- test_acceptance_1_all_cells_installed -> §4.1 (every cell of the
+    runtime × 11-roles matrix exists at its real runtime destination after an
+    isolated install)
+- test_acceptance_1_frontmatter_fixes_no_model -> §4.1 as amended by
+    006-003 PD-1e/INV-3 (no installed agent carries `model:` — replaces
+    `..._coherent_with_profile`)
+- test_acceptance_1_install_check_rc0 -> §4.1 (install.sh --check exits 0
+    for the isolated install)
 """
 
 from __future__ import annotations
@@ -69,7 +75,6 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
-MODELS_SH = REPO_ROOT / "scripts" / "cdad-models.sh"
 INSTALLER = REPO_ROOT / "install.sh"
 
 # The 11 agents per runtime (T6 frozen role set + orchestrator; stack odoo
@@ -81,14 +86,11 @@ ROLE_NAMES = (
     + ("orchestrator",)
 )
 
-PROFILES = (
-    ("basic", "--basic"),
-    ("economical", "--economical"),
-    ("optimus", "--optimus"),
-    ("premium", "--premium"),
-)
-
 RUNTIMES = ("opencode", "claude-code")
+
+# D1: the only install flag that still runs is `--basic`, a deprecated alias
+# with no effect on the deployed bytes (006-003 §2.1).
+INSTALL_FLAG = "--basic"
 
 # Real runtime destinations under the isolated install root (same frozen set
 # T6 uses; orchestrator-confirmed):
@@ -101,57 +103,6 @@ AGENT_DESTINATIONS = {
 PRODUCT_ENTRIES = ("install.sh", "scripts", "skills", "sources", "agents")
 
 MODEL_LINE_RE = re.compile(r"^model:\s*(.*?)\s*$")
-
-
-def cdad_models_expectations(profile: str) -> dict[tuple[str, str], str]:
-    """Execute the DATA contract (cdad-models.sh) and map (runtime, role) -> model.
-
-    The map is never hardcoded: this function RUNS the declared single source
-    (`scripts/cdad-models.sh`, authorized by the packet objective) and returns
-    cdad_model / cdad_model_claude per role. Empty string means the contract
-    fixes no model for that cell (installed agent must NOT carry model:).
-    Premium env overrides are stripped for determinism (defaults expected).
-    """
-    env = os.environ.copy()
-    for key in list(env):
-        if key.startswith("CDAD_PREMIUM_MODEL_"):
-            env.pop(key)
-    script = (
-        "set -u; source %s\n"
-        "for role in %s; do\n"
-        "  printf 'opencode|%%s|%%s\\n' \"$role\" \"$(cdad_model %s \"$role\")\"\n"
-        "  printf 'claude-code|%%s|%%s\\n' \"$role\" \"$(cdad_model_claude %s \"$role\")\"\n"
-        "done\n"
-        % (MODELS_SH, " ".join(ROLE_NAMES), profile, profile)
-    )
-    result = subprocess.run(
-        ["bash", "-c", script],
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise AssertionError(
-            "el contrato de datos scripts/cdad-models.sh falló al ejecutarse "
-            f"para el perfil {profile}: {result.stderr.strip()}"
-        )
-    expectations: dict[tuple[str, str], str] = {}
-    for line in result.stdout.splitlines():
-        runtime, role, value = line.split("|", 2)
-        expectations[(runtime, role)] = value.strip()
-    missing = [
-        (runtime, role)
-        for runtime in RUNTIMES
-        for role in ROLE_NAMES
-        if (runtime, role) not in expectations
-    ]
-    if missing:
-        raise AssertionError(
-            f"cdad-models.sh no resolvió {len(missing)} celdas para el perfil "
-            f"{profile}: {missing[:5]}"
-        )
-    return expectations
 
 
 def frontmatter_model(agent_text: str) -> str | None:
@@ -172,16 +123,14 @@ def tail(text: str, lines: int = 30) -> str:
     return "\n".join(text.strip().splitlines()[-lines:])
 
 
-class _AcceptanceMatrixProfile(unittest.TestCase):
-    """Per-profile fixture: product copy -> staging -> isolated install.
+class TestAcceptanceMatrix(unittest.TestCase):
+    """Fixture: product copy -> staging -> isolated install (no profiles).
 
     Everything happens under one temporary directory created by this fixture:
     a product copy (never the repo's build/) and a pre-created install root
     passed via CDAD_INSTALL_ROOT (never the real HOME).
     """
 
-    PROFILE: str = ""
-    FLAG: str = ""
     maxDiff = None
 
     @classmethod
@@ -208,8 +157,6 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
                     runtime,
                     "--stack",
                     "odoo",
-                    "--profile",
-                    cls.PROFILE,
                     "--out",
                     str(cls.staging),
                 ],
@@ -222,7 +169,7 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
         cls.install_root.mkdir()
         install_env = cls._installer_env()
         cls.install_result = subprocess.run(
-            ["bash", str(cls.product_copy / "install.sh"), cls.FLAG],
+            ["bash", str(cls.product_copy / "install.sh"), INSTALL_FLAG],
             cwd=str(cls.product_copy),
             env=install_env,
             text=True,
@@ -230,7 +177,7 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
             check=False,
         )
         cls.check_result = subprocess.run(
-            ["bash", str(cls.product_copy / "install.sh"), cls.FLAG, "--check"],
+            ["bash", str(cls.product_copy / "install.sh"), INSTALL_FLAG, "--check"],
             cwd=str(cls.product_copy),
             env=install_env,
             text=True,
@@ -258,10 +205,9 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
             self.assertEqual(
                 self.generate_results[runtime].returncode,
                 0,
-                "el generador falló para runtime=%s perfil=%s:\n%s"
+                "el generador falló para runtime=%s (sin perfil, PD-1f):\n%s"
                 % (
                     runtime,
-                    self.PROFILE,
                     tail(
                         self.generate_results[runtime].stderr
                         or self.generate_results[runtime].stdout
@@ -271,10 +217,9 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
         self.assertEqual(
             self.install_result.returncode,
             0,
-            "la instalación aislada falló (perfil=%s, flag=%s):\n%s"
+            "la instalación aislada falló (flag=%s):\n%s"
             % (
-                self.PROFILE,
-                self.FLAG,
+                INSTALL_FLAG,
                 tail(self.install_result.stderr or self.install_result.stdout),
             ),
         )
@@ -283,105 +228,58 @@ class _AcceptanceMatrixProfile(unittest.TestCase):
         destination = self.install_root / AGENT_DESTINATIONS[runtime]
         return destination / f"cdad-{role}.md"
 
+    # --- tests (§4.1 of 004-001 as amended by 006-003 PD-1e/INV-3) ---------
 
-class TestAcceptanceMatrixBasic(_AcceptanceMatrixProfile):
-    PROFILE = "basic"
-    FLAG = "--basic"
+    def test_acceptance_1_all_cells_installed(self) -> None:
+        """§4.1: every runtime × 11-roles cell exists at its real destination."""
+        self.assert_pipeline_succeeded()
+        for runtime in RUNTIMES:
+            for role in ROLE_NAMES:
+                with self.subTest(runtime=runtime, rol=role):
+                    cell = self.agent_path(runtime, role)
+                    self.assertTrue(
+                        cell.is_file(),
+                        "celda de matriz ausente: runtime=%s rol=%s -> %s"
+                        % (runtime, role, cell),
+                    )
 
+    def test_acceptance_1_frontmatter_fixes_no_model(self) -> None:
+        """PD-1e/INV-3: no installed agent carries a `model:` line.
 
-class TestAcceptanceMatrixEconomical(_AcceptanceMatrixProfile):
-    PROFILE = "economical"
-    FLAG = "--economical"
-
-
-class TestAcceptanceMatrixOptimus(_AcceptanceMatrixProfile):
-    PROFILE = "optimus"
-    FLAG = "--optimus"
-
-
-class TestAcceptanceMatrixPremium(_AcceptanceMatrixProfile):
-    PROFILE = "premium"
-    FLAG = "--premium"
-
-
-# --- tests (defined once on the base; each profile subclass runs them) ------
-
-
-def all_cells_installed(self: _AcceptanceMatrixProfile) -> None:
-    """§4.1: every runtime × 11-roles cell exists at its real destination."""
-    self.assert_pipeline_succeeded()
-    for runtime in RUNTIMES:
-        for role in ROLE_NAMES:
-            with self.subTest(perfil=self.PROFILE, runtime=runtime, rol=role):
-                cell = self.agent_path(runtime, role)
-                self.assertTrue(
-                    cell.is_file(),
-                    "celda de matriz ausente: perfil=%s runtime=%s rol=%s -> %s"
-                    % (self.PROFILE, runtime, role, cell),
-                )
-
-
-def frontmatter_coherent_with_profile(self: _AcceptanceMatrixProfile) -> None:
-    """§4.1: installed frontmatter matches the cdad-models.sh data contract."""
-    self.assert_pipeline_succeeded()
-    expectations = cdad_models_expectations(self.PROFILE)
-    for runtime in RUNTIMES:
-        for role in ROLE_NAMES:
-            with self.subTest(perfil=self.PROFILE, runtime=runtime, rol=role):
-                cell = self.agent_path(runtime, role)
-                self.assertTrue(
-                    cell.is_file(),
-                    "celda de matriz ausente: perfil=%s runtime=%s rol=%s -> %s"
-                    % (self.PROFILE, runtime, role, cell),
-                )
-                installed = frontmatter_model(cell.read_text(encoding="utf-8"))
-                expected = expectations[(runtime, role)]
-                if expected == "":
+        ORACLE REPLACEMENT (006-003 U1): the former
+        `..._coherent_with_profile` compared every installed cell against the
+        model map executed from `scripts/cdad-models.sh`. The map is retired
+        (PD-1c) and the generator has no profiles (PD-1f), so the new oracle
+        asserts the stronger absence invariant: for BOTH runtimes and ALL 11
+        roles the installed frontmatter has no `model:` at all.
+        """
+        self.assert_pipeline_succeeded()
+        for runtime in RUNTIMES:
+            for role in ROLE_NAMES:
+                with self.subTest(runtime=runtime, rol=role):
+                    cell = self.agent_path(runtime, role)
+                    self.assertTrue(
+                        cell.is_file(),
+                        "celda de matriz ausente: runtime=%s rol=%s -> %s"
+                        % (runtime, role, cell),
+                    )
+                    installed = frontmatter_model(cell.read_text(encoding="utf-8"))
                     self.assertIsNone(
                         installed,
-                        "frontmatter incoherente con el perfil %s: %s trae "
-                        "model: %r y el contrato de datos no fija modelo "
-                        "(sin línea model:)" % (self.PROFILE, cell.name, installed),
-                    )
-                else:
-                    self.assertIsNotNone(
-                        installed,
-                        "frontmatter incoherente con el perfil %s: %s no trae "
-                        "model: y el contrato de datos fija %r"
-                        % (self.PROFILE, cell.name, expected),
-                    )
-                    self.assertEqual(
-                        installed,
-                        expected,
-                        "frontmatter incoherente con el perfil %s: %s trae "
-                        "model: %r y el contrato de datos fija %r"
-                        % (self.PROFILE, cell.name, installed, expected),
+                        "PD-1e/INV-3: el agente instalado %s/%s trae model: %r "
+                        "y ningún texto instalable fija modelos"
+                        % (runtime, cell.name, installed),
                     )
 
-
-def install_check_rc0(self: _AcceptanceMatrixProfile) -> None:
-    """§4.1: install.sh --check exits 0 for this profile's isolated install."""
-    self.assert_pipeline_succeeded()
-    self.assertEqual(
-        self.check_result.returncode,
-        0,
-        "install.sh --check no está en rc=0 para el perfil %s:\n%s"
-        % (self.PROFILE, tail(self.check_result.stderr or self.check_result.stdout)),
-    )
-
-
-for _cls in (
-    TestAcceptanceMatrixBasic,
-    TestAcceptanceMatrixEconomical,
-    TestAcceptanceMatrixOptimus,
-    TestAcceptanceMatrixPremium,
-):
-    _cls.test_acceptance_1_all_cells_installed = all_cells_installed
-    _cls.test_acceptance_1_frontmatter_coherent_with_profile = (
-        frontmatter_coherent_with_profile
-    )
-    _cls.test_acceptance_1_install_check_rc0 = install_check_rc0
-del _cls
+    def test_acceptance_1_install_check_rc0(self) -> None:
+        """§4.1: install.sh --check exits 0 for the isolated install."""
+        self.assert_pipeline_succeeded()
+        self.assertEqual(
+            self.check_result.returncode,
+            0,
+            "install.sh --check no está en rc=0:\n%s"
+            % tail(self.check_result.stderr or self.check_result.stdout),
+        )
 
 
 if __name__ == "__main__":

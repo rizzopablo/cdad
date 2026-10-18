@@ -89,11 +89,11 @@ WITHDRAWN_OC_REFERENCE = (REPO / "skills" / "cdad-cycle" / "references"
 WITHDRAWN_CC_REFERENCE = (REPO / "skills" / "cdad-cycle" / "references"
                           / "claude-code-delegation.md")
 
-# Parámetros con los que el repo genera `agents/claude-code/**`
-# (precedente: `tests/test_cdad_generate.py`; `Makefile` `PROFILE ?= optimus`).
+# Parámetros con los que el repo genera `agents/claude-code/**`.
+# 006-003 U1/PD-1f: el generador ya no tiene perfil, así que la constante
+# GENERATOR_PROFILE que replicaba `Makefile PROFILE ?= optimus` se retiró.
 GENERATOR_RUNTIME = "claude-code"
 GENERATOR_STACK = "odoo"
-GENERATOR_PROFILE = "optimus"
 
 # La herramienta de despacho que el contrato fija para Claude Code (la
 # observada en ejecuciones reales) y la que el lado OpenCode conserva.
@@ -189,6 +189,8 @@ def names_the_cc_tool_form(text: str) -> bool:
 
 
 def run_generator(out: Path) -> subprocess.CompletedProcess[str]:
+    # 006-003 U1 / PD-1f: the generator has no `--profile`; the former
+    # GENERATOR_PROFILE constant was removed with the profile surface.
     return subprocess.run(
         [
             sys.executable,
@@ -197,8 +199,6 @@ def run_generator(out: Path) -> subprocess.CompletedProcess[str]:
             GENERATOR_RUNTIME,
             "--stack",
             GENERATOR_STACK,
-            "--profile",
-            GENERATOR_PROFILE,
             "--out",
             str(out),
         ],

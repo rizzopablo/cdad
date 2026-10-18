@@ -84,7 +84,9 @@ GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"  # staging del producto
 # Patrón de instalación aislada (tests/test_003_002_t4_integration.py).
 PRODUCT_ENTRIES = ("install.sh", "scripts", "skills", "sources", "agents")
 RUNTIME = "opencode"
-PROFILE = "basic"
+# 006-003 U1/PD-1f: el generador no tiene `--profile`; `PROFILE = "basic"` se
+# retiró con el argumento. `--basic` sobrevive solo como alias deprecado del
+# instalador (D1), que es lo que FLAG ejercita.
 FLAG = "--basic"
 SKILL_REL = Path(".config") / RUNTIME / "skills" / "cdad-cycle"
 INSTALLED_PACKET_CLI_REL = SKILL_REL / "scripts" / "cdad_packet.py"
@@ -170,7 +172,7 @@ class _IsolatedInstall:
                 env.pop(key, None)
         staging_result = subprocess.run(
             [sys.executable, str(GENERATOR), "--runtime", RUNTIME,
-             "--stack", "odoo", "--profile", PROFILE, "--out",
+             "--stack", "odoo", "--out",
              str(self.product / "build" / "staging")],
             cwd=str(REPO_ROOT), env=env | {"HOME": str(self.home)},
             text=True, capture_output=True, check=False)

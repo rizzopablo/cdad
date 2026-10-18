@@ -60,7 +60,8 @@ PACKET_SCRIPT = REPO_ROOT / "scripts" / "cdad_packet.py"   # runtime v2 de 001 (
 # Patrón de instalación aislada (test_004_001_acceptance_matrix.py).
 PRODUCT_ENTRIES = ("install.sh", "scripts", "skills", "sources", "agents")
 RUNTIME = "opencode"
-PROFILE = "basic"
+# 006-003 U1/PD-1f: el generador no tiene `--profile`; `PROFILE = "basic"` se
+# retiró con el argumento (ver tests/test_006_003_u1_generator_without_profiles.py).
 FLAG = "--basic"
 SKILL_REL = Path(".config") / RUNTIME / "skills" / "cdad-cycle"
 INSTALLED_RESULT_REL = SKILL_REL / "scripts" / "cdad_result.py"
@@ -231,7 +232,7 @@ class InstalledProductCase(unittest.TestCase):
                 env.pop(key)
         cls.staging_result = subprocess.run(
             [sys.executable, str(GENERATOR), "--runtime", RUNTIME,
-             "--stack", "odoo", "--profile", PROFILE, "--out",
+             "--stack", "odoo", "--out",
              str(cls.product_copy / "build" / "staging")],
             cwd=str(cls.product_copy), text=True, capture_output=True,
             check=False)

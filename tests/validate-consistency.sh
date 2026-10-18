@@ -382,16 +382,22 @@ if printf '%s' "$CC_RC" | grep -Eq 'deepseek-v4-(pro|flash)|glm-5\.2|qwen3\.7-(p
 else
   pass "F001: CC orchestrator §2 free of OpenCode design models (PD-14/D7)"
 fi
-if printf '%s' "$CC_RC" | grep -Eq '(^|[|(])[[:space:]]*(sonnet|haiku|opus|fable)[[:space:]]*([|)])'; then
-  pass "F001: CC orchestrator §2 uses values cdad_model_claude produces (sonnet/haiku/opus/fable)"
-else
-  fail "F001: CC orchestrator §2 lacks any cdad_model_claude-produced model value (PD-14/D7)"
-fi
-if printf '%s' "$OC_RC" | grep -Eq '(^|[|(])[[:space:]]*(sonnet|haiku|opus|fable)[[:space:]]*([|)])|claude-(sonnet|haiku|opus|fable)'; then
-  fail "F001: OC orchestrator §2 mentions Claude Code model values that cdad_model does not produce (PD-14/D7)"
-else
-  pass "F001: OC orchestrator §2 free of Claude Code model values (PD-14/D7)"
-fi
+# 006-003 U1 (PD-1c/PD-7a/INV-3) — ORACLE REPLACEMENT of the three per-runtime
+# model-value asserts above (PD-14/D7): they required each §2 to CARRY the model
+# values of its own runtime map. The map is retired (PD-1c) and no installable
+# text fixes or names a model (INV-3), so the asserts are INVERTED here instead
+# of deleted: §2 of BOTH orchestrators must be free of every model name.
+MODEL_NAME_RE='deepseek|glm-|qwen|minimax|sonnet|haiku|opus|fable|mofgw/'
+for s2_entry in "agents/claude-code/cdad-orchestrator.md|$CC_RC" "agents/cdad-orchestrator.md|$OC_RC"; do
+  section_file="${s2_entry%%|*}"
+  section_block="${s2_entry#*|}"
+  if printf '%s' "$section_block" | grep -Eq "$MODEL_NAME_RE|(^|[|])[[:space:]]*model:"; then
+    fail "F001: $section_file §2 names a model (006-003 PD-7a/INV-3: no installable text fixes or names a model)"
+  else
+    pass "F001: $section_file §2 free of model names (006-003 PD-7a/INV-3, replaces PD-14 model cells)"
+  fi
+done
+unset s2_entry section_file section_block
 if printf '%s' "$OC_RC" | grep -Eq 'Roles-contract §2 table — composed|composed from all'; then
   pass "F001: OC orchestrator §2 is marked as composed (PD-4/D7)"
 else
@@ -455,23 +461,32 @@ assert_file_has "$CCO" 'cdad-<role>-<stack>' \
 
 echo
 echo "############################################"
-echo "# F008 — anti-bias guard also for cdad_model_claude (B2)"
+echo "# F008 — no model map and no model in the agents"
 echo "############################################"
 
-# shellcheck source=scripts/cdad-models.sh
-source "$ROOT/scripts/cdad-models.sh"
-for p in economical optimus premium; do
-  r="$(cdad_model_claude "$p" reviewer)"
-  i="$(cdad_model_claude "$p" implementer)"
-  if [[ -n "$r" && -n "$i" && "$r" != "$i" ]]; then
-    pass "F008: cdad_model_claude profile '$p' — reviewer ($r) != implementer ($i)"
-  else
-    fail "F008: cdad_model_claude profile '$p' — reviewer ($r) == implementer ($i), violates anti-bias"
-  fi
-done
+# 006-003 U1 (PD-1c/PD-1e/INV-3) — ORACLE REPLACEMENT of the former F008 block.
+# F008 used to `source scripts/cdad-models.sh` and assert that
+# `cdad_model_claude <profile> reviewer` differed from `<profile> implementer`
+# for every profile (anti-bias map check, B2). The model map is RETIRED (PD-1c)
+# and no installable text fixes a model (PD-1e/INV-3), so there is no profile
+# matrix left to compare. The block is replaced — not deleted — by the three
+# absence asserts that carry the same anti-bias intent at the tree level: no
+# map, no `model:` in any agent, no remaining map consumer in the product.
 
-assert_file_has "scripts/validate-subagents.sh" 'cdad_model_claude' \
-  "F008: validate-subagents.sh evaluates cdad_model_claude (previously only OpenCode's cdad_model)"
+assert_file_missing "scripts/cdad-models.sh" \
+  "F008 (006-003 PD-1c): the model map is retired (was scripts/cdad-models.sh)"
+
+if grep -Eq '^model:' agents/cdad-*.md agents/claude-code/*.md 2>/dev/null; then
+  fail "F008 (006-003 PD-1e/INV-3): some agent artifact still fixes a model (grep -E '^model:' agents/)"
+else
+  pass "F008 (006-003 PD-1e/INV-3): no agent artifact fixes a model"
+fi
+
+if grep -rEq 'cdad_model(_claude)?[[:space:]]' install.sh scripts/ 2>/dev/null; then
+  fail "F008 (006-003 PD-1c): install.sh/scripts/ still consume the retired model map"
+else
+  pass "F008 (006-003 PD-1c): install.sh/scripts/ consume no model map"
+fi
 
 echo
 echo "############################################"

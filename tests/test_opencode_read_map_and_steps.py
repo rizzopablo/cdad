@@ -45,7 +45,9 @@ INSTALLER = REPO_ROOT / "install.sh"
 
 RUNTIME = "opencode"
 STACK = "odoo"  # an odoo run emits BOTH the base and the -odoo variants
-PROFILE = "basic"
+# 006-003 U1/PD-1f: el generador no tiene `--profile` (constante retirada);
+# los agentes ya no traen `model:`, así que el oráculo de este archivo
+# (bloques de permisos/read-map) no depende de un perfil.
 
 ROLES = ("architect", "test-writer", "implementer", "reviewer", "scribe")
 
@@ -75,7 +77,6 @@ def run_generator(cwd: Path, out_dir: Path) -> subprocess.CompletedProcess[str]:
             str(GENERATOR),
             "--runtime", RUNTIME,
             "--stack", STACK,
-            "--profile", PROFILE,
             "--out", str(out_dir),
         ],
         cwd=str(cwd),
@@ -340,7 +341,6 @@ class TestP3FailLoud(unittest.TestCase):
                             str(tree / "scripts" / "cdad-generate.py"),
                             "--runtime", RUNTIME,
                             "--stack", STACK,
-                            "--profile", PROFILE,
                             "--out", str(out),
                         ],
                         cwd=str(tree),

@@ -408,11 +408,9 @@ def test_pd9_distinction_projected_into_generated_and_staging_parity(label, path
         "paridad PD-9: el generador declarado scripts/cdad-generate.py no "
         "existe (proyección fuente↔generado no verificable)"
     )
-    profile = "optimus"
-    mk = (REPO / "Makefile").read_text(encoding="utf-8")
-    m = re.search(r"(?m)^PROFILE\s*\?=\s*(\S+)", mk)
-    if m:
-        profile = m.group(1)
+    # 006-003 U1/PD-1b/PD-1f: la regeneración ya no toma el perfil del Makefile
+    # (`PROFILE` desaparece con el mapa de modelos) ni pasa `--profile`; el
+    # oráculo de paridad por byte no cambia.
     with tempfile.TemporaryDirectory(prefix="cdad-t3-parity-") as tmp:
         out = Path(tmp) / "staging"
         proc = subprocess.run(
@@ -423,8 +421,6 @@ def test_pd9_distinction_projected_into_generated_and_staging_parity(label, path
                 runtime,
                 "--stack",
                 "odoo",
-                "--profile",
-                profile,
                 "--out",
                 str(out),
             ],
@@ -434,8 +430,8 @@ def test_pd9_distinction_projected_into_generated_and_staging_parity(label, path
             check=False,
         )
         assert proc.returncode == 0, (
-            f"paridad PD-9: la regeneración ({runtime}, stack odoo, perfil "
-            f"{profile}) falló: stderr={proc.stderr!r}"
+            f"paridad PD-9: la regeneración ({runtime}, stack odoo) falló: "
+            f"stderr={proc.stderr!r}"
         )
         staged = out / EXTERNALLY_GENERATED[(GEN_OC if runtime == "opencode" else GEN_CC)][1]
         assert staged.is_file(), (

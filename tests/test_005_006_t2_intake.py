@@ -92,7 +92,8 @@ RUNTIMES = (
 )
 
 STACK = "odoo"
-PROFILE = "optimus"
+# 006-003 U1/PD-1f: sin `--profile` en el generador (la constante PROFILE se
+# retiró junto con el argumento; ver tests/test_006_003_u1_*).
 
 
 def _load(path: Path) -> str:
@@ -277,7 +278,6 @@ def test_pd2_generated_outputs_parity_and_boot_entry_projection():
                 [sys.executable, str(GENERATOR),
                  "--runtime", runtime,
                  "--stack", STACK,
-                 "--profile", PROFILE,
                  "--out", str(out)],
                 cwd=str(REPO),
                 text=True,

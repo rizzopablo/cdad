@@ -43,7 +43,7 @@ ALLOWLIST = REPO_ROOT / "scripts" / "cdad-bash-allowlist.sh"
 
 RUNTIME = "opencode"  # T4 scope: OpenCode adapters first (plan.md T4 row)
 STACK = "odoo"
-PROFILE = "optimus"
+# 006-003 U1/PD-1f: el generador no tiene `--profile` (constante retirada).
 
 # Role used for the adapter-selection reproduction (review-2 R2-B1 was
 # reproduced with `implementer --stack odoo` and with `implementer-odoo`).
@@ -81,8 +81,6 @@ def run_generator(out_dir: Path) -> subprocess.CompletedProcess[str]:
             RUNTIME,
             "--stack",
             STACK,
-            "--profile",
-            PROFILE,
             "--out",
             str(out_dir),
         ],

@@ -32,7 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
 
 STACK = "odoo"
-PROFILE = "optimus"
+# 006-003 U1/PD-1f: el generador no tiene `--profile` (constante retirada).
 RUNTIME = "opencode"  # T4 scope: OpenCode adapters first (plan.md T4)
 
 ARCHITECT_SOURCE = REPO_ROOT / "sources" / "roles" / "architect.md"
@@ -51,19 +51,17 @@ ROLE_AGENTS = (
 
 
 def make_sandbox(base: Path) -> Path:
-    """Sandbox copy of sources/ plus the generator and the model map.
+    """Sandbox copy of sources/ plus the generator.
 
     Same pattern as the T3 suite: the real sources/ is never mutated; the
-    mutation cases run a COPY of the generator inside the sandbox.
+    mutation cases run a COPY of the generator inside the sandbox. 006-003
+    PD-1c: there is no model map to copy any more.
     """
     sandbox = base / "sandbox"
     sandbox.mkdir(parents=True)
     shutil.copytree(REPO_ROOT / "sources", sandbox / "sources")
     (sandbox / "scripts").mkdir()
     shutil.copy2(GENERATOR, sandbox / "scripts" / GENERATOR.name)
-    models = REPO_ROOT / "scripts" / "cdad-models.sh"
-    if models.is_file():
-        shutil.copy2(models, sandbox / "scripts" / models.name)
     return sandbox
 
 
@@ -73,7 +71,6 @@ def run_generator(
     sandbox: Path | None = None,
     runtime: str = RUNTIME,
     stack: str = STACK,
-    profile: str = PROFILE,
 ) -> subprocess.CompletedProcess[str]:
     generator = (sandbox or REPO_ROOT) / "scripts" / GENERATOR.name
     return subprocess.run(
@@ -84,8 +81,6 @@ def run_generator(
             runtime,
             "--stack",
             stack,
-            "--profile",
-            profile,
             "--out",
             str(out_dir),
         ],

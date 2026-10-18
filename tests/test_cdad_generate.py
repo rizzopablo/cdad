@@ -1,20 +1,38 @@
 #!/usr/bin/env python3
-"""RED tests for 004-001 T3: the deterministic generator (spec §2 contract).
+"""Tests for 004-001 T3: the deterministic generator (spec §2 contract).
 
 Black-box tests: the generator `scripts/cdad-generate.py` is invoked as a
-subprocess and only its published outputs are inspected. The generator does
-not exist yet — every test's FIRST assertion is the contract assertion that
-it exists and runs (AssertionError with the contract message, never
-ImportError). Mappings to the approved postconditions:
+subprocess and only its published outputs are inspected. Every test's FIRST
+assertion is the contract assertion that the generator exists and runs
+(AssertionError with the contract message, never ImportError). Mappings to the
+approved postconditions:
 
 - test_postcondition_2_*  → PD-2  (determinism)
 - test_postcondition_3a_* → PD-3  (explicit failure, incomplete/duplicated source)
 - test_postcondition_3b_* → PD-3  (explicit failure, duplicated shared block)
-- test_postcondition_3c_* → PD-3  (explicit failure, unsupported combination)
+- test_postcondition_3c_* → PD-3  (explicit failure, unsupported runtime/stack)
 - test_postcondition_4_*  → PD-4  (single source: manifest references + composed §2)
-- test_postcondition_14_* → PD-14 (coherence between runtimes)
+- test_pd_1e_generated_*  → 006-003 PD-1e/INV-3 (no `model:` in generated agents)
+- test_pd_7a_generated_*  → 006-003 PD-7a/INV-3 (generated orchestrators name no model)
 - test_postcondition_15_* → PD-15 (honesty: no unbacked sandbox promises)
 - test_postcondition_16_* → PD-16 (legacy fallback declared in generated agents)
+
+ORACLE REPLACEMENT (006-003 U1, spec docs/specs/006-003-installer-single-
+profile-delegation-config/spec.md, PD-1/PD-1c/PD-1e/PD-7a/INV-3): this file was
+profile-coupled. What changed and why, so no assert is dropped silently:
+
+- `PROFILE = "optimus"` and the `--profile` argument are GONE from every run:
+  the generator no longer has profiles (PD-1f).
+- `test_postcondition_3c` no longer exercises the `unknown-profile` case: there
+  is no profile argument left to validate (PD-1f). Runtime/stack validation is
+  kept unchanged.
+- `test_postcondition_4` asserted that the manifest RECORDS the profile used.
+  That assert is REPLACED by its inverse: the manifest must not carry the
+  profile (PD-1d). Nothing else of PD-4 changes.
+- `test_postcondition_14_*` (PD-14: "each runtime mentions only the models its
+  own map produces") is REPLACED by PD-1e/PD-7a/INV-3: no generated agent fixes
+  a `model:` line and no generated orchestrator names a model at all — there is
+  no runtime model map left to be coherent with (the map is retired, PD-1c).
 """
 
 from __future__ import annotations
@@ -34,7 +52,6 @@ GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
 GENERATOR_REF = "scripts/cdad-generate.py"
 
 STACK = "odoo"
-PROFILE = "optimus"
 RUNTIMES = ("opencode", "claude-code")
 ROLES = ("architect", "test-writer", "implementer", "reviewer", "scribe")
 AGENT_NAMES = tuple(
@@ -43,27 +60,14 @@ AGENT_NAMES = tuple(
     + ["cdad-orchestrator.md"]
 )
 
-# OpenCode design-model names — single source: scripts/cdad-models.sh (cdad_model).
-# They must never appear in a Claude Code artifact (PD-14; ADR-001/005).
-OC_DESIGN_MODELS = (
-    "deepseek-v4-pro",
-    "deepseek-v4-flash",
-    "glm-5.2",
-    "qwen3.7-plus",
-    "qwen3.7-max",
-    "minimax-m3",
-)
-# Values cdad_model_claude produces (scripts/cdad-models.sh).
-CC_MODEL_VALUES = ("sonnet", "haiku", "opus", "fable")
-# Regex for Claude Code model values appearing as table cells or claude-* ids.
-CC_MODEL_CELL_RE = re.compile(
-    r"(^|[|(])\s*(sonnet|haiku|opus|fable)\s*([|)])"
-    r"|claude-(sonnet|haiku|opus|fable)"
-)
+# 006-003 U1 replaced the per-runtime model map (scripts/cdad-models.sh, PD-14)
+# with the absence invariant INV-3: no installable text fixes or names a model.
+MODEL_LINE_RE = re.compile(r"^model:")
+MODEL_NAME_RE = re.compile(r"deepseek|glm-|qwen|minimax|sonnet|haiku|opus|mofgw/")
 
 MISSING_GENERATOR_MSG = (
     "T3 contract: %s is a declared artifact of this feature "
-    "(PD-2/3/4/14/15/16) and does not exist — RED contract not yet honored"
+    "(PD-2/3/4/1e/7a/15/16) and does not exist — RED contract not yet honored"
     % GENERATOR_REF
 )
 
@@ -87,7 +91,6 @@ def run_generator(
     *,
     cwd: Path | None = None,
     stack: str = STACK,
-    profile: str = PROFILE,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
@@ -97,8 +100,6 @@ def run_generator(
             runtime,
             "--stack",
             stack,
-            "--profile",
-            profile,
             "--out",
             str(out_dir),
         ],
@@ -118,12 +119,13 @@ def tree_hashes(root: Path) -> dict[str, str]:
 
 
 def make_sandbox(base: Path) -> Path:
-    """Sandbox copy of sources/ plus the generator and the model map.
+    """Sandbox copy of sources/ plus the generator.
 
     Never mutates the real sources/: the mutation cases run a COPY of the
     generator inside the sandbox so the source-resolution sees the mutated
     copy regardless of whether the generator resolves sources from its own
-    location or from the working directory.
+    location or from the working directory. The model map is no longer part of
+    the sandbox (006-003 PD-1c: the generator has no model map to copy).
     """
     assert GENERATOR.is_file(), MISSING_GENERATOR_MSG
     sandbox = base / "sandbox"
@@ -131,9 +133,6 @@ def make_sandbox(base: Path) -> Path:
     shutil.copytree(REPO_ROOT / "sources", sandbox / "sources")
     (sandbox / "scripts").mkdir()
     shutil.copy2(GENERATOR, sandbox / "scripts" / GENERATOR.name)
-    models = REPO_ROOT / "scripts" / "cdad-models.sh"
-    if models.is_file():
-        shutil.copy2(models, sandbox / "scripts" / models.name)
     return sandbox
 
 
@@ -146,8 +145,6 @@ def run_generator_in_sandbox(sandbox: Path, out_dir: Path, runtime: str) -> subp
             runtime,
             "--stack",
             STACK,
-            "--profile",
-            PROFILE,
             "--out",
             str(out_dir),
         ],
@@ -282,24 +279,26 @@ class TestDeterministicGenerator(unittest.TestCase):
 
     def test_postcondition_3c_unsupported_combinations_fail(self) -> None:
         self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+        # 006-003 PD-1f: the `unknown-profile` case is RETIRED here — the
+        # generator has no profile argument left to validate (that surface is
+        # asserted by tests/test_006_003_u1_generator_without_profiles.py).
         cases = {
-            "unknown-runtime": ("cursor", STACK, PROFILE),
-            "unknown-stack": ("opencode", "golang", PROFILE),
-            "unknown-profile": ("opencode", STACK, "fubar"),
+            "unknown-runtime": ("cursor", STACK),
+            "unknown-stack": ("opencode", "golang"),
         }
         with tempfile.TemporaryDirectory(prefix="cdad-t3-fail-combo-") as tmp:
             base = Path(tmp)
-            for label, (runtime, stack, profile) in cases.items():
+            for label, (runtime, stack) in cases.items():
                 with self.subTest(case=label):
                     out = base / label / "staging"
-                    result = run_generator(runtime, out, stack=stack, profile=profile)
+                    result = run_generator(runtime, out, stack=stack)
                     self.assertNotEqual(
                         result.returncode,
                         0,
                         "PD-3: unsupported combination (%s) was accepted" % label,
                     )
                     self.assertTrue(result.stderr.strip(), "PD-3: rejection lacked a diagnostic")
-                    bad_value = {"unknown-runtime": "cursor", "unknown-stack": "golang", "unknown-profile": "fubar"}[label]
+                    bad_value = {"unknown-runtime": "cursor", "unknown-stack": "golang"}[label]
                     self.assertIn(
                         bad_value,
                         result.stderr,
@@ -332,7 +331,17 @@ class TestDeterministicGenerator(unittest.TestCase):
                 )
             self.assertIn("cdad-generate.py", raw, "PD-4: manifest does not carry the regeneration command")
             self.assertIn(STACK, raw, "PD-4: manifest does not record the stack used")
-            self.assertIn(PROFILE, raw, "PD-4: manifest does not record the profile used")
+            # ORACLE REPLACEMENT (006-003 U1 / PD-1d): PD-4 used to assert that
+            # the manifest recorded the profile used. The profile is gone from
+            # the generator, so the assert is inverted: the manifest must not
+            # carry it. (The focal file asserts the JSON key; here the raw
+            # bytes are checked so a leftover value cannot survive either.)
+            self.assertNotIn(
+                "optimus",
+                raw,
+                "PD-1d (reemplazo del oráculo PD-4 'registra el perfil'): manifest.json "
+                "todavía registra el perfil de generación",
+            )
 
     def test_postcondition_4_orchestrator_contract_is_composed_once_with_all_role_rows(self) -> None:
         self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
@@ -360,50 +369,72 @@ class TestDeterministicGenerator(unittest.TestCase):
                             "PD-4: %s orchestrator §2 is missing the composed row of role %s" % (runtime, role),
                         )
 
-    def test_postcondition_14_cc_agents_do_not_mention_opencode_design_models(self) -> None:
-        self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
-        with tempfile.TemporaryDirectory(prefix="cdad-t3-cc-models-") as tmp:
-            out = Path(tmp) / "staging"
-            result = run_generator("claude-code", out)
-            self.assertEqual(result.returncode, 0, "generator run failed: %s" % result.stderr)
-            agents = sorted((out / "agents" / "claude-code").glob("cdad-*.md"))
-            self.assertEqual(
-                [a.name for a in agents],
-                sorted(AGENT_NAMES),
-                "PD-4: CC runtime must publish exactly the 11 declared agents",
-            )
-            for agent in agents:
-                text = agent.read_text(encoding="utf-8")
-                for model in OC_DESIGN_MODELS:
-                    self.assertNotIn(
-                        model,
-                        text,
-                        "PD-14: %s mentions OpenCode design model %s, which cdad_model_claude does not produce"
-                        % (agent.name, model),
-                    )
+    def test_pd_1e_generated_agents_carry_no_model_line(self) -> None:
+        """PD-1e/INV-3 (replaces PD-14): generated agents fix no `model:`.
 
-    def test_postcondition_14_orchestrator_contract_section_models_belong_to_runtime_map(self) -> None:
+        ORACLE REPLACEMENT (006-003 U1): PD-14 verified that each runtime
+        mentioned only the models its own map produced. The map is retired
+        (PD-1c), so the invariant becomes stronger and simpler: NO generated
+        agent of either runtime may carry a `model:` line (PD-1e, INV-3).
+        """
+        self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
+        for runtime in RUNTIMES:
+            with self.subTest(runtime=runtime):
+                with tempfile.TemporaryDirectory(prefix="cdad-t3-cc-models-") as tmp:
+                    out = Path(tmp) / "staging"
+                    result = run_generator(runtime, out)
+                    self.assertEqual(
+                        result.returncode, 0, "generator run failed: %s" % result.stderr
+                    )
+                    agents = sorted((out / "agents" / runtime).glob("cdad-*.md"))
+                    self.assertEqual(
+                        [a.name for a in agents],
+                        sorted(AGENT_NAMES),
+                        "PD-4: %s runtime must publish exactly the 11 declared agents" % runtime,
+                    )
+                    for agent in agents:
+                        lines = [
+                            number
+                            for number, line in enumerate(
+                                agent.read_text(encoding="utf-8").splitlines(), start=1
+                            )
+                            if MODEL_LINE_RE.match(line)
+                        ]
+                        self.assertEqual(
+                            lines,
+                            [],
+                            "PD-1e/INV-3: generated %s/%s still carries a model: line "
+                            "(lines %s)" % (runtime, agent.name, lines),
+                        )
+
+    def test_pd_7a_generated_orchestrators_name_no_model(self) -> None:
+        """PD-7a/INV-3 (replaces PD-14): generated orchestrators name no model.
+
+        ORACLE REPLACEMENT (006-003 U1): PD-14 checked that the §2 model cells
+        of each runtime belonged to its own map. The cells are retired
+        (PD-7a: no installable text names a model), so the assert is inverted:
+        the generated orchestrator must name no model of either family.
+        """
         self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)
         with tempfile.TemporaryDirectory(prefix="cdad-t3-oc-models-") as tmp:
             base = Path(tmp)
-            oc_out = base / "oc"
-            cc_out = base / "cc"
-            oc_result = run_generator("opencode", oc_out)
-            cc_result = run_generator("claude-code", cc_out)
-            self.assertEqual(oc_result.returncode, 0, "generator run failed: %s" % oc_result.stderr)
-            self.assertEqual(cc_result.returncode, 0, "generator run failed: %s" % cc_result.stderr)
-            oc_text = (oc_out / "agents" / "opencode" / "cdad-orchestrator.md").read_text(encoding="utf-8")
-            self.assertIsNone(
-                CC_MODEL_CELL_RE.search(oc_text),
-                "PD-14: OC orchestrator mentions Claude Code model values, which cdad_model does not produce",
-            )
-            cc_text = (cc_out / "agents" / "claude-code" / "cdad-orchestrator.md").read_text(encoding="utf-8")
-            for model in OC_DESIGN_MODELS:
-                self.assertNotIn(
-                    model,
-                    cc_text,
-                    "PD-14: CC orchestrator §2 mentions OpenCode design model %s" % model,
-                )
+            for runtime in RUNTIMES:
+                with self.subTest(runtime=runtime):
+                    out = base / runtime
+                    result = run_generator(runtime, out)
+                    self.assertEqual(
+                        result.returncode, 0, "generator run failed: %s" % result.stderr
+                    )
+                    orchestrator = out / "agents" / runtime / "cdad-orchestrator.md"
+                    matches = MODEL_NAME_RE.findall(
+                        orchestrator.read_text(encoding="utf-8")
+                    )
+                    self.assertEqual(
+                        matches,
+                        [],
+                        "PD-7a/INV-3: generated %s orchestrator names models %s"
+                        % (runtime, sorted(set(matches))),
+                    )
 
     def test_postcondition_15_generated_agents_make_no_unbacked_sandbox_promises(self) -> None:
         self.assertTrue(GENERATOR.is_file(), MISSING_GENERATOR_MSG)

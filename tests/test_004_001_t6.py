@@ -82,6 +82,13 @@ PUBLIC_LAYOUT_ENTRIES = (
 # PD-14 single source for OpenCode design models: scripts/cdad-models.sh
 # (cdad_model). Values frozen from tests/test_cdad_generate.py — the tests are
 # the declared consumers of the model map, never the implementation.
+#
+# 006-003 U1 (PD-1c/PD-1e/INV-3) — DECLARED REPLACEMENT of the oracle, asserts
+# untouched: the model map `scripts/cdad-models.sh` is RETIRED and no installed
+# agent carries a `model:` line any more, so this frozen tuple stops being "the
+# values the map produces" and becomes a NEGATIVE oracle (these names must not
+# appear in a Claude Code artifact). The `assertNotIn` direction of this test
+# is unchanged and still holds; only its justification is restated here.
 OC_DESIGN_MODELS = (
     "deepseek-v4-pro",
     "deepseek-v4-flash",
