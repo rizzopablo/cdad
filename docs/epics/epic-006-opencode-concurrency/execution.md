@@ -221,3 +221,7 @@ El 2026-10-18 el dueño retiró la verificación de familia (enmienda A-5 de la 
 ## 006-003: suite completa antes de la review
 
 `pytest tests/` sobre `f072cf3`: **1166 passed, 1 failed, 5 skipped** (30 min). El fallo es `test_006_001_t1_selection.py::TestPd2ServerPreflight::test_pd2_connection_refused_is_transport_error` (`'timeout' != 'transport-error'`), que en aislamiento pasa 3/3 (1,6 s). Es la misma carrera conocida de los fixtures del adaptador bajo la carga de la suite, no una regresión de 006-003. `make validate` en este checkout da 168/1: el único FAIL es F011 por la deriva de la instalación del dueño, que es anterior al despliegue. Contra la instalación de aceptación de U8 da 169/0.
+
+## 006-003: suite de cierre
+
+`pytest tests/` sobre `8638d06` (tras la re-review focal 2): **1177 passed, 5 skipped, 0 failed** (30 min). PD-8c cumplida.
