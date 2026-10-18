@@ -7251,6 +7251,47 @@
         "docs/specs/006-002-delegation-by-layer/u4-red.md": "2077d3f1bfbbbd8352499ddbad94de2c9114ed401159c816b91399374db2d9d3"
       },
       "note": "3c828ad: 6 focales + 4 F001 rojos por asercion."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u4-green",
+      "substage": "green",
+      "at": "2026-10-18T01:38:24.394142+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "755a201e205a00c73c6f8a6e66a465ea4347b9b42cd87c4338c9ad4e98b51659",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u4-green",
+        "substage": "green",
+        "packet_id": "006-002-delegation-by-layer-implementer-green-005",
+        "receipt_sha256": "604cd824268807c5733c76254aff391a54382394b60f423c04c7622b964ae2a7",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u4-green.md",
+            "6c0db7b07abc1616e1a5984ed4cfd3c72e4abcfa717b08c4da5f853a308bdec5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-implementer-green-005",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-implementer-green-005/receipt.json",
+      "receipt_sha256": "604cd824268807c5733c76254aff391a54382394b60f423c04c7622b964ae2a7",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/u4-green.md": "6c0db7b07abc1616e1a5984ed4cfd3c72e4abcfa717b08c4da5f853a308bdec5"
+      },
+      "note": "8c05755; verificado: 352 passed 2 skipped (006-002, acoplados, todo test que lee SKILL.md u orquestadores), validate 161/1 (F011=DT-8). Pendiente para la review: sub-agent-strategies.md:51 conserva alias de modelo de Claude Code (detalle de runtime en la skill; el oraculo de U2 no lo cubre)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7265,7 +7306,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T01:26:02.345477+00:00",
+  "last_updated": "2026-10-18T01:38:24.394142+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7373,13 +7414,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-implementer-green-005",
-    "role": "implementer",
-    "substage": "green",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-test-writer-red-006",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
