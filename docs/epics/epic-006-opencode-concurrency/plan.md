@@ -316,14 +316,14 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 **Límite:** el principio mejora el juicio de diseño; no aumenta las justificaciones que los agentes deben producir.
 
 **Es un cambio de contrato de rol:**
-1. **ADR-033** registra el principio y su límite. Lo redacta el architect y lo aprueba el dueño.
+1. **ADR-034** registra el principio y su límite (renumerado: ADR-033 lo tomó la decisión de modelos de 006-003). Lo redacta el architect y lo aprueba el dueño.
 2. **Fuente única instalable:** el principio vive en un solo lugar del skill; los roles lo referencian.
 3. **Architect:** considera alternativas generales y específicas en las decisiones relevantes y explica el criterio elegido.
 4. **Reviewer:** evalúa consecuencias reales: duplicación que puede divergir, complejidad innecesaria, pérdida de capacidades y acoplamiento. La falta de una abstracción, por sí sola, no es un defecto.
 
 **Vehículo:** se construye junto con 006-004, que lo distribuye como primera fila de «Decisiones vigentes». El alcance de 006-004 no cambia por esto; los puntos 1 a 4 son trabajo adicional declarado.
 
-**Aceptación:** ADR-033 aprobado; un test de texto fija la fuente única, la obligación del architect, el criterio del reviewer y el límite («la falta de abstracción no es defecto»); `make validate` y la suite pasan.
+**Aceptación:** ADR-034 aprobado; un test de texto fija la fuente única, la obligación del architect, el criterio del reviewer y el límite («la falta de abstracción no es defecto»); `make validate` y la suite pasan.
 
 ## 13. Enmienda 006 — revisión independiente de spec y plan antes de RED; feature 006-006 (2026-10-18)
 

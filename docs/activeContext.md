@@ -4,6 +4,147 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-18 — Feature: 006-003-installer-single-profile-delegation-config (epic 006)
+
+**Cerrada el 2026-10-18 (ciclo técnico completo).** Tercera unidad de `epic-006-opencode-concurrency`. El instalador
+y el generador quedan **sin perfiles y sin mapa de modelos**; la delegación externa toma el modelo de un **único
+archivo de configuración**; el instalador **retira sus propios obsoletos**; y la credencial del servidor se carga
+de un archivo con permisos verificados. **Contrato:** `spec.md` sha256 `c25ebf0e…` (PD-1..PD-8, INV-1..INV-7,
+D1..D8; **§8 A-1..A-4** del orquestador y **§9 A-5** del dueño) y `plan.md` con **A-6**; aprobados el **2026-10-18**
+por el orquestador Claude bajo la **HITL delegada del epic** (A-5 lo aprobó **Pablo**). **El epic NO se cierra.**
+
+**Problema medido (no presupuestado).** Dos hechos: (i) el despliegue de 006-002 dejó en HOME las dos referencias
+retiradas como `pending_removal` — el instalador **no borra** lo que dejó de desplegar y un orquestador puede seguir
+leyéndolas (`docs/epics/epic-006-opencode-concurrency/execution.md` §«Despliegue y push tras 006-002»); (ii) el
+principio del dueño (`plan.md` §9): **los modelos los fija la configuración, nunca el orquestador ni los scripts**.
+Con eso, el mapa de perfiles de `scripts/cdad-models.sh` y la línea `model:` de los agentes dejan de tener sentido.
+
+**Producto (U1 → U8 + dos rondas de review-fix).** Rango `2b43516..HEAD` (HEAD = `2798a9a`): **111 archivos,
++12653/−1771**, de los cuales **41 son producto, +1163/−860** — `install.sh` es el grueso, `scripts/cdad-models.sh`
+**retirado** (−177), `scripts/cdad-generate.py`, `scripts/validate-subagents.sh`, `Makefile`, `sources/agents/adapters/*`,
+`sources/roles/*`, `skills/cdad-cycle/SKILL.md`, `references/cli-delegation.md`, `scripts/cdad_delegate.py`,
+`scripts/cdad_delegate_opencode.py`, `assets/opencode-exec-config.example.json` y los agentes regenerados;
+`tests/` suma **37 archivos, +7338/−900**. **Último commit de producto: `738a380`** (todo lo posterior es docs/estado).
+
+- **U1** — generador sin `--profile` ni mapa: `cdad-models.sh` retirado, `Makefile` sin `PROFILE`, manifiesto de
+  staging sin la clave `profile`, `^model:` a **0** en los 21 agentes. RED `d5b2ae0` → GREEN `afcd14f`; **testfix**
+  `bb674b4` (`P1.reviewer` de `validate-odoo-specialization.sh` pasa de exigir `model:` distinto a exigir su
+  ausencia, declarado).
+- **U2** — instalador sin perfiles: `--economical|--optimus|--premium` **rechazados** con diagnóstico que nombra
+  la config de delegación; `--basic` y `CDAD_MODEL_PROFILE` **aceptados, deprecados y sin efecto** (A-1: nada
+  silencioso, INV-7). RED `f2c3540` → GREEN `44f1561`.
+- **U3** — textos instalables sin perfiles ni modelos concretos: §2 de `SKILL.md`, sección `delegation` de los
+  adaptadores, agentes regenerados; oráculo de PD-7a vacío. RED `54c6ac6` → GREEN `2b1b597`.
+- **U4** — `delegation.json` **versión 1** (por destino y rol) como **única fuente** del modelo de la delegación
+  externa; la clave `model` de la exec-config se **ignora con un aviso de una línea** que nombra la ruta y cómo
+  migrar; rol sin entrada → sin `--model` y `model_configured: null`; el instalador crea `delegation.json` +
+  `opencode-server.env.example` (sin valor) y **no los registra como suyos** (A-3). RED `5b91387` → GREEN `df90b41`.
+- **U5/U5'** — ver **A-5** abajo.
+- **U6** — credencial del servidor: variables de entorno primero y si no el archivo (`credential_env_file` o el
+  default); permisos sobre el **fd abierto** (`os.fstat`, acepta 600/400, rechaza bits 077); `401/403` con
+  diagnóstico autosuficiente (variables, ruta resuelta, procedencia) y **nunca el valor**. RED `e2eba98` → GREEN `797b935`.
+- **U7** — el instalador **retira sus obsoletos propios**: intacto por sha256 → retirado del disco **y** del
+  manifiesto; modificado → preservado + CONFLICT + **sigue registrado**; no registrado → nunca se lee; `--dry-run`
+  lista sin borrar; el python del manifiesto recibe `INSTALL_ROOT`. RED `3a04ad1`; **GREEN detenido** (`ef78451`,
+  sin commit, árbol devuelto) porque **review-5 B3** fijaba lo contrario; **A-6** reformula B3 y deriva la cuenta
+  del `Verify` del staging; **testfix** `12a859b` → GREEN `516149b`.
+- **U8** — aceptación end-to-end en **raíz redirigida** (HOME falso, XDG propio): install → `--check` PASS →
+  `make validate` sobre la instalación de aceptación → despacho `mode: server` con la config del instalador →
+  reinstalación que retira el obsoleto; **HOME byte a byte intacto** (INV-6). Test `1bc7645` (797 líneas) + T4 de
+  005-010 reformulada por D3/U4.
+
+**A-5 (decisión del dueño, en mitad de camino): se retira la verificación de familia.** Mientras corría el GREEN de
+U5, Pablo retiró el requisito: para la delegación **externa** el modelo se configura en `delegation.json`; para la
+**interna**, en la config de cada agente según lo que el runtime permita; y **no** se exige al orquestador despachar
+controlando familia ni modelo. Se retiran PD-4a..e, D4, §2.4, el script `cdad_model_family.py` (**no se construyó**) y
+**INV-5 se reemplaza**; se conservan la observación I8 (`model_configured`/`model_reported`, que solo registra) y los
+demás invariantes anti-sesgo (el test-writer no ve implementación, el implementer no edita tests, el reviewer es
+read-only y de sesión separada). El GREEN `-005` quedó **abandonado sin cambios** y U5' lo reemplazó: RED `0629ae0`
+(+ **testfix** `113c777`, un **falso positivo** del oráculo: «failure family» de `stage-4-review.md` no es requisito
+de despacho) → GREEN `0230156`.
+
+**Review (etapa 4, reviewer en sesión independiente) — 0 bloqueantes / 7 opcionales / 3 abstenciones**,
+sobre `2b43516..401d951`. **Disposición:** una ronda de review-fix para los opcionales que contradicen la letra de la
+spec o confunden el diagnóstico (**O-1** credencial de entorno vacía tratada como presente, **O-2** el lector de
+`delegation.json` y de la credencial debía resolver la **misma base** que el instalador, **O-4** el 401 imprimía
+«credential file None», **O-5** un registro con sha vacío no debía retirarse). **O-3** (precedencia de
+`XDG_CONFIG_HOME` del host frente a la raíz redirigida) y **O-6** (XDG relativo) pasan a **deuda**; **O-7** se cierra
+con la suite. RED `c57fc79` —que **declaró que O-5 no era reproducible** en vez de inventar una postcondición
+sustituta— → GREEN `ef8d2f8`.
+
+**Re-review focal 1 — 1 BLOQUEANTE.** **B-1: la afirmación del RED sobre O-5 era falsa.** El reviewer sondeó
+black-box y mostró que un registro con sha `""` **sí se retira** en dos representaciones alcanzables: el TSV del
+manifiesto leído con `IFS=$'\t' read` de bash **colapsa columnas vacías**, así que con sha y source vacíos el
+registro da `removable`; con source presente la columna colapsada se rellena con el source y el registro queda
+**permutado** («registered hand-edit»). El remedio fue **estructural**: veredicto `unverifiable` (sha vacío o `null`
+**nunca** `removable`) y los registros del manifiesto viajan **NUL-framed** con `read -r -d ''`; los streams que
+quedan en TSV los parsea **Python** (`split("\t", 2)`), que preserva campos vacíos. **OPT-1** (la rama de entorno del
+401 ya no nombraba ninguna ruta candidata) se corrigió en la misma ronda. RED `26667b5` → GREEN `738a380`; la
+afirmación de `rf-red.md` §4 quedó **refutada por escrito** con la disposición.
+
+**Re-review focal 2 — 0 bloqueantes / 1 opcional / 3 abstenciones.** B-1 cerrado **5/5** puntos de su condición
+(remedio estructural verificado por lectura + test + sonda propia: `--dry-run` con registro degenerado **no borra
+nada**); OPT-1 cerrado. **OPT-2** (el comentario de symlinks de `install.sh` declara un veredicto que el orden real
+del código —más conservador— ya no entrega con digest vacío) pasa a **deuda**: no cambia comportamiento, no pierde
+datos y solo se alcanza con un manifiesto editado a mano.
+
+**Suite de cierre (una vez, por quien cierra).** `pytest tests/` sobre `8638d06` → **1177 passed, 5 skipped,
+0 failed** (**PD-8c cumplida**); la falla ambiental de la corrida previa (carrera de fixtures del adaptador bajo la
+carga de la suite) **no se reprodujo**. `make validate` en este checkout: **168 PASS / 1 FAIL = F011**, la deriva de
+la instalación de HOME (**DT-8**, preexistente); **redirigido a la instalación de aceptación de U8 → 169 PASS / 0 FAIL**.
+
+**Decisiones relevantes.** **D-1** el instalador y el generador **no tienen perfiles**; `--basic`/`CDAD_MODEL_PROFILE`
+sobreviven un ciclo como **alias deprecado sin efecto** (≥6 recetas de test los usan) y los flags de perfil se
+**rechazan** nombrando el lugar donde ahora se elige el modelo. **D-3 (dueño)** `delegation.json` es la **única**
+fuente del modelo externo, **sin fallback silencioso**, con aviso de deprecación para la clave heredada;
+**trade-off declarado:** una exec-config existente cambia de modelo efectivo (pasa al default del destino) y el
+registro lo declara. **D-5** la credencial se verifica sobre el **fd abierto** (patrón TOCTOU ya existente) y el
+diagnóstico nombra variables/ruta/procedencia **nunca el valor**. **D-6 (dueño)** el retiro de obsoletos es **unidad
+propia**, reutiliza la regla owned+sha256 de `--uninstall` (**una sola función compartida, sin duplicar**) y **no toca
+lo no registrado**; **A-3** deja `delegation.json` y el `.example` **fuera del manifiesto** (son datos del usuario:
+ni `--uninstall` ni el prune los borran nunca). **D-7** los tests acoplados se **reformulan declarando el reemplazo**
+(A-1 del plan), nunca se borran en silencio. **A-5 (dueño)** quita la verificación de familia; **A-6 (orquestador,
+HITL)** resuelve el choque B3↔PD-6a de forma **general** —no acota el retiro a «lo que no sea agente»— y hace que la
+cuenta del `Verify` **salga del staging** por runtime, conservando su poder de detectar una instalación incompleta.
+
+**Deuda detectada (abierta, con condición de cierre).** **O-3** — con raíz redirigida y `XDG_CONFIG_HOME` definida en
+el host, los dos archivos de config se crean en el XDG real: **INV-6 al pie de la letra se rompe** en esa
+configuración (la implementación sigue PD-2c fielmente y los tests evitan el caso redirigiendo XDG). **Decisión del
+dueño** (que PD-2c gane por diseño, o que se ignore XDG con aviso cuando hay raíz redirigida) + test que la fije.
+**O-6** — un `XDG_CONFIG_HOME` **relativo** (inválido por la spec XDG) resuelve rutas relativas al cwd de cada
+proceso; validar absolutidad con diagnóstico (patrón ya usado para `CDAD_INSTALL_ROOT`). **OPT-2** — comentario de
+symlinks de `install.sh` contra el orden real del código. **DT-8** — `__pycache__` en el staging (causa única del
+F011): sigue **fuera de alcance** y el retiro de PD-6 **no promete** árbol «limpio». **Desconocidos conservados:**
+si el runtime honra `agent.<name>.model` sobre el frontmatter de un agente custom (no verificable desde el repo;
+CDAD no depende de ello) y la relación exacta de la contraseña con el runtime del dueño (afirmada por el plan, no
+verificable en el repo). Y **evidencia para 006-005**: abandonar un paquete despachado **no lo libera** —
+`disposition --resolution abandoned` registra la decisión pero el paquete queda `dispatched`; `prepare` rechaza todo
+paquete nuevo, `--replace-packet` solo acepta lo nunca despachado y `reconcile` es de solo lectura: **ningún comando
+lleva un paquete despachado a `failed`** (se cambió un campo a mano, con la disposición como autoridad, y
+`validate-state` dio VALID).
+
+**Lecciones de proceso (las cuatro medidas).** (1) **Un oráculo aprobado antes puede contradecir una decisión nueva y
+el discovery no listarlo**: review-5 **B3** fijaba lo contrario de PD-6a y `discovery.md` §1.6/R1 solo había declarado
+acoplado a **B4**; el implementer **se detuvo** en vez de acotar la regla a lo que dejara el test verde —lo que
+habría sido gaming—. (2) **Un RED puede dar por cumplido un hallazgo con sondas incompletas**: el RED de O-5 reportó
+«ya se cumple» con siete variantes y la re-review lo **refutó black-box** en dos representaciones alcanzables; la
+lección operativa es que **un registro estructurado no se lee con `read` de bash cuando puede haber campos vacíos**.
+(3) **Abandonar no libera**: el vocabulario cerrado de la disposición es `abandoned|superseded` y la enmienda 004 ya
+le encargó a 006-005 el «intento interrumpido sin entrega» con camino mecánico. (4) **La carrera conocida de los
+fixtures del adaptador bajo la carga de la suite volvió a aparecer** (una instancia de la clase DT-9: cota de 2 s;
+el caso pasa en aislamiento): no es regresión de esta feature y hay que seguir teniéndola en cuenta.
+
+**Estado del epic.** `epic-006-opencode-concurrency` sigue **abierto** (`features-loop`): **006-001, 006-002 y 006-003
+`done`, 3/6**, y **en cola** —cada una con su enmienda al plan aprobada por el dueño— **006-005-native-path-parity**
+(paridad del recorrido nativo: núcleo común, registro mecánico del intento, capacidades del encargo; enmienda 004) y
+**006-004-active-decisions-table** (la sección «Decisiones vigentes», enmienda 003, que además vehiculiza el
+principio de general antes que específico, enmienda 005). Y **006-006-spec-plan-review** (revisión independiente de spec y plan antes de RED, enmienda 006, aprobada por el dueño el 2026-10-18), ordenada **después** de 006-004; la spec y el plan de 006-005 los revisa el reviewer con el procedimiento actual. **El epic NO se cierra.** **Redespliegue en HOME ordenado por el dueño el 2026-10-18** (antes: `e4d17e3`, 006-002 con perfil `basic`); receta — `make staging && bash install.sh --force &&
+bash install.sh --check` (el flag de perfil ya no hace falta; se acepta con aviso de deprecación); se esperan el
+CONFLICT preservado del reviewer del dueño y DT-8. **ADR:** borrador **ADR-033** (reemplaza ADR-007 y la parte de
+perfiles de ADR-008), **aprobado por el dueño**; numeración ajustada en `plan.md` §12: el ADR del principio de general antes que
+específico pasa de `ADR-033` a **`ADR-034`**. **Siguiente:**
+`006-005-native-path-parity`.
+
 ## 2026-10-18 — Feature: 006-002-delegation-by-layer (epic 006)
 
 **Cerrada el 2026-10-18 (ciclo técnico completo).** Segunda unidad de `epic-006-opencode-concurrency`.

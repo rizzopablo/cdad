@@ -1,7 +1,14 @@
 # ADR-008 — Claude Code como segundo runtime objetivo para CDAD
 
 **Fecha:** 2026-08-13  
-**Status:** **Verified** (2026-08-14 — validation spike `cdad-002` ejecutado end-to-end con sub-agentes reales vía CLI; gates G7a-G7e PASS; delegación Agent tool verificada; Fix B path-guard aplicado)  
+**Status:** **Verified** (2026-08-14 — validation spike `cdad-002` ejecutado end-to-end con sub-agentes reales vía CLI; gates G7a-G7e PASS; delegación Agent tool verificada; Fix B path-guard aplicado) — **parcialmente reemplazado por ADR-033** (2026-10-18) en su parte de perfiles y modelos por rol; el resto sigue vigente.  
+
+> **PARCIALMENTE REEMPLAZADO por ADR-033** (2026-10-18): la **parte de perfiles y de modelos por rol** queda sin
+> efecto — el punto 3 de la Decisión (extensión de `cdad-models.sh` con `cdad_model_claude` hacia alias de Anthropic),
+> la fila «Reviewer ≠ implementer» de la tabla de trade-offs y la entrada `cdad/scripts/cdad-models.sh` de las
+> Referencias —: `scripts/cdad-models.sh` **no existe**, el instalador **no tiene perfiles** y la familia del
+> reviewer **no se exige ni se verifica**. El **resto del ADR sigue vigente** (hooks `PreToolUse`, guard de rutas,
+> agentes `claude-code/cdad-*`, instalación, validación).
 **Contexto:** Expansión de CDAD más allá de OpenCode (runtime de referencia desde ADR-002) para incluir Claude Code como runtime con soporte completo de sub-agentes.
 
 ---

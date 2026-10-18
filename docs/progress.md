@@ -8,6 +8,35 @@ _(ninguna)_
 
 ## Done
 
+- **006-003-installer-single-profile-delegation-config** (2026-10-18, epic 006) — tercera feature de
+  `epic-006-opencode-concurrency`. El instalador y el generador quedan **sin perfiles y sin mapa de modelos**;
+  la delegación externa toma el modelo de un **único archivo de configuración**; el instalador **retira sus
+  propios obsoletos**; y la credencial del servidor se carga de un archivo con permisos verificados. **Contrato:**
+  `spec.md` sha256 `c25ebf0e…` (PD-1..PD-8, INV-1..INV-7, D1..D8; **§8 A-1..A-4** del orquestador y **§9 A-5** del
+  dueño) + `plan.md` con **A-6**, aprobados el 2026-10-18 bajo la **HITL delegada del epic** (A-5 lo aprobó
+  **Pablo**). **Producto (41 archivos, +1163/−860; rango `2b43516..HEAD`, 111 archivos +12653/−1771):** U1 generador
+  sin `--profile` y `scripts/cdad-models.sh` **retirado**; U2 instalador sin perfiles (`--basic` y
+  `CDAD_MODEL_PROFILE` deprecados sin efecto; los demás flags **rechazados** con diagnóstico); U3 textos instalables
+  sin perfiles ni modelos; U4 `delegation.json` v1 por destino y rol como **única fuente** del modelo externo (la
+  clave `model` de la exec-config se ignora con aviso) + archivos de config del usuario **fuera del manifiesto**
+  (A-3); U6 credencial desde archivo con permisos verificados sobre el fd abierto y diagnóstico 401/403
+  autosuficiente sin el valor; U7 **retiro de obsoletos propios** (intactos por sha256; los modificados se preservan
+  como CONFLICT) con la cuenta del `Verify` derivada del staging (A-6); U8 aceptación end-to-end en raíz redirigida.
+  **Gates RED→GREEN:** U1 `d5b2ae0`→`afcd14f` (testfix `bb674b4`); U2 `f2c3540`→`44f1561`; U3 `54c6ac6`→`2b1b597`;
+  U4 `5b91387`→`df90b41`; U5' `0629ae0`(+`113c777`)→`0230156`; U6 `e2eba98`→`797b935`; U7 `3a04ad1`→GREEN detenido
+  `ef78451`→testfix `12a859b`→`516149b` (A-6); U8 `1bc7645`. **A-5 (dueño, a mitad de camino):** se retira la
+  verificación de familia (`cdad_model_family.py` **no se construyó**; el GREEN `-005` quedó abandonado sin cambios);
+  se conservan la observación I8 y los demás invariantes anti-sesgo. **Review formal:** **0 bloqueantes / 7 opcionales
+  / 3 abstenciones**; review-fix de O-1/O-2/O-4/O-5 (`c57fc79`→`ef8d2f8`, con `c57fc79` declarando que O-5 **no era
+  reproducible**), **re-review focal 1 con 1 BLOQUEANTE (B-1)** que **refutó** esa afirmación (el TSV del manifiesto
+  leído con `read` de bash colapsa columnas vacías y retiraba sin comparar sha) y se corrigió con **remedio
+  estructural** (veredicto `unverifiable` + registros **NUL-framed**; `26667b5`→`738a380`), y **re-review focal 2 con
+  0 bloqueantes** (OPT-2 a deuda). **Suite de cierre:** `pytest tests/` sobre `8638d06` → **1177 passed, 5 skipped,
+  0 failed**; `make validate` 168 PASS / 1 FAIL (= F011, **DT-8** preexistente) y **169/0** sobre la instalación de
+  aceptación. **Deuda:** **O-3** (precedencia de `XDG_CONFIG_HOME` del host frente a la raíz redirigida: **decisión
+  del dueño**), **O-6** (XDG relativo), **OPT-2** (comentario de symlinks en `install.sh`), **DT-8**, y la evidencia
+  para **006-005** (abandonar un paquete despachado **no lo libera**: ningún comando lo lleva a `failed`). Decisión
+  registrada en **ADR-033** (reemplaza ADR-007 y la parte de perfiles de ADR-008). **El epic NO se cierra: 3/6** — quedan **006-005-native-path-parity**, **006-004-active-decisions-table** y **006-006-spec-plan-review** (enmienda 006, aprobada); **redespliegue en HOME ordenado por el dueño el 2026-10-18**. **Siguiente:** `006-005-native-path-parity`.
 - **006-002-delegation-by-layer** (2026-10-18, epic 006) — segunda feature de
   `epic-006-opencode-concurrency` y corrección de la **regla de delegación**: el texto instalable tenía el
   **mismo mecanismo de runtime en cinco lugares** y un consumidor real leyó la skill como si **mandara** el

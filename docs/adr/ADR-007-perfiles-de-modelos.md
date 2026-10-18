@@ -1,8 +1,12 @@
 # ADR-007: Perfiles de modelos CDAD (economical | optimus | premium)
 
-- **Status**: Accepted
+- **Status**: **Superseded** → **ADR-033** (2026-10-18). Este ADR se conserva como historia.
 - **Date**: 2026-08-05
 - **Deciders**: el usuario (dueño del proyecto) + el orquestador
+
+> **REEMPLAZADO por ADR-033** (2026-10-18): el instalador y el generador no tienen perfiles ni mapa de modelos
+> (`scripts/cdad-models.sh` retirado); el modelo de la delegación interna lo fija la configuración del runtime y el
+> de la delegación externa, `delegation.json`. Este ADR se conserva como historia; **no gobierna** el trabajo nuevo.
 
 ## Contexto
 

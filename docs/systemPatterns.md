@@ -542,6 +542,44 @@ catch-all deny o pares de comandos durante la simplificación.
   **ADR-032**; contrato normativo en `docs/specs/006-002-delegation-by-layer/spec.md` (PD-1..PD-11,
   INV-1..INV-8, D-1..D-7, enmiendas 001/002).
 
+### Modelos por configuración, archivos del usuario fuera del ownership y retiro de obsoletos propios (epic 006, 2026-10-18)
+
+- **Los modelos se resuelven por configuración, y CDAD no los elige ni los verifica.** Este bloque **completa** el
+  principio que ADR-032 dejó declarado («el modelo lo fija la configuración, nunca el orquestador ni el script»,
+  cuyo script de familias y config de delegación eran «de 006-003»): el instalador y el generador **no tienen
+  perfiles ni mapa de modelos** (`scripts/cdad-models.sh` retirado, `Makefile` sin `PROFILE`, `cdad-generate.py` sin
+  `--profile`, staging sin la clave `profile`, **ningún agente con `^model:`**); los flags de perfil se **rechazan**
+  nombrando el lugar donde se elige el modelo, y `--basic`/`CDAD_MODEL_PROFILE` sobreviven un ciclo como **alias
+  deprecado sin efecto** (aviso de una línea, INV-7: nada silencioso). En la **delegación interna** el modelo lo fija
+  la configuración del runtime; en la **externa**, `delegation.json` v1 —por **destino y rol**— es la **única**
+  fuente, **sin fallback**: un rol sin entrada produce el destino **sin `--model`** y `model_configured: null`, y una
+  clave `model` heredada en la exec-config se **ignora con aviso**. **El invariante de familia del reviewer no se
+  exige ni se verifica** (decisión del dueño, A-5): la observación I8 (`model_configured`/`model_reported`) **solo
+  registra** lo ocurrido; los demás invariantes anti-sesgo no cambian.
+- **Los archivos de configuración del usuario no son propiedad del instalador.** `delegation.json` y
+  `opencode-server.env.example` se crean **solo si no existen** (segunda instalación: bytes idénticos + aviso) y
+  **no se registran en el manifiesto**: ni `--uninstall` ni el retiro de obsoletos pueden borrarlos (A-3). Regla
+  general: el ownership del instalador cubre **lo que él desplegó**, no la configuración con la que el usuario
+  completa el despliegue.
+- **El instalador retira sus propios obsoletos, y la regla de retiro es una sola.** Un artefacto registrado,
+  **no redesplegado** y con **sha256 igual al registrado** se **retira** del disco y del manifiesto; uno
+  **modificado localmente** se **preserva**, se reporta como CONFLICT y **sigue registrado**; uno **no registrado
+  nunca se lee**. La misma función decide en la instalación y en `--uninstall` (sin duplicar la regla) y
+  `--dry-run` lista las bajas sin escribir. **Un registro con el digest vacío o `null` nunca es removible**
+  (veredicto `unverifiable`): solo se retira lo propio **con sha256 sin cambios** (INV-2).
+- **Los registros estructurados no se transportan como TSV leído por bash.** Lección medida (B-1 de la re-review de
+  006-003): `IFS=$'\t' read` **colapsa las columnas vacías**, así que un registro con un campo vacío se
+  reinterpreta como otro registro (y puede **retirar sin comparar el digest**). Los registros del manifiesto viajan
+  **NUL-framed** con `read -r -d ''`; los streams que quedan en TSV los parsea **Python** (`split("\t", 2)`), que
+  preserva campos vacíos. Un campo vacío que cambia el veredicto de un borrado es un defecto estructural, no un caso
+  degenerado.
+- **Referencia operativa:** `install.sh` (prune y arranque), `skills/cdad-cycle/scripts/cdad_delegate.py`
+  (`delegation_model`, regla única de la base de config) y `cdad_delegate_opencode.py` (credencial),
+  `skills/cdad-cycle/references/cli-delegation.md` § Configuration, `skills/cdad-cycle/assets/*`;
+  **ADR-033**; contrato normativo en
+  `docs/specs/006-003-installer-single-profile-delegation-config/spec.md` (PD-1..PD-8, INV-1..INV-7, D1..D8,
+  A-1..A-4, A-5).
+
 ### Medición de contexto — registro neutral opcional, medidor read-only que nunca aprueba (epic 005, 2026-10-11)
 
 - **El formato de medición es neutral respecto del runtime y opcional para la metodología.** El
