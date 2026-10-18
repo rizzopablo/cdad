@@ -5,9 +5,12 @@ Contrato (oráculo — nada se deriva de la implementación):
 - ``docs/specs/006-002-delegation-by-layer/spec.md`` §2 **PD-6** (las cuatro
   reglas de contexto en AMBOS orquestadores generados con staging `basic`;
   `references/orientation.md` §1 sigue siendo el dueño de «vista primero» y el
-  orquestador lo CITA sin duplicarlo) y §3 **INV-4** (`/tmp` no es canal ni
-  espacio de trabajo; el recibo va a `.cdad/inbox` y los temporales al
-  workspace declarado).
+  orquestador lo CITA sin duplicarlo) y §3 **INV-4**, ambos leídos con la
+  **«Enmienda 001 — regla 4 de contexto»** (aprobada por el dueño, 2026-10-17):
+  `/tmp` se ADMITE para borradores efímeros de un mismo proceso; lo que debe
+  durar, dejar evidencia o leerlo otro proceso o rol va a rutas estables del
+  workspace (`.cdad/inbox` para el recibo; el workspace declarado para lo
+  demás), porque `/tmp` se limpia y no deja evidencia.
 - ``docs/specs/006-002-delegation-by-layer/plan.md`` ficha **U6** (archivos:
   la sección directiva de ``sources/roles/orchestrator.md``, ``references/
   orientation.md`` §1 como dueño de «vista primero», y una frase de ``SKILL.md``
@@ -24,8 +27,12 @@ Las CUATRO reglas de contexto que PD-6 exige en cada orquestador generado:
   (3) no reparar por su cuenta: si un rol devuelve algo roto o incompleto se
       re-despacha al rol nombrando el defecto; el orquestador no escribe
       reparaciones;
-  (4) nunca `/tmp` como canal ni espacio de trabajo (la alternativa sancionada
-      es `.cdad/inbox` / el workspace declarado).
+  (4) disciplina de `/tmp` RELATIVIZADA (enmienda 001): `/tmp` se ADMITE para
+      borradores efímeros de un MISMO proceso; lo que debe durar, dejar
+      evidencia o leerlo otro proceso o rol va a rutas estables del workspace
+      (`.cdad/inbox` para el recibo; el workspace declarado para lo demás).
+      NO existe una prohibición absoluta de `/tmp` («never `/tmp`» sin matiz
+      viola la enmienda).
 
 Superficie observable (caja negra, consumidor): la salida GENERADA
 ``build/staging/agents/{opencode,claude-code}/cdad-orchestrator.md`` producida
@@ -54,45 +61,58 @@ Mapa test → postcondición (un test por regla observable):
   1 ``TestPd6Rule1OrientationFirst::test_pd6_rule1_orient_first_with_the_compact_status_view_without_dumps``   PD-6(1)
   2 ``TestPd6Rule2SessionRotation::test_pd6_rule2_rotate_the_session_at_task_boundaries_not_mid_unit``          PD-6(2)
   3 ``TestPd6Rule3NoSelfRepair::test_pd6_rule3_no_self_repair_redispatch_the_role_naming_the_defect``           PD-6(3)
-  4 ``TestPd6Rule4NoTmp::test_pd6_rule4_never_tmp_as_channel_or_workspace``                                     PD-6(4)/INV-4
-  5 ``TestPd6Rule4NoTmp::test_pd6_rule4_declares_the_sanctioned_alternative_to_tmp``                            PD-6(4)/INV-4
+  4 ``TestPd6Rule4TmpRelativized::test_pd6_rule4_durable_evidence_and_cross_role_reads_go_to_stable_workspace_paths``   PD-6(4)/INV-4 (enmienda 001, (a))
+  5 ``TestPd6Rule4TmpRelativized::test_pd6_rule4_tmp_relativized_admitted_for_same_process_drafts_without_absolute_prohibition``   PD-6(4)/INV-4 (enmienda 001, (b))
   6 ``TestPd6OrientationOwnerCited::test_pd6_orchestrators_reference_the_view_first_owner``                     PD-6 (cita, no duplica)
-  7 ``TestPd6NoTmpInstructionInInstallableText::test_pd6_no_installable_text_instructs_tmp``                    PD-6(4)/INV-4 (oráculo de ausencia)
+  7 ``TestPd6NoTmpCrossScopeInstructionInInstallableText::test_pd6_no_installable_text_uses_tmp_as_cross_scope_channel_or_artifact_place``   PD-6(4)/INV-4 (enmienda 001, (c) — oráculo de ausencia)
 
-RED observado contra el árbol vigente (U1–U5 en GREEN, U6 sin implementar) —
-OBSERVADO ejecutando este módulo, todo fallo es AssertionError de contenido,
-nunca ImportError/SyntaxError ni fallo del fixture:
+RED observado contra el árbol vigente (U1–U6 en GREEN: los orquestadores ya
+declaran las cuatro reglas con el «Never `/tmp` as channel or workspace`» de la
+spec ORIGINAL; la **enmienda 001** relativiza la regla 4 y este RED la
+reformula) — OBSERVADO ejecutando este módulo, todo fallo es AssertionError de
+CONTENIDO, nunca ImportError/SyntaxError ni fallo del fixture:
 
-  (1) FALLA: el orquestador tiene los tres conceptos del documento pero NO
-      co-ubicados en una misma unidad/ventana — la regla no está declarada
-      como regla.
-  (2) FALLA: concepto ausente `no a mitad de la unidad`.
-  (3) FALLA: concepto ausente `no auto-reparación`.
-  (4) FALLA (ambas mitades): los orquestadores generados no mencionan `/tmp`
-      en absoluto.
+  (1)-(3) GUARD pre-satisfecho declarado (OBSERVADO verde): las reglas 1–3 de la
+      spec original ya están declaradas y co-ubicadas; los tests las protegen
+      contra degradación.
+  (4)/(a) FALLA: la regla 4 vigente no declara que lo durable, la evidencia y lo
+      que lee otro proceso o rol va a rutas estables del workspace con
+      `.cdad/inbox` para el recibo — los conceptos existen en el documento pero
+      NO co-ubicados con la mención de `/tmp`: la regla no está declarada como
+      regla relativizada.
+  (5)/(b) FALLA (ambas mitades OBSERVADAS en la misma corrida): (i) falta el
+      concepto «de un mismo proceso» del permiso acotado; (ii) la regla vigente
+      es una prohibición ABSOLUTA («Never `/tmp` as channel or workspace»), sin
+      el matiz que la enmienda exige.
   (6) GUARD pre-satisfecho declarado (OBSERVADO verde): la cita a
       `references/orientation.md` ya existe en los dos orquestadores
       generados (no la introduce U6); el test la protege contra degradación.
       Que la sección citada siga siendo el DUEÑO de «vista primero» y que el
       orquestador no la duplique es prosa: la verifica el review de stage 4.
-  (7) GUARD pre-satisfecho declarado (OBSERVADO verde): ningún texto
-      instalable del árbol actual (`skills/**` + `agents/**`) manda usar
-      `/tmp`; el oráculo de ausencia de INV-4 se conserva contra la
-      degradación futura.
+  (7)/(c) GUARD pre-satisfecho declarado (OBSERVADO verde): ningún texto
+      instalable del árbol actual (`skills/**` + `agents/**`) usa `/tmp` como
+      canal entre procesos o roles ni como lugar de un artefacto, recibo o
+      evidencia; el oráculo de ausencia RELATIVIZADO de la enmienda 001 se
+      conserva contra la degradación futura.
 
-Sin reformulación de acoplados en este RED (enmienda A-1): U6 AGREGA texto
-(la sección directiva del orquestador fuente, §1 de `orientation.md` y una
-frase de `SKILL.md`) y no cambia ninguno de los textos que fijan
-`tests/test_005_009_t3_spawn_reconciliation.py` (conservación del SPAWN GUARD,
-anti-recursión, distinción de delegación externa, escritor único del state,
-paridad fuente↔generado) ni `tests/validate-consistency.sh` (F001/F004/F007/
-F010/F011): no fijan las reglas de contexto. Ambos se corren como regresión.
-La paridad fuente↔generado sí depende de que el GREEN regenere los agentes
-(`make agents`), que es su trabajo, no una reformulación de tests.
+Reformulación de acoplados (enmienda A-1) y alcance de este RED: se reformula la
+superficie de SU unidad — los tres oráculos de la regla 4/INV-4 de este módulo.
+`grep -rn "/tmp" tests/*.py tests/*.sh` (pedido por la enmienda 001): ningún
+otro test fija el «never `/tmp`» del orquestador o de la skill; las demás
+apariciones de `/tmp` en `tests/` son fixtures de `temporary_roots`/tempdirs y
+rutas absolutas del path-policy, ajenas a la regla 4, así que no se reformula
+ninguna otra. `tests/validate-consistency.sh` (cero apariciones de `/tmp`) y
+`tests/test_005_009_t3_spawn_reconciliation.py` no fijan las reglas de contexto:
+se corren como regresión. La paridad fuente↔generado sí depende de que el GREEN
+regenere los agentes (`make agents`), que es su trabajo, no una reformulación de
+tests.
 
 Límite honesto (PD-6): el test prueba que la regla EXISTE, no que se OBEDEZCA.
 La única evidencia de comportamiento es el transcript de la corrida de
-aceptación (U8) y es una muestra.
+aceptación (U8) y es una muestra. Los oráculos de prosa son heurísticos sobre
+CONCEPTOS con alternativas (co-ubicación de unidad/ventana para (a)/(b);
+proximidad línea a línea para el oráculo de ausencia (c)): la redacción fina la
+verifica el review de stage 4.
 """
 
 from __future__ import annotations
@@ -117,8 +137,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # instalador copia. `docs/**` queda fuera (evidencia no instalable, PD-9).
 INSTALLABLE_SUFFIXES = (".md", ".json", ".sh", ".py", ".yaml", ".yml")
 
-# Alternativa sancionada y su negación (INV-4: «el recibo va a `.cdad/inbox` y
-# los temporales al workspace declarado»).
+# Nombres normativos (el contrato fija el NOMBRE, no la prosa): `/tmp` es el
+# token literal de la regla 4/INV-4 (enmienda 001), `.cdad/inbox` es el inbox
+# del recibo (PD-5) y `orientation.md` el dueño de «vista primero» (PD-6).
 TMP_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9_.])/tmp(?![A-Za-z0-9_])")
 # Marcas que vuelven VÁLIDA una mención de `/tmp` (la prohíben o la excluyen):
 # negación/evitación, o exclusión explícita («outside», «instead of»).
@@ -136,11 +157,89 @@ TMP_PROHIBITION_RE = re.compile(
     r"\bis prohibited\b|\bno es\b|\bnunca\b|\bjam[áa]s\b|\bprohibido\b)"
 )
 
-# Marcas de la alternativa sancionada (INV-4/PD-6 regla 4): el inbox fijo del
-# recibo o el workspace declarado. `.cdad/inbox` es un nombre normativo.
-SANCTIONED_ALTERNATIVE_RE = re.compile(
-    r"(?i)\.cdad/inbox|cdad/inbox|declared workspace|workspace declarado|"
-    r"espacio de trabajo declarado|the workspace declared|the declared workspace"
+# ---- enmienda 001: conceptos de la regla 4 RELATIVIZADA (no frases) -------
+
+# Permiso acotado: `/tmp` se ADMITE (no es una prohibición absoluta).
+TMP_PERMISSION_RE = re.compile(
+    r"(?i)(?:\b(?:admit|admitted|admits|admisi[óo]n|allow(?:ed|s)?|"
+    r"permit(?:ted|s)?|permissible|acceptable|accepted|valid|legal)\b"
+    r"|\b(?:may|can)\b[^.\n]{0,12}\b(?:use|write|store|keep|hold|put|create)\b"
+    r"|\b(?:is|are|remains?)\b[^.\n]{0,12}\b(?:fine|okay|ok|acceptable|"
+    r"admitted|allowed)\b"
+    r"|\bse admite\b|\badmitid[oa]s?\b|\bse permite\b|\bpermitid[oa]s?\b"
+    r"|\bpuede\b|\bes v[áa]lid[oa]\b|\best[áa] bien\b|\bes aceptable\b)"
+)
+# Borrador efímero/desechable: lo único que la enmienda admite en `/tmp`.
+EPHEMERAL_DRAFT_RE = re.compile(
+    r"(?i)\b(?:ephemeral|ef[ií]mer[oa]s?|throwaway|scratch(?:pad)?|"
+    r"disposable|desechabl[es]?|transient|one-off|short-lived|draft|drafts|"
+    r"borrador(?:es)?|temporar[yi]|temporales|temporal)\b"
+)
+# De un MISMO proceso (no entre procesos ni roles).
+SAME_PROCESS_RE = re.compile(
+    r"(?i)(?:(?:same|single|own|one|mismo|[úu]nico|propio)[^.\n]{0,20}process"
+    r"|process[^.\n]{0,20}(?:same|own|local)"
+    r"|\bwithin (?:the|a) process\b|\bin-?process\b|\bmismo proceso\b"
+    r"|\bun mismo proceso\b|\bdel mismo proceso\b|\b[úu]nico proceso\b)"
+)
+# Lo durable / la evidencia / lo que lee OTRO proceso o rol: la CONDICIÓN que
+# la enmienda manda a rutas estables (el par «recibo»/«.cdad/inbox» tiene su
+# propio grupo: no cuenta como condición de durabilidad).
+DURABLE_OR_XPROCESS_RE = re.compile(
+    r"(?i)(?:\bdurable\b|\bmust last\b|\blong-?lived\b|\bpersist(?:s|ent)?\b|"
+    r"\bsurvive\b|\boutlive\b|\bleave (?:a )?(?:trace|record|evidence)\b|"
+    r"\bevidence\b|\bevidencia\b|\bdebe durar\b|\bdebe permanecer\b|"
+    r"\bdejar evidencia\b|\bsobrevivir\b|"
+    r"\banother (?:process|role|session|agent)\b|"
+    r"\bother (?:processes|roles|sessions|agents)\b|\bcross-?process\b|"
+    r"\bcross-?role\b|\bbetween (?:processes|roles|sessions)\b|"
+    r"\bread by (?:another|other)\b|\ble[íi]do por\b|"
+    r"\botro (?:proceso|rol|sesi[óo]n|agente)\b|"
+    r"\botros (?:procesos|roles|sesiones)\b|"
+    r"\bentre (?:procesos|roles|sesiones)\b)"
+)
+# La ruta estable del workspace declarado (concepto, alternativas).
+STABLE_WORKSPACE_PATH_RE = re.compile(
+    r"(?i)(?:\bstable\b[^.\n]{0,30}\b(?:path|paths|location|workspace|"
+    r"directory|place|root)\b|"
+    r"\b(?:path|paths|location|workspace|directory|place|root)\b[^.\n]{0,30}"
+    r"\bstable\b|"
+    r"\bdeclared workspace\b|\bworkspace declared\b|\bdeclared path\b|"
+    r"\bworkspace declarado\b|\brutas? (?:estables?|del workspace|de workspace)\b|"
+    r"\bestables? del workspace\b|"
+    r"\bpersistent (?:path|location|workspace|directory)\b|"
+    r"\bdurable (?:path|location|directory)\b)"
+)
+# El recibo: `.cdad/inbox` es un nombre normativo (PD-5/INV-4).
+RECEIPT_INBOX_RE = re.compile(r"(?i)\.cdad/inbox|cdad/inbox")
+
+# Canal entre procesos o roles: acotar una prohibición de `/tmp` a ESTE uso la
+# vuelve NO-absoluta (la enmienda relativiza la regla; una prohibición sin
+# matiz ni acotación es la «never `/tmp`» que falla).
+CROSS_PROCESS_ROLE_RE = re.compile(
+    r"(?i)(?:\bbetween (?:processes|roles|sessions|agents)\b|"
+    r"\bacross (?:processes|roles|sessions|agents)\b|"
+    r"\bcross-?process\b|\bcross-?role\b|"
+    r"\banother (?:process|role|session|agent)\b|"
+    r"\bother (?:processes|roles|sessions|agents)\b|"
+    r"\bnext (?:process|role|session|agent)\b|"
+    r"\bentre (?:procesos|roles|sesiones|agentes)\b|"
+    r"\botro (?:proceso|rol|sesi[óo]n|agente)\b)"
+)
+# Lugar de un artefacto, recibo o evidencia: el otro uso que la enmienda manda
+# FUERA de `/tmp` (canal entre procesos/roles o lugar de un artefacto/recibo/
+# evidencia son los dos usos prohibidos por el oráculo de ausencia).
+ARTIFACT_RECEIPT_EVIDENCE_RE = re.compile(
+    r"(?i)(?:\bartifact\b|\bartefacto\b|\breceipt\b|\brecibo\b|\bevidence\b|"
+    r"\bevidencia\b|\bdescriptor\b|\bdeliverable\b|\bentregable\b|"
+    r"\bresult\.json\b)"
+)
+# `/tmp` usado como LUGAR (destino/fuente/ubicación), no como mera mención
+# (permiso o prohibición): `in /tmp`, `to /tmp`, `/tmp/<name>`, etc.
+TMP_AS_PLACE_RE = re.compile(
+    r"(?i)(?:/tmp/[^\s`]+"
+    r"|(?:in|into|to|at|under|via|through|from|on|en|bajo)\s+`?/tmp(?![A-Za-z0-9_])"
+    r"|`?/tmp(?![A-Za-z0-9_])`?\s*(?:holds?|contains?|is where|is the place))"
 )
 
 # Igual que en u5: las marcas se combinan por CONCEPTO, no por frase; los
@@ -212,9 +311,29 @@ NAMES_THE_DEFECT = rx("naming the defect", "name the defect",
                       "broken", "roto", "incomplete", "incompleto",
                       "no cumple", "not complete")
 
-# --------------------------------------------------------------- regla 4
+# ------------------------------------- regla 4 (enmienda 001, relativizada)
+# El token `/tmp` sigue siendo normativo, pero la enmienda lo RELATIVIZA: la
+# regla se declara cuando la mención de `/tmp` co-ubica con el permiso acotado
+# (borrador efímero de un mismo proceso). Alternativa de idioma por concepto.
 TMP_MENTION = rx("/tmp")
-SANCTIONED_ALTERNATIVE = SANCTIONED_ALTERNATIVE_RE
+# El matiz que vuelve NO-ABSOLUTA la regla 4 (tres conceptos co-ubicados con la
+# mención de `/tmp`).
+TMP_PERMITTED_FOR_DRAFTS = (
+    ("permiso acotado (`/tmp` admitido/permitido)", TMP_PERMISSION_RE),
+    ("borrador efímero/desechable", EPHEMERAL_DRAFT_RE),
+    ("de un mismo proceso", SAME_PROCESS_RE),
+)
+RULE4_GROUPS = (("mención de `/tmp`", TMP_MENTION),) + TMP_PERMITTED_FOR_DRAFTS
+# (a) la regla 4 contrasta `/tmp` con su alternativa: lo durable / la evidencia
+# / lo que lee otro proceso o rol → rutas estables del workspace, con
+# `.cdad/inbox` para el recibo (la mención de `/tmp` es parte de la MISMA regla).
+RULE4_DURABLE_GROUPS = (
+    ("mención de `/tmp`", TMP_MENTION),
+    ("lo durable / la evidencia / lo que lee otro proceso o rol",
+     DURABLE_OR_XPROCESS_RE),
+    ("ruta estable del workspace declarado", STABLE_WORKSPACE_PATH_RE),
+    ("recibo → `.cdad/inbox`", RECEIPT_INBOX_RE),
+)
 
 # Un grupo de una regla = (concepto, patrón). La regla se declara cuando TODOS
 # los grupos co-ubican en una misma unidad (o, en su defecto, en una ventana).
@@ -227,11 +346,6 @@ RULE2_GROUPS = (("rotación de la sesión", SESSION_ROTATION),
 RULE3_GROUPS = (("no auto-reparación", NO_SELF_REPAIR_RE),
                 ("re-despacho", REDISPATCH),
                 ("nombra el defecto", NAMES_THE_DEFECT))
-RULE4_GROUPS = (("mención de `/tmp`", TMP_MENTION),
-                ("prohibición co-ubicada de `/tmp`", TMP_PROHIBITION_RE))
-RULE4_ALTERNATIVE_GROUPS = (("prohibición co-ubicada de `/tmp`", TMP_PROHIBITION_RE),
-                            ("alternativa sancionada (inbox/workspace declarado)",
-                             SANCTIONED_ALTERNATIVE))
 
 H2_RE = re.compile(r"(?m)^#{1,6}[ \t]")
 LIST_ITEM_RE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]")
@@ -316,6 +430,28 @@ def assert_rule(text: str, label: str, rule: str,
     )
 
 
+def absolute_tmp_prohibitions(text: str) -> list[str]:
+    """Unidades que prohíben `/tmp` SIN el matiz de la enmienda 001.
+
+    Una prohibición es legítima sólo si está ACOTADA: o declara el permiso
+    acotado (borrador efímero de un mismo proceso) o restringe explícitamente
+    el uso prohibido al canal entre procesos/roles. Una regla «never `/tmp`»
+    sin matiz es ABSOLUTA y viola la enmienda (el dueño la relativizó al quitar
+    el aislamiento por proceso del SO)."""
+    offenders: list[str] = []
+    for unit in rule_units(text):
+        if not TMP_TOKEN_RE.search(unit):
+            continue
+        if not TMP_PROHIBITION_RE.search(unit):
+            continue
+        if all(pattern.search(unit) for _, pattern in TMP_PERMITTED_FOR_DRAFTS):
+            continue
+        if CROSS_PROCESS_ROLE_RE.search(unit):
+            continue
+        offenders.append(" ".join(unit.split())[:160])
+    return offenders
+
+
 class U6Case(unittest.TestCase):
     """Base del oráculo U6: lee los orquestadores generados (staging `basic`)."""
 
@@ -386,36 +522,63 @@ class TestPd6Rule3NoSelfRepair(U6Case):
                             RULE3_GROUPS, (REDISPATCH, NO_SELF_REPAIR_RE))
 
 
-# ------------------ PD-6(4)/INV-4 — nunca `/tmp` como canal/workspace
+# --------- PD-6(4)/INV-4 (enmienda 001) — `/tmp` relativizado, no prohibido
 
 
-class TestPd6Rule4NoTmp(U6Case):
-    """PD-6 regla 4/INV-4: `/tmp` NUNCA es canal ni espacio de trabajo, y la
-    regla nombra la alternativa sancionada (`.cdad/inbox` / workspace
-    declarado)."""
+class TestPd6Rule4TmpRelativized(U6Case):
+    """PD-6 regla 4/INV-4 con la **enmienda 001** (dueño, 2026-10-17): la regla
+    está RELATIVIZADA. `/tmp` NO está prohibido en absoluto: se admite para
+    borradores efímeros de un mismo proceso. Lo que debe durar, dejar evidencia
+    o leerlo otro proceso o rol va a rutas estables del workspace (`.cdad/inbox`
+    para el recibo; el workspace declarado para lo demás)."""
 
-    def test_pd6_rule4_never_tmp_as_channel_or_workspace(self) -> None:
-        """PD-6(4)/INV-4: ambos orquestadores generados declaran la mención de
-        `/tmp` co-ubicada con su prohibición («nunca como canal ni espacio de
-        trabajo»)."""
+    def test_pd6_rule4_durable_evidence_and_cross_role_reads_go_to_stable_workspace_paths(
+            self) -> None:
+        """PD-6(4)/INV-4 (enmienda 001, (a)): ambos orquestadores generados
+        declaran que lo durable, la evidencia y lo que lee otro proceso o rol
+        va a rutas ESTABLES del workspace, co-ubicado con el recibo
+        `.cdad/inbox` (el canal válido; `/tmp` se limpia y no deja evidencia)."""
         for rel in (OC_ORCH_REL, CC_ORCH_REL):
             with self.subTest(orchestrator=str(rel.parent.parent.name)):
                 text, label = self.orchestrator(rel)
-                assert_rule(text, label, "nunca `/tmp` como canal ni espacio "
-                                         "de trabajo",
-                            RULE4_GROUPS, (TMP_MENTION, TMP_PROHIBITION_RE))
+                assert_rule(text, label, "lo durable / la evidencia / lo que "
+                                         "lee otro proceso o rol va a rutas "
+                                         "estables del workspace, con "
+                                         "`.cdad/inbox` para el recibo",
+                            RULE4_DURABLE_GROUPS,
+                            (TMP_MENTION, STABLE_WORKSPACE_PATH_RE,
+                             RECEIPT_INBOX_RE, DURABLE_OR_XPROCESS_RE))
 
-    def test_pd6_rule4_declares_the_sanctioned_alternative_to_tmp(self) -> None:
-        """PD-6(4)/INV-4: la prohibición de `/tmp` nombra la alternativa
-        sancionada (`.cdad/inbox` o el workspace declarado) — prohibir sin
-        declarar el canal válido deja al orquestador sin ruta."""
+    def test_pd6_rule4_tmp_relativized_admitted_for_same_process_drafts_without_absolute_prohibition(
+            self) -> None:
+        """PD-6(4)/INV-4 (enmienda 001, (b)): la mención de `/tmp` co-ubica con
+        el permiso ACOTADO (borrador efímero de un mismo proceso) y NO existe
+        una prohibición absoluta: una regla tipo «never `/tmp`» sin matiz falla
+        la enmienda."""
         for rel in (OC_ORCH_REL, CC_ORCH_REL):
             with self.subTest(orchestrator=str(rel.parent.parent.name)):
                 text, label = self.orchestrator(rel)
-                assert_rule(text, label, "alternativa sancionada a `/tmp` "
-                                         "(`.cdad/inbox` / workspace declarado)",
-                            RULE4_ALTERNATIVE_GROUPS,
-                            (TMP_PROHIBITION_RE, SANCTIONED_ALTERNATIVE))
+                problems: list[str] = []
+                try:
+                    assert_rule(text, label, "`/tmp` admitido para borradores "
+                                             "efímeros de un mismo proceso",
+                                RULE4_GROUPS,
+                                (TMP_MENTION, TMP_PERMISSION_RE,
+                                 EPHEMERAL_DRAFT_RE))
+                except AssertionError as exc:
+                    problems.append(str(exc))
+                offenders = absolute_tmp_prohibitions(text)
+                if offenders:
+                    problems.append(
+                        "prohibición ABSOLUTA de `/tmp` sin matiz (la enmienda "
+                        "001 la relativiza: sólo se admite para borradores "
+                        f"efímeros de un mismo proceso): {offenders!r}"
+                    )
+                self.assertEqual(
+                    problems, [],
+                    msg=(f"PD-6 ({label}): regla 4 (enmienda 001) NO "
+                         "relativizada:\n- " + "\n- ".join(problems)),
+                )
 
 
 # ------------------- PD-6 — orientation.md §1 sigue siendo el dueño
@@ -451,13 +614,16 @@ class TestPd6OrientationOwnerCited(U6Case):
                 )
 
 
-# ----------------- PD-6(4)/INV-4 — oráculo de ausencia en texto instalable
+# ------- PD-6(4)/INV-4 (enmienda 001) — oráculo de ausencia relativizado
 
 
-class TestPd6NoTmpInstructionInInstallableText(unittest.TestCase):
-    """PD-6 regla 4/INV-4: ningún texto INSTALABLE (`skills/**` + los agentes
-    generados `agents/**`) manda usar `/tmp` como canal ni espacio de trabajo.
-    Las menciones que lo PROHÍBEN (o lo excluyen explícitamente) son válidas."""
+class TestPd6NoTmpCrossScopeInstructionInInstallableText(unittest.TestCase):
+    """PD-6 regla 4/INV-4 (enmienda 001): en texto INSTALABLE (`skills/**` + los
+    agentes generados `agents/**`) NO hay instrucciones que usen `/tmp` como
+    canal entre procesos o roles, ni como lugar de un artefacto, recibo o
+    evidencia. Las menciones que lo PROHÍBEN o lo EXCLUYEN explícitamente, y las
+    que lo admiten para borradores efímeros de un mismo proceso, son válidas
+    (la enmienda ya no prohíbe toda mención de `/tmp`)."""
 
     def installable_files(self) -> list[Path]:
         files: list[Path] = []
@@ -469,11 +635,14 @@ class TestPd6NoTmpInstructionInInstallableText(unittest.TestCase):
                     files.append(path)
         return files
 
-    def test_pd6_no_installable_text_instructs_tmp(self) -> None:
-        """PD-6(4)/INV-4: cada mención de `/tmp` en texto instalable está en un
-        bloque que la prohíbe o la excluye; una mención prescriptiva es una
-        violación (el canal es `.cdad/inbox` y los temporales el workspace
-        declarado)."""
+    def test_pd6_no_installable_text_uses_tmp_as_cross_scope_channel_or_artifact_place(
+            self) -> None:
+        """PD-6(4)/INV-4 (enmienda 001, (c)): ninguna línea de texto instalable
+        en un bloque NO prohibitivo usa `/tmp` como LUGAR (destino/fuente) de un
+        artefacto, recibo o evidencia, ni como canal entre procesos o roles; una
+        instrucción de ese uso es una violación (el canal es `.cdad/inbox` y lo
+        durable va al workspace declarado, porque `/tmp` se limpia y no deja
+        evidencia)."""
         files = self.installable_files()
         self.assertTrue(
             files,
@@ -490,17 +659,24 @@ class TestPd6NoTmpInstructionInInstallableText(unittest.TestCase):
                 continue
             relative = path.relative_to(REPO_ROOT).as_posix()
             for number, block in enumerate(re.split(r"\n\s*\n", text), start=1):
+                if PROHIBITIVE_RE.search(block):
+                    continue
                 for line in block.splitlines():
                     if not TMP_TOKEN_RE.search(line):
                         continue
-                    if PROHIBITIVE_RE.search(block):
+                    if not TMP_AS_PLACE_RE.search(line):
+                        continue
+                    if not (CROSS_PROCESS_ROLE_RE.search(line)
+                            or ARTIFACT_RECEIPT_EVIDENCE_RE.search(line)):
                         continue
                     offenders.append(f"{relative}:{number} → {line.strip()}")
         self.assertEqual(
             offenders, [],
-            msg=("PD-6(4)/INV-4: texto instalable que manda usar `/tmp` como "
-                 "canal o espacio de trabajo (las menciones que lo prohíben son "
-                 f"válidas): {offenders!r}"),
+            msg=("PD-6(4)/INV-4 (enmienda 001): texto instalable que usa `/tmp` "
+                 "como canal entre procesos o roles, o como LUGAR de un "
+                 "artefacto, recibo o evidencia (prohibirlo, o admitirlo para "
+                 "borradores efímeros del mismo proceso, es válido): "
+                 f"{offenders!r}"),
         )
 
 
