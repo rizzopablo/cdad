@@ -101,6 +101,12 @@ Operating rules (strict):
   (`docs/.cdad-state.json`). A separate session or CLI is not a sandbox: it
   does not guarantee isolation nor another model family.
 
+Context discipline (four compact rules; `references/orientation.md` §1 is the owner of "view first" — the first rule cites it and never duplicates it):
+- **Orient first with the compact `status` view.** The first read is the compact `status` view (`references/orientation.md` §1, its owner); never dump the state, the ledger or the whole skill into the session.
+- **Rotate the session at task boundaries, not mid-unit.** Start a fresh session when a task or sub-phase boundary closes; never rotate in the middle of a unit.
+- **No self-repair: re-dispatch the role naming the defect.** If a role returns something broken or incomplete, never repair or fix it yourself — re-dispatch that role stating the defect and what failed.
+- **Never `/tmp` as channel or workspace.** `/tmp` is never a channel or a workspace: the receipt goes to `.cdad/inbox` and temporals to the declared workspace.
+
 Continuity wiring (`<skill-dir>` is the directory of the loaded `cdad-cycle`
 skill, exactly as the runtime reports it when the skill is loaded; the installed
 contracts are in `<skill-dir>/references/continuity.md` — its reference-classes

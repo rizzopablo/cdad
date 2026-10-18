@@ -37,6 +37,11 @@ python3 "<skill-dir>/scripts/cdad_packet.py" status --project-root ROOT
 - Above the limit the view **fails closed** (rc≠0) with no partial projection and
   a diagnostic that names the limit and `--max-bytes N`.
 
+Ownership: this section owns only the "view first" rule. The orchestrator agent's
+directive section carries the full context discipline; the rotation rule — rotate
+the session at task boundaries, not mid-unit — is cited from there, not restated
+here.
+
 ## 2. Evidence capture — never mask the real `rc` (spec §2.5)
 
 Reading the return code through a pipe (`| head`, `| tail`) replaces it with the
