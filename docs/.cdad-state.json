@@ -8046,6 +8046,47 @@
       "approved_by": "Pablo",
       "closure_path": "docs/specs/006-002-delegation-by-layer/closure.md",
       "closure_sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-18T11:41:37.076118+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "a3d14cb5dfa4d9651e90b6ba268c80ceb13f8e14bf664eae5888bd6b2046494a",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-architect-discovery-001",
+        "receipt_sha256": "44ba12e73c82570f23b6ff679d43ac8f17b53d61a6c8e200cc789561b0068511",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/discovery.md",
+            "151b42ebb5d69eabede76d070aa0a0fe422acd6cb43c157dd6a2f40bd76525f9"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-architect-discovery-001/receipt.json",
+      "receipt_sha256": "44ba12e73c82570f23b6ff679d43ac8f17b53d61a6c8e200cc789561b0068511",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/discovery.md": "151b42ebb5d69eabede76d070aa0a0fe422acd6cb43c157dd6a2f40bd76525f9"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8060,7 +8101,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T10:54:54.814612+00:00",
+  "last_updated": "2026-10-18T11:41:37.076118+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8171,7 +8212,7 @@
     "id": "006-003-installer-single-profile-delegation-config-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
