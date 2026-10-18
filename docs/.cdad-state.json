@@ -7688,6 +7688,52 @@
       "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4",
       "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
       "plan_sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u6c-red",
+      "substage": "red",
+      "at": "2026-10-18T02:38:32.931252+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "374708c2fbb3f77a864e04e1c0fa59ab5962303c6de4cbde0c6e8d75330013b9",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u6c-red",
+        "substage": "red",
+        "packet_id": "006-002-delegation-by-layer-test-writer-red-009",
+        "receipt_sha256": "46840ac9455826962c7c52758ffc60dc1873231bb2e159f4256e5503b0f6db16",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u6c-red.md",
+            "925d6e46c1e6984915cbc436258a5969c46cbe64447b045392721544269f96d2"
+          ],
+          [
+            "tests/test_006_002_u6_context_discipline.py",
+            "8e1d9d0321da855bd39e84a703d1c353b13f7290029eeb2d3ec6b2f1ee904ec7"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-test-writer-red-009",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-test-writer-red-009/receipt.json",
+      "receipt_sha256": "46840ac9455826962c7c52758ffc60dc1873231bb2e159f4256e5503b0f6db16",
+      "artifacts": {
+        "tests/test_006_002_u6_context_discipline.py": "8e1d9d0321da855bd39e84a703d1c353b13f7290029eeb2d3ec6b2f1ee904ec7",
+        "docs/specs/006-002-delegation-by-layer/u6c-red.md": "925d6e46c1e6984915cbc436258a5969c46cbe64447b045392721544269f96d2"
+      },
+      "note": "300a05c: 1 rojo por asercion (/tmp en texto instalable); regla de rutas estables ya presente."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7702,7 +7748,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T02:33:38.257774+00:00",
+  "last_updated": "2026-10-18T02:38:32.931252+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7810,13 +7856,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-test-writer-red-009",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-implementer-green-009",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "red"
 }
