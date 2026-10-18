@@ -24,8 +24,10 @@
 # modified owned file — agents, skills and the guard share the SAME
 # conflict-and-preserve policy, review-5 B2 — or a symlink at a destination)
 # and preserve the local bytes; files owned by a previous install that this
-# install no longer deploys stay registered as pending_removal (visible to
-# --check, retired by --uninstall; review-5 B3 — a reinstall never forgets).
+# install no longer deploys are RETIRED when their bytes still match the
+# recorded sha256 (006-003 U7/D6: the install retires its own obsoletes) and
+# stay registered as pending_removal when they were modified locally (visible
+# to --check, retired by --uninstall; review-5 B3 — a reinstall never forgets).
 # This is how a pre-T6 root's public-layout copies surface after a PD-9
 # reinstall: pending_removal, retired by --uninstall. --uninstall removes
 # exactly the manifest entries (artifacts + pending records), preserving a
@@ -60,17 +62,21 @@ PUBLIC_AGENTS_DIR="$INSTALL_ROOT/agents"
 PUBLIC_SKILLS_DIR="$INSTALL_ROOT/skills"
 
 SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer odoo-reviewer odoo-make-env odoo-expert)
+# EXPECTED_CDAD_AGENTS* are the FALLBACK totals of the post-install Verify, used
+# only when the staged set cannot be read (plan amendment A-6: the expected count
+# now comes FROM the staging manifest, per runtime — `staged_agent_count`). Kept
+# as the declared last resort so a manifest-less root (legacy --uninstall path)
+# keeps its historical summary instead of printing an empty expectation.
 # EXPECTED_CDAD_AGENTS counts OpenCode agents. Base = 6 generic (architect,
 # implementer, orchestrator, reviewer, scribe, test-writer) + 5 Odoo variants
 # (agents/cdad-*-odoo.md: architect/test-writer/implementer/reviewer/scribe).
 # The cdad-.*-odoo variants are captured by the same cdad-*.md glob in
 # install_agents() (now the staged set from build/staging) and fix NO model per
-# role (006-003 D1/INV-3: no installable surface pins a model); they are
-# counted here so the "N of N cdad agents present" verification is correct.
+# role (006-003 D1/INV-3: no installable surface pins a model).
 EXPECTED_CDAD_AGENTS=11
 # NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code agents are
 # staged under agents/claude-code/ and deployed to .claude/agents by the same
-# staging-driven pass. EXPECTED_CDAD_AGENTS_CLAUDE_CODE=11 is their count.
+# staging-driven pass. EXPECTED_CDAD_AGENTS_CLAUDE_CODE=11 is their fallback count.
 EXPECTED_CDAD_AGENTS_CLAUDE_CODE=11
 
 # Extra skill target dirs (colon-separated) via CDAD_SKILL_EXTRA_DIRS, e.g. the
@@ -103,6 +109,19 @@ OWNERSHIP_MANIFEST="$INSTALL_ROOT/$INSTALL_MANIFEST_NAME"
 OWNED=()
 # Conflicts detected during THIS run: "rel<TAB>reason".
 CONFLICTS=()
+# 006-003 U7/D6: the obsolete prune needs to know which DESTINATIONS this run
+# deploys (in BOTH modes: --dry-run must preview the same bajas) and which ones
+# it already disclosed as conflicts. Keyed by absolute path, so a manifest that
+# recorded absolute paths and one that recorded install-root-relative paths
+# describe the SAME destination.
+declare -A OWNED_ABS=()
+declare -A CONFLICT_ABS=()
+# Obsolete-retirement plan of this run (PD-6a/D6): keys retired from disk and
+# from the manifest, and entries preserved (locally modified) that must stay
+# REGISTERED. Consumed by write_ownership_manifest; "" until the prune runs.
+PRUNED=()
+KEPT=()
+PRUNE_PLAN_FILE=""
 # PD-14/INV-7: deterministic identifier of what this install deployed, resolved
 # once per run (installation_version) and published at the install root.
 INSTALL_VERSION=""
@@ -219,14 +238,26 @@ count_tree_files() {  # dir -> number of files recursively (0 if dir missing)
 }
 
 count_manifest_agents_installed() {  # dir -> how many declared agent names are present there
-  # When the source agents/ directory exists (a full checkout) the count keeps
-  # the historical repo-manifest semantics. In an isolated product (PD-12:
-  # agents/ absent) it falls back to the STAGED opencode set, which is the
-  # single deployment input.
+  # The STAGED set is the declared single deployment input (PD-18) and the same
+  # basis plan amendment A-6 uses for the expected total, so both sides of the
+  # "N of N" presence check agree by construction: a staging-only fixture agent
+  # counts on both sides and a retired staged agent disappears from both. The
+  # repo agents/ directory is only the LEGACY fallback for a root with no
+  # staging manifest (pre-T5 install, legacy --uninstall summary).
   local dir="$1"
   local f base name count=0
   if [ ! -d "$dir" ]; then
     printf '0'
+    return 0
+  fi
+  if [ -f "$STAGING_MANIFEST" ]; then
+    while IFS= read -r name; do
+      [ -n "$name" ] || continue
+      if [ -f "$dir/$name" ]; then
+        count=$((count + 1))
+      fi
+    done < <(staged_agent_names opencode)
+    printf '%s' "$count"
     return 0
   fi
   if [ -d "$SOURCE_AGENTS_DIR" ]; then
@@ -240,25 +271,7 @@ count_manifest_agents_installed() {  # dir -> how many declared agent names are 
     printf '%s' "$count"
     return 0
   fi
-  if [ ! -f "$STAGING_MANIFEST" ]; then
-    printf '0'
-    return 0
-  fi
-  while IFS= read -r name; do
-    [ -n "$name" ] || continue
-    if [ -f "$dir/$name" ]; then
-      count=$((count + 1))
-    fi
-  done < <(python3 - "$STAGING_MANIFEST" <<'PY'
-import json, sys
-data = json.load(open(sys.argv[1], encoding="utf-8"))
-for entry in data.get("artifacts", []):
-    rel = entry.get("file", "")
-    if rel.startswith("agents/opencode/"):
-        print(rel.split("/", 2)[2])
-PY
-)
-  printf '%s' "$count"
+  printf '0'
 }
 
 # extra_skills_dirs — prints each configured extra skill target dir on its own
@@ -614,16 +627,49 @@ write_version_marker() {
   log "VERSION marker: $marker = $version"
 }
 
+# install_root_abs <recorded-path> — resolve a path RECORDED in the ownership
+# manifest against the install root (PD-6e): an absolute path is already
+# resolved, a relative one resolves under the — possibly redirected — root.
+install_root_abs() {
+  case "$1" in
+    /*) printf '%s' "$1" ;;
+    *)  printf '%s/%s' "$INSTALL_ROOT" "$1" ;;
+  esac
+}
+
+# owned_removal_state <path> <recorded-sha256> — the ONE rule that decides what a
+# registered own path is entitled to right now. Shared by --uninstall
+# (review-5 E1) and the obsolete prune (006-003 U7/D6) instead of duplicating it:
+#   removable — a symlink, or a regular file whose bytes match the recorded
+#               sha256 (also when no digest was recorded: there is no evidence of
+#               a local change to preserve — the historical --uninstall rule)
+#   absent    — nothing at that path (idempotent)
+#   modified  — a regular file whose bytes differ from a RECORDED digest: the
+#               user changed it after the install, so it is never discarded.
+owned_removal_state() {
+  local path="$1" recorded="$2" actual
+  if [ -L "$path" ]; then printf 'removable'; return 0; fi
+  if [ ! -f "$path" ]; then printf 'absent'; return 0; fi
+  actual="$(sha256_of "$path")"
+  if [ -z "$recorded" ] || [ "$actual" = "$recorded" ]; then printf 'removable'; return 0; fi
+  printf 'modified'
+}
+
 record_owned() {  # abs_path source — register an owned file for the ownership manifest
-  [ "$DRY_RUN" -eq 1 ] && return 0
   local abs="$1" source="$2" sha rel
-  sha="$(sha256_of "$abs")"
   rel="${abs#"$INSTALL_ROOT"/}"
+  # Tracked in BOTH modes (the manifest itself is not): the obsolete prune needs
+  # to know which destinations this run deploys, and --dry-run has to preview the
+  # same bajas it would perform.
+  OWNED_ABS["$abs"]=1
+  [ "$DRY_RUN" -eq 1 ] && return 0
+  sha="$(sha256_of "$abs")"
   OWNED+=("$rel"$'\t'"$sha"$'\t'"$source")
 }
 
 add_conflict() {  # rel reason — report and preserve (PD-7: never overwrite/delete)
   local rel="$1" reason="$2"
+  CONFLICT_ABS["$(install_root_abs "$rel")"]=1
   CONFLICTS+=("$rel"$'\t'"$reason")
   if [ "$DRY_RUN" -eq 1 ]; then
     log "DRY-RUN CONFLICT: $rel — preserved ($reason)"
@@ -667,6 +713,41 @@ staged_destinations() {  # staging-rel — prints the absolute destination(s); v
       printf '%s\n' "$CLAUDE_CODE_AGENTS_DIR/$name"
       ;;
   esac
+}
+
+# staged_agent_names <runtime> — the agent FILENAMES the STAGING manifest deploys
+# to that runtime (one per line; nothing when there is no readable staging).
+# PD-18: staging is the single deployment input, so it is also the single basis
+# the post-install presence check can honestly compare against.
+staged_agent_names() {  # runtime
+  [ -f "$STAGING_MANIFEST" ] || return 0
+  python3 - "$STAGING_MANIFEST" "$1" <<'PY'
+import json, sys
+path, runtime = sys.argv[1], sys.argv[2]
+try:
+    data = json.load(open(path, encoding="utf-8"))
+except (OSError, ValueError):
+    raise SystemExit(0)
+prefix = "agents/%s/" % runtime
+for entry in data.get("artifacts", []):
+    rel = str(entry.get("file", ""))
+    if rel.startswith(prefix):
+        print(rel[len(prefix):])
+PY
+}
+
+# staged_agent_count <runtime> — how many agents the staging manifest deploys to
+# that runtime (plan amendment A-6). The expected agent count of the post-install
+# Verify is DERIVED from the staged set, not a frozen constant: a staged agent the
+# install no longer deploys (retired by D6/PD-6a) lowers the expectation with it,
+# so the retirement cannot collide with a stale hardcoded total. Prints "" when
+# there is no readable staging manifest (the caller falls back to the historical
+# constant, e.g. the legacy --uninstall path over a manifest-less root).
+staged_agent_count() {  # runtime — prints the count (empty if unresolvable)
+  [ -f "$STAGING_MANIFEST" ] || return 0
+  local count
+  count="$(staged_agent_names "$1" | awk 'END { print NR + 0 }')"
+  printf '%s' "$count"
 }
 
 # previous_artifact_sha <rel> — the sha256 registered by the LAST successful
@@ -739,6 +820,7 @@ stage_one_destination() {
     if [ "$DRY_RUN" -eq 1 ]; then
       log "DRY-RUN COPY $srel -> $dst"
       log "DRY-RUN STAGED-UPDATE $rel staging moved on; would redeploy the staged bytes"
+      record_owned "$dst" "$srel"
     else
       do_run "COPY (staging regenerated) $srel -> $dst" cp -p "$STAGING_DIR/$srel" "$dst"
       record_owned "$dst" "$srel"
@@ -747,6 +829,7 @@ stage_one_destination() {
   fi
   if [ "$DRY_RUN" -eq 1 ]; then
     log "DRY-RUN COPY $srel -> $dst"
+    record_owned "$dst" "$srel"
     return 0
   fi
   dst_dir="$(dirname "$dst")"
@@ -803,6 +886,7 @@ stage_owned_file() {
     if [ "$DRY_RUN" -eq 1 ]; then
       log "DRY-RUN COPY $source_label -> $dst"
       log "DRY-RUN UPDATE $rel source moved on; would redeploy the source bytes"
+      record_owned "$dst" "$source_label"
     else
       do_run "COPY (source moved on) $source_label -> $dst" cp -p "$src" "$dst"
       record_owned "$dst" "$source_label"
@@ -814,6 +898,7 @@ stage_owned_file() {
   fi
   if [ "$DRY_RUN" -eq 1 ]; then
     log "DRY-RUN COPY $source_label -> $dst"
+    record_owned "$dst" "$source_label"
     return 0
   fi
   dst_dir="$(dirname "$dst")"
@@ -864,10 +949,25 @@ write_ownership_manifest() {
     rm -f "$stream_file"
     die "Cannot write the ownership-manifest stream temp file: $stream_file"
   fi
-  python3 - "$STAGING_MANIFEST" "$OWNERSHIP_MANIFEST" "$stream_file" "$INSTALL_VERSION" <<'PY' || status=$?
+  python3 - "$STAGING_MANIFEST" "$OWNERSHIP_MANIFEST" "$stream_file" "$INSTALL_VERSION" "$PRUNE_PLAN_FILE" <<'PY' || status=$?
 import json, os, sys
 staging_path, out_path, stream_path, install_version = (
     sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+# 006-003 U7/D6: the obsolete-retirement plan of the prune pass ("" when it did
+# not run, i.e. there was no previous manifest): the keys retired from disk (they
+# must leave the manifest) and the entries preserved because they were modified
+# locally (they must STAY registered — PD-6b/INV-2).
+prune_path = sys.argv[5] if len(sys.argv) > 5 else ""
+pruned, kept = set(), {}
+if prune_path and os.path.exists(prune_path):
+    blob = open(prune_path, encoding="utf-8").read()
+    pruned_blob, _, kept_blob = blob.partition("%%KEPT%%")
+    pruned = {line for line in pruned_blob.splitlines() if line.strip()}
+    for line in kept_blob.splitlines():
+        if not line.strip():
+            continue
+        rel, sha, source = line.split("\t", 2)
+        kept[rel] = {"sha256": sha, "source": source}
 stream = open(stream_path, encoding="utf-8").read().split("%%CONFLICTS%%", 1)
 artifacts = {}
 for line in stream[0].splitlines():
@@ -905,13 +1005,16 @@ if os.path.exists(out_path):
                 previous_pending[rel] = record
 pending = {}
 for rel, record in sorted(previous.items()):
-    if rel in artifacts or rel in conflict_paths:
+    if rel in artifacts or rel in conflict_paths or rel in pruned:
         continue
     pending[rel] = {"sha256": record.get("sha256", ""), "source": record.get("source", "")}
 for rel, record in sorted(previous_pending.items()):
-    if rel in artifacts or rel in conflict_paths:
-        continue  # re-adopted or conflicted this run
+    if rel in artifacts or rel in conflict_paths or rel in pruned:
+        continue  # re-adopted, conflicted or retired this run
     pending[rel] = {"sha256": record.get("sha256", ""), "source": record.get("source", "")}
+# PD-6b: an obsolete own file the prune PRESERVED (modified locally) stays
+# registered — a conflict disclosure never unregisters a file.
+pending.update(kept)
 staging = json.load(open(staging_path, encoding="utf-8"))
 manifest = {
     "manifest_version": 1,
@@ -932,6 +1035,10 @@ with open(tmp_path, "w", encoding="utf-8") as fh:
 os.replace(tmp_path, out_path)
 PY
   rm -f "$stream_file"
+  if [ -n "$PRUNE_PLAN_FILE" ]; then
+    rm -f "$PRUNE_PLAN_FILE"
+    PRUNE_PLAN_FILE=""
+  fi
   if [ "$status" -ne 0 ]; then
     die "Cannot write the ownership manifest: $OWNERSHIP_MANIFEST (stream reader exit $status)"
   fi
@@ -1070,6 +1177,94 @@ install_user_config() {
 }
 
 # ---------------------------------------------------------------------------
+# Obsolete own files (006-003 U7/D6: PD-6a..e)
+# ---------------------------------------------------------------------------
+# The installer retires ITS OWN obsolete files. Candidate = every entry a
+# previous install registered (artifacts or pending_removal) that this run
+# neither redeploys nor discloses as a conflict; --uninstall's rule decides
+# (owned_removal_state, shared — never duplicated):
+#   removable (bytes match the recorded sha256) -> retired from DISK and from the
+#       manifest: the install no longer deploys it, so keeping it registered
+#       forever would leave --check reporting a PENDING-REMOVAL nobody resolves;
+#   modified -> PRESERVED, disclosed as CONFLICT and kept REGISTERED (PD-6b):
+#       a local change is never discarded by an install (INV-2);
+#   absent -> nothing to do (idempotent; the registered entry is left as it is).
+# A file the manifest does NOT register is never read nor written, so it cannot
+# be touched even while the prune is active (PD-6c/INV-2), and the user config
+# files are not registered either (A-3). --dry-run announces every baja through
+# do_run and performs none.
+prune_owned_obsolete() {
+  local prev="$OWNERSHIP_MANIFEST"
+  [ -f "$prev" ] || return 0
+  local reg_path
+  reg_path="$(mktemp)" || die "Cannot create the obsolete-prune registration temp file"
+  # PD-6e: the manifest-reading python receives INSTALL_ROOT and resolves every
+  # RECORDED path against it — absolute paths stay as they are, relative ones
+  # resolve under the (possibly redirected) root. The hash compares the bytes on
+  # DISK, and `owned_removal_state` decides with the recorded digest.
+  python3 - "$prev" "$INSTALL_ROOT" "$reg_path" <<'PY' || { rm -f "$reg_path"; die "Cannot read the ownership manifest: $prev"; }
+import json, os, sys
+manifest_path, root, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    data = json.load(open(manifest_path, encoding="utf-8"))
+except (OSError, ValueError):
+    raise SystemExit(0)
+records = {}
+for section_name in ("artifacts", "pending_removal"):
+    section = data.get(section_name)
+    if not isinstance(section, dict):
+        continue
+    for rel, record in sorted(section.items()):
+        if isinstance(record, dict) and rel not in records:
+            records[rel] = record
+with open(out_path, "w", encoding="utf-8") as out:
+    for rel, record in sorted(records.items()):
+        absolute = rel if os.path.isabs(rel) else os.path.join(root, rel)
+        out.write("%s\t%s\t%s\t%s\n" % (absolute, rel, record.get("sha256", ""), record.get("source", "")))
+PY
+  local abs rel sha source state preserved=0 plan_path
+  local -A pruned_abs=()
+  while IFS=$'\t' read -r abs rel sha source; do
+    [ -n "$rel" ] || continue
+    [ -n "${OWNED_ABS[$abs]:-}" ] && continue     # this run deploys it: not obsolete
+    [ -n "${CONFLICT_ABS[$abs]:-}" ] && continue  # already reported and preserved
+    if [ -n "${pruned_abs[$abs]:-}" ]; then
+      PRUNED+=("$rel")                            # same destination, another key
+      continue
+    fi
+    state="$(owned_removal_state "$abs" "$sha")"
+    case "$state" in
+      absent) continue ;;
+      removable)
+        do_run "REMOVE (own obsolete: no longer deployed, bytes match the recorded sha256) $abs" rm -f -- "$abs"
+        pruned_abs["$abs"]=1
+        PRUNED+=("$rel")
+        ;;
+      modified)
+        preserved=$((preserved + 1))
+        KEPT+=("$rel"$'\t'"$sha"$'\t'"$source")
+        add_conflict "$rel" "obsolete own file modified locally since the recorded install (registered $sha); PRESERVED and kept registered"
+        ;;
+    esac
+  done < "$reg_path"
+  rm -f "$reg_path"
+  log "Obsolete prune: ${#PRUNED[@]} own file(s) retired, $preserved preserved (locally modified — explicit resolution needed)"
+  [ "$DRY_RUN" -eq 1 ] && return 0
+  # The plan for write_ownership_manifest: keys to drop, then the entries that
+  # must stay REGISTERED (PD-6b).
+  plan_path="$(mktemp)" || die "Cannot create the obsolete-prune plan temp file"
+  if ! {
+    printf '%s\n' "${PRUNED[@]}"
+    printf '%s\n' '%%KEPT%%'
+    printf '%s\n' "${KEPT[@]}"
+  } > "$plan_path"; then
+    rm -f "$plan_path"
+    die "Cannot write the obsolete-prune plan: $plan_path"
+  fi
+  PRUNE_PLAN_FILE="$plan_path"
+}
+
+# ---------------------------------------------------------------------------
 # Uninstall operations (cdad-owned paths only)
 # ---------------------------------------------------------------------------
 # uninstall_items — prints the paths uninstall would remove. Agents come from
@@ -1147,7 +1342,7 @@ uninstall_cdad() {
 # No confirmation prompt: the manifest IS the explicit resolution of what is ours.
 uninstall_by_manifest() {
   local reg_path keep_file status=0 total=0 removed=0 preserved=0
-  local key rel sha source path actual
+  local key rel sha source path
   local -a keep_artifacts=() keep_pending=()
   reg_path="$(mktemp)" || die "Cannot create the uninstall registration temp file"
   python3 - "$OWNERSHIP_MANIFEST" "$reg_path" <<'PY' || { rm -f "$reg_path"; die "Cannot read the ownership manifest: $OWNERSHIP_MANIFEST"; }
@@ -1170,32 +1365,27 @@ PY
   while IFS=$'\t' read -r key rel sha source; do
     [ -n "$rel" ] || continue
     total=$((total + 1))
-    case "$rel" in
-      /*) path="$rel" ;;
-      *)  path="$INSTALL_ROOT/$rel" ;;
+    path="$(install_root_abs "$rel")"
+    # E1 (review-5) / 006-003 U7: historical ownership is not authorization to
+    # discard later local changes — a modified owned file is reported and
+    # PRESERVED. owned_removal_state is the ONE rule (also used by the obsolete
+    # prune); a symlink or an absent path is handled exactly as before.
+    case "$(owned_removal_state "$path" "$sha")" in
+      absent)
+        log "UNINSTALL (absent, idempotent) $path"
+        continue
+        ;;
+      modified)
+        preserved=$((preserved + 1))
+        if [ "$key" = "artifacts" ]; then
+          keep_artifacts+=("$rel"$'\t'"$sha"$'\t'"$source")
+        else
+          keep_pending+=("$rel"$'\t'"$sha"$'\t'"$source")
+        fi
+        log "CONFLICT: $rel — modified locally since the recorded install; PRESERVED for explicit resolution (--uninstall did not remove it)"
+        continue
+        ;;
     esac
-    if [ -L "$path" ]; then
-      do_run "UNINSTALL $path" rm -f -- "$path"
-      removed=$((removed + 1))
-      continue
-    fi
-    if [ ! -f "$path" ]; then
-      log "UNINSTALL (absent, idempotent) $path"
-      continue
-    fi
-    # E1 (review-5): historical ownership is not authorization to discard
-    # later local changes — a modified owned file is reported and PRESERVED.
-    actual="$(sha256_of "$path")"
-    if [ -n "$sha" ] && [ "$actual" != "$sha" ]; then
-      preserved=$((preserved + 1))
-      if [ "$key" = "artifacts" ]; then
-        keep_artifacts+=("$rel"$'\t'"$sha"$'\t'"$source")
-      else
-        keep_pending+=("$rel"$'\t'"$sha"$'\t'"$source")
-      fi
-      log "CONFLICT: $rel — modified locally since the recorded install; PRESERVED for explicit resolution (--uninstall did not remove it)"
-      continue
-    fi
     do_run "UNINSTALL $path" rm -f -- "$path"
     removed=$((removed + 1))
   done < "$reg_path"
@@ -1571,12 +1761,20 @@ PY
 
 print_summary() {  # mode: install | uninstall
   local mode="$1"
-  local cdad_agents non_cdad total
+  local cdad_agents non_cdad total expected_agents
   cdad_agents=$(count_manifest_agents_installed "$OPENCODE_AGENTS_DIR")
   total=$(count_flat_files "$OPENCODE_AGENTS_DIR" '*.md')
   non_cdad=$((total - cdad_agents))
+  # 006-003 plan amendment A-6: the expected agent count is DERIVED from the
+  # staged set for this runtime — a staged agent retired by this same run
+  # (PD-6a/D6) lowers the expectation instead of failing the Verify against a
+  # frozen total. The historical constant is only the declared last resort when
+  # the staged set is unreadable (e.g. legacy --uninstall over a root with no
+  # staging), so unrelated summaries keep their previous wording.
+  expected_agents="$(staged_agent_count opencode)"
+  [ -n "$expected_agents" ] || expected_agents="$EXPECTED_CDAD_AGENTS"
   log "=== Summary ($mode) ==="
-  log "Agents: $cdad_agents of $EXPECTED_CDAD_AGENTS staged cdad-*.md present in $OPENCODE_AGENTS_DIR"
+  log "Agents: $cdad_agents of $expected_agents staged cdad-*.md present in $OPENCODE_AGENTS_DIR"
   log "Agents dir: $non_cdad unmanaged .md files present (untouched)"
   local s d
   for s in "${SKILLS[@]}"; do
@@ -1588,8 +1786,8 @@ print_summary() {  # mode: install | uninstall
       log "  $s: $(count_tree_files "$d/$s") files @ extra: $d"
     done
   done < <(extra_skills_dirs)
-  if [ "$mode" = "install" ] && [ "$DRY_RUN" -eq 0 ] && [ "$cdad_agents" -ne "$EXPECTED_CDAD_AGENTS" ]; then
-    log "Verify: FAIL — expected $EXPECTED_CDAD_AGENTS cdad agents, found $cdad_agents"
+  if [ "$mode" = "install" ] && [ "$DRY_RUN" -eq 0 ] && [ "$cdad_agents" -ne "$expected_agents" ]; then
+    log "Verify: FAIL — expected $expected_agents cdad agents, found $cdad_agents"
     return 1
   fi
   if [ "$mode" = "install" ]; then
@@ -1693,6 +1891,9 @@ main() {
   install_user_config
   INSTALL_VERSION="$(installation_version)"
   write_version_marker "$INSTALL_VERSION"
+  # 006-003 U7/D6 (PD-6a..e): retire the own obsolete files this run no longer
+  # deploys (byte-identical only; modified ones are preserved and reported).
+  prune_owned_obsolete
   write_ownership_manifest
   if [ "$DRY_RUN" -eq 1 ]; then
     print_dry_run_summary
