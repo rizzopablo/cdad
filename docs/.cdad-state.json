@@ -8393,7 +8393,7 @@
     "id": "006-003-installer-single-profile-delegation-config-test-writer-red-002",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
