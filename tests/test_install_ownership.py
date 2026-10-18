@@ -14,10 +14,21 @@ New observable interface pinned by these tests (the only new surface T5 adds):
     JSON object with at least:
       "runtime":   str  (equals staging manifest "runtime")
       "stack":     str  (RESOLVED stack, equals staging manifest "stack"; R3-O2)
-      "profile":   str  (equals staging manifest "profile")
       "artifacts": object mapping install-root-relative destination path ->
                    {"sha256": <hex of the installed bytes>,
                     "source": <staging-relative path of the deployed artifact>}
+
+ORACLE REPLACEMENT (006-003 U2 — spec docs/specs/006-003-installer-single-
+profile-delegation-config/spec.md, PD-1d/D1). The pinned interface above no
+longer declares a `"profile"` key: D1 retires the profile surface from the
+installer and from the staging manifest it consumes, so there is no profile for
+the ownership manifest to record (it came from staging, install.sh:954). The
+former assertion `manifest["profile"] == staging_manifest["profile"]` is
+REPLACED by the stronger absence assertion in
+`test_t5_r3o2_install_manifest_records_resolved_stack` below. The staging side of
+PD-1d (the generator writes no `profile` key) is asserted on freshly generated
+staging by `tests/test_006_003_u1_generator_without_profiles.py`; this file does
+not depend on the possibly stale build/staging of the checkout.
 
 Staging contract: the installer consumes build/staging/manifest.json next to
 install.sh ({"artifacts": [{"file", "sha256", "sources", "regenerate"}]}) and
@@ -36,6 +47,7 @@ Test -> postcondition mapping (plan T5 RED list; objective cases 1-10 + R3-O2):
   test_t5_case9_dry_run_announces_exactly_the_staged_set                 -> plan T5 (dry-run exacto)
   test_t5_case10_check_reports_installed_drift_vs_staging                -> PD-5
   test_t5_r3o2_install_manifest_records_resolved_stack                   -> R3-O2
+      (+ 006-003 PD-1d/D1: the manifest records no `profile`)
 
 PD-9 note: the plan defers the public-layout / opt-in-flag decision to T6
 ("decision del flag ... despues de migrar fixtures"). The enforceable-today
@@ -277,8 +289,12 @@ class TestT5FirstInstallOwnership(unittest.TestCase):
             assert_manifest_consistent(self, root)
 
     def test_t5_r3o2_install_manifest_records_resolved_stack(self) -> None:
-        """R3-O2: the install manifest records the resolved stack (and
-        runtime/profile) exactly as the staging manifest resolved them."""
+        """R3-O2 + PD-1d/D1: the install manifest records the resolved stack and
+        runtime exactly as the staging manifest resolved them, and records NO
+        `profile` (D1 retires the profile surface; there is no profile to
+        record, so the R3-O2 'no machine-hidden effect' invariant is asserted
+        over the surfaces that still exist and, for the retired one, as
+        absence)."""
         staging_manifest = load_staging_manifest(staging_product())
         with tempfile.TemporaryDirectory(prefix="cdad-t5-stack-") as root_dir:
             root = Path(root_dir)
@@ -287,7 +303,7 @@ class TestT5FirstInstallOwnership(unittest.TestCase):
                 result.returncode, 0, result.stderr or result.stdout
             )
             manifest = load_install_manifest(root)  # RED pivot: missing today
-            for key in ("runtime", "stack", "profile"):
+            for key in ("runtime", "stack"):
                 self.assertIn(
                     key,
                     manifest,
@@ -303,9 +319,13 @@ class TestT5FirstInstallOwnership(unittest.TestCase):
                 manifest["runtime"], staging_manifest["runtime"],
                 "R3-O2: the recorded runtime must match the staging manifest",
             )
-            self.assertEqual(
-                manifest["profile"], staging_manifest["profile"],
-                "R3-O2: the recorded profile must match the staging manifest",
+            self.assertTrue(
+                "profile" not in manifest,
+                "PD-1d/D1 (ORACLE REPLACEMENT, 006-003 U2): the install "
+                "manifest must no longer record a `profile`; the installer has "
+                "no profiles and the staging manifest it consumes carries none, "
+                "so the key can only be a leftover of the retired surface "
+                "(manifest keys: %s)" % sorted(manifest),
             )
 
 

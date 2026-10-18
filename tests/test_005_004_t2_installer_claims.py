@@ -18,48 +18,99 @@ artefactos declarados:
   es la verdad de referencia con la que el enunciado del adaptador debe
   coincidir (PD-2/AC-2).
 - la instalación en **raíz aislada** (`CDAD_INSTALL_ROOT` → temporal, nunca
-  HOME) y el manifiesto de propiedad `<root>/.cdad-install-manifest.json`
+  HOME) y el manifiesto de propiedad `<root>.cdad-install-manifest.json`
   (interfaz declarada de 004-001 T5, reusada por import desde
   `tests/test_install_ownership.py`: PD-9 no duplica el patrón).
-- el generador de staging (`make staging PROFILE=<perfil>` en una **copia**
-  temporal del repo) y el generador de agentes — la ausencia de la línea
-  `model:` bajo `basic` es un hecho de GENERACIÓN (PD-2/PD-5).
+- el generador de staging (`make staging` en una **copia** temporal del repo) y
+  el generador de agentes — la ausencia de la línea `model:` es un hecho de
+  GENERACIÓN (PD-2/PD-5).
 
-Mapa test → postcondición/criterio (un test por afirmación observable):
+ORACLE REPLACEMENTS (006-003 U2 — spec docs/specs/006-003-installer-single-
+profile-delegation-config/spec.md, §2.1/PD-1a/D1; regla A-1 del plan: los tests
+acoplados al perfil se reformulan declarando el reemplazo). Qué cambió y por qué,
+para que ningún assert se caiga en silencio:
+
+- `make staging PROFILE=<perfil>` → `make staging`: D1 retira el eje de perfiles
+  del generador y del Makefile (PD-1b/PD-1f, unidad U1). El fixture
+  `_isolated_profile_install(profile)` pasa a `_isolated_install()` (un solo
+  caso) y su assert `staging_manifest["profile"] == profile` se REPLACE por
+  «el staging fresco NO trae clave `profile`» (PD-1d).
+- `install.sh --optimus` → `install.sh --basic`: PD-1a rechaza los flags de
+  perfil y D1 conserva `--basic` como alias deprecado sin efecto. El control
+  positivo de bytes verbatim (PD-2(ii)/AC-2) se conserva íntegro; lo que
+  desaparece es el eje «perfil que fija modelos», porque ningún perfil fija
+  modelos ya (INV-3/PD-1e).
+- `manifest["profile"] == profile` → el manifiesto de propiedad NO registra
+  `profile` (PD-1d/D1).
+- El enunciado del adaptador que atribuía la ausencia de `model:` al «perfil de
+  generación» se reformula a la causa vigente: el GENERADOR sin perfiles y sin
+  mapa no emite `model:` (PD-1e/PD-1f). El reclamo de honestidad de PD-5(b) (el
+  instalador NO garantiza la invariante anti-sesgo) se CONSERVA, reformulado sin
+  perfiles (INV-5: garantizado por configuración o declarado, nunca silencio).
+
+Mapa test → postcondición/criterio (un test por afirmación observable; el
+«ROJO hoy» de la tabla original era el del RED de 005-004 y el GREEN de 005-004
+ya lo resolvió — el estado por test está medido en la sección RED esperado):
 
 - `test_pd2_i_sweep_no_declared_surface_claims_the_installer_removes_the_model_field`
-      → PD-2(i) / AC-2                       (barrido; ROJO hoy)
+      → PD-2(i) / AC-2                       (barrido; verde hoy)
 - `test_pd2_ii_adapter_states_the_installer_deploys_staged_bytes_untransformed`
       → PD-2(ii) / AC-2                      (mecanismo real + coincidencia con
-                                              `install.sh --help`; ROJO hoy)
-- `test_pd2_ii_adapter_attributes_the_missing_model_line_to_the_generation_profile`
-      → PD-2(ii) / AC-2                      (causa = perfil de generación; ROJO hoy)
-- `test_pd5_adapter_declares_no_model_per_role_under_basic`
-      → PD-5(a) / AC-5                       (ROJO hoy)
+                                              `install.sh --help`; verde hoy)
+- `test_pd2_ii_adapter_attributes_the_missing_model_line_to_the_generator`
+      → PD-2(ii) / AC-2                      (causa = generador sin perfiles;
+                                              REPLACE declarado de la variante
+                                              «generation profile»; verde hoy)
+- `test_pd5_adapter_declares_no_model_per_role`
+      → PD-5(a) / AC-5                       (REPLACE declarado de la variante
+                                              «under basic»; verde hoy)
 - `test_pd5_adapter_declares_the_installer_does_not_guarantee_the_anti_bias_invariant`
-      → PD-5(b) / AC-5                       (ROJO hoy)
+      → PD-5(b) / AC-5                       (reclamo de honestidad CONSERVADO,
+                                              encuadre sin perfiles; verde hoy)
 - `test_pd5_adapter_references_the_exemption_source_instead_of_copying_it`
       → PD-5(c) / PD-9 / AC-5                (exención explícita por referencia;
-                                              ROJO hoy)
+                                              verde hoy)
 - `test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim`
-      → PD-2(ii) / AC-2 (control positivo)   (verde hoy: el instalador ya copia
-                                              los bytes staged y la línea
-                                              `model:` del perfil viaja)
-- `test_pd2_ii_basic_profile_absence_is_produced_by_the_generator`
-      → PD-2(ii), PD-5 / AC-5 (control)      (verde hoy: bajo `basic` la línea
-                                              `model:` la omite el generador)
+      → PD-2(ii)/PD-1d / AC-2 (control positivo) (REPLACE del control por
+                                              perfil: los bytes desplegados son
+                                              los staged y el manifiesto no
+                                              registra `profile`; ROJO hoy por
+                                              PD-1d/D1)
+- `test_pd1e_absence_of_model_lines_is_produced_by_the_generator`
+      → PD-1e/PD-2(ii) / AC-5 (control)       (REPLACE de «basic profile
+                                              absence»: la ausencia de `model:`
+                                              la produce el generador sin
+                                              perfiles; verde hoy)
 
-RED esperado: los seis primeros fallan por `AssertionError` (el adaptador hoy
-afirma que el instalador quita el campo `model` y hoy no enuncia el mecanismo
-real, la causa por perfil ni la procedencia bajo `basic`); los dos controles de
-instalación quedan verdes hoy. Ningún fallo es `ImportError`/`SyntaxError`/
-`NameError`.
+RED esperado (MEDIDO contra el árbol de hoy, post-U1; se corrige el «ROJO hoy»
+histórico del RED de 005-004, ya resuelto por su GREEN):
+
+- Los cinco tests de enunciado/barrido (`test_pd2_i_*`, los dos
+  `test_pd2_ii_adapter_*`, `test_pd5_adapter_*`) están **verdes** hoy: el GREEN
+  de 005-004 ya reescribió el adaptador. Esta sesión NO debilita su oráculo: se
+  conservan los grupos de co-ocurrencia y sólo se retiran los dos que el propio
+  cambio vuelve falsos (`\bbasic\b`, y «generation profile» como CAUSA, que pasó
+  a «generador/staging sin perfiles»).
+- `test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim` es
+  **ROJO** hoy por el reemplazo declarado: el manifiesto de propiedad todavía
+  registra `profile` (PD-1d/D1). Antes de esta sesión ya era rojo por el eje de
+  perfiles retirado (U1), pero por una precondición del fixture; ahora falla por
+  la aserción del contrato.
+- `test_pd1e_absence_of_model_lines_is_produced_by_the_generator` es el control
+  verde (PD-1e ya cumplido por U1: el staging fresco no trae `model:`).
+
+Ningún fallo es `ImportError`/`SyntaxError`/`NameError`.
 
 Límite declarado del barrido (PD-2(i)): las superficies declaradas por el
 contrato son `sources/`, `skills/` e `install.sh`. La segunda ocurrencia que el
 contrato nombra (`scripts/cdad-generate.py`, comentario `strip`, §9 `:443-446`)
 queda **fuera** de esa superficie declarada y no se barre aquí; su corrección
 está en el alcance de T2 (plan §4) y no la fuerza este focal.
+
+Dependencia declarada (006-003 U3): los tres asserts sobre el ENUNCIADO del
+adaptador (`sources/agents/adapters/claude-code.md`) quedan rojos hasta que U3
+reescriba la sección `delegation` de los adaptadores (plan U3, PD-7b). Es una
+regresión esperada y declarada, no un fallo nuevo.
 """
 
 from __future__ import annotations
@@ -100,9 +151,10 @@ SWEEP_MIN_FILES = {"sources": 5, "skills": 50}
 MODEL_LINE_RE = re.compile(r"(?m)^model:")
 MODEL_WORD_RE = re.compile(r"(?i)\bmodel\b")
 
-# Perfiles del contrato: `basic` (sin modelos fijos) y uno que SÍ fija modelos.
-BASIC_PROFILE = "basic"
-MODELED_PROFILE = "optimus"
+# 006-003 U2 (A-1): sólo sobrevive el alias deprecado `--basic` (D1). El eje de
+# perfiles (`basic` vs `optimus`) se retiró con el oráculo que lo describía.
+DEPRECATED_ALIAS = "basic"
+ALIAS_FLAG = f"--{DEPRECATED_ALIAS}"
 
 CC_PREFIX = "agents/claude-code/"
 
@@ -377,41 +429,46 @@ def test_pd2_ii_adapter_states_the_installer_deploys_staged_bytes_untransformed(
     )
 
 
-def test_pd2_ii_adapter_attributes_the_missing_model_line_to_the_generation_profile():
-    """PD-2(ii)/AC-2: el adaptador atribuye la ausencia de la línea `model:`
-    bajo el perfil vigente al PERFIL DE GENERACIÓN (lo omite el generador),
-    no al instalador."""
+def test_pd2_ii_adapter_attributes_the_missing_model_line_to_the_generator():
+    """PD-2(ii)/AC-2 (REPLACE 006-003 U2 de la variante «generation profile»):
+    el adaptador atribuye la ausencia de la línea `model:` al GENERADOR —que ya
+    no tiene perfiles ni mapa de modelos (PD-1e/PD-1f, INV-3)—, no al
+    instalador."""
     adapter = _read_text(ADAPTER, "PD-2(ii)")
     attributes_cause = co_occurs(
         adapter,
         [
-            [r"generation-time profile", r"generation time profile",
-             r"generation profile", r"generation-time", r"at generation time",
-             r"generator", r"generated", r"regenerated"],
+            [r"generation", r"generator", r"generated", r"regenerated",
+             r"at generation time", r"generation-time", r"staging",
+             r"build/staging"],
             [r"model"],
             [r"absent", r"absence", r"missing", r"omitted", r"omits", r"omit",
-             r"not present", r"no model", r"without a model", r"lacks"],
+             r"not present", r"no model", r"without a model", r"lacks",
+             r"carries no", r"no longer"],
         ],
         window=45,
     )
     assert attributes_cause, (
         "PD-2(ii)/AC-2: el adaptador no atribuye la ausencia de la línea "
-        "`model:` al perfil de generación (el generador la omite cuando el "
-        "modelo es vacío) — hoy la atribuye al instalador"
+        "`model:` al generador/staging (que ya no tiene perfiles ni mapa: la "
+        "línea nunca se produce), — hoy la atribuye al instalador o a un perfil"
     )
 
 
 # ------------------------------- PD-5 — procedencia bajo el perfil `basic`
 
 
-def test_pd5_adapter_declares_no_model_per_role_under_basic():
-    """PD-5(a)/AC-5: el adaptador declara que bajo el perfil `basic` no hay
-    modelo por rol (los agentes no llevan `model:`)."""
+def test_pd5_adapter_declares_no_model_per_role():
+    """PD-5(a)/AC-5 (REPLACE 006-003 U2 de la variante «under basic»): el
+    adaptador declara que NO hay modelo por rol —ningún agente lleva `model:`—
+    porque no hay perfiles ni modelo fijo por rol (INV-3/PD-1e); el modelo de la
+    delegación externa se configura aparte (D3)."""
     adapter = _read_text(ADAPTER, "PD-5(a)")
     declared = co_occurs(
         adapter,
         [
-            [r"\bbasic\b"],
+            [r"\binstaller\b", r"\binstallation\b", r"\bgenerator\b",
+             r"\bgenerated\b", r"\bagents?\b", r"\bcdad[-\w]*\.md\b"],
             [r"no per-role model", r"no per role model", r"no model",
              r"without a model", r"no fixed model", r"no models",
              r"model:.*(absent|missing|omitted|not present)",
@@ -421,15 +478,19 @@ def test_pd5_adapter_declares_no_model_per_role_under_basic():
         window=45,
     )
     assert declared, (
-        "PD-5(a)/AC-5: el adaptador no declara que bajo el perfil `basic` no "
-        "hay modelo por rol — la procedencia del modelo quedaría implícita"
+        "PD-5(a)/AC-5: el adaptador no declara que no hay modelo por rol "
+        "(ningún agente lleva `model:` y no hay perfiles que lo fijen) — la "
+        "procedencia del modelo quedaría implícita"
     )
 
 
 def test_pd5_adapter_declares_the_installer_does_not_guarantee_the_anti_bias_invariant():
-    """PD-5(b)/AC-5: el adaptador declara que el instalador NO garantiza la
-    invariante reviewer≠implementer bajo el perfil vigente (nunca como
-    invariante satisfecha)."""
+    """PD-5(b)/AC-5 (reclamo de honestidad CONSERVADO; encuadre reformulado en
+    006-003 U2): el adaptador declara que el instalador NO garantiza la
+    invariante reviewer≠implementer —nunca como invariante satisfecha—. Sin
+    perfiles ni modelo por rol (INV-3/PD-1e), la garantía sólo puede venir de la
+    configuración de delegación o declararse como no garantizada (INV-5: nunca
+    silencio); el ajuste del enunciado pertenece a U3 (PD-7b)."""
     adapter = _read_text(ADAPTER, "PD-5(b)")
     declared = co_occurs(
         adapter,
@@ -445,7 +506,8 @@ def test_pd5_adapter_declares_the_installer_does_not_guarantee_the_anti_bias_inv
     assert declared, (
         "PD-5(b)/AC-5: el adaptador no declara que el instalador no garantiza "
         "la invariante reviewer≠implementer — la exención quedaría como "
-        "invariante satisfecha en silencio"
+        "invariante satisfecha en silencio (INV-5: garantizado por "
+        "configuración o declarado)"
     )
 
 
@@ -523,27 +585,33 @@ def _sandbox_root() -> Path:
 
 
 @functools.lru_cache(maxsize=None)
-def _isolated_profile_install(profile: str) -> dict:
-    """Genera el staging del perfil pedido en la copia y lo instala en una raíz
-    AISLADA (`CDAD_INSTALL_ROOT` → temporal, nunca HOME), devolviendo los bytes
-    staged y los desplegados de los agentes de Claude Code."""
+def _isolated_install() -> dict:
+    """Genera el staging en la copia (`make staging`, ya sin perfiles: U1) y lo
+    instala en una raíz AISLADA (`CDAD_INSTALL_ROOT` → temporal, nunca HOME),
+    devolviendo los bytes staged y los desplegados de los agentes de Claude Code.
+
+    REPLACE 006-003 U2: el fixture era `_isolated_profile_install(profile)`
+    (`make staging PROFILE=<perfil>` + `install.sh --<perfil>`). D1 retira el eje
+    de perfiles; queda UN caso instalado con el alias deprecado `--basic` y el
+    assert de perfil se invierte a «no hay clave `profile`».
+    """
     sandbox = _sandbox_root()
     staged_result = subprocess.run(
-        ["make", "staging", f"PROFILE={profile}"],
+        ["make", "staging"],
         cwd=str(sandbox),
         text=True,
         capture_output=True,
         check=False,
     )
     assert staged_result.returncode == 0, (
-        f"fixture T2: `make staging PROFILE={profile}` falló "
+        f"fixture T2: `make staging` falló "
         f"(rc={staged_result.returncode}): {staged_result.stderr!r}"
     )
     staging_manifest = load_staging_manifest(sandbox)
-    assert staging_manifest.get("profile") == profile, (
-        "fixture T2: el staging generado no tiene el perfil pedido "
-        f"(pedido {profile!r}, obtenido {staging_manifest.get('profile')!r}) "
-        "— el caso por perfil no es verificable"
+    assert "profile" not in staging_manifest, (
+        "fixture T2 (PD-1d/D1): el staging generado todavía trae la clave "
+        f"`profile` ({staging_manifest.get('profile')!r}) — el generador no "
+        "tiene perfiles"
     )
     staged_dir = sandbox / "build" / "staging" / "agents" / "claude-code"
     staged = {
@@ -552,11 +620,11 @@ def _isolated_profile_install(profile: str) -> dict:
         if path.is_file()
     }
     assert len(staged) >= 10, (
-        f"fixture T2: el staging de `{profile}` no trae los agentes de Claude "
+        "fixture T2: el staging no trae los agentes de Claude "
         f"Code (encontrados {len(staged)})"
     )
 
-    root = Path(tempfile.mkdtemp(prefix=f"cdad-t2-{profile}-root-"))
+    root = Path(tempfile.mkdtemp(prefix="cdad-t2-install-root-"))
     atexit.register(shutil.rmtree, root, ignore_errors=True)
     tmp_dir = Path(tempfile.gettempdir()).resolve()
     assert root.resolve().is_relative_to(tmp_dir), (
@@ -568,9 +636,9 @@ def _isolated_profile_install(profile: str) -> dict:
         "el contrato prohíbe instalar en HOME"
     )
 
-    result = run_installer(sandbox, root, f"--{profile}")
+    result = run_installer(sandbox, root, ALIAS_FLAG)
     assert result.returncode == 0, (
-        f"fixture T2: la instalación aislada del perfil `{profile}` falló "
+        f"fixture T2: la instalación aislada falló "
         f"(rc={result.returncode}): {result.stderr or result.stdout}"
     )
     manifest = load_install_manifest(root)
@@ -582,15 +650,14 @@ def _isolated_profile_install(profile: str) -> dict:
             mapping[source] = dest
             deployed[source] = (root / dest).read_bytes()
     assert len(deployed) >= 10, (
-        f"fixture T2: la instalación del perfil `{profile}` no desplegó los "
+        f"fixture T2: la instalación no desplegó los "
         f"agentes de Claude Code (encontrados {len(deployed)})"
     )
     return {
-        "profile": profile,
         "staged": staged,
         "deployed": deployed,
         "mapping": mapping,
-        "manifest_profile": manifest.get("profile"),
+        "manifest": manifest,
         "conflicts": manifest.get("conflicts"),
     }
 
@@ -602,18 +669,20 @@ def _model_line_holders(blobs: dict[str, bytes]) -> list[str]:
 
 
 def test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim():
-    """PD-2(ii)/AC-2 (control positivo): en una raíz aislada, los bytes
-    desplegados de los agentes de Claude Code SON los bytes staged (sin
-    transformación) y, en un perfil que fija modelos, la línea `model:` viaja
-    a la salida (el instalador no la quita)."""
-    data = _isolated_profile_install(MODELED_PROFILE)
+    """PD-2(ii)/PD-1d / AC-2 (control positivo, REPLACE 006-003 U2): en una raíz
+    aislada, los bytes desplegados de los agentes de Claude Code SON los bytes
+    staged (sin transformación) y el manifiesto de propiedad NO registra
+    `profile` (D1: el instalador no tiene perfiles; el staging que consume
+    tampoco). El control «la línea `model:` del perfil viaja» se retira con el
+    eje de perfiles: ningún staging fija modelos ya (INV-3/PD-1e)."""
+    data = _isolated_install()
     assert data["conflicts"] == [], (
         "PD-2(ii)/AC-2: la instalación aislada reportó conflictos; el control "
         f"de bytes desplegados no es limpio: {data['conflicts']}"
     )
-    assert data["manifest_profile"] == MODELED_PROFILE, (
-        "PD-2(ii): el manifiesto de propiedad no registró el perfil del "
-        f"staging desplegado ({data['manifest_profile']!r})"
+    assert "profile" not in data["manifest"], (
+        "PD-2(ii)/PD-1d: el manifiesto de propiedad todavía registra `profile` "
+        f"({data['manifest'].get('profile')!r}); el instalador no tiene perfiles"
     )
     assert sorted(data["mapping"]) == sorted(
         f"{CC_PREFIX}{name}" for name in data["staged"]
@@ -624,16 +693,14 @@ def test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim():
     )
 
     staged_with_model = _model_line_holders(data["staged"])
-    assert staged_with_model, (
-        f"PD-2(ii)/AC-2 (control positivo): el perfil `{MODELED_PROFILE}` no "
-        "staged ningún agente de Claude Code con línea `model:` — el control "
-        "positivo no demuestra nada"
+    assert staged_with_model == [], (
+        "PD-2(ii)/PD-1e (control): el staging SÍ trae la línea `model:` en "
+        f"{staged_with_model} — el generador sin perfiles no la produce"
     )
     deployed_with_model = _model_line_holders(data["deployed"])
-    assert deployed_with_model, (
-        "PD-2(ii)/AC-2 (control positivo): ningún agente de Claude Code "
-        f"desplegado lleva la línea `model:` staged ({staged_with_model} la "
-        "llevan en staging) — la línea NO viaja a la salida"
+    assert deployed_with_model == [], (
+        "PD-2(ii)/PD-1e: la salida desplegada lleva la línea `model:` en "
+        f"{deployed_with_model} — ningún texto instalable fija modelos"
     )
 
     not_verbatim = sorted(
@@ -648,26 +715,22 @@ def test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim():
     )
 
 
-def test_pd2_ii_basic_profile_absence_is_produced_by_the_generator():
-    """PD-2(ii)/PD-5/AC-5 (control): bajo el perfil `basic` la línea `model:`
-    no existe ya en staging (la omite el GENERADOR) y tampoco en la salida
-    desplegada, que sigue siendo copia de los bytes staged."""
-    data = _isolated_profile_install(BASIC_PROFILE)
-    assert data["manifest_profile"] == BASIC_PROFILE, (
-        "PD-5/AC-5: el manifiesto de propiedad no registró el perfil `basic` "
-        f"del staging desplegado ({data['manifest_profile']!r})"
-    )
+def test_pd1e_absence_of_model_lines_is_produced_by_the_generator():
+    """PD-1e/PD-2(ii) (control, REPLACE 006-003 U2 de «basic profile absence»):
+    la línea `model:` no existe ya en staging (la ausencia la produce el
+    GENERADOR sin perfiles ni mapa) y tampoco en la salida desplegada, que sigue
+    siendo copia de los bytes staged."""
+    data = _isolated_install()
     staged_with_model = _model_line_holders(data["staged"])
     assert staged_with_model == [], (
-        "PD-2(ii)/PD-5 (control): bajo `basic` el staging SÍ trae la línea "
-        f"`model:` en {staged_with_model} — la ausencia no vendría del "
-        "generador"
+        "PD-2(ii)/PD-1e (control): el staging trae la línea "
+        f"`model:` en {staged_with_model} — la ausencia no vendría del generador"
     )
     deployed_with_model = _model_line_holders(data["deployed"])
     assert deployed_with_model == [], (
-        "PD-2(ii)/PD-5 (control): la salida desplegada bajo `basic` lleva la "
-        f"línea `model:` en {deployed_with_model} — incompatible con un "
-        "staging sin modelos fijos"
+        "PD-2(ii)/PD-1e (control): la salida desplegada lleva la línea "
+        f"`model:` en {deployed_with_model} — incompatible con un staging sin "
+        "modelos fijos"
     )
     not_verbatim = sorted(
         source
@@ -675,7 +738,7 @@ def test_pd2_ii_basic_profile_absence_is_produced_by_the_generator():
         if data_bytes != data["staged"][Path(source).name]
     )
     assert not_verbatim == [], (
-        "PD-2(ii)/AC-2: bajo `basic` los bytes desplegados tampoco son los "
+        "PD-2(ii)/AC-2: los bytes desplegados tampoco son los "
         f"bytes staged (el instalador transformó el contenido): {not_verbatim}"
     )
 

@@ -7,6 +7,29 @@ R3-O2 and spec invariant "el stack/perfil es entrada explícita registrada en el
 manifest, no efecto oculto de la máquina") + review-5 findings B1-B4 and the
 explicit-resolution recommendation.
 
+ORACLE REPLACEMENTS (006-003 U2 — spec docs/specs/
+006-003-installer-single-profile-delegation-config/spec.md, §2.1/PD-1a/D1 and
+orchestrator amendment A-1). What changed and why, so no assert is dropped
+silently:
+
+- review-5 B4 (`test_review5_b4_*`, class `TestReview5ProfileAgreement`) asserted
+  the PROFILE INVARIANT: a requested profile disagreeing with the staged profile
+  had to be reported before installing, and the published labels had to be
+  coherent. D1 retires the profile surface: `--economical|--optimus|--premium`
+  are rejected (PD-1a) and `--basic` survives only as a DEPRECATED, EFFECT-FREE
+  alias (D1); `CDAD_MODEL_PROFILE` is accepted and ignored with the same
+  one-line warning (A-1); the marker `.cdad-models-profile` is no longer written.
+  There is therefore no profile to disagree with: the test is REPLACED by
+  `test_review5_b4_no_profile_disagreement_and_no_retired_marker`, which pins the
+  surviving invariants (a clean `--basic` install, the deprecation notice, no
+  retired marker anywhere under the root, no `profile` key in the install
+  manifest). The `DISAGREEMENT_WORDS` lexicon and its `dry-run`/install
+  disagreement asserts are RETIRED with the object they described; the flag
+  rejection surface itself (PD-1a) is asserted by
+  `tests/test_006_003_u2_installer_without_profiles.py` (unit U2), not here.
+- `install.sh --basic` in the remaining recipes of this file is UNCHANGED: D1
+  keeps it accepted, so every other test here stays valid as written.
+
 These are FULL-JOURNEY regression tests over ONE install root
 (install -> mutate/withdraw/reinstall/check/uninstall), following the sandbox +
 subprocess black-box pattern of tests/test_install_ownership.py. The installer
@@ -27,11 +50,11 @@ them exercises:
       files — dropped from the manifest, --check PASSed, uninstall never freed
       them. They must stay REGISTERED as pending removal, stay visible to
       --check, and be retired by --uninstall)
-  test_review5_b4_basic_request_vs_staging_profile_labels_coherent -> profile
-      invariant / R3-O2 / review-5 B4 (install.sh:835/1430: --basic wrote the
-      basic marker while installing an optimus staging and an optimus manifest;
-      the effective profile must be unambiguous: the disagreement is reported
-      before installing, and the marker never contradicts the manifest)
+  test_review5_b4_no_profile_disagreement_and_no_retired_marker -> 006-003 D1/PD-1a
+      (replaces review-5 B4's profile invariant: with no profile surface there is
+      no disagreement to report, `--basic` warns once and no retired marker is
+      published; the "labels must be coherent" invariant survives as the
+      absence of the retired label)
   test_review5_e1_uninstall_reports_modified_agent_and_preserves -> PD-7/D4
       (review-5 recommendation: historical ownership is not automatic
       authorization to discard later local changes; permanent-explicit
@@ -43,6 +66,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -55,10 +79,11 @@ INSTALL_MANIFEST_NAME = ".cdad-install-manifest.json"
 PROFILE_MARKER_NAME = ".cdad-models-profile"
 
 # Oracle note (red-005 adjustment): the installer reports in UPPERCASE
-# ("CONFLICT: ..."), so both lexica are case-insensitive.
-DISAGREEMENT_WORDS = (
-    r"(?i)(desacuerdo|disagree|difiere|differ|mismatch|no coincide|conflict)"
-)
+# ("CONFLICT: ..."), so the lexicon is case-insensitive.
+# 006-003 U2 replacement: the `DISAGREEMENT_WORDS` lexicon (and its dry-run /
+# install asserts) is RETIRED with the profile object it described — see the
+# ORACLE REPLACEMENTS note in the module docstring. The uninstall lexicon below
+# is untouched.
 # --uninstall reports the local modification and its preservation decision
 # ("CONFLICT: ... modified locally since the recorded install; PRESERVED for
 # explicit resolution"); the lexicon covers the modification-report axis.
@@ -66,9 +91,28 @@ UNINSTALL_REPORT_WORDS = (
     r"(?i)(conflict|modified|preserv|explicit resolution|desacuerdo|disagree)"
 )
 
+# D1/§2.1: the deprecation notice that `--basic` (and `CDAD_MODEL_PROFILE`) must
+# produce — one line, while the run stays accepted.
+DEPRECATION_RE = re.compile(r"(?i)(deprecat|obsolet)")
+BASIC_ALIAS = "--basic"
+
 
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def tail(text: str, lines: int = 5) -> str:
+    """Last `lines` lines of an installer output (keeps failure logs small)."""
+    return "\n".join(text.strip().splitlines()[-lines:])
+
+
+def _basic_deprecation_notices(output: str) -> list[str]:
+    """Deprecation notice lines of ONE installer run that name `--basic`."""
+    return [
+        line
+        for line in output.splitlines()
+        if DEPRECATION_RE.search(line) and BASIC_ALIAS in line
+    ]
 
 
 def run_installer(
@@ -154,12 +198,13 @@ def find_deployed(install_root: Path, filename: str) -> Path:
 
 
 def find_profile_markers(install_root: Path) -> list[Path]:
-    """Discover the persisted profile label file(s) the installer published.
+    """Discover the RETIRED profile label file(s) under an install root.
 
-    The profile marker is published surface (installer help: precedence
-    `flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus`);
-    the exact destination directory of the marker is not part of the contract
-    asserted here, so the marker is discovered by name under the install root.
+    The marker `.cdad-models-profile` was published surface (installer help:
+    precedence `flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile >
+    optimus`). 006-003 D1 retires it: the replacement oracle asserts it is never
+    written (the exact destination directory never was part of the contract, so
+    the file is discovered by name under the install root).
     """
     found: list[Path] = []
     for dirpath, _dirnames, filenames in os.walk(install_root):
@@ -394,90 +439,81 @@ class TestReview5WithdrawnAgent(SandboxFixture):
             )
 
 
-class TestReview5ProfileAgreement(SandboxFixture):
-    """Sandbox installer: a requested profile that disagrees with the staged
-    profile must be reported and must not publish contradictory labels."""
+class TestReview5ProfileSurfacesRetired(SandboxFixture):
+    """Sandbox installer: with D1 there is no profile any more — the former
+    'requested profile vs staged profile' disagreement (review-5 B4) has no
+    object, and the retired label surface must stay unpublished."""
 
-    def test_review5_b4_basic_request_vs_staging_profile_labels_coherent(self) -> None:
-        """Profile invariant / R3-O2 / review-5 B4: the user selects --basic
-        while staging resolves profile=optimus; the disagreement must be
-        reported by dry-run AND install BEFORE deploying, and the published
-        labels must be coherent: the persisted marker must equal the install
-        manifest profile, which equals the staging profile."""
-        staging_manifest = load_staging_manifest(self.sandbox)
-        requested = "basic"
-        self.assertNotEqual(
-            staging_manifest["profile"],
-            requested,
-            "T5 precondition (review-5 B4 repro): staging must be built with a "
-            f"profile different from the requested one (staged "
-            f"profile={staging_manifest['profile']}); regenerate staging with "
-            "the design default profile first",
-        )
+    def test_review5_b4_no_profile_disagreement_and_no_retired_marker(self) -> None:
+        """ORACLE REPLACEMENT (006-003 U2 — §2.1/PD-1a/D1/A-1). review-5 B4 asked
+        that a `--basic` request disagreeing with a staged profile be reported
+        and that the published profile labels stay coherent. D1 retires the
+        profile surface, so the surviving oracle is its absence:
 
+          1. the request is accepted (rc=0) and warns ONCE that `--basic` is a
+             deprecated alias with no effect (D1, INV-7: nothing silent),
+          2. no `.cdad-models-profile` marker is published anywhere under the
+             root (the retired label cannot contradict anything),
+          3. the install manifest records no `profile` key (nothing
+             profile-shaped can be a machine-hidden effect either).
+
+        The dry-run disagreement asserts and the `DISAGREEMENT_WORDS` lexicon are
+        retired with the object they described; the rejection of the retired
+        `--<profile>` flags (PD-1a) is asserted by the U2 focal test.
+        """
         with tempfile.TemporaryDirectory(prefix="cdad-t5b-b4-") as root_dir:
             root = Path(root_dir)
 
             dry = run_installer(self.sandbox, root, "--dry-run", "--basic")
             dry_out = dry.stdout + dry.stderr
             self.assertEqual(dry.returncode, 0, dry_out)
-            # "Informed before installing": the plan names the disagreement.
-            self.assertRegex(
-                dry_out,
-                DISAGREEMENT_WORDS,
-                f"review-5 B4 (profile invariant): dry-run must inform that "
-                f"the requested profile {requested} differs from the staged "
-                f"profile {staging_manifest['profile']}; dry-run output:\n"
-                f"{dry_out}",
-            )
 
             result = run_installer(self.sandbox, root, "--basic")
             result_out = result.stdout + result.stderr
-            self.assertRegex(
-                result_out,
-                DISAGREEMENT_WORDS,
-                f"review-5 B4 (profile invariant): the install must keep "
-                f"informing that the requested profile {requested} differs "
-                f"from the staged profile {staging_manifest['profile']}; "
+            self.assertEqual(
+                result.returncode,
+                0,
+                f"review-5 B4 (replacement, D1): `--basic` must stay accepted as "
+                f"a deprecated alias so the existing recipes keep working; "
                 f"install output:\n{result_out}",
             )
 
-            if result.returncode != 0:
-                # A refused install is a valid resolution: as long as nothing
-                # contradictory is published, the contract holds with the
-                # dry-run report asserted above.
-                return
+            dry_notices = _basic_deprecation_notices(dry_out)
+            self.assertEqual(
+                len(dry_notices),
+                1,
+                "review-5 B4 (replacement, D1/INV-7): `--dry-run --basic` must "
+                "produce exactly one one-line deprecation notice, found "
+                f"{len(dry_notices)} (dry-run tail:\n{tail(dry_out, 5)})",
+            )
+
+            result_notices = _basic_deprecation_notices(result_out)
+            self.assertEqual(
+                len(result_notices),
+                1,
+                "review-5 B4 (replacement, D1/INV-7): `--basic` must produce "
+                "exactly one one-line deprecation notice on install, found "
+                f"{len(result_notices)} (install tail:\n{tail(result_out, 5)})",
+            )
 
             markers = find_profile_markers(root)
-            self.assertTrue(
-                markers,
-                "review-5 B4 (profile invariant): the install must persist its "
-                "profile decision (marker file missing from the install root)",
-            )
-            marker_values = sorted({p.read_text(encoding="utf-8").strip() for p in markers})
             self.assertEqual(
-                len(marker_values),
-                1,
-                "review-5 B4: contradictory profile labels published at the "
-                f"same time: {markers}",
+                markers,
+                [],
+                "review-5 B4 (replacement, D1): the install published the "
+                f"retired profile marker(s) {markers}; the label surface is "
+                "gone and cannot be coherent or contradictory any more",
             )
+
             manifest = json.loads(
                 (root / INSTALL_MANIFEST_NAME).read_text(encoding="utf-8")
             )
-            self.assertEqual(
-                marker_values[0],
-                staging_manifest["profile"],
-                f"review-5 B4: the persisted marker {marker_values[0]!r} "
-                f"contradicts the staged profile "
-                f"{staging_manifest['profile']!r} (the user asked --basic but "
-                "the deployed bytes and the manifest are staged-driven; "
-                "labels must be coherent, effective profile unambiguous)",
-            )
-            self.assertEqual(
-                manifest["profile"],
-                staging_manifest["profile"],
-                "review-5 B4 (R3-O2): the install manifest profile must match "
-                "the staging manifest profile (no machine-hidden effect)",
+            self.assertNotIn(
+                "profile",
+                manifest,
+                "review-5 B4 (replacement, PD-1d/D1): the install manifest still "
+                "records `profile`; the staged surface it comes from no longer "
+                "has one",
             )
 
 
