@@ -57,8 +57,9 @@ Mapa test → postcondición (spec 005-010):
        de la FILA DURABLE (el `model` de la fila es DISTINTO del
        `model_configured` de la config para probar la provenance por
        comportamiento), con `provenance` que declara la fuente; esquema
-       cerrado I8 conservado; `runtime`/`model_configured` siguen de la
-       configuración.
+       cerrado I8 conservado; `runtime` sigue de la configuración y
+       `model_configured` de la config de delegación (A-1 de 006-003
+       U4/D3, reemplazo declarado).
 
 PD-7 (doble fiel): la plantilla FAKE_BINARY_SOURCE migrada + los lectores
 `durable_*` viven en tests/test_005_009_t2_opencode_adapter.py; su fidelidad
@@ -399,9 +400,10 @@ class TestPd5IdleOutcomeClassification(AdapterCase):
 class TestPd6WorkerI8FromDurableRow(AdapterCase):
     """PD-6: el registro I8 del intento del WORKER toma `session` y
     `model_reported` de la FILA DURABLE (`session_v2.id` y
-    `session_v2.model`), con `provenance` que lo declara; `runtime` y
-    `model_configured` siguen viniendo de la configuración de ejecución; el
-    esquema cerrado del registro se conserva."""
+    `session_v2.model`), con `provenance` que lo declara; `runtime` sigue
+    viniendo de la configuración de ejecución y `model_configured` de la
+    config de delegación (A-1 de 006-003 U4/D3: el `model` de la exec-config
+    dejó de ser su fuente); el esquema cerrado del registro se conserva."""
 
     SEED_MODE = "all"
 
@@ -410,7 +412,8 @@ class TestPd6WorkerI8FromDurableRow(AdapterCase):
         el id de la fila correlacionada; `model_reported` == el `model` de
         la fila (el fixture usa ROW_MODEL != FAKE_MODEL para discriminar
         la fuente por comportamiento); provenance declara la fuente de
-        ambos; runtime/model_configured de la config."""
+        ambos; `runtime` de la config; `model_configured` de la config de
+        delegación (A-1 de 006-003 U4/D3)."""
         self.assert_derived_agents_published()
         fake = self.fake_runtime("pd6-i8-durable", variant="succeeded")
         records_before = dispatch_records(self.root, self.execution_id)
@@ -495,16 +498,22 @@ class TestPd6WorkerI8FromDurableRow(AdapterCase):
                 source.strip(),
                 msg=f"provenance[{field!r}] vacío (PD-6)")
 
-        # runtime y model_configured siguen de la configuración de
-        # ejecución (PD-6; conservado del oráculo 005-009).
+        # `runtime` sigue de la configuración de ejecución (PD-6;
+        # conservado del oráculo 005-009).
         self.assertEqual(
             record["runtime"], FAKE_RUNTIME,
             msg=f"runtime del registro no es el de la configuración (PD-6): "
                 f"{record['runtime']!r}")
-        self.assertEqual(
-            record["model_configured"], FAKE_MODEL,
-            msg=f"model_configured del registro no es el de la "
-                f"configuración (PD-6): {record['model_configured']!r}")
+        # A-1 (006-003 U4/D3): `model_configured` dejó de venir de la
+        # exec-config — su única fuente es la config de delegación. Esta
+        # corrida NO provisiona config de delegación, así que el valor
+        # observado honesto es null (reemplazo declarado del oráculo que
+        # exigía `model_configured == FAKE_MODEL`).
+        self.assertIsNone(
+            record["model_configured"],
+            msg=f"model_configured refleja la exec-config pese a U4/D3 "
+                f"(sin delegación debe ser null): "
+                f"{record['model_configured']!r}")
 
         # El registro del intento de la INTERFAZ se conserva: `session`
         # desde el envelope y `model_reported` honestamente null (la

@@ -813,7 +813,15 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
         registros distintos: la config de la ejecución gana sobre cualquier
         valor por defecto del producto); lo que el destino no reporta queda
         `unknown`/null honesto (sin invento); el registro no lleva rutas de
-        host de este VPS."""
+        host de este VPS.
+
+        A-1 (006-003 U4/D3, reemplazo declarado): el `model` de la
+        exec-config dejó de ser la fuente de `model_configured` — desde U4 la
+        única fuente es la config de delegación (`delegation.json`, sin
+        fallback). Esta corrida NO provisiona config de delegación para el
+        destino `testdest`, así que el valor observado honesto es null; el
+        oráculo que exigía `model_configured == model de la exec-config` se
+        reemplaza por esa ausencia (el acoplamiento lo declara A-1)."""
         # El barrido de los ficheros de producto NUEVOS lo hace el reviewer
         # (PD-8); aquí el ancla es el comportamiento observable sobre el
         # registro I8 y la no-necesidad de valores del host.
@@ -836,9 +844,13 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
             record_one["runtime"], "opencode-clone",
             msg=f"runtime del registro no es el de la configuración de "
                 f"ejecución: {record_one['runtime']!r}")
-        self.assertEqual(
-            record_one["model_configured"], "exec-config-model-alpha",
-            msg=f"model_configured no es el configurado en la ejecución: "
+        # A-1 (006-003 U4/D3): sin config de delegación para el destino
+        # `testdest`, `model_configured` es null honesto (dejó de reflejar el
+        # `model` de la exec-config, que ya no es la fuente).
+        self.assertIsNone(
+            record_one["model_configured"],
+            msg=f"model_configured refleja la exec-config pese a que U4/D3 la "
+                f"retiró como fuente (sin delegación debe ser null): "
                 f"{record_one['model_configured']!r}")
 
         # Segunda invocación con OTRA configuración: la config gana (no hay
@@ -853,10 +865,14 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
             record_two, record_one,
             msg="dos configuraciones de ejecución distintas produjeron el "
                 "mismo registro: la configuración no llega al registro")
-        self.assertEqual(
-            record_two["model_configured"], "exec-config-model-beta",
-            msg="model_configured de la segunda invocación no siguió su "
-                "configuración de ejecución (¿valor fijado por el producto?)")
+        # A-1 (006-003 U4/D3): la segunda config tampoco provisiona delegación,
+        # así que `model_configured` es null honesto (la fuente es la config de
+        # delegación, no la exec-config).
+        self.assertIsNone(
+            record_two["model_configured"],
+            msg="model_configured de la segunda invocación refleja la "
+                "exec-config pese a U4/D3 (sin delegación debe ser null): "
+                f"{record_two['model_configured']!r}")
         self.assertEqual(
             record_two["runtime"], "codex-clone",
             msg="runtime de la segunda invocación no siguió su configuración")

@@ -995,7 +995,14 @@ class TestPd4SameErrandInServerMode(Pd600T1Case):
         encargo que standalone; declarado, no oculto); si el adaptador
         vigente no declara `--model` en el argv (ninguna prueba de la
         suite lo exige hoy), ESA aserción puntual falla por
-        comportamiento ausente."""
+        comportamiento ausente.
+
+        A-1 (006-003 U4/D3, reemplazo declarado): el `model` de la
+        exec-config dejó de ser la fuente del `--model` del argv; sin
+        entrada en la config de delegación NO hay `--model` (sin
+        fallback). El bloque que exigía `--model == config["model"]` se
+        reemplaza por esa ausencia, con la config de delegación redirigida
+        a un directorio vacío del tempdir (nunca la del host)."""
         info_server = FakeInfoServer(
             body=json.dumps({"version": MATCHING_CLIENT_SEMVER}).encode())
         self.addCleanup(info_server.stop)
@@ -1006,7 +1013,10 @@ class TestPd4SameErrandInServerMode(Pd600T1Case):
                    "wait": FAST_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
-        proc = self.dispatch(fake)
+        xdg_home = Path(self._tmp) / "xdg-config-u4"
+        xdg_home.mkdir(parents=True, exist_ok=True)
+        proc = self.dispatch(
+            fake, env_overrides={"XDG_CONFIG_HOME": str(xdg_home)})
         out = self.envelope(proc, "PD-4 encargo en modo servidor")
         self.assertEqual(
             out["termination"], "completed",
@@ -1046,16 +1056,16 @@ class TestPd4SameErrandInServerMode(Pd600T1Case):
             msg="la sesión declarada por el envelope no es la del argv "
                 "(PD-4/PD-8)")
 
-        # --model, si está configurado.
-        if config.get("model"):
-            self.assertIn(
-                "--model", argv,
-                msg=f"hay `model` en la config pero el argv no lleva "
-                    f"--model (PD-4): {argv!r}")
-            self.assertEqual(
-                argv[argv.index("--model") + 1], config["model"],
-                msg=f"--model no lleva el valor configurado (PD-4): "
-                    f"{argv!r}")
+        # A-1 (006-003 U4/D3, reemplazo declarado): el `model` de la
+        # exec-config dejó de ser la fuente del `--model` del argv; sin
+        # entrada en la config de delegación (redirigida a un directorio
+        # vacío) NO hay `--model` (sin fallback). Antes este bloque exigía
+        # `argv[--model] == config["model"]`.
+        self.assertNotIn(
+            "--model", argv,
+            msg=f"el argv lleva `--model` pese a que U4/D3 retiró el `model` "
+                f"de la exec-config como fuente y no hay entrada de "
+                f"delegación: {argv!r}")
 
         # --auto según la config (por defecto activado).
         self.assertIn(
