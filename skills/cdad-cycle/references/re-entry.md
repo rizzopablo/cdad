@@ -67,6 +67,19 @@ fields. The protocol has four steps:
    (receiving never approves a gate). On retry, reconcile first and do not
    repeat a change already reflected in state.
 
+## Transport equivalence: one receipt route
+
+Native delegation does not change the delivery contract: the role returns its
+**FINAL TEXT** in the **orchestrator's session**, and the orchestrator stages
+the **exact bytes** under `.cdad/inbox` with their `RESULT.json` descriptor,
+**without retyping, summarizing or regenerating** them. The staged bytes are
+the original ones, and receiving approves nothing — `semantic_status` stays
+`pending`.
+
+The transport equivalence holds for every transport: it is the same route —
+`receive` → `validate-receipt` → `materialize` → the state transition — for
+the handoff to a new chat and for the CLI adapter.
+
 ---
 
 ## Equivalence of a registered run (canonical rule)
