@@ -8627,6 +8627,86 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/u5-red.md": "1e0d8087df359404cad1431399ae647e5d55467cc2b0bdd0cbbdd095bfbce327"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "dispatch-disposition",
+      "substage": null,
+      "at": "2026-10-18T16:15:30.776430+00:00",
+      "by": "orchestrator",
+      "transition": "disposition",
+      "transition_key": "a2c8570cfd90df901c9492a08eefb734d31df777dbe82c0e44a1984a9132c2c7",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "disposition",
+        "stage": "dispatch-disposition",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-implementer-green-005",
+        "receipt_sha256": null,
+        "resolution": "abandoned",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-implementer-green-005",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "detenido por el orquestador a los ~3 min sin cambios: el dueño retiró la verificación de familia (enmienda A-5)",
+      "resolution": "abandoned"
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "specification",
+      "substage": "red",
+      "at": "2026-10-18T16:15:31.163800+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "f1dadce1e2beae80d876d82921600c850f20be1f40b8eaa4ec925d7e647daa20",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "Pablo (enmienda A-5)",
+        "contract": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
+        },
+        "plan": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+          "sha256": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Pablo (enmienda A-5)",
+      "contract_path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+      "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890",
+      "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
+      "plan_sha256": "13ed92d600ab41de67090478261a2e3e8115074d883bb5ed1950f3bb464e0c89"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8641,7 +8721,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T16:11:22.288929+00:00",
+  "last_updated": "2026-10-18T16:15:31.163800+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
