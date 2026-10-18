@@ -194,3 +194,11 @@ En las dos corridas: 0 servidores privados antes, durante y después; el estado 
 ## 006-002: despacho erróneo detenido (2026-10-17)
 
 Al despachar el RED de la enmienda 001, `prepare` falló (la re-aprobación de la spec se había registrado con otro stage) y el helper local igual lanzó el paquete anterior (`...-test-writer-red-007`, ya recibido) con el intento `at-006-002-u6b-red-001`. El orquestador lo detuvo a los 5 s, sin cambios en el árbol ni commits; queda un registro de despacho de ese intento sin recibo. Corrección: el helper `prep-dispatch.sh` aborta si `prepare` falla y solo despacha el paquete recién creado. El despacho correcto es `...-test-writer-red-008`, intento `at-006-002-u6b-red-002`.
+
+## 006-002 U8: aceptación con despacho nativo real (2026-10-18)
+
+- **Aislamiento (VERIFY-5):** worktree descartable del repo con `.cdad` copiado, agentes de `make staging PROFILE=basic` en `.opencode/agents/` del proyecto (OpenCode los prefiere sobre los globales del mismo nombre, verificado con `opencode debug agents`) y la skill del repo en `.opencode/skills/`. HOME no se tocó. El modelo del reviewer se configuró en el frontmatter de su agente en ese proyecto: un `opencode.json` de proyecto con `agent.cdad-reviewer.model` dejó la lista de agentes vacía (observación, no investigada).
+- **Corrida:** orquestador `cdad-orchestrator` (deepseek) con un encargo de una línea: despachar el reviewer del paquete preparado, escenificar y `receive`.
+- **Evidencia (session_v2 en solo lectura):** sesión padre `succeeded`; una sesión hija `cdad-reviewer` con `mofgw/glm-5.3-flash`, `succeeded` (despacho por `task`); 56 comandos bash, ninguno invoca `cdad_delegate*.py` ni `opencode run`; texto final escenificado tal cual en `.cdad/inbox` y `receive` con recibo `pending`.
+- **Observaciones de comportamiento:** el orquestador leyó código fuente del CLI (`sed`/`grep` sobre los scripts) para resolver el uso de `begin` y del descriptor, lo que contradice el espíritu de la regla 1 (orientarse sin volcados); y razonó que el mandato del epic prescribía la herramienta `Agent` de Claude Code, leyendo `execution.md` (notas de este orquestador). Ambas van a la review como uso real.
+- **Paso al repo principal:** paquete byte-idéntico; despacho registrado como intento `at-006-002-u8-001` y recibo emitido en el repo principal con los mismos bytes escenificados.
