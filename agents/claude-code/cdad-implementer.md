@@ -2,7 +2,6 @@
 name: cdad-implementer
 description: CDAD implementer — stage 3 GREEN (+ REFACTOR/review-fix sub-modes). Minimal code that makes the approved test pass; never edits tests.
 tools: Read, Grep, Glob, Bash, Edit, Write, Skill
-model: haiku
 hooks:
   PreToolUse:
     - matcher: Edit|Write

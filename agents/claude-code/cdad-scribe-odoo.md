@@ -2,7 +2,6 @@
 name: cdad-scribe-odoo
 description: CDAD scribe — stage 5. Memory Bank update drafts faithful to the evidence; drafts only, the user approves, the orchestrator commits.
 tools: Read, Grep, Glob, Bash, Skill
-model: sonnet
 # Path-scoping is enforced by ~/.claude/cdad-scripts/path-guard.sh (the
 # installed CC destination; repo source: scripts/claude-code-path-guard.sh):
 # fail-open on unknown role; prevention of accidents, not isolation

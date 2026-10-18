@@ -2,7 +2,6 @@
 description: CDAD reviewer — stage 4. Read-only adversarial review of the diff against the approved spec; different model from the implementer (anti-confirmation-bias).
 mode: subagent
 steps: 300
-model: mofgw/qwen3.7-plus
 temperature: 0.1
 # edit: deny — top-level mirror of permission.edit below (cdad-010 P2/A6).
 # INERT at runtime; it stays only as a marker of the role's read-only state.

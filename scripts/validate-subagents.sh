@@ -12,20 +12,19 @@
 #      not exist, DOCUMENTED fallback: it compares against the repo (agents/)
 #      with an explicit WARN and the stage counts as FAIL (runtime not installed).
 #      Validated set: 5 base roles (architect/implementer/reviewer/scribe/
-#      test-writer) + 5 Odoo variants (*-odoo with a fixed model per ADR-007).
+#      test-writer) + 5 Odoo variants (*-odoo).
 #      The orchestrator (cdad-orchestrator) is validated separately (mode: all, no
 #      model: — the user picks the model).
 #   2. repo     — cross-check against the source of truth reusing
 #      `install.sh --check` (comparison logic is not duplicated).
 #   3. artifacts — enumerates and verifies the 5 artifacts per stage of the CDAD
 #      cycle in docs/specs/cdad-001-validate-subagents/artifacts/.
-#   4. models — each cdad-* agent declares the ACTIVE PROFILE's model in its
-#      frontmatter (map scripts/cdad-models.sh; active profile = env
-#      CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus); the
-#      -odoo variants carry a FIXED model per role (ADR-007: the same in any
-#      profile). cdad-orchestrator does NOT declare model: and is not part of this set.
-#      Anti-bias guard in all 3 profiles: reviewer ≠ implementer (exact string
-#      comparison) — covers misconfigured envs (CDAD_PREMIUM_MODEL_*).
+#   4. models — ABSENCE invariant (006-003 PD-1e/INV-3): no installed agent
+#      declares `model:`. The profile model map and the per-profile model cells
+#      were RETIRED (006-003 PD-1c): the model of each role is the one configured
+#      in the runtime, and the reviewer≠implementer family invariant is a
+#      CONFIGURATION verification (guaranteed by configuration or declared by the
+#      review gate — never silent, INV-5), not a check this script performs.
 #
 # Exit: 0 if and only if ALL verifications pass; != 0 on any failure, printing
 # what failed. Read-only: idempotent by design.
@@ -71,10 +70,8 @@ fi
 SPEC_DIR="$REPO_ROOT/docs/specs/cdad-001-validate-subagents"
 ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="$INSTALL_ROOT/.config/opencode/agents"
-RUNTIME_INSTALL_DIR="$RUNTIME_DIR"
 INSTALL_SH="$REPO_ROOT/install.sh"
 PACKET_CLI="$REPO_ROOT/skills/cdad-cycle/scripts/cdad_packet.py"
-SCOPED_MODEL_EXCEPTION=0
 if [ -n "$EXECUTION_CONTEXT" ]; then
   if ! command -v python3 >/dev/null 2>&1; then
     echo "ERROR: python3 is required to validate the execution context" >&2
@@ -90,13 +87,10 @@ if [ -n "$EXECUTION_CONTEXT" ]; then
     exit 2
   fi
   echo "$POLICY_OUT"
-  case "$POLICY_OUT" in
-    *"model_policy=scoped-exception"*) SCOPED_MODEL_EXCEPTION=1 ;;
-  esac
 fi
-# 5 base roles + 5 Odoo variants (fixed model per ADR-007, except the basic profile
-# where agents inherit the runtime's model). The orchestrator is
-# validated separately (not part of AGENTS): mode: all, no model:.
+# 5 base roles + 5 Odoo variants (no agent carries a model: line any more —
+# 006-003 PD-1e/INV-3). The orchestrator is validated separately (not part of
+# AGENTS): mode: all, no model:.
 AGENTS=(cdad-architect cdad-implementer cdad-reviewer cdad-scribe cdad-test-writer \
         cdad-architect-odoo cdad-implementer-odoo cdad-reviewer-odoo cdad-scribe-odoo cdad-test-writer-odoo)
 
@@ -180,87 +174,30 @@ if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.m
 if [ -f "$ART_DIR/memory-bank.md" ] && grep -qE "^##? .*2026|^[0-9]{4}-[0-9]{2}-[0-9]{2}" "$ART_DIR/memory-bank.md"; then
   stage scribe "memory-bank.md" 0; else stage scribe "memory-bank.md" 1; fi
 
-# --- Stage 4: models per agent (profile-aware; single source of the map) ------
-echo "[models] expected model per agent"
-# The map lives in scripts/cdad-models.sh (single source: duplicates ADR-001/005 and
-# the §2 table of the Roles Contract for the optimus profile). With the optimus
-# profile (default/design) it yields EXACTLY the historical map — intentional
-# validation guard: if the repo or the runtime drifts from the decision, this
-# stage detects it. It runs last (after the artifacts) so as not to break the
-# context of cdad-001's impl.diff, which only covers up to Stage 2.
-MODELS_SH="$REPO_ROOT/scripts/cdad-models.sh"
-MODELS_LOADED=0
-if [ ! -f "$MODELS_SH" ]; then
-  fail "scripts/cdad-models.sh not found (single source of the model map)"
-else
-  # shellcheck source=cdad-models.sh
-  source "$MODELS_SH"
-  MODELS_LOADED=1
-fi
-
-# Active profile: env CDAD_MODEL_PROFILE > runtime marker > optimus.
-ACTIVE_PROFILE="${CDAD_MODEL_PROFILE:-}"
-if [ -z "$ACTIVE_PROFILE" ] && [ -f "$RUNTIME_INSTALL_DIR/.cdad-models-profile" ]; then
-  ACTIVE_PROFILE="$(cat "$RUNTIME_INSTALL_DIR/.cdad-models-profile")"
-fi
-ACTIVE_PROFILE="${ACTIVE_PROFILE:-optimus}"
-if [ "$MODELS_LOADED" -eq 1 ] && ! cdad_valid_profile "$ACTIVE_PROFILE"; then
-  fail "invalid model profile: '$ACTIVE_PROFILE' (expected: economical | optimus | premium | basic)"
-  ACTIVE_PROFILE="optimus"
-fi
-echo "[models] active profile: $ACTIVE_PROFILE"
-if [ "$ACTIVE_PROFILE" = "basic" ]; then
-  echo "[models] basic profile: no fixed models — agents inherit the runtime's model; the reviewer≠implementer anti-bias is NOT verified in this profile (ADR-007)"
-fi
-
-declare -A MODEL_EXPECTED
-if [ "$MODELS_LOADED" -eq 1 ]; then
-  for a in "${AGENTS[@]}"; do
-    MODEL_EXPECTED["$a"]="$(cdad_model "$ACTIVE_PROFILE" "${a#cdad-}")"
-  done
-fi
-# cdad-orchestrator does NOT declare model: — the user picks the model when
-# selecting it (ADR-001/005: the orchestrator stays without a fixed model).
+# --- Stage 4: no installable text fixes a model (006-003 PD-1e/INV-3) ---------
+echo "[models] no installed agent fixes a model"
+# 006-003 (U1) RETIRED the per-profile model map and the per-runtime model
+# cells: the model of each role is the one configured in the runtime, and
+# CHOOSING a model is not an orchestration decision. The reviewer!=implementer
+# family invariant stops being a map comparison here: it is a CONFIGURATION
+# verification (guaranteed by configuration, or declared — never silent,
+# INV-5), owned by the review gate. What this stage verifies is the absence
+# invariant on the INSTALLED bytes: no agent, orchestrator included, declares
+# `model:`.
+MODEL_DECLARERS=0
 for a in "${AGENTS[@]}"; do
-  expected="${MODEL_EXPECTED[$a]:-}"
-  [ -z "$expected" ] && continue
-  actual="$(sed -n 's/^model:[[:space:]]*//p' "$RUNTIME_DIR/$a.md" 2>/dev/null | head -1)"
-  if [ -z "$actual" ]; then
-    fail "model missing in $a.md (expected: $expected)"
-  elif [ "$actual" != "$expected" ]; then
-    fail "wrong model in $a.md: '$actual' (expected: '$expected')"
+  if [ -f "$RUNTIME_DIR/$a.md" ] && grep -q '^model:' "$RUNTIME_DIR/$a.md"; then
+    fail "$a.md declares model: (no installable text fixes a model — 006-003 PD-1e/INV-3)"
+    MODEL_DECLARERS=$((MODEL_DECLARERS + 1))
   fi
 done
-# Anti-bias guard (all profiles): reviewer and implementer must run on
-# DIFFERENT models. Exact string comparison — detects misconfigured envs
-# (e.g. CDAD_PREMIUM_MODEL_REVIEWER == CDAD_PREMIUM_MODEL_IMPLEMENTER)
-# without needing to infer model family.
-REVIEWER_MODEL="${MODEL_EXPECTED[cdad-reviewer]:-}"
-IMPLEMENTER_MODEL="${MODEL_EXPECTED[cdad-implementer]:-}"
-if [ "$SCOPED_MODEL_EXCEPTION" -eq 0 ] && [ -n "$REVIEWER_MODEL" ] && [ -n "$IMPLEMENTER_MODEL" ] && [ "$REVIEWER_MODEL" = "$IMPLEMENTER_MODEL" ]; then
-  fail "reviewer and implementer share a model ($REVIEWER_MODEL) — violates the anti-bias invariant; check CDAD_PREMIUM_MODEL_REVIEWER/IMPLEMENTER"
-fi
-
-# Anti-bias guard — Claude Code (findings B1/B2, 2026-09-02): the guard
-# above only evaluates cdad_model (OpenCode/mofgw map). cdad_model_claude
-# (haiku/sonnet/opus) was never checked, and the premium profile gave "opus"
-# for reviewer AND implementer — silent violation of the same invariant,
-# in the same profile, with no guard detecting it. In Claude Code there
-# are no cross-model families (everything is Anthropic-native): "different" here
-# means a different string, same as the guard above but against the
-# correct map. basic is exempt (same trade-off documented in ADR-007).
-if [ "$SCOPED_MODEL_EXCEPTION" -eq 0 ] && [ "$MODELS_LOADED" -eq 1 ] && [ "$ACTIVE_PROFILE" != "basic" ]; then
-  CC_REVIEWER_MODEL="$(cdad_model_claude "$ACTIVE_PROFILE" reviewer)"
-  CC_IMPLEMENTER_MODEL="$(cdad_model_claude "$ACTIVE_PROFILE" implementer)"
-  if [ -n "$CC_REVIEWER_MODEL" ] && [ -n "$CC_IMPLEMENTER_MODEL" ] && [ "$CC_REVIEWER_MODEL" = "$CC_IMPLEMENTER_MODEL" ]; then
-    fail "Claude Code: reviewer and implementer share a model ($CC_REVIEWER_MODEL) in profile '$ACTIVE_PROFILE' — violates the anti-bias invariant (cdad_model_claude)"
-  fi
-fi
-
 if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
-  fail "cdad-orchestrator.md must not declare model: (the user picks the model)"
+  fail "cdad-orchestrator.md declares model: (the user picks it at selection)"
+  MODEL_DECLARERS=$((MODEL_DECLARERS + 1))
 fi
-if [ "$FAIL" -eq 0 ]; then ok "models OK (10/10: 5 base + 5 Odoo variants, per profile $ACTIVE_PROFILE; orchestrator without model:)"; fi
+if [ "$MODEL_DECLARERS" -eq 0 ]; then
+  ok "models OK (no agent fixes a model; the reviewer family invariant is a configuration verification — 006-003 PD-1e/INV-3)"
+fi
 
 # --- Verdict -----------------------------------------------------------------
 if [ "$FAIL" -eq 0 ]; then

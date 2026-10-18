@@ -156,24 +156,29 @@ keeps that table in view: the harness amplifies its guarantees (session
 isolation, a different model per role); without a harness the orchestrator
 enforces the limits behaviorally with that table in view.
 
-Composed rows (sources/roles/*.md — composed by the generator; the sources stay symbolic, the model cells are resolved per runtime×stack×profile):
+Composed rows (sources/roles/*.md — composed by the generator; every row is the role's own §2 line, restated nowhere):
 
-| Role | Stages | Does | May read | May edit | Never touches | Artifact | Model |
-|---|---|---|---|---|---|---|---|
-| architect | 1 Discovery, 2 Spec | technical mapping + Socratic brainstorm + spec draft (+ plan.md for complex features) | everything | nothing  | the product; does NOT approve its own spec/plan (user approval) | spec draft + plan draft as FINAL TEXT (orchestrator/user materialize `docs/specs/<id>/{spec,plan}.md` — ADR-003) | mofgw/deepseek-v4-pro |
-| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per postcondition, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) | mofgw/glm-5.2 |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | minimal code that makes the approved test pass; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") | mofgw/deepseek-v4-flash |
-| reviewer | 4      | systematic adversarial review of the diff against the approved spec | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003) | mofgw/qwen3.7-plus |
-| scribe | 5      | Memory Bank update drafts faithful to the evidence | spec, diff, review, Memory Bank | nothing (draft as FINAL TEXT) | commits and approval (user approves; orchestrator executes the git) | three Memory Bank drafts (orchestrator materializes — ADR-003) | mofgw/deepseek-v4-pro |
-| orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state | (never carries model: — the user chooses it at selection) |
+| Role | Stages | Does | May read | May edit | Never touches | Artifact |
+|---|---|---|---|---|---|---|
+| architect | 1 Discovery, 2 Spec | technical mapping + Socratic brainstorm + spec draft (+ plan.md for complex features) | everything | nothing  | the product; does NOT approve its own spec/plan (user approval) | spec draft + plan draft as FINAL TEXT (orchestrator/user materialize `docs/specs/<id>/{spec,plan}.md` — ADR-003) |
+| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per postcondition, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | minimal code that makes the approved test pass; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| reviewer | 4      | systematic adversarial review of the diff against the approved spec | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003) |
+| scribe | 5      | Memory Bank update drafts faithful to the evidence | spec, diff, review, Memory Bank | nothing (draft as FINAL TEXT) | commits and approval (user approves; orchestrator executes the git) | three Memory Bank drafts (orchestrator materializes — ADR-003) |
+| orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
 
 Anti-bias invariants (supervised by the orchestrator, non-negotiable): the
-reviewer's model family differs from the implementer's (per profile,
-`scripts/cdad-models.sh`); the test-writer never sees implementation code; the
+reviewer's model family differs from the implementer's (an invariant guaranteed
+by the delegation configuration when it fixes models and declared when it does
+not — never silent, INV-5); the test-writer never sees implementation code; the
 test↔postcondition mapping is audited by a session different from the one that
 wrote the tests.
+Model: never a concrete model name in this source, and none in the composed §2
+either (006-003 retires the per-runtime model cells: the model of each role is
+the one configured in the runtime; only external delegation takes it from the
+delegation configuration).
 
-Models of the design. Model cells resolve per runtime×stack×profile from `scripts/cdad-models.sh` (`cdad_model`) — the only map. Profiles: economical (cheap execution with quality at the critical points: architect moves up to deepseek-v4-pro, reviewer on minimax-m3 — a family different from the implementer's, amendment 2026-08-24 ADR-007) / premium (top-tier configurable via env CDAD_PREMIUM_MODEL_*) / basic (no fixed models — agents inherit the runtime's default model; the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer in this profile, ADR-007). Switch: install.sh --economical|--optimus|--premium|--basic.
+Model choice. The model of each role is the one configured in the runtime; this skill names no model and no installable text fixes one. External delegation takes the model from the delegation configuration (per destination and role); a destination or role without an entry runs the destination's own default and the model is reported as unverifiable, never invented. The reviewer's family differing from the implementer's is an invariant guaranteed by configuration when the configuration fixes models and declared when it does not. `install.sh --basic` survives only as a deprecated alias with no effect: under it the reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer and is declared, not hidden (INV-5; ADR-007 is replaced by 006-003).
 
 ## Delegation (adapter)
 

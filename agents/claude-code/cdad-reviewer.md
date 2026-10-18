@@ -2,7 +2,6 @@
 name: cdad-reviewer
 description: CDAD reviewer — stage 4. Read-only adversarial review of the diff against the approved spec; different model from the implementer (anti-confirmation-bias).
 tools: Read, Grep, Glob, Bash, Skill
-model: opus
 # Path-scoping is enforced by ~/.claude/cdad-scripts/path-guard.sh (the
 # installed CC destination; repo source: scripts/claude-code-path-guard.sh):
 # fail-open on unknown role; prevention of accidents, not isolation

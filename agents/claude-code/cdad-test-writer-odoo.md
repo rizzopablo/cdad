@@ -2,7 +2,6 @@
 name: cdad-test-writer-odoo
 description: CDAD test-writer — stage 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edits tests/ only; never sees implementation code.
 tools: Read, Grep, Glob, Bash, Edit, Write, Skill
-model: sonnet
 hooks:
   PreToolUse:
     - matcher: Read|Grep|Glob

@@ -123,16 +123,6 @@ log() {
 }
 
 # ---------------------------------------------------------------------------
-# Model profiles — single source of the map (scripts/cdad-models.sh)
-# ---------------------------------------------------------------------------
-MODELS_SH="$SCRIPT_DIR/scripts/cdad-models.sh"
-if [ ! -f "$MODELS_SH" ]; then
-  die "Model profiles script missing: $MODELS_SH"
-fi
-# shellcheck source=scripts/cdad-models.sh
-source "$MODELS_SH"
-
-# ---------------------------------------------------------------------------
 # Bash allowlists — derivation via the single policy source (004-001 T4)
 # ---------------------------------------------------------------------------
 # The bash POLICY lives only in the canonical role sources (sources/roles/)
@@ -330,9 +320,10 @@ Options:
                  deepseek-v4-flash; architect deepseek-v4-pro, reviewer
                  minimax-m3 — family different from the implementer; ADR-007).
   --optimus    Install the optimus profile marker (design default).
-               Details: profiles/roles are resolved per runtime by
-               scripts/cdad-models.sh (the only map); the deployed agent bytes
-               carry the STAGING profile (recorded in the staging manifest).
+               The per-runtime model map is RETIRED (006-003 PD-1c): no profile
+               resolves models any more, and the deployed agent bytes (the
+               STAGING bytes, recorded in the staging manifest) carry no
+               `model:` line.
   --premium    Install the premium profile marker (top-tier, configurable via
                env CDAD_PREMIUM_MODEL_<ROLE>). The profile flags are mutually
                exclusive.
@@ -994,11 +985,10 @@ resolve_profile() {
   fi
 }
 
-validate_profile() {  # aborts if the active profile is not supported
-  if ! cdad_valid_profile "$MODEL_PROFILE"; then
-    die "Invalid model profile: '$MODEL_PROFILE' (expected: economical | optimus | premium | basic)"
-  fi
-}
+# 006-003 PD-1c/PD-1f: the per-profile model map is RETIRED, so there is no
+# map left to validate a profile against (`validate_profile` and its
+# `cdad_valid_profile` lookup are gone). The profile surface itself (flag
+# rejection, marker retirement) belongs to the installer unit of 006-003.
 
 # ---------------------------------------------------------------------------
 # Install operations (staging-driven agents; ownership recorded per file)
@@ -1341,7 +1331,10 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
     base=$(basename "$f")
     role=${base#cdad-}
     role=${role%.md}
-    want_model=$(cdad_model "$MODEL_PROFILE" "$role")
+    # 006-003 PD-1e/INV-3: no agent fixes a model, so nothing is expected here
+    # (the retired map used to answer this) — the installed bytes must carry
+    # no `model:` line either.
+    want_model=""
     if ! check_agent_file "$f" "$OPENCODE_AGENTS_DIR/$base" "$role" "$want_model"; then
       drifted_paths+=("$OPENCODE_AGENTS_DIR/$base")
       drifted=1
@@ -1668,7 +1661,6 @@ main() {
     fi
     # Legacy check for roots installed before the ownership manifest existed.
     resolve_profile
-    validate_profile
     if check_installed; then
       return 0
     fi
@@ -1709,7 +1701,6 @@ main() {
   # skills pass too, so load it once here, before anything is deployed.
   load_previous_ownership
   resolve_profile
-  validate_profile
   # Review-5 B4 (profile invariant / R3-O2): the effective profile must be
   # unambiguous BEFORE anything is deployed or labelled. The staged bytes
   # carry the generation-time profile recorded in the staging manifest; a

@@ -2,7 +2,6 @@
 name: cdad-architect
 description: CDAD architect — stages 1 (Discovery) and 2 (Spec). Read-only. Socratic brainstorm + spec draft (+ plan draft for complex features).
 tools: Read, Grep, Glob, Bash, Skill
-model: sonnet
 # Path-scoping is enforced by ~/.claude/cdad-scripts/path-guard.sh (the
 # installed CC destination; repo source: scripts/claude-code-path-guard.sh):
 # fail-open on unknown role; prevention of accidents, not isolation

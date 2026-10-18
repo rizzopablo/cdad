@@ -12,10 +12,11 @@ Agent layout: `~/.config/opencode/agents/cdad-<role>[-odoo].md`.
 Frontmatter shape (generated):
 - `description:` — one-line role summary (from the role source).
 - `mode: subagent` (orchestrator: `mode: all` + `permission: allow`).
-- `model:` — emitted from `scripts/cdad-models.sh` (the only map; optimus default
-  by the generator); install.sh REWRITES this field at install time from the
-  profile given as explicit parameter (profile = install input, not a hidden
-  machine effect).
+- `model:` — NOT emitted any more (006-003 PD-1e/INV-3): the generator has no
+  model map and no profiles, and the installer transforms no agent bytes. No
+  OpenCode agent fixes a model; the model of each role is the one configured in
+  the runtime, and external delegation takes it from the delegation
+  configuration (per destination and role).
 - `steps: 300` — per-agent step ceiling emitted on every role subagent (5 roles
   x base/odoo; the orchestrator, `mode: all`, gets none). Declared ONCE here:
   a runaway guard, not a work budget — it forces a text-only report after

@@ -2,7 +2,6 @@
 description: CDAD architect — stages 1 (Discovery) and 2 (Spec). Read-only. Socratic brainstorm + spec draft (+ plan draft for complex features).
 mode: subagent
 steps: 300
-model: mofgw/deepseek-v4-pro
 # edit: deny — top-level mirror of permission.edit below (cdad-010 P2/A6).
 # INERT at runtime; it stays only as a marker of the role's read-only state.
 edit: deny

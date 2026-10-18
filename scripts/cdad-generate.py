@@ -4,11 +4,11 @@
 Composes the declared runtime agents from the canonical editable sources:
 
     scripts/cdad-generate.py --runtime <opencode|claude-code> \
-        --stack <auto|odoo> --profile <name> --out <staging-dir>
+        --stack <auto|odoo> --out <staging-dir>
 
 Outputs ``<out>/agents/<runtime>/cdad-*.md`` (the 11 declared agents: 5 roles
 × {base, -odoo} + orchestrator) plus ``<out>/manifest.json`` (per artifact:
-sha256, contributing sources, regeneration command, stack/profile).
+sha256, contributing sources, regeneration command, stack).
 
 Guarantees implemented here (docs/specs/004-001-canonical-runtime-artifacts):
 - PD-2 determinism: same inputs → byte-identical outputs (no timestamps,
@@ -19,26 +19,30 @@ Guarantees implemented here (docs/specs/004-001-canonical-runtime-artifacts):
   no rule is retained without its source declaration.
 - PD-3 explicit failure: incomplete/duplicated/empty source sections, text
   outside a section, duplicated shared blocks, or an unsupported
-  runtime×stack×profile → non-zero exit with a diagnostic naming the
-  problem and ZERO published files (all validation happens before any write).
+  runtime×stack → non-zero exit with a diagnostic naming the problem and
+  ZERO published files (all validation happens before any write).
 - PD-4 single source: shared blocks are hosted once (sources/roles) and
   composed into every consumer; the orchestrator's §2 is a COMPOSED artifact;
   the manifest references each contributing source.
-- PD-14 runtime coherence: model values resolved per runtime from
-  scripts/cdad-models.sh (cdad_model / cdad_model_claude) — the only map;
-  no runtime ever mentions the other runtime's design models.
+- PD-1e/PD-1f/PD-7a (006-003) — no profile, no model map, no model:
+  the generator has no `--profile` surface (the option is REJECTED with a
+  diagnostic that points at the delegation configuration as the place where
+  the model is chosen), it resolves no model (the retired model map is gone),
+  it publishes no `model:` line in any agent and §2 of the orchestrator
+  carries no model cell and names no model (INV-3). The model of a role is the
+  one configured in the runtime; external delegation takes it from the
+  delegation configuration.
 - PD-15 honesty: no generated line may mention "sandbox" without an honest
   negation on the same line (self-checked before publishing).
 - PD-16 legacy fallback: every generated agent declares its legacy loads.
 
-Python stdlib only. bash is invoked only to source scripts/cdad-models.sh
-(the declared single model map) — never to mutate anything.
+Python stdlib only. No shell is invoked: the composition is pure text.
 
 Staging merge (004-001 T5): the declared regeneration flow (`make staging`)
 runs the generator once per runtime into the SAME --out directory. Each run
 MERGES its artifacts into the existing manifest.json (entries of other
 runtimes are kept verbatim; this runtime's entries are replaced; the header
-records THIS run's runtime/stack/profile). The per-runtime membership is
+records THIS run's runtime/stack). The per-runtime membership is
 encoded in the artifact paths (agents/<runtime>/...), so the published
 staging manifest covers the whole staged set and the installer can consume it
 as its single entry. Re-running the SAME runtime into the same directory is
@@ -51,13 +55,11 @@ import argparse
 import hashlib
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT / "sources"
-MODELS_SH = ROOT / "scripts" / "cdad-models.sh"
 
 ROLES = ("architect", "test-writer", "implementer", "reviewer", "scribe")
 REQUIRED_ROLE_SECTIONS = ("directive", "contract", "bash", "convention", "capacity", "odoo", "limits")
@@ -174,44 +176,6 @@ def strip_full_line_comments(text: str) -> str:
     cleaned = FULL_LINE_COMMENT_RE.sub("", text)
     cleaned = BLANK_RUN_RE.sub("\n\n", cleaned)
     return cleaned.strip("\n")
-
-
-# ---------------------------------------------------------------------------
-# Model map (scripts/cdad-models.sh — the only source; resolved via bash)
-# ---------------------------------------------------------------------------
-
-def _require_models_sh() -> None:
-    if not MODELS_SH.is_file():
-        fail("model map not found: scripts/cdad-models.sh (the only declared source)")
-
-
-def validate_profile(profile: str) -> None:
-    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", profile):
-        fail(f"unsupported profile: {profile!r} (expected economical | optimus | premium | basic)")
-    _require_models_sh()
-    script = MODELS_SH.relative_to(ROOT).as_posix()
-    probe = f'set -e; source "{script}"; if cdad_valid_profile "{profile}"; then echo ok; else echo bad; fi'
-    result = subprocess.run(["bash", "-c", probe], text=True, capture_output=True)
-    if result.returncode != 0:
-        fail(f"cannot consult cdad-models.sh: {result.stderr.strip()}")
-    if "bad" in result.stdout:
-        fail(f"unsupported profile: '{profile}' (cdad-models.sh supports: economical | optimus | premium | basic)")
-
-
-def model_for(runtime: str, profile: str, role_key: str) -> str:
-    """Model for one (runtime, profile, role) from the single map.
-
-    Empty string = the agent inherits the runtime's default model (the
-    `basic` profile semantics; OpenCode's orchestrator never carries model:).
-    """
-    _require_models_sh()
-    function = "cdad_model" if runtime == "opencode" else "cdad_model_claude"
-    script = MODELS_SH.relative_to(ROOT).as_posix()
-    command = f'set -e; source "{script}"; {function} "{profile}" "{role_key}"'
-    result = subprocess.run(["bash", "-c", command], text=True, capture_output=True)
-    if result.returncode != 0:
-        fail(f"cdad-models.sh {function} failed for {role_key}: {result.stderr.strip()}")
-    return result.stdout.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -385,13 +349,11 @@ def steps_ceiling(frontmatter_section: str) -> int:
 
 
 def oc_frontmatter(
-    role: str, description: str, model: str, stack: str, bash_lines: list[str],
+    role: str, description: str, stack: str, bash_lines: list[str],
     steps: int,
 ) -> str:
     lines = ["---", f"description: {description}", "mode: subagent"]
     lines.append(f"steps: {steps}")
-    if model:
-        lines.append(f"model: {model}")
     if role == "reviewer":
         lines.append("temperature: 0.1")
     if role not in ("test-writer", "implementer"):
@@ -442,9 +404,8 @@ def oc_frontmatter(
 
 # ---------------------------------------------------------------------------
 # Claude Code frontmatter (adapter: tools + PreToolUse path-guard hooks; the
-# installer deploys the staged bytes untransformed — the absent `model:` line
-# under `basic` comes from the generation profile, not from the installer —
-# baseline PD-13)
+# installer deploys the staged bytes untransformed — no `model:` line is
+# generated for either runtime since 006-003 PD-1e, baseline PD-13)
 # ---------------------------------------------------------------------------
 
 def cc_tools(role: str) -> str:
@@ -488,10 +449,8 @@ def cc_hooks(role: str, stack: str) -> list[tuple[str, str]]:
     return [(matcher, guard) for matcher, guard, _ in CC_GUARDS.get(f"{role}{'-odoo' if stack == 'odoo' else ''}", [])]
 
 
-def cc_frontmatter(role: str, stack: str, name: str, description: str, model: str) -> str:
+def cc_frontmatter(role: str, stack: str, name: str, description: str) -> str:
     lines = ["---", f"name: {name}", f"description: {description}", f"tools: {cc_tools(role)}"]
-    if model:
-        lines.append(f"model: {model}")
     hooks = cc_hooks(role, stack)
     if hooks:
         lines += ["hooks:", "  PreToolUse:"]
@@ -575,36 +534,28 @@ def test_writer_red_fragment() -> str:
     )
 
 
-def models_note(runtime: str) -> str:
-    basic = (
-        "basic (no fixed models — agents inherit the runtime's default model; the "
-        "reviewer≠implementer anti-bias invariant is NOT guaranteed by the installer "
-        "in this profile, ADR-007)"
-    )
-    if runtime == "opencode":
-        profiles = (
-            "economical (cheap execution with quality at the critical points: architect "
-            "moves up to deepseek-v4-pro, reviewer on minimax-m3 — a family different "
-            "from the implementer's, amendment 2026-08-24 ADR-007) / premium (top-tier "
-            "configurable via env CDAD_PREMIUM_MODEL_*)"
-        )
-        map_note = (
-            "Model cells resolve per runtime×stack×profile from `scripts/cdad-models.sh` "
-            "(`cdad_model`) — the only map."
-        )
-    else:
-        profiles = (
-            "economical (haiku execution; the reviewer moves up to opus for family "
-            "diversity — ADR-008 documents the accepted limitation) / premium (top-tier "
-            "configurable via env CDAD_PREMIUM_MODEL_<ROLE>)"
-        )
-        map_note = (
-            "Model cells resolve per runtime×stack×profile from `scripts/cdad-models.sh` "
-            "(`cdad_model_claude`: sonnet/haiku/opus/fable aliases) — the only map."
-        )
+def model_note() -> str:
+    """§2's model note (006-003 PD-1/PD-7a/INV-3): no profile matrix, no model.
+
+    One line, and it fixes nothing: the model of each role is the one
+    configured in the runtime, external delegation reads it from the
+    delegation configuration, and the reviewer's family difference is an
+    invariant guaranteed by configuration or declared — never silent. The
+    surviving `install.sh --basic` alias (deprecated, no effect) is the
+    declared case in which the installer guarantees nothing.
+    """
     return (
-        f"Models of the design. {map_note} Profiles: {profiles} / {basic}. "
-        "Switch: install.sh --economical|--optimus|--premium|--basic."
+        "Model choice. The model of each role is the one configured in the runtime; "
+        "this skill names no model and no installable text fixes one. External "
+        "delegation takes the model from the delegation configuration (per "
+        "destination and role); a destination or role without an entry runs the "
+        "destination's own default and the model is reported as unverifiable, never "
+        "invented. The reviewer's family differing from the implementer's is an "
+        "invariant guaranteed by configuration when the configuration fixes models "
+        "and declared when it does not. `install.sh --basic` survives only as a "
+        "deprecated alias with no effect: under it the reviewer≠implementer "
+        "anti-bias invariant is NOT guaranteed by the installer and is declared, "
+        "not hidden (INV-5; ADR-007 is replaced by 006-003)."
     )
 
 
@@ -643,7 +594,6 @@ def compose_role_agent(
     sections: dict[str, str],
     shared_blocks: dict[str, str],
     runtime: str,
-    model: str,
     bash_lines: list[str],
     steps: int,
 ) -> tuple[str, str]:
@@ -724,9 +674,9 @@ def compose_role_agent(
         "",
     ]
     frontmatter = (
-        oc_frontmatter(role, meta["description"], model, stack, bash_lines, steps)
+        oc_frontmatter(role, meta["description"], stack, bash_lines, steps)
         if runtime == "opencode"
-        else cc_frontmatter(role, stack, name.removesuffix(".md"), meta["description"], model)
+        else cc_frontmatter(role, stack, name.removesuffix(".md"), meta["description"])
     )
     text = normalize_honesty(frontmatter + "\n---\n\n" + "\n".join(body))
     return name, text.rstrip("\n") + "\n"
@@ -751,8 +701,6 @@ def compose_orchestrator_agent(
     role_sections: dict[str, dict[str, str]],
     shared_blocks: dict[str, str],
     runtime: str,
-    stack: str,
-    profile: str,
 ) -> tuple[str, str]:
     """Return (agent_name, agent_text) for the orchestrator (§2 COMPOSED)."""
     contract_paras = [p.strip() for p in sections["contract"].split("\n\n") if p.strip()]
@@ -762,22 +710,14 @@ def compose_orchestrator_agent(
     anti_bias = [p for p in contract_paras if p.startswith("Anti-bias invariants")]
     if not anti_bias:
         fail("sources/roles/orchestrator.md: the contract section lost its anti-bias invariants (PD-4)")
-    # The source's trailing "Model: per profile from ..." paragraph is source-meta
-    # (it speaks ABOUT the source, not to the agent); the composed models note
-    # below replaces it in the deployed body.
-    anti_bias_text = re.split(r"\nModel: per profile from", anti_bias[0])[0].rstrip()
+    anti_bias_text = anti_bias[0].rstrip()
 
-    header = "| Role | Stages | Does | May read | May edit | Never touches | Artifact | Model |"
-    separator = "|---|---|---|---|---|---|---|---|"
+    header = "| Role | Stages | Does | May read | May edit | Never touches | Artifact |"
+    separator = "|---|---|---|---|---|---|---|"
     rows = []
     for role in ROLES:
-        row = extract_contract_row(role_sections[role]["contract"], role)
-        model_cell = model_for(runtime, profile, f"{role}{'-odoo' if stack == 'odoo' else ''}")
-        rows.append(f"{row} {model_cell} |")
-    orch_row = extract_contract_row(sections["contract"], "orchestrator")
-    orch_model = model_for(runtime, profile, "orchestrator")
-    orch_cell = orch_model if orch_model else "(never carries model: — the user chooses it at selection)"
-    rows.append(f"{orch_row} {orch_cell} |")
+        rows.append(extract_contract_row(role_sections[role]["contract"], role))
+    rows.append(extract_contract_row(sections["contract"], "orchestrator"))
 
     limits = sections["limits"]
     if "<!-- cdad-shared:limits-core -->" not in limits:
@@ -800,8 +740,8 @@ def compose_orchestrator_agent(
         "",
         composed_prose,
         "",
-        "Composed rows (sources/roles/*.md — composed by the generator; the sources "
-        "stay symbolic, the model cells are resolved per runtime×stack×profile):",
+        "Composed rows (sources/roles/*.md — composed by the generator; every row "
+        "is the role's own §2 line, restated nowhere):",
         "",
         header,
         separator,
@@ -809,7 +749,7 @@ def compose_orchestrator_agent(
         "",
         anti_bias_text,
         "",
-        models_note(runtime),
+        model_note(),
         "",
         "## Delegation (adapter)",
         "",
@@ -850,7 +790,7 @@ def compose_orchestrator_agent(
         )
     else:
         frontmatter = (
-            cc_frontmatter("orchestrator", "", "cdad-orchestrator", ORCHESTRATOR_DESCRIPTION, orch_model)
+            cc_frontmatter("orchestrator", "", "cdad-orchestrator", ORCHESTRATOR_DESCRIPTION)
             + "\n---\n"
         )
     text = normalize_honesty(frontmatter + "\n" + "\n".join(body))
@@ -867,15 +807,14 @@ def role_stack_pairs(effective_stack: str) -> list[str]:
     return ["", "odoo"] if effective_stack == "odoo" else [""]
 
 
-def regeneration_command(stack_arg: str, runtime: str, profile: str) -> str:
+def regeneration_command(stack_arg: str, runtime: str) -> str:
     return (
-        "python3 scripts/cdad-generate.py --runtime %s --stack %s --profile %s --out <staging-dir>"
-        % (runtime, stack_arg, profile)
+        "python3 scripts/cdad-generate.py --runtime %s --stack %s --out <staging-dir>"
+        % (runtime, stack_arg)
     )
 
 
-def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
-    validate_profile(profile)
+def build(stack_arg: str, runtime: str) -> dict[str, bytes]:
     if stack_arg == "odoo":
         effective_stack = "odoo"
     elif stack_arg == "generic":
@@ -940,7 +879,6 @@ def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
     artifacts: dict[str, str] = {}
     artifact_sources: dict[str, list[str]] = {}
     adapter_path = f"sources/agents/adapters/{runtime}.md"
-    models_path = "scripts/cdad-models.sh"
     adapter_permissions = adapters[runtime]["permissions"]
     steps = steps_ceiling(adapters[runtime]["frontmatter"]) if runtime == "opencode" else 0
 
@@ -951,7 +889,6 @@ def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
             )
             name, text = compose_role_agent(
                 role, stack, role_sections[role], shared_blocks, runtime,
-                model_for(runtime, profile, f"{role}{'-odoo' if stack else ''}"),
                 bash_lines,
                 steps,
             )
@@ -965,12 +902,10 @@ def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
                 f"sources/roles/{role}.md",
                 *([f"sources/roles/{policy_host}.md"] if policy_host else []),
                 adapter_path,
-                models_path,
             ]
 
     name, text = compose_orchestrator_agent(
-        orchestrator_sections, role_sections, shared_blocks,
-        runtime, effective_stack, profile,
+        orchestrator_sections, role_sections, shared_blocks, runtime,
     )
     assert_honesty(text, name)
     artifacts[name] = text
@@ -978,7 +913,6 @@ def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
         "sources/roles/orchestrator.md",
         *[f"sources/roles/{role}.md" for role in ROLES],  # §2 composed from all 5
         adapter_path,
-        models_path,
     ]
 
     manifest = {
@@ -987,13 +921,12 @@ def build(stack_arg: str, runtime: str, profile: str) -> dict[str, bytes]:
         "runtime": runtime,
         "stack": effective_stack,
         "stack_arg": stack_arg,
-        "profile": profile,
         "artifacts": [
             {
                 "file": f"agents/{runtime}/{agent_name}",
                 "sha256": hashlib.sha256(artifacts[agent_name].encode("utf-8")).hexdigest(),
                 "sources": artifact_sources[f"agents/{runtime}/{agent_name}"],
-                "regenerate": regeneration_command(stack_arg, runtime, profile),
+                "regenerate": regeneration_command(stack_arg, runtime),
             }
             for agent_name in sorted(artifacts)
         ],
@@ -1043,18 +976,39 @@ def merge_staging_manifest(existing_path: Path, fresh: bytes, runtime: str) -> b
     ).encode("utf-8")
 
 
+STAGING_COMMAND = (
+    "scripts/cdad-generate.py --runtime <opencode|claude-code> "
+    "--stack <auto|generic|odoo> --out <staging-dir>"
+)
+
+PROFILE_REJECTED_MSG = (
+    "ERROR: `--profile` (and any profile name) is no longer a generator option: "
+    "the generator and the installer have no model profiles and no model map "
+    "(006-003 PD-1f/PD-1c). The model of a role is the one configured in the "
+    "runtime, and external delegation takes it from the delegation configuration "
+    "(delegation.json, per destination and role). Run: " + STAGING_COMMAND
+)
+
+
 def main(argv: list[str] | None = None) -> int:
+    args_in = list(sys.argv[1:] if argv is None else argv)
+    # PD-1f: the option is REJECTED explicitly (rc != 0) with a diagnostic that
+    # names it and points at the delegation configuration — never a silent
+    # "unrecognized argument" and never an accepted no-op.
+    if any(a == "--profile" or a.startswith("--profile=") for a in args_in):
+        print(PROFILE_REJECTED_MSG, file=sys.stderr)
+        return 2
+
     parser = argparse.ArgumentParser(
         prog="cdad-generate.py", description=__doc__.splitlines()[0]
     )
     parser.add_argument("--runtime", required=True, choices=("opencode", "claude-code"))
     parser.add_argument("--stack", required=True, choices=("auto", "generic", "odoo"))
-    parser.add_argument("--profile", required=True)
     parser.add_argument("--out", required=True)
-    args = parser.parse_args(argv)
+    args = parser.parse_args(args_in)
 
     try:
-        files = build(args.stack, args.runtime, args.profile)
+        files = build(args.stack, args.runtime)
     except GenerateError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

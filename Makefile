@@ -4,14 +4,13 @@
 # sources/agents/adapters/*.md, then `make agents`.
 
 PY ?= python3
-PROFILE ?= optimus
 
 .PHONY: staging agents validate
 
 ## staging — generate both runtimes into build/staging/ (reproducible staging)
 staging:
-	$(PY) scripts/cdad-generate.py --runtime opencode --stack odoo --profile $(PROFILE) --out build/staging
-	$(PY) scripts/cdad-generate.py --runtime claude-code --stack odoo --profile $(PROFILE) --out build/staging
+	$(PY) scripts/cdad-generate.py --runtime opencode --stack odoo --out build/staging
+	$(PY) scripts/cdad-generate.py --runtime claude-code --stack odoo --out build/staging
 
 ## agents — promote the staging outputs over the repo agents (declared outputs)
 agents: staging

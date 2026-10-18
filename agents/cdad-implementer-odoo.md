@@ -2,7 +2,6 @@
 description: CDAD implementer — stage 3 GREEN (+ REFACTOR/review-fix sub-modes). Minimal code that makes the approved test pass; never edits tests.
 mode: subagent
 steps: 300
-model: mofgw/deepseek-v4-flash
 permission:
   # write: ask — classification lever (cdad-010 P1): the plugin's classifier
   # reads permission.write; the runtime does NOT evaluate it today (the write

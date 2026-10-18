@@ -169,14 +169,15 @@ Orchestrator row (its own contract):
 | orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
 
 Anti-bias invariants (supervised by the orchestrator, non-negotiable): the
-reviewer's model family differs from the implementer's (per profile,
-`scripts/cdad-models.sh`); the test-writer never sees implementation code; the
+reviewer's model family differs from the implementer's (an invariant guaranteed
+by the delegation configuration when it fixes models and declared when it does
+not — never silent, INV-5); the test-writer never sees implementation code; the
 test↔postcondition mapping is audited by a session different from the one that
 wrote the tests.
-Model: per profile from `scripts/cdad-models.sh` (the only map). Never a
-concrete model name in this source (inventory R1/R4 — the deployed bodies'
-§2 tables carry OpenCode design-model names other runtimes do not produce;
-the SOURCE stays symbolic; the generator resolves per runtime×stack×profile).
+Model: never a concrete model name in this source, and none in the composed §2
+either (006-003 retires the per-runtime model cells: the model of each role is
+the one configured in the runtime; only external delegation takes it from the
+delegation configuration).
 <!-- /cdad-section -->
 
 <!-- cdad-section:bash -->

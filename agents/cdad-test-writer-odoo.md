@@ -2,7 +2,6 @@
 description: CDAD test-writer — stage 3 (AUDIT, POST-AUDIT, RED, Properties, E2E). Edits tests/ only; never sees implementation code.
 mode: subagent
 steps: 300
-model: mofgw/glm-5.2
 permission:
   # write: ask — classification lever (cdad-010 P1): the plugin's classifier
   # reads permission.write; the runtime does NOT evaluate it today (the write

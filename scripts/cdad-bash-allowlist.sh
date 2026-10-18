@@ -125,11 +125,11 @@ fi
 STAGE_DIR="$(mktemp -d "${TMPDIR:-${HOME:-/tmp}}/.cdad-allowlist-XXXXXX")"
 trap 'rm -rf "$STAGE_DIR"' EXIT
 
-# --profile basic: the bash policy is profile-independent (the profile only
-# pins the model: line), so the emitted block is the one every profile
-# regenerates identically.
+# 006-003 U1: the generator has no `--profile` (no profile and no model map any
+# more); the bash policy was never profile-dependent — the emitted block is the
+# one every generation produces.
 if ! python3 "$GENERATOR" --runtime opencode --stack "$STACK_ARG" \
-      --profile basic --out "$STAGE_DIR" >/dev/null; then
+      --out "$STAGE_DIR" >/dev/null; then
   die "policy derivation failed: scripts/cdad-generate.py rejected the sources"
 fi
 

@@ -12,15 +12,13 @@ Frontmatter shape (generated):
 - `name: cdad-<role>[-odoo]`, `description:` (one-line, from the role source).
 - `tools:` — Read, Grep, Glob, Bash, Skill (+ Edit, Write for writer roles; Agent
   for orchestrator).
-- `model:` — pinned per `cdad_model_claude` (optimus profile) in the repo. The
-  installer deploys the agents as a copy of the staged bytes, verbatim and
-  untransformed (it `cp -p`s them); `install.sh --help` says it: "the deployed
-  bytes are the staged bytes ... the installer transforms nothing". The `model:`
-  line is absent under the current profile because of the GENERATION profile,
-  not the installer: `cdad_model_claude` is empty under `basic`, so the
-  generator omits the `model:` line when writing the staging bytes
-  (`scripts/cdad-generate.py`); those bytes already lack the line before any
-  install, so the installer never touches them.
+- `model:` — NOT emitted any more (006-003 PD-1e/INV-3): the generator has no
+  model map and no profiles. The installer deploys the agents as a copy of the
+  staged bytes, verbatim and untransformed (it `cp -p`s them); `install.sh
+  --help` says it: "the deployed bytes are the staged bytes ... the installer
+  transforms nothing". No CC agent carries a `model:` line, before or after any
+  install; the model of a role is the one configured in the runtime (see the
+  model-provenance bullet below).
 - Model provenance under `basic` (PD-5): under `basic` there is no per-role
   model — the CC agents carry no `model:` line — so the model of a critical
   dispatch is declared per call on the dispatch tool (its `model` parameter),
