@@ -18,22 +18,21 @@ extendido con **formas de herramienta** de despacho: code-span ``task`` /
 ``sessions_spawn``, «Agent tool». NUNCA la palabra suelta *task* (prosa como
 "atomic task": discovery §4 risk 6).
 
-Exclusiones declaradas de esta unidad (cada una con su dueño):
+Exclusión declarada de esta unidad (con su dueño):
 - ``references/context-meter.md`` — contrato de LECTOR/MEDICIÓN (INV-8): declara
   ``task``/``subagent`` como nombres de herramienta *reconocidos* (dato de
   medición, no instrucción de delegación).
-- **sección §2 de ``SKILL.md``** (columna "Model family" + párrafo de perfiles,
-  ``:67-77``) — superficie de **PD-11** (plan U4): el oráculo de MODELOS la
-  neutraliza (misma numeración de líneas) y su ausencia la fija el RED de esa
-  unidad (enmienda A-1: cada RED cubre su superficie).
 
 Ya NO hay exclusiones temporales: el RED de **U3** (``test_006_002_u3_…``, PD-9/
 PD-10) retiró las dos referencias por runtime del árbol instalable y la regla de
-elección de transporte de ``cli-delegation.md``, así que este oráculo corre
-sobre el árbol completo (``skills/cdad-cycle/**`` y ``skills/cdad-epic/**``)
-salvo las dos exclusiones con dueño de arriba — el contrato PD-1 no distingue
-por unidad: ningún texto instalable de la skill nombra una herramienta de
-despacho de un runtime.
+elección de transporte de ``cli-delegation.md``; el RED de **U4**
+(``test_006_002_u4_skill_without_models.py``, PD-11) retiró la neutralización
+TEMPORAL de §2 de ``SKILL.md`` (columna "Model family" + párrafo de perfiles)
+que este módulo declaraba como deuda de esa unidad (enmienda A-1). El oráculo
+corre ahora sobre el árbol instalable COMPLETO (``skills/cdad-cycle/**`` y
+``skills/cdad-epic/**``) salvo ``context-meter.md`` (INV-8) — el contrato PD-1 no
+distingue por unidad: ningún texto instalable de la skill nombra una herramienta
+de despacho de un runtime ni un modelo concreto.
 
 Mapa test → postcondición (un test por afirmación observable):
   1 ``TestPd1SkillWithoutRuntimeTools::test_pd1_no_dispatch_tool_form_in_installable_skill_text``   PD-1 / INV-1
@@ -41,19 +40,20 @@ Mapa test → postcondición (un test por afirmación observable):
   3 ``TestPd3Section4NeutralCore::test_pd3_section4_keeps_the_seven_points_in_abstract_form``       PD-3
   4 ``TestPd3Section4NeutralCore::test_pd3_section4_names_no_runtime_tool_form``                    PD-3 / INV-1
 
-RED esperado (árbol actual: U2 ya en GREEN; el RED de U3 retiró las exclusiones
-temporales de la superficie de PD-9/PD-10):
-- (1) FALLA por AssertionError de CONTENIDO: las formas de herramienta que aún
-  quedan en el texto instalable son las de las DOS referencias por runtime que
-  PD-9 retira (``references/opencode-delegation.md``: ``task``/``delegate``/
-  ``subagent_type``; ``references/claude-code-delegation.md``: ``Agent``/
-  ``Agent tool``/``subagent_type``) y la regla de elección de transporte de
-  ``cli-delegation.md`` (``task``): exactamente la superficie de U3, cuyo RED
-  (``tests/test_006_002_u3_runtime_references.py``) las baja del árbol con los
-  punteros reconciliados.
-- (2) pasa hoy: **GUARD pre-satisfecho** (el árbol no fija modelos fuera de §2 —
-  superficie de PD-11); protege el GREEN contra un intercambio de nombres de
-  modelo en la superficie de delegación.
+RED esperado (árbol actual: U2 GREEN; el RED de U3 ya retiró las exclusiones
+temporales de la superficie de PD-9/PD-10 y el de U4 la neutralización temporal
+de §2 — superficie de PD-11):
+- (1) PASA hoy (U3 ya en GREEN: las dos referencias por runtime salieron del
+  árbol instalable y la regla de elección de transporte de ``cli-delegation.md``
+  fue retirada): GUARD de conservación declarado — protege el GREEN contra la
+  reaparición de una forma de herramienta de despacho en el texto instalable.
+- (2) FALLA por AssertionError de CONTENIDO: el texto instalable fija modelos
+  concretos — los de §2 de ``SKILL.md`` (columna "Model family", familia +
+  versión: ``deepseek-v4-pro``/``deepseek-v4-flash``/``glm-5.2``, proveedor
+  ``deepseek``) y el ejemplo de ``handoff-prompts.md:515``
+  (``mofgw/qwen3.7-plus``) — exactamente la superficie de **PD-11 (U4)**, cuyo
+  RED retiró la neutralización que este módulo declaraba; su ausencia la fija
+  ``tests/test_006_002_u4_skill_without_models.py`` (enmienda A-1).
 - (3)/(4): PASAN hoy (U2 GREEN); son los controles de conservación de §4.
 Ningún fallo es ImportError/SyntaxError.
 """
@@ -158,28 +158,6 @@ def numbered_section_region(text: str, number: int) -> tuple[str, int, int] | No
     return None
 
 
-def model_scan_text(path: Path, text: str) -> str:
-    """Texto sobre el que corre el oráculo de MODELOS (PD-1/INV-2).
-
-    Exclusión declarada: la sección §2 de ``SKILL.md`` (columna "Model family" y
-    párrafo de perfiles con modelos concretos) es la superficie de **PD-11**
-    (plan U4) — su ausencia la fija el RED de esa unidad. Aquí se neutraliza esa
-    región (misma numeración de líneas) para que este oráculo mida el contexto
-    de delegación y no la deuda de otra unidad (enmienda A-1: cada RED cubre su
-    superficie)."""
-    if path != SKILL_MD:
-        return text
-    region = numbered_section_region(text, 2)
-    assert region is not None, (
-        "drift del oráculo PD-1 (modelos): SKILL.md no expone una sección §2 "
-        "delimitable por su encabezado numerado (superficie de PD-11)"
-    )
-    _, first, last = region
-    lines = text.splitlines()
-    lines[first - 1:last] = [""] * (last - first + 1)
-    return "\n".join(lines)
-
-
 def model_offences(text: str) -> list[str]:
     """Modelos/proveedores concretos presentes en `text` (INV-2), sin los
     nombres de runtime (`claude-code`)."""
@@ -281,15 +259,16 @@ class TestPd1SkillWithoutRuntimeTools(unittest.TestCase):
         )
 
     def test_pd1_no_concrete_model_in_delegation_context(self) -> None:
-        """PD-1/INV-2: ausencia de modelos concretos y de proveedores en el texto
-        instalable de la skill (la familia de cada rol es la configurada en el
-        runtime; la skill no nombra ninguna)."""
+        """PD-1/INV-2: ausencia de modelos concretos y de proveedores en TODO el
+        texto instalable de la skill — incluida §2 de ``SKILL.md`` (la familia de
+        cada rol es la configurada en el runtime; la skill no nombra ninguna) —
+        salvo la única exclusión con dueño (``context-meter.md``, INV-8)."""
         documents = scanned_documents(TOOL_FORM_EXCLUSIONS)
         self.assertGreater(len(documents), 0, "drift del oráculo PD-1 (modelos)")
 
         offenders: list[str] = []
         for path in documents:
-            text = model_scan_text(path, read(path))
+            text = read(path)
             for offence in model_offences(text):
                 offenders.append(f"{relative(path)} — {offence}")
 
@@ -297,9 +276,8 @@ class TestPd1SkillWithoutRuntimeTools(unittest.TestCase):
             offenders, [],
             msg=(
                 "PD-1/INV-2: el texto instalable de la skill fija modelos "
-                "concretos o proveedores en el contexto de delegación (el modelo "
-                "de cada rol es el configurado en el runtime): "
-                f"{offenders[:20]!r}"
+                "concretos o proveedores (el modelo de cada rol es el configurado "
+                f"en el runtime): {offenders[:20]!r}"
             ),
         )
 

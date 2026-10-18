@@ -291,11 +291,70 @@ assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'Approved by
 echo
 echo "############################################"
 echo "# F001 — honest profiles note + §2 block drift (B7)"
+echo "#   Reformulated by 006-002 PD-11 (U4): §2 of SKILL.md no longer fixes"
+echo "#   models (no \"Model family\" column, no profiles paragraph). The new"
+echo "#   sentence lives in SKILL.md §2; the basic caveat (family NOT"
+echo "#   guaranteed by the installer) stays where it still belongs: the"
+echo "#   generated orchestrators, whose delegation section declares the"
+echo "#   family not guaranteed (006-002 PD-4/D-3, U1). Reformulated, never"
+echo "#   deleted (plan amendment A-1)."
 echo "############################################"
 
-# The profiles note mentions the 4 real profiles (--basic was missing) and
-# caveats the anti-bias invariant for the profile that suspends it.
-for f in skills/cdad-cycle/SKILL.md agents/cdad-orchestrator.md agents/claude-code/cdad-orchestrator.md; do
+# 006-002 PD-11 (U4): §2 of SKILL.md loses the "Model family" column and the
+# profiles paragraph, replaced by ONE sentence: the model of each role is the
+# one CONFIGURED IN THE RUNTIME, the skill NAMES NO MODELS, and the reviewer's
+# different family is an INVARIANT GUARANTEED BY CONFIGURATION when the profile
+# fixes models and DECLARED when not (INV-7). The old profiles note (~"-–basic"
+# + the caveat for the profile that suspends the invariant) no longer belongs
+# to §2; its caveat moves to the generated orchestrators below.
+extract_skill_section2() {
+  # Delimitation mirrors the focal oracle
+  # (tests/test_006_002_u4_skill_without_models.py -> numbered_section_region):
+  # the numbered heading starts the section whatever its level, and the section
+  # ends at the next heading of the SAME or higher level; sub-headings (2.x)
+  # stay inside. Awk cannot look ahead, so the "2." separator is required to be
+  # followed by a non-digit to reject sub-numbers like "### 2.1".
+  awk '
+    function level(line,   n) { n = 0; while (substr(line, n + 1, 1) == "#") n++; return n }
+    /^#+[ \t]/ {
+      if (started) { if (level($0) <= target) exit; print; next }
+      if ($0 ~ /^#+[ \t]*2([.)[:space:]:][^0-9]|$)/) {
+        started = 1; target = level($0); print
+      }
+      next
+    }
+    started { print }
+  ' "$ROOT/skills/cdad-cycle/SKILL.md"
+}
+SKILL_S2="$(extract_skill_section2)"
+if [[ -z "$SKILL_S2" ]]; then
+  fail "F001 (006-002 PD-11): SKILL.md §2 could not be extracted by its numbered heading"
+else
+  if printf '%s' "$SKILL_S2" | grep -Eq 'configured in the runtime|configured in the environment|configured by the runtime|runtime configuration|configuration of the runtime|configurado en el runtime|configurado en el entorno|configuraci[oó]n del runtime'; then
+    pass "F001 (006-002 PD-11): SKILL.md §2 declares the model of each role is the configured one"
+  else
+    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'model of each role = the one configured in the runtime' sentence"
+  fi
+  if printf '%s' "$SKILL_S2" | grep -Eq 'names no model|does not name any model|does not name a model|name no model|no model is named|no model names|no nombra|sin nombrar|no se nombra'; then
+    pass "F001 (006-002 PD-11): SKILL.md §2 declares the skill names no models"
+  else
+    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'the skill names no models' declaration"
+  fi
+  if printf '%s' "$SKILL_S2" | grep -Eq 'guaranteed by (the )?configuration|guaranteed by config|garantizada por (la )?configuraci[oó]n'; then
+    pass "F001 (006-002 PD-11): SKILL.md §2 declares the reviewer family invariant is guaranteed by configuration (when the profile fixes models)"
+  else
+    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'guaranteed by configuration' half of the reviewer-family invariant"
+  fi
+  if printf '%s' "$SKILL_S2" | grep -Eq 'declared when|declared if|declared as|declared, not|declarada cuando|declarada si|declarada,'; then
+    pass "F001 (006-002 PD-11): SKILL.md §2 declares the reviewer family invariant when the profile does not fix models"
+  else
+    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'declared' half of the reviewer-family invariant"
+  fi
+fi
+# The basic caveat stays where the family is declared NOT guaranteed by the
+# installer: the generated orchestrators' delegation section (006-002 PD-4/D-3,
+# U1 — the runtime agent owns the delegation rule, D-1).
+for f in agents/cdad-orchestrator.md agents/claude-code/cdad-orchestrator.md; do
   assert_file_has "$f" '\-\-basic' "F001: $f mentions the --basic profile in the switch"
   assert_file_has "$f" 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic' \
     "F001: $f caveats the anti-bias invariant for the basic profile"
