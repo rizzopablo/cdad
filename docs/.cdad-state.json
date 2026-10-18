@@ -7862,6 +7862,47 @@
         "docs/specs/006-002-delegation-by-layer/rf-red.md": "c6dab9473d115a31aa498ace93fd50d3e2e3d045833dde0ca286fa298de19627"
       },
       "note": "5c85d68: B-1 rojo por asercion; 40 verdes."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "review-fix-green",
+      "substage": "green",
+      "at": "2026-10-18T03:39:07.150223+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "c638585e49700be8d61be1d05621166bb5eae7fed52e5e60e9cca7f0a47db765",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "review-fix-green",
+        "substage": "green",
+        "packet_id": "006-002-delegation-by-layer-implementer-green-010",
+        "receipt_sha256": "8e407252add9dcdbeb1b1aec360039d1db46267230ae0da6b552b43445a8bc3e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/rf-green.md",
+            "4a648fc65e13ea6d0975efa758c1134119264ec519a554bdc6fc986132a0604b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-implementer-green-010",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-implementer-green-010/receipt.json",
+      "receipt_sha256": "8e407252add9dcdbeb1b1aec360039d1db46267230ae0da6b552b43445a8bc3e",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/rf-green.md": "4a648fc65e13ea6d0975efa758c1134119264ec519a554bdc6fc986132a0604b"
+      },
+      "note": "a25fc20; verificado: 344 passed 2 skipped, validate 161/1 (F011=DT-8). Deuda de capas observada por el orquestador: sub-agent-strategies.md:49-50 describen permisos/hooks de Claude Code en la skill (no marcado por la review)."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7876,7 +7917,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T03:26:42.787014+00:00",
+  "last_updated": "2026-10-18T03:39:07.150223+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7984,13 +8025,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-implementer-green-010",
-    "role": "implementer",
-    "substage": "green",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-reviewer-review-002",
+    "role": "reviewer",
+    "substage": "review",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
   },
-  "tdd_substage": "red"
+  "tdd_substage": "green"
 }
