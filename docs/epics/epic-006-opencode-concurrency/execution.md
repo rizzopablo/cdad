@@ -234,3 +234,9 @@ El 2026-10-18 el dueño retiró la verificación de familia (enmienda A-5 de la 
 - **Reviewer instalado:** el respaldo ya era la versión generada anterior. La personalización del dueño (`model:` propio) se perdió entre los respaldos del 2026-10-17 a las 02:21 (todavía la tiene) y a las 19:35 (ya no), o sea en un despliegue de 006-001. Hoy solo cambió el texto del producto (A-5). Queda recuperable desde ese respaldo, a decisión del dueño.
 - **`--check`:** FAIL solo por DT-8 (dos `.pyc` de `__pycache__` registrados como conflicto).
 - **Efecto en el consumidor:** sus exec-configs con `model` ya no fijan el modelo (D3). Hasta que se completen `models.opencode.<rol>` en `delegation.json`, la delegación externa usa el modelo por defecto del destino.
+
+## Uso real del adaptador por el orquestador (desde 2026-10-18, pedido del dueño)
+
+El orquestador despacha ahora por el adaptador instalado (`cdad_delegate.py --destination opencode`, `mode: server` contra el servidor del dueño), sin `-m`: el modelo sale de `delegation.json`. Los defectos que aparezcan se registran acá.
+
+- **D-ADP-1 (006-003 U6, real):** en `mode: server`, el adaptador carga la credencial de `opencode-server.env` para su propio preflight, pero no se la pasa al cliente `opencode run` que lanza. El cliente hereda `env = dict(os.environ)` (`cdad_delegate_opencode.py:426`) y falla con «Server … requires a password; set OPENCODE_PASSWORD» (`termination: transport-error`). Los tests de U6 no lo detectaron porque su binario falso no autentica. Lo que sí funcionó: `model_configured` salió de `delegation.json` con su procedencia. **Rodeo documentado:** exportar la variable en el entorno del proceso que despacha (`set -a; . ~/.config/cdad/opencode-server.env; set +a`), que es la precedencia de §2.3. **Fix propuesto:** inyectar la credencial resuelta solo en el entorno del cliente (nunca en argv ni en logs), con un test cuyo binario falso exija la variable.
