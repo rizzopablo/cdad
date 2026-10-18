@@ -7292,6 +7292,52 @@
         "docs/specs/006-002-delegation-by-layer/u4-green.md": "6c0db7b07abc1616e1a5984ed4cfd3c72e4abcfa717b08c4da5f853a308bdec5"
       },
       "note": "8c05755; verificado: 352 passed 2 skipped (006-002, acoplados, todo test que lee SKILL.md u orquestadores), validate 161/1 (F011=DT-8). Pendiente para la review: sub-agent-strategies.md:51 conserva alias de modelo de Claude Code (detalle de runtime en la skill; el oraculo de U2 no lo cubre)."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "u5-red",
+      "substage": "red",
+      "at": "2026-10-18T01:43:57.751648+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "79044816cea31df95131b7f11c42425355c6c8818051d32bd00db0f03c15b913",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "u5-red",
+        "substage": "red",
+        "packet_id": "006-002-delegation-by-layer-test-writer-red-006",
+        "receipt_sha256": "298e4bc6a53d6ec5425de59358c4f2d3fc41bb200222cc8516bddacac489f930",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/u5-red.md",
+            "bae0711e4955bbfe8453d0aafd448f3110b36eb6ee918a89f89aa37da89f8dbe"
+          ],
+          [
+            "tests/test_006_002_u5_transport_equivalence.py",
+            "50949f65af0a53c8561b5b8ecffd8db3f9cf6e045d874b5c1fc795bc2beadbc0"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-test-writer-red-006",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-test-writer-red-006/receipt.json",
+      "receipt_sha256": "298e4bc6a53d6ec5425de59358c4f2d3fc41bb200222cc8516bddacac489f930",
+      "artifacts": {
+        "tests/test_006_002_u5_transport_equivalence.py": "50949f65af0a53c8561b5b8ecffd8db3f9cf6e045d874b5c1fc795bc2beadbc0",
+        "docs/specs/006-002-delegation-by-layer/u5-red.md": "bae0711e4955bbfe8453d0aafd448f3110b36eb6ee918a89f89aa37da89f8dbe"
+      },
+      "note": "1125c53: 3 rojos por asercion; guards pre-satisfechos declarados; regresiones verdes."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7306,7 +7352,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T01:38:24.394142+00:00",
+  "last_updated": "2026-10-18T01:43:57.751648+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7414,13 +7460,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-test-writer-red-006",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "dispatched",
+    "id": "006-002-delegation-by-layer-implementer-green-006",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "red"
 }
