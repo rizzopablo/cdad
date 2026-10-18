@@ -15,7 +15,7 @@
     "disposition": "Sin bloqueantes. Los 4 opcionales (O-1 la rama cerrada no exige --closure-path y la omision cae en PD-25/PD-27c; O-2 --feature '' se trata como ausente; O-3 el limite declarado de PD-23 se extiende a los --artifact citados; O-4 el mensaje de PD-25 no nombra receive --late) van a deuda del cierre: mejora o variante sin impacto material. Actualizacion MANUAL declarada: el campo derivado no tiene dueno en la operacion de transiciones (deuda D-2 de 005-012)."
   },
   "postconditions_status": {
-    "1": "red"
+    "1": "green"
   },
   "epic_features": [
     {
@@ -8224,6 +8224,50 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/u1-red.md": "0568715fa95d7eb8af6ed58e63483727e48e734f6ddd150869cc2e00729f2a37"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "green",
+      "substage": null,
+      "at": "2026-10-18T12:58:25.958501+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "254f19314ad5c447068e2e1b91e83ff6426bfbb327ac86153de28a450077e536",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "green",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-implementer-green-001",
+        "receipt_sha256": "425cce68d4cbc8d60b6e77d28aa605aa1b8dd40bfb7eacabb305e99522817558",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "1",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-003-installer-single-profile-delegation-config/u1-green.md",
+            "4cdba0387623f41eca25562bdabb35e57c46f39060c504e8efe54924572031e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-implementer-green-001/receipt.json",
+      "receipt_sha256": "425cce68d4cbc8d60b6e77d28aa605aa1b8dd40bfb7eacabb305e99522817558",
+      "artifacts": {
+        "docs/specs/006-003-installer-single-profile-delegation-config/u1-green.md": "4cdba0387623f41eca25562bdabb35e57c46f39060c504e8efe54924572031e4"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -8238,7 +8282,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T12:07:08.594464+00:00",
+  "last_updated": "2026-10-18T12:58:25.958501+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8349,7 +8393,7 @@
     "id": "006-003-installer-single-profile-delegation-config-implementer-green-001",
     "role": "implementer",
     "substage": "green",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
