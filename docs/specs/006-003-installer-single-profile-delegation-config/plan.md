@@ -78,3 +78,11 @@ R1 (tests acoplados → A-1), R2 (recetas `--basic` → PD-1b), R3 (exec-configs
 ---
 
 Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 2026-10-18
+
+## Enmienda A-6 del plan (orquestador, HITL delegada, 2026-10-18)
+
+El GREEN de U7 se detuvo, como correspondía, porque review-5 B3 (`tests/test_install_review5_regressions.py:372-439`) fija para un agente propio retirado y sin modificar lo contrario de PD-6a/D6: que quede en disco y que `--check` lo reporte. El discovery no lo había declarado como acoplado. Además, retirar un agente del staging hace fallar el `Verify` del instalador, porque compara contra una cuenta fija (`EXPECTED_CDAD_AGENTS=11`, `install.sh:70`).
+
+Se descarta acotar el retiro a lo que no sea agente: dejaría vivo el mismo problema para el próximo agente que se retire. Se resuelve de forma general:
+- **U7 testfix (RED):** B3 se reformula declarando el reemplazo por D6. Un agente propio retirado y sin modificar se retira en la instalación y `--check` da PASS; si fue modificado localmente se preserva y se reporta como CONFLICT. Se mantiene que `--uninstall` lo retira.
+- **U7 GREEN:** además del retiro, la cuenta esperada del `Verify` sale del conjunto en staging (por runtime), no de una constante.
