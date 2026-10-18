@@ -122,7 +122,8 @@ else
   fail "PD-10: P1 semantic checker exited non-zero ($PD10_RC)"
 fi
 
-# P1.reviewer — 006-003 U1 (PD-1e/INV-3): ORACLE REPLACEMENT, declared (rule A-1).
+# P1.reviewer — 006-003 U1 (PD-1e/INV-3), reformulado por A-5 (§9). Declared
+# replacement (rule A-1 + A-5):
 # The former assert read the frontmatter `model:` line of
 # agents/cdad-implementer-odoo.md and agents/cdad-reviewer-odoo.md and demanded
 # that BOTH exist AND differ ("the reviewer's model (...) differs from the
@@ -132,17 +133,20 @@ fi
 # no longer carry a `model:` line at all and the old assert is unsatisfiable by
 # construction. It is REPLACED — never deleted, and no other P1 assert is
 # touched — by its inverse: NEITHER of the two `-odoo` agents may fix a model.
-# The anti-bias intent (reviewer not the same model as the implementer) is NOT
-# lost: it moves to PD-4, unit U5 — a CONFIGURATION verification
-# (skills/cdad-cycle/scripts/cdad_model_family.py: same-family /
-# guaranteed-by-configuration / not-verifiable / invariant-not-guaranteed,
-# always rc=0) whose declaration lands in `review.md` (PD-4d/INV-5).
+# The anti-bias intent (reviewer not the same model as the implementer) is NO
+# LONGER a requirement of this project: the owner's amendment A-5 (006-003 §9,
+# 2026-10-18) retires the family/model requirement (PD-4a..e, D4, §2.4 and the
+# `cdad_model_family.py` script) — no installable text requires choosing,
+# controlling, verifying or declaring the reviewer's family/model relative to
+# the implementer; the model of each role is the one the runtime (or
+# delegation.json for external delegation) configures. Nothing moved to PD-4:
+# the former pointer to U5 and to a configuration verification is withdrawn.
 for odoo_agent in implementer reviewer; do
     af="agents/cdad-$odoo_agent-odoo.md"
     if [[ -f "$ROOT/$af" ]] && ! grep -Eq '^model:' "$ROOT/$af"; then
-        pass "P1 rev ($odoo_agent-odoo): fixes no model: line (006-003 PD-1e/INV-3, replaces \"reviewer's model differs from the implementer's\"; family invariant -> PD-4/U5)"
+        pass "P1 rev ($odoo_agent-odoo): fixes no model: line (006-003 PD-1e/INV-3, reformulates \"reviewer's model differs from the implementer's\"; the family requirement is RETIRED by A-5)"
     else
-        fail "P1 rev ($odoo_agent-odoo): fixes a model: line — prohibited by 006-003 PD-1e/INV-3 (the family invariant is a configuration check, PD-4/U5)"
+        fail "P1 rev ($odoo_agent-odoo): fixes a model: line — prohibited by 006-003 PD-1e/INV-3 (no installable text fixes a model; the family requirement is retired by A-5)"
     fi
 done
 unset odoo_agent af

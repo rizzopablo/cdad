@@ -213,6 +213,130 @@ def read(path: Path) -> str:
 
 
 # --------------------------------------------------------------------------
+# Oráculo de AUSENCIA de A-5 (006-003 §9) — el requisito de familia/modelo del
+# reviewer respecto del implementer se RETIRA del texto instalable (INV-5
+# reformulada). DEFINICIÓN ÚNICA del oráculo: lo consumen
+# ``tests/test_006_003_u3_texts_without_profiles.py`` (superficies acotadas),
+# ``tests/test_006_003_u5p_no_family_requirement.py`` (focal) y
+# ``tests/test_006_002_u4_skill_without_models.py`` / ``…_u1_delegation_section``
+# (superficies de 006-002).
+#
+# Un ofensor es una línea que, junto a su ventana (±``FAMILY_WINDOW_LINES``
+# líneas), usa «familia» en el sentido de A-5, nombra el rol reviewer/revisor y
+# tiene mood de requisito/verificación/declaración (o su forma declarada
+# «invariant not guaranteed» ligada a la familia).
+#
+# Usos NO relacionados excluidos por COLOCACIÓN (declarados, con su dueño):
+# «failure family» / «failure-family» / «family of failures» / «familia de
+# fallos» (clasificación de hallazgos: `stage-4-review.md`, `anti-patterns.md`)
+# y «split-brain family» (`continuity.md`, familia de fallas de continuidad).
+# --------------------------------------------------------------------------
+
+FAMILY_RE = re.compile(r"(?i)\bfamil(?:y|ies|ia|ias)\b")
+ROLE_ANCHOR_RE = re.compile(r"(?i)\b(reviewer|revisor)\b")
+
+# La MOOD del requisito retirado: exigir/elegir/controlar/verificar/declarar la
+# familia o comparar el modelo del reviewer con el del implementer.
+FAMILY_REQUIREMENT_MOOD_RE = re.compile(
+    r"(?i)\b(must|shall|should|require[sd]?|need(?:s|ed)?|"
+    r"verif\w*|check\w*|checked|comprob\w*|compar\w*|control\w*|"
+    r"declar\w*|guarantee\w*|garantiz\w*|ensure[sd]?|enforce[sd]?|"
+    r"different|distinct|differ\w*|separate|separada|separado|"
+    r"distinta|distinto|diferente|otra|otro)\b"
+)
+
+# La declaración de la rama retirada, ligada a la familia (A-5 §9: se retira).
+FAMILY_NOT_GUARANTEED_RE = re.compile(
+    r"(?i)invariant\s+not\s+guaranteed|invariante\s+no\s+garantizad\w*"
+)
+
+# Prefijo/sufijo inmediato que convierte «family» en un concepto ajeno a A-5.
+UNRELATED_FAMILY_PREFIX_RE = re.compile(
+    r"(?i)(failure|failures|fallo|fallos|split[-\s]?brain)[-\s]+$"
+)
+UNRELATED_FAMILY_SUFFIX_RE = re.compile(
+    r"(?i)^[-\s]+(of\s+(a\s+|the\s+)?failures?|de\s+fall[oa]s?|de\s+fallas)\b"
+)
+
+# Ventana de co-ubicación: el requisito vive en su párrafo/ítem, no a distancia.
+FAMILY_WINDOW_LINES = 3
+
+
+def has_related_family(line: str) -> bool:
+    """¿La línea usa «family» en el sentido de A-5 (no «failure family»)?
+
+    Cada ocurrencia se juzga por su vecindad inmediata: los usos declarados como
+    no relacionados (``failure famil…``, ``family of failures``, ``familia de
+    fallos``, ``split-brain famil…``) quedan exentos; si un documento combina
+    ambos sentidos, la ocurrencia relacionada sigue contando.
+    """
+    for match in FAMILY_RE.finditer(line):
+        if UNRELATED_FAMILY_PREFIX_RE.search(line[:match.start()]):
+            continue
+        if UNRELATED_FAMILY_SUFFIX_RE.search(line[match.end():]):
+            continue
+        return True
+    return False
+
+
+def family_requirement_offenders(
+    text: str, path: Path, first_line: int = 1
+) -> list[str]:
+    """El requisito retirado por A-5 (conceptos, no frases exactas).
+
+    `first_line` permite reportar la línea del DOCUMENTO cuando `text` es una
+    región (§2, un bloque ``delegation``).
+    """
+    lines = text.splitlines()
+    offenders: list[str] = []
+    for index, line in enumerate(lines):
+        if not FAMILY_RE.search(line) or not has_related_family(line):
+            continue
+        lo = max(0, index - FAMILY_WINDOW_LINES)
+        hi = min(len(lines), index + FAMILY_WINDOW_LINES + 1)
+        chunk = "\n".join(lines[lo:hi])
+        if not ROLE_ANCHOR_RE.search(chunk):
+            continue
+        if (
+            FAMILY_REQUIREMENT_MOOD_RE.search(chunk)
+            or FAMILY_NOT_GUARANTEED_RE.search(chunk)
+        ):
+            offenders.append(
+                f"{relative(path)}:{first_line + index} — {line.strip()!r}"
+            )
+    return offenders
+
+
+def family_not_guaranteed_offenders(
+    text: str, path: Path, first_line: int = 1
+) -> list[str]:
+    """La declaración «invariant not guaranteed» ligada a la familia (A-5).
+
+    El enunciado por sí solo no basta (puede describir otro invariante): sólo
+    cuenta cuando la MISMA ventana usa «familia» en el sentido de A-5.
+    """
+    lines = text.splitlines()
+    offenders: list[str] = []
+    for index, line in enumerate(lines):
+        if not FAMILY_NOT_GUARANTEED_RE.search(line):
+            continue
+        lo = max(0, index - FAMILY_WINDOW_LINES)
+        hi = min(len(lines), index + FAMILY_WINDOW_LINES + 1)
+        if not any(has_related_family(window_line) for window_line in lines[lo:hi]):
+            continue
+        offenders.append(f"{relative(path)}:{first_line + index} — {line.strip()!r}")
+    return offenders
+
+
+def all_offenders(text: str, path: Path, first_line: int = 1) -> list[str]:
+    """Las dos formas del requisito retirado por A-5, en un solo oráculo."""
+    return (
+        family_requirement_offenders(text, path, first_line)
+        + family_not_guaranteed_offenders(text, path, first_line)
+    )
+
+
+# --------------------------------------------------------------------------
 # PD-1 / INV-1 — la skill no nombra herramientas de despacho de un runtime
 # --------------------------------------------------------------------------
 

@@ -4,22 +4,23 @@
 Contract:
 - ``docs/specs/006-002-delegation-by-layer/spec.md`` §2 **PD-11**, §3
   **INV-2**/INV-7, §4 **D-6**;
+- ``docs/specs/006-003-installer-single-profile-delegation-config/spec.md`` §9
+  (enmienda A-5 del dueño, 2026-10-18) — **INV-5 reformulada**: §2 no exige ni
+  declara la familia o el modelo del reviewer respecto del implementer;
 - ``docs/specs/006-002-delegation-by-layer/plan.md`` ficha **U4** (archivos:
-  ``SKILL.md:67-77``, ``handoff-prompts.md:515``, F001 de
+  ``SKILL.md``, ``handoff-prompts.md``, F001 de
   ``tests/validate-consistency.sh``) + **enmienda A-1** (los asserts acoplados
   de esta superficie se reformulan en ESTE RED, nunca en el GREEN).
 
-PD-11 — §2 pierde la columna "Model family" (``SKILL.md:67-75``) y el párrafo de
-perfiles (``:77``); en su lugar queda UNA frase: el modelo de cada rol es **el
-configurado en el runtime**, la skill **no nombra modelos**, y la familia
-distinta del reviewer es una **invariante garantizada por configuración** cuando
-el perfil fija modelos y **declarada** cuando no (nunca omitida en silencio:
-INV-7). ``references/handoff-prompts.md:515`` pierde su ejemplo de modelo
-concreto. F001 de ``tests/validate-consistency.sh`` se **reformula, no se
-borra** (esa reformulación es parte de este mismo RED — enmienda A-1).
+PD-11 — §2 pierde la columna "Model family" y el párrafo de perfiles; en su
+lugar queda: el modelo de cada rol es **el configurado en el runtime** y la
+skill **no nombra modelos**. ``references/handoff-prompts.md`` pierde su ejemplo
+de modelo concreto. F001 de ``tests/validate-consistency.sh`` se **reformula, no
+se borra** (esa reformulación es parte de este mismo RED — enmienda A-1).
 (Las dos mitades «cuando el perfil fija modelos / cuando no» quedaron
-supersedidas por PD-7b de 006-003: ver *REFORMULADO por 006-003 U3* al final de
-esta cabecera. El párrafo se conserva como registro del contrato de 006-002.)
+supersedidas por PD-7b de 006-003 y, luego, por **A-5**: ver *REFORMULADO por
+006-003 U3 y por A-5* al final de esta cabecera. Los párrafos se conservan como
+registro del contrato de 006-002.)
 
 Oráculo de ausencia (spec §2, cabecera): el patrón ya fijado por
 ``tests/test_005_010_t3_references.py`` (``CONCRETE_MODEL_ID_RE``,
@@ -33,60 +34,42 @@ Mapa test → postcondición (un test por afirmación observable):
   2 ``TestPd11Section2WithoutModels::test_pd11_section2_drops_the_profiles_paragraph``        PD-11 / D-6
   3 ``TestPd11Section2WithoutModels::test_pd11_section2_has_no_concrete_model_identifier``    PD-11 / INV-2
   4 ``TestPd11Section2WithoutModels::test_pd11_section2_declares_the_configured_model_sentence`` PD-11 / INV-7
-  5 ``TestPd11HandoffPromptsWithoutModelExamples::test_pd11_handoff_prompts_has_no_concrete_model_example`` PD-11 / INV-2
+  5 ``TestPd11Section2WithoutModels::test_pd11_section2_has_no_family_requirement``          PD-7b / INV-5 (A-5)
+  6 ``TestPd11HandoffPromptsWithoutModelExamples::test_pd11_handoff_prompts_has_no_concrete_model_example`` PD-11 / INV-2
 
-RED esperado en el momento de ESTA unidad (histórico: U4 ya está en GREEN; el
-estado vigente bajo PD-7b lo declara el bloque *REFORMULADO por 006-003 U3*):
-- (1)/(2)/(4): FALLAN por AssertionError de CONTENIDO sobre §2 (líneas 65-83):
-  columna "Model family" presente; párrafo de perfiles presente (ofensor en
-  ``:77``, exactamente la línea que el spec declara); la frase nueva ausente
-  (faltan los conceptos 1 «modelo configurado en el runtime», 2 «la skill no
-  nombra modelos», 6 «garantizada por configuración» y 7 «declarada»).
-- (3): FALLA por AssertionError de CONTENIDO (12 identificadores de modelo/
-  proveedor concretos en §2: ``deepseek-v4-pro``, ``deepseek-v4-flash``,
-  ``glm-5.2``, proveedor ``deepseek``) — no es un guard pre-satisfecho.
-- (5): FALLA por AssertionError de CONTENIDO: el ejemplo declarado por discovery
-  §1 #18 (``mofgw/qwen3.7-plus``) sigue en ``handoff-prompts.md``. Forma que el
-  oráculo compartido NO captura (``CONCRETE_MODEL_ID_RE`` exige el guion pegado
-  a la familia y aquí la versión se interpone); se declara el patrón de esta
-  unidad (``EMBEDDED_VERSION_MODEL_RE``) por el ejemplo que el propio contrato
-  nombra.
+RED esperado contra el árbol vigente (OBSERVADO; los guards ya están en verde):
+- (1)/(3): PASAN (la columna y los modelos concretos ya salieron de §2 con el
+  GREEN de U4) — GUARDs de PD-11/D-6 e INV-2.
+- (2): PASA (el párrafo de perfiles salió con el GREEN de U3) — GUARD de
+  PD-11/D-6.
+- (4): PASA (la frase nueva de §2 —modelo configurado en el runtime + la skill
+  no nombra modelos— está desde el GREEN de U4) — GUARD de INV-7 con los
+  conceptos 1 y 2 (los conceptos de la rama de familia se retiraron).
+- (5): FALLA por AssertionError de CONTENIDO: §2 todavía declara el requisito de
+  familia del reviewer (A-5 lo retira). Es el RED de U5' en esta superficie.
+- (6): PASA (el ejemplo con modelo concreto ya salió de ``handoff-prompts.md``).
 Ningún fallo es ImportError/SyntaxError.
 
-Acoplados reformulados en este RED (enmienda A-1, cada RED cubre su superficie):
-- ``tests/test_006_002_u2_neutral_skill.py``: se retira la neutralización
-  TEMPORAL de §2 del oráculo de modelos (PD-1/INV-2) — la ausencia de modelos
-  concretos rige ahora sobre todo el texto instalable salvo ``context-meter.md``
-  (INV-8); su mitad de modelos falla hoy por los ofensores de esta unidad.
-- ``tests/validate-consistency.sh`` F001: la nota de perfiles (`--basic` + el
-  caveat de la invariante) deja de exigirse en ``SKILL.md`` y pasa a exigir la
-  frase nueva de §2 (SKILL.md) + el caveat de ``basic`` donde todavía
-  corresponde (los orquestadores generados, cuya sección ``delegation`` ya
-  declara la familia no garantizada — PD-4/D-3, U1).
+Acoplados reformulados (enmienda A-1 y A-5, cada RED cubre su superficie):
+- ``tests/test_006_002_u2_neutral_skill.py``: se retiró la neutralización
+  TEMPORAL de §2 del oráculo de modelos (PD-1/INV-2).
+- ``tests/validate-consistency.sh`` F001: la nota de perfiles dejó de exigirse y
+  pasó a exigir la frase nueva de §2; con A-5, la mitad de FAMILIA de F001 se
+  invierte a ausencia (el requisito se retira, la declaración «invariant not
+  guaranteed» ligada a familia con él).
+- ``tests/test_006_003_u5p_no_family_requirement.py`` es el focal del retiro
+  (A-5); aquí se conserva la mitad de esta unidad —§2 sin modelos, sin perfiles
+  y sin el requisito de familia— para que ningún assert quede borrado sin
+  declarar su reemplazo.
 
-REFORMULADO por 006-003 U3 (PD-7b, D7; enmienda A-1 del plan de 006-003): la
-rampa por PERFIL de §2 se retira completa (la elección de modelo vive en la
-configuración de delegación), así que los conceptos 6/7/8 de esta unidad se
-reemplazan —no se borran— por su forma post-PD-7, y el concepto 8 («perfil»
-como condición) se convierte en PROHIBICIÓN (PD-7b: §2 no habla de perfiles):
-
-- 6 «garantizada por configuración *cuando el perfil fija modelos*» →
-  6' «la familia es una **verificación de configuración**» (PD-7b);
-- 7 «declarada *cuando el perfil no fija modelos*» →
-  7' «**cuando no es verificable** (invariante no garantizado)» (INV-5);
-- 8 «condición sobre el perfil de modelos» → **se elimina como concepto
-  exigido** y su reemplazo es la AUSENCIA de vocabulario de perfiles en §2
-  (``PROFILES_PARAGRAPH_PATTERNS``, segundo patrón reformulado aquí mismo).
-  El oráculo focal de PD-7b vive en
-  ``tests/test_006_003_u3_texts_without_profiles.py``; aquí se conserva la
-  mitad de esta unidad (§2 sin modelos + sin perfiles) para que ningún assert
-  quede borrado sin declarar su reemplazo.
-
-RED esperado tras esta reformulación: (1)/(3) PASAN hoy (la columna y los
-modelos concretos ya salieron de §2 con el GREEN de U4); (2)/(4) FALLAN por
-AssertionError de CONTENIDO porque §2 conserva 2 líneas con vocabulario de
-perfiles y no declara la verificación de configuración; (5) PASA hoy (el
-ejemplo con modelo concreto ya salió de ``handoff-prompts.md``).
+REFORMULADO por A-5 (006-003 §9; sobre la regla A-1): los conceptos 4, 5, 6',
+7' y 8' de la versión anterior de esta unidad («la familia del reviewer difiere
+del implementer», «familia distinta = invariante», «verificación de
+configuración», «no verificable» y «se declara») EXIGÍAN el requisito que A-5
+retira: se reemplazan —nunca se borran— por la AUSENCIA de ese requisito
+(``test_pd11_section2_has_no_family_requirement``, oráculo único de u3:
+``all_offenders``) y el concepto 3 («el rol reviewer») deja de exigirse porque
+sólo existía para sostener esa declaración.
 """
 
 from __future__ import annotations
@@ -104,6 +87,10 @@ from tests.test_006_002_u2_neutral_skill import (
     relative,
     require_any,
 )
+
+# Oráculo de ausencia del requisito de familia (A-5), definición única en u2
+# (junto al resto de los oráculos de ausencia compartidos).
+from tests.test_006_002_u2_neutral_skill import all_offenders
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -186,10 +173,15 @@ PROFILES_PARAGRAPH_PATTERNS = (
 
 # La frase nueva (§2 PD-11) — concepto con alternativas de idioma; la redacción
 # es libre, el concepto no. Conjunción: si falta UNO, la unidad falla.
-# Conceptos 6/7/8 REFORMULADOS por 006-003 U3 (PD-7b/INV-5, ver cabecera):
-# 6' verificación de configuración, 7' no verificable, 8' se declara. El antiguo
-# 8 («perfil» como condición) vive ahora como ausencia en
-# `PROFILES_PARAGRAPH_PATTERNS`.
+# REFORMULADO por A-5 (006-003 §9): los conceptos 4, 5, 6', 7' y 8' anteriores
+# exigían el requisito de familia/modelo del reviewer (diferencia de familia,
+# «familia distinta = invariante», «verificación de configuración», «no
+# verificable» y «se declara»), que A-5 RETIRA: se reemplazan por su AUSENCIA
+# (test_pd11_section2_has_no_family_requirement, oráculo único de u3:
+# ``all_offenders``). El concepto 3 («el rol reviewer») deja de exigirse porque
+# sólo existía para sostener esa declaración. Se conservan los conceptos del
+# contrato vigente: el modelo configurado en el runtime y la skill que no nombra
+# modelos.
 PD11_SECTION2_CONCEPTS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("1. el modelo de cada rol es el configurado en el runtime",
      ("configured in the runtime", "configured in the environment",
@@ -200,42 +192,16 @@ PD11_SECTION2_CONCEPTS: tuple[tuple[str, tuple[str, ...]], ...] = (
      ("names no model", "does not name any model", "does not name a model",
       "name no model", "no model is named", "no model names",
       "no nombra", "sin nombrar", "no se nombra")),
-    ("3. el rol reviewer",
-     ("reviewer", "revisor")),
-    ("4. la familia del reviewer difiere de la del implementer",
-     ("different family", "different model family", "family differs",
-      "distinct family", "not the same family", "differs from",
-      "familia distinta", "familia diferente", "distinta de la del")),
-    ("5. familia distinta = invariante",
-     ("invariant", "invariante")),
-    ("6'. la familia es una verificación de configuración (PD-7b)",
-     ("configuration check", "check of the configuration",
-      "checks the configuration", "configuration verification",
-      "verification of the configuration", "verify the configuration",
-      "verifies the configuration", "verified from the configuration",
-      "verified in the configuration", "verify the configured models",
-      "check the configured models", "compare the configured models",
-      "compares the effective models", "verificación de configuración",
-      "verificación de la configuración", "se verifica en la configuración",
-      "se comprueba en la configuración",
-      "comprobación de la configuración")),
-    ("7'. cuando no es verificable (invariante no garantizado; INV-5)",
-     ("not verifiable", "not-verifiable", "cannot be verified", "cannot verify",
-      "unverifiable", "invariant not guaranteed", "invariante no garantizado",
-      "no verificable", "no puede verificarse", "no se puede verificar")),
-    ("8'. se declara (nunca en silencio; INV-5)",
-     ("declared", "declares", "declare", "se declara", "declarado",
-      "declarada", "stated", "never silent", "nunca en silencio")),
 )
 
 
 class TestPd11Section2WithoutModels(unittest.TestCase):
-    """PD-11: ``SKILL.md`` §2 pierde la columna "Model family" y el párrafo de
-    perfiles; ninguna de las dos se reemplaza por otro compromiso de modelos:
-    §2 declara que el modelo de cada rol es el configurado en el runtime, que la
-    skill no nombra modelos, y que la familia distinta del reviewer es una
-    **verificación de configuración** declarada cuando no es verificable
-    (INV-5/PD-7b de 006-003 — conceptos 6'/7'/8')."""
+    """PD-11 + A-5: ``SKILL.md`` §2 pierde la columna "Model family" y el
+    párrafo de perfiles; ninguna de las dos se reemplaza por otro compromiso de
+    modelos: §2 declara que el modelo de cada rol es el configurado en el
+    runtime y que la skill no nombra modelos, y **no** exige ni declara la
+    familia o el modelo del reviewer respecto del implementer (INV-5
+    reformulada por A-5)."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -306,10 +272,10 @@ class TestPd11Section2WithoutModels(unittest.TestCase):
         )
 
     def test_pd11_section2_declares_the_configured_model_sentence(self) -> None:
-        """PD-11/INV-7 + PD-7b/INV-5 (006-003 U3): §2 declara la frase nueva
-        (concepto con alternativas): modelo configurado en el runtime; la skill
-        no nombra modelos; la familia distinta del reviewer es una verificación
-        de configuración, declarada cuando no es verificable.
+        """PD-11/INV-7: §2 declara la frase vigente (concepto con alternativas):
+        el modelo de cada rol es el configurado en el runtime y la skill no
+        nombra modelos. Los conceptos de la familia del reviewer se retiraron
+        con A-5 (su ausencia la fija el test siguiente).
         """
         missing = [
             detail
@@ -321,6 +287,22 @@ class TestPd11Section2WithoutModels(unittest.TestCase):
             msg=(
                 "PD-11/INV-7: §2 de SKILL.md no declara la frase nueva completa "
                 f"(líneas {self.first_line}-{self.last_line}). Ausentes: {missing}"
+            ),
+        )
+
+    def test_pd11_section2_has_no_family_requirement(self) -> None:
+        """PD-7b/INV-5 REFORMULADA por A-5: §2 no exige, verifica ni declara la
+        familia o el modelo del reviewer respecto del implementer (el modelo de
+        cada rol es el que configura el runtime). Oráculo único: ``all_offenders``
+        de ``tests/test_006_003_u3_texts_without_profiles.py``."""
+        offenders = all_offenders(self.section, SKILL_MD, self.first_line)
+        self.assertEqual(
+            offenders, [],
+            msg=(
+                "PD-7b/INV-5 (A-5): §2 de SKILL.md todavía exige o declara la "
+                "familia/modelo del reviewer respecto del implementer "
+                f"(líneas {self.first_line}-{self.last_line}): "
+                f"{offenders[:20]!r}"
             ),
         )
 

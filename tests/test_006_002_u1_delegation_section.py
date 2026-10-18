@@ -41,37 +41,41 @@ Los formularios de herramienta siguen el oráculo de ausencia de la spec §2:
 code-spans `` `task` `` / `` `Agent` `` y el token `subagent_type` — nunca la
 palabra suelta *task* ("atomic task" no matchea; discovery §4 riesgo 6).
 
-REFORMULADO por 006-003 U3 (PD-7b, D7; enmienda A-1 del plan de 006-003): la
-declaración de FAMILIA de D-3(iii)/(iv) hablaba de la rama `basic` (el perfil
-que fijaba modelos y suspendía la invariante). Los perfiles se retiran
-(PD-1/D1), así que el assert se INVIERTE y se repunta —no se borra—: el
-orquestador compuesto NO lleva vocabulario de perfiles ni `--basic`, y la
-familia del reviewer se declara como VERIFICACIÓN DE CONFIGURACIÓN, declarada
-cuando no es verificable (INV-5). Los campos de registro y las reglas «nunca
-elige ni inventa modelo» / «modelo sólo desde la configuración» de D-3 se
-conservan sin cambio.
+REFORMULADO por 006-003 U3 (PD-7b, D7) y, sobre él, por la ENMIENDA A-5 del
+dueño (006-003 §9, 2026-10-18): la declaración de FAMILIA de D-3(iii)/(iv)
+hablaba de la rama `basic` (el perfil que fijaba modelos) y U3 la convirtió en
+una «verificación de configuración declarada». **A-5 retira el requisito
+entero**: ningún texto instalable exige al orquestador elegir, controlar,
+verificar ni declarar la familia o el modelo del reviewer respecto del
+implementer (INV-5 reformulada). Así que el assert se INVIERTE y se repunta —no
+se borra—: el orquestador compuesto no lleva vocabulario de perfiles ni
+`--basic`, y NO exige ni declara la familia/modelo del reviewer (oráculo único
+`all_offenders` de u2). Los campos de registro I8 (`model_configured`/
+`model_reported`) y las reglas «nunca elige ni inventa modelo» / «modelo sólo
+desde la configuración» de D-3 se conservan sin cambio.
 
 RED esperado en el árbol vigente de esta unidad (histórico: los bloques
-`delegation` ya existen). Estado OBSERVADO bajo PD-7b:
+`delegation` ya existen). Estado OBSERVADO bajo A-5:
 
   - PD-2(a)/(b), mecanismo nativo, prohibición intra-runtime, pase + enlace:
     PASAN hoy (GREEN de 006-002 U1) — controles de conservación;
-  - declaración de FAMILIA por configuración (reformulada): FALLA por
-    AssertionError de CONTENIDO en AMBOS orquestadores — conservan 1 línea con
-    `--basic` y 1 con vocabulario de perfiles (el caveat `basic` que F001 exigía
-    hasta el RED de 006-003 U3) y no declaran la verificación de configuración
-    (el bloque fuente sólo dice «invariant not guaranteed» bajo `basic`).
-Todo fallo RED es AssertionError de CONTENIDO (contrato PD-2/PD-4/PD-7b), nunca
+  - registro I8 + «nunca elige» + «modelo sólo desde la configuración»
+    (conservados por A-5): PASAN hoy — controles de conservación;
+  - ausencia del requisito de FAMILIA (reformulada por A-5): FALLA por
+    AssertionError de CONTENIDO en AMBOS orquestadores — el compuesto todavía
+    declara la familia del reviewer como verificación de configuración y su
+    caveat «invariant not guaranteed».
+Todo fallo RED es AssertionError de CONTENIDO (contrato PD-2/PD-4/A-5), nunca
 ImportError/SyntaxError ni fallo de fixture.
 
-Mapa test → postcondición (spec 006-002; fila 6 reformulada por 006-003 PD-7b):
+Mapa test → postcondición (spec 006-002; fila 6 reformulada por A-5):
 
   1  TestPd2aExactlyOneDelegationSection::test_pd2a_…_adapter_…          PD-2(a) (bloque único por adaptador)
   2  TestPd2bSourceOwnsDelegationContent::test_pd2b_…_source_block_…     PD-2(a)/(b) + D-1 (el contenido vive en la fuente)
   3  TestPd2cOcOrchestratorNativeMechanism::test_pd2c_…                  PD-2(c) (OpenCode: `task` + subagent_type)
   4  TestPd2cCcOrchestratorNativeMechanism::test_pd2c_…                  PD-2(c) (Claude Code: `Agent` + subagent_type; control)
   5  TestPd4IntraRuntimeAdapterProhibition::test_pd4_ii_…                PD-4(ii) / D-1 (prohibición explícita, ambos)
-  6  TestPd4FamilyConfigurationDeclaration::test_pd4_family_…            PD-4(iii)+(iv)/D-3 reformulada → PD-7b/INV-5 (ambos)
+  6  TestPd4DelegationRegistrationWithoutFamilyRequirement::test_pd4_…   PD-4(iii)+(iv)/D-3 con la familia RETIRADA → INV-5/A-5 (ambos)
   7  TestPd2dPacketPassAndReceiptLink::test_pd2d_…                       PD-2(d) + PD-5(b) (pase byte-idéntico + enlace)
 """
 
@@ -84,6 +88,10 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+
+# Oráculo único de AUSENCIA del requisito de familia/modelo del reviewer (A-5),
+# compartido con las demás superficies (definición única en u2).
+from tests.test_006_002_u2_neutral_skill import all_offenders
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -124,32 +132,15 @@ INTRA_RUNTIME_TOKENS = ("intra-runtime", "intra runtime", "same runtime",
                         "within the runtime", "inside the runtime",
                         "own runtime", "mismo runtime")
 
-# Rama `delegation` y declaración de FAMILIA (D-3 de 006-002; reformulada por
-# 006-003 PD-7b/D7 — ver la cabecera del módulo). La rama `basic` de D-3
-# (perfil que fijaba modelos) se RETIRA con los perfiles: la familia del
-# reviewer pasa a ser una VERIFICACIÓN DE CONFIGURACIÓN, declarada cuando no es
-# verificable (INV-5). Ningún rastro de perfil sobrevive en el orquestador.
+# Rama `delegation` y registro del intento (D-3 de 006-002; la parte de FAMILIA
+# fue RETIRADA por la enmienda A-5 de 006-003 §9 — ver la cabecera del módulo).
+# La rama `basic` de D-3 (perfil que fijaba modelos) se retira con los perfiles
+# (PD-1/D1) y con ella TODO requisito sobre la familia/modelo del reviewer
+# respecto del implementer: ningún rastro de perfil ni de familia sobrevive en
+# el orquestador. Los campos de registro I8 y las reglas «nunca elige» /
+# «modelo sólo desde la configuración» (D-3) se CONSERVAN.
 PROFILE_VOCABULARY_RE = re.compile(r"(?i)\bperfil(?:es)?\b|\bprofile(?:s)?\b")
 RETIRED_BASIC_FLAG_RE = re.compile(r"--basic\b")
-# PD-7b: la familia se verifica contra la configuración (concepto con
-# alternativas de idioma; la redacción es libre).
-FAMILY_CONFIGURATION_TOKENS = (
-    "configuration check", "check of the configuration",
-    "checks the configuration", "configuration verification",
-    "verification of the configuration", "verify the configuration",
-    "verifies the configuration", "verified from the configuration",
-    "verified in the configuration", "verify the configured models",
-    "check the configured models", "compare the configured models",
-    "compares the effective models", "verificación de configuración",
-    "verificación de la configuración", "se verifica en la configuración",
-    "se comprueba en la configuración", "comprobación de la configuración",
-)
-# INV-5: imposible de verificar ⇒ se declara «invariante no garantizado».
-FAMILY_NOT_VERIFIABLE_TOKENS = (
-    "not verifiable", "not-verifiable", "cannot be verified", "cannot verify",
-    "unverifiable", "invariant not guaranteed", "invariante no garantizado",
-    "no verificable", "no puede verificarse", "no se puede verificar",
-)
 # D-3(2): campos de registro fijados por el contrato (nombres normativos).
 REGISTRATION_FIELD_TOKENS = ("model_configured", "model_reported")
 # D-3: el orquestador NO elige ni inventa modelo.
@@ -452,40 +443,46 @@ class TestPd4IntraRuntimeAdapterProhibition(U1Case):
                     CLI_ADAPTER_TOKENS, window=12, document=label)
 
 
-# ------------------- PD-4(iii)+(iv) / PD-7b — declaración de FAMILIA
+# ------------------- PD-4(iii)+(iv) / A-5 — registro sin requisito de familia
 #
-# REFORMULADO por 006-003 U3 (PD-7b, D7; enmienda A-1 del plan de 006-003): la
-# rama `basic` de D-3 (006-002) describía el perfil que fijaba modelos. Los
-# perfiles se retiran (PD-1/D1) y la familia del reviewer pasa a ser una
-# VERIFICACIÓN DE CONFIGURACIÓN, declarada cuando no es verificable (INV-5). El
-# oráculo NO se borra: se invierte (ausencia de `basic`/perfiles) y se repunta a
-# los conceptos de PD-7b, conservando los campos de registro y las reglas
-# «nunca elige» / «modelo sólo desde la configuración» de D-3.
+# REFORMULADO por 006-003 U3 (PD-7b) y luego por la ENMIENDA A-5 del dueño
+# (006-003 §9, 2026-10-18): la rama `basic` de D-3 (006-002) describía el perfil
+# que fijaba modelos, y la reformulación de U3 convirtió la familia del reviewer
+# en una «verificación de configuración declarada». A-5 RETIRA el requisito
+# entero: el orquestador no elige, controla, verifica ni declara la familia ni
+# el modelo del reviewer respecto del implementer (INV-5 reformulada). El oráculo
+# NO se borra: se invierte (ausencia del requisito, con el oráculo único
+# ``all_offenders`` de u2) y se CONSERVAN los campos de registro I8
+# (``model_configured``/``model_reported``, que sólo registran lo ocurrido) y las
+# reglas «nunca elige» / «modelo sólo desde la configuración» de D-3.
 
 
-class TestPd4FamilyConfigurationDeclaration(U1Case):
-    """PD-4(iii)+(iv) de 006-002 reformulado por PD-7b (006-003) — idéntica en
-    CADA orquestador: el perfil retirado no sobrevive en el artefacto compuesto,
-    la familia del reviewer se declara como verificación de configuración
-    (declarada cuando no es verificable), el intento se REGISTRA con los campos
-    del contrato, el orquestador NUNCA elige ni inventa un modelo y solo pasa
-    uno si viene de la configuración."""
+class TestPd4DelegationRegistrationWithoutFamilyRequirement(U1Case):
+    """PD-4(iii)+(iv) de 006-002 con la parte de familia retirada por A-5 —
+    idéntica en CADA orquestador: el perfil retirado no sobrevive en el artefacto
+    compuesto, la familia/modelo del reviewer no se exige, verifica ni declara, el
+    intento se REGISTRA con los campos del contrato (I8), el orquestador NUNCA
+    elige ni inventa un modelo y solo pasa uno si viene de la configuración."""
 
 
-    def assert_family_configuration_declaration(self, rel: Path) -> None:
+    def assert_delegation_without_family_requirement(self, rel: Path) -> None:
         text, label = self.orchestrator(rel)
         # (i) ausencia: el perfil y su flag ya no existen en el compuesto.
         self.forbid(text, PROFILE_VOCABULARY_RE,
                     "vocabulario de perfiles", label)
         self.forbid(text, RETIRED_BASIC_FLAG_RE,
                     "el flag retirado `--basic`", label)
-        # (ii) la familia es una verificación de configuración (PD-7b).
-        self.require_any(text, FAMILY_CONFIGURATION_TOKENS,
-                         "familia = verificación de configuración", label)
-        # (ii-bis) cuando no es verificable, se declara (INV-5).
-        self.require_any(text, FAMILY_NOT_VERIFIABLE_TOKENS,
-                         "familia no verificable declarada", label)
-        # (iii) registro con los campos fijados por D-3(2).
+        # (ii) A-5/INV-5: la familia/modelo del reviewer respecto del implementer
+        # no se exige, controla, verifica ni declara (oráculo único ``all_offenders``).
+        # La ruta que se reporta es la del artefacto LÓGICO (la copia de staging
+        # vive en un tempdir): `build/staging/agents/<runtime>/cdad-orchestrator.md`.
+        offenders = all_offenders(text, REPO_ROOT / rel)
+        self.assertEqual(
+            offenders, [],
+            msg=f"{label}: el orquestador generado todavía exige o declara la "
+                "familia/modelo del reviewer respecto del implementer "
+                f"(A-5/PD-7b): {offenders[:20]!r}")
+        # (iii) registro con los campos fijados por D-3(2) — CONSERVADO por A-5.
         self.require_any(text, REGISTRATION_FIELD_TOKENS,
                          "campos de registro model_configured/model_reported",
                          label)
@@ -498,18 +495,18 @@ class TestPd4FamilyConfigurationDeclaration(U1Case):
                          label)
 
 
-    def test_pd4_family_configuration_declaration_in_opencode_orchestrator(
+    def test_pd4_delegation_registration_without_family_requirement_opencode(
             self) -> None:
-        """PD-4(iii)+(iv)/D-3 + PD-7b: declaración de familia por
-        configuración en el orquestador OpenCode generado."""
-        self.assert_family_configuration_declaration(OC_ORCH_REL)
+        """PD-4(iii)+(iv)/D-3 + A-5: registro I8 sin requisito de familia en el
+        orquestador OpenCode generado."""
+        self.assert_delegation_without_family_requirement(OC_ORCH_REL)
 
 
-    def test_pd4_family_configuration_declaration_in_claude_code_orchestrator(
+    def test_pd4_delegation_registration_without_family_requirement_claude_code(
             self) -> None:
-        """PD-4(iii)+(iv)/D-3 + PD-7b: declaración de familia por configuración
-        en el orquestador Claude Code generado."""
-        self.assert_family_configuration_declaration(CC_ORCH_REL)
+        """PD-4(iii)+(iv)/D-3 + A-5: registro I8 sin requisito de familia en el
+        orquestador Claude Code generado."""
+        self.assert_delegation_without_family_requirement(CC_ORCH_REL)
 
 
 # ------------------------------ PD-2(d) + PD-5(b) — paquete y recibo

@@ -45,8 +45,10 @@ para que ningún assert se caiga en silencio:
 - El enunciado del adaptador que atribuía la ausencia de `model:` al «perfil de
   generación» se reformula a la causa vigente: el GENERADOR sin perfiles y sin
   mapa no emite `model:` (PD-1e/PD-1f). El reclamo de honestidad de PD-5(b) (el
-  instalador NO garantiza la invariante anti-sesgo) se CONSERVA, reformulado sin
-  perfiles (INV-5: garantizado por configuración o declarado, nunca silencio).
+  instalador NO garantiza la invariante anti-sesgo) se REEMPLAZA por A-5
+  (006-003 §9, 2026-10-18): el requisito de familia/modelo del reviewer respecto
+  del implementer —y su reclamo, garantizado o no garantizado— se retira del
+  texto instalable; el adaptador no declara esa relación (INV-5 reformulada).
 
 Mapa test → postcondición/criterio (un test por afirmación observable; el
 «ROJO hoy» de la tabla original era el del RED de 005-004 y el GREEN de 005-004
@@ -64,9 +66,11 @@ ya lo resolvió — el estado por test está medido en la sección RED esperado)
 - `test_pd5_adapter_declares_no_model_per_role`
       → PD-5(a) / AC-5                       (REPLACE declarado de la variante
                                               «under basic»; verde hoy)
-- `test_pd5_adapter_declares_the_installer_does_not_guarantee_the_anti_bias_invariant`
-      → PD-5(b) / AC-5                       (reclamo de honestidad CONSERVADO,
-                                              encuadre sin perfiles; verde hoy)
+- `test_pd5_adapter_does_not_declare_the_retired_reviewer_family_invariant`
+      → PD-5(b) / AC-5                       (REFORMULADO por A-5: el reclamo
+                                              de honestidad reviewer≠implementer
+                                              se retira con el requisito; el
+                                              adaptador no declara esa relación)
 - `test_pd5_adapter_references_the_exemption_source_instead_of_copying_it`
       → PD-5(c) / PD-9 / AC-5                (exención explícita por referencia;
                                               verde hoy)
@@ -85,12 +89,16 @@ ya lo resolvió — el estado por test está medido en la sección RED esperado)
 RED esperado (MEDIDO contra el árbol de hoy, post-U1; se corrige el «ROJO hoy»
 histórico del RED de 005-004, ya resuelto por su GREEN):
 
-- Los cinco tests de enunciado/barrido (`test_pd2_i_*`, los dos
-  `test_pd2_ii_adapter_*`, `test_pd5_adapter_*`) están **verdes** hoy: el GREEN
-  de 005-004 ya reescribió el adaptador. Esta sesión NO debilita su oráculo: se
-  conservan los grupos de co-ocurrencia y sólo se retiran los dos que el propio
-  cambio vuelve falsos (`\bbasic\b`, y «generation profile» como CAUSA, que pasó
-  a «generador/staging sin perfiles»).
+- Los tests de enunciado/barrido (`test_pd2_i_*`, los dos
+  `test_pd2_ii_adapter_*`, `test_pd5_adapter_declares_no_model_per_role`) están
+  **verdes** hoy: el GREEN de 005-004 ya reescribió el adaptador. Esta sesión NO
+  debilita su oráculo: se conservan los grupos de co-ocurrencia y sólo se retiran
+  los dos que el propio cambio vuelve falsos (`\bbasic\b`, y «generation
+  profile» como CAUSA, que pasó a «generador/staging sin perfiles»).
+- `test_pd5_adapter_does_not_declare_the_retired_reviewer_family_invariant` es
+  **ROJO** hoy por el reemplazo declarado de A-5 (006-003 §9): el adaptador
+  todavía declara la familia/modelo del reviewer respecto del implementer, y el
+  requisito está retirado.
 - `test_pd2_ii_isolated_install_deploys_staged_cc_agent_bytes_verbatim` es
   **ROJO** hoy por el reemplazo declarado: el manifiesto de propiedad todavía
   registra `profile` (PD-1d/D1). Antes de esta sesión ya era rojo por el eje de
@@ -134,6 +142,10 @@ from tests.test_install_ownership import (
     load_staging_manifest,
     run_installer,
 )
+
+# Oráculo único de AUSENCIA del requisito de familia/modelo del reviewer (A-5),
+# compartido con las demás superficies (definición única en u2).
+from tests.test_006_002_u2_neutral_skill import all_offenders
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -484,30 +496,21 @@ def test_pd5_adapter_declares_no_model_per_role():
     )
 
 
-def test_pd5_adapter_declares_the_installer_does_not_guarantee_the_anti_bias_invariant():
-    """PD-5(b)/AC-5 (reclamo de honestidad CONSERVADO; encuadre reformulado en
-    006-003 U2): el adaptador declara que el instalador NO garantiza la
-    invariante reviewer≠implementer —nunca como invariante satisfecha—. Sin
-    perfiles ni modelo por rol (INV-3/PD-1e), la garantía sólo puede venir de la
-    configuración de delegación o declararse como no garantizada (INV-5: nunca
-    silencio); el ajuste del enunciado pertenece a U3 (PD-7b)."""
+def test_pd5_adapter_does_not_declare_the_retired_reviewer_family_invariant():
+    """PD-5(b)/AC-5 REFORMULADO por A-5 (006-003 §9, regla A-1): el reclamo de
+    honestidad «el instalador no garantiza la invariante reviewer≠implementer»
+    se RETIRA junto con el requisito de familia. El adaptador no declara (ni
+    como garantizada ni como no garantizada) la familia o el modelo del reviewer
+    respecto del implementer: el modelo de cada rol lo configura el runtime o,
+    en la delegación externa, `delegation.json` (D3). El oráculo único de la
+    ausencia vive en `tests/test_006_002_u2_neutral_skill.py` (`all_offenders`)."""
     adapter = _read_text(ADAPTER, "PD-5(b)")
-    declared = co_occurs(
-        adapter,
-        [
-            [r"installer", r"installation", r"install"],
-            [r"does not guarantee", r"doesn't guarantee", r"not guaranteed",
-             r"no guarantee", r"cannot guarantee", r"does not enforce",
-             r"not enforced", r"is not enforced", r"no la garantiza"],
-            [r"reviewer", r"implementer", r"anti-bias", r"invariant", r"bias"],
-        ],
-        window=55,
-    )
-    assert declared, (
-        "PD-5(b)/AC-5: el adaptador no declara que el instalador no garantiza "
-        "la invariante reviewer≠implementer — la exención quedaría como "
-        "invariante satisfecha en silencio (INV-5: garantizado por "
-        "configuración o declarado)"
+    offenders = all_offenders(adapter, ADAPTER)
+    assert not offenders, (
+        "PD-5(b)/AC-5 (A-5): el adaptador todavía declara la familia/modelo del "
+        "reviewer respecto del implementer — el requisito (y su reclamo de "
+        "honestidad) está retirado por A-5; el modelo de cada rol es el que "
+        f"configura el runtime (o delegation.json). Ofensores: {offenders[:20]!r}"
     )
 
 

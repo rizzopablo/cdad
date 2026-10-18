@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
-"""006-003 U3 RED — textos instalables sin perfiles ni modelos.
+"""006-003 U3 RED — textos instalables sin perfiles, sin modelos y sin el
+requisito de familia del reviewer.
 
 Contract:
 - ``docs/specs/006-003-installer-single-profile-delegation-config/spec.md``
-  (approved 2026-10-18) — §3 **PD-7a** (``grep -rE
-  'deepseek|glm-|qwen|minimax|sonnet|haiku|opus|mofgw/' skills/ agents/...`` sin
-  salida), §3 **PD-7b** (§2 de ``SKILL.md`` y la sección ``delegation`` de los
-  adaptadores ya no hablan de «perfil»; la familia del reviewer se describe como
-  **verificación de configuración** declarada cuando no es verificable), §4
-  **INV-3** (ningún texto instalable fija modelos), **INV-4** (ningún texto
-  instalable nombra ``/tmp`` — no-regresión) e **INV-5** (la familia distinta
-  del reviewer: garantizada por configuración o **declarada**, nunca silencio).
+  (approved 2026-10-18; **§9 — enmienda A-5 del dueño, 2026-10-18**) — §3
+  **PD-7a** (``grep -rE 'deepseek|glm-|qwen|minimax|sonnet|haiku|opus|mofgw/'
+  skills/ agents/...`` sin salida), §3 **PD-7b REFORMULADA por A-5**: §2 de
+  ``SKILL.md``, los invariantes de rol, las fuentes de rol y la sección
+  ``delegation`` de los adaptadores **no contienen** el requisito de familia ni
+  de modelo del reviewer respecto del implementer, y los restos de la redacción
+  por perfiles (``basic``, «profile») se retiran; §4 **INV-3** (ningún texto
+  instalable fija modelos), **INV-4** (ningún texto instalable nombra ``/tmp`` —
+  no-regresión) e **INV-5 REFORMULADA por A-5** («ningún texto instalable exige
+  al orquestador ni a ningún rol elegir, controlar, verificar ni declarar la
+  familia o el modelo del reviewer respecto del implementer»).
 - ``docs/specs/006-003-installer-single-profile-delegation-config/plan.md``
-  ficha **U3** (archivos: ``skills/cdad-cycle/SKILL.md:77-82,165-170``,
-  ``sources/agents/adapters/opencode.md:76-83``, ``claude-code.md:98-105`` y los
+  ficha **U3** (archivos: ``skills/cdad-cycle/SKILL.md``,
+  ``sources/agents/adapters/opencode.md``, ``claude-code.md`` y los
   orquestadores regenerados) + **regla A-1**.
+
+Reformulación declarada por A-5 (regla A-1) — los conceptos que esta unidad
+exigía como PRESENCIA («la familia del reviewer es una verificación de
+configuración», «not verifiable», «declared») se INVIERTEN: pasan a ser un
+oráculo de AUSENCIA. La definición única del oráculo de ausencia vive en ESTE
+módulo (patrones + ``all_offenders``) y la consume el focal de U5'
+(``tests/test_006_003_u5p_no_family_requirement.py``) sobre las superficies
+amplias que A-5 nombra; aquí quedan las superficies acotadas de esta unidad (§2
+de ``SKILL.md``, los bloques ``delegation`` de los adaptadores y los dos
+orquestadores generados). Ninguna aserción se borra sin declarar su reemplazo.
 
 Alcance declarado de esta unidad: el texto INSTALABLE (``skills/**`` y los dos
 orquestadores generados) y la sección ``delegation`` de los adaptadores (dueña
@@ -30,11 +44,14 @@ Oráculo (caja negra, artefacto publicado):
   de skills (no sólo ``.md``), decodificados con reemplazo para que el barrido
   sea total como el ``grep`` del contrato, más los dos orquestadores generados
   que PD-7a nombra.
-- Sin exclusión de ``references/context-meter.md``: PD-7a no la declara y el
-  contrato de lector (INV-8) no nombra ningún modelo en el árbol vigente, así
-  que excluirlo debilitaría el oráculo sin necesidad. Si el contrato de lector
-  llegara a nombrar uno, el fallo debe discutirse en la spec (no silenciarse
-  aquí).
+- Sin exclusión de ``references/context-meter.md`` para PD-7a: PD-7a no la
+  declara y el contrato de lector (INV-8) no nombra ningún modelo en el árbol
+  vigente, así que excluirlo debilitaría el oráculo sin necesidad. Si el
+  contrato de lector llegara a nombrar uno, el fallo debe discutirse en la spec
+  (no silenciarse aquí). El oráculo de AUSENCIA de familia (A-5) sí excluye
+  ``context-meter.md`` (contrato de lector, INV-8) y ``references/verdict-tuple.md``
+  (criterio de CONFIANZA del veredicto: el puntaje «+1 por familia distinta» no
+  se fija en ningún sentido), ambas con su dueño declarado.
 - PD-7b delimita §2 con el helper único ``numbered_section_region`` (misma
   delimitación que el oráculo focal de ``test_006_002_u4_skill_without_models``)
   y la sección ``delegation`` de cada adaptador con la gramática de secciones
@@ -43,20 +60,21 @@ Oráculo (caja negra, artefacto publicado):
   exigen con alternativas de idioma (``require_any``, patrón 005-010 T3): la
   redacción es libre, el concepto no.
 - «Por composición» (PD-7b): los dos orquestadores generados son artefactos
-  compuestos, sin marcadores de sección; su declaración de familia se exige
-  CO-UBICADA alrededor de una línea-ancla del rol ``reviewer`` (±12 líneas), no
-  en cualquier lugar del documento (un hit lejano no es una declaración).
+  compuestos, sin marcadores de sección; por eso el oráculo de ausencia los
+  escanea como documento completo (no hay ancla de sección que delimite la
+  declaración retirada).
 
-Mapa test → postcondición (un test por afirmación observable):
+Mapa test → postcondición (un test por afirmación observable; filas 4/6/8
+reformuladas por A-5, de presencia a ausencia):
 
   1 ``TestPd7aInstallableTextWithoutModels::test_pd7a_installable_skill_tree_names_no_model``                    PD-7a / INV-3
   2 ``TestPd7aInstallableTextWithoutModels::test_pd7a_generated_orchestrators_name_no_model``                    PD-7a / INV-3
   3 ``TestPd7bSkillSection2WithoutProfiles::test_pd7b_skill_section2_has_no_profile_vocabulary``                 PD-7b / D7
-  4 ``TestPd7bSkillSection2WithoutProfiles::test_pd7b_skill_section2_declares_the_family_as_configuration_verification`` PD-7b / INV-5
+  4 ``TestPd7bSkillSection2WithoutProfiles::test_pd7b_skill_section2_has_no_family_requirement``                 PD-7b / INV-5 (A-5)
   5 ``TestPd7bAdapterDelegationSections::test_pd7b_adapter_delegation_blocks_have_no_profile_vocabulary``         PD-7b / D7
-  6 ``TestPd7bAdapterDelegationSections::test_pd7b_adapter_delegation_blocks_declare_the_family_as_configuration_verification`` PD-7b / INV-5
+  6 ``TestPd7bAdapterDelegationSections::test_pd7b_adapter_delegation_blocks_have_no_family_requirement``         PD-7b / INV-5 (A-5)
   7 ``TestPd7bGeneratedOrchestratorComposition::test_pd7b_generated_orchestrators_carry_no_profile_vocabulary``   PD-7b / D7 (composición)
-  8 ``TestPd7bGeneratedOrchestratorComposition::test_pd7b_generated_orchestrators_declare_the_family_configuration_verification`` PD-7b / INV-5 (composición)
+  8 ``TestPd7bGeneratedOrchestratorComposition::test_pd7b_generated_orchestrators_carry_no_family_requirement``   PD-7b / INV-5 (A-5) (composición)
   9 ``TestRetiredModelMapNotReferenced::test_retired_model_map_is_unreferenced_by_role_sources_and_generated_agents`` PD-1c / PD-7 / INV-3
  10 ``TestInv4InstallableTextWithoutTmp::test_inv4_installable_skill_text_names_no_tmp``                          INV-4
 
@@ -67,34 +85,29 @@ RED esperado contra el árbol vigente (OBSERVADO; declarado, no accidental):
   GUARD de no-regresión de INV-3, no evidencia de que U3 esté hecha.
 - (2) PASA hoy por la misma razón (los dos orquestadores comprometidos ya salen
   sin modelos de U1): GUARD declarado de PD-7a.
-- (3) FALLA por AssertionError de CONTENIDO: §2 de ``SKILL.md`` conserva el
-  párrafo de perfiles (2 líneas con vocabulario de perfiles, las que el plan cita
-  en ``:77-82``).
-- (4) FALLA por AssertionError de CONTENIDO: §2 no declara la verificación de
-  configuración (concepto 3) ni la condición «no verificable» (concepto 4); sí
-  conserva el vocabulario de la rama por perfil («garantizada por
-  configuración» condicionada al perfil).
-- (5) FALLA por AssertionError de CONTENIDO: cada sección ``delegation`` de los
-  adaptadores contiene 1 línea con vocabulario de perfiles.
-- (6) FALLA por AssertionError de CONTENIDO: los bloques ``delegation`` no
-  declaran la familia del reviewer como verificación de configuración (concepto
-  3), ni la diferencia de familia (concepto 2), ni la declaración (concepto 5);
-  conservan la rama por perfil («invariant not guaranteed» bajo ``basic``).
-- (7) FALLA por AssertionError de CONTENIDO: cada orquestador generado conserva
-  1 línea con ``--basic`` y 1 con vocabulario de perfiles (el caveat que F001
-  exigía hasta este RED).
-- (8) FALLA por AssertionError de CONTENIDO: alrededor del ancla del reviewer no
-  hay verificación de configuración (concepto 3) — la composición no hereda una
-  declaración que la fuente todavía no tiene.
-- (9) FALLA por AssertionError de CONTENIDO: los 5 ``sources/roles/*.md`` y los
-  agentes generados siguen nombrando ``cdad-models.sh``, el mapa retirado en U1.
+- (3) PASA hoy: §2 de ``SKILL.md`` ya no habla de perfiles (GREEN de U3). GUARD
+  de PD-7b/D7: el retiro de U5' no debe reintroducirlos.
+- (4) FALLA por AssertionError de CONTENIDO: §2 todavía declara el requisito de
+  familia del reviewer (verificación de configuración / «no verificable» /
+  declaración), que A-5 retira. Es el RED de U5'.
+- (5) PASA hoy: los bloques ``delegation`` de los adaptadores ya perdieron el
+  vocabulario de perfiles (GREEN de U3). GUARD de PD-7b/D7.
+- (6) FALLA por AssertionError de CONTENIDO: los bloques ``delegation``
+  conservan la declaración de familia del reviewer, que A-5 retira.
+- (7) PASA hoy: cada orquestador generado ya salió sin ``--basic`` ni
+  vocabulario de perfiles (GREEN de U3). GUARD de PD-7b/D7 (composición).
+- (8) FALLA por AssertionError de CONTENIDO: los orquestadores generados
+  conservan el requisito de familia heredado de la fuente, que A-5 retira.
+- (9) PASA hoy: ni las fuentes de rol ni los agentes generados nombran
+  ``cdad-models.sh`` (retirado en U1). GUARD declarado.
 - (10) PASA hoy (INV-4 se cumple en ``skills/``): GUARD de no-regresión.
 
 Ningún fallo es ImportError/SyntaxError: todos son aserciones sobre el contenido
-publicado. Los reformulados acoplados (``test_006_002_u4_…``,
-``test_006_002_u1_…``, ``test_005_010_t3_…`` y F001 de
-``tests/validate-consistency.sh``) se cambian en ESTE RED declarando su
-reemplazo por PD-7 (A-1).
+publicado. Los reformulados acoplados del retiro de A-5
+(``test_006_002_u4_…``, ``test_006_002_u1_…``, ``test_005_004_t2_…``,
+``validate-consistency.sh`` F001 y ``validate-odoo-specialization.sh``) se
+cambian en ESTE RED declarando su reemplazo (A-5, sobre la regla A-1); el focal
+del retiro es ``tests/test_006_003_u5p_no_family_requirement.py``.
 """
 
 from __future__ import annotations
@@ -107,10 +120,10 @@ from pathlib import Path
 # líneas/etiquetas y conceptos con alternativas de idioma (006-002 U2, el mismo
 # oráculo que usa el focal de §2 de 006-002 U4).
 from tests.test_006_002_u2_neutral_skill import (
+    all_offenders,
     line_of,
     numbered_section_region,
     relative,
-    require_any,
 )
 
 # Gramática de secciones del generador (006-002 U1: dueña del bloque
@@ -162,41 +175,14 @@ PROFILES_VOCABULARY_PATTERNS = (
 )
 
 # --------------------------------------------------------------------------
-# PD-7b / INV-5 — la familia del reviewer como VERIFICACIÓN DE CONFIGURACIÓN,
-# declarada cuando no es verificable. Conceptos con alternativas de idioma: la
-# redacción es libre, el concepto no.
+# INV-5 REFORMULADA por A-5 — oráculo de AUSENCIA del requisito de familia/modelo
+# del reviewer respecto del implementer: DEFINICIÓN ÚNICA en
+# ``tests/test_006_002_u2_neutral_skill.py`` (``all_offenders`` y sus patrones,
+# con los usos no relacionados de «familia» excluidos por colocación). Lo
+# consumen esta unidad en sus superficies acotadas y el focal de U5'
+# (``tests/test_006_003_u5p_no_family_requirement.py``) en las superficies
+# amplias que A-5 nombra.
 # --------------------------------------------------------------------------
-FAMILY_CONFIGURATION_CONCEPTS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("1. el rol reviewer",
-     ("reviewer", "revisor")),
-    ("2. la familia del reviewer difiere de la del implementer",
-     ("different family", "different model family", "family differs",
-      "not the same family", "distinct family", "differs from the implementer",
-      "from the implementer's family", "familia distinta", "familia diferente",
-      "distinta de la del implementer", "distinta de la del implementador",
-      "otra familia")),
-    ("3. la familia es una verificación de configuración",
-     ("configuration check", "check of the configuration",
-      "checks the configuration", "configuration verification",
-      "verification of the configuration", "verify the configuration",
-      "verifies the configuration", "verified from the configuration",
-      "verified in the configuration", "verify the configured models",
-      "check the configured models", "compare the configured models",
-      "compares the effective models", "verificación de configuración",
-      "verificación de la configuración", "se verifica en la configuración",
-      "se comprueba en la configuración",
-      "comprobación de la configuración")),
-    ("4. cuando no es verificable (invariante no garantizado)",
-     ("not verifiable", "not-verifiable", "cannot be verified", "cannot verify",
-      "unverifiable", "invariant not guaranteed", "invariante no garantizado",
-      "no verificable", "no puede verificarse", "no se puede verificar")),
-    ("5. se declara (nunca en silencio)",
-     ("declared", "declares", "declare", "se declara", "declarado",
-      "declarada", "stated", "reports", "never silent", "nunca en silencio")),
-)
-
-# Ancla del rol en los artefactos compuestos (PD-7b «por composición»).
-REVIEWER_ANCHOR = ("reviewer", "revisor")
 
 
 # --------------------------------------------------------------------- helpers
@@ -293,46 +279,9 @@ def delegation_block(path: Path, text: str) -> tuple[str, int]:
     return block, line_of(text, opening.end())
 
 
-def missing_concepts(text: str) -> list[str]:
-    """Conceptos de PD-7b/INV-5 ausentes en `text` (conjunción: si falta uno,
-    la declaración no está completa)."""
-    return [
-        detail
-        for concept, alternatives in FAMILY_CONFIGURATION_CONCEPTS
-        if (detail := require_any(text, alternatives, concept))
-    ]
-
-
-def missing_concepts_co_located(
-    text: str, anchor: tuple[str, ...], window: int = 12
-) -> list[str]:
-    """Conceptos de PD-7b ausentes alrededor de una línea-ancla del rol.
-
-    Los artefactos compuestos (orquestadores generados) no llevan marcadores:
-    la declaración de familia debe vivir junto a su sujeto (el reviewer), no en
-    cualquier lugar del documento. Se devuelve el conjunto de faltantes de la
-    mejor ventana observada (informativo para el RED y para el GREEN).
-    """
-    lines = text.splitlines()
-    lowered = [line.lower() for line in lines]
-    anchors = [
-        index for index, line in enumerate(lowered)
-        if any(token in line for token in anchor)
-    ]
-    if not anchors:
-        return [
-            "no hay línea-ancla del rol reviewer/revisor — la declaración de "
-            "familia no tendría sujeto"
-        ]
-    best: list[str] = []
-    for index in anchors:
-        chunk = "\n".join(lowered[max(0, index - window):index + window + 1])
-        missing = missing_concepts(chunk)
-        if not missing:
-            return []
-        if not best or len(missing) < len(best):
-            best = missing
-    return best
+# (Los helpers `missing_concepts` / `missing_concepts_co_located` de la rama de
+# PRESENCIA se retiran en este RED: su reemplazo declarado es `all_offenders`
+# —oráculo de AUSENCIA—, que además consume el focal de U5'.)
 
 
 # ------------------------------------------------------- PD-7a / INV-3 (textos)
@@ -402,9 +351,9 @@ class TestPd7aInstallableTextWithoutModels(unittest.TestCase):
 
 
 class TestPd7bSkillSection2WithoutProfiles(unittest.TestCase):
-    """PD-7b / D7: §2 de ``SKILL.md`` no habla de perfiles y declara la familia
-    del reviewer como verificación de configuración, declarada cuando no es
-    verificable (INV-5)."""
+    """PD-7b / D7 + INV-5 (A-5): §2 de ``SKILL.md`` no habla de perfiles y no
+    exige ni declara la familia o el modelo del reviewer respecto del
+    implementer."""
 
     maxDiff = None
 
@@ -434,19 +383,19 @@ class TestPd7bSkillSection2WithoutProfiles(unittest.TestCase):
             ),
         )
 
-    def test_pd7b_skill_section2_declares_the_family_as_configuration_verification(
-        self,
-    ) -> None:
-        """PD-7b/INV-5: §2 declara que la familia del reviewer es una
-        verificación de configuración y que, cuando no es verificable, se
-        declara «invariante no garantizado» (nunca en silencio)."""
-        missing = missing_concepts(self.section)
+    def test_pd7b_skill_section2_has_no_family_requirement(self) -> None:
+        """PD-7b/INV-5 REFORMULADA por A-5: §2 no exige ni declara la familia o
+        el modelo del reviewer respecto del implementer (el modelo de cada rol
+        es el que configura el runtime; el de la delegación externa, la config
+        de delegación)."""
+        offenders = all_offenders(self.section, SKILL_MD, self.first_line)
         self.assertEqual(
-            missing, [],
+            offenders, [],
             msg=(
-                "PD-7b/INV-5: §2 de SKILL.md no declara la familia del reviewer "
-                f"como verificación de configuración declarada (líneas "
-                f"{self.first_line}-{self.last_line}). Ausentes: {missing}"
+                "PD-7b/INV-5 (A-5): §2 de SKILL.md todavía exige o declara la "
+                "familia/modelo del reviewer respecto del implementer "
+                f"(líneas {self.first_line}-{self.last_line}): "
+                f"{offenders[:20]!r}"
             ),
         )
 
@@ -455,9 +404,9 @@ class TestPd7bSkillSection2WithoutProfiles(unittest.TestCase):
 
 
 class TestPd7bAdapterDelegationSections(unittest.TestCase):
-    """PD-7b / D7: la sección ``delegation`` de cada adaptador fuente no habla
-    de perfiles y declara la familia del reviewer como verificación de
-    configuración (INV-5)."""
+    """PD-7b / D7 + INV-5 (A-5): la sección ``delegation`` de cada adaptador
+    fuente no habla de perfiles y no exige ni declara la familia o el modelo del
+    reviewer respecto del implementer."""
 
     maxDiff = None
 
@@ -481,23 +430,21 @@ class TestPd7bAdapterDelegationSections(unittest.TestCase):
                     ),
                 )
 
-    def test_pd7b_adapter_delegation_blocks_declare_the_family_as_configuration_verification(
-        self,
-    ) -> None:
-        """PD-7b/INV-5: cada bloque ``delegation`` declara la familia del
-        reviewer como verificación de configuración, declarada cuando no es
-        verificable."""
+    def test_pd7b_adapter_delegation_blocks_have_no_family_requirement(self) -> None:
+        """PD-7b/INV-5 REFORMULADA por A-5: ningún bloque ``delegation`` exige
+        ni declara la familia o el modelo del reviewer respecto del
+        implementer."""
         for path in ADAPTERS:
             with self.subTest(adapter=relative(path)):
                 text = read_document(path, "PD-7b")
-                block, _first_line = delegation_block(path, text)
-                missing = missing_concepts(block)
+                block, first_line = delegation_block(path, text)
+                offenders = all_offenders(block, path, first_line)
                 self.assertEqual(
-                    missing, [],
+                    offenders, [],
                     msg=(
-                        "PD-7b/INV-5: la sección `delegation` del adaptador no "
-                        "declara la familia del reviewer como verificación de "
-                        f"configuración declarada. Ausentes: {missing}"
+                        "PD-7b/INV-5 (A-5): la sección `delegation` del "
+                        "adaptador todavía exige o declara la familia/modelo del "
+                        f"reviewer respecto del implementer: {offenders[:20]!r}"
                     ),
                 )
 
@@ -506,9 +453,9 @@ class TestPd7bAdapterDelegationSections(unittest.TestCase):
 
 
 class TestPd7bGeneratedOrchestratorComposition(unittest.TestCase):
-    """PD-7b / D7: por composición, los dos orquestadores generados tampoco
-    hablan de perfiles y declaran la familia del reviewer como verificación de
-    configuración (INV-5)."""
+    """PD-7b / D7 + INV-5 (A-5): por composición, los dos orquestadores generados
+    tampoco hablan de perfiles ni heredan el requisito de familia o modelo del
+    reviewer respecto del implementer."""
 
     maxDiff = None
 
@@ -528,22 +475,21 @@ class TestPd7bGeneratedOrchestratorComposition(unittest.TestCase):
                     ),
                 )
 
-    def test_pd7b_generated_orchestrators_declare_the_family_configuration_verification(
-        self,
-    ) -> None:
-        """PD-7b/INV-5 (composición): alrededor de su ancla del rol, cada
-        orquestador declara la familia del reviewer como verificación de
-        configuración, declarada cuando no es verificable."""
+    def test_pd7b_generated_orchestrators_carry_no_family_requirement(self) -> None:
+        """PD-7b/INV-5 REFORMULADA por A-5 (composición): ningún orquestador
+        generado hereda el requisito de familia/modelo del reviewer respecto del
+        implementer (por eso se escanea el documento completo: el artefacto
+        compuesto no lleva marcadores de sección)."""
         for path in ORCHESTRATORS:
             with self.subTest(orchestrator=relative(path)):
                 text = read_document(path, "PD-7b")
-                missing = missing_concepts_co_located(text, REVIEWER_ANCHOR)
+                offenders = all_offenders(text, path)
                 self.assertEqual(
-                    missing, [],
+                    offenders, [],
                     msg=(
-                        "PD-7b/INV-5: el orquestador generado no declara junto "
-                        "al rol reviewer la familia como verificación de "
-                        f"configuración declarada. Ausentes: {missing}"
+                        "PD-7b/INV-5 (A-5): el orquestador generado todavía "
+                        "exige o declara la familia/modelo del reviewer respecto "
+                        f"del implementer: {offenders[:20]!r}"
                     ),
                 )
 
