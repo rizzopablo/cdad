@@ -228,9 +228,9 @@ El 2026-10-18 el dueño retiró la verificación de familia (enmienda A-5 de la 
 
 ## Despliegue tras 006-003 (orden del dueño, 2026-10-18)
 
-`.cdad/local/deploy-006-003.sh`: respaldo previo en `~/clawd/archive/` (árboles instalados + manifiesto), `make staging` sin perfil, `install.sh --force`, `install.sh --check`. Instalado `4bd9e0c`.
+`.cdad/local/deploy-006-003.sh`: respaldo previo en `<workspace>/archive/` (árboles instalados + manifiesto), `make staging` sin perfil, `install.sh --force`, `install.sh --check`. Instalado `4bd9e0c`.
 - **Obsoleto propio retirado en la instalación:** el marcador `.cdad-models-profile` (PD-6a en uso real). 11/11 agentes por runtime; ningún agente instalado tiene `model:`.
 - **Config del usuario:** se creó `delegation.json` como plantilla vacía (`models.opencode` sin roles) y `opencode-server.env.example`; el `opencode-server.env` existente quedó intacto (solo se miraron metadatos: modo 600).
-- **Reviewer instalado:** el respaldo ya era la versión generada anterior; la personalización del dueño (`model:` propio) se había perdido en el despliegue de 006-002, con el `--uninstall`. Hoy solo cambió el texto del producto (A-5).
+- **Reviewer instalado:** el respaldo ya era la versión generada anterior. La personalización del dueño (`model:` propio) se perdió entre los respaldos del 2026-10-17 a las 02:21 (todavía la tiene) y a las 19:35 (ya no), o sea en un despliegue de 006-001. Hoy solo cambió el texto del producto (A-5). Queda recuperable desde ese respaldo, a decisión del dueño.
 - **`--check`:** FAIL solo por DT-8 (dos `.pyc` de `__pycache__` registrados como conflicto).
 - **Efecto en el consumidor:** sus exec-configs con `model` ya no fijan el modelo (D3). Hasta que se completen `models.opencode.<rol>` en `delegation.json`, la delegación externa usa el modelo por defecto del destino.
