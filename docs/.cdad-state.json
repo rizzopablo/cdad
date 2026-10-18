@@ -9272,7 +9272,7 @@
     "id": "006-003-installer-single-profile-delegation-config-test-writer-e2e-001",
     "role": "test-writer",
     "substage": "e2e",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
