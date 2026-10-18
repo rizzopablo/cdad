@@ -43,9 +43,26 @@ Usos NO relacionados de la palabra «familia» excluidos por COLOCACIÓN (A-5 §
 encargo del packet), declarados uno por uno: ``failure family`` /
 ``failure-family`` (``stage-4-review.md``, ``anti-patterns.md``), ``family of
 failures`` / ``familia de fallos`` y ``split-brain family`` (``continuity.md``).
-El clasificador ``has_related_family`` de u3 es la definición única y su
+El clasificador ``has_related_family`` de u2 es la definición única y su
 auto-test (``TestU5pOracleDeclaredExclusions``) fija ambos lados: lo declarado
 como ajeno NO cuenta y lo relacionado SÍ.
+
+Testfix de U5' (post-RED ``0629ae0``): el clasificador exigía sólo «familia» en
+la línea y descartaba los usos ajenos por prefijo/sufijo inmediato, de modo que
+una «familia» SUELTA dentro de un párrafo de review disparaba el oráculo. Falso
+positivo observado y corregido: ``skills/cdad-cycle/references/stage-4-review.md``
+líneas 23-24 («A failure family is fixed as a family, in one round. … When
+several findings / reveal a family (not a single case), the reviewer asks…»):
+regla de CALIBRACIÓN del review (familias de fallos), ajena a la familia de un
+modelo — A-5 no la toca y el GREEN no debe reescribirla. La definición única (u2)
+ahora exige la CONJUNCIÓN del token con un rol o un modelo (calificador
+antecedente, complemento, o rol en la misma cláusula); el auto-test añade esas
+dos líneas literales y un párrafo sintético como negativos. Barrido auditado en
+ese testfix: ningún otro documento del barrido producía ese falso positivo —
+``anti-patterns.md`` y ``continuity.md`` no aportan ofensores (ni antes ni
+después del ajuste) y los ofensores restantes son los requisitos REALES que el
+GREEN retira (SKILL.md ``:78,:79,:82,:86,:170,:584``; ``sources/roles/
+{reviewer,orchestrator}.md``; los dos adaptadores; ``agents/**``).
 
 Mapa test → postcondición (un test por afirmación observable):
 
@@ -69,6 +86,25 @@ RED esperado contra el árbol actual (OBSERVADO y declarado, no accidental):
     después del GREEN (si el retiro de los textos de familia se llevara por
     delante un invariante anti-sesgo, este test lo detecta);
   - (7) pasa siempre: no lee producto, fija la precisión del oráculo.
+
+Inventario de ofensores del barrido tras el testfix (OBSERVADO, evidencia de la
+auditoría pedida por el packet): ``SKILL.md`` ``:78,:79,:82,:86,:170,:584`` (6);
+``sources/roles/orchestrator.md:172``, ``sources/roles/reviewer.md:50,:53`` (3);
+``sources/agents/adapters/claude-code.md:96`` y ``…/opencode.md:77`` (2);
+``agents/**`` (16 líneas: orquestadores y reviewers generados, en ``agents/`` y
+``agents/claude-code/``). Todos son el requisito REAL de familia/modelo. Los
+demás usos de «familia» del barrido quedan fuera y se declaran: familias de
+FALLOS (``stage-4-review.md`` ``:23-24`` y ``:72`` —calibración del review—,
+``anti-patterns.md`` ``:184,:188``, ``continuity.md`` ``:121``
+split-brain/divergent-heads, ``handoff-prompts.md`` ``:508``), el puntaje del
+verdict-tuple (``handoff-prompts.md`` ``:499`` «family different from implementer
++1»: puntaje de CONFIANZA, no requisito de despacho — misma conducta que
+``verdict-tuple.md``, declarado en la cabecera) y la limitación honesta
+(``cli-delegation.md`` ``:334-335`` «changing CLI does not guarantee another
+model family (INV-8)», ``SKILL.md`` ``:148``, ``sources/roles/orchestrator.md``
+``:102``) más el uso interno de un helper (``scripts/cdad_context_meter.py``
+``:1718`` families coordinator/worker). Ninguno era ofensor antes del ajuste ni
+lo es después: la detección real no se relajó.
 
 Ningún fallo es ImportError/SyntaxError: todos son aserciones sobre el contenido
 publicado. Sólo se LEE el artefacto publicado al ejecutarse; el test-writer no
@@ -420,9 +456,10 @@ class TestU5pConservedAntiBiasInvariants(unittest.TestCase):
 class TestU5pOracleDeclaredExclusions(unittest.TestCase):
     """A-5 §9 / encargo del packet: los usos NO relacionados de la palabra
     «family» están excluidos por colocación (``failure family``,
-    ``failure-family``, ``family of failures``, ``split-brain family``) y los
-    usos relacionados se siguen detectando. Auto-test del oráculo sobre cadenas
-    sintéticas: no lee producto."""
+    ``failure-family``, ``family of failures``, ``split-brain family``), la
+    «familia» suelta sin rol ni modelo ligado («fixed as a family», «reveal a
+    family») no cuenta, y los usos relacionados se siguen detectando. Auto-test
+    del oráculo sobre cadenas sintéticas: no lee producto."""
 
     UNRELATED_USES = (
         "el reviewer agrupa los hallazgos por failure family",
@@ -432,6 +469,22 @@ class TestU5pOracleDeclaredExclusions(unittest.TestCase):
         "continuity declares the split-brain family explicitly",
         "the reviewer detects a family of failures in the log",
         "el reviewer agrupa los hallazgos por familia de fallos",
+        # Falso positivo corregido (post-RED 0629ae0): líneas literales de
+        # `skills/cdad-cycle/references/stage-4-review.md:23-24`. Son la regla de
+        # CALIBRACIÓN del review (una familia de fallos se arregla en una ronda),
+        # no la familia de un modelo: la «familia» suelta hereda el sentido por
+        # anáfora y el oráculo no debe disparar por ella.
+        "3. **A failure family is fixed as a family, in one round.** When several findings",
+        "reveal a family (not a single case), the reviewer asks for one **proportionate",
+    )
+
+    # El mismo párrafo completo (ancla de rol + mood de requisito + dos «family»
+    # sueltas): el oráculo no debe producir NINGÚN ofensor.
+    FAILURE_FAMILY_PARAGRAPH = (
+        "3. **A failure family is fixed as a family, in one round.** When several findings\n"
+        "reveal a family (not a single case), the reviewer asks for one **proportionate\n"
+        "round** and must not re-open the findings one by one.\n"
+        "The reviewer must classify the family of failures once per round.\n"
     )
 
     RELATED_USES = (
@@ -463,6 +516,18 @@ class TestU5pOracleDeclaredExclusions(unittest.TestCase):
             msg=(
                 "oráculo A-5: un uso RELACIONADO de «family» (familia de un "
                 "modelo) se clasificó como ajeno: {wrongly_unrelated!r}"
+            ),
+        )
+        offenders = all_offenders(
+            self.FAILURE_FAMILY_PARAGRAPH,
+            Path("synthetic/failure-family-paragraph.md"),
+        )
+        self.assertEqual(
+            offenders, [],
+            msg=(
+                "oráculo A-5: el párrafo de familias de FALLOS del review "
+                "(rol + mood + «family» suelta) produjo ofensores: "
+                f"{offenders!r}"
             ),
         )
 

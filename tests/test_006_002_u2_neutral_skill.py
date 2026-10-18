@@ -222,14 +222,21 @@ def read(path: Path) -> str:
 # (superficies de 006-002).
 #
 # Un ofensor es una línea que, junto a su ventana (±``FAMILY_WINDOW_LINES``
-# líneas), usa «familia» en el sentido de A-5, nombra el rol reviewer/revisor y
-# tiene mood de requisito/verificación/declaración (o su forma declarada
-# «invariant not guaranteed» ligada a la familia).
+# líneas), usa «familia» LIGADA a un rol o a un modelo en el sentido de A-5,
+# nombra el rol reviewer/revisor y tiene mood de requisito/verificación/
+# declaración (o su forma declarada «invariant not guaranteed» ligada a la
+# familia).
 #
 # Usos NO relacionados excluidos por COLOCACIÓN (declarados, con su dueño):
 # «failure family» / «failure-family» / «family of failures» / «familia de
 # fallos» (clasificación de hallazgos: `stage-4-review.md`, `anti-patterns.md`)
 # y «split-brain family» (`continuity.md`, familia de fallas de continuidad).
+# Además (testfix del falso positivo de U5', 006-003 §9) una «familia» **suelta**
+# —sin rol ni modelo ligado en la línea, como «fixed as a family» o «reveal a
+# family»— no es el requisito retirado: hereda el sentido del párrafo por
+# anáfora y pertenece a las familias de fallos. La ligadura se exige por
+# ``_family_is_role_qualified`` (calificador antecedente, complemento o rol en
+# la misma cláusula).
 # --------------------------------------------------------------------------
 
 FAMILY_RE = re.compile(r"(?i)\bfamil(?:y|ies|ia|ias)\b")
@@ -258,24 +265,70 @@ UNRELATED_FAMILY_SUFFIX_RE = re.compile(
     r"(?i)^[-\s]+(of\s+(a\s+|the\s+)?failures?|de\s+fall[oa]s?|de\s+fallas)\b"
 )
 
+# CONJUNCIÓN con el rol/modelo (testfix del falso positivo de U5', 006-003 §9):
+# «familia» sólo cuenta como el requisito retirado por A-5 cuando el token está
+# LIGADO a un rol o a un modelo. Un «family» suelto que hereda el sentido del
+# párrafo por anáfora discursiva («is fixed as a family», «reveal a family») NO
+# es ese requisito: en `stage-4-review.md:23-24` son familias de FALLOS. Tres
+# formas declaradas de ligadura:
+#   1. calificador antecedente: «the reviewer's family», «model family»;
+#   2. complemento: «family of the reviewer», «family from the implementer's»,
+#      «familia del reviewer»;
+#   3. rol/modelo en la MISMA cláusula antes del token: «reviewer ≠ implementer
+#      in family».
+FAMILY_ROLE_WORD_RE = re.compile(
+    r"(?i)\b(reviewer|revisor|implementer|implementador|test[-\s]?writer|"
+    r"architect|scribe|rol|role|model|modelo|models|modelos)\b"
+)
+FAMILY_QUALIFIER_PREFIX_RE = re.compile(
+    r"(?i)(?:\b(reviewer|revisor|implementer|implementador|test[-\s]?writer|"
+    r"architect|scribe|rol|role|model|modelo)(?:'s|’s)?"
+    r"(?:\s+(model|modelo))?[-\s]*"
+    r"|\b(reviewer|revisor|implementer|implementador)\s*"
+    r"(?:≠|!=|vs\.?|versus|in|from|of|de|y|o|and|or|between)\s*)$"
+)
+FAMILY_QUALIFIER_SUFFIX_RE = re.compile(
+    r"(?i)^[-\s]*(of|from|del|de\s+la|de\s+los|de\s+las|de)\s+"
+    r"(the|their|el|la|los|las)?\s*"
+    r"(reviewer|revisor|implementer|implementador|test[-\s]?writer|architect|"
+    r"scribe|rol|role|model|modelo)"
+)
+# Frontera de cláusula para la forma 3: un rol de otra oración/ítem no liga.
+CLAUSE_BOUNDARY_RE = re.compile(r"[,.;:()\[\]—–]")
+
 # Ventana de co-ubicación: el requisito vive en su párrafo/ítem, no a distancia.
 FAMILY_WINDOW_LINES = 3
 
 
-def has_related_family(line: str) -> bool:
-    """¿La línea usa «family» en el sentido de A-5 (no «failure family»)?
+def _family_is_role_qualified(line: str, start: int, end: int) -> bool:
+    """¿Esta ocurrencia de «family» está ligada a un rol o a un modelo?"""
+    before, after = line[:start], line[end:]
+    if FAMILY_QUALIFIER_PREFIX_RE.search(before):
+        return True
+    if FAMILY_QUALIFIER_SUFFIX_RE.search(after):
+        return True
+    clause_prefix = CLAUSE_BOUNDARY_RE.split(before)[-1]
+    return FAMILY_ROLE_WORD_RE.search(clause_prefix) is not None
 
-    Cada ocurrencia se juzga por su vecindad inmediata: los usos declarados como
-    no relacionados (``failure famil…``, ``family of failures``, ``familia de
-    fallos``, ``split-brain famil…``) quedan exentos; si un documento combina
-    ambos sentidos, la ocurrencia relacionada sigue contando.
+
+def has_related_family(line: str) -> bool:
+    """¿Liga la línea «family» con un rol o un modelo (sentido de A-5)?
+
+    Cada ocurrencia se juzga por separado: los usos declarados como no
+    relacionados (``failure famil…``, ``family of failures``, ``familia de
+    fallos``, ``split-brain famil…``) quedan exentos, y una «familia» suelta —
+    sin rol ni modelo ligado en la línea — tampoco cuenta: es la familia de
+    fallos del review, no la familia de un modelo (falso positivo corregido de
+    ``stage-4-review.md:23-24``). Si un documento combina ambos sentidos, la
+    ocurrencia ligada sigue contando.
     """
     for match in FAMILY_RE.finditer(line):
         if UNRELATED_FAMILY_PREFIX_RE.search(line[:match.start()]):
             continue
         if UNRELATED_FAMILY_SUFFIX_RE.search(line[match.end():]):
             continue
-        return True
+        if _family_is_role_qualified(line, match.start(), match.end()):
+            return True
     return False
 
 
