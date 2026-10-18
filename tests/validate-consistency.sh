@@ -292,21 +292,23 @@ echo
 echo "############################################"
 echo "# F001 — honest profiles note + §2 block drift (B7)"
 echo "#   Reformulated by 006-002 PD-11 (U4): §2 of SKILL.md no longer fixes"
-echo "#   models (no \"Model family\" column, no profiles paragraph). The new"
-echo "#   sentence lives in SKILL.md §2; the basic caveat (family NOT"
-echo "#   guaranteed by the installer) stays where it still belongs: the"
-echo "#   generated orchestrators, whose delegation section declares the"
-echo "#   family not guaranteed (006-002 PD-4/D-3, U1). Reformulated, never"
-echo "#   deleted (plan amendment A-1)."
+echo "#   models (no \"Model family\" column, no profiles paragraph)."
+echo "#   RE-REFORMULATED by 006-003 PD-7b (U3, D7): the profiles vocabulary"
+echo "#   itself is retired — §2 and the generated orchestrators must NOT"
+echo "#   speak of profiles nor mention --basic. The reviewer's different"
+echo "#   family is now a CONFIGURATION VERIFICATION, DECLARED as"
+echo "#   'invariant not guaranteed' when it is not verifiable (INV-5)."
+echo "#   Reformulated, never deleted (plan amendment A-1)."
 echo "############################################"
 
-# 006-002 PD-11 (U4): §2 of SKILL.md loses the "Model family" column and the
-# profiles paragraph, replaced by ONE sentence: the model of each role is the
-# one CONFIGURED IN THE RUNTIME, the skill NAMES NO MODELS, and the reviewer's
-# different family is an INVARIANT GUARANTEED BY CONFIGURATION when the profile
-# fixes models and DECLARED when not (INV-7). The old profiles note (~"-–basic"
-# + the caveat for the profile that suspends the invariant) no longer belongs
-# to §2; its caveat moves to the generated orchestrators below.
+# 006-002 PD-11 (U4) + 006-003 PD-7b (U3, D7): §2 of SKILL.md loses the
+# "Model family" column, the profiles paragraph and every profile-conditioned
+# claim. What stands: the model of each role is the one CONFIGURED IN THE
+# RUNTIME, the skill NAMES NO MODELS, and the reviewer's different family is a
+# CONFIGURATION VERIFICATION that is DECLARED when the models cannot be
+# verified (INV-5). The old "guaranteed by configuration when the profile fixes
+# models / declared when not" halves are REPLACED (A-1) — there is no profile to
+# condition anything on.
 extract_skill_section2() {
   # Delimitation mirrors the focal oracle
   # (tests/test_006_002_u4_skill_without_models.py -> numbered_section_region):
@@ -340,24 +342,51 @@ else
   else
     fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'the skill names no models' declaration"
   fi
-  if printf '%s' "$SKILL_S2" | grep -Eq 'guaranteed by (the )?configuration|guaranteed by config|garantizada por (la )?configuraci[oó]n'; then
-    pass "F001 (006-002 PD-11): SKILL.md §2 declares the reviewer family invariant is guaranteed by configuration (when the profile fixes models)"
+  # 006-003 PD-7b (U3) — ORACLE REPLACEMENT of the profiles-note assert: §2 must
+  # be free of the profile vocabulary and of the retired --basic flag (the model
+  # lives in the delegation configuration, PD-3; the profile is gone, PD-1).
+  if printf '%s' "$SKILL_S2" | grep -Eqi 'perfil|profile|\-\-basic'; then
+    fail "F001 (006-003 PD-7b): SKILL.md §2 still speaks of profiles / --basic (the model is chosen in the delegation configuration)"
   else
-    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'guaranteed by configuration' half of the reviewer-family invariant"
+    pass "F001 (006-003 PD-7b): SKILL.md §2 is free of profile vocabulary and of --basic"
   fi
-  if printf '%s' "$SKILL_S2" | grep -Eq 'declared when|declared if|declared as|declared, not|declarada cuando|declarada si|declarada,'; then
-    pass "F001 (006-002 PD-11): SKILL.md §2 declares the reviewer family invariant when the profile does not fix models"
+  # 006-003 PD-7b (U3) — ORACLE REPLACEMENT of 'guaranteed by configuration when
+  # the profile fixes models': the reviewer's family is a CONFIGURATION
+  # VERIFICATION (006-002 D-3 was the profile-conditioned form).
+  if printf '%s' "$SKILL_S2" | grep -Eqi 'configuration check|check of the configuration|checks the configuration|configuration verification|verification of the configuration|verif[a-z]* (in|against|the) configuration|verificaci[oó]n de (la )?configuraci[oó]n|se verifica en la configuraci[oó]n|comprobaci[oó]n de la configuraci[oó]n'; then
+    pass "F001 (006-003 PD-7b): SKILL.md §2 declares the reviewer family is a configuration verification"
   else
-    fail "F001 (006-002 PD-11): SKILL.md §2 lacks the 'declared' half of the reviewer-family invariant"
+    fail "F001 (006-003 PD-7b): SKILL.md §2 lacks the 'family = configuration verification' declaration"
+  fi
+  # 006-003 PD-7b/INV-5 (U3) — ORACLE REPLACEMENT of 'declared when the profile
+  # does not fix models': when the models cannot be verified, the invariant is
+  # DECLARED (invariant not guaranteed), never silent.
+  if printf '%s' "$SKILL_S2" | grep -Eqi 'not verifiable|not-verifiable|cannot be verified|unverifiable|invariant not guaranteed|invariante no garantizado|no verificable|no puede verificarse'; then
+    pass "F001 (006-003 PD-7b/INV-5): SKILL.md §2 declares the not-verifiable case (invariant not guaranteed)"
+  else
+    fail "F001 (006-003 PD-7b/INV-5): SKILL.md §2 lacks the 'not verifiable -> invariant not guaranteed' declaration"
+  fi
+  if printf '%s' "$SKILL_S2" | grep -Eq 'declared|declares|se declara|declarado|declarada'; then
+    pass "F001 (006-003 PD-7b/INV-5): SKILL.md §2 says the declaration is stated (never silent)"
+  else
+    fail "F001 (006-003 PD-7b/INV-5): SKILL.md §2 lacks the 'declared' half of the reviewer-family invariant"
   fi
 fi
-# The basic caveat stays where the family is declared NOT guaranteed by the
-# installer: the generated orchestrators' delegation section (006-002 PD-4/D-3,
-# U1 — the runtime agent owns the delegation rule, D-1).
+# 006-003 PD-7b (U3) — INVERTED (not deleted) version of the former F001 loop:
+# the generated orchestrators used to be required to MENTION --basic and its
+# caveat; with the profiles retired (PD-1/PD-7) the composed artifact must carry
+# neither, and it must declare the family as a configuration verification that
+# is declared when not verifiable (source: the adapter's `delegation` section,
+# 006-002 D-1).
 for f in agents/cdad-orchestrator.md agents/claude-code/cdad-orchestrator.md; do
-  assert_file_has "$f" '\-\-basic' "F001: $f mentions the --basic profile in the switch"
-  assert_file_has "$f" 'basic.*[Nn][Oo][Tt] guaranteed|basic.*suspend|except.*basic' \
-    "F001: $f caveats the anti-bias invariant for the basic profile"
+  assert_file_not_has "$f" '\-\-basic' \
+    "F001 (006-003 PD-7b): $f no longer mentions the retired --basic profile"
+  assert_file_not_has "$f" '[Pp]erfil|[Pp]rofile' \
+    "F001 (006-003 PD-7b): $f no longer speaks of profiles"
+  assert_file_has "$f" 'configuration check|check of the configuration|configuration verification|verification of the configuration|verif[a-z]* (in|against|the) configuration|verificaci[oó]n de (la )?configuraci[oó]n' \
+    "F001 (006-003 PD-7b): $f declares the reviewer family is a configuration verification"
+  assert_file_has "$f" 'not verifiable|not-verifiable|cannot be verified|unverifiable|invariant not guaranteed|invariante no garantizado|no verificable' \
+    "F001 (006-003 PD-7b/INV-5): $f declares the not-verifiable case (invariant not guaranteed)"
 done
 
 # 004-001 T3 / D7 / PD-14: byte-equality of the §2 block is NO LONGER a

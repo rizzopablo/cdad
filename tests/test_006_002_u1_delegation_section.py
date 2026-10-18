@@ -19,10 +19,10 @@ enlazan al protocolo de materialización.
 
 Oráculo de artefacto (caja negra, consumidor): los tests leen
   - la salida GENERADA `build/staging/agents/{opencode,claude-code}/
-    cdad-orchestrator.md` con `make staging PROFILE=basic` (perfil `basic`
-    declarado por la ficha U1 y PD-4), producida en una COPIA temporal del
-    checkout (patrón de `tests/product_staging.py`; nunca se escribe en el
-    repo), y
+    cdad-orchestrator.md` con `make staging`, producida en una COPIA temporal
+    del checkout (patrón de `tests/product_staging.py`; nunca se escribe en el
+    repo). REFORMULADO por 006-003 U3 (PD-1b/D7): la receta ya no recibe perfil
+    — `PROFILE=basic` describiría la superficie retirada por PD-1/D1 —, y
   - las fuentes de adaptador `sources/agents/adapters/*.md` (D-1: dueñas del
     contenido de la sección; lectura de consumidor declarada por el paquete).
 NO se lee implementación (`scripts/`, `skills/`): la composición se verifica
@@ -41,29 +41,37 @@ Los formularios de herramienta siguen el oráculo de ausencia de la spec §2:
 code-spans `` `task` `` / `` `Agent` `` y el token `subagent_type` — nunca la
 palabra suelta *task* ("atomic task" no matchea; discovery §4 riesgo 6).
 
-RED esperado (árbol vigente, sin secciones `delegation`):
-  - PD-2(a) + fuente-dueña: FALLO (0 bloques `delegation` en ambos adaptadores);
-  - mecanismo nativo OpenCode: FALLO (ni `` `task` `` ni `subagent_type`);
-  - mecanismo nativo Claude Code: PASA HOY (control de no-regresión — el
-    tool-loading del adaptador CC ya nombra `Agent` + `subagent_type`; la
-    sección dedicada es el resto del contrato, cubierta por PD-2(a) y D-3);
-  - prohibición intra-runtime del adaptador: FALLO (0 menciones de adaptador
-    CLI en ambos orquestadores generados);
-  - rama `basic` D-3: FALLO (faltan los campos de registro y la declaración
-    de pase/invencción de modelo en ambos orquestadores);
-  - pase byte-idéntico + enlace al protocolo de recibo: FALLO (enlace
-    ausente en ambos).
-Todo fallo RED es AssertionError de CONTENIDO ausente (contrato PD-2/PD-4),
-nunca ImportError/SyntaxError ni fallo de fixture.
+REFORMULADO por 006-003 U3 (PD-7b, D7; enmienda A-1 del plan de 006-003): la
+declaración de FAMILIA de D-3(iii)/(iv) hablaba de la rama `basic` (el perfil
+que fijaba modelos y suspendía la invariante). Los perfiles se retiran
+(PD-1/D1), así que el assert se INVIERTE y se repunta —no se borra—: el
+orquestador compuesto NO lleva vocabulario de perfiles ni `--basic`, y la
+familia del reviewer se declara como VERIFICACIÓN DE CONFIGURACIÓN, declarada
+cuando no es verificable (INV-5). Los campos de registro y las reglas «nunca
+elige ni inventa modelo» / «modelo sólo desde la configuración» de D-3 se
+conservan sin cambio.
 
-Mapa test → postcondición (spec 006-002):
+RED esperado en el árbol vigente de esta unidad (histórico: los bloques
+`delegation` ya existen). Estado OBSERVADO bajo PD-7b:
+
+  - PD-2(a)/(b), mecanismo nativo, prohibición intra-runtime, pase + enlace:
+    PASAN hoy (GREEN de 006-002 U1) — controles de conservación;
+  - declaración de FAMILIA por configuración (reformulada): FALLA por
+    AssertionError de CONTENIDO en AMBOS orquestadores — conservan 1 línea con
+    `--basic` y 1 con vocabulario de perfiles (el caveat `basic` que F001 exigía
+    hasta el RED de 006-003 U3) y no declaran la verificación de configuración
+    (el bloque fuente sólo dice «invariant not guaranteed» bajo `basic`).
+Todo fallo RED es AssertionError de CONTENIDO (contrato PD-2/PD-4/PD-7b), nunca
+ImportError/SyntaxError ni fallo de fixture.
+
+Mapa test → postcondición (spec 006-002; fila 6 reformulada por 006-003 PD-7b):
 
   1  TestPd2aExactlyOneDelegationSection::test_pd2a_…_adapter_…          PD-2(a) (bloque único por adaptador)
   2  TestPd2bSourceOwnsDelegationContent::test_pd2b_…_source_block_…     PD-2(a)/(b) + D-1 (el contenido vive en la fuente)
   3  TestPd2cOcOrchestratorNativeMechanism::test_pd2c_…                  PD-2(c) (OpenCode: `task` + subagent_type)
   4  TestPd2cCcOrchestratorNativeMechanism::test_pd2c_…                  PD-2(c) (Claude Code: `Agent` + subagent_type; control)
   5  TestPd4IntraRuntimeAdapterProhibition::test_pd4_ii_…                PD-4(ii) / D-1 (prohibición explícita, ambos)
-  6  TestPd4BasicFamilyDeclaration::test_pd4_iii_iv_…                    PD-4(iii)+(iv) / D-3 (rama basic, ambos)
+  6  TestPd4FamilyConfigurationDeclaration::test_pd4_family_…            PD-4(iii)+(iv)/D-3 reformulada → PD-7b/INV-5 (ambos)
   7  TestPd2dPacketPassAndReceiptLink::test_pd2d_…                       PD-2(d) + PD-5(b) (pase byte-idéntico + enlace)
 """
 
@@ -116,12 +124,32 @@ INTRA_RUNTIME_TOKENS = ("intra-runtime", "intra runtime", "same runtime",
                         "within the runtime", "inside the runtime",
                         "own runtime", "mismo runtime")
 
-# Rama `basic` / declaración de familia (D-3, tres partes).
-BASIC_PROFILE_TOKENS = ("basic",)
-FAMILY_NOT_GUARANTEED_TOKENS = ("not guaranteed", "no guarantee",
-                                "cannot guarantee", "does not guarantee",
-                                "not assured", "no está garantizada",
-                                "no garantizada")
+# Rama `delegation` y declaración de FAMILIA (D-3 de 006-002; reformulada por
+# 006-003 PD-7b/D7 — ver la cabecera del módulo). La rama `basic` de D-3
+# (perfil que fijaba modelos) se RETIRA con los perfiles: la familia del
+# reviewer pasa a ser una VERIFICACIÓN DE CONFIGURACIÓN, declarada cuando no es
+# verificable (INV-5). Ningún rastro de perfil sobrevive en el orquestador.
+PROFILE_VOCABULARY_RE = re.compile(r"(?i)\bperfil(?:es)?\b|\bprofile(?:s)?\b")
+RETIRED_BASIC_FLAG_RE = re.compile(r"--basic\b")
+# PD-7b: la familia se verifica contra la configuración (concepto con
+# alternativas de idioma; la redacción es libre).
+FAMILY_CONFIGURATION_TOKENS = (
+    "configuration check", "check of the configuration",
+    "checks the configuration", "configuration verification",
+    "verification of the configuration", "verify the configuration",
+    "verifies the configuration", "verified from the configuration",
+    "verified in the configuration", "verify the configured models",
+    "check the configured models", "compare the configured models",
+    "compares the effective models", "verificación de configuración",
+    "verificación de la configuración", "se verifica en la configuración",
+    "se comprueba en la configuración", "comprobación de la configuración",
+)
+# INV-5: imposible de verificar ⇒ se declara «invariante no garantizado».
+FAMILY_NOT_VERIFIABLE_TOKENS = (
+    "not verifiable", "not-verifiable", "cannot be verified", "cannot verify",
+    "unverifiable", "invariant not guaranteed", "invariante no garantizado",
+    "no verificable", "no puede verificarse", "no se puede verificar",
+)
 # D-3(2): campos de registro fijados por el contrato (nombres normativos).
 REGISTRATION_FIELD_TOKENS = ("model_configured", "model_reported")
 # D-3: el orquestador NO elige ni inventa modelo.
@@ -149,12 +177,15 @@ RECEIPT_LINK_PHRASE = "orchestrator materialization protocol"
 _STAGING_ROOT: Path | None = None
 
 
-def basic_staging_root() -> Path:
-    """Raíz de producto (copia temporal) con `make staging PROFILE=basic`.
+def staging_root() -> Path:
+    """Raíz de producto (copia temporal) con `make staging`.
 
-    Patrón de `tests/product_staging.py`: una copia del checkout por proceso,
-    staging generado UNA vez dentro de la copia; nunca se escribe en el repo
-    y no hay rutas de host en las aserciones (INV: sin valores del host).
+    Reformulado por 006-003 U3 (PD-1b/D7): la receta ya no recibe perfil — el
+    generador no tiene `--profile` y el instalador no tiene perfiles; pedir
+    `PROFILE=basic` describiría una superficie retirada. Patrón de
+    `tests/product_staging.py`: una copia del checkout por proceso, staging
+    generado UNA vez dentro de la copia; nunca se escribe en el repo y no hay
+    rutas de host en las aserciones (INV: sin valores del host).
     """
     global _STAGING_ROOT
     if _STAGING_ROOT is None:
@@ -169,14 +200,14 @@ def basic_staging_root() -> Path:
                 ".git", ".pytest_cache", "__pycache__", "build"),
         )
         run = subprocess.run(
-            ["make", "staging", "PROFILE=basic"],
+            ["make", "staging"],
             cwd=str(copy), text=True, capture_output=True,
         )
         manifest = copy / "build" / "staging" / "manifest.json"
         if run.returncode != 0 or not manifest.is_file():
             raise AssertionError(
-                "U1 fixture: `make staging PROFILE=basic` no generó el "
-                f"staging en la copia del fixture (rc={run.returncode}): "
+                "U1 fixture: `make staging` no generó el staging en la copia "
+                f"del fixture (rc={run.returncode}): "
                 f"{run.stdout[-400:]!r} {run.stderr[-400:]!r}")
         _STAGING_ROOT = copy
     return _STAGING_ROOT
@@ -199,9 +230,9 @@ class U1Case(unittest.TestCase):
 
     def orchestrator(self, rel: Path) -> tuple[str, str]:
         """Texto del orquestador generado (staging `basic`)."""
-        root = basic_staging_root()
+        root = staging_root()
         label = rel.parent.parent.name + "/" + rel.parent.name
-        return self.read(root / rel, f"PD-2/PD-4 staging basic ({label})"), label
+        return self.read(root / rel, f"PD-2/PD-4 staging ({label})"), label
 
     def require_any(self, text: str, alternatives: tuple[str, ...],
                     concept: str, document: str) -> None:
@@ -254,7 +285,7 @@ class TestPd2aExactlyOneDelegationSection(U1Case):
 
 
     def assert_exactly_one(self, adapter_rel: Path, label: str) -> None:
-        root = basic_staging_root()
+        root = staging_root()
         text = self.read(root / adapter_rel, f"PD-2(a) ({label})")
         opens = SECTION_OPEN_RE.findall(text)
         self.assertEqual(
@@ -299,7 +330,7 @@ class TestPd2bSourceOwnsDelegationContent(U1Case):
 
     def assert_block_owns_concepts(self, adapter_rel: Path, label: str,
                                    mechanism_forms: tuple[str, ...]) -> None:
-        root = basic_staging_root()
+        root = staging_root()
         text = self.read(root / adapter_rel, f"PD-2(a)/(b) ({label})")
         match = SECTION_OPEN_RE.search(text)
         self.assertIsNotNone(
@@ -421,23 +452,39 @@ class TestPd4IntraRuntimeAdapterProhibition(U1Case):
                     CLI_ADAPTER_TOKENS, window=12, document=label)
 
 
-# --------------------------- PD-4(iii)+(iv) — rama `basic` (D-3)
+# ------------------- PD-4(iii)+(iv) / PD-7b — declaración de FAMILIA
+#
+# REFORMULADO por 006-003 U3 (PD-7b, D7; enmienda A-1 del plan de 006-003): la
+# rama `basic` de D-3 (006-002) describía el perfil que fijaba modelos. Los
+# perfiles se retiran (PD-1/D1) y la familia del reviewer pasa a ser una
+# VERIFICACIÓN DE CONFIGURACIÓN, declarada cuando no es verificable (INV-5). El
+# oráculo NO se borra: se invierte (ausencia de `basic`/perfiles) y se repunta a
+# los conceptos de PD-7b, conservando los campos de registro y las reglas
+# «nunca elige» / «modelo sólo desde la configuración» de D-3.
 
 
-class TestPd4BasicFamilyDeclaration(U1Case):
-    """PD-4(iii)+(iv) / D-3 (idéntica en CADA orquestador): bajo `basic` la
-    familia del reviewer NO está garantizada por el instalador, el intento se
-    REGISTRA con los campos del contrato, el orquestador NUNCA elige ni
-    inventa un modelo y solo pasa uno si viene de la configuración del
-    entorno."""
+class TestPd4FamilyConfigurationDeclaration(U1Case):
+    """PD-4(iii)+(iv) de 006-002 reformulado por PD-7b (006-003) — idéntica en
+    CADA orquestador: el perfil retirado no sobrevive en el artefacto compuesto,
+    la familia del reviewer se declara como verificación de configuración
+    (declarada cuando no es verificable), el intento se REGISTRA con los campos
+    del contrato, el orquestador NUNCA elige ni inventa un modelo y solo pasa
+    uno si viene de la configuración."""
 
 
-    def assert_basic_declaration(self, rel: Path) -> None:
+    def assert_family_configuration_declaration(self, rel: Path) -> None:
         text, label = self.orchestrator(rel)
-        # (i)+(ii) co-ubicados: `basic` + familia no garantizada.
-        self.co_located_window(
-            text, [BASIC_PROFILE_TOKENS, FAMILY_NOT_GUARANTEED_TOKENS],
-            ("basic",), window=6, document=label)
+        # (i) ausencia: el perfil y su flag ya no existen en el compuesto.
+        self.forbid(text, PROFILE_VOCABULARY_RE,
+                    "vocabulario de perfiles", label)
+        self.forbid(text, RETIRED_BASIC_FLAG_RE,
+                    "el flag retirado `--basic`", label)
+        # (ii) la familia es una verificación de configuración (PD-7b).
+        self.require_any(text, FAMILY_CONFIGURATION_TOKENS,
+                         "familia = verificación de configuración", label)
+        # (ii-bis) cuando no es verificable, se declara (INV-5).
+        self.require_any(text, FAMILY_NOT_VERIFIABLE_TOKENS,
+                         "familia no verificable declarada", label)
         # (iii) registro con los campos fijados por D-3(2).
         self.require_any(text, REGISTRATION_FIELD_TOKENS,
                          "campos de registro model_configured/model_reported",
@@ -451,18 +498,18 @@ class TestPd4BasicFamilyDeclaration(U1Case):
                          label)
 
 
-    def test_pd4_basic_family_declaration_in_opencode_orchestrator(
+    def test_pd4_family_configuration_declaration_in_opencode_orchestrator(
             self) -> None:
-        """PD-4(iii)+(iv)/D-3: rama `basic` declarada en el orquestador
-        OpenCode generado."""
-        self.assert_basic_declaration(OC_ORCH_REL)
+        """PD-4(iii)+(iv)/D-3 + PD-7b: declaración de familia por
+        configuración en el orquestador OpenCode generado."""
+        self.assert_family_configuration_declaration(OC_ORCH_REL)
 
 
-    def test_pd4_basic_family_declaration_in_claude_code_orchestrator(
+    def test_pd4_family_configuration_declaration_in_claude_code_orchestrator(
             self) -> None:
-        """PD-4(iii)+(iv)/D-3: rama `basic` declarada en el orquestador
-        Claude Code generado."""
-        self.assert_basic_declaration(CC_ORCH_REL)
+        """PD-4(iii)+(iv)/D-3 + PD-7b: declaración de familia por configuración
+        en el orquestador Claude Code generado."""
+        self.assert_family_configuration_declaration(CC_ORCH_REL)
 
 
 # ------------------------------ PD-2(d) + PD-5(b) — paquete y recibo

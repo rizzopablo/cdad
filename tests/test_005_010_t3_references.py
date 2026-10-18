@@ -31,6 +31,18 @@ documento permanece instalable. INV-7 sigue aplicando sólo a texto INSTALABLE:
 la evidencia no instalable queda fuera de su alcance por diseño (PD-9), y la
 mitad OpenCode de INV-7 la retira el mismo retiro del archivo del árbol.
 
+REFORMULADO por 006-003 U3 (PD-7, D7; enmienda A-1 del plan de 006-003): la
+mitad «puntero a la ÚNICA tabla de modelos» pierde su objeto. El mapa de modelos
+(`scripts/cdad-models.sh`) se RETIRA en 006-003 U1 (PD-1c) y la elección de
+modelo pasa a la configuración de delegación (PD-3), así que un puntero a ese
+script sería un enlace muerto. El assert se INVIERTE —no se borra—: en lugar de
+exigir el puntero y la existencia del destino, se exige que el mapa NO exista y
+que la referencia INSTALABLE que sigue viva (`cli-delegation.md`) no lo nombre;
+la copia preservada se conserva como evidencia histórica (no instalable) y sigue
+siendo la superficie que la mitad de MODO DE CARGA necesita. El oráculo
+reformulado PASA hoy (U1 ya retiró el mapa y `cli-delegation.md` no lo nombra):
+es un GUARD de no-regresión, declarado como tal.
+
 MARCADORES ESTRUCTURALES (elección declarada del oráculo; plan §T3
 «criterio de prosa»: no se fijan frases del prompt ni nombres internos —
 la PROSA se verifica por review en stage 4). Este módulo usa:
@@ -66,7 +78,7 @@ Mapa test → postcondición (spec 005-010):
   1  TestPd10CliDelegationDurableSignal::test_pd10_cli_reference_documents_…  PD-10 (señal durable real + servidor/permisos)
   2  TestPd10CliDelegationDurableSignal::test_pd10_cli_reference_no_legacy_…  PD-10 (ya no describe la señal como JSON legado)
   3  TestPd10OpencodeLoadMode::test_pd10_opencode_reference_documents_…       PD-10 (entry subagent válida; identidad desde la fila; sin fallback)
-  4  TestPd10OpencodeLoadMode::test_pd10_opencode_reference_points_to_single_… PD-10 (puntero a la ÚNICA tabla de modelos; sin modelos concretos)
+  4  TestPd10OpencodeLoadMode::test_pd10_model_pointer_retired_with_…       PD-10 (mitad 2) / PD-7+PD-1c 006-003: el mapa retirado no reaparece como puntero
   5  TestInv7ReferencesWithoutVpsValues::test_inv7_references_free_of_…       INV-7 (sin rutas absolutas de host, proveedor, modelo concreto ni servidor)
 """
 
@@ -95,9 +107,9 @@ CLI_REFERENCE = (REPO_ROOT / "skills" / "cdad-cycle" / "references"
 # `docs/**` (helper único del RED de U3).
 OPENCODE_REFERENCE = (REPO_ROOT / "skills" / "cdad-cycle" / "references"
                       / "opencode-delegation.md")
-# Destino del puntero de la tabla ÚNICA de modelos (PD-10): existe en el
-# repo; la comprobación es de EXISTENCIA (consistencia estructural del
-# puntero), jamás de contenido.
+# Destino del puntero de la tabla ÚNICA de modelos (PD-10): RETIRADO por
+# 006-003 U1 (PD-1c). El oráculo ya NO exige su existencia: exige su AUSENCIA
+# (un enlace a un mapa retirado es un puntero muerto; ver cabecera).
 MODELS_TABLE_SCRIPT = REPO_ROOT / "scripts" / "cdad-models.sh"
 
 # --- patrones prohibidos (INV-7 / señal JSON legado) ----------------------
@@ -280,14 +292,18 @@ class TestPd10CliDelegationDurableSignal(ReferenceCase):
 
 
 class TestPd10OpencodeLoadMode(ReferenceCase):
-    """PD-10 (mitad 2, reformulada por 006-002 U3/PD-9): el modo de carga de
-    OpenCode (`mode: subagent` = entry NO interactiva válida en la versión
-    instalada) y la verificación de identidad desde la FILA DURABLE sin
-    fallback se conservan como evidencia NO instalable bajo `docs/**` (la
-    referencia por runtime salió del árbol de la skill), junto con el puntero a
-    la ÚNICA tabla de modelos (`scripts/cdad-models.sh` + perfil activo)."""
+    """PD-10 (mitad 2, reformulada por 006-002 U3/PD-9 y por 006-003 U3/PD-7):
+    el modo de carga de OpenCode (`mode: subagent` = entry NO interactiva válida
+    en la versión instalada) y la verificación de identidad desde la FILA DURABLE
+    sin fallback se conservan como evidencia NO instalable bajo `docs/**` (la
+    referencia por runtime salió del árbol de la skill). El puntero a la tabla
+    única de modelos se retira con el mapa mismo (006-003 PD-1c): su assert se
+    invierte, no se borra."""
 
     DOCUMENT = "opencode-delegation.md (retirada: evidencia no instalable)"
+    # Documento INSTALABLE de la delegación (PD-10, mitad 1): sigue vivo y es la
+    # superficie donde un puntero al mapa retirado sería un enlace muerto.
+    DOCUMENT_INSTALLABLE = "cli-delegation.md"
 
     def withdrawn_reference_is_gone(self) -> None:
         self.assertFalse(
@@ -338,39 +354,41 @@ class TestPd10OpencodeLoadMode(ReferenceCase):
                                 "sin fallback"),
                          "sin fallback a agente genérico", self.DOCUMENT)
 
-    def test_pd10_opencode_model_pointer_survives_the_withdrawal(self) -> None:
-        """PD-10: el puntero a la ÚNICA tabla de modelos
-        (`scripts/cdad-models.sh` + perfil activo) se conserva con el detalle
-        retirado (evidencia no instalable; 006-002 PD-9), y el destino del
-        puntero existe.
+    def test_pd10_model_pointer_retired_with_the_map(self) -> None:
+        """PD-10 (mitad 2) reformulado por 006-003 PD-7/PD-1c: el mapa de
+        modelos retirado no reaparece como puntero en el texto INSTALABLE.
 
-        La ausencia de nombres de modelo concretos YA NO se aserta sobre la
-        referencia retirada: la evidencia NO instalable queda fuera del alcance
-        de INV-7 por diseño (006-002 PD-9). El texto INSTALABLE sigue cubierto
-        por `TestInv7ReferencesWithoutVpsValues` (cli-delegation.md) y por el
-        oráculo de modelos de 006-002 PD-1/INV-2."""
+        La evidencia preservada (no instalable) se conserva como historia; lo
+        que se exige es que el documento instalable que sigue vivo no enlace a
+        un archivo que ya no existe.
+        """
         self.withdrawn_reference_is_gone()
-        text = self.preserved_evidence_text()
 
-        # Puntero a la tabla única + el perfil activo como selector.
-        self.require_any(text, ("cdad-models.sh",),
-                         "puntero a la única tabla de modelos",
-                         self.DOCUMENT)
-        self.require_any(text, ("profile", "perfil"),
-                         "perfil activo como selector de modelo",
-                         self.DOCUMENT)
-        # Consistencia estructural del puntero: el destino existe.
+        # No-vacuidad de la preservación: el detalle retirado sigue documentado
+        # bajo docs/** (PD-9 de 006-002); su ausencia es fallo de contrato y no
+        # debe confundirse con el retiro del puntero.
         self.assertTrue(
-            MODELS_TABLE_SCRIPT.is_file(),
-            msg="el puntero a la tabla única de modelos apunta a un "
-                "archivo inexistente en el repo (consistencia "
-                f"estructural): {MODELS_TABLE_SCRIPT}")
+            self.preserved_evidence_text().strip(),
+            msg="006-002 PD-9: la evidencia preservada de la referencia retirada "
+                "está vacía — el retiro del puntero no puede evaluarse sobre un "
+                "texto inexistente",
+        )
 
-        # La ausencia de nombres de modelo concretos se asertaba sobre esta
-        # referencia; con el retiro (006-002 PD-9) esa mitad viaja a la
-        # evidencia NO instalable, fuera del alcance de INV-7 por diseño. El
-        # texto INSTALABLE sigue cubierto por TestInv7ReferencesWithoutVpsValues
-        # y por el oráculo de modelos de 006-002 PD-1/INV-2.
+        # Inversión declarada (A-1): el destino del puntero no existe.
+        self.assertFalse(
+            MODELS_TABLE_SCRIPT.is_file(),
+            msg="006-003 PD-1c: el mapa de modelos sigue existiendo; PD-7/PD-1c "
+                f"lo retiran y con él el puntero: {MODELS_TABLE_SCRIPT}",
+        )
+
+        # Y ningún documento INSTALABLE vuelve a nombrarlo (enlace muerto).
+        installable = self.read_reference(CLI_REFERENCE)
+        self.assertNotIn(
+            "cdad-models.sh", installable,
+            msg="006-003 PD-7/PD-1c: la referencia instalable de la delegación "
+                "sigue nombrando el mapa de modelos retirado (puntero muerto): "
+                f"{self.DOCUMENT_INSTALLABLE}",
+        )
 
 
 # --------------------------------------------------------------- INV-7

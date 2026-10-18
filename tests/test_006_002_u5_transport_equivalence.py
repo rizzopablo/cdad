@@ -26,7 +26,7 @@ Superficie observable (caja negra, la del propio contrato): los documentos
 fuente del skill que son el producto publicado de este repo (mismo precedente
 declarado por ``tests/test_004_003_t5_reentry_equivalence.py``: cuando el
 entregable ES una regla, el doc es el artefacto), el orquestador GENERADO
-(staging `basic`, patrón de ``tests/test_006_002_u1_delegation_section.py``) y
+(staging, patrón de ``tests/test_006_002_u1_delegation_section.py``) y
 el COMPORTAMIENTO del CLI de recibo. El test-writer no leyó implementación
 (``skills/``, ``scripts/``, ``sources/``) para derivar aserciones: los oráculos
 salen del spec y del plan; el CLI se ejecuta (comportamiento), no se lee.
@@ -86,7 +86,7 @@ from pathlib import Path
 
 # Reuso declarado (una sola definición de cada helper/constante, patrón u2→u4):
 # la delimitación de secciones numeradas y el oráculo de conceptos de u2; el
-# fixture de staging `basic` y las rutas de los orquestadores generados de u1;
+# fixture de staging y las rutas de los orquestadores generados de u1;
 # el fixture de paquete disputado/`receive` y su snapshot de árbol de 003-002 T1.
 from tests.test_003_002_t1_receive import (
     EstablishedProjectCase,
@@ -96,7 +96,7 @@ from tests.test_004_002_t2_bootstrap import tree_snapshot
 from tests.test_006_002_u1_delegation_section import (
     CC_ORCH_REL,
     OC_ORCH_REL,
-    basic_staging_root,
+    staging_root,
 )
 from tests.test_006_002_u2_neutral_skill import (
     numbered_section_region,
@@ -358,7 +358,7 @@ DELEGATION_RE = re.compile(r"delegation|delegaci[óo]n", re.IGNORECASE)
 
 class TestPd5bMaterializationProtocolLink(unittest.TestCase):
     """PD-5(b)/D-4: §4 de ``SKILL.md`` Y la sección ``delegation`` de cada
-    orquestador generado (staging `basic`) enlazan al «Orchestrator
+    orquestador generado (staging) enlazan al «Orchestrator
     materialization protocol» de ``re-entry.md``."""
 
     def test_pd5b_section4_links_to_the_materialization_protocol(self) -> None:
@@ -393,14 +393,14 @@ class TestPd5bMaterializationProtocolLink(unittest.TestCase):
     def test_pd5b_delegation_sections_link_to_the_materialization_protocol(
             self) -> None:
         """PD-5(b)/INV-3: la sección ``delegation`` de CADA orquestador
-        generado (staging `basic`) enlaza al protocolo de materialización —
+        generado (staging) enlaza al protocolo de materialización —
         co-ubicada en su propia región de delegación, no perdida en el resto
         del documento.
 
         GUARD pre-satisfecho declarado (U1 compone el enlace, PD-2(d)/PD-5(b));
         este test protege el GREEN contra degradación con un oráculo de
         co-ubicación más estrecho que el de U1."""
-        root = basic_staging_root()
+        root = staging_root()
         for rel in (OC_ORCH_REL, CC_ORCH_REL):
             label = rel.parent.parent.name + "/" + rel.parent.name
             with self.subTest(orchestrator=label):
@@ -408,7 +408,7 @@ class TestPd5bMaterializationProtocolLink(unittest.TestCase):
                 self.assertTrue(
                     path.is_file(),
                     msg=f"PD-5(b): falta el orquestador generado {label} en el "
-                        "staging `basic` (fixture de U1)",
+                        "staging (fixture de U1)",
                 )
                 text = path.read_text(encoding="utf-8")
                 linked = [

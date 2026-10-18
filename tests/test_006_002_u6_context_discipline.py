@@ -3,7 +3,7 @@
 
 Contrato (oráculo — nada se deriva de la implementación):
 - ``docs/specs/006-002-delegation-by-layer/spec.md`` §2 **PD-6** (las cuatro
-  reglas de contexto en AMBOS orquestadores generados con staging `basic`;
+  reglas de contexto en AMBOS orquestadores generados con staging;
   `references/orientation.md` §1 sigue siendo el dueño de «vista primero» y el
   orquestador lo CITA sin duplicarlo) y §3 **INV-4**, ambos leídos con la
   **«Enmienda 002 — `/tmp` fuera de la metodología»** (aprobada por el dueño,
@@ -42,7 +42,7 @@ Superficie observable (caja negra, consumidor): la salida GENERADA
 con ``make staging PROFILE=basic`` en una COPIA temporal del checkout (fixture
 de U1, patrón de ``tests/product_staging.py``: nunca se escribe en el repo), y
 el texto INSTALABLE del árbol (``skills/**``, los agentes generados
-``agents/**`` y los agentes/orquestadores generados con staging `basic`) para
+``agents/**`` y los agentes/orquestadores generados con staging) para
 el oráculo de ausencia de `/tmp` de INV-4. El test-writer NO leyó
 implementación (``skills/``, ``sources/``, ``scripts/``, ``agents/``) para
 derivar aserciones: los oráculos salen del spec y del plan; los artefactos se
@@ -98,7 +98,7 @@ AssertionError de CONTENIDO, nunca ImportError/SyntaxError ni fallo del fixture:
       discipline»; `skills/cdad-cycle/references/handoff-prompts.md:628`, los
       run logs) y los agentes generados (`agents/cdad-orchestrator.md:102`,
       `agents/claude-code/cdad-orchestrator.md:107` y sus equivalentes en el
-      staging `basic`, el ítem «`/tmp` only for ephemeral drafts of one same
+      staging, el ítem «`/tmp` only for ephemeral drafts of one same
       process» de la enmienda 001) —, que es exactamente lo que la enmienda 002
       retira del texto instalable. La aserción enumera cada archivo:línea
       ofensor (el árbol observado nombra `/tmp`; contra un árbol ya saneado la
@@ -134,19 +134,19 @@ import unittest
 from pathlib import Path
 
 # Reuso declarado (una sola definición de cada helper/constante, patrón
-# u2→u5): el fixture de staging `basic` y las rutas de los orquestadores
+# u2→u5): el fixture de staging y las rutas de los orquestadores
 # generados de u1. Los conceptos con alternativas de idioma se construyen con
 # `rx`/`assert_rule` de este módulo (mismo patrón `require_any` de u2).
 from tests.test_006_002_u1_delegation_section import (
     CC_ORCH_REL,
     OC_ORCH_REL,
-    basic_staging_root,
+    staging_root,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # Texto INSTALABLE (INV-4, enmienda 002): la capa del skill, los agentes
-# generados del repo y los agentes/orquestadores generados con staging `basic`.
+# generados del repo y los agentes/orquestadores generados con staging.
 # `docs/**` queda fuera (evidencia no instalable, PD-9).
 INSTALLABLE_SUFFIXES = (".md", ".json", ".sh", ".py", ".yaml", ".yml")
 
@@ -358,12 +358,12 @@ def assert_rule(text: str, label: str, rule: str,
 
 
 class U6Case(unittest.TestCase):
-    """Base del oráculo U6: lee los orquestadores generados (staging `basic`)."""
+    """Base del oráculo U6: lee los orquestadores generados (staging)."""
 
     def orchestrator(self, rel: Path) -> tuple[str, str]:
-        root = basic_staging_root()
+        root = staging_root()
         label = rel.parent.parent.name + "/" + rel.parent.name
-        return read(root / rel, f"PD-6 staging basic ({label})"), label
+        return read(root / rel, f"PD-6 staging ({label})"), label
 
 
 # ------------------------------- PD-6(1) — vista primero, sin volcar nada
@@ -439,7 +439,7 @@ class TestPd6Rule4StableWorkspacePaths(U6Case):
 
     def test_pd6_rule4_durable_evidence_and_cross_role_reads_go_to_stable_workspace_paths(
             self) -> None:
-        """PD-6 (enmienda 002): ambos orquestadores generados (staging `basic`)
+        """PD-6 (enmienda 002): ambos orquestadores generados (staging)
         declaran que lo durable / la evidencia / lo que lee otro proceso o rol
         va a rutas ESTABLES del workspace del proyecto, co-ubicado con el
         recibo `.cdad/inbox` (la ruta válida del recibo; INV-4)."""
@@ -496,14 +496,14 @@ class TestPd6NoTmpInInstallableText(unittest.TestCase):
     ni para prohibirlo ni para admitirlo — la limitación era del servidor del
     dueño, no de la metodología. Superficie: la capa del skill (`skills/**`),
     los agentes generados del repo (`agents/**`) y los orquestadores/agentes
-    generados con staging `basic` (`build/staging/agents/**` en la copia del
+    generados con staging (`build/staging/agents/**` en la copia del
     fixture de U1, nunca el repo)."""
 
     def installable_files(self) -> list[Path]:
         roots = (
             REPO_ROOT / "skills",
             REPO_ROOT / "agents",
-            basic_staging_root() / "build" / "staging" / "agents",
+            staging_root() / "build" / "staging" / "agents",
         )
         files: list[Path] = []
         for root in roots:
@@ -515,11 +515,11 @@ class TestPd6NoTmpInInstallableText(unittest.TestCase):
         return files
 
     def display(self, path: Path) -> str:
-        """Ruta legible: relativa al repo; el staging `basic` (fuera del repo,
+        """Ruta legible: relativa al repo; el staging (fuera del repo,
         copia temporal del fixture) se prefija para no confundirlo con el
         árbol instalable del checkout."""
         for base, prefix in ((REPO_ROOT, ""),
-                             (basic_staging_root(), "staging-basic/")):
+                             (staging_root(), "staging/")):
             try:
                 return prefix + path.relative_to(base).as_posix()
             except ValueError:
@@ -535,7 +535,7 @@ class TestPd6NoTmpInInstallableText(unittest.TestCase):
         self.assertTrue(
             files,
             msg="PD-6(4)/INV-4 (enmienda 002): no se localizó texto instalable "
-                "bajo skills/, agents/ ni el staging `basic` (drift de la "
+                "bajo skills/, agents/ ni el staging (drift de la "
                 "superficie del oráculo de ausencia)",
         )
         offenders: list[str] = []
