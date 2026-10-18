@@ -68,12 +68,37 @@ RED esperado (árbol vigente, U1/U2 ya en GREEN):
 Ningún fallo es ImportError/SyntaxError/NameError: todas las superficies
 faltantes son aserción de contrato.
 
+TESTFIX (006-002 U3, paquete ``test-writer-red-004``): acotado de la SELECCIÓN
+de los guards de CONSERVACIÓN acoplados (``test_005_004_t4_cc_guard_decisions``,
+``test_005_009_t3_spawn_reconciliation``, ``test_005_010_t3_references``). El
+defecto era del oráculo, no del producto: ``framed_evidence_documents()``
+devolvía **todo** documento de ``docs/**`` con un marcador de evidencia (416
+documentos), de modo que un informe histórico —p. ej. el bloque de
+``docs/specs/005-004-claude-code-roles/spec.md`` que dice «verifica las
+decisiones del guard, **no** que Claude Code honre ``exit 2``»— entraba en la
+ventana del guard de ``exit 2`` y lo hacía fallar sobre el GREEN por una
+afirmación que ningún documento preservado hacía. Un guard de conservación debe
+verificar la COPIA PRESERVADA de la referencia retirada (PD-9), no cualquier
+documento que la mencione: ``preservation_copy_documents()`` selecciona por
+CONTENIDO los documentos que se declaran a sí mismos la copia que preserva una
+referencia retirada (declaración de preservación con sujeto en el propio
+documento + la referencia nombrada + el retiro declarado, en el mismo bloque),
+sin fijar ninguna ruta. Las aserciones de esos guards NO cambian: sobre la
+copia, el alcance de ``exit 2``, la prohibición de spawn y el detalle de carga
+de OpenCode siguen exigiendo lo mismo.
+
 Límites honestos declarados:
 - El oráculo de (2) NO fija ninguna ruta: acepta cualquier documento de
   ``docs/**`` que se declare evidencia no instalable. Excluye **solo** los
   documentos de planificación de esta feature (spec/plan/discovery/u*-red/
   u*-green), porque son los que *mandan* mover el detalle y aceptarlos volvería
   vacuo el assert (mismo criterio con que U2 excluyó ``context-meter.md``).
+- La copia preservada se localiza por su DECLARACIÓN de preservación, no por su
+  ruta ni por su nombre de archivo: una copia que no se declare la copia (o que
+  no declare el retiro) no es seleccionada — el guard falla por contrato
+  («drift del oráculo»), no en silencio. Requisito declarado, no infalible: el
+  oráculo reconoce las formas de la declaración listadas en
+  ``SELF_PRESERVATION_RE``/``WITHDRAWAL_DECLARATION_RE``.
 - (5) es un guard pre-satisfecho: mide que la conservación sigue ahí, no que esta
   unidad agregue texto del adaptador.
 - Los mensajes de falla de (4)/(6) imprimen la procedencia (archivo:línea y un
@@ -131,6 +156,24 @@ EVIDENCE_FRAME = (
     "withdrawn", "retirad", "moved to docs", "moved into docs", "historical",
     "histórico", "historia", "history", "evidence", "evidencia", "archive",
     "not shipped", "no se instala", "removed from the skill",
+)
+
+# ------------------------------------------- declaración de PRESERVACIÓN (PD-9)
+# Un documento PRESERVA una referencia retirada cuando lo DECLARA de sí mismo:
+# el sujeto de la declaración es el propio documento («This document preserves,
+# in full, the runtime reference …»). Así se distingue la COPIA preservada de un
+# informe histórico que la menciona al pasar — la diferencia que el oráculo
+# original no hacía (testfix U3, paquete test-writer-red-004).
+SELF_PRESERVATION_RE = re.compile(
+    r"(?i)\b(?:this|the\s+present|este|el\s+presente)\s+"
+    r"(?:document\w*|file|archivo)\b[^.]{0,200}?"
+    r"\b(?:preserv\w*|conserv\w*)\b"
+)
+# La misma declaración fija el RETIRO de la referencia del árbol instalable
+# (PD-9: «salen del árbol instalable»), no un simple traslado de prosa.
+WITHDRAWAL_DECLARATION_RE = re.compile(
+    r"(?i)withdrawn|withdrew|retirad\w*|removed from the (?:skill|installable)|"
+    r"sale del (?:árbol|arbol)"
 )
 
 # Detalle histórico/verificación que PD-9 manda preservar (spec PD-9; discovery
@@ -247,13 +290,59 @@ def non_installable_evidence_documents() -> list[Path]:
 
 def framed_evidence_documents() -> list[Path]:
     """Candidatos que se declaran evidencia no instalable (PD-9): contienen
-    algún marcador de `EVIDENCE_FRAME`. Es la superficie sobre la que se
-    verifica que el detalle retirado NO se perdió."""
+    algún marcador de `EVIDENCE_FRAME`. Es la superficie ANCHA de candidatos
+    (416 documentos en el estado vigente): los guards de conservación NO
+    verifican sobre ella — un informe histórico que mencione la referencia
+    retirada entra acá. Ver `preservation_copy_documents()` (testfix U3)."""
     return [
         path for path in non_installable_evidence_documents()
         if require_any(path.read_text(encoding="utf-8"), EVIDENCE_FRAME,
                        "marcador de evidencia no instalable") is None
     ]
+
+
+def preserved_reference_names(path: Path) -> tuple[str, ...]:
+    """Referencias retiradas que ESTE documento declara PRESERVAR (PD-9).
+
+    Un documento lo declara en un bloque donde el sujeto es él mismo (una
+    declaración de preservación), la referencia retirada queda nombrada y el
+    retiro del árbol instalable se declara. Un bloque que solo la menciona
+    (informe, spec, ADR) no cuenta."""
+    text = path.read_text(encoding="utf-8")
+    declared: list[str] = []
+    for block in re.split(r"\n\s*\n", text):
+        block = block.strip()
+        if not (SELF_PRESERVATION_RE.search(block)
+                and WITHDRAWAL_DECLARATION_RE.search(block)):
+            continue
+        declared.extend(name for name in WITHDRAWN_NAMES if name in block)
+    return tuple(sorted(set(declared)))
+
+
+def preservation_copy_documents(reference_name: str | None = None) -> list[Path]:
+    """Copias PRESERVADAS de las referencias retiradas (PD-9): documentos de
+    `docs/**` que se declaran **la copia que preserva** una referencia retirada
+    —identificados por CONTENIDO (su declaración de preservación), nunca por una
+    ruta ni por un nombre fijado—.
+
+    Es la superficie que los guards de CONSERVACIÓN deben mirar: sobre la copia,
+    las afirmaciones retiradas se verifican sin que un informe histórico con
+    otro formato las contamine (testfix U3: `framed_evidence_documents()`
+    devolvía todo `docs/**` con marcador de evidencia, y un informe de 005-004
+    hacía fallar el guard de `exit 2` sobre el GREEN). Con
+    `reference_name`, limita a la copia que preserva ESA referencia.
+
+    Su ausencia es una aserción de contrato (la copia falta o dejó de
+    declararse la copia), no un error de entorno."""
+    copies: list[Path] = []
+    for path in framed_evidence_documents():
+        names = preserved_reference_names(path)
+        if not names:
+            continue
+        if reference_name is not None and reference_name not in names:
+            continue
+        copies.append(path)
+    return copies
 
 
 def installable_markdown() -> list[Path]:

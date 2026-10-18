@@ -79,12 +79,16 @@ from pathlib import Path
 import pytest
 
 # Helpers de 006-002 U3 (una sola definición de «evidencia no instalable»,
-# PD-9): la superficie a la que se repunta el assert de conservación del
-# consumidor retirado.
+# PD-9): la COPIA PRESERVADA —localizada por su declaración de preservación,
+# nunca por una ruta— a la que se repunta el assert de conservación del
+# consumidor retirado (testfix U3: `framed_evidence_documents()` es la
+# superficie ancha de candidatos, no la copia).
 from tests.test_006_002_u3_runtime_references import (
     doc_relative,
-    framed_evidence_documents,
+    preservation_copy_documents,
 )
+
+PRESERVED_REFERENCE = "claude-code-delegation.md"
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -274,18 +278,22 @@ def test_pd9_spawn_guard_conservation_survives_the_reference_withdrawal():
     el orquestador generado, cubiertos por los tests parametrizados de arriba);
     (ii) el detalle retirado se preserva como evidencia NO instalable bajo
     `docs/**` (006-002 PD-9), con la prohibición sub-agente→sub-agente y su
-    registro del incidente."""
+    registro del incidente. La superficie es la COPIA PRESERVADA —seleccionada
+    por su declaración de preservación (testfix U3), no todo documento de
+    `docs/**` que mencione la referencia—."""
     assert not CC_REF.is_file(), (
         "PD-9 + 006-002 U3: references/claude-code-delegation.md sigue en el "
         "árbol instalable — la referencia por runtime sale de la skill (su "
         "detalle se preserva como evidencia no instalable bajo docs/**)"
     )
 
-    evidence = framed_evidence_documents()
+    evidence = preservation_copy_documents(PRESERVED_REFERENCE)
     assert evidence, (
-        "PD-9 + 006-002 U3: no hay evidencia NO instalable bajo docs/** que "
-        "conserve el detalle retirado — la prohibición de spawn y su incidente "
-        "no pueden perderse con el archivo"
+        "PD-9 + 006-002 U3: no hay copia preservada bajo docs/** de la "
+        "referencia por runtime retirada "
+        f"(`{PRESERVED_REFERENCE}`) — la prohibición de spawn y su incidente "
+        "no pueden perderse con el archivo (PD-9 manda preservar su detalle "
+        "declarándose la copia)"
     )
 
     preserved: list[str] = []

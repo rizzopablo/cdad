@@ -22,8 +22,10 @@ REFORMULADO por 006-002 U3 (PD-9; enmienda A-1): la segunda referencia sale del
 árbol instalable (PD-9) y su detalle —modo de carga, identidad durable sin
 fallback, puntero a la tabla única de modelos— se preserva como evidencia NO
 instalable bajo `docs/**`. Las dos aserciones de la mitad OpenCode se repuntan
-a esa evidencia (localizada por el helper único `framed_evidence_documents()` de
-`tests/test_006_002_u3_runtime_references.py`) y agregan el assert de retiro; la
+a esa evidencia (la COPIA PRESERVADA de la referencia, localizada por el helper
+único `preservation_copy_documents()` de
+`tests/test_006_002_u3_runtime_references.py` —por su declaración de
+preservación, no por una ruta; testfix U3—) y agregan el assert de retiro; la
 mitad `cli-delegation.md` (PD-10 de esta feature) sigue igual porque ese
 documento permanece instalable. INV-7 sigue aplicando sólo a texto INSTALABLE:
 la evidencia no instalable queda fuera de su alcance por diseño (PD-9), y la
@@ -74,11 +76,15 @@ import re
 import unittest
 from pathlib import Path
 
-# Helper único de 006-002 U3 (PD-9): la evidencia NO instalable bajo `docs/**`
-# donde se preserva el detalle de la referencia por runtime retirada.
+# Helper único de 006-002 U3 (PD-9): la COPIA PRESERVADA —localizada por su
+# declaración de preservación, no por una ruta— de la referencia por runtime
+# retirada (testfix U3: `framed_evidence_documents()` es la superficie ancha de
+# candidatos, no la copia).
 from tests.test_006_002_u3_runtime_references import (
-    framed_evidence_documents,
+    preservation_copy_documents,
 )
+
+PRESERVED_REFERENCE = "opencode-delegation.md"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI_REFERENCE = (REPO_ROOT / "skills" / "cdad-cycle" / "references"
@@ -292,13 +298,16 @@ class TestPd10OpencodeLoadMode(ReferenceCase):
         )
 
     def preserved_evidence_text(self) -> str:
-        """Texto de la evidencia NO instalable (PD-9) donde se conserva el
-        detalle retirado; su ausencia es aserción de contrato."""
-        documents = framed_evidence_documents()
+        """Texto de la COPIA PRESERVADA (PD-9) donde se conserva el detalle
+        retirado —localizada por su declaración de preservación, no por una
+        ruta—; su ausencia es aserción de contrato."""
+        documents = preservation_copy_documents(PRESERVED_REFERENCE)
         self.assertTrue(
             documents,
-            msg="006-002 PD-9/U3: no hay evidencia NO instalable bajo docs/** "
-                "que conserve el detalle de la referencia por runtime retirada",
+            msg="006-002 PD-9/U3: no hay copia preservada bajo docs/** de la "
+                f"referencia por runtime retirada (`{PRESERVED_REFERENCE}`) — "
+                "PD-9 manda preservar su detalle como evidencia no instalable, "
+                "declarándose la copia",
         )
         return "\n\n".join(path.read_text(encoding="utf-8")
                            for path in documents)

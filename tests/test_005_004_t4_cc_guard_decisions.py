@@ -70,6 +70,14 @@ por el RETIRO pendiente del consumidor instalable (PD-9), conservando la
 cobertura del contrato del guard y del alcance de `exit 2` sobre la evidencia
 no instalable que lo preserva.
 
+Testfix U3 (paquete `test-writer-red-004`): esa conservación se verifica sobre
+la COPIA PRESERVADA del consumidor —localizada por su declaración de
+preservación, `preservation_copy_documents("claude-code-delegation.md")`, no por
+«todo `docs/**` con un marcador de evidencia»—, que era el defecto del oráculo:
+un informe histórico de 005-004 con otro formato del bloque de `exit 2` entraba
+en la ventana y hacía fallar este focal sobre el GREEN. Las aserciones de
+alcance (interactivo / `-p` / desconocido) NO cambian.
+
 Declarado (PD-8, sin extrapolar): estos tests verifican las DECISIONES del
 guard y el mapa declarado; NO afirman que Claude Code honre `exit 2` ni que
 los hooks del frontmatter se apliquen a los subagentes nativos. No se habilita
@@ -95,11 +103,16 @@ from test_004_002_t2_bootstrap import SCRIPT as PACKET_CLI
 from test_004_002_t5_runtime import CLI_ENV, LayoutProject
 # Parser de frontmatter único del suite (reutilizado; no se escribe otro).
 from test_opencode_read_map_and_steps import frontmatter
-# Helper único de 006-002 U3 (PD-9): la evidencia NO instalable bajo `docs/**`
-# donde se preserva el detalle del consumidor retirado.
-from tests.test_006_002_u3_runtime_references import framed_evidence_documents
+# Helper único de 006-002 U3 (PD-9): la COPIA PRESERVADA bajo `docs/**` de la
+# referencia por runtime retirada (seleccionada por su declaración de
+# preservación, no por su ruta) — el dato del consumidor que esta feature retira.
+from tests.test_006_002_u3_runtime_references import preservation_copy_documents
 
 REPO = Path(__file__).resolve().parents[1]
+
+# Referencia por runtime que 006-002 U3 (PD-9) retira del árbol instalable: la
+# conservación de sus afirmaciones se verifica sobre la copia que la preserva.
+PRESERVED_REFERENCE = "claude-code-delegation.md"
 
 # Superficies declaradas por el contrato (§3 PD-4, §9 y la ficha T4 del plan).
 CC_AGENTS = REPO / "agents" / "claude-code"
@@ -514,24 +527,31 @@ class TestConsumerReference(unittest.TestCase):
         )
 
     def evidence_text(self) -> str:
-        documents = framed_evidence_documents()
+        """Texto de la COPIA PRESERVADA (PD-9) de la referencia retirada: se
+        selecciona por su declaración de preservación, no por una ruta — un
+        informe histórico que la mencione no es la copia (testfix U3)."""
+        documents = preservation_copy_documents(PRESERVED_REFERENCE)
         self.assertTrue(
             documents,
-            msg="PD-4/PD-9 + 006-002 U3: no hay evidencia NO instalable bajo "
-                "docs/** que conserve el detalle del consumidor retirado "
-                "(006-002 PD-9)",
+            msg="PD-4/PD-9 + 006-002 U3: no hay copia preservada bajo docs/** "
+                "de la referencia por runtime retirada "
+                f"(`{PRESERVED_REFERENCE}`): PD-9 manda preservar su detalle "
+                "como evidencia no instalable, declarándose la copia",
         )
         return "\n\n".join(path.read_text(encoding="utf-8")
                            for path in documents)
 
     def test_pd4_withdrawn_consumer_preserves_the_guard_contract_claims(
             self) -> None:
-        """PD-4/PD-9/AC-4 (reformulado por 006-002 U3, PD-9 — enmienda A-1):
-        el consumidor instalable `claude-code-delegation.md` sale del árbol de la
-        skill (PD-9) y sus afirmaciones sobre el contrato del guard NO se
-        pierden: la evidencia preservada bajo `docs/**` sigue refiriendo el
-        clasificador de la política del proyecto, las búsquedas acotadas y el
-        fail-closed sin clasificador (el mecanismo vigente del guard v2)."""
+        """PD-4/PD-9/AC-4 (reformulado por 006-002 U3, PD-9 — enmienda A-1;
+        selección acotada en el testfix U3): el consumidor instalable
+        `claude-code-delegation.md` sale del árbol de la skill (PD-9) y sus
+        afirmaciones sobre el contrato del guard NO se pierden: la copia que
+        preserva ese consumidor bajo `docs/**` sigue refiriendo el clasificador
+        de la política del proyecto, las búsquedas acotadas y el fail-closed sin
+        clasificador (el mecanismo vigente del guard v2). La copia se localiza
+        por su declaración de preservación (`preservation_copy_documents`), no
+        por una ruta."""
         self.assert_consumer_withdrawn()
         joined = self.evidence_text()
         self.assertRegex(
@@ -558,14 +578,22 @@ class TestConsumerReference(unittest.TestCase):
 
     def test_pd4_exit2_claim_stays_scoped_in_the_preserved_evidence(self) -> None:
         """PD-8/§10 VERIFY 1 + 006-002 PD-9 (reformulado por U3 — enmienda
-        A-1): la afirmación sobre `exit 2` que traía el consumidor retirado no
-        puede reaparecer SIN su alcance en la evidencia preservada: donde el
-        detalle conservado afirme que el runtime honra/confía en `exit 2`, la
-        ventana del bloque debe declarar a la vez el alcance observado (sesión
-        interactiva), el modo no interactivo (`-p`) y el desconocido conservado.
+        A-1; selección acotada en el testfix U3): la afirmación sobre `exit 2`
+        que traía el consumidor retirado no puede reaparecer SIN su alcance en
+        la COPIA QUE PRESERVA ese consumidor: donde esa copia afirme que el
+        runtime honra/confía en `exit 2`, la ventana del bloque debe declarar a
+        la vez el alcance observado (sesión interactiva), el modo no interactivo
+        (`-p`) y el desconocido conservado.
 
-        Declarado: si la evidencia preservada no conserva esa afirmación, el
-        guard es vacuo y se declara (el assert que falla en RED es el RETIRO del
+        Selección (testfix U3): la copia se localiza por su declaración de
+        preservación (`preservation_copy_documents`), no por una ruta; otros
+        documentos de `docs/**` que mencionen `exit 2` (p. ej. los informes
+        históricos de 005-004, con otro formato y con la negación explícita) NO
+        entran en la ventana: el guard mide la conservación, no cualquier
+        mención.
+
+        Declarado: si la copia preservada no conserva esa afirmación, el guard
+        es vacuo y se declara (el assert que falla en RED es el RETIRO del
         consumidor, PD-9) — el guard se activa sobre el texto que el GREEN
         preserve."""
         self.assert_consumer_withdrawn()
