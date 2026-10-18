@@ -8300,13 +8300,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-003-installer-single-profile-delegation-config-architect-draft-001",
-    "role": "architect",
-    "substage": "draft",
-    "status": "completed",
+    "id": "006-003-installer-single-profile-delegation-config-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "approved-epic-plan",
-    "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
   },
   "tdd_substage": "red"
 }
