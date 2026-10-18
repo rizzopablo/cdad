@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "006-003-installer-single-profile-delegation-config",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -38,7 +38,8 @@
     },
     {
       "id": "006-003-installer-single-profile-delegation-config",
-      "status": "queued"
+      "status": "in-progress",
+      "opened_at": "2026-10-18T11:28:46.153950+00:00"
     },
     {
       "id": "006-004-active-decisions-table",
@@ -8158,14 +8159,22 @@
     }
   ],
   "execution": {
-    "id": "exec-006-002-delegation-by-layer-001",
+    "id": "exec-006-003-installer-single-profile-delegation-config-001",
     "epic_id": "epic-006-opencode-concurrency",
-    "feature_id": "006-002-delegation-by-layer",
+    "feature_id": "006-003-installer-single-profile-delegation-config",
     "scope": "epic-006-opencode-concurrency",
     "authority_ref": "docs/epics/epic-006-opencode-concurrency/execution.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": null,
-  "tdd_substage": "memory"
+  "active_packet": {
+    "id": "006-003-installer-single-profile-delegation-config-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-epic-plan",
+    "contract_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63"
+  },
+  "tdd_substage": null
 }
