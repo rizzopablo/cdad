@@ -122,20 +122,30 @@ else
   fail "PD-10: P1 semantic checker exited non-zero ($PD10_RC)"
 fi
 
-# P1.reviewer — model different from the implementer's
-IMP_MODEL=""
-REV_MODEL=""
-if [[ -f "$ROOT/agents/cdad-implementer-odoo.md" ]]; then
-    IMP_MODEL="$(frontmatter "$ROOT/agents/cdad-implementer-odoo.md" | sed -n -E 's/^model:[[:space:]]*["'"'"']*([^"'"'"'[:space:]]+).*/\1/p' | head -1)"
-fi
-if [[ -f "$ROOT/agents/cdad-reviewer-odoo.md" ]]; then
-    REV_MODEL="$(frontmatter "$ROOT/agents/cdad-reviewer-odoo.md" | sed -n -E 's/^model:[[:space:]]*["'"'"']*([^"'"'"'[:space:]]+).*/\1/p' | head -1)"
-fi
-if [[ -n "$IMP_MODEL" && -n "$REV_MODEL" && "$IMP_MODEL" != "$REV_MODEL" ]]; then
-    pass "P1 rev: the reviewer's model ($REV_MODEL) differs from the implementer's ($IMP_MODEL)"
-else
-    fail "P1 rev: the reviewer's model differs from the implementer's (imp='$IMP_MODEL' rev='$REV_MODEL')"
-fi
+# P1.reviewer — 006-003 U1 (PD-1e/INV-3): ORACLE REPLACEMENT, declared (rule A-1).
+# The former assert read the frontmatter `model:` line of
+# agents/cdad-implementer-odoo.md and agents/cdad-reviewer-odoo.md and demanded
+# that BOTH exist AND differ ("the reviewer's model (...) differs from the
+# implementer's"). The approved 006-003 contract retires that expectation: PD-1e
+# fixes `grep -rc '^model:' agents/cdad-*.md agents/claude-code/*.md` -> 0 and
+# INV-3 states that no installable text fixes a model, so a generated agent may
+# no longer carry a `model:` line at all and the old assert is unsatisfiable by
+# construction. It is REPLACED — never deleted, and no other P1 assert is
+# touched — by its inverse: NEITHER of the two `-odoo` agents may fix a model.
+# The anti-bias intent (reviewer not the same model as the implementer) is NOT
+# lost: it moves to PD-4, unit U5 — a CONFIGURATION verification
+# (skills/cdad-cycle/scripts/cdad_model_family.py: same-family /
+# guaranteed-by-configuration / not-verifiable / invariant-not-guaranteed,
+# always rc=0) whose declaration lands in `review.md` (PD-4d/INV-5).
+for odoo_agent in implementer reviewer; do
+    af="agents/cdad-$odoo_agent-odoo.md"
+    if [[ -f "$ROOT/$af" ]] && ! grep -Eq '^model:' "$ROOT/$af"; then
+        pass "P1 rev ($odoo_agent-odoo): fixes no model: line (006-003 PD-1e/INV-3, replaces \"reviewer's model differs from the implementer's\"; family invariant -> PD-4/U5)"
+    else
+        fail "P1 rev ($odoo_agent-odoo): fixes a model: line — prohibited by 006-003 PD-1e/INV-3 (the family invariant is a configuration check, PD-4/U5)"
+    fi
+done
+unset odoo_agent af
 
 # P1 — permissive bash policy for the 5 variants (owner decision 2026-09-29,
 # spec docs/specs/permissive-bash-policy-2026-09-29/spec.yaml; reverses
