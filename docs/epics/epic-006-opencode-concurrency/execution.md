@@ -217,3 +217,7 @@ Al despachar el RED de la enmienda 001, `prepare` falló (la re-aprobación de l
 ## 006-003: paquete despachado sin entrega (evidencia para 006-005)
 
 El 2026-10-18 el dueño retiró la verificación de familia (enmienda A-5 de la spec de 006-003) mientras el GREEN `-005` corría. Lo detuve a los ~3 min, sin cambios. `register-transition --transition disposition --resolution abandoned` registró la decisión, pero el paquete activo quedó en `dispatched`. Así, `prepare` rechaza todo paquete nuevo (PD-4), `--replace-packet` solo acepta paquetes nunca despachados y `reconcile` es de solo lectura. Ningún comando lleva un paquete despachado a `failed`. Lo cambié a mano (`active_packet.status: failed`, un solo campo, con la disposición como autoridad) y `validate-state` dio VALID. Es el caso «intento interrumpido sin entrega» de la enmienda 004: 006-005 tiene que darle un camino mecánico.
+
+## 006-003: suite completa antes de la review
+
+`pytest tests/` sobre `f072cf3`: **1166 passed, 1 failed, 5 skipped** (30 min). El fallo es `test_006_001_t1_selection.py::TestPd2ServerPreflight::test_pd2_connection_refused_is_transport_error` (`'timeout' != 'transport-error'`), que en aislamiento pasa 3/3 (1,6 s). Es la misma carrera conocida de los fixtures del adaptador bajo la carga de la suite, no una regresión de 006-003. `make validate` en este checkout da 168/1: el único FAIL es F011 por la deriva de la instalación del dueño, que es anterior al despliegue. Contra la instalación de aceptación de U8 da 169/0.
