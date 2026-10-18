@@ -7511,6 +7511,51 @@
       "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd",
       "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
       "plan_sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-18T02:13:00.305672+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "fc84b276c096ef97fa2ee25da2aa4c3891243dc0fa8e3ebb966477f9d72f044b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo",
+        "contract": {
+          "path": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd"
+        },
+        "plan": {
+          "path": "docs/specs/006-002-delegation-by-layer/plan.md",
+          "sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Re-aprobacion por la enmienda 001 (regla de /tmp), pedida por el duenio.",
+      "approved_by": "Pablo",
+      "contract_path": "docs/specs/006-002-delegation-by-layer/spec.md",
+      "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd",
+      "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
+      "plan_sha256": "6e566692e4781714e87b07dc36fbca60df5373e6ceb9d28fe9c49bea50ae5a05"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7525,7 +7570,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T02:12:28.018209+00:00",
+  "last_updated": "2026-10-18T02:13:00.305672+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -7633,13 +7678,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-002-delegation-by-layer-implementer-green-007",
-    "role": "implementer",
-    "substage": "green",
-    "status": "completed",
+    "id": "006-002-delegation-by-layer-test-writer-red-008",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
-    "contract_sha256": "27c51933aefc3485a0badb33a6e867cea9a0346b464cc129a304b7d0760365d5"
+    "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd"
   },
   "tdd_substage": "green"
 }
