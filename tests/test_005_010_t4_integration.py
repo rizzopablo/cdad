@@ -8,6 +8,18 @@ enmienda) + plan.md §T4. Consume `senal-durable-sqlite` (T1, GREEN) y
 del runtime, la identidad se verifica desde la fila y la invocación usa
 --standalone/--auto por defecto del adaptador.
 
+REFORMULACIÓN DECLARADA (006-003 U4/PD-3b, D3 — el modelo configurado ya NO
+sale de la exec-config): el oráculo `model_configured` del registro I8 se
+reemplaza — donde antes se verificaba contra la clave `model` de la exec-config
+temporal, ahora se verifica contra el modelo declarado en `delegation.json`
+(la única fuente del modelo de la delegación externa, spec 006-003 §2.2/D3).
+La exec-config temporal deja de declarar `model` (PD-3a retiró la clave del
+ejemplo instalable) y el documento de delegación se escribe en el TEMPORAL del
+test, con `XDG_CONFIG_HOME` redirigido: el HOME y la config del dueño no se
+leen ni se pisan. La variable `CDAD_OPENCODE_MODEL` conserva su significado
+como VALOR del modelo, ahora aportado a `delegation.json`. Nada más de esta
+prueba se relaja: sigue omitida por defecto y no se activa aquí.
+
 OMISIÓN POR DEFECTO (PD-8, verificable sin entorno): esta prueba está
 MARCADA y OMITIDA por defecto; se HABILITA por variable de entorno
 `CDAD_OPENCODE_INTEGRATION=1`. Sin la variable NO corre NADA de runtime:
@@ -19,7 +31,8 @@ variable:
   CDAD_OPENCODE_INTEGRATION=1     habilita la prueba (única variable de control)
   CDAD_OPENCODE_BINARY            ruta del binario REAL de OpenCode
   CDAD_OPENCODE_SESSIONS_DB       base de sesiones REAL del runtime (SQLite)
-  CDAD_OPENCODE_MODEL             modelo de la configuración de ejecución
+  CDAD_OPENCODE_MODEL             modelo de la config de DELEGACIÓN
+                                  (delegation.json; 006-003 U4/PD-3b)
 
 FRONTERA DECLARADA — lo AISLADO es CDAD, el runtime es el REAL del dueño:
 - proyecto TEMPORAL (sintético, build_project) + instalación aislada: la
@@ -68,8 +81,10 @@ Mapa test → postcondición (spec 005-010; PD-8 enmendada al aprobar):
        (e) registro I8 del WORKER con `session`/`model_reported` de la
            fila durable y provenance que lo declara (PD-6); `model_reported`
            aplica la regla R2 del review-fix (objeto {id, providerID} →
-           'providerID/id'; texto plano intacto); `runtime` y
-           `model_configured` de la configuración (variables de entorno).
+           'providerID/id'; texto plano intacto); `runtime` de la
+           configuración y `model_configured` del `delegation.json`
+           (reformulación declarada arriba: 006-003 D3/U4, ya NO de la
+           exec-config).
 """
 
 from __future__ import annotations
@@ -101,6 +116,14 @@ MODEL_VAR = "CDAD_OPENCODE_MODEL"
 # respuesta) y el token que la entrega final debe CONTENER.
 EXPECTED_ROLE_AGENT = "cdad-test-writer"
 FIXED_TOKEN = "CDAD-T4-TOKEN-b7e04a2c"
+
+# 006-003 §2.2/D3 (reformulación declarada arriba): el rol del paquete es la
+# clave del modelo en `delegation.json` — el mismo `--role` con que el fixture
+# publica el paquete (`prepare`, EXPECTED_ROLE_AGENT = `cdad-<rol>`), y el id
+# de destino es el identificador del runtime (A-2).
+DELEGATION_ROLE = "test-writer"
+DELEGATION_DIR_NAME = "cdad"
+DELEGATION_FILE_NAME = "delegation.json"
 
 RUNTIME = "opencode"          # id del destino (convención del adaptador)
 WAIT_TIMEOUT_SECONDS = 600    # espera ACOTADA de la corrida real (PD-1/INV-4)
@@ -220,7 +243,8 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
         if not model:
             self._skip(
                 "integración habilitada pero FALTA la variable "
-                f"{MODEL_VAR} (modelo de la configuración de ejecución): "
+                f"{MODEL_VAR} (modelo de la config de DELEGACIÓN: "
+                "006-003 §2.2/D3 — la exec-config ya no declara `model`): "
                 "la prueba no toma valores por defecto del host (PD-8).")
 
     # -- fixture ------------------------------------------------------------
@@ -274,13 +298,16 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
     def integration_config(self) -> Path:
         """Exec-config TEMPORAL con valores EXCLUSIVAMENTE del entorno de la
         integración (sin valores por defecto del host, PD-8/INV-7): binario,
-        base de sesiones real y modelo de las variables declaradas; la
-        espera es ACOTADA (PD-1/INV-4). `binary_version` se declara desde la
-        sonda honesta del binario (`--version`, no despacho) o `unknown` si
-        la sonda no responde — jamás un valor inventado."""
+        base de sesiones real; la espera es ACOTADA (PD-1/INV-4).
+        `binary_version` se declara desde la sonda honesta del binario
+        (`--version`, no despacho) o `unknown` si la sonda no responde — jamás
+        un valor inventado.
+
+        Reformulación declarada (006-003 U4/PD-3a/D3): la exec-config ya NO
+        declara la clave `model` — el modelo efectivo sale de `delegation.json`
+        (`delegation_config()`), que es su única fuente."""
         binary = Path(os.environ[BINARY_VAR].strip())
         sessions_db = Path(os.environ[SESSIONS_DB_VAR].strip())
-        model = os.environ[MODEL_VAR].strip()
         try:
             probe = subprocess.run(
                 [str(binary), "--version"], capture_output=True, text=True,
@@ -297,7 +324,6 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
                 "runtime": RUNTIME,
                 "binary": str(binary),
                 "binary_version": version or "unknown",
-                "model": model,
                 "logs_dir": str(logs_dir),
                 "sessions_db": str(sessions_db),
                 "wait": {"timeout_seconds": WAIT_TIMEOUT_SECONDS},
@@ -305,13 +331,41 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
             encoding="utf-8")
         return config_path
 
-    def run_real_delegate(self, config: Path) -> subprocess.CompletedProcess:
+    def delegation_home(self) -> Path:
+        """`XDG_CONFIG_HOME` del fixture: el temporal del test (nunca el del
+        dueño)."""
+        config_home = Path(self._tmp) / "xdg-config"
+        config_home.mkdir(parents=True, exist_ok=True)
+        return config_home
+
+    def delegation_config(self, config_home: Path) -> Path:
+        """`delegation.json` TEMPORAL (006-003 §2.2/D3, destino=`opencode` por
+        A-2) con el modelo de `CDAD_OPENCODE_MODEL` para el rol del paquete:
+        la fuente ÚNICA del `model_configured` que observa el I8."""
+        path = (config_home / DELEGATION_DIR_NAME / DELEGATION_FILE_NAME)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({
+                "version": 1,
+                "models": {
+                    RUNTIME: {
+                        DELEGATION_ROLE: os.environ[MODEL_VAR].strip(),
+                    },
+                },
+            }, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8")
+        return path
+
+    def run_real_delegate(self, config: Path, *,
+                          config_home: Path) -> subprocess.CompletedProcess:
         """La INTERFAZ COMÚN stageada (instalación aislada) despacha al
-        destino `opencode` con la exec-config temporal. El env se HEREDA
-        (las credenciales del runtime viven en SU base — el runtime es el
-        real del dueño, PD-8 enmendada) y `CDAD_INSTALL_ROOT` apunta al
-        tempdir del test: ningún componente de CDAD instala o escribe en el
-        HOME del dueño."""
+        destino `opencode` con la exec-config temporal y el `delegation.json`
+        del test. El env se HEREDA (las credenciales del runtime viven en SU
+        base — el runtime es el real del dueño, PD-8 enmendada) salvo
+        `XDG_CONFIG_HOME`, que se redirige al temporal del test (006-003 D3:
+        el modelo sale de ahí, nunca de la config del dueño) y
+        `CDAD_INSTALL_ROOT`, que apunta al tempdir: ningún componente de CDAD
+        instala o escribe en el HOME del dueño."""
         return subprocess.run(
             [sys.executable, str(self.staged),
              "--project-root", str(self.root),
@@ -319,7 +373,9 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
              "--destination", "opencode",
              "--exec-config", str(config)],
             capture_output=True, text=True,
-            env={**os.environ, "CDAD_INSTALL_ROOT": str(self._tmp)},
+            env={**os.environ,
+                 "CDAD_INSTALL_ROOT": str(self._tmp),
+                 "XDG_CONFIG_HOME": str(config_home)},
             timeout=DELEGATE_SUBPROCESS_TIMEOUT)
 
     def assert_token_in_delivery(self) -> None:
@@ -347,13 +403,21 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
         succeeded`; (c) el texto final contiene el token fijo; (d) el recibo
         queda `semantic_status:"pending"` (entrega ≠ gate, INV-5); (e) el
         registro I8 del WORKER toma `session`/`model_reported` de la fila
-        durable con provenance, y `runtime`/`model_configured` de la
-        configuración (variables de entorno)."""
+        durable con provenance (PD-6); `runtime` viene de la configuración de
+        ejecución y `model_configured` del `delegation.json` del test
+        (006-003 D3/U4: reformulación declarada — la única fuente del modelo
+        de la delegación externa)."""
         self.assert_derived_agents_published()
         config = self.integration_config()
+        config_home = self.delegation_home()
+        delegation = self.delegation_config(config_home)
+        self.assertTrue(
+            delegation.is_file(),
+            msg="precondición (fixture, 006-003 D3/U4): no se escribió el "
+                f"delegation.json del test en {delegation}")
         records_before = dispatch_records(self.root, self.execution_id)
 
-        proc = self.run_real_delegate(config)
+        proc = self.run_real_delegate(config, config_home=config_home)
         out = self.envelope(proc, "PD-8 integración real")
 
         # (a) La corrida REAL termina completed (señal durable de la base
@@ -410,8 +474,9 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
         self.assert_receipt_no_gate()
 
         # (e) El registro I8 del WORKER: session/model_reported desde la
-        # FILA DURABLE con provenance (PD-6); runtime/model_configured de
-        # la configuración de ejecución.
+        # FILA DURABLE con provenance (PD-6); runtime de la configuración de
+        # ejecución y model_configured del delegation.json del test
+        # (006-003 D3/U4: reformulación declarada).
         interface_path = self.assert_attempt_is_in_ledger(out, records_before)
         after = dispatch_records(self.root, self.execution_id)
         worker_records = [
@@ -465,9 +530,11 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
                 f"(PD-6): {record['runtime']!r}")
         self.assertEqual(
             record["model_configured"], os.environ[MODEL_VAR].strip(),
-            msg=f"model_configured del registro no es el de la "
-                f"configuración ({MODEL_VAR}; PD-6): "
-                f"{record['model_configured']!r}")
+            msg=f"model_configured del registro no es el declarado en el "
+                f"delegation.json del test ({MODEL_VAR}; 006-003 §2.2/D3 — "
+                f"única fuente del modelo de la delegación externa; "
+                f"reformulación declarada, la exec-config ya no declara "
+                f"`model`): {record['model_configured']!r}")
 
         # El registro de la INTERFAZ se conserva: session desde el envelope
         # y model_reported honestamente null (la interfaz no lee el store,
