@@ -207,3 +207,9 @@ Al despachar el RED de la enmienda 001, `prepare` falló (la re-aprobación de l
 
 - Review-fix B-1: RED `5c85d68` → GREEN `a25fc20`. Re-review (glm): B-1 cerrado, 0 bloqueantes; NF-1 y `sub-agent-strategies.md:49-50` (frontmatter de permisos y hooks de Claude Code en la skill) a deuda de capas.
 - Suite completa: `1119 passed, 5 skipped` (21:47), sin fallas.
+
+## Despliegue y push tras 006-002 (2026-10-18, orden del dueño)
+
+- **Despliegue en HOME** de `e4d17e3` con perfil `basic` y respaldo previo. El primer `install.sh --check` mostró que las dos referencias retiradas por 006-002 (`opencode-delegation.md`, `claude-code-delegation.md`) seguían instaladas como `pending_removal`: el instalador no borra lo que dejó de desplegar, y solo `--uninstall` lo retira. Se corrió `--uninstall` (borra solo lo registrado en el manifiesto) y se reinstaló con `basic`. Queda solo DT-8 (`.pyc`).
+- **Hallazgo para 006-003:** un despliegue normal deja en HOME archivos retirados que un orquestador puede seguir leyendo. 006-003 toca el instalador y es el lugar para resolverlo.
+- **Push:** `main` a `origin` (`81ee8d3..41fc8b6`, fast-forward), tras barrer la anonimización sobre todo lo publicado; se saneó un id de sesión de fixture en `rf-red.md` de 006-001. No se publicaron ramas privadas ni los archivos sin trackear de otro agente.
