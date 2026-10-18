@@ -8,6 +8,42 @@ _(ninguna)_
 
 ## Done
 
+- **006-002-delegation-by-layer** (2026-10-18, epic 006) — segunda feature de
+  `epic-006-opencode-concurrency` y corrección de la **regla de delegación**: el texto instalable tenía el
+  **mismo mecanismo de runtime en cinco lugares** y un consumidor real leyó la skill como si **mandara** el
+  adaptador CLI dentro de su propio runtime (1.145 turnos, 6 compactaciones, ninguna sesión hija). Aplica el
+  **principio de capas del dueño** (`skills` metodología neutral; `agentes` comportamiento por runtime;
+  `scripts` dependientes del SO; **adaptadores sólo para otro runtime o uno sin delegación propia**) y el de
+  `plan.md` §9 (**los modelos los fija la configuración, nunca el orquestador ni los scripts**). **Contrato:**
+  `spec.md` (PD-1..PD-11, INV-1..INV-8, D-1..D-7) + `plan.md` (A-1, A-2) aprobados el 2026-10-17 bajo la HITL
+  delegada del epic, con **enmiendas 001/002 del dueño** sobre `/tmp` (002 reemplaza a 001: el límite era de
+  su servidor, no de la metodología). **Producto (16 archivos, +255/−435):** sección
+  `<!-- cdad-section:delegation -->` en `sources/agents/adapters/{opencode,claude-code}.md` compuesta por
+  `scripts/cdad-generate.py` (que **pierde el bloque hardcodeado** del orden) y regenerada en los dos
+  orquestadores; §4 neutral; retiro de las **dos referencias por runtime** (su detalle histórico queda **no
+  instalable** en `docs/evidence/runtime-delegation/`, byte-idéntico salvo el encabezado declarado);
+  `cli-delegation.md` como **sólo contrato del adaptador**; `SKILL.md` §2 sin modelos (**F001 reformulado**);
+  equivalencia de transporte en `references/re-entry.md`; las **4 reglas de contexto** en
+  `sources/roles/orchestrator.md` (la 4ª = **rutas estables del workspace**; **ningún texto instalable nombra
+  `/tmp`**). **Gates RED→GREEN por unidad:** U1 `a2db8f8` (9 failed / 1 passed) → `51ab88d`; U2 `4e17dcc` →
+  `8cf2d75`; U3 `2665d55` → `5ad04e2` (**testfix** `20bb835`: el selector de evidencia pasó de **416** a **2**
+  copias, sin cambiar aserciones); U4 `3c828ad` → `8c05755`; U5 `1125c53` → `8d4b302`; U6 `edc58ae` →
+  `900fa58`; **arreglo de regresiones de U1** `7d13a6d` (A2 ruta `<skill-dir>`; P1 el recibo no reestata los
+  pasos); enmiendas sobre `/tmp` `b9d9455`→`4c068ea` y `300a05c`→`a3b54e6`. **Aceptación real (U8):**
+  worktree aislado con los agentes de `make staging PROFILE=basic` en `.opencode/agents/` del proyecto
+  (**HOME sin tocar**); el orquestador (deepseek) despachó al reviewer por **`task` nativo** — una sesión hija
+  `cdad-reviewer` (familia glm) `succeeded`, **56 comandos bash, ninguno** con el adaptador o un `run` del
+  CLI—, escenificó el texto final en `.cdad/inbox` y `receive` cerró **`pending`**; el paquete pasó al repo
+  principal byte-idéntico (intento `at-006-002-u8-001`). **Review formal:** **1 bloqueante / 4 opcionales /
+  4 abstenciones** (**B-1**: alias de modelo de runtime y nombre del gateway de despliegue en
+  `sub-agent-strategies.md:51`, que **escapaba al oráculo declarado**), cerrado por review-fix
+  (`5c85d68` RED → `a25fc20` GREEN, 1 línea) con **re-review: B-1 CERRADO, 0 bloqueantes, 1 opcional nuevo
+  (NF-1)**. **Gate de cierre:** suite **1119 passed, 5 skipped**, sin fallas; `make validate` **161 PASS /
+  1 FAIL** (F011 = **DT-8**, drift preexistente de la instalación de HOME); `make staging PROFILE=basic &&
+  make agents` determinista. **Deuda:** O-1..O-4, **NF-1**, `sub-agent-strategies.md:49-50`, el **despacho
+  erróneo detenido** (registro sin recibo del intento `at-006-002-u6b-red-001`), **DT-8**, y que el
+  consumidor **todavía prescribe el adaptador en su handoff** (fuera de alcance; lo actualiza su dueño).
+  **El epic NO se cierra (2/4).** **Siguiente:** `006-003-installer-single-profile-delegation-config`.
 - **006-001-opencode-concurrency-reliability** (2026-10-17, epic 006) — primera feature de
   `epic-006-opencode-concurrency` y corrección del **modo de ejecución del adaptador OpenCode** ante la
   **contención medida** del store compartido (dos despachos reales del implementer terminaron `failed` con
@@ -736,14 +772,12 @@ _(ninguna)_
 
 ## Queued
 
-- **epic-006 — cola y pendientes del dueño:** **006-002-delegation-by-layer** (regla de delegación por capas
-  y principio «los modelos los fija la configuración, nunca el orquestador ni los scripts»),
-  **006-003-installer-single-profile-delegation-config** (instalador siempre `basic` y sin mapa de modelos
-  —reemplaza ADR-007—, config de delegación y verificación de familias del reviewer) y
-  **006-004-active-decisions-table** (sección «Decisiones vigentes» del Memory Bank). **Redespliegue post-fix**
-  de 006-001 en HOME (lo instalado es anterior al review-fix que cerró B1/B2), pendiente de la orden del
-  dueño; **AC-7** (recepción real del consumidor y declaración de `mode: "service"` en sus configs) y la
-  **credencial** para la concurrencia real en `mode: server`, también del dueño.
+- **epic-006 — cola y pendientes del dueño:** **006-003-installer-single-profile-delegation-config**
+  (instalador siempre `basic` y sin mapa de modelos —reemplaza ADR-007—, plantilla de config de delegación y
+  credencial del servidor, y verificación de familias del reviewer) y **006-004-active-decisions-table**
+  (sección «Decisiones vigentes» del Memory Bank). **Redespliegue en HOME pendiente de la orden del dueño**
+  (lo instalado es `6978709`, 006-001 completo redesplegado el 2026-10-17, y **no** incluye 006-002); **AC-7** (recepción real del
+  consumidor y declaración de `mode: "service"` en sus configs) (PD-6 de 006-001 en `mode: server` quedó resuelto después de su cierre: 3 despachos concurrentes `completed`, `execution.md`).
 - CI del repo (GitHub Actions) — deuda de bootstrap.
 - Dogfood pendiente: make lint (H3 cdad-004), §5.6 con worktree real,
   receiving-feedback con bloqueantes reales, stage-debugging con bug real,
@@ -796,7 +830,7 @@ _(ninguna)_
 
 ---
 
-Última actualización: 2026-10-17
+Última actualización: 2026-10-18
 
 - 2026-10-17 — 006-001-opencode-concurrency-reliability cerrada (epic 006, primera feature): **el modo de
   ejecución de la delegación OpenCode pasa a ser explícito y verificable** —`server` | `service` |

@@ -487,6 +487,61 @@ catch-all deny o pares de comandos durante la simplificación.
   `docs/specs/006-001-opencode-concurrency-reliability/spec.md` (PD-1..PD-14, INV-1..INV-10). Aviso de cota:
   los fixtures de tiempos usan cotas de **2 s** y son frágiles bajo carga del host (**DT-9**).
 
+### Delegación por capa — el mecanismo lo declara el agente del runtime, la skill es neutral y el adaptador sólo cruza runtimes (epic 006, 2026-10-18)
+
+- **El mecanismo de despacho pertenece a la capa del runtime, no a la skill.** Cada orquestador generado
+  declara su mecanismo **nativo** (`task` + `subagent_type: cdad-<rol>` en OpenCode; `Agent` +
+  `subagent_type` en Claude Code), el mapeo rol→subagente con sufijo de stack, la **prohibición
+  intra-runtime** del adaptador CLI y la declaración de familia (abajo). La regla vive en
+  `sources/agents/adapters/{opencode,claude-code}.md` como bloque `<!-- cdad-section:delegation -->` y el
+  generador la compone (`REQUIRED_ADAPTER_SECTIONS` en `scripts/cdad-generate.py`); **nadie edita
+  `agents/**` a mano** (fuente única de agentes, epic 004).
+- **La skill queda neutral: metodología, no herramientas.** `skills/cdad-cycle/SKILL.md` §4 conserva los
+  **siete puntos** en abstracto (principio, orden, regla de adaptadores, invariantes de rol, spawn guard,
+  recibo, paquete/reentrada independientes del transporte) **sin nombrar runtime ni modelo concreto**;
+  `handoff-prompts.md` y `sub-agent-strategies.md` son plantillas. La ausencia se verifica con un oráculo de
+  **formas de herramienta** (código en línea `` `task` ``, `` `delegate` ``, `` `Agent` ``; el token
+  `subagent_type`; `opencode run`; `sessions_spawn`; `Agent tool`) y de **modelos concretos** — **nunca** con
+  la palabra suelta *task* (prosa como «atomic task» no matchea). `references/context-meter.md` es
+  **exclusión declarada**: nombra `task`/`subagent` como **datos de medición**, no como instrucción.
+- **El adaptador sirve para otro runtime o para uno sin delegación propia.** Sirve para orquestar agentes de
+  **otro** runtime o de uno **sin** delegación nativa; en cualquier otro caso se delega con el mecanismo
+  nativo. La regla de elección **por transporte** salió de `references/cli-delegation.md`, que queda como
+  **contrato del adaptador**; las dos referencias por runtime (`opencode-delegation.md`,
+  `claude-code-delegation.md`) **salieron del árbol instalable** y su detalle histórico/verificación vive
+  **no instalable** en `docs/evidence/runtime-delegation/` (byte-idéntico salvo el encabezado que declara
+  «no instalable; la regla vigente no está aquí»). Nada instalable apunta a esa copia.
+- **El modelo lo fija la configuración, nunca el orquestador ni el script.** `SKILL.md` §2 pierde la columna
+  de familia de modelo y el párrafo de perfiles; el orquestador **pasa un modelo sólo si viene de la
+  configuración del entorno** y **nunca lo elige ni lo inventa**. Con un perfil que **no** fija modelos
+  (`basic`) la familia distinta del reviewer **no** está garantizada por construcción: se **declara** y se
+  **registra el intento** (`runtime`, `model_configured`, `model_reported`, `session`; `null`/`unknown` lo no
+  observado, y el gate de review escribe «invariante no garantizado» en vez de omitirlo). El script de
+  comparación de familias, la config de delegación y la sustitución de ADR-007 son de **006-003**.
+- **El paquete y el recibo son independientes del transporte.** El **mismo** `receive` cierra cualquier ruta:
+  el despacho nativo devuelve **TEXTO FINAL** en la sesión del orquestador, que escenifica los **bytes
+  exactos** bajo `.cdad/inbox` + `RESULT.json` y corre `receive` → `validate-receipt` → `materialize` →
+  transición; el recibo queda **`semantic_status: pending`** (recibir no aprueba nada). La equivalencia está
+  declarada en `references/re-entry.md` (protocolo de materialización) y **enlazada** desde §4 y desde cada
+  sección `delegation`.
+- **Disciplina de contexto del orquestador: cuatro reglas.** (1) orientarse con la vista compacta `status`
+  **primero**, sin volcados de state/ledger/skill; (2) **rotar la sesión** en los bordes de tarea, no a mitad
+  de unidad; (3) **no reparar por su cuenta** — re-despachar el rol nombrando el defecto; (4) lo que debe
+  durar, dejar evidencia o leer otro proceso o rol va a **rutas estables del workspace** (`.cad/inbox` para el
+  recibo). El **Ningún texto instalable nombra `/tmp`**: el dueño lo sacó de la metodología (enmienda 002 — el
+  límite era de su servidor, no de la metodología) y el oráculo exige la regla de rutas estables **y** la
+  ausencia del literal en `skills/**` y en los agentes generados. `references/orientation.md` §1 sigue siendo
+  el **dueño** de «vista primero»: la fuente lo **cita** y no lo duplica.
+- **Límite honesto:** el oráculo prueba que la regla **existe**, no que se **obedezca**. La única evidencia de
+  comportamiento es el transcript de la corrida de aceptación —una sesión hija `cdad-reviewer` despachada por
+  `task`, 56 comandos sin adaptador— y es una **muestra**; en esa misma corrida el orquestador leyó el código
+  del CLI para resolver el arranque (contra el espíritu de la regla 1) y tomó notas de orquestación como
+  mandato.
+- **Referencia operativa:** `sources/agents/adapters/*.md`, `sources/roles/orchestrator.md`,
+  `skills/cdad-cycle/SKILL.md` y `skills/cdad-cycle/references/re-entry.md`, `docs/evidence/runtime-delegation/`;
+  **ADR-032**; contrato normativo en `docs/specs/006-002-delegation-by-layer/spec.md` (PD-1..PD-11,
+  INV-1..INV-8, D-1..D-7, enmiendas 001/002).
+
 ### Medición de contexto — registro neutral opcional, medidor read-only que nunca aprueba (epic 005, 2026-10-11)
 
 - **El formato de medición es neutral respecto del runtime y opcional para la metodología.** El

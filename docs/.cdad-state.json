@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": "006-002-delegation-by-layer",
-  "current_stage": "tdd",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -28,8 +28,13 @@
     },
     {
       "id": "006-002-delegation-by-layer",
-      "status": "in-progress",
-      "opened_at": "2026-10-17T23:06:35.827974+00:00"
+      "status": "done",
+      "opened_at": "2026-10-17T23:06:35.827974+00:00",
+      "closed_at": "2026-10-18T10:54:54.814612+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/006-002-delegation-by-layer/closure.md",
+        "sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
+      }
     },
     {
       "id": "006-003-installer-single-profile-delegation-config",
@@ -7944,6 +7949,102 @@
         "docs/specs/006-002-delegation-by-layer/rereview.md": "f3ccf840dda838084d91b9a878580b825b1f86541d43b21f57e45f4cbd97606f"
       },
       "note": "Re-review glm: B-1 CERRADO; 0 bloqueantes; NF-1 opcional y lineas 49-50 de sub-agent-strategies.md a deuda de capas; 3 abstenciones."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "memory",
+      "substage": "memory",
+      "at": "2026-10-18T10:54:54.451007+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "3738e43ae552acef0ae8f862d65641caf82590edb24e6b7fb691ec143feb6889",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "memory",
+        "substage": "memory",
+        "packet_id": "006-002-delegation-by-layer-scribe-memory-001",
+        "receipt_sha256": "3c88bc2a3b09ed34c1d3391f42ec9edc80725ec32ec7e66aa38085e820d760fe",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "f225512d3c36572f4c56f5b74c65d030740e033ba89941f481c875462f74772d"
+          ],
+          [
+            "docs/adr/ADR-032-delegacion-por-capa-agente-del-runtime-dueno-del-mecanismo.md",
+            "7cfaf9d916f92df0d7386fef308484004136ff399d2c23302d569a998e1aacee"
+          ],
+          [
+            "docs/progress.md",
+            "a8fe8862d85a2fe5fa009f36a28d068b859e4019eb180df07212bdb167d5da5f"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "17666cdb00b56e26831a961ba945b2cdb0e2244af9a787d5a6125ba0046692f8"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-scribe-memory-001/receipt.json",
+      "receipt_sha256": "3c88bc2a3b09ed34c1d3391f42ec9edc80725ec32ec7e66aa38085e820d760fe",
+      "artifacts": {
+        "docs/activeContext.md": "f225512d3c36572f4c56f5b74c65d030740e033ba89941f481c875462f74772d",
+        "docs/progress.md": "a8fe8862d85a2fe5fa009f36a28d068b859e4019eb180df07212bdb167d5da5f",
+        "docs/systemPatterns.md": "17666cdb00b56e26831a961ba945b2cdb0e2244af9a787d5a6125ba0046692f8",
+        "docs/adr/ADR-032-delegacion-por-capa-agente-del-runtime-dueno-del-mecanismo.md": "7cfaf9d916f92df0d7386fef308484004136ff399d2c23302d569a998e1aacee"
+      },
+      "note": "Borradores del scribe aprobados por Pablo (2026-10-18), aplicados por el orquestador con dos correcciones: lo instalado es 6978709 (006-001 completo) y PD-6 de 006-001 resuelto despues de su cierre."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-18T10:54:54.814612+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "b80d00940aee322f85316b755c53f84fb4a8e05266f1b790b377378344c04a23",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/006-002-delegation-by-layer/closure.md",
+          "sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Pablo",
+      "closure_path": "docs/specs/006-002-delegation-by-layer/closure.md",
+      "closure_sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7958,7 +8059,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T03:41:53.464346+00:00",
+  "last_updated": "2026-10-18T10:54:54.814612+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8065,14 +8166,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "006-002-delegation-by-layer-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "dispatched",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
-  },
-  "tdd_substage": "review"
+  "active_packet": null,
+  "tdd_substage": "memory"
 }

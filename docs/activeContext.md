@@ -4,6 +4,164 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-18 — Feature: 006-002-delegation-by-layer (epic 006)
+
+**Cerrada el 2026-10-18 (ciclo técnico completo).** Segunda unidad de `epic-006-opencode-concurrency`.
+Corrige la **regla** que llevó al orquestador de un consumidor real a delegar **por el adaptador CLI
+dentro de su propio runtime** —1.145 turnos, 6 compactaciones y ninguna sesión hija; todos sus
+despachos por el adaptador con `--destination opencode`
+(`docs/epics/epic-006-opencode-concurrency/execution.md` §«Hallazgo: por qué el orquestador del
+consumidor despacha por bash»)—. El texto instalable tenía el **mismo mecanismo de runtime en cinco
+lugares a la vez** mientras los agentes generados llevaban una regla neutral
+(`docs/specs/006-002-delegation-by-layer/spec.md` §1). **Contrato:** `spec.md` (PD-1..PD-11,
+INV-1..INV-8, D-1..D-7) y `plan.md` (con **A-1/A-2**), aprobados el **2026-10-17** por el orquestador
+Claude bajo la **HITL delegada del epic**; **dos enmiendas del dueño** sobre `/tmp` (001 y 002)
+agregadas al `spec.md`. **El epic NO se cierra:** quedan **006-003** y **006-004**.
+
+**Principio de capas (del dueño, `plan.md` §8).** **skills** = la metodología, general y única;
+**agentes** = el comportamiento por runtime; **scripts** = independientes del runtime y dependientes
+del SO; **adaptadores** = sólo para orquestar agentes de **otro** runtime o de un runtime **sin**
+delegación propia; en cualquier otro caso se delega con el mecanismo nativo. Y el principio de
+`plan.md` §9: **los modelos los fija la configuración, nunca el orquestador ni los scripts**.
+
+**Producto (U1 → U2 → U3 → U4 → U5 → U6, más dos arreglos).** Rango completo de la feature
+`git diff f1292fb..HEAD` = **54 archivos, +6794/−328** (**72 commits**, 20 de ellos de producto/tests,
+todos bajo `skills/`, `sources/`, `scripts/`, `agents/`, `tests/`, `docs/`). Producto: **16 archivos,
++255/−435** (la merma neta es el retiro de las dos referencias instalables).
+- **U1** — sección `<!-- cdad-section:delegation -->` en `sources/agents/adapters/{opencode,claude-code}.md`
+  (bloque único; `REQUIRED_ADAPTER_SECTIONS` suma `"delegation"` en `scripts/cdad-generate.py`), y el
+  generador la compone en el orquestador y **elimina el bloque hardcodeado** del orden; los agentes se
+  regeneran (`agents/cdad-orchestrator.md`, `agents/claude-code/cdad-orchestrator.md`). RED `a2db8f8`
+  (**9 failed / 1 passed**, todos por aserción) → GREEN `51ab88d`.
+- **U2** — §4 neutral y skill sin herramientas de runtime. RED `4e17dcc` → GREEN `8cf2d75`.
+- **U3** — retiro de las dos referencias por runtime del árbol instalable y `cli-delegation.md` como
+  **sólo contrato del adaptador**. RED `2665d55` → GREEN `5ad04e2`.
+- **U4** — `SKILL.md` §2 sin modelos; **F001 reformulado, no borrado**. RED `3c828ad` → GREEN `8c05755`.
+- **U5** — equivalencia de transporte en `references/re-entry.md` + enlaces. RED `1125c53` → GREEN `8d4b302`.
+- **U6** — las cuatro reglas de contexto del orquestador (`sources/roles/orchestrator.md`; el 4º
+  condicionado a las enmiendas). RED `edc58ae` → GREEN `900fa58` (focal 7; 337 passed / 2 skipped en
+  los tests que leen orquestadores).
+- **Arreglo de regresiones de U1** (`7d13a6d`, detectadas por módulos ajenos a la ficha): **A2** — toda
+  invocación del CLI en la sección lleva la ruta derivada `<skill-dir>`; **P1** — el recibo **deja de
+  restatar** los pasos y apunta al cableado del orquestador y a «Orchestrator materialization
+  protocol» (así el párrafo compuesto vuelve a converger con la fuente). 80 passed + 191 passed / 2 skipped.
+- **Testfix de U3** (`20bb835`, sólo `tests/`): el selector de evidencia devolvía **416** documentos de
+  `docs/**`; ahora selecciona por **autodeclaración** → **2** copias preservadas. Las aserciones **no**
+  cambiaron.
+- **Enmiendas del dueño sobre `/tmp`.** **001** (`b9d9455` → `4c068ea`, relativizar la regla 4) quedó
+  **reemplazada** por la **002** (`300a05c` → `a3b54e6`): el límite de `/tmp` era **de su servidor**, no
+  de la metodología; la regla 4 queda como **rutas estables del workspace** (`.cdad/inbox` para el
+  recibo) y **ningún texto instalable nombra `/tmp`** — ni para prohibirlo ni para admitirlo.
+
+**Aceptación real U8 — despacho nativo medido (PD-4).** Worktree descartable con `.cdad` copiado; los
+agentes de `make staging PROFILE=basic` puestos en **`.opencode/agents/` del proyecto** y la skill del
+repo en `.opencode/skills/`; **HOME no se tocó**. Encargo de **una línea** («despachar el reviewer de
+este paquete»). **Evidencia (session_v2 en sólo lectura):** sesión padre `succeeded`; **una** sesión
+hija `cdad-reviewer` (familia **glm**) `succeeded`, **despachada por `task`**; **56 comandos bash,
+ninguno** invoca el adaptador ni un `run` del CLI; el texto final se escenificó **tal cual** en
+`.cdad/inbox` y `receive` cerró con recibo **`pending`**. El paquete pasó al repo principal
+**byte-idéntico**, despacho registrado como intento `at-006-002-u8-001` y recibo emitido con los
+mismos bytes (`execution.md` §«006-002 U8»). Es **evidencia de comportamiento, no prueba**.
+
+**Lo medido y lo aprendido de U8 (tres observaciones, ninguna investigada a fondo).**
+1. **Los agentes que `prepare` publica en `.opencode/agents/` del proyecto salen de la versión
+   instalada en HOME, no del repo** (coincide con lo que declara
+   `docs/runtime-adopted-version.md` §«Agentes de proyecto»). Para la corrida hubo que poner ahí los
+   de `make staging PROFILE=basic`; OpenCode **prefiere los de proyecto sobre los globales del mismo
+   nombre** (verificado con `opencode debug agents`). Consecuencia práctica: la aceptación del texto
+   nuevo **no** se puede hacer contra HOME sin desplegar.
+2. **Un `opencode.json` de proyecto con `agent.<name>.model` dejó la lista de agentes vacía**
+   (observación registrada, **no investigada**). El modelo del reviewer se configuró entonces en el
+   **frontmatter de su agente** en ese proyecto, que es lo que el registro del intento declara como
+   `model_configured`.
+3. **El orquestador de la corrida leyó código fuente del CLI** (`sed`/`grep` sobre los scripts) para
+   resolver el uso de `begin` y del descriptor — **contra el espíritu de la regla 1** (orientarse con
+   la vista compacta, sin volcados) — y **tomó las notas de orquestación de `execution.md` como
+   mandato**, razonando que el epic prescribía la herramienta nativa de Claude Code. Las dos van a la
+   review como **uso real**: una regla escrita **no** es una regla obedecida (es exactamente el límite
+   honesto que declara PD-6), y **las notas dirigidas al orquestador del epic no son instrucciones
+   para el orquestador de una corrida**.
+
+**Review formal (etapa 4) — 1 bloqueante / 4 opcionales / 4 abstenciones** (`review.md`; diff
+`f1292fb..8c4ead5`, 49 archivos +6130/−327; reviewer de familia **glm**, distinta a la del implementer,
+familia **deepseek**). **B-1 (BLOQUEANTE):** `sub-agent-strategies.md:51` nombraba **alias de modelo de
+runtime y el nombre del gateway de despliegue** en texto instalable — viola PD-1/INV-2 y **escapa al
+oráculo declarado** (alias sin dígito y gateway fuera de `PROVIDER_RE`; el reviewer lo probó
+mecánicamente). El árbol **se contradecía con su propia frase nueva** de §2. Opcionales a deuda:
+**O-1** el título «Delegation (adapter)» se lee como si el adaptador fuera el sujeto; **O-2** sobrevive
+en el cuerpo compuesto una línea del canal muerto del CLI; **O-3** la cita entre `orchestrator.md` y
+`orientation.md` §1 quedó **invertida** respecto de lo declarado en el plan (un dueño por regla, sin
+duplicación: PD-6 cumplido); **O-4** ruido cross-runtime/deployment en el cuerpo compartido de «Bash
+policy».
+
+**Review-fix y re-review (sólo B-1)** — RED `5c85d68` (**1 failed / 12 passed**; el oráculo
+extendido, autocontrolado con 3 guards) → GREEN `a25fc20` (**1 archivo, 1 línea**;
+`grep -RniE 'haiku|sonnet|opus|fable|<gateway>' skills/` → **0**). `rereview.md`: **B-1 CERRADO**
+(reproducido mecánicamente contra el árbol viejo: **5 ofensores** en esa línea; U2/U4 intactos 13
+passed; focal 006-002 **41 passed**), **0 bloqueantes**, **NF-1** nuevo (el token del gateway en el
+oráculo es **de instancia, no de clase** → deuda de generalización, no defecto del cierre) y juicio
+separado sobre `sub-agent-strategies.md:49-50` (frontmatter de permisos y hooks del otro runtime:
+**enforcement**, no despacho ni modelo → deuda de capas, no bloqueo).
+
+**Suite de cierre (una vez, por quien cierra).** `1119 passed, 5 skipped` (2026-10-18), **sin fallas**.
+`make validate`: **161 PASS / 1 FAIL = F011** (`validate-subagents.sh`), **drift de la instalación de
+HOME, preexistente y declarado (DT-8)**, reproducido por el reviewer. `make staging PROFILE=basic &&
+make agents` **determinista** (segundo `make agents` → `git diff` vacío; `diff -r` staging↔`agents/` = 0)
+y con **0 ocurrencias del prefijo de gateway** en los orquestadores bajo `basic`. **Frontera PD-8
+limpia:** sin `install.sh`, sin `scripts/cdad-models.sh`, sin el adaptador `cdad_delegate*.py`, sin
+`ADR-007*`, sin el handoff/config del consumidor.
+
+**Decisiones relevantes.** **D-1** cada regla de delegación por runtime vive en **su agente
+orquestador**, generado desde una sección nueva del **adaptador fuente**; la alternativa «referencia
+por runtime dentro de la skill» se **descartó con evidencia** (`install.sh` copia el **mismo** árbol de
+skill a las tres bases). **D-2** §4 conserva los siete puntos **sin nombrar runtime ni herramienta**.
+**D-3** declaración en tres partes: (1) por perfil — con un perfil que **no** fija modelos la familia
+distinta **no** está garantizada, y el orquestador **ni elige ni inventa** modelo (pasa uno **sólo** si
+viene de la configuración del entorno); (2) registro
+`runtime`/`model_configured`/`model_reported`/`session` con `null`/`unknown` lo no observado, y el gate
+de review **declara** «invariante no garantizado» en vez de omitirlo; (3) salida legítima = handoff a
+chat nuevo donde **el usuario** elige. El **script** de comparación de familias es **006-003**, no
+esta feature. **D-4** equivalencia de transporte en `re-entry.md`, enlazada desde §4 y desde cada
+sección `delegation`. **D-5** las 4 reglas de contexto en la fuente del orquestador, con
+`orientation.md` §1 como dueño de «vista primero». **D-6** la columna de familias y el párrafo de
+perfiles salen de `SKILL.md` §2; **F001 reformulado**; `install.sh`, `scripts/cdad-models.sh` y
+**ADR-007 no se tocan** (son de 006-003). **D-7** el consumidor queda **fuera de alcance**: su handoff
+**todavía prescribe el adaptador** y lo actualiza **su dueño**.
+
+**Deuda detectada (abierta, con condición).** **O-1..O-4** de la review (título de la sección; línea
+del canal muerto del CLI en el cuerpo compuesto; dirección de la cita con `orientation.md` §1; ruido
+cross-runtime en el cuerpo compartido de «Bash policy»). **NF-1**: el oráculo del gateway es **de
+instancia** (fija el literal) — migrarlo a una lista configurada o documentar la frontera.
+**`sub-agent-strategies.md:49-50`**: sintaxis de frontmatter de permisos y hooks del otro runtime en la
+skill — aceptable como referencia por el criterio vigente, pero **idealmente va a la capa agente**.
+**Despacho erróneo detenido** (2026-10-17): al despachar un RED, `prepare` falló y el helper local
+lanzó igual el paquete anterior; el orquestador lo detuvo a los 5 s **sin cambios en el árbol ni
+commits**, y queda **un registro de despacho sin recibo** (intento `at-006-002-u6b-red-001`); el helper
+`prep-dispatch.sh` **aborta si `prepare` falla**. **DT-8** (`__pycache__` en el staging del instalador;
+es también la causa única del `install.sh --check` FAIL). Y **el consumidor todavía prescribe el
+adaptador en su handoff** (fuera de alcance, D-7; lo actualiza su dueño).
+
+**Lecciones de proceso.** (1) **El oráculo declarado puede tener un agujero y la review lo encontró**:
+B-1 vivía en la superficie que U2 **ya había declarado** cubierta, y sólo salió al probar el oráculo
+contra la clase (alias + gateway), no contra el caso. (2) **Test y texto no comparten commit**: por eso
+A-1 **disolvió U7** — cada unidad reformula en su RED las aserciones acopladas de su superficie y su
+GREEN mueve el texto sin tocar `tests/`. (3) **Una regla escrita no es una regla obedecida**: la
+corrida real **midió** el despacho nativo (56 comandos, 0 adaptador) y a la vez mostró al orquestador
+**leyendo el código del CLI** y tomando **notas de orquestación como mandato**. (4) **`prepare`
+publica agentes de HOME, no del repo**: para aceptar texto nuevo hay que **desplegar** o aislar a mano.
+
+**Estado del epic.** `epic-006-opencode-concurrency` sigue **abierto** (`features-loop`): **006-001 y
+006-002 `done`** (**2/4**), y **en cola** —cada una con su enmienda al plan aprobada por el dueño el
+2026-10-17— **006-003-installer-single-profile-delegation-config** (instalador **siempre `basic`**, sin
+mapa de modelos —**reemplaza ADR-007**—, plantilla de config de delegación y credencial del servidor, y
+el invariante del reviewer de otra familia como **verificación de configuración**) y
+**006-004-active-decisions-table** (la sección «Decisiones vigentes» del Memory Bank). **El epic NO se
+cierra.** **Redespliegue en HOME pendiente de la orden del dueño:** lo instalado es `6978709` (006-001 completo, redesplegado el 2026-10-17) y **no** incluye 006-002; receta
+`make staging PROFILE=basic && bash install.sh --force --basic && bash install.sh --check`.
+**Siguiente:** `006-003-installer-single-profile-delegation-config`.
+
+---
+
 ## 2026-10-17 — Feature: 006-001-opencode-concurrency-reliability (epic 006)
 
 **Cerrada el 2026-10-17 (ciclo técnico completo).** Primera unidad de `epic-006-opencode-concurrency`, nacida
