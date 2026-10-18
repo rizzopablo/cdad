@@ -229,3 +229,9 @@ Status: Approved by orquestador Claude (HITL delegada epic-006) on 2026-10-17; V
 El «nunca `/tmp`» venía de una configuración de seguridad del SO que aislaba `/tmp` por proceso; el dueño la quitó y pidió relativizar la regla. **PD-6 regla (4)** e **INV-4** quedan así: `/tmp` se admite para borradores efímeros de un mismo proceso; lo que debe durar, dejar evidencia o leerlo otro proceso o rol va a rutas estables del workspace (`.cdad/inbox` para el recibo; el workspace declarado para lo demás), porque `/tmp` se limpia y no deja evidencia. El oráculo de ausencia de `/tmp` deja de prohibir toda mención: prohíbe instrucciones que usen `/tmp` como canal entre procesos o roles, o como lugar de un artefacto, recibo o evidencia.
 
 Status: enmienda 001 approved by Pablo on 2026-10-17 (pedido explícito del dueño).
+
+## Enmienda 002 — `/tmp` fuera de la metodología (dueño, 2026-10-17)
+
+El dueño aclaró que la limitación de `/tmp` era exclusiva de su servidor y no pertenece a la metodología: otros usuarios no tienen ese límite. Reemplaza la enmienda 001. **PD-6 regla (4)** e **INV-4**: lo que debe durar, dejar evidencia o leerlo otro proceso o rol (artefactos, recibos, registros de corrida) va a rutas estables del workspace del proyecto — `.cdad/inbox` para el recibo y el workspace declarado para lo demás —. **Ningún texto instalable nombra `/tmp`** (ni para prohibirlo ni para admitirlo): el oráculo exige la regla de rutas estables y la ausencia de `/tmp` en `skills/**` y en los agentes generados.
+
+Status: enmienda 002 approved by Pablo on 2026-10-17 (pedido explícito del dueño).
