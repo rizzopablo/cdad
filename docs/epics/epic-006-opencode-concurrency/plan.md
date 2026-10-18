@@ -284,4 +284,28 @@ y recuperación que no pierda trabajo; el cierre declara el riesgo residual.
 
 **Fuera de alcance:** índices generados, gates de cita obligatoria y cambios en `status`.
 
-Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17
+## 11. Enmienda 004 — paridad del recorrido nativo; feature 006-005 (2026-10-18)
+
+**Problema:** 006-002 volvió a la delegación nativa, pero trató la equivalencia como «mismo paquete, mismo texto». No trasladó la preparación que hace el adaptador externo: la raíz efectiva, el agente derivado y el registro del intento. En un consumidor real eso produjo tres bloqueos. Un recibo imposible, porque nadie registró la I8 del despacho nativo. Un rol esperando 53 minutos un permiso para escribir una sonda fuera del proyecto, porque ningún encargo puede darle un temporal al test-writer (la validación de scopes solo admite tests, aunque la política de 004-002 declara `temporary_roots`). Y un orquestador que reconstruyó el protocolo a mano. Los controles validan la representación del encargo, no que el rol pueda ejecutarlo.
+
+**Feature `006-005-native-path-parity`** (después de 006-003, antes de 006-004). Tres piezas:
+
+| Pieza | Responsabilidad |
+|---|---|
+| Núcleo común (módulo propio, reutiliza las validaciones de `cdad_packet.py` sin agrandarlo) | Validar encargo y autoridad, registrar el intento, conservar la entrega y producir el recibo. |
+| Integración del runtime | Resolver capacidades, contexto efectivo, agente y observaciones disponibles. |
+| Transporte | Ejecutar con la herramienta nativa o con un proceso externo. |
+
+1. **Preparación compartida.** La vía nativa y la externa consumen el mismo núcleo antes y después del despacho. Rutas, permisos y agentes se resuelven respecto del proyecto autorizado; el directorio del coordinador puede ser otro. El resultado distingue lo comprobado mecánicamente, lo que requiere comprobación del runtime y lo desconocido. Un agente global es una configuración válida, pero se declara con garantía menor («permisos del proyecto no aplicados»).
+2. **Registro mecánico del intento.** Un comando registra la I8 y deja la entrega para el recibo sin que el LLM investigue el store. Toma primero el resultado nativo si es byte-exacto, y si no, una lectura acotada del store, específica del runtime y con versión declarada. Verifica que la sesión corresponde al intento: padre, agente del rol, proyecto y momento posterior al `begin`. `unknown` vale para observaciones opcionales; sin texto final o artefacto no hay entrega, solo un intento interrumpido registrado como tal.
+3. **Capacidades coherentes con el encargo.** El test-writer puede recibir escritura en temporales declarados por el encargo. La ubicación por defecto es una propuesta adaptable al layout, ignorada de verdad por Git (verificado con `git check-ignore`).
+4. **Una sola entrada operativa del orquestador,** con un orden de decisión sin solapes entre ejecución preparada, camino legacy y arranque en reposo.
+5. **Observación de la espera según lo que permita el arnés.** Si la herramienta nativa bloquea al padre, se detecta después (herramienta en error, permiso rechazado o pendiente) y se declara; nada de sondeos frecuentes al store.
+
+**Orden:** primero el núcleo y la integración OpenCode. Claude Code se suma después sobre la misma interfaz, sin bloquear lo urgente. El tamaño lo fija el plan de la feature.
+
+**Aceptación:** cada integración demuestra su propio recorrido; se comparten escenarios y expectativas, no la corrida. El escenario es un proyecto con layout anidado, el coordinador iniciado desde otra carpeta, agente global y configuración de proyecto potencialmente distintos, y un auxiliar temporal necesario. Tiene que llegar a escribir y recibir un test legítimo conservando las restricciones, y registrar correctamente un intento interrumpido sin entrega. `make validate` y la suite pasan.
+
+**Fuera de alcance:** cambiar el transporte externo más allá de que consuma el núcleo; ejecutores de acciones externas; filtros de Bash; la construcción incremental (es otra propuesta).
+
+Status: Approved by Pablo on 2026-10-16; enmienda 001 (006-002) approved by Pablo on 2026-10-17; enmienda 002 (006-003) approved by Pablo on 2026-10-17; enmienda 003 (006-004) approved by Pablo on 2026-10-17; agregado de credencial a 006-003 approved by Pablo on 2026-10-17; enmienda 004 (006-005) approved by Pablo on 2026-10-18

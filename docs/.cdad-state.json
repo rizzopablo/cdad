@@ -45,6 +45,10 @@
       "opened_at": "2026-10-18T11:28:46.153950+00:00"
     },
     {
+      "id": "006-005-native-path-parity",
+      "status": "queued"
+    },
+    {
       "id": "006-004-active-decisions-table",
       "status": "queued"
     }
