@@ -190,3 +190,7 @@ La credencial la puso el dueño en un archivo local fuera del repo, con permisos
 | 3 despachos concurrentes | los 3 `completed` (32,7 s, 15,9 s, 18,1 s); filas durables `succeeded` con token; sin errores de lock |
 
 En las dos corridas: 0 servidores privados antes, durante y después; el estado del servicio no cambió; ninguna salida contiene la URL ni la credencial. **PD-6 deja de estar bloqueado en la pierna `mode: server`:** con un único servidor compartido, la concurrencia no reprodujo la contención. Es una observación de 3 concurrentes, no una prueba de carga.
+
+## 006-002: despacho erróneo detenido (2026-10-17)
+
+Al despachar el RED de la enmienda 001, `prepare` falló (la re-aprobación de la spec se había registrado con otro stage) y el helper local igual lanzó el paquete anterior (`...-test-writer-red-007`, ya recibido) con el intento `at-006-002-u6b-red-001`. El orquestador lo detuvo a los 5 s, sin cambios en el árbol ni commits; queda un registro de despacho de ese intento sin recibo. Corrección: el helper `prep-dispatch.sh` aborta si `prepare` falla y solo despacha el paquete recién creado. El despacho correcto es `...-test-writer-red-008`, intento `at-006-002-u6b-red-002`.
