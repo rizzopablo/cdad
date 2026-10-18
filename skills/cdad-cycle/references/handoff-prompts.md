@@ -513,7 +513,7 @@ Expected output: the review as FINAL TEXT with this structure (the orchestrator 
 
 # Review — <feature>
 
-Reviewer model: <model declaration, e.g.: mofgw/qwen3.7-plus>
+Reviewer model: <model declaration — the model configured for the reviewer in the runtime>
 
 ## Blocking
 ### 1. <title>
