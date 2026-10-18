@@ -202,3 +202,8 @@ Al despachar el RED de la enmienda 001, `prepare` falló (la re-aprobación de l
 - **Evidencia (session_v2 en solo lectura):** sesión padre `succeeded`; una sesión hija `cdad-reviewer` con `mofgw/glm-5.3-flash`, `succeeded` (despacho por `task`); 56 comandos bash, ninguno invoca `cdad_delegate*.py` ni `opencode run`; texto final escenificado tal cual en `.cdad/inbox` y `receive` con recibo `pending`.
 - **Observaciones de comportamiento:** el orquestador leyó código fuente del CLI (`sed`/`grep` sobre los scripts) para resolver el uso de `begin` y del descriptor, lo que contradice el espíritu de la regla 1 (orientarse sin volcados); y razonó que el mandato del epic prescribía la herramienta `Agent` de Claude Code, leyendo `execution.md` (notas de este orquestador). Ambas van a la review como uso real.
 - **Paso al repo principal:** paquete byte-idéntico; despacho registrado como intento `at-006-002-u8-001` y recibo emitido en el repo principal con los mismos bytes escenificados.
+
+## 006-002: re-review y suite de cierre (2026-10-18)
+
+- Review-fix B-1: RED `5c85d68` → GREEN `a25fc20`. Re-review (glm): B-1 cerrado, 0 bloqueantes; NF-1 y `sub-agent-strategies.md:49-50` (frontmatter de permisos y hooks de Claude Code en la skill) a deuda de capas.
+- Suite completa: `1119 passed, 5 skipped` (21:47), sin fallas.
