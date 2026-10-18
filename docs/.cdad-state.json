@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "006-005-native-path-parity",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -56,7 +56,8 @@
     },
     {
       "id": "006-005-native-path-parity",
-      "status": "queued"
+      "status": "in-progress",
+      "opened_at": "2026-10-18T23:51:12.371423+00:00"
     },
     {
       "id": "006-004-active-decisions-table",
@@ -9687,14 +9688,14 @@
     }
   ],
   "execution": {
-    "id": "exec-006-003-installer-single-profile-delegation-config-001",
+    "id": "exec-006-005-native-path-parity-001",
     "epic_id": "epic-006-opencode-concurrency",
-    "feature_id": "006-003-installer-single-profile-delegation-config",
+    "feature_id": "006-005-native-path-parity",
     "scope": "epic-006-opencode-concurrency",
     "authority_ref": "docs/epics/epic-006-opencode-concurrency/execution.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": null,
-  "tdd_substage": "red"
+  "tdd_substage": null
 }
