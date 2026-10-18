@@ -9495,6 +9495,40 @@
         "docs/specs/006-003-installer-single-profile-delegation-config/rereview2.md": "afbdca1020d06761707aeb1addd379d43dc90fff8484cf89c9ba614e21cc075e"
       },
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "memory",
+      "substage": null,
+      "at": "2026-10-18T23:24:37.928038+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "882127e5c4c3c44957fd8287ac07f0baaac1ba2cd6e4b1cdc29c686a4ceced66",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "delivery",
+        "stage": "memory",
+        "substage": null,
+        "packet_id": "006-003-installer-single-profile-delegation-config-scribe-memory-001",
+        "receipt_sha256": "0bc31fb0820aa080c8e9aee7ac8f742afe932158152c069394e2aceac0a8db11",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-003-installer-single-profile-delegation-config-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-003-installer-single-profile-delegation-config-001/006-003-installer-single-profile-delegation-config-scribe-memory-001/receipt.json",
+      "receipt_sha256": "0bc31fb0820aa080c8e9aee7ac8f742afe932158152c069394e2aceac0a8db11",
+      "artifacts": {},
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9509,7 +9543,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T22:47:36.290775+00:00",
+  "last_updated": "2026-10-18T23:24:37.928038+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9620,7 +9654,7 @@
     "id": "006-003-installer-single-profile-delegation-config-scribe-memory-001",
     "role": "scribe",
     "substage": "memory",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
