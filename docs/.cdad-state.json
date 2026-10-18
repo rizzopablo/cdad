@@ -7903,6 +7903,47 @@
         "docs/specs/006-002-delegation-by-layer/rf-green.md": "4a648fc65e13ea6d0975efa758c1134119264ec519a554bdc6fc986132a0604b"
       },
       "note": "a25fc20; verificado: 344 passed 2 skipped, validate 161/1 (F011=DT-8). Deuda de capas observada por el orquestador: sub-agent-strategies.md:49-50 describen permisos/hooks de Claude Code en la skill (no marcado por la review)."
+    },
+    {
+      "feature": "006-002-delegation-by-layer",
+      "stage": "re-review",
+      "substage": "review",
+      "at": "2026-10-18T03:41:53.464346+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "464ea0188e8781043063002c74c6cbc5f93cf48268635408470d95bd9cfcc401",
+      "transition_key_payload": {
+        "execution_id": "exec-006-002-delegation-by-layer-001",
+        "feature_id": "006-002-delegation-by-layer",
+        "transition": "delivery",
+        "stage": "re-review",
+        "substage": "review",
+        "packet_id": "006-002-delegation-by-layer-reviewer-review-002",
+        "receipt_sha256": "f8a422d6cd0d7495b2fc3384aaa25823a2302e1296f3644aaf63401eafcfd75f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-002-delegation-by-layer/rereview.md",
+            "f3ccf840dda838084d91b9a878580b825b1f86541d43b21f57e45f4cbd97606f"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-002-delegation-by-layer-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-002-delegation-by-layer-001/006-002-delegation-by-layer-reviewer-review-002/receipt.json",
+      "receipt_sha256": "f8a422d6cd0d7495b2fc3384aaa25823a2302e1296f3644aaf63401eafcfd75f",
+      "artifacts": {
+        "docs/specs/006-002-delegation-by-layer/rereview.md": "f3ccf840dda838084d91b9a878580b825b1f86541d43b21f57e45f4cbd97606f"
+      },
+      "note": "Re-review glm: B-1 CERRADO; 0 bloqueantes; NF-1 opcional y lineas 49-50 de sub-agent-strategies.md a deuda de capas; 3 abstenciones."
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -7917,7 +7958,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T03:39:07.150223+00:00",
+  "last_updated": "2026-10-18T03:41:53.464346+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -8028,10 +8069,10 @@
     "id": "006-002-delegation-by-layer-reviewer-review-002",
     "role": "reviewer",
     "substage": "review",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "review"
 }
