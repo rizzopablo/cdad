@@ -184,10 +184,10 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`;
   use `cdad-<role>-<stack>` when the variant exists, else the generic
   `cdad-<role>`).
-- **Byte-identical packet.** Dispatch the exact bytes that
-  `cdad_packet.py render` emits (`prepare`'s stdout or `render`'s
-  re-emission) — the packet is passed byte-identical, never padded with
-  extra instructions.
+- **Byte-identical packet.** Dispatch the exact bytes that the installed
+  `<skill-dir>/scripts/cdad_packet.py render` emits (`prepare`'s stdout or
+  `render`'s re-emission) — the packet is passed byte-identical, never padded
+  with extra instructions.
 - **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native
@@ -200,11 +200,14 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   invents or selects a model: it passes one only if it comes from the
   environment configuration; the legitimate exit is the new-chat handoff
   where the user picks the model.
-- **Receipt.** The native dispatch returns FINAL TEXT in this session: stage
-  the exact bytes under `.cdad/inbox` + `RESULT.json` and run the
-  Orchestrator materialization protocol (`references/re-entry.md`) —
-  `receive` → `validate-receipt` → `materialize` → transition; the receipt
-  stays `semantic_status: pending` (receiving approves nothing).
+- **Receipt.** The native dispatch returns FINAL TEXT in this session, and
+  every route stages that FINAL TEXT the same way. This bullet does not
+  restate the steps: the re-entry wiring composed in this same body (from
+  `sources/roles/orchestrator.md`) already names the command that stages
+  those exact bytes under `.cdad/inbox` + `RESULT.json` and the single state
+  transition, and the installed `<skill-dir>/references/re-entry.md` owns the
+  Orchestrator materialization protocol; the receipt stays
+  `semantic_status: pending` (approving nothing).
 
 ## Bash policy (supervisor — no allowlist is generated)
 
