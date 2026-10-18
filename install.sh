@@ -7,7 +7,7 @@
 # <root>/skills) is NO LONGER an install destination: installs land only at
 # real runtime destinations. Since 004-001 T5 the AGENTS come exclusively from
 # the staging tree declared by build/staging/manifest.json (PD-18: the
-# installer never reads sources/; generation-time profile/stack resolution is
+# installer never reads sources/; generation-time stack resolution is
 # recorded in the staging manifest). Copies are independent (per-file owned
 # cp -p), never symlinks. Only cdad-owned paths are touched; the 7 non-cdad
 # agents and ~/.agents/.skill-lock.json are left alone. The 4 loose top-level
@@ -18,8 +18,8 @@
 # installed into each extra dir (e.g. the OpenClaw skills dir).
 #
 # Ownership (D4, 004-001 T5): every successful install publishes the ownership
-# manifest <install root>/.cdad-install-manifest.json — runtime/stack/profile
-# resolved by staging (R3-O2) plus per-file sha256+source provenance for
+# manifest <install root>/.cdad-install-manifest.json — runtime/stack resolved
+# by staging (R3-O2) plus per-file sha256+source provenance for
 # everything the installer deployed. Installs report conflicts (a locally
 # modified owned file — agents, skills and the guard share the SAME
 # conflict-and-preserve policy, review-5 B2 — or a symlink at a destination)
@@ -64,8 +64,8 @@ SKILLS=(cdad-cycle cdad-epic cdad-spec-and-test odoo-architect odoo-test-writer 
 # implementer, orchestrator, reviewer, scribe, test-writer) + 5 Odoo variants
 # (agents/cdad-*-odoo.md: architect/test-writer/implementer/reviewer/scribe).
 # The cdad-.*-odoo variants are captured by the same cdad-*.md glob in
-# install_agents() (now the staged set from build/staging) and carry a fixed
-# model per role (generation-time, recorded in the staging manifest); they are
+# install_agents() (now the staged set from build/staging) and fix NO model per
+# role (006-003 D1/INV-3: no installable surface pins a model); they are
 # counted here so the "N of N cdad agents present" verification is correct.
 EXPECTED_CDAD_AGENTS=11
 # NOTE: EXPECTED_CDAD_AGENTS counts OpenCode agents. Claude Code agents are
@@ -84,9 +84,9 @@ EXTRA_SKILLS_DIRS="${CDAD_SKILL_EXTRA_DIRS:-}"
 # The installer deploys the agents declared by build/staging/manifest.json
 # (produced by scripts/cdad-generate.py via `make staging`) and the STAGED
 # bytes, never the canonical sources (sources/ is unread to this installer by
-# contract). The staging manifest also records the resolved runtime/stack/
-# profile — published verbatim in the ownership manifest (R3-O2: the stack is
-# an explicit recorded input, not a hidden effect of the machine).
+# contract). The staging manifest also records the resolved runtime/stack —
+# published verbatim in the ownership manifest (R3-O2: the stack is an explicit
+# recorded input, not a hidden effect of the machine).
 STAGING_DIR="$SCRIPT_DIR/build/staging"
 STAGING_MANIFEST="$STAGING_DIR/manifest.json"
 INSTALL_MANIFEST_NAME=".cdad-install-manifest.json"
@@ -98,9 +98,6 @@ DRY_RUN=0
 FORCE=0
 UNINSTALL=0
 CHECK=0
-PROFILE_FLAG=""
-MODEL_PROFILE=""
-PROFILE_MARKER="$OPENCODE_AGENTS_DIR/.cdad-models-profile"
 OWNERSHIP_MANIFEST="$INSTALL_ROOT/$INSTALL_MANIFEST_NAME"
 # Owned files recorded during THIS install: "rel<TAB>sha256<TAB>source".
 OWNED=()
@@ -293,9 +290,10 @@ CDAD installer — deploys the CDAD skills and the STAGED agent set
 directories (~/.config/opencode, ~/.agents, ~/.claude and the public layout).
 The agent artifacts come EXCLUSIVELY from staging (PD-18: sources/ is never
 read); the deployed bytes are the staged bytes, which carry the generation-time
-profile, stack and derived bash policy. Every successful install publishes the
-ownership manifest <install root>/.cdad-install-manifest.json (runtime/stack/
-profile resolved by staging + per-file sha256/source provenance).
+stack and derived bash policy (no installable surface pins a model: 006-003
+D1/INV-3). Every successful install publishes the
+ownership manifest <install root>/.cdad-install-manifest.json (runtime/stack
+resolved by staging + per-file sha256/source provenance).
 
 The packet renderer requires Python 3 and uses only the Python standard
 library (stdlib); the installer never downloads Python dependencies.
@@ -314,34 +312,13 @@ Options:
                sources (renamed/removed upstream), staged artifacts not yet
                installed, and the installed skill trees vs the repo.
                --status is an alias. Without an ownership manifest it falls
-               back to the legacy repo comparison (profile- and
-               allowlist-aware against the derived expectation).
-   --economical Install the economical profile marker (execution roles
-                 deepseek-v4-flash; architect deepseek-v4-pro, reviewer
-                 minimax-m3 — family different from the implementer; ADR-007).
-  --optimus    Install the optimus profile marker (design default).
-               The per-runtime model map is RETIRED (006-003 PD-1c): no profile
-               resolves models any more, and the deployed agent bytes (the
-               STAGING bytes, recorded in the staging manifest) carry no
-               `model:` line.
-  --premium    Install the premium profile marker (top-tier, configurable via
-               env CDAD_PREMIUM_MODEL_<ROLE>). The profile flags are mutually
-               exclusive.
-  --basic      Install the basic profile marker: NO fixed models — agents
-               inherit the runtime's default model. Like --optimus: the
-               deployed agent bytes carry the STAGING profile resolved at
-               GENERATION time (R3-O2; recorded in build/staging/manifest.json),
-               so to deploy basic models regenerate the staging with that
-               profile first. With a staging of another profile the flag
-               only persists the marker: the disagreement is reported
-               (PROFILE MISMATCH) and the STAGED profile prevails — no
-               contradictory label is published. There is NO automatic
-               portability across providers: rc and re-staging behavior
-               under a mismatched staging is deferred to epic-004 T6
-               (decision registered, review-6 R6-B1).
-               Trade-off (ADR-007): the reviewer≠implementer anti-bias
-               invariant is NOT enforced by the installer in this profile —
-               configure models manually if you need it.
+               back to the legacy repo comparison (allowlist-aware against the
+               derived expectation).
+  --basic      DEPRECATED, no effect (006-003 D1): accepted only so the
+               existing recipes keep working; it resolves no profile and
+               writes no marker. The installer has no profiles: the model is
+               chosen in the delegation config (delegation.json), never by an
+               installer flag.
   --help       Show this help and exit.
 
 Exit codes: rc=1 from install/--uninstall/--check means PENDING work —
@@ -350,25 +327,15 @@ Exit codes: rc=1 from install/--uninstall/--check means PENDING work —
  broken install: the rest is deployed and coherent; resolve the reported
  conflicts first.
 
-No flags = install (safe default). The profile is STATEFUL: the last profile
-installed persists via .cdad-models-profile, so a later install without flag
-or env reuses it instead of falling back to optimus. Precedence is the same
-everywhere (install, --check, --dry-run):
-    flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
-Fresh installs (no marker yet) default to optimus (the repo's design default);
-switch profiles at any time with `install.sh --<profile>` — the new choice is
-installed AND persisted as the marker.
+No flags = install (safe default). The model is NOT an installer concern: no
+installable surface pins a model, so no flag, env or marker selects one. The
+model of the external delegation is read from the delegation config
+(delegation.json) by the delegation layer.
 
-Environment — premium overrides (top-tier multi-provider; no forced mofgw
-prefix; the target provider must be configured in the runtime, e.g.
-opencode.jsonc):
-  CDAD_PREMIUM_MODEL_ARCHITECT    top-tier architect (default mofgw/qwen3.7-max)
-  CDAD_PREMIUM_MODEL_TEST_WRITER  top-tier test-writer (default mofgw/glm-5.2)
-  CDAD_PREMIUM_MODEL_IMPLEMENTER  top-tier implementer (default mofgw/deepseek-v4-pro)
-  CDAD_PREMIUM_MODEL_REVIEWER     top-tier reviewer (default mofgw/qwen3.7-max)
-  CDAD_PREMIUM_MODEL_SCRIBE       top-tier scribe (default mofgw/qwen3.7-max)
-  Example: CDAD_PREMIUM_MODEL_REVIEWER=anthropic/claude-sonnet-4-5 \
-           bash install.sh --premium
+Environment:
+  CDAD_MODEL_PROFILE  DEPRECATED and ignored (006-003 A-1): accepted only so
+               local recipes keep working; it resolves no profile and writes
+               no marker (the model lives in the delegation config).
   CDAD_SKILL_EXTRA_DIRS  colon-separated list of ADDITIONAL directories where
                the 3 cdad skills are also installed (e.g. the OpenClaw skills
                dir). Empty by default: only the default runtimes are used.
@@ -383,8 +350,8 @@ What gets installed (from build/staging — the single agent input, PD-18):
       -> ~/.config/opencode/agents/           (cp -p of the STAGED bytes)
   build/staging/agents/claude-code/cdad-*.md
       -> ~/.claude/agents/                    (cp -p of the STAGED bytes)
-      The staged bytes already carry the generation-time profile (model: line)
-      and the derived bash: policy — the installer transforms nothing.
+      The staged bytes already carry the generation-time bash: policy (no
+      `model:` line) — the installer transforms nothing.
   skills/cdad-{cycle,epic,spec-and-test}/ + skills/odoo-*/
       -> ~/.config/opencode/skills/<skill>/   (per-file owned copy, NEVER --delete)
       -> ~/.agents/skills/<skill>/            (per-file owned copy, NEVER --delete)
@@ -398,7 +365,7 @@ What gets installed (from build/staging — the single agent input, PD-18):
       -> ~/.claude/cdad-scripts/path-guard.sh (cp -p, chmod +x)
   Ownership manifest:
       <install root>/.cdad-install-manifest.json
-      (runtime/stack/profile resolved by staging — R3-O2 — plus per-file
+      (runtime/stack resolved by staging — R3-O2 — plus per-file
        sha256 + source provenance of everything deployed; conflicts listed
        separately until explicitly resolved)
 
@@ -419,6 +386,14 @@ EOF
 # ---------------------------------------------------------------------------
 # Option parsing (getopts, with long-option normalization)
 # ---------------------------------------------------------------------------
+# warn_basic_deprecated — D1 (006-003): `--basic` is accepted only as a
+# DEPRECATED, EFFECT-FREE alias (>=6 test recipes pass it). The notice is ONE
+# line; nothing about a profile is resolved or persisted (INV-7: nothing
+# silent).
+warn_basic_deprecated() {
+  log "DEPRECATED: --basic is obsolete and has no effect (006-003 D1) — the installer has no profiles; the model is chosen in the delegation config (delegation.json)"
+}
+
 parse_options() {
   local normalized=()
   local arg
@@ -429,28 +404,29 @@ parse_options() {
       --uninstall) normalized+=(-u) ;;
       --check)     normalized+=(-c) ;;
       --status)    normalized+=(-c) ;;
-      --economical) normalized+=(-e) ;;
-      --optimus)   normalized+=(-o) ;;
-      --premium)   normalized+=(-p) ;;
       --basic)     normalized+=(-b) ;;
       --help)      normalized+=(-h) ;;
-      --*)         die "Unknown option: $arg (see --help)" ;;
+      --*)
+        # 006-003 D1/PD-1a: the installer has no profiles. A retired profile
+        # flag (and any other unknown option) is refused HERE, before anything
+        # is deployed, with a diagnostic pointing at the delegation config — the
+        # single place where the model is chosen. The retired spellings are
+        # deliberately NOT listed: the source names none of them (PD-1a).
+        die "Unknown option: $arg — the installer has no profiles; the model is chosen in the delegation config (delegation.json), not by an installer flag (see --help)"
+        ;;
       *)           normalized+=("$arg") ;;
     esac
   done
   set -- "${normalized[@]}"
 
-  local opt profile_count=0
-  while getopts "dfuceboph" opt; do
+  local opt
+  while getopts "dfucbh" opt; do
     case "$opt" in
       d) DRY_RUN=1 ;;
       f) FORCE=1 ;;
       u) UNINSTALL=1 ;;
       c) CHECK=1 ;;
-      e) PROFILE_FLAG=economical; profile_count=$((profile_count + 1)) ;;
-      o) PROFILE_FLAG=optimus;    profile_count=$((profile_count + 1)) ;;
-      p) PROFILE_FLAG=premium;    profile_count=$((profile_count + 1)) ;;
-      b) PROFILE_FLAG=basic;      profile_count=$((profile_count + 1)) ;;
+      b) warn_basic_deprecated ;;
       h) usage; exit 0 ;;
       *) usage; exit 1 ;;
     esac
@@ -459,8 +435,10 @@ parse_options() {
   if [ $# -gt 0 ]; then
     die "Unexpected arguments: $* (see --help)"
   fi
-  if [ "$profile_count" -gt 1 ]; then
-    die "Profile flags are mutually exclusive: use only one of --economical | --optimus | --premium | --basic"
+  # A-1 (006-003): CDAD_MODEL_PROFILE is accepted and IGNORED with the same
+  # one-line deprecation notice as `--basic` (INV-7: nothing silent).
+  if [ -n "${CDAD_MODEL_PROFILE:-}" ]; then
+    log "DEPRECATED: CDAD_MODEL_PROFILE is obsolete and ignored (006-003 A-1) — the installer has no profiles; the model is chosen in the delegation config (delegation.json)"
   fi
 }
 
@@ -483,7 +461,6 @@ set_install_paths() {
   # PD-9: legacy-removal-only destinations (see comment at the top of the file).
   PUBLIC_AGENTS_DIR="$INSTALL_ROOT/agents"
   PUBLIC_SKILLS_DIR="$INSTALL_ROOT/skills"
-  PROFILE_MARKER="$OPENCODE_AGENTS_DIR/.cdad-models-profile"
   OWNERSHIP_MANIFEST="$INSTALL_ROOT/$INSTALL_MANIFEST_NAME"
 }
 
@@ -865,7 +842,7 @@ deploy_staged_agents() {  # deploy the manifest-declared staged set (D4)
 # write_ownership_manifest — publish <root>/.cdad-install-manifest.json ATOMICALLY
 # and ONLY after every deployment succeeded (no half state: a failed install
 # never publishes ownership). Header = the staging manifest's resolved
-# runtime/stack/profile (R3-O2); artifacts map install-root-relative paths to
+# runtime/stack (R3-O2); artifacts map install-root-relative paths to
 # sha256+source provenance of the installed bytes; conflicts lists what was
 # preserved (unowned until resolved).
 #
@@ -944,7 +921,6 @@ manifest = {
     "source_version": install_version,
     "runtime": staging.get("runtime", ""),
     "stack": staging.get("stack", ""),
-    "profile": staging.get("profile", ""),
     "artifacts": dict(sorted(artifacts.items())),
     "pending_removal": dict(sorted(pending.items())),
     "conflicts": sorted(conflicts, key=lambda c: c["path"]),
@@ -964,33 +940,6 @@ PY
 }
 
 # ---------------------------------------------------------------------------
-# Profile resolution (fail fast on invalid profile)
-# ---------------------------------------------------------------------------
-# resolve_profile — assigns MODEL_PROFILE (active profile). Consistent
-# precedence across install, --check and --dry-run:
-#     flag > env CDAD_MODEL_PROFILE > marker .cdad-models-profile > optimus
-# The marker makes the install STATEFUL: the last installed profile persists
-# (an install without flag or env respects it); a fresh install without a
-# marker uses optimus (repo's design). --check already read the marker;
-# now install does too.
-resolve_profile() {
-  if [ -n "$PROFILE_FLAG" ]; then
-    MODEL_PROFILE="$PROFILE_FLAG"
-  elif [ -n "${CDAD_MODEL_PROFILE:-}" ]; then
-    MODEL_PROFILE="$CDAD_MODEL_PROFILE"
-  elif [ -f "$PROFILE_MARKER" ]; then
-    MODEL_PROFILE="$(cat "$PROFILE_MARKER")"
-  else
-    MODEL_PROFILE="optimus"
-  fi
-}
-
-# 006-003 PD-1c/PD-1f: the per-profile model map is RETIRED, so there is no
-# map left to validate a profile against (`validate_profile` and its
-# `cdad_valid_profile` lookup are gone). The profile surface itself (flag
-# rejection, marker retirement) belongs to the installer unit of 006-003.
-
-# ---------------------------------------------------------------------------
 # Install operations (staging-driven agents; ownership recorded per file)
 # ---------------------------------------------------------------------------
 sync_skill_to() {  # skill_name target_base_dir — per-file owned copy (review-5
@@ -1008,19 +957,6 @@ sync_skill_to() {  # skill_name target_base_dir — per-file owned copy (review-
   while IFS= read -r -d '' src_file; do
     stage_owned_file "$src_file" "$dst/${src_file#"$src/"}" "skills/$skill/${src_file#"$src/"}"
   done < <(find "$src" -type f -print0)
-}
-
-write_profile_marker() {  # <profile> — persists the EFFECTIVE profile (B4:
-                          # marker == manifest.profile == staging.profile)
-  local persist_profile="$1"
-  ensure_dir "$OPENCODE_AGENTS_DIR"
-  if [ "$DRY_RUN" -eq 1 ]; then
-    log "DRY-RUN MARKER $PROFILE_MARKER = $persist_profile"
-  else
-    printf '%s\n' "$persist_profile" > "$PROFILE_MARKER"
-    record_owned "$PROFILE_MARKER" "install.sh (model profile state)"
-    log "PROFILE marker: $PROFILE_MARKER = $persist_profile"
-  fi
 }
 
 install_skills() {
@@ -1048,9 +984,9 @@ install_skills_extra() {
 }
 
 # install_agents — deploys the STAGED agent set (build/staging, PD-18) with the
-# D4 conflict semantics. The staged bytes carry the generation-time profile,
-# stack and derived bash policy: the installer transforms nothing (R3-O2: the
-# resolution was recorded in the staging manifest, never recomputed here).
+# D4 conflict semantics. The staged bytes carry the generation-time stack and
+# derived bash policy: the installer transforms nothing (R3-O2: the resolution
+# was recorded in the staging manifest, never recomputed here).
 install_agents() {
   deploy_staged_agents
 }
@@ -1089,7 +1025,6 @@ uninstall_items() {
     [ -e "$f" ] || continue
     printf '%s\n' "$CLAUDE_CODE_AGENTS_DIR/$(basename "$f")"
   done
-  printf '%s\n' "$PROFILE_MARKER"
   printf '%s\n' "$CLAUDE_CODE_SCRIPTS_DIR/path-guard.sh"
   local s d
   for s in "${SKILLS[@]}"; do
@@ -1248,17 +1183,18 @@ PY
 # ---------------------------------------------------------------------------
 # Verification & summary
 # ---------------------------------------------------------------------------
-check_agent_file() {  # src dst role expected — profile-aware + allowlist-derived compare; 0 = identical
-  local src="$1" dst="$2" role="$3" expected="$4"
+check_agent_file() {  # src dst role — allowlist-derived compare; 0 = identical
+  local src="$1" dst="$2" role="$3"
   if [ ! -f "$dst" ]; then
     printf 'DRIFT: missing %s\n' "$dst"
     return 1
   fi
-  # Byte-compare of the content WITHOUT the model: line — the deploy may drift
-  # from the repo ONLY on that line (profile applied to the copy) and on the
-  # bash block (allowlist derived from THIS machine's stack, P5 cdad-010). The
-  # expectation is DERIVED: the repo goes through the same replacement as the
-  # installation — it is not compared against repo bytes.
+  # Byte-compare, ignoring any historical `model:` line: a root installed before
+  # 006-003 D1 may still carry one, and no installable surface fixes a model any
+  # more (INV-3/PD-1e), so there is nothing to expect on that line. The rest of
+  # the content must match; for the generated roles the bash block is derived
+  # from THIS machine's stack (P5 cdad-010), so the expectation is DERIVED and
+  # never compared against repo bytes.
   if role_is_generated "$role"; then
     if ! cmp -s <(apply_bash_block "$src" "$role" | grep -v '^model:') <(grep -v '^model:' "$dst"); then
       printf 'DRIFT: differs %s\n' "$dst"
@@ -1269,18 +1205,6 @@ check_agent_file() {  # src dst role expected — profile-aware + allowlist-deri
       printf 'DRIFT: differs %s\n' "$dst"
       return 1
     fi
-  fi
-  # The runtime's model: line must be EXACTLY the active profile's model.
-  local actual
-  actual="$(sed -n 's/^model:[[:space:]]*//p' "$dst" | head -1)"
-  if [ -z "$expected" ]; then
-    if [ -n "$actual" ]; then
-      printf '❌ %s: declares model: %s but role %s carries no model in profile %s\n' "$dst" "$actual" "$role" "$MODEL_PROFILE"
-      return 1
-    fi
-  elif [ "$actual" != "$expected" ]; then
-    printf '❌ %s: expected model (profile %s) = %s, found: %s\n' "$dst" "$MODEL_PROFILE" "$expected" "${actual:-<none>}"
-    return 1
   fi
   printf 'OK: %s\n' "$dst"
   return 0
@@ -1315,12 +1239,12 @@ check_skill_tree() {  # src_dir dst_dir — cmps every source file vs dst; 0 = i
   return "$drift"
 }
 
-check_installed() {  # exit 0 if all installed artifacts match the repo (agents profile-aware), 1 on drift
+check_installed() {  # exit 0 if all installed artifacts match the repo (allowlist-derived agents), 1 on drift
   # LEGACY path: roots installed BEFORE the ownership manifest existed. Those
   # roots carried the public layout (<root>/agents|skills), so it is still
   # checked/installed-referenced here for THEM; PD-9 installs (manifest-owned)
   # never reach this function (main dispatches to check_installed_staging).
-  local f base s role want_model
+  local f base s role
   local total=0 expected_total=0 drifted=0
   local extra_total=0 extra_expected=0
   local -a drifted_paths=()
@@ -1331,11 +1255,7 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
     base=$(basename "$f")
     role=${base#cdad-}
     role=${role%.md}
-    # 006-003 PD-1e/INV-3: no agent fixes a model, so nothing is expected here
-    # (the retired map used to answer this) — the installed bytes must carry
-    # no `model:` line either.
-    want_model=""
-    if ! check_agent_file "$f" "$OPENCODE_AGENTS_DIR/$base" "$role" "$want_model"; then
+    if ! check_agent_file "$f" "$OPENCODE_AGENTS_DIR/$base" "$role"; then
       drifted_paths+=("$OPENCODE_AGENTS_DIR/$base")
       drifted=1
     fi
@@ -1386,13 +1306,13 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
   done < <(extra_skills_dirs)
   if [ "$drifted" -eq 0 ]; then
     if [ "$extra_expected" -gt 0 ]; then
-      log "Check: PASS ($total/$expected_total in sync + $extra_total/$extra_expected extra dirs, profile $MODEL_PROFILE)"
+      log "Check: PASS ($total/$expected_total in sync + $extra_total/$extra_expected extra dirs)"
     else
-      log "Check: PASS ($total/$expected_total in sync, profile $MODEL_PROFILE)"
+      log "Check: PASS ($total/$expected_total in sync)"
     fi
     return 0
   fi
-  log "Check: FAIL — ${drifted_paths[*]} (profile $MODEL_PROFILE)"
+  log "Check: FAIL — ${drifted_paths[*]}"
   return 1
 }
 
@@ -1403,13 +1323,14 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (agents 
 #     staged bytes, and OBSOLETE when the staged source disappeared upstream
 #     (renamed/removed — case3/case10 semantics).
 #   - LEGACY-PROVENANCE owned files (skills mirrored per file, the guard
-#     script, the profile marker — sources "skills/…", "scripts/…",
-#     "install.sh …"): the OBSOLETE staging-membership rule does NOT apply
-#     (the staging manifest only declares agents); existence is the check,
-#     skill trees get their own byte comparison below (green-003 fix-loop 3).
+#     script — sources "skills/…", "scripts/…", "install.sh …"): the OBSOLETE
+#     staging-membership rule does NOT apply (the staging manifest only declares
+#     agents); existence is the check, skill trees get their own byte comparison
+#     below (green-003 fix-loop 3).
 #   - every staged artifact must be owned (regenerated upstream, reinstall
 #     needed).
-# No profile logic here: the installer deploys the staged bytes as-is (R3-O2).
+# No profile logic here (006-003 D1): the installer deploys the staged bytes
+# as-is (R3-O2).
 # Owned entries OUTSIDE the install root (CDAD_SKILL_EXTRA_DIRS targets) are
 # recorded with their absolute path as the key and addressed as-is.
 check_installed_staging() {
@@ -1622,8 +1543,7 @@ print_dry_run_summary() {
   local staged_count conflicts_preview srel dst destinations
   staged_count=$(staged_artifact_list | awk 'END { print NR + 0 }')
   log "=== Summary (dry-run) ==="
-  log "Model profile: requested $MODEL_PROFILE, effective ${effective_profile:-$MODEL_PROFILE} (the deployed agent bytes are the STAGED ones)"
-  log "Staging: $STAGING_MANIFEST (runtime $(staged_header runtime), stack $(staged_header stack), profile $(staged_header profile))"
+  log "Staging: $STAGING_MANIFEST (runtime $(staged_header runtime), stack $(staged_header stack))"
   log "Staged set: $staged_count artifact(s) -> destinations below (R3-O2: the staging resolution is recorded, never recomputed)"
   while IFS=$'\t' read -r srel _; do
     [ -n "$srel" ] || continue
@@ -1660,7 +1580,6 @@ main() {
       return 1
     fi
     # Legacy check for roots installed before the ownership manifest existed.
-    resolve_profile
     if check_installed; then
       return 0
     fi
@@ -1700,30 +1619,11 @@ main() {
   # the installed bytes against the LAST install's register — needed for the
   # skills pass too, so load it once here, before anything is deployed.
   load_previous_ownership
-  resolve_profile
-  # Review-5 B4 (profile invariant / R3-O2): the effective profile must be
-  # unambiguous BEFORE anything is deployed or labelled. The staged bytes
-  # carry the generation-time profile recorded in the staging manifest; a
-  # requested profile that differs is informed HERE (dry-run included) and
-  # never published as a contradictory label: the persisted marker records
-  # the STAGED profile, so marker == install manifest == staging (a refusal
-  # would also be a valid resolution; informing + coherent labels is chosen).
-  # R3-O2: the staged bytes are the deployed bytes — the flag alone no longer
-  # changes what is installed, so it must not silently change the label.
-  local staged_profile=""
-  local effective_profile="$MODEL_PROFILE"
-  staged_profile="$(staged_header profile)"
-  if [ -n "$staged_profile" ] && [ "$MODEL_PROFILE" != "$staged_profile" ]; then
-    log "PROFILE MISMATCH: requested profile '$MODEL_PROFILE' differs from the staged profile '$staged_profile' (no coincide — the staged agent bytes were generated with '$staged_profile', R3-O2)"
-    log "PROFILE MISMATCH: the effective profile follows staging; the persisted marker records '$staged_profile' (no contradictory labels are published)"
-    effective_profile="$staged_profile"
-  fi
   install_skills
   install_skills_extra
   install_agents
   # Claude Code targets (guard script; CC agents/skills come from the staged set)
   install_guard_script
-  write_profile_marker "$effective_profile"
   INSTALL_VERSION="$(installation_version)"
   write_version_marker "$INSTALL_VERSION"
   write_ownership_manifest
