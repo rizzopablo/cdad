@@ -39,7 +39,7 @@ Minimal sub-agents to create (one per file):
 
 Different model per sub-agent with the `model: provider/model-id` key.
 
-Invocation: `@agent-name` or from a slash command with `subtask: true`.
+Invocation: through the runtime's native dispatch mechanism, declared in the `delegation` section of its generated orchestrator agent.
 
 ### Claude Code
 
@@ -50,7 +50,7 @@ Invocation: `@agent-name` or from a slash command with `subtask: true`.
 - Path-scoping is reconstructed via `hooks.PreToolUse` that runs a guard script (`~/.claude/cdad-scripts/path-guard.sh <role>`) before each `Edit`/`Write`/`Read`/`Grep`.
 - Model: `model:` accepts aliases (`haiku`, `sonnet`, `opus`, `fable`) or a full model ID — there is no `mofgw` gateway.
 
-Invocation from the orchestrator with the `Agent` tool (equivalent to OpenCode's `task`/`delegate`). The sub-session does NOT see the parent agent's context.
+Invocation from the orchestrator through the runtime's native dispatch mechanism (declared in its `delegation` section). The sub-session does NOT see the parent agent's context.
 
 **Full detail:** see `references/claude-code-delegation.md`.
 

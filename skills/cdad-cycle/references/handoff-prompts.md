@@ -33,20 +33,21 @@ partial packet. Continue with the legacy templates below.
 
 How the orchestrator generates the prompt the user pastes into a new chat (or a native sub-agent) to start a specific role.
 
-## Invocation with native sub-agents in OpenCode
+## Invocation with native sub-agents
 
-If the environment has `cdad-*` sub-agents installed (see
-`references/opencode-delegation.md`), invoke the role via `task` with
-`subagent_type: cdad-<role>`. For a prepared execution, the Task prompt is the
-renderer stdout unchanged. The adaptations below apply only to the legacy flow:
+If the environment has `cdad-*` sub-agents installed, invoke the role through
+**the native mechanism that the orchestrator agent of your runtime declares**
+(its `delegation` section: the dispatch tool, the role→sub-agent mapping and how
+the packet is passed). For a prepared execution, the Task prompt is the renderer
+stdout unchanged. The adaptations below apply only to the legacy flow:
 
 - Start the prompt with: "Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand your role within the cycle. Act as `<role>` with the following task:"
 - Add the line: "Also, read `docs/.cdad-state.json` and `docs/specs/<feature-id>/` as applicable to your role."
-- Do NOT include "paste into a new chat" instructions — the Task already isolates the session.
+- Do NOT include "paste into a new chat" instructions — the native dispatch already isolates the session.
 - Keep the strict rules, the context and the expected output of the template.
 
 The per-role templates below remain the content source; the
-difference is ONLY the delivery mechanism (Task vs new chat).
+difference is ONLY the delivery mechanism (native dispatch vs new chat).
 
 ## Handoff packet format
 
@@ -88,7 +89,7 @@ Your job (user):
 3. Attach / paste the context files: <list>.
 4. When the role finishes, come back here with the output (commit hash, diff, new file).
 
-For alternatives with native sub-agents (OpenCode @name, Claude Code Task), see `references/sub-agent-strategies.md`.
+For alternatives with native sub-agents, see `references/sub-agent-strategies.md`.
 ```
 
 The packet **is the last output** of the orchestrator in that turn. Then you wait for re-entry.

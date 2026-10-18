@@ -24,7 +24,8 @@ not worth wiring into the normal flow.
 
 ## When it is worth it
 
-- You dispatch roles as **external processes** (e.g. `opencode run`) and want to
+- You dispatch roles as **processes outside the runtime** (another CLI's
+  non-interactive run) and want to
   **preserve attempts and causes across resumptions** — `record`/`budget` keep
   that durable, keyed by `execution_id` + `packet_id`.
 - You want to **prevalidate an operation before dispatching it** — `preflight`
@@ -35,10 +36,10 @@ not worth wiring into the normal flow.
 - **Native runtime sub-agents** whose lifecycle the runtime already manages: the
   harness returns the result, so there is nothing to reconstruct — the guard is
   overhead.
-- Note: with `opencode run`, a shell command launched with `background: true`
-  **dies with the turn** and never notifies. That is an artifact of this dispatch
-  mode — **not** something the guard solves. Fix the dispatch mode; don't expect
-  the guard to see a result that was never produced.
+- Note: with a non-interactive external CLI run, a shell command launched with
+  `background: true` **dies with the turn** and never notifies. That is an
+  artifact of this dispatch mode — **not** something the guard solves. Fix the
+  dispatch mode; don't expect the guard to see a result that was never produced.
 
 ## Known limits
 

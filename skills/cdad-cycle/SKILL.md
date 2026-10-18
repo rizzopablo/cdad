@@ -40,7 +40,7 @@ You do NOT:
 The orchestrator decides which role runs, how, and with which limits. These are the
 elements you must have loaded **always** to run the cycle
 correctly, **regardless of the harness** (native sub-agents, permission
-globs, task/delegate routing). The harness, when it exists, amplifies
+globs, per-runtime dispatch routing). The harness, when it exists, amplifies
 guarantees (session isolation, a different model per role); when it doesn't,
 you enforce the limits behaviorally with this table in view. The
 `references/` are deepening material, not a condition for understanding what's here.
@@ -133,44 +133,38 @@ triggers and mapping table in `references/sub-agent-strategies.md`
 
 ### 4. Delegation decision rule (single, explicit)
 
-> **External delegation is not sub-agent recursion.** Handing a prepared packet
-> to a role session in ANOTHER CLI (coordinator → worker, between CLIs) is the
-> authorized external delegation; it is not recursion of subagents inside the
-> same runtime. A delegation does not expand authority or scope, and the worker
-> does not write the state (`docs/.cdad-state.json`). A separate session or CLI
-> is not a sandbox: it does not guarantee isolation nor another model family.
+> **Delegation principle.** Handing a prepared packet to a role session in
+> ANOTHER CLI (coordinator → worker, between CLIs) is authorized external delegation;
+> it is not recursion of sub-agent sessions inside the same runtime. A delegation
+> does not expand authority or scope, and the worker does not write the state
+> (`docs/.cdad-state.json`). A separate session or CLI is not a sandbox: it does
+> not attest isolation nor another model family.
 
-> ⚠️ **SPAWN GUARD (anti-loop):** If you are running as a SUBAGENT
-> (runtime=subagent, e.g.: spawned by an external orchestrator cycle),
-> **`sessions_spawn` is FORBIDDEN — you cannot spawn sub-subagents.**
-> It is a runtime design limitation (anti-recursion). NEVER try it: the runtime will reject it and retrying 2000+ times in
-> a loop burns tokens and blocks the scheduler (incident Aug 05 2026 —
-> cdad-architect FEAT-003 <project>, 2153 attempts, orchestrator cycle stalled 2h).
-> If you need to delegate from a subagent → return control to the
-> orchestrator with a handoff packet (rule 2) and let IT decide the spawn.
+> ⚠️ **SPAWN GUARD (anti-loop):** if you are running as a SUBAGENT
+> (runtime=subagent, e.g.: spawned by an external orchestrator cycle), **you
+> cannot spawn sub-subagents — the spawn from a subagent is FORBIDDEN.** It is a
+> runtime design limitation (anti-recursion): NEVER try it — the runtime rejects
+> it and retrying 2000+ times in a loop burns tokens and blocks the scheduler
+> (incident Aug 05 2026 — cdad-architect FEAT-003 <project>, 2153 attempts,
+> orchestrator cycle stalled 2h). If you need to delegate from a subagent →
+> return control to the orchestrator with a handoff packet (rule 2) and let IT
+> decide the spawn.
 
 For each role task, decide the mechanism in this order:
 
-1. **Does the environment expose `cdad-*` sub-agents as `subagent_type`?** → delegate
-   to the role's sub-agent.
-   - In OpenCode: ALL cdad roles via `task` (the 10 sub-agents are
-     task-able via the `write: ask` lever, cdad-010/ADR-009; the `delegate`
-     channel is dead on deploys with a creditless global default).
-   - In Claude Code: read-only roles via the `Agent` tool; write-capable roles
-     via the `Agent` tool (with PreToolUse hooks for path-scoping).
+1. **Native mechanism first.** If your environment exposes the `cdad-*` roles through its own sub-agent dispatch, use it: **the mechanism is the one the orchestrator agent of your runtime declares** in its `delegation` section (dispatch tool, role→sub-agent mapping, packet pass). Pass full context (rule 6). **Preferred: real separate session + per-role model routing.**
+2. **No native mechanism, and the user wants to run the role in a new chat?** → generate a handoff packet (`references/handoff-prompts.md`): real separation via a separate session, manual.
+3. **Neither native dispatch nor a new chat (forced single-session):** → act as the role inline applying the table's contract to yourself, with strict discipline. **Weaker assurance**: you cannot un-know what you already read in previous turns; tell the user.
 
-   Pass full context (see rule 6). **Preferred: it gives you real session isolation + per-agent model routing.** See `references/opencode-delegation.md` (OpenCode) and `references/claude-code-delegation.md` (Claude Code).
+Never mix: if you started as orchestrator, don't write tests "because it's faster". Delegate or switch modes explicitly.
 
-2. **No sub-agents but the user wants to run the role in a new chat?**
-   → generate a handoff packet (`references/handoff-prompts.md`). Real
-   isolation via a separate session, manual.
-3. **Neither sub-agents nor a new chat (forced single-session):** → act as the
-   role inline applying the table's contract to yourself, with strict
-   discipline. **Weaker guarantee**: you cannot un-know what you already read in
-   previous turns; tell the user.
+**Adapter rule — owner of the session lifecycle.** The CLI delegation adapter (`references/cli-delegation.md`) is for delegating **outside** the runtime, or to a runtime that has no native mechanism of its own: there it owns the worker's session lifecycle (process launch, correlation, result classification). When the runtime dispatches natively, the adapter is not the mechanism and the same runtime never re-enters through it.
 
-Never mix: if you started as orchestrator, don't write tests "because it's
-faster". Delegate or switch modes explicitly.
+**Role invariants.** Whatever the mechanism, the §2 limits hold: the test-writer never sees implementation code, the implementer never touches `tests/**`, the reviewer's model family differs from the implementer's — fixed by configuration when the profile fixes models and **declared** when it does not, never silently omitted — each role returns its own artifact; only the orchestrator writes the state.
+
+**Receipt — every route ends in the same receipt.** The worker returns its FINAL TEXT; the orchestrator stages the exact bytes under `.cdad/inbox` + `RESULT.json` and runs `receive` → `validate-receipt` → `materialize` → transition. Receiving approves nothing (the receipt stays `semantic_status: pending`).
+
+**Packet and re-entry are independent of the transport.** The packet is the same bytes and the re-entry the same protocol on every route: native dispatch, a handoff packet to a new chat, or the external CLI adapter. The transport only moves the text; the Orchestrator materialization protocol (`references/re-entry.md`) is the single end of every route.
 
 ### 5. Artifact materialization and commit rule
 
@@ -240,7 +234,7 @@ The user invokes it explicitly saying they want you to act as a specific role. T
 
 Here you are NOT the orchestrator. Load `references/handoff-prompts.md`, identify the requested role's rules, apply them to yourself, and execute the task respecting the constraints (what to see, what to touch, expected output).
 
-**Recommendation you always give the user in mode B**: if the environment exposes `cdad-*` sub-agents, delegating via `task`/`delegate` is **preferred** (see **Roles contract §4** — it gives you real session isolation + per-role model routing). The handoff to a new chat remains the route when there are no sub-agents and real isolation is wanted. Acting inline is a **last resort** (forced single-session): explicitly flag the weak-isolation trade-off (you cannot un-know what you already read in previous turns) and apply the role's rules to yourself with strict discipline.
+**Recommendation you always give the user in mode B**: if the environment exposes native dispatch for the `cdad-*` roles, delegating through **the mechanism that the orchestrator agent of your runtime declares** is **preferred** (see **Roles contract §4** — it gives you a real separate session + per-role model routing). The handoff to a new chat remains the route when there is no native mechanism and a real separate session is wanted. Acting inline is a **last resort** (forced single-session): explicitly flag the weak-separation trade-off (you cannot un-know what you already read in previous turns) and apply the role's rules to yourself with strict discipline.
 
 ---
 
@@ -267,12 +261,12 @@ Before dispatching a packet, freeze the write-ahead checkpoint with `begin`; clo
 If execution context and a valid prepared request are present, render them with
 `<skill-dir>/scripts/cdad_packet.py render` (`<skill-dir>` is the directory of the loaded
 `cdad-cycle` skill, as the runtime reports it when the skill is loaded), capture complete stdout, and dispatch those
-bytes unchanged through Task or the new-chat handoff. The role consumes that
+bytes unchanged through the native dispatch your runtime declares (its `delegation` section) or the new-chat handoff. The role consumes that
 packet and its declared inputs without loading this full skill. If no prepared
 execution exists, retain the legacy delegation flow below and do not fabricate
 authority or a partial packet.
 
-If the next step requires a role → decide the mechanism per **Roles contract §4 — Delegation decision rule** (order: `cdad-*` sub-agents via `task`/`delegate` → handoff packet to a new chat → inline only if forced single-session). The handoff packet is built from `references/handoff-prompts.md` and must satisfy the state-passing rule (§6): full context, atomic task.
+If the next step requires a role → decide the mechanism per **Roles contract §4 — Delegation decision rule** (order: the native mechanism your runtime's orchestrator agent declares → handoff packet to a new chat → inline only if forced single-session). The handoff packet is built from `references/handoff-prompts.md` and must satisfy the state-passing rule (§6): full context, atomic task.
 
 If the stage closes (all gates OK) → update the state file, announce the
 transition, and delegate/generate the handoff for the next stage.
@@ -460,10 +454,10 @@ The references are **deepening material**, not a condition for understanding the
 | `bootstrap.md` | Project without a Memory Bank |
 | `project-execution.md` | When a project adopts the v2 execution bootstrap: policy, authority (I2), first prepare, resume, replacement, dispatch record and reconciliation. The CLI is the installed one (`<skill-dir>/scripts/cdad_packet.py`), never a path relative to the consumer project |
 | `continuity.md` | When you use the optional continuity CLI in the cycle — the installed one, `<skill-dir>/scripts/cdad_continuity.py`: `begin` before dispatch, `checkpoint` at the task boundary, `reconcile` before a retry/resume, `resume` in a new session, advisory `trigger` |
-| `progress-guards.md` | Only if you dispatch roles as external processes (e.g. `opencode run`) or want to prevalidate an operation — read its applies/does-not-apply table first; not for native sub-agents |
+| `progress-guards.md` | Only if you dispatch roles as processes outside the runtime (another CLI's non-interactive run) or want to prevalidate an operation — read its applies/does-not-apply table first; not for native sub-agents |
 | `sub-agent-strategies.md` | If the environment has native sub-agents and you want to suggest an alternative to the new chat |
-| `opencode-delegation.md` | OpenCode environment with `cdad-*` sub-agents installed; delegate the role via Task |
-| `claude-code-delegation.md` | Claude Code environment with `cdad-*` sub-agents installed; delegate the role via `Agent` |
+| `opencode-delegation.md` | OpenCode environment with `cdad-*` sub-agents installed; the runtime-specific detail of the mechanism your OpenCode orchestrator agent declares |
+| `claude-code-delegation.md` | Claude Code environment with `cdad-*` sub-agents installed; the runtime-specific detail of the mechanism your Claude Code orchestrator agent declares |
 | `anti-patterns.md` | If you detect drift signals |
 | `receiving-feedback.md` | When transmitting or receiving feedback from review, user or external PR (Stage 4 fix loop) |
 | `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
@@ -498,9 +492,8 @@ When you create files, copy from templates and fill in.
 
 The skill is **harness-independent**: the orchestrator runs the cycle with or without native sub-agents (see **Roles contract §4**). The delegation mechanism is decided per environment, in this order of preference:
 
-- **(a1) OpenCode with `cdad-*` sub-agents**: native delegation via `task`/`delegate` with `subagent_type: cdad-<role>` (preferred — real session isolation + per-role model routing; see `references/opencode-delegation.md`).
-- **(a2) Claude Code with `cdad-*` sub-agents**: delegation via the `Agent` tool with `subagent_type: cdad-<role>` (real session isolation + per-role model routing via frontmatter; see `references/claude-code-delegation.md`). Supported since ADR-008 (2026-08-13).
-- **(b) Without `cdad-*` sub-agents (any LLM)**: handoff packet pasteable into a new chat (universal; see `references/handoff-prompts.md`). Alternative with generic native sub-agents in `references/sub-agent-strategies.md`.
+- **(a) With native dispatch for the `cdad-*` roles (any runtime)**: delegate through **the mechanism that the orchestrator agent of your runtime declares** (its `delegation` section: dispatch tool, role→sub-agent mapping and packet pass) — preferred: real separate session + per-role model routing. Environment-specific detail: `references/opencode-delegation.md` (OpenCode) and `references/claude-code-delegation.md` (Claude Code, supported since ADR-008, 2026-08-13).
+- **(b) Without native dispatch (any LLM)**: handoff packet pasteable into a new chat (universal; see `references/handoff-prompts.md`). Alternative with generic native sub-agents in `references/sub-agent-strategies.md`.
 - **(c) Zed**: threads with profiles (see `sub-agent-strategies.md`).
 
 The skill assumes no bash, git, or specific tooling. When a verification requires execution, it asks the user to run it and paste the output, unless your environment lets you run it.
