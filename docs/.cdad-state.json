@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": "006-003-installer-single-profile-delegation-config",
-  "current_stage": "tdd",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -46,8 +46,13 @@
     },
     {
       "id": "006-003-installer-single-profile-delegation-config",
-      "status": "in-progress",
-      "opened_at": "2026-10-18T11:28:46.153950+00:00"
+      "status": "done",
+      "opened_at": "2026-10-18T11:28:46.153950+00:00",
+      "closed_at": "2026-10-18T23:47:38.736110+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
+        "sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
+      }
     },
     {
       "id": "006-005-native-path-parity",
@@ -9529,6 +9534,46 @@
       "receipt_sha256": "0bc31fb0820aa080c8e9aee7ac8f742afe932158152c069394e2aceac0a8db11",
       "artifacts": {},
       "note": null
+    },
+    {
+      "feature": "006-003-installer-single-profile-delegation-config",
+      "stage": "merge",
+      "substage": null,
+      "at": "2026-10-18T23:47:38.736110+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "9b1021d73204c02b03d55981db55f123f66de77367e3173c299d7ceffe0fa5fa",
+      "transition_key_payload": {
+        "execution_id": "exec-006-003-installer-single-profile-delegation-config-001",
+        "feature_id": "006-003-installer-single-profile-delegation-config",
+        "transition": "closure",
+        "stage": "merge",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo (Memory Bank y ADR-033, 2026-10-18)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
+          "sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Pablo (Memory Bank y ADR-033, 2026-10-18)",
+      "closure_path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
+      "closure_sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9543,7 +9588,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-18T23:24:37.928038+00:00",
+  "last_updated": "2026-10-18T23:47:38.736110+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9650,14 +9695,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "006-003-installer-single-profile-delegation-config-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "completed",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
-  },
+  "active_packet": null,
   "tdd_substage": "red"
 }
