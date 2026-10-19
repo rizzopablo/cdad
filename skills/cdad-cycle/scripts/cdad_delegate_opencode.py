@@ -74,6 +74,21 @@ What this adapter does, and why (contract decisions D5/D6):
    in use, in the environment of the dispatching process -- and, when
    refused, the path and the mode found). The value never leaves the Basic
    header: never stdout/stderr/argv/ledger.
+7. 006-005 U2 (PD-11/PD-14/PD-5/PD-10/PD-12/PD-13/PD-23): the module also (a)
+   INJECTS the resolved server credential into the CLIENT PROCESS ENVIRONMENT
+   (`OPENCODE_PASSWORD`) in `mode: server` only, next to the pinned `PWD`, and
+   never into argv, stdout/stderr, the I8 record nor the receipt; (b) takes the
+   AGENT from `REQUEST.json.agent` (role + `stack`, PD-7), falling back to the
+   role agent `cdad-<role>` while DECLARING the absent field, and verifies THAT
+   agent is published before dispatching; (c) corroborates the durable row's
+   `agent` against the agent of the packet (`unknown` when either side is not
+   evaluable, a REJECTION naming the key when they contradict); (d) DERIVES the
+   delivered part's `artifact_kind` from role/subphase (§2.8/PD-23), never a
+   fixed constant; and (e) declares `--capabilities` (the five §2.2 keys, the
+   observed store columns and whether the §2.3 discrimination threshold is
+   reached) and `--observe` (ONE bounded read-only access returning the
+   correlated row plus the `store_reads` counter, failing closed naming the
+   absent column) for the native path.
 
 Honest limits: a separate process/session is not a sandbox (INV-8); the durable
 signal surface implemented here is the session store the execution
@@ -124,7 +139,11 @@ PACKET_INSTRUCTIONS_NAME = "common.md"
 # (PD-5).
 WAIT_RESERVE_SECONDS = 1.0
 FINAL_TEXT_PART = "final-text"
-FINAL_TEXT_ARTIFACT_KIND = "role-report"
+# 006-005 §2.8/PD-23: the kind of the delivered part is DERIVED from the
+# packet's role and subphase (`_derived_artifact_kind`); this literal is the
+# common single role report the derivation returns where the closed table
+# admits it (never written as a fixed constant for every delivery).
+ROLE_REPORT_KIND = "role-report"
 RECEIPT_NAME = "receipt.json"
 
 # 006-001 T1 (PD-1/PD-2): execution-mode selection and the server preflight.
@@ -184,6 +203,19 @@ SESSION_MESSAGE_COLUMNS = ("id", "session_id", "type", "seq", "data")
 IDLE_OUTCOME_SUCCEEDED = "succeeded"
 IDLE_OUTCOME_FAILED = "failed"
 IDLE_OUTCOME_INTERRUPTED = "interrupted"
+
+# 006-005 §2.2/§2.3 (PD-10/PD-12/PD-13): the declared capability keys, the
+# column the observation surface requires (the identity key this path
+# evaluates) and the DISCRIMINATING keys of the §2.3 native association (at
+# least one of them must be observable for the positive accreditation, O-3).
+CAPABILITY_KEYS = ("native_observation", "external_transport",
+                   "session_correlation", "version", "reason")
+VERSION_UNKNOWN = "unknown"
+SESSION_CORRELATION_AGENT_COLUMN = "agent"
+SESSION_OBSERVATION_KEY_COLUMNS = ("id", SESSION_CORRELATION_AGENT_COLUMN)
+SESSION_CORRELATION_DISCRIMINATING_COLUMNS = ("parent_id", "directory",
+                                              "time_created")
+STORE_READS_KEY = "store_reads"
 
 # 006-001 T2 (PD-7..PD-11, §2.4/§2.5/§2.7): the wait after the client exits,
 # the classification of the durable row, the ordered termination of the
@@ -299,8 +331,28 @@ def _entry_agent_name(role: str) -> str:
     return f"cdad-{role}"
 
 
-def _check_derived_agent_published(project_root: Path, role: str) -> str | None:
-    """Verify the derived `cdad-<role>` agent is published (PD-3).
+def _packet_agent(request: dict[str, Any], role: str) -> tuple[str, str | None]:
+    """The agent of the PACKET (PD-14/§2.7) and the note declaring its absence.
+
+    Returns `(agent, absence_note)`. The agent comes from `REQUEST.json.agent`
+    (role + `stack`, written by `prepare`, PD-7); a packet published before the
+    feature (no `agent` field) is still dispatchable with the role agent
+    `cdad-<role>`, and the absence of the declared field is NEVER silenced (the
+    caller states it in its envelope's diagnosis).
+    """
+    declared = _as_text(request.get("agent"))
+    if declared is not None:
+        return declared, None
+    agent = _entry_agent_name(role)
+    return agent, (
+        f"the packet request declares no `agent` field (a packet published "
+        f"before this feature): the role agent {agent!r} is the declared "
+        f"fallback and the `agent` key of the correlation stays `unknown`, "
+        f"never an inferred value (§2.7/PD-14)")
+
+
+def _check_derived_agent_published(project_root: Path, agent: str) -> str | None:
+    """Verify the derived agent of the packet is published (PD-3/PD-14).
 
     Returns `None` when the derived agent is published, or an actionable
     diagnosis that names the missing agent (fail closed BEFORE dispatching).
@@ -308,11 +360,10 @@ def _check_derived_agent_published(project_root: Path, role: str) -> str | None:
     PD-3: the derived entry's `mode:` NO LONGER conditions the dispatch (the
     installed runtime accepts `mode: subagent` as a non-interactive CLI entry);
     the barrier is the durable identity
-    (`session_v2.agent == "cdad-<role>"`), verified once the session is
+    (`session_v2.agent == <agent of the packet>`), verified once the session is
     correlated. A missing derived agent is still a pre-dispatch fail-closed
     fact and NEVER falls back to a generic non-Cdad agent.
     """
-    agent = _entry_agent_name(role)
     entry = project_root / DERIVED_AGENTS_RELPATH / f"{agent}.md"
     if entry.is_file():
         return None
@@ -324,24 +375,65 @@ def _check_derived_agent_published(project_root: Path, role: str) -> str | None:
         f"before delegating.")
 
 
-def _check_durable_identity(row: dict[str, Any], role: str) -> str | None:
-    """Verify the correlated durable row declares the role identity (PD-3).
+def _durable_identity_verdict(row: dict[str, Any],
+                              packet_agent: str | None
+                              ) -> tuple[str, str | None]:
+    """Corroborate the durable row's `agent` against the packet's agent (§2.5).
 
-    Returns `None` when `session_v2.agent == cdad-<role>`, or an actionable
-    diagnosis that names BOTH agents (the row's and the expected `cdad-<role>`)
-    when they differ. The identity is the barrier, not the CLI `mode`; there is
-    never a fallback to a generic non-Cdad agent.
+    Returns `(verdict, diagnosis)`: `match` (the delivered role identity is the
+    one the packet declared), `contradiction` (the row declares another agent:
+    a REJECTION that names the `agent` key, never `unknown` and never an
+    accepted delivery) or `unknown` (either side is not evaluable — a packet
+    without the field, or a row without the column: the key is `unknown`,
+    never compared against a supposed value).
     """
-    expected = _entry_agent_name(role)
     declared = _as_text(row.get("agent"))
-    if declared == expected:
-        return None
-    return (
+    if packet_agent is None or declared is None:
+        return "unknown", (
+            "the `agent` key of the correlation is not evaluable "
+            f"(session_v2.agent={declared!r}, the agent of the packet="
+            f"{packet_agent!r}): §2.5 resolves an unevaluable key as `unknown`, "
+            "never by comparing against a supposed value, and no delivery is "
+            "accepted on it (reconcile the session/agent before repeating)")
+    if declared == packet_agent:
+        return "match", None
+    return "contradiction", (
         f"the correlated durable session row declares agent {declared!r}, not "
-        f"the expected {expected!r} (PD-3: the role identity is verified from "
-        f"the durable row, session_v2.agent). Refusing to declare a delivery "
-        f"and refusing any fallback to a generic non-Cdad agent; reconcile the "
-        f"session/agent before repeating the delegation.")
+        f"the agent of the packet {packet_agent!r} (PD-3/§2.5: the role "
+        f"identity is verified from the durable row, session_v2.agent). "
+        f"Refusing to declare a delivery and refusing any fallback to a "
+        f"generic non-Cdad agent; reconcile the session/agent before repeating "
+        f"the delegation.")
+
+
+def _derived_artifact_kind(role: str, substage: str) -> str:
+    """§2.8/PD-23/INV-14: the kind of the delivered part comes from the closed
+    role/subphase table (`cdad_result._allowed_kinds`, the single source the
+    native path also derives from), never from a fixed constant.
+
+    §2.8.1: a row that admits EXACTLY one kind determines the delivered part.
+    §2.8.2: where the row admits `role-report` (the architect's report in
+    `discovery`/`draft`, since 005-007 T4) the common single delivery of the
+    interface is that role report. §2.8.3: the scribe's common single delivery
+    is the same role report; its row admits `role-report` from U7/PD-26 and
+    that row is NOT touched here (the materialization of the scribe's report is
+    U7's oracle).
+    """
+    kinds = cdad_result._allowed_kinds(role, substage)
+    if len(kinds) == 1:
+        return next(iter(kinds))
+    if ROLE_REPORT_KIND in kinds:
+        return ROLE_REPORT_KIND
+    # §2.8.3: the scribe's common single delivery is the same role report; its
+    # row admits `role-report` from U7/PD-26 (declared dependency, the row is
+    # NOT touched here and the materialization of that report is U7's oracle).
+    if role == "scribe":
+        return ROLE_REPORT_KIND
+    raise AdapterError(
+        f"the closed role/subphase table does not determine a single artifact "
+        f"kind for role {role!r}/substage {substage!r}: "
+        f"{sorted(kinds) or 'no kind admitted'} — the delivered part must "
+        f"declare one kind (§2.8/PD-23)")
 
 
 # ------------------------------------------------------- destination process
@@ -385,7 +477,8 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
                         server: str | None,
                         auto: bool,
                         standalone: bool = True,
-                        grace: float = 0.0) -> subprocess.CompletedProcess:
+                        grace: float = 0.0,
+                        credential_env: str | None = None) -> subprocess.CompletedProcess:
     """Invoke the configured binary, transporting the packet bytes on stdin.
 
     The adapter chooses the session id and passes `--session <id>` so the
@@ -407,6 +500,12 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
     (`start_new_session=True`) so that, when it does not return within the
     bound, the adapter terminates the whole group in an ORDERED way (SIGTERM,
     the effective grace, SIGKILL) -- never just the direct child.
+
+    006-005 U2 (PD-11/§2.5): `credential_env` is the credential the SERVER mode
+    resolved (environment first, then the 0600 file) and is injected ONLY into
+    the environment of THIS client process, next to the pinned `PWD`; it never
+    reaches argv, stdout, stderr, the I8 record nor the receipt. `None`
+    (standalone/service) injects nothing.
     """
     argv = [binary, "run", "--agent", agent, "--session", session_id]
     if server:
@@ -425,6 +524,9 @@ def _invoke_destination(binary: str, agent: str, model: str | None,
     # set for the destination process, never read (PD-3/PD-8).
     env = dict(os.environ)
     env["PWD"] = str(cwd)
+    if credential_env is not None:
+        # PD-11: only the client process environment, only in server mode.
+        env[OPENCODE_PASSWORD_ENV] = credential_env
     try:
         proc = subprocess.Popen(argv, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
@@ -1210,10 +1312,13 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
     """Spec §2.3: client version, then `GET /api/info`, within `timeout`.
 
     Returns {"ok", "termination", "diagnosis", "client_version",
-    "server_version"}. `client_version` is always the OBSERVED `--version`
-    fact (I8 provenance); the comparison against the server also considers
-    `binary_version` when the config declares it and it is parseable (spec
-    §2.3 row 4).
+    "server_version", "credential_value"}. `client_version` is always the
+    OBSERVED `--version` fact (I8 provenance); the comparison against the server
+    also considers `binary_version` when the config declares it and it is
+    parseable (spec §2.3 row 4). `credential_value` is the credential this mode
+    resolved (PD-11/§2.5) and is relayed to the caller so it can be injected
+    into the CLIENT process environment (never into the preflight document that
+    is emitted).
     """
     version_output, version_diag = _invoke_version(binary, timeout)
     if version_diag is not None:
@@ -1284,7 +1389,8 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                 "server_version": server_version}
     return {"ok": True, "termination": None, "diagnosis": None,
             "client_version": observed_client_version,
-            "server_version": server_version}
+            "server_version": server_version,
+            "credential_value": credential["value"]}
 
 
 # ------------------------------------------- 006-001 T1b: service preflight
@@ -1726,6 +1832,13 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
     staged = inbox / f"{part_name}.md"
     staged.write_bytes(final_text.encode("utf-8"))
 
+    # §2.8/PD-23/INV-14: the kind of the delivered part is DERIVED from the
+    # packet's role and subphase (the closed table is the single source), never
+    # the fixed constant that made another role's report impossible to
+    # materialize.
+    artifact_kind = _derived_artifact_kind(
+        _as_text(request.get("role")) or "", _as_text(request.get("substage")) or "")
+
     descriptor = {
         "schema_version": 1,
         "execution_id": execution_id,
@@ -1734,7 +1847,7 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         "source": {"kind": "staged-file", "sdk_message_ref": None},
         "parts": [{
             "name": part_name,
-            "artifact_kind": FINAL_TEXT_ARTIFACT_KIND,
+            "artifact_kind": artifact_kind,
             "staged_path": f"{cdad_result.INBOX_RELPATH.as_posix()}/{part_name}.md",
         }],
         "run_evidence_ref": None,
@@ -1754,6 +1867,248 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
 
     return str(project_root / cdad_result.RESULTS_RELPATH / execution_id
                / packet_id / RECEIPT_NAME)
+
+
+# ------------------------------ 006-005 U2: capabilities and observation
+
+
+def _read_store_columns(store_path: Path) -> list[str]:
+    """The observable `session_v2` columns, through ONE read-only access.
+
+    §2.2/PD-13: URI `mode=ro` (never `immutable`, never a writable connection);
+    the schema is introspected inside the same single access. Fails closed when
+    the store does not exist or is not readable SQLite -- an unknown store is
+    never degraded into a supposed capability.
+    """
+    if not store_path.is_file():
+        raise AdapterError(
+            f"the durable session store {store_path} declared by the execution "
+            "configuration (sessions_db) does not exist")
+    try:
+        conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True, timeout=0)
+    except sqlite3.Error as exc:
+        raise AdapterError(
+            f"the durable session store {store_path} is not readable as "
+            f"SQLite: {exc}") from exc
+    try:
+        return sorted(_table_columns(conn, SESSION_V2_TABLE))
+    except _StoreBusy as exc:
+        raise AdapterError(
+            f"the durable session store {store_path} is momentarily locked by "
+            f"a live writer ({exc}): the capability cannot be observed now and "
+            "this surface performs ONE bounded read, never a poll") from exc
+    except sqlite3.DatabaseError as exc:
+        raise AdapterError(
+            f"the durable session store {store_path} is not readable as "
+            f"SQLite: {exc}") from exc
+    finally:
+        conn.close()
+
+
+def _observed_binary_version(binary: str | None) -> tuple[str, str | None]:
+    """The version OBSERVED on the binary (§2.2): never a supposed one."""
+    if binary is None:
+        return VERSION_UNKNOWN, (
+            "the execution configuration declares no destination binary "
+            "(`binary`): the version cannot be observed")
+    output, diagnosis = _invoke_version(
+        binary, DEFAULT_WAIT_VALUES["preflight_timeout_seconds"])
+    if diagnosis is not None:
+        return VERSION_UNKNOWN, diagnosis
+    lines = [line.strip() for line in (output or "").splitlines()
+             if line.strip()]
+    if not lines:
+        return VERSION_UNKNOWN, (
+            f"the destination binary {binary!r} answered `--version` with no "
+            "observable version")
+    return lines[0], None
+
+
+def _capabilities_document(config: dict[str, Any],
+                          config_note: str | None = None) -> dict[str, Any]:
+    """§2.2/PD-10/O-3: the declared capabilities of this runtime module.
+
+    Exactly the five declared keys: `native_observation`, `external_transport`,
+    `session_correlation`, `version` and `reason`. `session_correlation` is true
+    only when the store of the version OBSERVED exposes the identity key this
+    path evaluates (`agent`) **and reaches the §2.3 discrimination threshold**
+    (at least one discriminating key -- parent, moment or project/directory);
+    the `reason` DECLARES the observed columns and, when a capability is denied,
+    names what is missing (never a silent degradation).
+    """
+    binary = _as_text(config.get("binary"))
+    version, version_note = _observed_binary_version(binary)
+    store_raw = _as_text(config.get("sessions_db"))
+    remarks: list[str] = []
+    if config_note is not None:
+        remarks.append(config_note)
+    columns: list[str] = []
+    if store_raw is None:
+        remarks.append(
+            "the execution configuration declares no durable session store "
+            "(`sessions_db`): the columns of the observed version cannot be "
+            "declared")
+    else:
+        try:
+            columns = _read_store_columns(Path(store_raw))
+        except AdapterError as exc:
+            remarks.append(str(exc))
+    agent_observable = SESSION_CORRELATION_AGENT_COLUMN in columns
+    discriminating = [column for column
+                      in SESSION_CORRELATION_DISCRIMINATING_COLUMNS
+                      if column in columns]
+    session_correlation = agent_observable and bool(discriminating)
+    if columns:
+        remarks.append("the observed store exposes: " + ", ".join(columns))
+        if not agent_observable:
+            remarks.append(
+                f"the `{SESSION_CORRELATION_AGENT_COLUMN}` column is absent: "
+                "the identity key of the correlation is not observable")
+        if not discriminating:
+            remarks.append(
+                "no discriminating key is evaluable (neither a parent column, "
+                "nor the moment `time_created`, nor a project/directory "
+                "column): the `agent` key alone does not discriminate (two "
+                "concurrent dispatches of the same role share it), so this "
+                "path does not reach the §2.3 threshold")
+    if version_note is not None:
+        remarks.append(version_note)
+    if session_correlation:
+        remarks.append(
+            "the observed version reaches the §2.3 discrimination threshold")
+    return {
+        "native_observation": session_correlation,
+        "external_transport": True,
+        "session_correlation": session_correlation,
+        "version": version,
+        "reason": "; ".join(remarks),
+    }
+
+
+def _observe_document(store_path: Path, session_id: str | None,
+                      parent_id: str | None) -> dict[str, Any] | None:
+    """§2.2/PD-12/PD-13: the observable row of the correlated attempt.
+
+    ONE bounded access to the store, READ ONLY (no polling, no write): the row
+    the external path correlates by the session id the module itself chose, or
+    the candidate row of the dispatching session (`parent_id`) the native path
+    declares. The keys this path evaluates are REQUIRED: a store that does not
+    expose them fails closed NAMING the absent column, never degrading to
+    `absent` nor fabricating a row. The returned document carries `store_reads`,
+    the accesses of the correlated row performed by this invocation (exactly
+    one).
+    """
+    if session_id is None and parent_id is None:
+        raise AdapterError(
+            "`--observe` needs the correlation evidence of the attempt: the "
+            "session id (`--session`) the external path chose, or the "
+            "dispatching session (`--parent`) of the native path")
+    if not store_path.is_file():
+        raise AdapterError(
+            f"the durable session store {store_path} declared by the execution "
+            "configuration (sessions_db) does not exist")
+    try:
+        conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True, timeout=0)
+    except sqlite3.Error as exc:
+        raise AdapterError(
+            f"the durable session store {store_path} is not readable as "
+            f"SQLite: {exc}") from exc
+    try:
+        columns = sorted(_table_columns(conn, SESSION_V2_TABLE))
+        if not columns:
+            raise AdapterError(
+                f"the durable session store {store_path} does not expose the "
+                f"{SESSION_V2_TABLE} table: refusing to observe an unknown "
+                "schema and refusing to fabricate a row")
+        required = list(SESSION_OBSERVATION_KEY_COLUMNS)
+        if session_id is None:
+            required.append("parent_id")
+        missing = [column for column in required if column not in columns]
+        if missing:
+            raise AdapterError(
+                f"the durable session store {store_path} lacks the column(s) "
+                f"this observation evaluates: missing {', '.join(missing)} "
+                f"(session_v2.{SESSION_CORRELATION_AGENT_COLUMN} is the "
+                "identity key of the correlation). Refusing to observe an "
+                "unknown schema and refusing to fabricate a row")
+        if session_id is not None:
+            row = _fetch_session_row(conn, session_id)
+        else:
+            cursor = _query(
+                conn,
+                f"SELECT * FROM {SESSION_V2_TABLE} WHERE parent_id = ? LIMIT 1",
+                (parent_id,))
+            description = cursor.description
+            found = cursor.fetchone()
+            row = (dict(zip([item[0] for item in description], found))
+                   if found is not None else None)
+    except _StoreBusy as exc:
+        raise AdapterError(
+            f"the durable session store {store_path} is momentarily locked by "
+            f"a live writer ({exc}): this observation performs ONE bounded "
+            "read and never polls -- reconcile and repeat") from exc
+    finally:
+        conn.close()
+    if row is None:
+        return None
+    document = dict(row)
+    document[STORE_READS_KEY] = 1
+    return document
+
+
+def _surface_config(args: argparse.Namespace) -> tuple[dict[str, Any], str | None]:
+    """The internal execution configuration of a §2.2 surface and a note.
+
+    These surfaces answer WITHOUT the transport of a packet: the configuration
+    is optional and a config that cannot be read is DECLARED (the capability
+    cannot be accredited), never a traceback and never a silent fallback.
+    Returns `(config, note)`; `note` is not `None` when the configuration could
+    not be read (the document stays the closed five-key one).
+    """
+    if not args.exec_config:
+        return {}, None
+    try:
+        return _load_json(Path(args.exec_config), "execution config"), None
+    except AdapterError as exc:
+        return {}, (
+            f"the execution configuration handed to the module is not readable "
+            f"JSON ({exc}): no version and no store column can be observed")
+
+
+def _run_capabilities(args: argparse.Namespace) -> int:
+    """`--capabilities`: the five §2.2 keys on stdout (rc=0, never a fallback)."""
+    config, config_note = _surface_config(args)
+    document = _capabilities_document(config, config_note=config_note)
+    sys.stdout.write(
+        json.dumps(document, ensure_ascii=False, sort_keys=True) + "\n")
+    return 0
+
+
+def _run_observe(args: argparse.Namespace) -> int:
+    """`--observe`: ONE bounded read-only access, the row or `null` on stdout.
+
+    A store/schema that cannot be observed fails closed with rc≠0 and a
+    diagnosis on stderr that names the absent column (never a fabricated row).
+    """
+    config, config_note = _surface_config(args)
+    if config_note is not None:
+        sys.stderr.write(config_note + "\n")
+        return 2
+    store_raw = _as_text(config.get("sessions_db"))
+    if store_raw is None:
+        sys.stderr.write(
+            "`--observe` requires the durable session store (`sessions_db`) in "
+            "the execution configuration\n")
+        return 2
+    try:
+        document = _observe_document(Path(store_raw), _as_text(args.session),
+                                     _as_text(args.parent))
+    except AdapterError as exc:
+        sys.stderr.write(f"{exc}\n")
+        return 2
+    sys.stdout.write(
+        json.dumps(document, ensure_ascii=False, sort_keys=True) + "\n")
+    return 0
 
 
 # --------------------------------------------------------------- envelope
@@ -1829,10 +2184,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cdad_delegate_opencode.py",
         description="CDAD OpenCode destination adapter.")
-    parser.add_argument("--project-root", required=True)
-    parser.add_argument("--packet-id", required=True)
+    # `--project-root`/`--packet-id` are required for the dispatch errand (the
+    # transport of a published packet) but NOT for the §2.2 surfaces the
+    # orchestrator's entry asks standalone (`--capabilities`).
+    parser.add_argument("--project-root", default=None)
+    parser.add_argument("--packet-id", default=None)
     parser.add_argument("--destination", default=DESTINATION_ID)
     parser.add_argument("--exec-config", default=None)
+    # 006-005 §2.2 (PD-10/PD-12/PD-13): the declared surfaces of the integration.
+    parser.add_argument("--capabilities", action="store_true")
+    parser.add_argument("--observe", action="store_true")
+    parser.add_argument("--session", default=None)
+    parser.add_argument("--parent", default=None)
     return parser
 
 
@@ -1847,6 +2210,10 @@ def _read_packet_stdin() -> bytes:
 
 
 def delegate(args: argparse.Namespace) -> dict[str, Any]:
+    if not args.project_root:
+        raise AdapterError("--project-root is required for a dispatch")
+    if not args.packet_id:
+        raise AdapterError("--packet-id is required for a dispatch")
     project_root = Path(args.project_root)
     if not project_root.is_dir():
         raise AdapterError(f"--project-root is not a directory: {args.project_root}")
@@ -1905,6 +2272,11 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     if role is None:
         raise AdapterError(f"packet {args.packet_id!r} request has no role")
     execution_id_value = _as_text(request.get("execution_id"))
+    # 006-005 PD-14/§2.7 (D-ADP-4): the agent travels IN THE PACKET
+    # (`REQUEST.json.agent`, role + `stack`); a packet published before the
+    # feature uses the role agent and its absent field is DECLARED, never
+    # silenced (the note travels in this attempt's diagnosis).
+    agent, agent_note = _packet_agent(request, role)
 
     packet_bytes = _read_packet_stdin()
     started_at = _now()
@@ -1998,10 +2370,11 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         return blocked_before_dispatch(
             f"the delegation config is not usable: {exc}")
 
-    # PD-3: verify the derived agent is published BEFORE dispatching anything.
-    # A missing derived agent fails closed here; the CLI `mode:` no longer
-    # conditions the dispatch (the durable identity is the barrier instead).
-    unpublished_diagnosis = _check_derived_agent_published(project_root, role)
+    # PD-3/PD-14: verify the derived agent of the PACKET is published BEFORE
+    # dispatching anything. A missing derived agent fails closed here; the CLI
+    # `mode:` no longer conditions the dispatch (the durable identity is the
+    # barrier instead).
+    unpublished_diagnosis = _check_derived_agent_published(project_root, agent)
     if unpublished_diagnosis is not None:
         return blocked_before_dispatch(unpublished_diagnosis)
 
@@ -2100,6 +2473,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # observed fact (in the service mode, D-2: only when the service runs).
     server_for_invoke: str | None = None
     standalone_for_invoke = True
+    # PD-11/§2.5 (D-ADP-1): the credential the SERVER mode resolved is injected
+    # ONLY into the environment of the client process this module launches.
+    # `None` in standalone/service: nothing is injected there.
+    client_credential: str | None = None
     if mode_effective == "server":
         remaining = max(0.0, wait_deadline - time.monotonic())
         # §2.3: bounded by the REMAINING budget, never by the configured
@@ -2116,6 +2493,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                 client_version=client_version, server_version=server_version)
         server_for_invoke = server_raw
         standalone_for_invoke = False
+        client_credential = preflight.get("credential_value")
     elif mode_effective == "service":
         # 006-001 §2.3b (PD-13/PD-14): `service status` once, then the D-11
         # version gate; any declared `server` is ignored and never checked.
@@ -2169,12 +2547,13 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # group and, when the bound expires, the WHOLE group is terminated in an
     # ordered way (SIGTERM, the effective grace, SIGKILL).
     try:
-        proc = _invoke_destination(binary, _entry_agent_name(role), model,
+        proc = _invoke_destination(binary, agent, model,
                                    packet_bytes, project_root,
                                    remaining_for_invoke, session_id,
                                    server=server_for_invoke, auto=auto,
                                    standalone=standalone_for_invoke,
-                                   grace=grace)
+                                   grace=grace,
+                                   credential_env=client_credential)
     except DestinationTimeoutError as exc:
         # R1: the material fact is absence-of-signal within the bound ->
         # `timeout`, never `transport-error` with a fabricated rc. PD-8: the
@@ -2279,18 +2658,27 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     row = outcome["row"]
     durable_session_base = (
         "durable session row (exec-config: sessions_db): session_v2.id")
-    # PD-3/INV-6: the role identity is the barrier. If the durable row declares
-    # another agent, fail closed with a diagnosis naming BOTH agents -- never a
-    # delivery and never a fallback to a generic non-Cdad agent.
-    identity_diagnosis = _check_durable_identity(row, role)
-    if identity_diagnosis is not None:
+    # PD-3/PD-5 (§2.5, INV-15): the durable row's `agent` is corroborated
+    # against the AGENT OF THE PACKET. A contradiction is a REJECTION that names
+    # the key; a key that is not evaluable (the packet declares no `agent`, or
+    # the row exposes no column) resolves to `unknown` -- never `cdad-<rol>` and
+    # never a delivery accepted on it. There is no parent to compare and no
+    # `directory == root` equality here (§2.3).
+    identity_verdict, identity_diagnosis = _durable_identity_verdict(
+        row, _as_text(request.get("agent")))
+    if identity_verdict != "match":
+        identity_termination = ("blocked"
+                                if identity_verdict == "contradiction"
+                                else "unknown")
         note = register_note(session=_as_text(row.get("id")),
                              session_base=durable_session_base,
                              row_state="present", client_version=client_version,
                              server_version=server_version)
-        return envelope(session=_as_text(row.get("id")), termination="blocked",
+        return envelope(session=_as_text(row.get("id")),
+                         termination=identity_termination,
                          delivery_ref=None,
-                         diagnosis=_append_note(identity_diagnosis, note))
+                         diagnosis=_append_note(
+                             _append_note(identity_diagnosis, agent_note), note))
 
     termination, session, final_text, diagnosis = _classify(
         row, outcome["final_text"], outcome.get("idle_error"))
@@ -2325,6 +2713,12 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    # 006-005 §2.2: the declared surfaces of the integration answer on their own
+    # (they are not the dispatch errand and never emit an envelope).
+    if args.capabilities:
+        return _run_capabilities(args)
+    if args.observe:
+        return _run_observe(args)
     try:
         output = delegate(args)
     except AdapterError as exc:
