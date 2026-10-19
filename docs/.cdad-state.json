@@ -9902,13 +9902,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-005-native-path-parity-architect-draft-003",
-    "role": "architect",
-    "substage": "draft",
-    "status": "completed",
+    "id": "006-005-native-path-parity-reviewer-plan-review-002",
+    "role": "reviewer",
+    "substage": "plan-review",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "approved-epic-plan",
-    "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
+    "contract_kind": "draft-plan",
+    "contract_sha256": "c2ca437ff3f3d55addf321f86585ac23a6a53d4158067d2d608c116b35b9ae94"
   },
   "tdd_substage": null
 }
