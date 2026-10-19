@@ -5769,10 +5769,20 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             new_state["active_packet"] = None
         elif transition == "disposition":
             # PD-21/INV-9: the disposition registers a DECISION, not a result.
-            # Its only write is the trace entry (plus `last_updated`): it never
-            # fabricates a `completed`, never approves and never touches a
-            # derived field of the feature.
-            pass
+            # It never fabricates a `completed`, never approves and never
+            # touches a derived field of the feature.
+            #
+            # 006-005 PD-19/D-4 (amends the INV-9 consequence, approved by the
+            # owner): the dispatch that will not come back gets its MECHANICAL
+            # route to `failed`. Only the CITED packet changes — and only its
+            # `status` — so nothing else of the state is touched and the
+            # decision still approves nothing. `failed` is terminal and outside
+            # `ACTIVE_PACKET_STATUSES`, so it unblocks the next `prepare`
+            # without stopping any worker (it is a state mark); the `late-delivery`
+            # route does not read the packet status, so it stays registrable.
+            active = state.get("active_packet")
+            if isinstance(active, dict) and active.get("id") == packet_id:
+                new_state["active_packet"] = {**active, "status": "failed"}
         elif transition == "late-delivery":
             # PD-13 (2)/INV-9: the late delivery registers a TRACE, not a result.
             # Its only write is the entry (plus `last_updated`): it never
