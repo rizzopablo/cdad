@@ -259,13 +259,16 @@ Derivado por el orquestador, sin contenido nuevo, de las fichas de §3 (archivos
     "U5"
    ],
    "parallel": [],
-   "files": [
-    "docs/specs/006-005-native-path-parity/"
-   ],
-   "focal_tests": [],
-   "regressions": [],
+   "files": [],
    "integration_gate": "@validation_strategy",
-   "owner": "orquestador (recorrido real) con evidencia"
+   "owner": "orquestador (recorrido real) con evidencia",
+   "observable_checks": [
+    "intento I8 por cada via (externa con la entrada nueva; nativa con task + record) en .cdad/executions/<exec>/dispatches/",
+    "recibo pending con scope_validation: passed para un test real y una sonda temporal",
+    "intento interrumpido llevado a failed por register-transition disposition, validate-state VALID",
+    "sonda V-11: session_v2.agent == cdad-<rol>-odoo en proyecto descartable con stack: odoo, o BLOQUEADA con motivo"
+   ],
+   "regressions": []
   }
  ]
 }
