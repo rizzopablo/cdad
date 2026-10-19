@@ -35,7 +35,7 @@ Mapa test → postcondición:
     test_pd8_i9_prepare_publishes_local_opencode_agents      -> PD-8/I9 (publicación)
     test_pd8_i9_manifest_records_policy_and_agent_hashes     -> PD-8/I9 (manifest)
     test_pd8_i9_foreign_file_survives_publication            -> PD-8/I9 (ajenos)
-    test_pd8_i9_derived_body_is_byte_identical_to_source     -> PD-8/I9 (byte a byte salvo la región de permisos: mapas + cabecera `permission`, F-R1/review-012)
+    test_pd8_i9_derived_body_is_byte_identical_to_source     -> PD-8/I9 (byte a byte salvo la región de permisos: mapas + cabecera `permission`, F-R1/review-012; U6-7b/A-1 suma `write` a la región reemplazada)
   TestPd7I9DerivedMaps
     test_pd7_i9_test_writer_cdad_layout_maps                 -> PD-7/I9 (layout CDAD) + W-2 (grep/glob sin entradas por ruta)
     test_pd7_i9_maps_conventional_and_colocated_layouts      -> PD-7/I9 (convencional + co-ubicado) + W-2
@@ -193,18 +193,28 @@ def without_maps(agent_text: str) -> str:
     """Agente sin la REGIÓN de permisos del frontmatter: lo que PD-8/I9
     exige byte a byte igual al origen.
 
-    La región de permisos comprende (i) las cuatro secciones de mapas
-    read/grep/glob/edit (block o inline) y (ii) la CABECERA `permission:`,
-    en ambas formas que declara el producto: escalar (`permission: allow`)
-    o la línea `permission:` que abre un mapa. La cabecera se normaliza
-    (enmenda el oráculo; F-R1 del review-012, decisión del orquestador
-    del 2026-10-02): con `private_paths`, la derivación correcta REEMPLAZA
-    la línea escalar `permission: allow` del origen (agents/
-    cdad-orchestrator.md:4) por el bloque `permission:` con mapas — y hoy
-    publica YAML inválido —, de modo que la comparación byte a byte debe
-    tratar la cabecera como parte de la región de permisos y NO como una
-    divergencia. TODO lo demás (resto del frontmatter, cuerpo) sigue
-    comparándose byte a byte; nada más se relaja."""
+    La región de permisos comprende (i) las secciones de mapas
+    read/grep/glob/edit Y `write` (block o inline) y (ii) la CABECERA
+    `permission:`, en ambas formas que declara el producto: escalar
+    (`permission: allow`) o la línea `permission:` que abre un mapa. La
+    cabecera se normaliza (enmenda el oráculo; F-R1 del review-012,
+    decisión del orquestador del 2026-10-02): con `private_paths`, la
+    derivación correcta REEMPLAZA la línea escalar `permission: allow` del
+    origen (agents/cdad-orchestrator.md:4) por el bloque `permission:` con
+    mapas — y hoy publica YAML inválido —, de modo que la comparación byte
+    a byte debe tratar la cabecera como parte de la región de permisos y NO
+    como una divergencia.
+
+    U6-7b (006-005) — A-1, reemplazo declarado: la región incluye TAMBIÉN
+    la clave `write`. En OpenCode v2.0.27 la herramienta de escritura
+    evalúa `edit` y `write` juntas y gana la última regla que coincide
+    (`execution.md` U6-7); una copia instalada anterior al fix lleva
+    `write: ask` dentro del bloque y conservarla reinserta la palanca que
+    anula el mapa derivado. Este oráculo trataba `write` como "resto
+    conservado byte a byte"; U6-7b exige que la derivación la reemplace o
+    retire, así que `write` pasa a la región reemplazada. El resto
+    (frontmatter y cuerpo) sigue comparándose byte a byte; nada más se
+    relaja."""
     fm = frontmatter(agent_text)
     body = agent_text[len(fm):]
     keep: list[str] = []
@@ -213,9 +223,10 @@ def without_maps(agent_text: str) -> str:
         # Cabecera de la región de permisos, escalar o map-opening (F-R1).
         if re.match(r"^permission:(\s|$)", line):
             continue
-        if re.match(r"^  (read|grep|glob|edit):(\s+.*)?$", line):
+        if re.match(r"^  (read|grep|glob|edit|write):(\s+.*)?$", line):
             # block form (sin valor) arrastra a sus hijos; inline no tiene hijos
-            skipping = not re.match(r"^  (read|grep|glob|edit):\s+\S", line)
+            skipping = not re.match(
+                r"^  (read|grep|glob|edit|write):\s+\S", line)
             continue
         if skipping:
             if line.startswith("    "):
@@ -414,17 +425,22 @@ class TestPd8I9Publication(LayoutProject):
 
     def test_pd8_i9_derived_body_is_byte_identical_to_source(self) -> None:
         """PD-8/I9: salvo la REGIÓN de permisos (los mapas read/grep/glob/
-        edit y su cabecera `permission:`, escalar o map-opening), el
-        derivado es byte a byte igual al agente de origen (no hay copias
-        editables paralelas con contenido divergente).
+        edit, la clave `write` y su cabecera `permission:`, escalar o
+        map-opening), el derivado es byte a byte igual al agente de origen
+        (no hay copias editables paralelas con contenido divergente).
 
         La cabecera `permission` es parte de la región (enmienda del
         oráculo; F-R1 del review-012, decisión del orquestador del
         2026-10-02): con `private_paths`, la derivación correcta reemplaza
         la línea escalar `permission: allow` del origen por el bloque
         `permission:` con mapas — esa sustitución NO es una divergencia.
-        El resto del frontmatter y el cuerpo siguen comparándose byte a
-        byte."""
+
+        U6-7b (006-005) — A-1, reemplazo declarado: `write` también es
+        parte de la región reemplazada. En OpenCode v2.0.27 la herramienta
+        de escritura evalúa `edit` y `write` juntas (findLast): conservar
+        el `write: ask` de una copia instalada previa al fix anularía el
+        mapa derivado, así que la derivación lo reemplaza/retira. El resto
+        del frontmatter y el cuerpo siguen comparándose byte a byte."""
         proc = self.prepare()
         self.assertEqual(
             proc.returncode, 0,
