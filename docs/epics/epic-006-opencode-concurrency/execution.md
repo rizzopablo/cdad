@@ -274,3 +274,7 @@ La review completa del draft-002 y la re-review focal del draft-003 verificaron 
 
 Recorrido de enmienda 006 aplicado: architect draft-002 → review (2 B, 8 O) → draft-003 → re-review focal (sin B) → revisor externo + decisiones del owner → draft-004 con escenarios E1..E5 → review por escenarios (1 B: el recorrido de U6 recibía dos veces el mismo paquete) → draft-005 → re-review por escenarios (sin B; O-6, O-7 erratas de letra declaradas en la marca). Aprobación del orquestador por HITL delegada; PD-19 y las decisiones de runtime, modelo y credencial, del owner. Evidencia para 006-006: con los escenarios como vara, la review encontró defectos de recorrido que las reviews centradas en la letra no vieron (B-1 de U6, O-2 copia del agente, O-3 umbral de discriminación). Todas las entregas del reviewer se copiaron a mano por D-ADP-3 (lo corrige U7/PD-23 de esta feature).
 
+
+## Delegación HITL amplia (2026-10-19)
+
+El owner delega el HITL completo al orquestador para avanzar sin consultarle, «con criterio amplio de acuerdo a la necesidad del usuario real del sistema». Sigue vigente: sin push hasta que el owner lo autorice; despliegues en HOME y operaciones de servicio solo por orden del owner.
