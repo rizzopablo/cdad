@@ -196,10 +196,13 @@ configurado. Comportamiento declarado (contrato del stub):
    intento — el único registro del despacho (PD-1/D-ADP-2) — invocando el
    comando existente del ledger (`cdad_packet.py prepare --record-dispatch`,
    el único escritor del ledger y de la transición, INV-5) y lo DECLARA en el
-   sobre; la interfaz lo RELAYA y NO registra. La invocación le da el
-   proyecto y el paquete (`--project-root` / `--packet-id`, o la ruta del
-   paquete en argv) y la configuración de ejecución (`--exec-config`, de la
-   que se lee el `runtime` observado).
+   sobre; la interfaz lo RELAYA y NO registra. El intento es PROPIO DE CADA
+   INVOCACIÓN (`_next_attempt`: el id avanza con el número de llamadas), así
+   que dos despachos con datos distintos nunca comparten attempt — el ledger
+   rechaza (con razón) reescribir un intento con datos distintos. La
+   invocación le da el proyecto y el paquete (`--project-root` / `--packet-id`,
+   o la ruta del paquete en argv) y la configuración de ejecución
+   (`--exec-config`, de la que se lee el `runtime` observado).
 
 La localización del transporte busca el paquete canónico (primera línea
 `---cdad-packet-json`) en: ficheros pasados por argv, ficheros nombrados en
@@ -222,7 +225,25 @@ _MARKER = "---cdad-packet-json"
 _SESSION = "ses-testdest-fixture-0001"
 # El intento que EL DESTINO registra y declara (A-1/PD-1): la interfaz lo
 # relaya, nunca lo reemplaza por uno propio.
+_ATTEMPT_PREFIX = "att-testdest-fixture"
 _ATTEMPT = "att-testdest-fixture-0001"
+
+
+def _next_attempt():
+    """A-1 (006-005 U1b testfix): el intento del DESTINO es PROPIO DE CADA
+    INVOCACIÓN. El ledger identifica el intento por su id y rechaza (con
+    razón) reescribirlo con datos distintos, así que dos despachos con datos
+    distintos (p. ej. dos configuraciones de ejecución) necesitan dos intentos
+    distintos. El índice es el número de llamadas ya registradas por este
+    stub (invocaciones secuenciales: determinista)."""
+    index = 1
+    if _CALLS_PATH.is_file():
+        try:
+            index = len(json.loads(
+                _CALLS_PATH.read_text(encoding="utf-8"))) + 1
+        except (OSError, ValueError):
+            index = 1
+    return "%s-%04d" % (_ATTEMPT_PREFIX, index)
 
 
 def _option(name):
@@ -261,6 +282,7 @@ def _register(packet_path):
     if not root or not packet:
         return None, ("la invocación no declaró proyecto y paquete "
                       "(--project-root/--packet-id): %r" % (sys.argv[1:],))
+    attempt = _next_attempt()
     _OBSERVATION_PATH.write_text(json.dumps({
         "runtime": _config_runtime() or "testdest",
         "model_configured": None,
@@ -278,11 +300,11 @@ def _register(packet_path):
     completed = subprocess.run(
         [sys.executable, str(HERE / "cdad_packet.py"), "prepare",
          "--project-root", str(root), "--record-dispatch", str(packet),
-         "--attempt-id", _ATTEMPT, "--input", str(_OBSERVATION_PATH)],
+         "--attempt-id", attempt, "--input", str(_OBSERVATION_PATH)],
         capture_output=True, text=True)
     if completed.returncode != 0:
         return None, (completed.stderr or completed.stdout)[-400:]
-    return _ATTEMPT, None
+    return attempt, None
 
 
 def _packet_from_file(value: str):
@@ -993,14 +1015,14 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
                 f"{record_one['model_configured']!r}")
 
         # Segunda invocación con OTRA configuración: la config gana (no hay
-        # valores fijos del producto).
+        # valores fijos del producto). A-1 (006-005 U1b): la línea base del
+        # oráculo es el ledger ANTES de la segunda invocación (el oráculo
+        # cuenta UN registro nuevo POR DESPACHO, no el acumulado del
+        # proyecto); tomarla después dejaría el conjunto vacío.
+        records_mid = dispatch_records(self.root, self.execution_id)
         proc_two = self.run_delegate(staged, config=config_two,
                                      destination="testdest")
         out_two = self.envelope(proc_two, "PD-8 config B")
-        # A-1 (006-005 U1b): la línea base de la segunda invocación es el
-        # ledger DESPUÉS de la primera (el oráculo cuenta UN registro nuevo por
-        # despacho, no el acumulado del proyecto).
-        records_mid = dispatch_records(self.root, self.execution_id)
         record_two_path = self.assert_single_record_per_dispatch(
             out_two, records_mid)
         record_two = json.loads(record_two_path.read_bytes().decode("utf-8"))

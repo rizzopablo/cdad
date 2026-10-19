@@ -119,9 +119,11 @@ import unittest
 from pathlib import Path
 
 from test_004_002_t2_bootstrap import (
+    FEATURE_ID as FEATURE_FIXTURE,
     build_project,
     read_state,
     tree_snapshot,
+    write_state,
 )
 from test_005_009_t1_interface import (
     OUTPUT_KEYS,
@@ -167,6 +169,32 @@ NATIVE_SESSION = "ses-native-u1b-0001"
 NATIVE_PARENT = "ses-parent-u1b-0001"
 
 EPIC_FIXTURE = "epic-004-single-source-planning"
+
+# La autoridad del fixture es el PLAN DEL EPIC aprobado (contrato del
+# architect, §2.8): el plan del fixture nombra la fila de su feature (el id
+# como token completo, forma de la plantilla del producto) y el estado lleva
+# la aprobación `epic-plan` en `epic_history`. Sin ellas
+# `prepare --role architect` rechaza con «approval pending» — precondición del
+# fixture, independiente de la implementación bajo prueba (precedente
+# tests/test_005_001_t4_decisive.py:262-284 y
+# tests/test_005_013_t1_unit_projection.py:266-305).
+PLAN_FIXTURE = (
+    "# Fixture epic plan (006-005 U1b)\n"
+    "\n"
+    "## Decomposition into features\n"
+    "\n"
+    "| Feature ID | Objective | Scope | Dependencies |\n"
+    "|---|---|---|---|\n"
+    "| %s | objetivo del fixture | alcance del fixture | — |\n"
+) % FEATURE_FIXTURE
+
+EPIC_PLAN_APPROVAL_FIXTURE = {
+    "epic": EPIC_FIXTURE,
+    "stage": "epic-plan",
+    "approved_by": "Pablo",
+    "approved_at": "2026-10-19T00:00:00Z",
+    "plan_path": "docs/epics/%s/plan.md" % EPIC_FIXTURE,
+}
 
 # ------------------------------------------------------- fixture module source
 
@@ -506,14 +534,24 @@ class U1bEntryCase(unittest.TestCase):
     # -- projects -----------------------------------------------------------
 
     def new_project(self, *, role: str, substage: str) -> dict:
-        """Disposable project with a canonical packet published by `prepare`."""
+        """Disposable project with a canonical packet published by `prepare`.
+
+        The fixture authority registers the approved plan of the active epic
+        (plan row with the feature id + `epic-plan` approval in
+        `epic_history`): it is the architect's contract, and without it that
+        package cannot be published at all — an independent fixture
+        precondition, not a behavior under test.
+        """
         root = self.base / ("project-%s-%s" % (role, substage))
         root.mkdir(parents=True, exist_ok=True)
         build_project(root)
         # the architect sheet of the fixture authority reads the epic plan.
         plan = root / "docs" / "epics" / EPIC_FIXTURE / "plan.md"
         plan.parent.mkdir(parents=True, exist_ok=True)
-        plan.write_text("# Fixture epic plan (006-005 U1b)\n", encoding="utf-8")
+        plan.write_text(PLAN_FIXTURE, encoding="utf-8")
+        state = read_state(root)
+        state["epic_history"] = [dict(EPIC_PLAN_APPROVAL_FIXTURE)]
+        write_state(root, state)
         proc = subprocess.run(
             [sys.executable, str(PACKET_CLI), "prepare",
              "--project-root", str(root), "--role", role,
@@ -1112,15 +1150,26 @@ class TestPd5NativeCorrelation(U1bEntryCase):
         so a nested layout (and the coordinator started from another folder)
         is accepted; there is no rigid `directory == root`."""
         root = self.project["root"]
-        for directory in (str(root), str(root / "nested" / "deep")):
+        # Cada iteración es un DESPACHO PROPIO: el ledger identifica el
+        # intento por su `attempt` y rechaza (con razón) reescribirlo con
+        # datos distintos, así que cada iteración lleva su PROPIO attempt id
+        # (una sola identidad de intento por despacho, PD-1/PD-4).
+        for index, directory in enumerate(
+                (str(root), str(root / "nested" / "deep")), start=1):
             with self.subTest(directory=directory):
+                attempt = "%s-%02d" % (ATTEMPT_PD5, index)
                 self.write_store(
                     ["id TEXT PRIMARY KEY", "directory TEXT"],
                     [{"id": NATIVE_SESSION, "directory": directory}])
                 before = self.records()
-                proc = self.record(attempt=ATTEMPT_PD5)
+                proc = self.record(attempt=attempt)
                 out = self.envelope(proc, "PD-5 pertenencia %s" % directory)
                 record = self.single_record(before)
+                self.assertEqual(
+                    out["attempt"], attempt,
+                    msg="PD-5: el sobre no declara el intento de ESTA "
+                        "iteración (%r != %r): el intento del despacho no se "
+                        "puede auto-desambiguar" % (out.get("attempt"), attempt))
                 self.assertEqual(
                     record["session"], NATIVE_SESSION,
                     msg="PD-5/INV-15: la raíz autorizada es la del directorio "
