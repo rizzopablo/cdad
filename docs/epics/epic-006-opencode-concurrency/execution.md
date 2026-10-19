@@ -306,3 +306,11 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
     - **Unidades:** el instante del store es un hecho del runtime, así que la entrada recibe un instante interpretable sin adivinar unidades.
     - **Diagnóstico:** un valor no interpretable se nombra como tal. La nota no verificada nombra también las llaves que sí coincidieron.
   - Se corrige con RED/GREEN, sobre un store descartable con la forma real, a través del módulo real. Después del fix, un despacho nativo nuevo desde la carpeta de afuera debe salir **verificado**: padre y momento coinciden, proyecto no evaluable.
+- **E4, intento que no vuelve, por la vía externa.** Paquete nuevo, `dispatch` lanzado desde la carpeta de afuera. Con el rol en curso (auxiliar ya escrito con su herramienta) se simuló la caída del coordinador: SIGKILL al grupo de `dispatch` y del módulo, y el cliente del runtime quedó vivo, como en una caída real o en el timeout de la herramienta de shell de un coordinador agente.
+- **Hallazgo U6-5 (defecto real, bloquea E4):** el registro I8 de la vía externa se escribe **al terminar** («every termination posterior to loading REQUEST.json»). Una muerte del proceso lo salta. Evidencia observada:
+  1. Sin registro de intento, el paquete queda `prepared` con una sesión del runtime trabajando en el proyecto.
+  2. `reconcile` ⇒ `classification: not-started`, `repeat_effect: false` («no dispatch and no receipt»): declara seguro repetir.
+  3. `register-transition --transition disposition` ⇒ rechazo, «has no dispatch record … only a dispatched packet can be dispositioned»: no hay comando que lleve el paquete a `failed`.
+  4. El cliente huérfano terminó y **commiteó** su test (`test: u6 probe e4`) sin que el estado lo registre; `reconcile` repetido sigue en `not-started`.
+  5. El chequeo de intento previo (INV-10, doble escritor) solo mira registros con sesión, así que un re-despacho abriría un segundo escritor y repetiría el efecto.
+  - El defecto es preexistente: el registro al final viene de 006-001. Pero E4 de 006-005 nombra exactamente este caso («un intento que no vuelve … sin repetir efectos») y la condición (d) de PD-19 del owner presupone que `reconcile` ve el despacho. Es un callejón sin salida para el uso previsto: solo saldría editando el estado a mano, cosa que el método prohíbe.
