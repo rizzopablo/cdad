@@ -699,8 +699,17 @@ def _allowed_kinds(role: str, substage: str) -> frozenset[str]:
     if role == "reviewer":
         return frozenset({substage} if substage in {"review", "plan-review"} else ())
     if role == "scribe":
+        # The scribe's role report / the delivery through the common delegation
+        # interface arrives as a single `role-report` part (PD-26/§2.8.3, D-17):
+        # admit it in the scribe's only subphase (`memory`), alongside the four
+        # per-file kinds. Same responsibility and same form as the architect's
+        # report (005-007 T4), and the role axis stays closed: the Memory Bank
+        # is not reachable through this kind (its allowed root is
+        # `docs/specs/<feature>/`), and a role-named kind of another role stays
+        # rejected.
         return frozenset({"scribe-projectbrief", "scribe-systemPatterns",
-                          "scribe-activeContext", "scribe-progress"})
+                          "scribe-activeContext", "scribe-progress",
+                          "role-report"})
     if role == "implementer":
         return frozenset({"implementer-role-report"})
     return frozenset()
