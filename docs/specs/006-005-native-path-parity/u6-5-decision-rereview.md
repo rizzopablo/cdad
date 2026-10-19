@@ -1,0 +1,84 @@
+# Re-review U6-5 — decisión «registro write-ahead del intento externo», revisión 2
+
+**Contrato verificado:** `docs/specs/006-005-native-path-parity/spec.md` sha256 `3a824be3…df01` — coincide con el del packet. HEAD revisado: `18348c6` (la decisión revisión 2 está en `4a04fed`). **Archivos modificados: ninguno** (rol read-only; el árbol sucio preexistente `docs/planning/`, `findings/…` no es de esta tarea). **Commit: ninguno.**
+
+**Evidencia (comandos y salidas exactas):**
+- `sha256sum docs/specs/006-005-native-path-parity/spec.md` → `3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01` ✓
+- `git diff 8115ef0 4a04fed -- docs/specs/006-005-native-path-parity/u6-5-decision.md` → reescritura de D-U65-1..5 y de los 8 oráculos (el diff completo quedó arriba en la sesión).
+- Lecturas: `u6-5-decision.md` completo (rev. 2); `u6-5-decision-review.md` completo; 006-001 spec §2.6 (`:185-197`), PD-3 (`:242-247`), PD-8 (`:289-292`), PD-9 (`:298-304`), D-5 (`:522-523`); 006-005 spec PD-19 (`:219`), PD-22 (`:222`), fila E4 (`:254`), D-4 (`:281`); `execution.md:300-321`.
+- Código verificado en esta pasada: `cdad_delegate_opencode.py:2408` (`started_at` antes del preflight), `:2445-2461` (`register_note`/D-5), `:2465-2496` (`pre_dispatch_termination`), `:2566-2587` (chequeo previo antes del write-ahead), `:2596-2651` (preflight antes de la elección de sesión), `:2653` (elección de sesión), `:2694-2823` (todas las terminaciones y qué escribe cada una), `:1905-1941` (`_persist_delivery` registra el I8 `completed` con `model_reported` de la fila), `:2830-2835` (receive falla con registro ya final); `cdad_packet.py:2507-2511` (esquema I8), `:2637-2706` (`_record_dispatch` write-once byte-idéntico), `:5019-5031`, `:5387-5399`, `:120` (verificados en la review anterior, re-confirmados); `cdad_continuity.py:965-991` (`_classify` por presencia de despacho, `repeat_effect: False` incondicional).
+- Tests: `tests/test_006_001_t2_wait_recovery.py:860-871` y `:1130-1144` (parseo por substring `store_reads=`…`;`).
+
+---
+
+## 1. Cierre de B-1..B-3 y O-1..O-3 (VARA 1)
+
+**B-1 — CIERRA.** La revisión 2 enmienda exactamente lo pedido. D-U65-2 (`u6-5-decision.md:36`): la compleción reemplaza «**todos** los pares de procedencia de terminación de PD-3 (`row`, `store_reads` igual a la traza de la espera, `prior_check_reads` y `provenance.runtime`)», y «Contratos que toca» (`:52`) declara «PD-3: su contenido queda **intacto en el registro final**». Verifiqué contra el código que el conjunto declarado es **completo** para producir un registro final byte-idéntico al que hoy escribe la terminación: los únicos valores que cambian entre el write-ahead y la terminación son `session`, `model_reported`, `row_state`/`store_reads` (dentro de `provenance.session`) y `provenance.runtime`; todo lo demás (`model_configured`, `binary_version`, `mode_*`, `service_status`, `fallback`, `prior_check_reads`) ya es definitivo al momento del write-ahead, porque la elección de sesión (`cdad_delegate_opencode.py:2653`) es **posterior** al preflight (`:2596-2651`) y al chequeo previo (`:2566`), y `started_at` se fija en `:2408`, antes de todo. La rama elegida es la primera que B-1 ofrecía (enmendar D-U65-2), así que `test_006_001_t2_wait_recovery.py:865-871,1136-1141` no necesita cambio. El oráculo 4 (`:69`) asserted `row=present` y `store_reads` == traza de la espera tras `completed` — el oráculo pedido en el cierre.
+
+**B-2 — CIERRA.** D-U65-1 (`:33`): «Si el registro falla (lock, política no reconciliada, escritura): el módulo **no lanza el cliente**. Termina `blocked` con el diagnóstico de la falla, sin efectos del rol. Esto reemplaza, solo para este paso, la regla de 006-001 D-5» — fail-closed declarado, y la excepción a D-5 está declarada como tal. El oráculo pedido existe: oráculo 6 (`:71`), «ninguna invocación del cliente, terminación `blocked` con el diagnóstico y el paquete sin efectos». La conducta es coherente con el código: si el write-ahead falla no hay registro provisional, la terminación `blocked` posterior registra como hoy (o deja la nota acotada de D-5 si vuelve a fallar) — la compleción no le aplica porque exige la marca (`:38`).
+
+**B-3 — CIERRA.** D-U65-2 (`:35-36`) ahora define la conducta de **toda** terminación post-write-ahead (lista explícita que incluye «binario que no arranca» y «`blocked` posterior al arranque»), con el contenido del reemplazo: `session` «según PD-8: la elegida si el cliente arrancó, `null` si no arrancó». «Contratos que toca» (`:53`) corrige el statement falso: «PD-8: se enmienda su cláusula ‘antes del despacho `session` sigue `null`’ **solo para el registro provisional**. El sobre y el registro final siguen PD-8 tal cual». El oráculo pedido existe: oráculo 5 (`:70`), «un solo registro, final, con `session: null` (PD-8) y sin nota de rechazo del ledger. Un `timeout` sin fila completa igual con su procedencia». Verificado contra el código: la terminación «binario que no arranca» de hoy (`:2700-2709`: `session=None`, `row=absent`, `store_reads=unknown`) es exactamente lo que la compleción produce sobre el registro provisional — sin rechazo write-once.
+
+**O-1 — CIERRA.** El marcador «campos pendientes» fue reemplazado por una marca explícita y autoconsistente: «la compleción solo vale sobre un registro con la marca `write-ahead:` y produce uno sin ella» (`:38`). Esto resuelve el problema que señalé (un registro final legítimo puede tener `model_reported` null para siempre): la marca vive en `provenance.session`, no en la ausencia de un valor. El caso negativo pedidos está: oráculo 7, «una compleción sobre un registro sin marca ⇒ rechazo» (`:72`).
+
+**O-2 — CIERRA (verificación final pendiente en GREEN, como pedí).** D-U65-4 (`:45`) ahora declara la salida nativa como **procedimental** y compromete «esto entra a §9 de la spec como límite, y la fila E4 de §3.1 se acota a la vía externa con ese hueco declarado»; «Contratos que toca» (`:56`) compromete «el orquestador lo aplica como enmienda con registro en `execution.md`». Verificado que `execution.md:310-321` hoy registra el hallazgo U6-5 pero aún no la enmienda — coherente con el estado pre-RED; la verificación de que spec §3.1/§9 y `execution.md` la llevan queda para el GREEN, como el cierre pedía.
+
+**O-3 — CIERRA.** Los tres huecos que listé están cubiertos: (i) falla del write-ahead ⇒ oráculo 6; (ii) caída entre write-ahead y lanzamiento ⇒ oráculo 2; (iii) el oráculo 1 ahora asserts «`validate-state` VALID y el registro todavía provisional con `model_reported` null» y «el siguiente `prepare` procede» (`:62-66`). Precondición del oráculo 2 re-verificada: el write-ahead y el lanzamiento son pasos distintos del mismo proceso del módulo (registro en `:2653`+ε vs. `_invoke_destination` en `:2680`), así que la ventana existe y es observable sondeando el archivo de registro.
+
+---
+
+## 2. Re-trazado de E4 por la revisión 2 (VARA 2)
+
+**Escenario E4 (spec `:254`), vía externa, con D-U65-1/2 implementadas sobre el código vigente:**
+
+1. `dispatch` carga REQUEST, pasa preflight y chequeo previo, elige sesión (`:2653`), escribe el registro I8 **provisional** (marca `write-ahead:` en `provenance.session`, `session`=elegida, `model_reported` null, `store_reads=unknown`, `row=unknown` — conforme a INV-9: unknown nunca 0 ni vacío) y lanza el cliente en su propio grupo (`:2680`).
+2. El coordinador muere por SIGKILL; el cliente queda vivo (ese es el premisa de E4). Nadie escribe la compleción: el registro queda provisional.
+3. `reconcile`: `_has_dispatch` ve el registro, no hay recibo ⇒ `dispatched-unknown`, «repeating is not authorized», `repeat_effect: False` (`cdad_continuity.py:979-990`). Ya no `not-started`.
+4. `disposition`: el registro existe (derivado de archivos, `cdad_packet.py:5019-5031`), no hay recibo durable ⇒ `failed` con las condiciones (a)-(d) de PD-19 intactas (`spec.md:219`); `validate-state` VALID y `prepare` desbloqueado (`:120`, `:4336-4338`).
+5. Siguiente `prepare` procede. Re-despacho del mismo paquete con el huérfano vivo: el chequeo previo lee el registro provisional (declara `session`), la fila existe sin idle ⇒ `blocking` ⇒ `blocked` **sin invocar `run`** (`cdad_delegate_opencode.py:1023-1026`, `:2568-2577`). Cuando el huérfano termina (fila idle) o es retirado, la fila no bloquea (`:1010-1015`) y el re-despacho procede.
+6. **No hay repetición de efectos automática en ningún estado**: mientras el huérfano vive, `blocked` (INV-10); cuando muere, la repetición es la decisión declarada del operador tras `reconcile` (PD-19 condición (d)).
+
+**Ventanas de caída, una por una (cada una con salida):**
+- **Antes del write-ahead** (preflight, intento previo vivo/no afirmable, request inválido): registra como hoy, registro final sin marca (D-U65-1 última viñeta; `pre_dispatch_termination` `:2465-2496`). Oráculo 8.
+- **Falla del write-ahead**: sin cliente, `blocked`, paquete sin efectos; salida trivial. Oráculo 6.
+- **Entre write-ahead y lanzamiento** (oráculo 2): registro provisional con sesión cuya fila **nunca** existirá; el chequeo previo de un re-despacho la trata como `absent` ⇒ no bloquea (`:1010-1015`) — el camino se autorecupera tras `disposition`→`failed`→`prepare`.
+- **Con el cliente vivo** (E4, oráculo 1): trazado arriba; salida por `disposition` con bloqueo del re-despacho mientras el huérfano vive.
+- **Entre la compleción y el sobre**: registro final; el paquete queda `dispatched`; el camino reconcile→disposition es el mismo que hoy tras una terminación — sin regreso.
+
+**Terminaciones de 006-001 por la revisión 2 (contracode contra el código, campo por campo):** cada terminación post-write-ahead produce por compleción el **mismo registro que hoy escribe esa terminación**: `timeout` del invoke (fila `unknown`, `store_reads=unknown`, `:2694-2702`), `blocked` por store ilegible (`:2714-2721`), `transport-error` post-exit (fila `absent`, `:2736-2745`), `timeout`/`unknown` de la espera (fila `present|absent` + traza, `:2747-2779`), contradicción de identidad (`:2794-2802`), no-`completed` clasificado (`:2805-2810`), y `completed` vía `_persist_delivery` (`model_reported` de la fila, `row=present`, traza de la espera, `:1929-1941`). Caso «`completed` pero `receive` falla» (`:2830-2835`): el registro ya quedó final por la compleción; el sobre `blocked` no registra segunda vez — cubierto por D-U65-2 («`blocked` posterior al arranque» no encuentra marca ⇒ nada que completar). D-5 queda enmendada **solo** en el momento y en el paso write-ahead (declarado, `:51`); PD-3 queda intacta en el registro final (declarado, `:52`); PD-8 queda enmienda en su cláusula pre-despacho solo para el registro provisional (declarado, `:53`); PD-9 no cambia y funciona mejor (los registros existen antes).
+
+**Respuestas directas:**
+1. **¿Queda algún camino del uso previsto sin salida?** No encontré ninguno en la vía externa. En la nativa el hueco pre-`record` persiste pero queda **declarado** con salida procedimental real (D-U65-4; `record` registra sobre `prepared`).
+2. **¿Contradice alguna PD/INV aprobada sin declararla?** Las enmiendas necesarias están todas declaradas (D-5, PD-8 cláusula pre-despacho, ledger write-once, §9 + fila E4). PD-1, PD-2, PD-9, PD-19 (a-d), PD-22, INV-2/5/8/9/10 quedan sin contradecir. Queda una imprecisión de letra menor (O-4 abajo) sobre la forma del registro provisional, no sobre su conducta.
+
+---
+
+## 3. Oráculos 1-8 (secundario)
+
+**Bastan, y son de conducta observable.** Los ocho se ejecutan a nivel de proceso con el módulo real, binario falso y store descartable, y cada uno aserta hechos materiales (archivos de registro, salidas de `reconcile`/`disposition`/`prepare`, log de llamadas sin `run`, rechazos del ledger) — no estados internos ni mocks de plomería. Cubren todas las ventanas de caída, la falla del write-ahead, las tres reglas del ledger y la no-regresión del camino previo al write-ahead. Dos notas de suficiencia, ambas opcionales: O-4 (forma del registro provisional sin oráculo) y O-5 (regresión que quedó fuera de la ficha).
+
+## Hallazgos nuevos
+
+### O-4 — La forma del registro provisional no declara su relación con la forma fija de §2.6 de 006-001
+- **Verdict: OPTIONAL · Bucket: m**
+- 006-001 §2.6 (`spec.md:192-193`) fija la forma de `provenance.session`: «`<durable session row… | chosen by adapter | not dispatched>; store=configured sessions_db; row=<…>; store_reads=<N>; prior_check_reads=<M>`», con los pares **al final** porque «el RED de T2 parsea `store_reads=`…`;`». El registro provisional de D-U65-1 empieza `provenance.session` con el literal `write-ahead:` — una cuarta variante del primer campo que **no está en el conjunto de §2.6** — y la decisión no dice si el texto provisional conserva la cola de pares (`row=unknown; store_reads=unknown; prior_check_reads=<n>`). Si una implementación la omite, el registro provisional viola la letra de §2.6/INV-9 («unknown para lo no observado, nunca 0 ni vacío») y ningún oráculo 1-8 lo detectaría (ninguno asserts la forma del registro provisional; los parseos de T2 solo ven registros finales). Ningún consumidor funcional lee la procedencia del registro provisional (chequeo previo lee `session`, `_classify` lee presencia, `disposition` lee existencia de archivo) — el efecto queda acotado al artefacto de recuperación.
+- **Cierre:** una cláusula en D-U65-1: «el registro provisional conserva la forma de §2.6 (pares al final, `row=unknown`, `store_reads=unknown`, `prior_check_reads=<n>`), con la marca delante del primer literal» — o declarar la enmienda de §2.6 para el registro provisional en «Contratos que toca». Opcionalmente, un aserto del oráculo 1 sobre la cola de pares del registro provisional.
+
+### O-5 — `test_006_001_t2_wait_recovery.py` sigue fuera de las regresiones declaradas de la ficha U6-5
+- **Verdict: OPTIONAL · Bucket: l**
+- La lista de regresiones del plan de validación de esta tarea no incluye `tests/test_006_001_t2_wait_recovery.py`, cuyo aserto exacto (`store_reads` del registro == traza de la espera, `:865-871`, `:1136-1141`) es precisamente el contenido que la enmienda del ledger toca. Con el diseño de la revisión 2 el riesgo es solo de implementación (un registro final no byte-idéntico), y el oráculo 4 lo cubre observablemente en el camino `completed` — pero si la implementación se desvía, el fallo se vería recién en la suite completa del cierre (PD-21) y no en el RED. La regla de amplitud del propio plan («a shared contract … expands the validation») aconseja sumarla a la ficha de U6-5.
+- **Cierre:** agregar el test a las regresiones declaradas de la unidad U6-5 (o registro explícito de por qué el oráculo 4 la sustituye).
+
+### FYI (sin acción exigida)
+- El registro provisional de un intento que murió queda con la marca para siempre (nadie lo completa: la compleción es del mismo attempt). Es evidencia veraz (`write-ahead:` + unknowns) y ningún consumidor lo confunde; a lo sumo se acumulan registros marcados de intentos muertos.
+- Un re-intento byte-idéntico de la compleción sigue siendo no-op por la regla write-once existente; un re-intento del payload provisional **después** de la compleción ⇒ `PolicyError` → nota acotada de D-5 — fail-closed, coherente.
+
+## Abstentions
+
+- **La forma literal exacta que la implementación dará a la marca dentro de `provenance.session`** (posición de la cola de pares, texto tras el literal): es decisión del RED; solo exijo que conserve los pares o que la enmienda de §2.6 se declare (O-4). No juzgo aquí la redacción concreta.
+- **Si la suite completa pasa hoy** (incluida `test_006_001_t2_wait_recovery.py` contra el árbol actual): no la ejecuté; el contrato de revisión no la exige ni la prohíbe — la corre quien cierra, PD-21. Solo afirmo la colisión por lectura del código de aserción y del diseño.
+- **Comportamiento del runtime real ante la fila `session_v2.model` nula en una sesión terminada** (afecta el valor de `model_reported` de la compleción): sin medición registrada en `execution.md` ni en la spec; mantengo la abstención de la review anterior; O-1-cerrado la cubre conductualmente (la marca no depende de `model_reported`).
+
+## Veredicto
+
+**Apta para RED.** Los 3 bloqueantes y los 3 opcionales de la review anterior están cerrados con citas verificables (`u6-5-decision.md:30-44` para D-U65-1/2/3, `:45` para D-U65-4, `:51-56` para los contratos que toca, `:62-73` para los oráculos 1-8). El re-trazado completo de E4 sobre el código vigente no dejó ningún camino del uso previsto sin salida ni ninguna PD/INV aprobada contradicha sin declarar. Los dos hallazgos nuevos (O-4, O-5) son opcionales, de una línea, y no condicionan el arranque del RED.

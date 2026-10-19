@@ -1,6 +1,6 @@
 # U6-5 — registro write-ahead del intento externo (enmienda)
 
-Status: Decisión del orquestador bajo la delegación HITL amplia del owner (2026-10-19). Revisión 2 tras la review (`u6-5-decision-review.md`, 3 B y 3 O), pendiente de re-review focal que vuelva a trazar E4.
+Status: Decisión del orquestador bajo la delegación HITL amplia del owner (2026-10-19). Revisión 2 tras la review (`u6-5-decision-review.md`, 3 B y 3 O); re-review focal con E4 re-trazado, apta para RED (`u6-5-decision-rereview.md`; O-4 aplicada, O-5 a los gates).
 
 ## Problema (evidencia)
 
@@ -29,7 +29,7 @@ Falta solo que el registro exista **antes** de que el cliente pueda producir efe
 
 - **D-U65-1 (write-ahead provisional, fail-closed).** El módulo externo escribe su registro I8 **antes de lanzar el cliente** del runtime: después de cargar `REQUEST.json`, de pasar el chequeo de intento previo y de elegir el id de sesión.
   - **Contenido:** lo que ya sabe (`session` = la elegida, `model_configured`, `started_at`, runtime, rol y subfase).
-  - **Marca:** el registro es **provisional**. La marca es declarada y legible: `provenance.session` empieza con el literal `write-ahead:` y nombra que la observación se completa al terminar. `model_reported` queda `null` mientras sea provisional.
+  - **Marca:** el registro es **provisional**. La marca es declarada y legible: `provenance.session` empieza con el literal `write-ahead:` y nombra que la observación se completa al terminar. `model_reported` queda `null` mientras sea provisional. El registro provisional conserva la forma de §2.6 de 006-001: la marca va delante del primer literal y los pares van al final (`row=unknown; store_reads=unknown; prior_check_reads=<n>`), con unknown para lo no observado, nunca 0 ni vacío (O-4 de la re-review).
   - **Si el registro falla** (lock, política no reconciliada, escritura): el módulo **no lanza el cliente**. Termina `blocked` con el diagnóstico de la falla, sin efectos del rol. Esto reemplaza, solo para este paso, la regla de 006-001 D-5 «a registration failure never changes the termination».
   - Una terminación **anterior** al write-ahead (preflight, intento previo vivo, request inválido) registra como hoy, en esa terminación, un registro final y no provisional.
 - **D-U65-2 (una sola compleción, en toda terminación).** En **toda** terminación posterior al write-ahead (`completed`, `timeout`, `unknown`, `transport-error`, `blocked` posterior al arranque, binario que no arranca) se reemplaza **una vez** la observación del mismo registro:
