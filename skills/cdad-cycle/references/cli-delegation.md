@@ -24,6 +24,61 @@ copy them:
 The interface is **destination-agnostic**: it is not a script per tool pair.
 Adding a destination adds one adapter module and never edits the interface.
 
+## The orchestrator's entry — `cdad_dispatch.py` (006-005)
+
+The coordinator drives the cycle through ONE entry
+(`skills/cdad-cycle/scripts/cdad_dispatch.py`, 006-005 §2.1) instead of carrying
+a configuration, a model or a credential itself. Today it carries the
+**execution configuration** and the **bounded migration**; the transport verbs
+(`dispatch`/`record`) and `capabilities` are the rest of 006-005.
+
+```
+python3 cdad_dispatch.py [dispatch] --project-root <root> --packet <id> --runtime <X>
+python3 cdad_dispatch.py migrate --runtime <X> --legacy-exec-config <file> [--dry-run]
+```
+
+- **`--runtime <X>` is mandatory in every verb and is the only runtime
+  resolution** (006-005 PD-8): the entry never reads a `runtime` from a project
+  document, not even from the flat v1 context that declares one. An id without a
+  `cdad_delegate_<id>.py` module next to the entry is rejected naming the value.
+- The **execution configuration** of the external path is the **runtime
+  section** of `runtimes.json`, beside `delegation.json` and under the same
+  location rule (`$XDG_CONFIG_HOME/cdad/`, else `<base>/.config/cdad/`; 006-005
+  PD-9). One section per runtime id; its keys are the ones the adapter already
+  reads (`binary`, `binary_version`, `mode`, `server`, `service`, `auto`,
+  `sessions_db`, `wait`). Without a section the entry fails closed with a
+  diagnostic that names the file, the section and the key-by-key
+  correspondence.
+- **`model` and the credential route never live in the section** — they are
+  `delegation.json` and its `credential_env_file` (ADR-033 D3 / point 6); a
+  section that carries either is rejected, naming where it lives (INV-12).
+- The retired `--exec-config` is **not an option**: passing it (either form) is a
+  usage error *before any effect*, with the migration diagnostic, in every verb —
+  the sweep is over `argv`, by exact token, before the verb is parsed (006-005
+  D-11).
+- The installer writes the `runtimes.json` template only when missing: user
+  data, never registered in the ownership manifest, never overwritten (INV-7).
+
+### Migrating a retired exec-config (E5)
+
+```
+python3 cdad_dispatch.py migrate --runtime <X> --legacy-exec-config <file> [--dry-run]
+```
+
+- It moves the correspondence keys into the section of that runtime **only when
+  it does not exist**; an existing section is refused without writing it
+  (**never** overwritten — user data, 006-005 INV-7). `--dry-run` prints the
+  section it would write and writes nothing.
+- It never moves `model` nor a credential value: it reports where they live.
+- **Verification is `capabilities --runtime X`** (006-005 PD-10); the migration
+  step does not declare success by itself.
+- **Adoption border.** The order is **migrate → `capabilities` → dispatch with
+  `--runtime`**. From the moment the section exists the entry reads ONE source
+  (the section) and the retired exec-config, the local dispatch helper and the
+  environment wrapper stop being used. The entry never reads a retired document
+  outside this explicit step, and it never deletes that document (it is the
+  owner's data).
+
 ## Interface
 
 ```

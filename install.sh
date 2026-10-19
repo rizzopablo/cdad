@@ -1165,6 +1165,27 @@ JSON
   log "User config: $path (delegation config v1 template — set models.<destination-id>.<role> to choose the delegated model)"
 }
 
+# PD-9 (§2.6): the execution configuration per runtime. The entry resolves the
+# runtime explicitly and reads its section of `runtimes.json` — the retired
+# exec-config is no longer user configuration. Like the delegation config, this
+# is USER DATA: created only when missing, never registered in the manifest,
+# never overwritten. The delegated model and the credential do NOT live here
+# (delegation.json, ADR-033 D3/point 6).
+write_runtimes_template() {  # path — v1 template, only when missing
+  local path="$1"
+  if [ -e "$path" ] || [ -L "$path" ]; then
+    log "User config: $path already exists — preserved untouched (user data; never overwritten, never owned, never removed)"
+    return 0
+  fi
+  cat > "$path" <<'JSON' || die "Cannot write the runtimes config: $path"
+{
+  "version": 1,
+  "runtimes": {}
+}
+JSON
+  log "User config: $path (execution configuration v1 template — one section per runtime id; the model stays in delegation.json, never here)"
+}
+
 write_server_env_example() {  # path — credential template with no value
   local path="$1"
   if [ -e "$path" ] || [ -L "$path" ]; then
@@ -1192,11 +1213,12 @@ install_user_config() {
   local config_dir
   config_dir="$(user_config_dir)"
   if [ "$DRY_RUN" -eq 1 ]; then
-    log "DRY-RUN user config: $config_dir/delegation.json + opencode-server.env.example (templates, written only when missing)"
+    log "DRY-RUN user config: $config_dir/delegation.json + runtimes.json + opencode-server.env.example (templates, written only when missing)"
     return 0
   fi
   ensure_dir "$config_dir"
   write_delegation_template "$config_dir/delegation.json"
+  write_runtimes_template "$config_dir/runtimes.json"
   write_server_env_example "$config_dir/opencode-server.env.example"
 }
 
