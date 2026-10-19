@@ -10850,6 +10850,47 @@
         "docs/specs/006-005-native-path-parity/u4-green.md": "d9e867ccc63e4147b09079efcf90e9fc05e5cbbe2e9cae7db9fcb40d819be488"
       },
       "note": "U4 GREEN 014bf2d: 7/7 focales; 006-005 89; regresiones 83 + 174; staging determinista (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T11:18:46.236199+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "bf308424f4b46bfd57ba2848e47a4c3a00bc3fd9ac1cf2c7021c1b86ac645aa7",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-013",
+        "receipt_sha256": "8f633da73c47197175ac49b09ffa4bab650a65cff68be8a7cb4b588daa7e7d02",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u6fix1-red.md",
+            "c488de92f4a0cdd28c077868f390d07386f34f2d32485d6e07409d782b79ac93"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-013",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-013/receipt.json",
+      "receipt_sha256": "8f633da73c47197175ac49b09ffa4bab650a65cff68be8a7cb4b588daa7e7d02",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u6fix1-red.md": "c488de92f4a0cdd28c077868f390d07386f34f2d32485d6e07409d782b79ac93"
+      },
+      "note": "U6-1 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10864,7 +10905,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T11:08:52.976062+00:00",
+  "last_updated": "2026-10-19T11:18:46.236199+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10975,7 +11016,7 @@
     "id": "006-005-native-path-parity-test-writer-red-013",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
