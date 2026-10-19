@@ -41,8 +41,12 @@ The entry verbs (U1b):
     is deliberate: a second transport implementation could diverge (§12).
   * **`record` (native path).** Builds the closed-key I8 observation, verifies
     the association with the evidence of this path (§2.3: the observable store
-    columns, with the O-3 discrimination threshold, `unknown` when a key is not
-    evaluable and a **rejection** when an evaluable key contradicts), registers
+    columns, with the O-3 discrimination threshold, `unknown` when a key the
+    store exposes cannot be evaluated and a **rejection** when an evaluable key
+    contradicts). The `project` key has THREE values (U6-3): a session directory
+    inside the authorized root coincides, an ANCESTOR of the root (the container
+    the coordinator was started from) is not evaluable — it neither proves nor
+    contradicts — and a foreign directory is a contradiction. It then registers
     the attempt through the existing command (`prepare --record-dispatch`) and,
     when it received the final text, stages it **byte-exact** under `.cdad/inbox`
     with its `RESULT.json` descriptor, declaring the artifact kind derived from
@@ -142,6 +146,16 @@ CORRELATION_COLUMNS = {
     "project": "directory",
 }
 DISCRIMINATING_KEYS = ("parent", "moment", "project")
+
+# §2.3/INV-15 + U6-3: the third evaluation state of a key the store exposes. The
+# `project` key has THREE values — the session directory is the root or lives
+# inside it (`match`), is an ANCESTOR of the root (`not-evaluable`: the
+# container folder the coordinator was started from can host other projects, so
+# it neither proves nor contradicts), or is foreign to the root
+# (`contradiction`). A not-evaluable key is not evidence in either direction: it
+# neither blocks the positive accreditation of the keys that do discriminate nor
+# is counted as a contradiction.
+KEY_NOT_EVALUABLE = "not-evaluable"
 
 # §2.2: the capability document of a runtime module.
 CAPABILITY_KEYS = (
@@ -593,9 +607,17 @@ def _compare_key(observed: Any, declared: Any) -> str:
 
 
 def _membership_key(observed: Any, root: Path) -> str:
-    """§2.3/INV-15: the project is corroborated BY MEMBERSHIP — the session's
-    directory is the authorized root or lives inside it — never by a rigid
-    `directory == root`."""
+    """§2.3/INV-15 + U6-3: the project is corroborated BY MEMBERSHIP — the
+    session's directory is the authorized root or lives inside it — never by a
+    rigid `directory == root`. Three values, never two:
+
+    * the directory is the root or lives INSIDE it ⇒ `match` (membership);
+    * the directory is an ANCESTOR of the root — the container folder from which
+      the coordinator was started — ⇒ `not-evaluable`: the container can host
+      other projects, so it neither proves nor contradicts the walk (U6-3: this
+      is the legitimate E1 layout the rigid rule used to reject);
+    * anything else (neither inside nor an ancestor) ⇒ `contradiction`.
+    """
     directory = _as_text(observed)
     if directory is None:
         return "unknown"
@@ -603,9 +625,9 @@ def _membership_key(observed: Any, root: Path) -> str:
         resolved = Path(directory).expanduser().resolve()
     except OSError:
         return "unknown"
-    if resolved == root:
+    if resolved == root or root in resolved.parents:
         return "match"
-    return "match" if root in resolved.parents else "contradiction"
+    return KEY_NOT_EVALUABLE if resolved in root.parents else "contradiction"
 
 
 def _instant(value: Any) -> datetime | None:
@@ -667,7 +689,10 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
     key was evaluated (O-3); `unknown` when a key the store exposes cannot be
     evaluated or no discriminating key was; and a **rejection** — raised, never
     returned as `unknown` and never as an accepted delivery — when an evaluable
-    key contradicts.
+    key contradicts. A key that is NOT EVALUABLE for the walk (U6-3: the project
+    key when the session directory is an ancestor of the root) is named in the
+    diagnosis but is evidence in neither direction: it neither blocks the
+    accreditation the discriminating keys give nor counts as a contradiction.
     """
     if row is None:
         detail = problem or ("the store offered no observable session row")
@@ -691,6 +716,8 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
             f"one")
     unknowns = [key for key in CORRELATION_COLUMNS
                 if states.get(key) == "unknown"]
+    not_evaluable = [key for key in CORRELATION_COLUMNS
+                     if states.get(key) == KEY_NOT_EVALUABLE]
     matched = [key for key in DISCRIMINATING_KEYS if states.get(key) == "match"]
     session_id = _as_text(row.get("id"))
     if not unknowns and matched:
@@ -711,6 +738,12 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
     if unknowns:
         reasons.append("not evaluable: "
                        + ", ".join(f"`{key}`" for key in unknowns))
+    if not_evaluable:
+        reasons.append("not evaluable: "
+                       + ", ".join(f"`{key}`" for key in not_evaluable)
+                       + " (the session directory is an ancestor of the "
+                         "authorized project root: it neither proves nor "
+                         "contradicts the project)")
     if not matched:
         reasons.append("no discriminating key (parent, moment, project) was "
                        "evaluated and matched")
