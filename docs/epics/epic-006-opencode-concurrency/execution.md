@@ -278,3 +278,8 @@ Recorrido de enmienda 006 aplicado: architect draft-002 → review (2 B, 8 O) �
 ## Delegación HITL amplia (2026-10-19)
 
 El owner delega el HITL completo al orquestador para avanzar sin consultarle, «con criterio amplio de acuerdo a la necesidad del usuario real del sistema». Sigue vigente: sin push hasta que el owner lo autorice; despliegues en HOME y operaciones de servicio solo por orden del owner.
+
+## 006-005: sonda V-7 antes del RED de U2 (2026-10-19)
+
+Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store de la versión instalada (OpenCode v2.0.27): la tabla **sí** expone `parent_id`, `directory`, `time_created` y `agent`, además de `id`, `model`, `time_idle` e `idle_outcome`. La premisa de la spec («hoy sólo `agent` es evaluable») venía de `SESSION_V2_COLUMNS` (el subconjunto que el módulo **exige**), no del esquema real. Consecuencia para U2: `capabilities.session_correlation` declara las columnas observadas y, con `parent_id`/`time_created`/`directory` presentes, el umbral de §2.3 se alcanza en esta versión; la vía nativa (E1) puede acreditar «verificada» en lugar de quedar en garantía menor. El umbral y el `unknown` siguen vigentes para versiones que no las expongan. No cambia el contrato: la spec ya hacía depender la acreditación de lo que la versión exponga.
+
