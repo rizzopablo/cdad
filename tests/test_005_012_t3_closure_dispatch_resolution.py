@@ -108,8 +108,10 @@ Mapeo test → postcondición (y caso mínimo del encargo):
          `transition: "disposition"`, `stage: "dispatch-disposition"`,
          `resolution`, `approval_effect: false`, `transition_key`, SIN
          `approved_by`; y NINGÚN otro campo del state cambia salvo
-         `stage_history` y `last_updated` (no fabrica un `completed`): el paquete
-         sigue `dispatched`, `epic_features`/`closed_at`/`active_feature`/
+         `stage_history`, `last_updated` y el **status del paquete identificado**
+         (no fabrica un `completed` ni un recibo): el paquete pasa a `failed`
+         —REEMPLAZO DECLARADO de A-1 de 006-005 U5, PD-19/D-4, enmienda
+         aprobada por el dueño—, `epic_features`/`closed_at`/`active_feature`/
          `current_stage` intactos.
   test_pd21_b1_closure_rejects_then_the_disposition_unblocks_and_the_closure_advances
       -> PD-21 (condición 2) + PD-8(a) + PD-9 + PD-17. Caso **4(b)** (el caso que
@@ -750,13 +752,23 @@ def test_pd21_disposition_of_unreceipted_dispatch_is_structural_and_does_not_tou
     con `transition: "disposition"`, `stage: "dispatch-disposition"`,
     `resolution`, `approval_effect: false`, `transition_key` (forma sha256) y
     SIN `approved_by`; y NO toca nada más: ningún otro campo del state cambia
-    salvo `stage_history` y `last_updated` (INV-9), el paquete sigue
-    `dispatched` (NO se fabrica un `completed`), y `epic_features`/`closed_at`/
-    `active_feature`/`current_stage` quedan intactos. `validate-state` rc=0
-    antes y después (PD-17).
+    salvo `stage_history`, `last_updated` y el **status del paquete identificado**,
+    y `epic_features`/`closed_at`/`active_feature`/`current_stage` quedan
+    intactos. `validate-state` rc=0 antes y después (PD-17).
 
-    RED hoy: rc=2 por error de uso («invalid choice: 'disposition'») → falla la
-    primera aserción de contrato (la disposición registrada).
+    REEMPLAZO DECLARADO — regla A-1 de 006-005 U5 (`docs/specs/
+    006-005-native-path-parity/plan.md` §4, fila U5): este test afirmaba que el
+    paquete seguía `dispatched` tras la disposición. La postcondición nueva es
+    «`active_packet.status` pasa a `failed` (terminal); el resto del estado
+    intacto» (PD-19 de 006-005, D-4). La enmienda de esa consecuencia de INV-9
+    está **aprobada por el dueño** (`docs/epics/epic-006-opencode-concurrency/
+    execution.md`:260). Motivo: la disposición es el camino mecánico a `failed`
+    para el intento que no vuelve, así que el efecto deja de ser `pass`. El
+    resto del test —la forma de la entrada, la ausencia de `approved_by`, la
+    inmutabilidad de todo lo demás— NO se toca ni se debilita.
+
+    RED hoy (006-005 U5): rc=0 y la entrada correcta, pero el paquete sigue
+    `dispatched` → falla la aserción del estado nuevo.
     """
     before_state = single_fx.read_state()
     assert single_fx.receipt_path_for(single_fx.packet_id).exists() is False, (
@@ -802,18 +814,29 @@ def test_pd21_disposition_of_unreceipted_dispatch_is_structural_and_does_not_tou
 
     after_packet = state.get("active_packet") or {}
     assert after_packet.get("id") == single_fx.packet_id, (
-        "PD-21 violada: la disposición no debe tocar `active_packet`: "
+        "PD-21 violada: la disposición no debe cambiar el paquete identificado: "
         f"{after_packet!r}")
-    assert after_packet.get("status") == "dispatched", (
-        "PD-21/INV-9 violada: la disposición NO fabrica un estado terminal del "
-        f"paquete (nunca `completed`): {after_packet.get('status')!r}")
+    # REEMPLAZO A-1 (006-005 U5, PD-19/D-4): el efecto del `disposition` sobre
+    # el paquete citado es `failed` (terminal, sin recibo ni aprobación). Antes
+    # de la enmienda aprobada por el dueño, este test afirmaba `dispatched`.
+    assert after_packet.get("status") == "failed", (
+        "PD-19 violada (006-005 U5, A-1): la disposición del despacho sin "
+        "recibo debe dejar `active_packet.status: failed` (terminal); visto "
+        f"{after_packet.get('status')!r}")
+    assert {k: v for k, v in after_packet.items() if k != "status"} == (
+        {k: v for k, v in (before_state.get("active_packet") or {}).items()
+         if k != "status"}), (
+        "PD-19 violada (a): sólo `active_packet.status` cambia dentro del "
+        f"paquete: {(before_state.get('active_packet') or {})!r} → "
+        f"{after_packet!r}")
     unchanged_keys = sorted(
         k for k in set(state) | set(before_state)
-        if k not in ("stage_history", "last_updated"))
+        if k not in ("stage_history", "last_updated", "active_packet"))
     for key_name in unchanged_keys:
         assert state.get(key_name) == before_state.get(key_name), (
             "PD-21/INV-9 violada: la disposición sólo escribe la entrada de "
-            f"`stage_history` (más `last_updated`); `{key_name}` cambió: "
+            f"`stage_history`, `last_updated` y el status del paquete "
+            f"identificado; `{key_name}` cambió: "
             f"{before_state.get(key_name)!r} → {state.get(key_name)!r}")
     assert (_feature_entry(state, FEATURE_ID) or {}).get("status") == (
         _feature_entry(before_state, FEATURE_ID) or {}).get("status"), (
