@@ -318,12 +318,13 @@ def _globs_block(key: str, pairs: list[tuple[str, str]], comment: str) -> list[s
     return lines
 
 
-def _write_lever_lines() -> list[str]:
+def _write_key_note_lines() -> list[str]:
+    # 006-005 U6-7: the cdad-010 P1 lever is RETIRED. OpenCode v2.0.27 evaluates
+    # `write` for the write tool together with `edit` (findLast), so a trailing
+    # `write: ask` voided every role's path map.
     return [
-        "  # write: ask — classification lever (cdad-010 P1): the plugin's classifier",
-        "  # reads permission.write; the runtime does NOT evaluate it today (the write",
-        '  # tool requests "edit"). WATCH RULE: if a future OpenCode version evaluates',
-        "  # `write` at runtime, this lever starts generating prompts — revisit on migration.",
+        "  # la clave `write` no se emite: v2.0.27 la evalua para la escritura y",
+        "  # anularia el mapa `edit` (U6-7).",
     ]
 
 
@@ -362,7 +363,7 @@ def oc_frontmatter(
             "# INERT at runtime; it stays only as a marker of the role's read-only state.",
             "edit: deny",
         ]
-    lines += ["permission:"] + _write_lever_lines()
+    lines += ["permission:"] + _write_key_note_lines()
     if role == "test-writer":
         read_denies = _ODOO_IMPL_GLOBS if stack == "odoo" else ["src/**", "lib/**"]
         read_pairs = [(glob, "deny") for glob in read_denies] + [
@@ -376,7 +377,6 @@ def oc_frontmatter(
         lines += _globs_block("edit", edit_pairs, "tests-only edits, expanded globs — the matcher escapes { } (audit 3.3); never braces.")
         lines += ["  bash:"] + bash_lines
         lines += _globs_block("grep", grep_pairs, "content search scoped: the implementation is invisible to Grep too (B1).")
-        lines += ["  write: ask"]
     elif role == "implementer":
         # Implementer reads broadly; the hard barrier is on EDITS (never tests/**,
         # including colocated tests — anti-gaming invariant, ADR-011:94).
@@ -390,7 +390,6 @@ def oc_frontmatter(
             " findLast order: catch-all first, denies after; no braces (audit 3.3).",
         )
         lines += ["  bash:"] + bash_lines
-        lines += ["  write: ask"]
     else:
         lines += [
             "  edit: deny",
@@ -398,7 +397,6 @@ def oc_frontmatter(
             "  # as the delegate's final text; the ORCHESTRATOR materializes it (ADR-003).",
             "  bash:",
         ] + bash_lines
-        lines += ["  write: ask"]
     return "\n".join(lines)
 
 

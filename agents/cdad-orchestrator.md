@@ -333,6 +333,7 @@ orchestrator never approves what a role must not approve either.
 ## Tool loading and delegation (adapter)
 
 Skills are loaded with the `skill` tool (lowercase). The composed body's legacy
-sentences use "skill tool". Delegation: all cdad roles are task-able via the
-`write: ask` lever (cdad-010/ADR-009); the `delegate` channel may be dead on
-no-credit deploys — the orchestrator source decides the mechanism.
+sentences use "skill tool". Delegation: all cdad roles are task-able with the
+runtime's subagent tool (P3, 006-005 U6-7: the invocation does not need the
+retired `write: ask` lever); the `delegate` channel may be dead on no-credit
+deploys — the orchestrator source decides the mechanism.

@@ -26,10 +26,10 @@ Frontmatter shape (generated):
 - Optional top-level `edit: deny` mirror for read-only roles — INERT at runtime;
   it stays only as a marker of the role's read-only state (cdad-010 P2/A6).
 - `permission:` block — see the `permissions` section.
-Classification lever (cdad-010 P1): `write: ask` — the plugin's classifier reads
-it; the runtime does NOT evaluate it today (the write tool requests "edit").
-WATCH RULE: if a future OpenCode version evaluates `write` at runtime, this lever
-starts generating prompts — revisit on version migration.
+- `write` key — NOT emitted (006-005 U6-7). OpenCode v2.0.27 evaluates `write`
+  for the write tool together with `edit` and the last matching rule wins, so a
+  trailing entry would override the role's path map. The cdad-010 P1
+  classification lever is retired (its own watch rule was fulfilled).
 <!-- /cdad-section -->
 
 <!-- cdad-section:permissions -->
@@ -52,9 +52,10 @@ Read/Edit/Write/Grep only; bash is permissive by owner decision 2026-09-29.
 
 <!-- cdad-section:tool-loading -->
 Skills are loaded with the `skill` tool (lowercase). The composed body's legacy
-sentences use "skill tool". Delegation: all cdad roles are task-able via the
-`write: ask` lever (cdad-010/ADR-009); the `delegate` channel may be dead on
-no-credit deploys — the orchestrator source decides the mechanism.
+sentences use "skill tool". Delegation: all cdad roles are task-able with the
+runtime's subagent tool (P3, 006-005 U6-7: the invocation does not need the
+retired `write: ask` lever); the `delegate` channel may be dead on no-credit
+deploys — the orchestrator source decides the mechanism.
 <!-- /cdad-section -->
 
 <!-- cdad-section:delegation -->

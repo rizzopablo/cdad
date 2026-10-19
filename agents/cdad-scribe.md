@@ -6,10 +6,8 @@ steps: 300
 # INERT at runtime; it stays only as a marker of the role's read-only state.
 edit: deny
 permission:
-  # write: ask — classification lever (cdad-010 P1): the plugin's classifier
-  # reads permission.write; the runtime does NOT evaluate it today (the write
-  # tool requests "edit"). WATCH RULE: if a future OpenCode version evaluates
-  # `write` at runtime, this lever starts generating prompts — revisit on migration.
+  # la clave `write` no se emite: v2.0.27 la evalua para la escritura y
+  # anularia el mapa `edit` (U6-7).
   edit: deny
   # Read-only by CDAD design (anti-confirmation-bias): the artifact is delivered
   # as the delegate's final text; the ORCHESTRATOR materializes it (ADR-003).
@@ -22,7 +20,6 @@ permission:
     # Mechanism limit: declared, not a sandbox — bash can read/write
     # anything; the edit-path maps are the systematic guard.
     "*": allow
-  write: ask
 ---
 
 # CDAD Scribe Agent
@@ -125,6 +122,7 @@ non-delegable (user), git execution is not.
 ## Tool loading and delegation (adapter)
 
 Skills are loaded with the `skill` tool (lowercase). The composed body's legacy
-sentences use "skill tool". Delegation: all cdad roles are task-able via the
-`write: ask` lever (cdad-010/ADR-009); the `delegate` channel may be dead on
-no-credit deploys — the orchestrator source decides the mechanism.
+sentences use "skill tool". Delegation: all cdad roles are task-able with the
+runtime's subagent tool (P3, 006-005 U6-7: the invocation does not need the
+retired `write: ask` lever); the `delegate` channel may be dead on no-credit
+deploys — the orchestrator source decides the mechanism.

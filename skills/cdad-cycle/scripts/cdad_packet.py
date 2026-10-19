@@ -2999,17 +2999,31 @@ def _temporary_patterns(temporary_roots: list[str]) -> list[str]:
     return patterns
 
 
+# Role-level test conventions the implementer never edits (anti-gaming,
+# ADR-011:94 — same barrier the generator emits in its `edit` map,
+# scripts/cdad-generate.py `_IMPL_TEST_GLOBS`). The derived map keeps it on top
+# of the policy's declared test roots: under a policy whose test roots do not
+# cover, say, `addons/m/tests/`, "never edit tests" still holds (006-005 U6-7).
+_IMPLEMENTER_TEST_GLOBS = [
+    "tests/**", "**/tests/**", "**/*_test.go",
+    "**/*.test.js", "**/*.test.ts", "**/*.test.mjs", "**/*.test.cjs",
+    "**/*.spec.ts", "**/*.spec.js", "**/test_*.py",
+]
+
+
 def _derived_maps(role: str | None, path_policy: dict[str, Any],
                   temporary_roots: list[str] | None = None
                   ) -> dict[str, list[tuple[str, str]]]:
     """Permission maps (findLast order) for one derived agent (I9/PD-7).
 
     test-writer: deny implementation reads (co-located tests allowed), edits
-    only tests. implementer: edits everything except tests. reader: the
-    existing read-only map is kept (edit deny). orchestrator: allow-all except
-    the policy. Every role excludes docs/cdad-policy.json AND the published
-    derivatives under .opencode/agents/ on edit (invariant 3: the derivatives
-    are not editable sources by any role).
+    only tests. implementer: edits everything except tests — the policy's
+    declared tests plus the role's own test conventions (but never
+    over-restricting a path the policy classifies as implementation). reader:
+    the existing read-only map is kept (edit deny). orchestrator: allow-all
+    except the policy. Every role excludes docs/cdad-policy.json AND the
+    published derivatives under .opencode/agents/ on edit (invariant 3: the
+    derivatives are not editable sources by any role).
 
     W-2 (t7-live-walk.md §3, live probe): OpenCode evaluates `grep`/`glob`
     permissions against the SEARCH PATTERN, not the path. Path entries in those
@@ -3058,8 +3072,19 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + private)
         return {"read": read, "edit": edit}
     if role == "implementer":
-        denied = _test_patterns(path_policy) + _colocated_test_patterns(path_policy)
+        # PD-7/B3 exactness: every path under an implementation root is
+        # implementation to the policy, so the role barrier below must not
+        # over-restrict it. The allow is emitted AFTER the conventional denies;
+        # the policy's own test/colocated denies come after it and keep
+        # precedence, so a declared test inside an implementation root still
+        # resolves deny.
+        implementation_allows = [(pattern, "allow")
+                                 for pattern in _implementation_patterns(path_policy)]
+        denied = (_test_patterns(path_policy)
+                  + _colocated_test_patterns(path_policy))
         edit = ([("*", "allow")]
+                + [(pattern, "deny") for pattern in _IMPLEMENTER_TEST_GLOBS]
+                + implementation_allows
                 + [(pattern, "deny") for pattern in denied]
                 + [(policy_pattern, "deny"), (derived_pattern, "deny")]
                 + private)

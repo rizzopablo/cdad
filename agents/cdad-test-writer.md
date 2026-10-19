@@ -3,10 +3,8 @@ description: CDAD test-writer — stage 3 (AUDIT, POST-AUDIT, RED, Properties, E
 mode: subagent
 steps: 300
 permission:
-  # write: ask — classification lever (cdad-010 P1): the plugin's classifier
-  # reads permission.write; the runtime does NOT evaluate it today (the write
-  # tool requests "edit"). WATCH RULE: if a future OpenCode version evaluates
-  # `write` at runtime, this lever starts generating prompts — revisit on migration.
+  # la clave `write` no se emite: v2.0.27 la evalua para la escritura y
+  # anularia el mapa `edit` (U6-7).
   read:
     # deny-list: implementation paths denied, colocated tests allowed; the contract, docs and tests are readable by default (cdad-010 P2/A4).
     "src/**": deny
@@ -53,7 +51,6 @@ permission:
     # content search scoped: the implementation is invisible to Grep too (B1).
     "src/**": deny
     "lib/**": deny
-  write: ask
 ---
 
 # CDAD Test-Writer Agent
@@ -192,6 +189,7 @@ what was read (ADR-011:84-86).
 ## Tool loading and delegation (adapter)
 
 Skills are loaded with the `skill` tool (lowercase). The composed body's legacy
-sentences use "skill tool". Delegation: all cdad roles are task-able via the
-`write: ask` lever (cdad-010/ADR-009); the `delegate` channel may be dead on
-no-credit deploys — the orchestrator source decides the mechanism.
+sentences use "skill tool". Delegation: all cdad roles are task-able with the
+runtime's subagent tool (P3, 006-005 U6-7: the invocation does not need the
+retired `write: ask` lever); the `delegate` channel may be dead on no-credit
+deploys — the orchestrator source decides the mechanism.
