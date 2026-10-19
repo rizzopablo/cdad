@@ -1,0 +1,73 @@
+Tengo todo lo verificado. Emito el dictamen como texto final.
+
+---
+
+# Dictamen — re-review focal sobre draft-003 (006-005-native-path-parity)
+
+## Veredicto: **SIN BLOQUEANTES** — 2 opcionales nuevos
+
+Draft-003 resuelve los dos bloqueantes (B-1 con la opción ii, declarada y coherente en spec/plan; B-2 con los tres tests de la familia 005-010 en A-1 con reemplazo declarado) y los ocho opcionales del dictamen anterior. Lo nuevo que no había visto (PD-23/§2.8/INV-14, la partición U1a/U1b/U1c, los dos tests nuevos de A-1 y el hallazgo del architect sobre el conjunto cerrado del request) se verificó contra el HEAD medido y **sostiene las decisiones**: la tabla `_allowed_kinds` no se toca, la tabla de materialización ya contiene `plan-review` (el oráculo «materialize rc=0» es alcanzable sin tocar nada), y la cadena `agent` en `REQUEST.json` → render byte-idéntico → `receive` sin cambio está verificada en el código. El bloque `plan-tasks` coincide con las fichas §3. No encontré regresiones introducidas por las correcciones. Quedan dos opcionales nuevos (O-9, O-10), ninguno compromete el resultado ni la evidencia.
+
+Este dictamen **no aprueba** el plan ni habilita el RED: la aprobación es de la autoridad vigente. Los gates del dueño figuran como pendientes, no aprobados (detalle abajo).
+
+---
+
+## Seguimiento de hallazgos previos
+
+| Hallazgo | Estado | Evidencia verificada |
+|---|---|---|
+| **B-1** (mecanismo del exec-config heredado no declarado) | **Resuelto** | Opción (ii) elegida y declarada en spec Δ10, §2.6 y D-11 (`spec.md`:26, :113-122, :222): la entrada no declara `--exec-config`, no sondea nada, el flag en `argv` (dos formas) ⇒ rc≠0 antes de todo efecto. PD-9 redefine el fixture 3 como «`--exec-config` en `argv`» (`spec.md`:152) — determinista y escribible. El RED de U1a lo prueba (`plan.md`:33) y el diagnóstico nombra archivo, sección y correspondencia clave por clave. La deuda del `--exec-config` interno de la interfaz conserva su disparador (§8 item 4). Coherente en las tres piezas. |
+| **B-2** (tests acoplados al registro doble, fuera de A-1) | **Resuelto** | §4 tiene ahora cuatro filas para U1b con reemplazo declarado (`plan.md`:97-102). Verifiqué el acoplamiento en los tres tests de la familia 005-010 en HEAD: `test_005_010_t1_durable_signal.py` cuenta el registro «del worker además del de la interfaz» en :431-449 y aserta `model_reported` nulo en :536-543; `test_005_010_t4_integration.py` mismo patrón en :480-486 y :540-557; `test_005_010_reviewfix.py` en :489-500. Los tres están además en `files` de U1b en §6 (`plan.md`:157-160). |
+| **O-1** (gate PD-19 fuera del plan de U5) | **Resuelto** | Gate en la tabla §2 (`plan.md`:23), en la ficha U5 (`plan.md`:86) y en D-4/PD-19 (`spec.md`:205, :162): «aprobación del owner… registrada antes del RED… no se da por hecha». `execution.md` (leído completo, 256 líneas) no registra esa aprobación — correcto: figura pedida y pendiente. |
+| **O-2** (PD-8 sin alcance v1/v2) | **Resuelto** | PD-8 declara el alcance (`spec.md`:151): caso «declaración» sólo en contexto v1 plano; en v2 el error nombra el flag y la ausencia de lugar, sin inventar lugar propuesto. El oráculo declara los cuatro fixtures con esa forma. Coherente con V-9. |
+| **O-3** (U1 sobredimensionada) | **Resuelto** | Partición U1a/U1b/U1c con orden justificado (U1a antes que U1b porque `dispatch` consume la config) y serialización explícita de las unidades que comparten `cdad_packet.py` (`plan.md`:9-11). U1c independiente; U2 depende de las tres. |
+| **O-4** (salidas de `make agents` ausentes en §6) | **Resuelto** | `files` de U4 incluye `agents/cdad-*.md` y `agents/claude-code/cdad-*.md` con la anotación «promociones de `build/staging/`, nunca editadas a mano» (`plan.md`:76, :288-289). Verifiqué que el validador de `plan-tasks` (`cdad_packet.py`:3089-3180) usa `files` sólo para colisión de paralelismo sobre strings literales — los globs no violan ninguna regla estructural. |
+| **O-5** (confirmación del dueño §2.6 sin registro) | **Resuelto** | El gate está declarado como pendiente en §2 U1a (`plan.md`:17), ficha U1a (`plan.md`:36), §2.6 (`spec.md`:110: «no está confirmada por el dueño todavía») y Δ13a. En `execution.md` no hay registro de esa confirmación — correcto. |
+| **O-6** (ventana U1→U2 sin conducta declarada) | **Resuelto** | §2.2 último viñete (`spec.md`:73): módulo sin la superficie ⇒ sin degradación silenciosa, `native_observation: false` con `reason`, `record` falla cerrado, ventana transitoria declarada (INV-4). |
+| **O-7** (conteo «seis» contra cinco) | **Resuelto** | §1 cuenta las seis «una a una» y nombra la sexta (el orquestador que reconstruyó el protocolo a mano, cerrada por el registro mecánico de la vía nativa) (`spec.md`:34). |
+| **O-8** (citas con deriva) | **Resuelto** | Δ14 declara las correcciones y las cinco citas corregidas se verificaron contra HEAD: `_adapter_path` en `cdad_delegate.py`:91 ✓; prohibición `--replace-packet` sobre `dispatched` en `cdad_packet.py`:2094-2102 ✓; `temporary_roots: []` en :1100 ✓; `_load_observation_document` en :2410 ✓; `binary` en `cdad_delegate_opencode.py`:1999 ✓; el «Registro» de `runtime-adoption.md` es un párrafo (en :37), no un encabezado ✓. |
+
+---
+
+## Lo nuevo de draft-003 — verificación
+
+- **PD-23 / §2.8 / INV-14.** La derivación es coherente con la tabla real medida en HEAD: `_allowed_kinds` (`cdad_result.py`:681-706) admite exactamente un kind para test-writer (audit → `test-audit`), implementer (`implementer-role-report`) y reviewer por subfase (`{review, plan-review}`); para architect admite `role-report` sólo en `discovery`/`draft`; para scribe devuelve los cuatro `scribe-*`. El punto que decidía la viabilidad del oráculo: `materialize` exige el kind en la **tabla de materialización** (`_allowed_target`, `cdad_result.py`:676-681) y esa tabla (`skills/cdad-cycle/assets/artifact-policy.json`) **ya contiene** `plan-review`, `review`, `test-audit`, `test-writer-role-report`, `implementer-role-report` y `role-report` → «materialize rc=0 con sha idéntico» para el caso del defecto real es alcanzable **sin tocar ninguna tabla**. El caso scribe conserva el rechazo nombrando rol/subfase (`cdad_result.py`:916-920 ✓). El módulo declara hoy la constante `FINAL_TEXT_ARTIFACT_KIND = "role-report"` (`:127`) en `descriptor.parts[].artifact_kind` (`:1737`) ✓ — el defecto medido en `execution.md`:255 es real y PD-23 lo corrige en las dos vías sin relajar la tabla (INV-14).
+- **Partición U1a/U1b/U1c.** Dependencias de §1/§2 y del bloque `plan-tasks` son consistentes; U1b declara PD-23 (nativa) porque implementa `record`; U1c declara el campo `agent`. El archivo compartido de U1c/U3/U5 está correctamente serializado.
+- **Los dos tests nuevos en A-1.** Verificados arriba (B-2). El reemplazo declarado para `reviewfix` («la localización del registro I8 pasa a ser el único registro nuevo del despacho») es fiel a lo que el test hace hoy.
+- **Hallazgo del architect sobre el conjunto cerrado del request (U1c).** Verificado end-to-end: `validate_request` tiene el conjunto cerrado con `optional = {"plan_task"}` (`cdad_packet.py`:768-777) — extenderlo con `agent` como opcional es el patrón 005-003 y no relaja el rechazo de claves desconocidas; `render_packet` construye el paquete desde una **lista explícita de claves** (:932 ✓), así que `agent` no entra a `PACKET.md`; y `receive` recomputa el render y lo compara byte a byte (`cdad_result.py`:563-566 ✓) — la cadena «paquete con `agent` ⇒ `PACKET.md` idéntico ⇒ `receive` sin cambio» se sostiene en el código. El RED de U1c cubre las dos direcciones de compatibilidad (con y sin el campo).
+- **Gates del dueño pendientes.** Los tres figuran como **pendientes, no aprobados**: (a) modelo/credencial fuera de `runtimes.json` — gate del RED de U1a (§2, §3 U1a, Δ13a, D-10); (b) enmienda de PD-19 — gate del RED de U5 (§2, §3 U5, Δ13b, D-4); (c) runtime por proyecto (V-9) — figura como propuesta **no decidida** del dueño y el error no nombra lugar propuesto (`spec.md`:238). Verifiqué en `execution.md` completo que ninguna de las decisiones está registrada. Correcto — salvo O-9 abajo sobre la forma del tercero.
+- **plan-tasks vs §3.** Coinciden unidad por unidad (archivos, focales, regresiones, dependencias, A-1 en `files` de U1b/U5, `observable_checks` de U6 con la regla de bloqueo). El plan y la spec embebidos en `architect-draft-003.md` son **byte-idénticos** a los archivos de la carpeta (diff vacío, verificado).
+
+---
+
+## Hallazgos nuevos
+
+### O-9 — V-9 (runtime por proyecto) figura como pendiente del dueño pero no como gate de unidad; el oráculo del caso 3 de PD-8 depende de esa no-decisión
+
+- **Verdict:** OPTIONAL · **Bucket:** m
+- **Ubicación:** `spec.md`:238 (V-9) y `spec.md`:151 (PD-8, caso «ninguno» sobre contexto v2) vs `plan.md`:17 (gate de U1a, que sólo nombra la confirmación de O-5).
+- **Evidencia verificada:** Δ13 declara como gates del RED a los ítems (a) y (b) del dueño, pero V-9 quedó fuera de esa lista: es una «propuesta para el dueño (no decidida)» sin unidad que la espere. Sin embargo, si el dueño registra la decisión («declarar el runtime en la config del proyecto») antes o durante U1a, el oráculo del caso 3 de PD-8 (contexto v2 ⇒ rc≠0 nombrando la *ausencia* de lugar) queda invalidado y el RED de U1a se re-escribe a mitad de unidad.
+- **Corrección:** una línea en el gate de U1a (§2/§3) o en la cabecera del plan: «si el dueño registra la decisión V-9 antes del RED de U1a, PD-8 se enmienda antes de ese RED».
+
+### O-10 — El oráculo de PD-9 exige el rechazo de `--exec-config` «en cualquiera de los verbos», pero en el RED de U1a sólo existe el verbo por defecto
+
+- **Verdict:** OPTIONAL · **Bucket:** l
+- **Ubicación:** `spec.md`:152 (PD-9: «el flag en `argv` (sus dos formas, en cualquiera de los verbos)») vs `plan.md`:30 (U1a: «El resto de los verbos es de U1b») y `plan.md`:43 (RED de U1b, que no re-declara el caso `--exec-config` sobre los verbos que añade).
+- **Evidencia verificada:** en el punto de secuencia de U1a, `cdad_dispatch.py` sólo tiene la capa de config y el barrido de migración — el RED de U1a sólo puede observar el rechazo sobre el verbo por defecto. Tras U1b, ningún RED declarado vuelve a observar el rechazo sobre `dispatch` explícito, `record` ni `capabilities`. El mecanismo (barrido de `argv` previo al parseo del verbo) lo cubre por construcción, pero la convención del contrato pide observables, no构造 implícita.
+- **Corrección:** añadir al RED de U1b un caso de `--exec-config` sobre cada verbo nuevo, o declarar en PD-9/U1a que el barrido es previo al parseo del verbo (una cláusula).
+
+---
+
+## Abstenciones
+
+- **Suite/build:** no ejecuté tests ni `make validate`/`make staging`: revisión read-only de plan; la suite completa corre una vez al cierre (política declarada, PD-21).
+- **Sondas V-1/V-7/V-11/V-13:** juzgué su *declaración* en los borradores, no su factibilidad técnica (se ejecutan en U2/U6 según el plan).
+- **Afirmación Δ11 «usos de pertenencia»:** la verifiqué por muestreo (patrón de doble registro y aserciones `model_reported` nulo por grep sobre los 11 tests nombrados, más lectura de los positivos); no leí los 11 en su totalidad. Los sondeados (`test_005_009_t2_opencode_adapter.py`, `test_004_002_t4_dispatch.py`, `test_005_010_t2_load_mode_invocation.py`, `test_006_001_t1_selection.py`, `test_006_002_u5_transport_equivalence.py`, `test_005_007_t5_delegation_dispatch.py`, `test_006_003_u4/u6/u8`) no muestran el patrón acoplado; los marginales restantes lo cubre la regla A-1 que el plan ya declara.
+- **Citas no re-medidas:** las citas de código que el dictamen anterior ya había verificado en `9d3b2ea` y que Δ14 no corrige no se re-midieron una a una; la base sigue vigente porque `git diff 9d3b2ea..b82e6a3` y `b82e6a3..HEAD` son docs-only (ambos verificados).
+
+## Evidencia del rol
+
+- **HEAD medido:** `0a47ee8` (`git log -1`: «docs(state): 006-005 re-review focal draft-003 preparado»). El `sha256` de `plan.md` es `c2ca437f…` — **coincide** con el del contrato del paquete. `git diff b82e6a3..HEAD --stat`: sólo docs (`.cdad-state.json`, `architect-draft-003.md`, `plan.md`, `spec.md`) — las citas de código medidas siguen vigentes.
+- **Comandos exactos:** `git rev-parse HEAD`; `git log -1 --format`; `sha256sum` de los cinco documentos de la carpeta; `git diff b82e6a3..HEAD --stat`; lectura completa de `spec.md`, `plan.md`, `architect-draft-003.md`, `plan-review.md` y `docs/epics/epic-006-opencode-concurrency/execution.md` (256 líneas, para confirmar que ningún gate del dueño está registrado como aprobado); extracción y `diff` de las secciones embebidas en `architect-draft-003.md` contra los archivos reales (idénticos); ~15 inspecciones `sed -n` de símbolo+línea en `cdad_delegate.py` (`_adapter_path`:91), `cdad_packet.py` (`validate_request`:768-777, `render_packet`:932, `--replace-packet`:2094-2102, `propose_policy`:1100, `_load_observation_document`:2410, construcción del request en `prepare`:4455-4477, `disposition: pass`:5584-5589, validador `plan-tasks`:3019-3270), `cdad_result.py` (`_artifact_policy`:658, `_allowed_target`:676, `_allowed_kinds`:681-706, rechazo kind/rol:916-920, re-render en receive:563-566), `cdad_delegate_opencode.py` (`FINAL_TEXT_ARTIFACT_KIND`:127, uso :1737, `binary`:1999); `cat skills/cdad-cycle/assets/artifact-policy.json` (presencia de `plan-review` y los kinds de §2.8); `grep` de acoplamiento (doble registro / `model_reported` nulo) sobre los 11 tests de regresión nombrados por Δ11; `grep` de `stack` en `skills/cdad-cycle/scripts/` (sólo usos ajenos ✓, afirma §2.7); verificación de `CONFIG_REL_PATHS` en `test_006_003_u7_prune_obsolete.py`:104-108 (nota de U1a fiel).
+- **Verificaciones positivas que sostienen draft-003:** la tabla de materialización contiene todos los kinds que §2.8 necesita sin modificaciones ✓; la cadena `agent`→render→`receive` verificada en código ✓; el patrón 005-003 de extensión del conjunto cerrado existe tal como se cita ✓; los tres tests acoplados de A-1 están acoplados exactamente como se declara y en las líneas citadas ✓; los gates del dueño figuran pendientes en §2/§3 y Δ13, y `execution.md` no registra ninguna aprobación de ellos ✓; el `plan-tasks` replica §3 sin divergencias ✓; ningún `parallel` mutuo declarado y las unidades con archivo compartido están serializadas ✓.
+- **Archivos modificados:** ninguno (write_scope vacío; rol read-only cumplido). **Commit:** ninguno (no corresponde; la materialización del dictamen es del orquestador, ADR-003).
