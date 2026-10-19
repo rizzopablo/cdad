@@ -10235,6 +10235,47 @@
         "docs/specs/006-005-native-path-parity/u1b-green.md": "b57d4f54b31b141cd2461320e76172cd676302b963a6e1262036723f7ae63215"
       },
       "note": "U1b GREEN 3af53f1 parcial: 3 oráculos bloqueados por defectos de test (PD-5 subTest con attempt fijo; PD-23 fixture sin aprobación de epic; t1_interface snapshot tardío y attempt constante); testfix pedido (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T05:37:36.515108+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "e36f68506b160b1d8603b2b3f007ba3ca8a826cdc505a046312127acddb2d266",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-004",
+        "receipt_sha256": "d6973c2a1103cfc278a0402afa111fb8ef019c04d4d3940acefe954fe7ae1995",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u1b-testfix2.md",
+            "404cc6d5269bb737f530cb0d14b22e7bd8260f9251a1f1036f16fb12c3e77313"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-004",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-004/receipt.json",
+      "receipt_sha256": "d6973c2a1103cfc278a0402afa111fb8ef019c04d4d3940acefe954fe7ae1995",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u1b-testfix2.md": "404cc6d5269bb737f530cb0d14b22e7bd8260f9251a1f1036f16fb12c3e77313"
+      },
+      "note": "U1b testfix 2 b28be34; gate U1b verificado por el orquestador: focales+A-1 51 passed/1 skipped, regresiones 115 passed/1 skipped (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10249,7 +10290,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T05:19:27.102175+00:00",
+  "last_updated": "2026-10-19T05:37:36.515108+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10360,7 +10401,7 @@
     "id": "006-005-native-path-parity-test-writer-red-004",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
