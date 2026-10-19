@@ -64,11 +64,14 @@ DECLARED DEPENDENCIES (no failing test is written for them here):
   kind is already in the table) and with the architect (whose row has admitted
   `role-report` since 005-007 T4).
 * PD-5 / «agent of another role ⇒ rejection»: the agent key is compared against
-  `REQUEST.json.agent`, which PD-7/U1c writes. The packet of this unit carries
-  no `agent`, so the contracted observable of that key here is `unknown` (never
-  `cdad-<rol>`), and the discriminator cases use the keys that do not need PD-7
-  (padre, proyecto). When U1c lands, the agent-contradiction case belongs to
-  that unit's surface (the request admits the field).
+  `REQUEST.json.agent`, which PD-7/U1c writes. The packet this unit observes
+  carries no `agent`: the fixture reconstructs the pre-feature form by removing
+  that declared optional field from the published REQUEST.json (the device
+  U1c's own compatibility oracle declares, faithful because the render is
+  invariant to the field), so the contracted observable of the key here is
+  `unknown` (never `cdad-<rol>`), and the discriminator cases use the keys that
+  do not need PD-7 (padre, proyecto). The agent-contradiction case belongs to
+  U1c's surface (the request admits the field).
 
 A-1 (tests coupled to the surface this unit changes; replacement declared here,
 per `plan.md` §4 — the four tests are reformulated in THIS RED, never in GREEN):
@@ -781,11 +784,33 @@ class U1bEntryCase(unittest.TestCase):
         return [json.loads(line) for line in path.read_text(
             encoding="utf-8").splitlines() if line.strip()]
 
-    def request_doc(self, ctx: dict | None = None) -> dict:
+    def request_path(self, ctx: dict | None = None) -> Path:
         ctx = ctx or self.project
-        path = (ctx["root"] / ".cdad" / "packets" / ctx["packet_id"]
+        return (ctx["root"] / ".cdad" / "packets" / ctx["packet_id"]
                 / "REQUEST.json")
-        return json.loads(path.read_text(encoding="utf-8"))
+
+    def request_doc(self, ctx: dict | None = None) -> dict:
+        return json.loads(self.request_path(ctx).read_text(encoding="utf-8"))
+
+    def drop_optional_agent(self, ctx: dict | None = None) -> None:
+        """Reconstructs the PRE-FEATURE packet form (PD-7/U1c): removes the
+        declared optional field `agent` from the published REQUEST.json and
+        rewrites it in place.
+
+        Since U1c `prepare` writes `agent` always, so the form this unit's
+        contract is about (a packet published before PD-7) has to be rebuilt by
+        the fixture. The device is the one declared by `tests/
+        test_006_005_u1c_packet_agent.py` (PD-7's own compatibility oracle) and
+        it is faithful because the packet RENDER is invariant to the field: the
+        reconstructed form differs from the published one only in the field
+        PD-7 added.
+        """
+        path = self.request_path(ctx)
+        request = json.loads(path.read_text(encoding="utf-8"))
+        request.pop("agent", None)
+        path.write_text(
+            json.dumps(request, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8")
 
 
 # ---------------------------------------------------------------- PD-1
@@ -1181,7 +1206,21 @@ class TestPd5NativeCorrelation(U1bEntryCase):
             self) -> None:
         """PD-5/§2.3: a packet prepared before PD-7 carries no `agent`, so the
         agent key is `unknown` — never `cdad-<rol>`. The observable is
-        `unknown` (no accredited session) and a diagnosis naming the key."""
+        `unknown` (no accredited session) and a diagnosis naming the key.
+
+        The pre-feature form is rebuilt by the fixture: since U1c (PD-7)
+        `prepare` always publishes the declared optional `agent`, the fixture
+        removes it from the published REQUEST.json — the device U1c's own
+        compatibility oracle declares, faithful because the render is invariant
+        to the field. PD-7's publication is U1c's surface: the only precondition
+        asserted here is the absence of the field in the form under test."""
+        request = self.request_doc()
+        self.assertIn(
+            "agent", request,
+            msg="precondición (fixture): PD-7/U1c publica `agent` en el "
+                "REQUEST.json; sin el campo no hay forma pre-feature que "
+                "reconstruir (%r)" % sorted(request))
+        self.drop_optional_agent()
         request = self.request_doc()
         self.assertNotIn(
             "agent", request,
