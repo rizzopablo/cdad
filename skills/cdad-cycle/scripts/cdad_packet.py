@@ -2511,6 +2511,15 @@ OBSERVATION_KEYS = {
 OBSERVATION_TEXT_FIELDS = ("runtime", "model_configured", "model_reported", "session", "started_at")
 UNOBSERVED_RUNTIME = "multi-runtime"
 DISPATCHES_DIRNAME = "dispatches"
+# 006-005 U6-5 (D-U65-2): the DECLARED mark of a PROVISIONAL dispatch record.
+# `provenance.session` of a write-ahead record starts with it; such a record
+# admits exactly ONE completion — a later observation with the SAME fixed
+# identity and WITHOUT the mark replaces it. A record without the mark is final
+# and the write-once rule is untouched.
+WRITE_AHEAD_MARK = "write-ahead:"
+DISPATCH_IDENTITY_FIELDS = (
+    "execution_id", "packet_id", "role", "substage", "runtime", "started_at",
+)
 
 
 def _atomic_write_bytes(path: Path, payload: bytes) -> None:
@@ -2582,6 +2591,46 @@ def _load_observation_document(path: Path) -> dict[str, Any]:
     return document
 
 
+def _provenance_session_text(record: dict[str, Any]) -> str:
+    """The `provenance.session` source text of a dispatch record, or `""`."""
+    provenance = record.get("provenance")
+    value = provenance.get("session") if isinstance(provenance, dict) else None
+    return value if isinstance(value, str) else ""
+
+
+def _is_write_ahead(record: dict[str, Any]) -> bool:
+    """Is this record the PROVISIONAL write-ahead observation? (D-U65-2)."""
+    return _provenance_session_text(record).startswith(WRITE_AHEAD_MARK)
+
+
+def _completion_rejection(existing: dict[str, Any],
+                          incoming: dict[str, Any]) -> str | None:
+    """Why `incoming` may NOT complete the recorded attempt, or `None` (D-U65-2).
+
+    The ONE completion is admitted over a record that carries the
+    `write-ahead:` mark, produces a record WITHOUT it, and keeps the fixed
+    identity (`execution_id`, `packet_id`, attempt, role, substage, runtime,
+    `started_at`). A final record, a completion that is itself still marked (it
+    would not produce a final record) and a changed identity are all rejected.
+    """
+    if not _is_write_ahead(existing):
+        return ("the existing dispatch record is final (its provenance.session "
+                f"does not start with {WRITE_AHEAD_MARK!r}): only a provisional "
+                "write-ahead record admits ONE completion")
+    if _is_write_ahead(incoming):
+        return ("the completion must PRODUCE a final record: the incoming "
+                f"observation still carries the {WRITE_AHEAD_MARK!r} mark")
+    changed = [
+        field for field in DISPATCH_IDENTITY_FIELDS
+        if existing.get(field) != incoming.get(field)]
+    if changed:
+        return ("the completion changes the fixed identity of the attempt: "
+                + ", ".join(
+                    f"{field} {existing.get(field)!r} -> {incoming.get(field)!r}"
+                    for field in changed))
+    return None
+
+
 def _serialize_dispatch(record: dict[str, Any]) -> bytes:
     try:
         return (json.dumps(record, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
@@ -2644,8 +2693,12 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     the T3 lock and atomic-write discipline. Repeating an identical record is
     idempotent (same bytes) and completes any pending prepared -> dispatched
     transition; reusing the attempt id with different data fails without
-    overwriting. The packet may move prepared -> dispatched, never to
-    completed/failed; results, gates and postconditions are never touched.
+    overwriting, EXCEPT for the ONE completion of a provisional write-ahead
+    record (006-005 U6-5/D-U65-2): an unmarked observation with the same fixed
+    identity replaces a record whose `provenance.session` starts with
+    `write-ahead:`, and produces a final record. The packet may move prepared
+    -> dispatched, never to completed/failed; results, gates and postconditions
+    are never touched.
     """
     packet_id = args.record_dispatch
     attempt_id = args.attempt_id
@@ -2687,11 +2740,26 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
                          / DISPATCHES_DIRNAME / f"{attempt_id}.json")
 
         already_recorded = dispatch_path.is_file()
-        if already_recorded and _read_bytes(dispatch_path, "dispatch record") != payload:
-            raise PolicyError(
-                f"attempt {attempt_id!r} already exists with different observation data: "
-                f"refusing to overwrite a dispatch record (idempotent repeats must be "
-                f"byte-identical)")
+        completion = False
+        if already_recorded:
+            existing_payload = _read_bytes(dispatch_path, "dispatch record")
+            if existing_payload != payload:
+                try:
+                    existing_record = json.loads(
+                        existing_payload.decode("utf-8"))
+                except (UnicodeDecodeError, ValueError):
+                    existing_record = None
+                rejection = (
+                    None if not isinstance(existing_record, dict)
+                    else _completion_rejection(existing_record, record))
+                if rejection is not None:
+                    raise PolicyError(
+                        f"attempt {attempt_id!r} already exists with different observation data: "
+                        f"refusing to overwrite a dispatch record ({rejection}; idempotent "
+                        f"repeats must be byte-identical)")
+                # D-U65-2: the ONE completion of a provisional write-ahead
+                # record. It replaces the observation and leaves a final record.
+                completion = True
 
         # Compute the state transition if it is still pending (B-1): an
         # idempotent retry must still complete it, never early-return.
@@ -2699,7 +2767,7 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
         transition_pending = (
             isinstance(active, dict) and active.get("id") == packet_id
             and active.get("status") not in {"completed", "failed", "dispatched"})
-        if already_recorded and not transition_pending:
+        if already_recorded and not transition_pending and not completion:
             return
         if transition_pending:
             new_state = dict(state)
@@ -2711,7 +2779,7 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
         else:
             state_bytes = _read_bytes(state_path, "project state")
 
-        if already_recorded:
+        if already_recorded and not completion:
             # The attempt is already on disk; only the state transition remains,
             # published with the same atomic discipline.
             _atomic_write_bytes(state_path, state_bytes)

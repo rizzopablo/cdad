@@ -89,6 +89,18 @@ What this adapter does, and why (contract decisions D5/D6):
    reached) and `--observe` (ONE bounded read-only access returning the
    correlated row plus the `store_reads` counter, failing closed naming the
    absent column) for the native path.
+8. 006-005 U6-5 (D-U65-1/D-U65-2): the I8 attempt record is written
+   WRITE-AHEAD -- a PROVISIONAL record (the declared `write-ahead:` mark in
+   `provenance.session`, `model_reported: null`, the chosen session) is
+   persisted AFTER the preflight, the prior-attempt check and the session
+   choice and BEFORE the client is launched, so a coordinator that dies with
+   the client alive still leaves the attempt visible to `reconcile`,
+   `disposition` and the prior-attempt check. A failure to write it is
+   fail-closed (the client is never launched; the termination is `blocked`),
+   and EVERY later termination completes the SAME record exactly once with the
+   observation that termination writes today (session per PD-8,
+   `model_reported` from the store, and all PD-3 pairs). Terminations BEFORE
+   the write-ahead register as before.
 
 Honest limits: a separate process/session is not a sandbox (INV-8); the durable
 signal surface implemented here is the session store the execution
@@ -186,6 +198,14 @@ SERVICE_STATUS_UNEXPECTED = "unexpected"
 SERVICE_STATUS_NOT_CHECKED = "not-checked"
 FALLBACK_NONE = "none"
 FALLBACK_SERVICE_UNAVAILABLE = "service-unavailable"
+# 006-005 U6-5 (D-U65-1/D-U65-2): the DECLARED mark of the PROVISIONAL I8
+# record this adapter writes BEFORE launching the runtime client.
+# `provenance.session` of that record starts with it; every termination after it
+# completes the SAME record ONCE (an unmarked observation with the fixed
+# identity, admitted by the ledger), and the final record is the one today's
+# termination writes. A failure to write it is fail-closed: the client is never
+# launched.
+WRITE_AHEAD_MARK = "write-ahead:"
 
 # PD-1/PD-2: the durable signal is the runtime's OWN session store, opened
 # READ ONLY (URI `mode=ro`, never `immutable`, never written). The adapter
@@ -2447,8 +2467,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                       server_version: str | None) -> str | None:
         """006-001 §2.6 (PD-3): register the WORKER's own attempt in the
         SAME I8 ledger in EVERY termination posterior to loading
-        REQUEST.json. A registration failure never changes the
-        termination (D-5): it only adds a bounded note to the diagnosis."""
+        REQUEST.json. After the 006-005 U6-5 write-ahead this call is the ONE
+        completion of the provisional record (D-U65-2); a registration failure
+        never changes the termination (D-5): it only adds a bounded note to the
+        diagnosis."""
         observation = _observation(
             runtime, model, binary_version, session, started_at,
             mode_requested=mode_requested, mode_effective=mode_effective,
@@ -2648,6 +2670,41 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
 
     # PD-1: the adapter CHOOSES the session id and correlates by it.
     session_id = _choose_session_id()
+
+    # 006-005 U6-5 (D-U65-1): the PROVISIONAL I8 record is written BEFORE the
+    # runtime client can produce any effect -- after the preflight, the
+    # prior-attempt check and the session choice, and BEFORE the launch. It
+    # carries the chosen session (so the prior-attempt check of a later dispatch
+    # can see it), `model_reported: null` (the row is not observed yet) and the
+    # declared `write-ahead:` mark, keeping §2.6's form with `unknown` for what
+    # is not observed (O-4). A failure here is FAIL-CLOSED: the client is NEVER
+    # launched (this replaces 006-001 D-5 only for this step). The registration
+    # consumes part of the internal budget, so it runs BEFORE the client's
+    # bound is computed: the adapter still answers inside the interface's own
+    # bound (PD-11).
+    write_ahead_observation = _observation(
+        runtime, model, binary_version, session_id, started_at,
+        mode_requested=mode_requested, mode_effective=mode_effective,
+        client_version=client_version, server_version=server_version,
+        session_base=(
+            f"{WRITE_AHEAD_MARK} provisional: the observation is completed ONCE "
+            "at termination"),
+        row_state="unknown",
+        dispatch_flags=dispatch_flags, service_status=service_status,
+        fallback=fallback, store_reads="unknown",
+        prior_check_reads=prior_check_reads_value)
+    try:
+        _register_dispatch(project_root, args.packet_id, request, attempt_id,
+                           write_ahead_observation)
+    except AdapterError as exc:
+        return envelope(
+            session=None, termination="blocked", delivery_ref=None,
+            diagnosis=(
+                "the write-ahead I8 record could not be written, so the "
+                "dispatch is blocked and the runtime client was NOT launched "
+                "(D-U65-1 fail-closed): "
+                f"{str(exc)[:300]}"))
+
     # §2.5 (D-3, PD-11): the client dispatch gets whatever the preflight left
     # of the budget, but NEVER less than its declared share: a slow preflight
     # must not kill a healthy client at a near-zero bound and report a FALSE
