@@ -10645,6 +10645,47 @@
         "docs/specs/006-005-native-path-parity/u5-green.md": "2a3d9dd705dd770949d9c497f414283591c4ecbcdb52e6889a2aa8ef019e5043"
       },
       "note": "U5 GREEN 0a260ab: 6/6 focales; regresiones 80; focales 006-005 + 005-012 t3 87/87 verificados por el orquestador (copia sanitized por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T10:01:25.956429+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "4fb4bb7d5e40980e08d6dcfc9d21f0886a444ced193af5c45747d5209fa73da4",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-010",
+        "receipt_sha256": "f8b027345efee819c59fd90caf8aa3040a20d7dbe692d93f9a9dde9c25c8410a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u7-red.md",
+            "cfb5ad93931206d595cfb63cde909d488a7a114e1a959eec2f3886580a59676b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-010",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-010/receipt.json",
+      "receipt_sha256": "f8b027345efee819c59fd90caf8aa3040a20d7dbe692d93f9a9dde9c25c8410a",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u7-red.md": "cfb5ad93931206d595cfb63cde909d488a7a114e1a959eec2f3886580a59676b"
+      },
+      "note": "U7 RED ba95af5: 2 focales en rojo, 4 anclas; regresiones 50 verdes (copia sanitized por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10659,7 +10700,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T09:43:17.304937+00:00",
+  "last_updated": "2026-10-19T10:01:25.956429+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10770,7 +10811,7 @@
     "id": "006-005-native-path-parity-test-writer-red-010",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
