@@ -9698,6 +9698,47 @@
         "docs/specs/006-005-native-path-parity/architect-draft-002.md": "0f84cdf389f926b7a0a857f41f0b5e686a343b144f17603d905f43e63b9cd3c1"
       },
       "note": "draft-002 entregado por el adaptador (role-report); spec.md y plan.md separados por el orquestador por los marcadores; plan-tasks derivado de §3 del plan"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-19T01:48:27.720868+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "995d3412ef9cf4a6c78c78207507fe71a1cc25274b9719bc6b7bbc5d7f68227a",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-reviewer-plan-review-001",
+        "receipt_sha256": "8811040b103238d8ddbf1563fed904a6d801aec1253f1ff74e4c7a07b6b7883d",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/plan-review.md",
+            "43c5fa6fe69963a935978b52714c42c155aea57cc32428fddc451c0d462be7b3"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "8811040b103238d8ddbf1563fed904a6d801aec1253f1ff74e4c7a07b6b7883d",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/plan-review.md": "43c5fa6fe69963a935978b52714c42c155aea57cc32428fddc451c0d462be7b3"
+      },
+      "note": "plan-review draft-002: 2 bloqueantes, 8 opcionales. Copiado byte a byte por el orquestador: materialize rechaza role-report para reviewer/plan-review (D-ADP-3 real)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9712,7 +9753,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T01:28:48.272124+00:00",
+  "last_updated": "2026-10-19T01:48:27.720868+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9823,7 +9864,7 @@
     "id": "006-005-native-path-parity-reviewer-plan-review-001",
     "role": "reviewer",
     "substage": "plan-review",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "draft-plan",
     "contract_sha256": "567ebcfea008591cc6e8dc842ce3c8dea258e046d05017257522e8167d4fa879"
