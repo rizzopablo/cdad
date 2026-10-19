@@ -330,7 +330,20 @@ class TestPrepareDefaults(PrepareTestCase):
         return ([{"class": "repository-read"}], [])
 
     def test_p2_default_request_derivations_per_role(self) -> None:
-        """P2: packet_id, contract, inputs, scopes, invariants, output and evidence defaults."""
+        """P2: packet_id, contract, inputs, scopes, invariants, output and evidence defaults.
+
+        A-1 (declarado en el RED de 006-005 U1c
+        `tests/test_006_005_u1c_packet_agent.py`, plan.md §4) — REEMPLAZADO:
+        esta prueba fijaba el documento EXACTO de `REQUEST.json` sin el campo
+        `agent`; REEMPLAZADA POR la misma igualdad exacta (el conjunto de claves
+        del request sigue cerrado) CON el campo declarado `agent` presente,
+        derivado del `stack` del estado del fixture (`stack: null` ⇒
+        `cdad-<rol>`). POSTCONDICIÓN NUEVA: PD-7 de
+        `docs/specs/006-005-native-path-parity/spec.md` §2.7 — `prepare` escribe
+        `agent` = rol + `stack` del estado. RAZÓN: la extensión declarada del
+        conjunto cerrado cambia el documento que es el oráculo de esta prueba;
+        se actualiza el valor esperado sin relajar el oráculo.
+        """
         cases = (
             ("test-writer", "red"),
             ("implementer", "green"),
@@ -356,6 +369,11 @@ class TestPrepareDefaults(PrepareTestCase):
                         "role": role,
                         "substage": substage,
                         "objective": f"objective for {role}",
+                        # A-1 (006-005 U1c, PD-7 §2.7): el estado del fixture
+                        # lleva `stack: null`, así que el agente del paquete es
+                        # `cdad-<rol>`. La igualdad exacta del documento se
+                        # conserva: el conjunto de claves sigue cerrado.
+                        "agent": f"cdad-{role}",
                         "contract": {
                             "kind": contract_kind,
                             "path": contract_path,
