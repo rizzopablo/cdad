@@ -11424,6 +11424,47 @@
         "docs/specs/006-005-native-path-parity/u6fix6-green.md": "49d4ee9e940a26544f9ce5fdf96f513716ab8dae407e32e6c7640f04f4158c27"
       },
       "note": "U6-6 GREEN (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "u6fix7-red",
+      "substage": null,
+      "at": "2026-10-19T15:46:09.617504+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "b26c9ea6b243c2dce8fa1244dfa10269ab1c9b1990f95413c5955afd682af2ad",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "u6fix7-red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-019",
+        "receipt_sha256": "9c19c9f4c7a6ef317519612b739b207808ed1dc55a3b428cd949b2e1cecf8a0e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u6fix7-red.md",
+            "2ffdf6928c1bc9946727399d71237cf0a2b43a7d4c6b33ead1729be74d2c99b1"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-019",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-019/receipt.json",
+      "receipt_sha256": "9c19c9f4c7a6ef317519612b739b207808ed1dc55a3b428cd949b2e1cecf8a0e",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u6fix7-red.md": "2ffdf6928c1bc9946727399d71237cf0a2b43a7d4c6b33ead1729be74d2c99b1"
+      },
+      "note": "U6-7 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -11438,7 +11479,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T15:36:15.647562+00:00",
+  "last_updated": "2026-10-19T15:46:09.617504+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -11549,7 +11590,7 @@
     "id": "006-005-native-path-parity-test-writer-red-019",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
