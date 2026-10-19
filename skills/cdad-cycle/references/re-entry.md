@@ -36,6 +36,12 @@ fields. The protocol has four steps:
      the interface here;
    - only then invoke `receive` with that descriptor.
 
+   On the native path this staging is **mechanical**: the entry's `record` verb
+   (006-005 §2.1) writes the FINAL TEXT under `.cdad/inbox` with its
+   `RESULT.json` descriptor, byte-exact and without retyping, and declares the
+   derived artifact kind there. The manual step above remains for the other
+   transports (handoff to a new chat, external CLI dispatch).
+
    Staging is transport, not authority: it approves nothing and grants the role
    no write permission. The staged bytes **are** the original (identical) — what
    is persisted and received is exactly the role's FINAL TEXT. Run the product's

@@ -744,7 +744,7 @@ def compose_orchestrator_agent(
         "",
         model_note(),
         "",
-        "## Delegation (adapter)",
+        "## Delegation",
         "",
         strip_full_line_comments(ADAPTER_SECTIONS["delegation"]),
         "",

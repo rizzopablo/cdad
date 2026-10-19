@@ -111,6 +111,20 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   transition, and the installed `<skill-dir>/references/re-entry.md` owns the
   Orchestrator materialization protocol; the receipt stays
   `semantic_status: pending` (approving nothing).
+- **Entry of the coordinator (the other runtime).** For a destination that is
+  NOT this runtime, dispatch through the entry
+  `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X`: it reads
+  the execution configuration of that runtime from its section of `runtimes.json`
+  and returns the FINAL TEXT, which is staged through the receipt route above.
+  The retired `--exec-config` is NOT an option of the entry (a usage error that
+  names `runtimes.json`).
+- **Agent travels in the packet (D-ADP-4).** `prepare` resolves the agent and
+  writes it as the `agent` field of `REQUEST.json`; the dispatch carries the
+  packet byte-identical and the invocation resolves that agent, failing closed
+  before dispatching when the derived agent is not published.
+- **Server credential (D-ADP-1).** In `mode: server` the runtime module resolves
+  the credential and injects it only into the environment of the client process
+  it launches; it never reaches argv, the logs or the records.
 <!-- /cdad-section -->
 
 <!-- /cdad-source -->

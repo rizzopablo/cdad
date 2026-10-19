@@ -73,17 +73,19 @@ python3 cdad_dispatch.py migrate --runtime <X> --legacy-exec-config <file> [--dr
 - **Verification is `capabilities --runtime X`** (006-005 PD-10); the migration
   step does not declare success by itself.
 - **Adoption border.** The order is **migrate → `capabilities` → dispatch with
-  `--runtime`**. From the moment the section exists the entry reads ONE source
-  (the section) and the retired exec-config, the local dispatch helper and the
-  environment wrapper stop being used. The entry never reads a retired document
-  outside this explicit step, and it never deletes that document (it is the
-  owner's data).
+  `--runtime`**: `migrate` writes the runtime's section of `runtimes.json` from
+  the retired document, `capabilities` verifies the section it wrote, and only
+  then does the entry dispatch. From the moment the section exists the entry
+  reads ONE source — that section of `runtimes.json` — and the retired
+  exec-config, the local dispatch helper and the environment wrapper stop being
+  used. The entry never reads a retired document outside this explicit step, and
+  it never deletes that document (it is the owner's data).
 
 ## Interface
 
 ```
 python3 cdad_delegate.py --project-root <root> --packet <packet-id> \
-    --destination <adapter-id> --exec-config <config.json>
+    --destination <adapter-id> --exec-config <config.json>   # internal flag
 ```
 
 | Flag | Meaning |
@@ -91,7 +93,7 @@ python3 cdad_delegate.py --project-root <root> --packet <packet-id> \
 | `--project-root` | Project root, **explicit and independent of the coordinator's cwd** (PD-3). |
 | `--packet` | Id of a **canonical packet already published by `prepare`** (PD-2). Not re-rendered. |
 | `--destination` | Adapter id; resolves `cdad_delegate_<id>.py` next to the interface (PD-1/INV-2). |
-| `--exec-config` | Execution configuration JSON (see *Configuration*). |
+| `--exec-config` | Execution configuration JSON — an **internal** interface flag, never the orchestrator's path (006-005 D-11); its content is derived from the runtime's section of `runtimes.json`. |
 
 The role/substage and the execution identity are **never** passed as flags:
 they are read from the **published packet** (PD-3).
@@ -141,7 +143,8 @@ Invoked by the interface as a subprocess:
 
 - **stdin**: the published `PACKET.md` **byte-identical** (PD-2/INV-3).
 - **argv**: `--project-root <root> --packet-id <id> --destination <id>
-  [--exec-config <config.json>]`.
+  [--exec-config <config.json>]` (that last flag is internal to the interface;
+  the orchestrator never passes it).
 - **stdout**: one JSON envelope with the same keys as the output schema
   (`attempt` may be `null`; the interface fills it).
 - **exit code**: `0` when the adapter ran; non-zero only for adapter-internal
@@ -322,10 +325,12 @@ during the dispatch).
 ## Configuration (PD-8/INV-7)
 
 Runtime, binary/version, logs, servers, timeouts and the execution mode live in
-the **execution configuration** (`--exec-config`, local and git-ignored) or in
-flags — never hardcoded in the product nor in public contracts. The
-configuration also carries the durable signal surface (the `sessions_db` path of
-the destination's session store) and the server/permission selectors (`server`
+the **execution configuration** — the runtime's section of `runtimes.json`
+(006-005 PD-9), which the entry reads and from which it derives the module's
+internal configuration — or in flags — never hardcoded in the product nor in
+public contracts. The configuration also carries the durable signal surface
+(the `sessions_db` path of the destination's session store) and the
+server/permission selectors (`server`
 as the alternative to the default private server, and `auto` for
 non-interactive permissions). No value of the operating host (absolute paths,
 provider, concrete model, server, times) may appear in the product. The
@@ -396,9 +401,12 @@ assets: `skills/cdad-cycle/assets/opencode-exec-config.example.json`, with
 ## Procedure for another coordinator
 
 1. `prepare` publishes the canonical packet (`PACKET.md` + `REQUEST.json`).
-2. `cdad_delegate.py --project-root <root> --packet <id> --destination <id>
-   --exec-config <config.json>` resolves the adapter, transports the packet
-   byte-identical and registers the attempt in the same I8 ledger.
+2. `cdad_dispatch.py --project-root <root> --packet <id> --runtime <X>`
+   resolves the runtime, reads its section of `runtimes.json`, transports the
+   packet byte-identical and leaves the attempt of the dispatch to the module
+   (one record in the same I8 ledger). The interface's own
+   `--exec-config` argument is an internal flag the entry derives — never a path
+   the orchestrator passes.
 3. The adapter runs the role session in the destination CLI.
 4. The delivery is persisted with `cdad_result.py receive`
    (`semantic_status: "pending"`).
