@@ -202,9 +202,28 @@ class TestInstalledConsumerEntrypoint(InstalledFixture):
             )
             for role in ROLE_AGENTS
         }
+        # A-1 (006-005 U6-7 RED) — TEST REPLACED, reason declared: this
+        # assertion used to fix the PRESENCE of `write: ask` (the cdad-010 P1
+        # classification lever). The lever's own WATCH RULE ("if a future
+        # OpenCode version evaluates `write` at runtime, this lever starts
+        # generating prompts — revisit on migration") was fulfilled in
+        # OpenCode v2.0.27: the write tool is evaluated against `write`
+        # together with `edit` and the LAST matching rule wins, so the
+        # trailing `write: ask` turned every write into `ask` and voided the
+        # path barriers (execution.md U6-7, probes P1/E1b). The lever is
+        # retired, so the replacement asserts its absence: the installed
+        # `edit` map is what governs writes.
         for role, metadata in installed.items():
-            with self.subTest(role=role, invariant="task-able"):
-                self.assertRegex(metadata, r"(?m)^\s{2}write:\s*ask\s*$")
+            with self.subTest(role=role, invariant="write-lever-retired"):
+                self.assertNotRegex(
+                    metadata,
+                    r"(?m)^  write:",
+                    msg="006-005 U6-7: a `write` permission entry is evaluated "
+                        "for the write tool together with `edit` (findLast, "
+                        "OpenCode v2.0.27) and overrides the role's path map; "
+                        "the cdad-010 P1 lever is retired (its watch rule was "
+                        "fulfilled).",
+                )
         for role in ("architect", "reviewer", "scribe"):
             with self.subTest(role=role, invariant="read-only"):
                 self.assertRegex(installed[role], r"(?m)^\s{2}edit:\s*deny\s*$")
