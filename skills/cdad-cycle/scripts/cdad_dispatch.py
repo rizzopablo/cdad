@@ -544,12 +544,18 @@ def _run_module(module: Path, argv: Sequence[str], *,
 
 def observe_model(*, module: Path, runtime: str, section: dict[str, Any],
                   root: Path, packet: str, session: str | None,
-                  parent: str | None) -> tuple[dict[str, Any] | None, str | None]:
+                  parent: str | None, agent: str | None = None,
+                  since: str | None = None
+                  ) -> tuple[dict[str, Any] | None, str | None, str | None]:
     """§2.2/§2.3: ONE bounded read of the store through the module's `--observe`.
 
-    Returns the observable row (or `None` when the module answers `null`) and,
-    when the surface is unusable, the reason that **names the missing surface**
-    (never a silent degradation, O-6/INV-4).
+    Returns `(row, problem, detail)`: the observable row (or `None` when the
+    module answers `null`), and, when the surface is unusable, the reason that
+    **names the missing surface** (never a silent degradation, O-6/INV-4). The
+    module (which knows its store) receives the packet's `agent` and the
+    declared `--since` so IT selects the candidate and hands an interpretable
+    instant; `detail` is the declared diagnostic of a read that accredits no row
+    (no candidate, ambiguity, uninterpretable instant) — never a rejection.
     """
     derived = derived_internal_config(root, runtime, section)
     argv = [
@@ -564,29 +570,35 @@ def observe_model(*, module: Path, runtime: str, section: dict[str, Any],
         argv += ["--session", session]
     if parent:
         argv += ["--parent", parent]
+    if agent:
+        argv += ["--agent", agent]
+    if since:
+        argv += ["--since", since]
     try:
         proc = _run_module(module, argv, timeout=_observe_timeout(section))
     finally:
         derived.unlink(missing_ok=True)
     if proc is None:
         return None, (f"the runtime module {module.name} could not be run to read "
-                      f"the store (`--observe`)")
+                      f"the store (`--observe`)"), None
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout).strip()
         return None, (f"the runtime module {module.name} answered `--observe` with "
-                      f"rc={proc.returncode}: {detail[:200]}")
+                      f"rc={proc.returncode}: {detail[:200]}"), None
     text = (proc.stdout or "").strip()
     try:
         row = json.loads(text)
     except ValueError:
         return None, (f"the runtime module {module.name} does not declare the "
                       f"`--observe` surface of §2.2 (its answer is not the "
-                      f"observable row JSON): {text[:200]!r}")
+                      f"observable row JSON): {text[:200]!r}"), None
+    detail = (proc.stderr or "").strip() or None
     if row is None:
-        return None, None
+        return None, None, detail
     if not isinstance(row, dict):
-        return None, (f"the observable row of `--observe` is not an object: {row!r}")
-    return row, None
+        return None, (f"the observable row of `--observe` is not an object: "
+                      f"{row!r}"), None
+    return row, None, detail
 
 
 @dataclass(frozen=True)
@@ -682,7 +694,7 @@ def _key_states(row: dict[str, Any], request: dict[str, Any], *,
 
 def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
               packet: str, parent: str | None, since: str | None, root: Path,
-              problem: str | None) -> Correlation:
+              problem: str | None, detail: str | None = None) -> Correlation:
     """§2.3: three outcomes with their own consequence.
 
     `verified` when every evaluated key matches and at least one DISCRIMINATING
@@ -693,12 +705,17 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
     key when the session directory is an ancestor of the root) is named in the
     diagnosis but is evidence in neither direction: it neither blocks the
     accreditation the discriminating keys give nor counts as a contradiction.
+
+    U6-4: `detail` is the module's declared diagnostic of a read that accredits
+    no row (no candidate, ambiguity, uninterpretable instant). It is named in
+    the non-verified note, never turned into a rejection, and a non-verified
+    note also names the keys that DID match.
     """
     if row is None:
-        detail = problem or ("the store offered no observable session row")
+        text = detail or problem or ("the store offered no observable session row")
         return Correlation(
             verified=False, session=None, model_reported=None,
-            note=(f"not verified: {detail}; no discriminating key "
+            note=(f"not verified: {text}; no discriminating key "
                   f"(parent, moment, project) was evaluated — no session is "
                   f"accredited (INV-2)"),
             model_note="not observed: the identity of the attempt is not verified")
@@ -722,13 +739,22 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
     session_id = _as_text(row.get("id"))
     if not unknowns and matched:
         if session_id is not None:
+            verified_note = (
+                f"verified: the observable row of the module's single store "
+                f"read matches the declared evidence "
+                f"({', '.join(matched)}) — the session comes from the "
+                f"store, never from the invocation")
+            if not_evaluable:
+                verified_note += (
+                    "; not evaluable: "
+                    + ", ".join(f"`{key}`" for key in not_evaluable)
+                    + " (the session directory is an ancestor of the "
+                      "authorized project root: it neither proves nor "
+                      "contradicts the project)")
             return Correlation(
                 verified=True, session=session_id,
                 model_reported=_as_text(row.get("model")),
-                note=(f"verified: the observable row of the module's single store "
-                      f"read matches the declared evidence "
-                      f"({', '.join(matched)}) — the session comes from the "
-                      f"store, never from the invocation"),
+                note=verified_note,
                 model_note=("durable session row (the module's `--observe`): "
                             "session_v2.model" if _as_text(row.get("model"))
                             else "the observed row does not carry a model column: "
@@ -747,6 +773,11 @@ def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
     if not matched:
         reasons.append("no discriminating key (parent, moment, project) was "
                        "evaluated and matched")
+    else:
+        reasons.append("matched: "
+                       + ", ".join(f"`{key}`" for key in matched))
+    if detail:
+        reasons.append(detail)
     note = ("not verified: " + "; ".join(reasons)
             + " — no session is accredited and nothing is delivered by this "
               "path unless a byte-exact native result is provided (PD-6/INV-2)")
@@ -931,9 +962,10 @@ def record(runtime: str, project_root: str | None, packet: str | None,
     row: dict[str, Any] | None = None
     problem: str | None = None
     if session or parent or payload is None:
-        row, problem = observe_model(
+        row, problem, detail = observe_model(
             module=module, runtime=runtime, section=section, root=root,
-            packet=packet, session=session, parent=parent)
+            packet=packet, session=session, parent=parent,
+            agent=_as_text(request.get("agent")), since=since)
         if problem is not None and payload is None:
             raise DispatchError(
                 f"the native observation is not available and no byte-exact "
@@ -944,8 +976,10 @@ def record(runtime: str, project_root: str | None, packet: str | None,
                    "the byte-exact native result travels with the lower guarantee "
                    "of PD-6: the store is read only when there is a motive (one "
                    "bounded read per invocation)")
+        detail = None
     correlation = correlate(row, request, packet=packet, parent=parent,
-                            since=since, root=root, problem=problem)
+                            since=since, root=root, problem=problem,
+                            detail=detail)
 
     _register_attempt(root, packet, request, attempt_id,
                       _observation_payload(runtime=runtime,

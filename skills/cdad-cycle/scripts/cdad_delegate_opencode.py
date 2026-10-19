@@ -217,6 +217,15 @@ SESSION_CORRELATION_DISCRIMINATING_COLUMNS = ("parent_id", "directory",
                                               "time_created")
 STORE_READS_KEY = "store_reads"
 
+# 006-005 U6-4 (V-7 extended, execution.md): the installed version's
+# `session_v2.time_created` is an INTEGER in epoch MILLISECONDS. The unit is a
+# fact of the runtime's store, so THIS module (which knows its store) converts it
+# into an ISO instant before handing the row to the entry: the entry never
+# guesses units. A value that cannot be read as an instant is NAMED as not
+# interpretable, never silently degraded into the ancestor-directory wording.
+STORE_MOMENT_COLUMN = "time_created"
+STORE_MOMENT_EPOCH_MILLISECONDS = 1000
+
 # 006-001 T2 (PD-7..PD-11, §2.4/§2.5/§2.7): the wait after the client exits,
 # the classification of the durable row, the ordered termination of the
 # adapter's OWN process group and the prior attempt check.
@@ -621,6 +630,113 @@ def _fetch_session_row(conn: sqlite3.Connection,
     columns = [description[0] for description in cursor.description]
     row = cursor.fetchone()
     return dict(zip(columns, row)) if row is not None else None
+
+
+def _store_instant(value: Any) -> datetime | None:
+    """The store's `time_created` as an instant, or `None` when unreadable.
+
+    U6-4: the unit (epoch MILLISECONDS) is a fact of the runtime's store, known
+    here and nowhere else in the product. The entry receives the ISO instant;
+    it never guesses seconds vs milliseconds. A value that is not a number is
+    not an instant, and the caller NAMES it as such (O-6/INV-4).
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        return datetime.fromtimestamp(
+            value / STORE_MOMENT_EPOCH_MILLISECONDS, tz=timezone.utc)
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def _declared_instant(value: str) -> datetime | None:
+    """The declared `--since` instant (ISO), or `None` when uninterpretable."""
+    text = _as_text(value)
+    if text is None:
+        return None
+    try:
+        instant = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if instant.tzinfo is None:
+        return instant.replace(tzinfo=timezone.utc)
+    return instant
+
+
+def _native_candidate(conn: sqlite3.Connection, parent_id: str,
+                      agent: str | None, since: str | None
+                      ) -> tuple[dict[str, Any] | None, str | None]:
+    """U6-4: the candidate row under the declared parent, or the named reason.
+
+    Candidates are the rows under the declared parent whose `agent` is the
+    packet's agent and whose moment is AFTER `--since`. Exactly one is handed to
+    the entry (with its moment as an ISO instant); none is `(None, reason|None)`;
+    more than one is NOT accredited and the ambiguity is NAMED (never a
+    rejection, INV-2). ONE bounded read: a single `SELECT` filtered by parent.
+    """
+    cursor = _query(
+        conn, f"SELECT * FROM {SESSION_V2_TABLE} WHERE parent_id = ?",
+        (parent_id,))
+    columns = [description[0] for description in cursor.description]
+    rows = [dict(zip(columns, values)) for values in cursor.fetchall()]
+    if not rows:
+        return None, None
+    declared = None
+    if since is not None:
+        declared = _declared_instant(since)
+        if declared is None:
+            raise AdapterError(
+                f"the declared instant (`--since`) {since!r} is not "
+                "interpretable as an ISO instant: the native selection cannot "
+                "order the rows under the declared parent by moment")
+    candidates: list[tuple[dict[str, Any], datetime | None]] = []
+    uninterpretable = 0
+    agent_matched = 0
+    for row in rows:
+        declared_agent = _as_text(row.get(SESSION_CORRELATION_AGENT_COLUMN))
+        if agent is not None and declared_agent != agent:
+            continue
+        agent_matched += 1
+        if STORE_MOMENT_COLUMN not in row:
+            candidates.append((row, None))
+            continue
+        moment = _store_instant(row.get(STORE_MOMENT_COLUMN))
+        if moment is None:
+            uninterpretable += 1
+            continue
+        if declared is not None and not moment > declared:
+            continue
+        candidates.append((row, moment))
+    if len(candidates) > 1:
+        return None, (
+            f"ambiguous: the durable store exposes {len(candidates)} candidate "
+            f"rows under the declared parent {parent_id!r} for the packet's "
+            f"agent {agent!r} after the declared instant: more than one "
+            "candidate is not unique, so no session is accredited (INV-2)")
+    if len(candidates) == 1:
+        row, moment = candidates[0]
+        document = dict(row)
+        if moment is not None:
+            document[STORE_MOMENT_COLUMN] = moment.isoformat()
+        return document, None
+    if uninterpretable:
+        return None, (
+            f"the store's {STORE_MOMENT_COLUMN} value of {uninterpretable} "
+            f"row(s) under the declared parent {parent_id!r} is not "
+            "interpretable as an instant: the moment key cannot be evaluated "
+            "and no session is accredited")
+    if agent_matched:
+        return None, (
+            f"the row(s) under the declared parent {parent_id!r} match "
+            f"`parent`"
+            + (f" and `agent` {agent!r}" if agent is not None else "")
+            + (", but no moment is after the declared instant"
+               if declared is not None else "")
+            + ": no session is accredited")
+    return None, (
+        f"the row(s) under the declared parent {parent_id!r} match `parent`, "
+        f"but none declares the packet's agent {agent!r}: no session is "
+        "accredited")
 
 
 def _text_from_message_data(data: Any) -> str | None:
@@ -1986,17 +2102,23 @@ def _capabilities_document(config: dict[str, Any],
 
 
 def _observe_document(store_path: Path, session_id: str | None,
-                      parent_id: str | None) -> dict[str, Any] | None:
-    """§2.2/PD-12/PD-13: the observable row of the correlated attempt.
+                      parent_id: str | None, agent: str | None = None,
+                      since: str | None = None
+                      ) -> tuple[dict[str, Any] | None, str | None]:
+    """§2.2/PD-12/PD-13 + U6-4: the observable row of the correlated attempt.
 
     ONE bounded access to the store, READ ONLY (no polling, no write): the row
     the external path correlates by the session id the module itself chose, or
     the candidate row of the dispatching session (`parent_id`) the native path
     declares. The keys this path evaluates are REQUIRED: a store that does not
     expose them fails closed NAMING the absent column, never degrading to
-    `absent` nor fabricating a row. The returned document carries `store_reads`,
-    the accesses of the correlated row performed by this invocation (exactly
-    one).
+    `absent` nor fabricating a row. The native selection is U6-4's: candidates
+    are the rows under the declared parent with the packet's `agent` and a
+    moment after `--since`; exactly one is returned, more than one is NAMED as
+    an ambiguity and nothing is accredited (never a rejection). The returned
+    document carries `store_reads`, the accesses of the correlated row performed
+    by this invocation (exactly one). The second element is a diagnostic that
+    does not accredit a row (the entry declares it).
     """
     if session_id is None and parent_id is None:
         raise AdapterError(
@@ -2023,6 +2145,8 @@ def _observe_document(store_path: Path, session_id: str | None,
         required = list(SESSION_OBSERVATION_KEY_COLUMNS)
         if session_id is None:
             required.append("parent_id")
+            if since is not None:
+                required.append(STORE_MOMENT_COLUMN)
         missing = [column for column in required if column not in columns]
         if missing:
             raise AdapterError(
@@ -2031,17 +2155,11 @@ def _observe_document(store_path: Path, session_id: str | None,
                 f"(session_v2.{SESSION_CORRELATION_AGENT_COLUMN} is the "
                 "identity key of the correlation). Refusing to observe an "
                 "unknown schema and refusing to fabricate a row")
+        detail: str | None = None
         if session_id is not None:
             row = _fetch_session_row(conn, session_id)
         else:
-            cursor = _query(
-                conn,
-                f"SELECT * FROM {SESSION_V2_TABLE} WHERE parent_id = ? LIMIT 1",
-                (parent_id,))
-            description = cursor.description
-            found = cursor.fetchone()
-            row = (dict(zip([item[0] for item in description], found))
-                   if found is not None else None)
+            row, detail = _native_candidate(conn, parent_id, agent, since)
     except _StoreBusy as exc:
         raise AdapterError(
             f"the durable session store {store_path} is momentarily locked by "
@@ -2050,10 +2168,10 @@ def _observe_document(store_path: Path, session_id: str | None,
     finally:
         conn.close()
     if row is None:
-        return None
+        return None, detail
     document = dict(row)
     document[STORE_READS_KEY] = 1
-    return document
+    return document, detail
 
 
 def _surface_config(args: argparse.Namespace) -> tuple[dict[str, Any], str | None]:
@@ -2101,11 +2219,14 @@ def _run_observe(args: argparse.Namespace) -> int:
             "the execution configuration\n")
         return 2
     try:
-        document = _observe_document(Path(store_raw), _as_text(args.session),
-                                     _as_text(args.parent))
+        document, detail = _observe_document(
+            Path(store_raw), _as_text(args.session), _as_text(args.parent),
+            _as_text(args.agent), _as_text(args.since))
     except AdapterError as exc:
         sys.stderr.write(f"{exc}\n")
         return 2
+    if detail:
+        sys.stderr.write(detail + "\n")
     sys.stdout.write(
         json.dumps(document, ensure_ascii=False, sort_keys=True) + "\n")
     return 0
@@ -2196,6 +2317,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--observe", action="store_true")
     parser.add_argument("--session", default=None)
     parser.add_argument("--parent", default=None)
+    # 006-005 U6-4: the native selection's declared evidence. `--agent` is the
+    # packet's agent (`REQUEST.json.agent`); `--since` is the ISO instant the
+    # moment key is measured against. The store's unit is known HERE, not there.
+    parser.add_argument("--agent", default=None)
+    parser.add_argument("--since", default=None)
     return parser
 
 
