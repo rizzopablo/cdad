@@ -41,6 +41,22 @@ it for the external path, and `record` must consume it for the native one):
   the entry must RELAY it, never replace it.
 * `--capabilities` answers the five declared keys.
 
+U6-3 (declared correction of the earlier reading of the `project` key). The
+native `project` key has THREE values, not a rigid equality nor a rigid
+membership: (i) the session's directory is INSIDE the authorized root ⇒
+coincides; (ii) the session's directory is an ANCESTOR of the root (the
+container folder the coordinator was started from) ⇒ NOT EVALUABLE: it neither
+proves nor contradicts (the container can host other projects), so it cannot
+reject the legitimate E1 walk; (iii) the session's directory is FOREIGN to the
+root (neither inside nor an ancestor) ⇒ contradiction and rejection naming the
+key. The discrimination threshold does not change (O-3): a positive
+accreditation still requires at least one evaluated discriminating key (parent,
+moment or project-by-membership). Sources: `docs/epics/epic-006-opencode-
+concurrency/execution.md` «006-005 U6: recorrido real», finding U6-3 and the
+orchestrator's decision; spec §2.3/PD-5, INV-15, §3.1 E1. No existing test of
+this suite pinned the ancestor as a contradiction, so no A-1 reformulation was
+needed here (declared).
+
 MAPPING (one test per numbered postcondition; each docstring names its PD):
 
   PD-1  test_pd1_external_dispatch_registers_one_attempt_relayed_by_the_entry
@@ -53,6 +69,11 @@ MAPPING (one test per numbered postcondition; each docstring names its PD):
         test_pd5_native_session_outside_the_authorized_root_is_a_rejection
         test_pd5_native_nested_project_is_accepted_by_membership
         test_pd5_native_packet_without_agent_never_invents_the_agent
+  PD-5/E1 (U6-3)
+        test_u63_ancestor_directory_with_a_matching_parent_is_verified
+        test_u63_ancestor_directory_without_a_discriminating_key_is_unknown_pd6
+        test_u63_foreign_directory_is_a_rejection_naming_the_project_key
+        test_u63_directory_inside_the_root_still_matches
   PD-6  test_pd6_byte_exact_result_with_unverifiable_identity_keeps_no_session
   PD-9  test_pd9_exec_config_token_is_rejected_on_dispatch_record_capabilities
   PD-23 test_pd23_native_descriptor_kind_is_derived_from_role_and_substage
@@ -167,6 +188,9 @@ ATTEMPT_PD6 = "att-u1b-native-pd6-0001"
 ATTEMPT_PD23_TW = "att-u1b-native-pd23-tw-0001"
 ATTEMPT_PD23_ARCH = "att-u1b-native-pd23-ar-0001"
 ATTEMPT_PD9 = "att-u1b-native-pd9-0001"
+ATTEMPT_U63_A = "att-u1b-native-u63-a-0001"
+ATTEMPT_U63_B = "att-u1b-native-u63-b-0001"
+ATTEMPT_U63_D = "att-u1b-native-u63-d-0001"
 
 NATIVE_SESSION = "ses-native-u1b-0001"
 NATIVE_PARENT = "ses-parent-u1b-0001"
@@ -1247,6 +1271,208 @@ class TestPd5NativeCorrelation(U1bEntryCase):
             record.get("session"), NATIVE_SESSION,
             msg="PD-5: sin la llave «agente» evaluable no hay acreditación "
                 "positiva (la identidad del rol se detecta, no se supone)")
+
+
+# ------------------------------------------------- PD-5/E1 (U6-3)
+
+
+class TestPd5E1NativeProjectKeyU63(U1bEntryCase):
+    """PD-5/E1 (U6-3): the native `project` key has THREE values — inside the
+    root ⇒ coincides; an ANCESTOR of the root (the container folder where the
+    coordinator was started) ⇒ not evaluable (neither proves nor contradicts);
+    foreign to the root (neither inside nor ancestor) ⇒ contradiction and
+    rejection naming the key. The O-3 discrimination threshold is unchanged: a
+    positive accreditation requires at least one evaluated discriminating key
+    (parent, moment or project-by-membership). Sources: `execution.md`
+    «006-005 U6: recorrido real», finding U6-3 and the orchestrator's decision;
+    spec §2.3/PD-5, INV-15, §3.1 E1."""
+
+    def test_u63_ancestor_directory_with_a_matching_parent_is_verified(
+            self) -> None:
+        """PD-5/E1 (U6-3): a session directory that is an ANCESTOR of the
+        authorized root (the container from which the coordinator was started)
+        is NOT a contradiction: the project key is not evaluable, and the
+        declared parent — a discriminating key — accredits the attempt. One
+        attempt, one delivery, the OBSERVED session persisted."""
+        root = self.project["root"]
+        self.assertEqual(
+            root.parent, self.base,
+            msg="precondición (fixture): la raíz del proyecto no cuelga del "
+                "directorio contenedor declarado (%r vs %r)"
+                % (str(root.parent), str(self.base)))
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "parent_id TEXT", "directory TEXT"],
+            [{"id": NATIVE_SESSION, "parent_id": NATIVE_PARENT,
+              "directory": str(self.base)}])
+        before = self.records()
+        proc = self.record(attempt=ATTEMPT_U63_A, parent=NATIVE_PARENT,
+                           native_result=self.native_result_file())
+        self.assertEqual(
+            proc.returncode, 0,
+            msg="PD-5/E1 (U6-3): el directorio ANCESTRO de la raíz (la carpeta "
+                "contenedora donde se inició el coordinador) es una llave NO "
+                "EVALUABLE, nunca una contradicción; con el padre coincidente la "
+                "entrega se acredita. La entrada rechazó:\n%s"
+                % tail(self.output(proc)))
+        out = self.envelope(proc, "U6-3 (a) ancestro + padre coincidente")
+        record = self.single_record(before)
+        self.assertEqual(
+            out["attempt"], ATTEMPT_U63_A,
+            msg="PD-5/E1 (U6-3): el sobre no declara el intento registrado: %r"
+                % out.get("attempt"))
+        self.assertEqual(
+            record["session"], NATIVE_SESSION,
+            msg="PD-5/E1 (U6-3): con el directorio ancestro (sin evaluar) y el "
+                "padre coincidente (llave discriminante) la sesión OBSERVADA se "
+                "acredita; se persistió %r" % record.get("session"))
+
+        # one delivery: the descriptor exists and points at the byte-exact part
+        descriptor = self.descriptor()
+        self.assertEqual(
+            descriptor.get("packet_id"), self.project["packet_id"],
+            msg="PD-5/E1 (U6-3): el descriptor no liga el paquete despachado")
+        staged = [path for path in sorted(
+            (root / ".cdad" / "inbox").rglob("*"))
+            if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
+        self.assertTrue(
+            staged,
+            msg="PD-5/E1 (U6-3): la acreditación por el padre no escenificó la "
+                "entrega byte-exacta del resultado nativo")
+
+    def test_u63_ancestor_directory_without_a_discriminating_key_is_unknown_pd6(
+            self) -> None:
+        """PD-5/E1 (U6-3) + PD-6: the session directory is an ANCESTOR of the
+        root (project key not evaluable) and the store exposes only `agent`
+        (non-discriminating, and matching): no key reaches the O-3 threshold ⇒
+        `unknown`, and PD-6's declared minor guarantee applies — the byte-exact
+        native delivery is persisted with `session: null` and a provenance that
+        declares the identity could not be verified.
+
+        `--session` declares the CANDIDATE row (it gives the bounded store read
+        its motive, so the project key is actually evaluated); it is never
+        accreditation in the native path, whose evidence is the store's keys —
+        hence `session: null` is still asserted."""
+        request = self.request_doc()
+        self.assertEqual(
+            request.get("agent"), "cdad-test-writer",
+            msg="precondición (fixture): la llave «agente» tiene que ser "
+                "evaluable y coincidente para aislar la llave «proyecto» "
+                "(REQUEST.json.agent=%r)" % request.get("agent"))
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT", "directory TEXT"],
+            [{"id": NATIVE_SESSION, "agent": "cdad-test-writer",
+              "directory": str(self.base)}])
+        before = self.records()
+        proc = self.record(attempt=ATTEMPT_U63_B, session=NATIVE_SESSION,
+                           native_result=self.native_result_file())
+        self.assertEqual(
+            proc.returncode, 0,
+            msg="PD-5/E1 (U6-3): el directorio ancestro no puede rechazar la "
+                "entrega (es una llave no evaluable; rige PD-6). La entrada "
+                "rechazó:\n%s" % tail(self.output(proc)))
+        self.assertTrue(
+            [entry for entry in self.module_log()
+             if entry.get("mode") == "observe"],
+            msg="precondición del caso: sin una lectura acotada del store la "
+                "llave «proyecto» no se evalúa y el caso pasaría en vacío")
+        self.envelope(proc, "U6-3 (b) ancestro sin llave discriminante")
+        record = self.single_record(before)
+        self.assertIsNone(
+            record.get("session"),
+            msg="PD-5/E1 (U6-3)/PD-6: sin llave discriminante evaluable el "
+                "resultado es `unknown` y la entrega se persiste con `session: "
+                "null` (nunca un valor inventado): %r" % record.get("session"))
+        provenance = record.get("provenance")
+        self.assertIsInstance(
+            provenance, dict,
+            msg="PD-6/INV-8: el `provenance` del intento no es un objeto: %r"
+                % (provenance,))
+        source = provenance.get("session")
+        self.assertIsInstance(
+            source, str,
+            msg="PD-6: el `provenance` no declara que la identidad no se pudo "
+                "verificar: %r" % (source,))
+        self.assertTrue(
+            source.strip(),
+            msg="PD-6: la procedencia declarada de `session` está vacía")
+        root = self.project["root"]
+        staged = [path for path in sorted(
+            (root / ".cdad" / "inbox").rglob("*"))
+            if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
+        self.assertTrue(
+            staged,
+            msg="PD-6: la garantía menor exige la entrega byte-exacta del "
+                "resultado nativo (no se escenificó ninguna parte)")
+
+    def test_u63_foreign_directory_is_a_rejection_naming_the_project_key(
+            self) -> None:
+        """PD-5/E1 (U6-3): a session directory FOREIGN to the root — a sibling
+        of the project directory, neither inside it nor one of its ancestors —
+        is a contradiction: a REJECTION that names the project key, never
+        `unknown` and never an accepted delivery."""
+        root = self.project["root"]
+        foreign = self.base / "proyecto-hermano-u63"
+        self.assertNotEqual(foreign, root)
+        self.assertFalse(
+            str(foreign).startswith(str(root) + os.sep),
+            msg="precondición (fixture): el directorio ajeno no puede estar "
+                "dentro de la raíz (%r)" % str(foreign))
+        self.assertNotEqual(
+            foreign, root.parent,
+            msg="precondición (fixture): el directorio ajeno no es el ancestro "
+                "contenedor (ese caso es no evaluable, no contradicción)")
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "directory TEXT"],
+            [{"id": NATIVE_SESSION, "directory": str(foreign)}])
+        proc = self.record(attempt=ATTEMPT_PD5, session=NATIVE_SESSION)
+        text = self.output(proc)
+        self.assert_record_surface(proc, "U6-3 (c) directorio ajeno")
+        self.assertRegex(
+            text,
+            r"(?i)proyect|project|directory|directorio|ra[íi]z|root",
+            msg="PD-5/E1 (U6-3): el rechazo del directorio ajeno no nombra la "
+                "llave contradictoria (proyecto/directorio):\n%s" % tail(text))
+        out = self.json_or_none(proc)
+        if out is not None:
+            self.assertNotIn(
+                out.get("termination"), ("unknown", "completed"),
+                msg="PD-5/E1 (U6-3): un directorio ajeno es RECHAZO, no "
+                    "`unknown` ni entrega aceptada: %r" % out.get("termination"))
+        else:
+            self.assertNotEqual(
+                proc.returncode, 0,
+                msg="PD-5/E1 (U6-3): el directorio ajeno no falló cerrado:\n%s"
+                    % tail(text))
+        for stem in self.records():
+            self.assertNotEqual(
+                self.record_doc(stem).get("session"), NATIVE_SESSION,
+                msg="PD-5/E1 (U6-3): se acreditó una sesión de un directorio "
+                    "ajeno a la raíz autorizada")
+
+    def test_u63_directory_inside_the_root_still_matches(self) -> None:
+        """PD-5/E1 (U6-3) control: a session directory INSIDE the authorized
+        root (nested layout) still coincides with the project key, so the
+        observed session is accredited. This is the part of the membership rule
+        the correction must not weaken."""
+        root = self.project["root"]
+        directory = root / "nested" / "deep"
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "directory TEXT"],
+            [{"id": NATIVE_SESSION, "directory": str(directory)}])
+        before = self.records()
+        proc = self.record(attempt=ATTEMPT_U63_D)
+        self.assertEqual(
+            proc.returncode, 0,
+            msg="PD-5/E1 (U6-3): un directorio DENTRO de la raíz sigue "
+                "coincidiendo (pertenencia); la entrada rechazó:\n%s"
+                % tail(self.output(proc)))
+        self.envelope(proc, "U6-3 (d) directorio dentro de la raíz")
+        record = self.single_record(before)
+        self.assertEqual(
+            record["session"], NATIVE_SESSION,
+            msg="PD-5/E1 (U6-3): el directorio de la sesión está dentro de la "
+                "raíz autorizada (pertenencia) y la sesión OBSERVADA debe "
+                "acreditarse; se persistió %r" % record.get("session"))
 
 
 # ---------------------------------------------------------------- PD-6
