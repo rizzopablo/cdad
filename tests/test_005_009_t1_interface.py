@@ -61,6 +61,16 @@ Mapa test → postcondición:
   3  pd3_project_explicit_independent_of_cwd_i8_closed_shape_from_packet PD-3
   4  pd8_exec_config_portable_config_beats_product_no_host_values     PD-8
 
+A-1 (006-005 U1b, REEMPLAZO DECLARADO en el RED de esa unidad): las
+aserciones donde la INTERFAZ era la escritora del registro I8 se reemplazan
+por «el DESTINO registra su propio intento (el único del despacho) y la
+interfaz RELAYA el `attempt` que él declara, sin registrar» (PD-1/D-ADP-2,
+un solo intento I8 por despacho escrito por una sola capa). El fixture
+TESTDEST_ADAPTER_SOURCE registra por el comando existente del ledger; las
+aserciones sobre el resto del contrato de la interfaz (transporte
+byte-idéntico, sobre, fallo cerrado) no cambian. Oráculo del reemplazo:
+`assert_attempt_is_in_ledger` (un solo registro) + el relay del `attempt`.
+
 RED hoy: NO existe `cdad_delegate.py` en el producto (ni canónico ni
 wrapper): cada unidad falla en su puerta común con AssertionError
 («interfaz ausente»), no por import/sintaxis.
@@ -182,6 +192,14 @@ configurado. Comportamiento declarado (contrato del stub):
    el envelope en el log de llamadas.
 5. Sin paquete localizado: falla CERRADO, sin inventar entrega (PD-4
    simétrico en la interfaz: sin fallback, diagnosóstico accionable).
+6. A-1 (006-005 U1b, REEMPLAZO DECLARADO): el DESTINO registra SU PROPIO
+   intento — el único registro del despacho (PD-1/D-ADP-2) — invocando el
+   comando existente del ledger (`cdad_packet.py prepare --record-dispatch`,
+   el único escritor del ledger y de la transición, INV-5) y lo DECLARA en el
+   sobre; la interfaz lo RELAYA y NO registra. La invocación le da el
+   proyecto y el paquete (`--project-root` / `--packet-id`, o la ruta del
+   paquete en argv) y la configuración de ejecución (`--exec-config`, de la
+   que se lee el `runtime` observado).
 
 La localización del transporte busca el paquete canónico (primera línea
 `---cdad-packet-json`) en: ficheros pasados por argv, ficheros nombrados en
@@ -191,6 +209,7 @@ env con PACKET/CDAD/DELIVER, stdin. Nada outside su propio directorio.
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -198,8 +217,72 @@ HERE = Path(__file__).resolve().parent
 _CALLS_PATH = HERE / "testdest-calls.json"
 _SENT_PATH = HERE / "testdest-sent-packet.md"
 _FINAL_PATH = HERE / "testdest-final-text.md"
+_OBSERVATION_PATH = HERE / "testdest-observation.json"
 _MARKER = "---cdad-packet-json"
 _SESSION = "ses-testdest-fixture-0001"
+# El intento que EL DESTINO registra y declara (A-1/PD-1): la interfaz lo
+# relaya, nunca lo reemplaza por uno propio.
+_ATTEMPT = "att-testdest-fixture-0001"
+
+
+def _option(name):
+    """Valor de `--name <v>` o `--name=<v>` del argv (contrato de la interfaz)."""
+    argv = sys.argv[1:]
+    for index, token in enumerate(argv):
+        if token == name and index + 1 < len(argv):
+            return argv[index + 1]
+        if token.startswith(name + "="):
+            return token[len(name) + 1:]
+    return None
+
+
+def _config_runtime():
+    value = _option("--exec-config")
+    if value and Path(value).is_file():
+        try:
+            document = json.loads(Path(value).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+        return document.get("runtime")
+    return None
+
+
+def _register(packet_path):
+    """Registra el intento del DESTINO por el comando existente del ledger
+    (INV-5: un solo escritor). Devuelve (attempt, diagnóstico)."""
+    root = _option("--project-root")
+    packet = _option("--packet-id") or _option("--packet")
+    if packet_path is not None and (root is None or packet is None):
+        parts = Path(packet_path).parts
+        if packet is None and len(parts) >= 2:
+            packet = parts[-2]
+        if root is None and len(parts) >= 4:
+            root = str(Path(*parts[:-3]))
+    if not root or not packet:
+        return None, ("la invocación no declaró proyecto y paquete "
+                      "(--project-root/--packet-id): %r" % (sys.argv[1:],))
+    _OBSERVATION_PATH.write_text(json.dumps({
+        "runtime": _config_runtime() or "testdest",
+        "model_configured": None,
+        "model_reported": None,
+        "session": _SESSION,
+        "started_at": "2026-10-19T00:00:00Z",
+        "provenance": {
+            "runtime": "execution config (the interface passes --exec-config)",
+            "model_configured": "delegation config: no model for this destination",
+            "model_reported": "destination adapter holds no durable store",
+            "session": "destination transport (fixture stub)",
+            "started_at": "destination transport (fixture stub)",
+        },
+    }, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+    completed = subprocess.run(
+        [sys.executable, str(HERE / "cdad_packet.py"), "prepare",
+         "--project-root", str(root), "--record-dispatch", str(packet),
+         "--attempt-id", _ATTEMPT, "--input", str(_OBSERVATION_PATH)],
+        capture_output=True, text=True)
+    if completed.returncode != 0:
+        return None, (completed.stderr or completed.stdout)[-400:]
+    return _ATTEMPT, None
 
 
 def _packet_from_file(value: str):
@@ -217,11 +300,13 @@ def _packet_from_file(value: str):
 
 packet = None
 transport = None
+packet_path = None
 
 for token in sys.argv[1:]:
     found = _packet_from_file(token)
     if found is not None:
         packet, transport = found
+        packet_path = token
         break
 
 if packet is None:
@@ -280,6 +365,7 @@ if packet is None:
         "diagnosis": "testdest: sin paquete en el transporte (argv/env/stdin): "
                      "entrega posible, sin invento",
     }
+    registration = None
 else:
     _SENT_PATH.write_bytes(packet)
     _FINAL_PATH.write_text(
@@ -288,8 +374,11 @@ else:
         "Entrega final del worker de prueba: interfaz probada por "
         "tests/test_005_009_t1_interface.py.\\n",
         encoding="utf-8")
+    # A-1 (006-005 U1b): el DESTINO registra su propio intento (el único del
+    # despacho, PD-1) y lo declara; la interfaz lo relaya.
+    attempt, registration = _register(packet_path)
     envelope = {
-        "attempt": None,
+        "attempt": attempt or _ATTEMPT,
         "session": _SESSION,
         "termination": "completed",
         "delivery_ref": str(_FINAL_PATH),
@@ -297,6 +386,11 @@ else:
     }
 
 entry["envelope"] = envelope
+entry["registration"] = {
+    "attempt": envelope["attempt"],
+    "diagnosis": registration,
+    "registered": registration is None and packet is not None,
+}
 
 calls = []
 if _CALLS_PATH.is_file():
@@ -463,7 +557,11 @@ class DelegateCase(unittest.TestCase):
 
     def assert_attempt_is_in_ledger(
             self, out: dict, before: dict[str, Path]) -> Path:
-        """El intento declarado vive en el MISMO ledger I8."""
+        """El intento declarado vive en el MISMO ledger I8.
+
+        (Contrato conservado para los consumidores que sólo necesitan el relay:
+        el oráculo del registro ÚNICO por despacho es
+        `assert_single_record_per_dispatch`, declarado por A-1 de 006-005 U1b.)"""
         attempt = out["attempt"]
         self.assertIsInstance(
             attempt, str, msg="la identidad de intento no es texto")
@@ -481,6 +579,32 @@ class DelegateCase(unittest.TestCase):
             attempt, set(new),
             msg=f"el intento declarado ({attempt!r}) no coincide con el "
                 f"registro nuevo del ledger: {sorted(new)}")
+        return new[attempt]
+
+    def assert_single_record_per_dispatch(
+            self, out: dict, before: dict[str, Path]) -> Path:
+        """A-1 (006-005 U1b, REEMPLAZO DECLARADO): un solo intento I8 por
+        despacho, escrito por una sola capa — el registro es el del DESTINO
+        (el módulo registra su propio intento, PD-1) y la interfaz RELAYA el
+        `attempt` que él declara, sin registrar una segunda vez (D-14/D-ADP-2).
+        Reemplaza al oráculo que daba por sentado que la INTERFAZ era la
+        escritora del registro; el resto del contrato de la interfaz
+        (transporte byte-idéntico, sobre, fallo cerrado) no cambia."""
+        after = dispatch_records(self.root, self.execution_id)
+        new = {
+            stem: path for stem, path in after.items()
+            if stem not in set(before) and not stem.startswith(".")
+        }
+        self.assertEqual(
+            len(new), 1,
+            msg=f"PD-1/D-14: el despacho dejó {len(new)} registros I8 nuevos "
+                f"(se espera EXACTAMENTE uno: el del módulo; la interfaz "
+                f"relaya el `attempt` y no registra): {sorted(new)}")
+        attempt = out["attempt"]
+        self.assertIn(
+            attempt, set(new),
+            msg=f"PD-1/D-14: el `attempt` que la interfaz declara "
+                f"({attempt!r}) no es el registro del módulo: {sorted(new)}")
         return new[attempt]
 
     def assert_state_untouched_beyond_dispatch_frontier(
@@ -581,7 +705,22 @@ class TestPd1CommonInterfaceAndAdapterResolution(DelegateCase):
                 Path(delivery_ref).is_file(),
                 msg=f"delivery_ref no apunta a una entrega durable en disco: "
                     f"{delivery_ref!r}")
-        self.assert_attempt_is_in_ledger(out, records_before)
+        self.assert_single_record_per_dispatch(out, records_before)
+        # A-1 (006-005 U1b): la interfaz RELAYA el attempt que el DESTINO
+        # declaró (y registró); no lo reemplaza por uno propio.
+        calls = json.loads(
+            (staged.parent / "testdest-calls.json").read_text("utf-8"))
+        declared = calls[-1].get("envelope", {}).get("attempt")
+        self.assertEqual(
+            declared, out["attempt"],
+            msg=f"PD-1/D-14: el sobre de la interfaz ({out['attempt']!r}) no "
+                f"relaya el attempt declarado por el destino ({declared!r}): "
+                f"la interfaz debe relayarlo, nunca reemplazarlo")
+        self.assertTrue(
+            calls[-1].get("registration", {}).get("registered") is True,
+            msg=f"fixture/PD-1: el destino de prueba no pudo registrar su "
+                f"propio intento: "
+                f"{calls[-1].get('registration', {}).get('diagnosis')!r}")
         self.assertEqual(
             sha256_file(staged), staged_sha,
             msg="la interfaz se editó a sí misma al resolver el adaptador "
@@ -677,7 +816,7 @@ class TestPd2ByteIdenticalTransportAndSingleLedger(DelegateCase):
                 "transportado")
 
         # Mismo ledger I8: intento declarado ↔ fichero del ledger.
-        record_path = self.assert_attempt_is_in_ledger(out, records_before)
+        record_path = self.assert_single_record_per_dispatch(out, records_before)
         expected_prefix = (
             f".cdad/executions/{self.execution_id}/dispatches/")
         self.assertTrue(
@@ -735,7 +874,7 @@ class TestPd3ExplicitProjectAndClosedI8Shape(DelegateCase):
         proc = self.run_delegate(staged, config=config, destination="testdest",
                                  cwd=foreign)
         out = self.envelope(proc, "PD-3 cwd ajeno")
-        record = self.assert_attempt_is_in_ledger(out, records_before)
+        record = self.assert_single_record_per_dispatch(out, records_before)
 
         # Forma cerrada del registro I8.
         data = json.loads(record.read_bytes().decode("utf-8"))
@@ -837,8 +976,8 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
         proc_one = self.run_delegate(staged, config=config_one,
                                      destination="testdest")
         out_one = self.envelope(proc_one, "PD-8 config A")
-        record_one_path = self.assert_attempt_is_in_ledger(out_one,
-                                                           records_before)
+        record_one_path = self.assert_single_record_per_dispatch(
+            out_one, records_before)
         record_one = json.loads(record_one_path.read_bytes().decode("utf-8"))
         self.assertEqual(
             record_one["runtime"], "opencode-clone",
@@ -858,8 +997,12 @@ class TestPd8PortableExecConfigNotVpsValues(DelegateCase):
         proc_two = self.run_delegate(staged, config=config_two,
                                      destination="testdest")
         out_two = self.envelope(proc_two, "PD-8 config B")
-        record_two_path = self.assert_attempt_is_in_ledger(out_two,
-                                                           records_before)
+        # A-1 (006-005 U1b): la línea base de la segunda invocación es el
+        # ledger DESPUÉS de la primera (el oráculo cuenta UN registro nuevo por
+        # despacho, no el acumulado del proyecto).
+        records_mid = dispatch_records(self.root, self.execution_id)
+        record_two_path = self.assert_single_record_per_dispatch(
+            out_two, records_mid)
         record_two = json.loads(record_two_path.read_bytes().decode("utf-8"))
         self.assertNotEqual(
             record_two, record_one,

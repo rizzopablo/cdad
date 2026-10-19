@@ -80,6 +80,12 @@ RED esperado (estado vigente post GREEN de 005-010, según review.md):
        en este RED — su estado observado se reporta.
 Cada fallo RED debe ser AssertionError sobre el COMPORTAMIENTO ausente
 (terminación/diagnóstico/provenancia), no import/sintaxis.
+
+A-1 (006-005 U1b, REEMPLAZO DECLARADO en el RED de esa unidad): `:489-500`
+(«el registro NUEVO que NO es el de la interfaz») pasa a «el ÚNICO registro
+nuevo del despacho»: la interfaz RELAYA el `attempt` del módulo y no registra
+(D-14/PD-1), así que el registro del intento ES el que el sobre declara. Las
+aserciones sobre `model_reported` desde la fila durable no cambian.
 """
 
 from __future__ import annotations
@@ -472,10 +478,13 @@ class TestR2ModelReportedFromDurableRow(AdapterCase):
 
     def _worker_i8_record(self, label: str, *,
                           variant: str, name: str) -> dict:
-        """Despacha al binario falso y devuelve el registro I8 NUEVO del
-        intento del WORKER (localización por comportamiento, igual que el
-        oráculo T1 TestPd6: el registro nuevo del ledger que NO es el del
-        intento de la interfaz)."""
+        """Despacha al binario falso y devuelve el registro I8 del intento del
+        despacho. A-1 (006-005 U1b, REEMPLAZO DECLARADO): la localización pasa
+        de «el registro nuevo del ledger que NO es el de la interfaz» a «el
+        ÚNICO registro nuevo del despacho» — la interfaz RELAYA el `attempt`
+        del módulo y no registra (D-14/PD-1), así que el registro del intento
+        ES el que el sobre declara. Las aserciones sobre `model_reported`
+        (desde la fila durable) no cambian."""
         self.assert_derived_agents_published()
         fake = self.fake_runtime(name, variant=variant)
         records_before = dispatch_records(self.root, self.execution_id)
@@ -487,19 +496,9 @@ class TestR2ModelReportedFromDurableRow(AdapterCase):
                 f"completed (precondición de la observación I8): "
                 f"{out['termination']!r}, diagnosis "
                 f"{out.get('diagnosis')!r}")
-        after = dispatch_records(self.root, self.execution_id)
-        worker_records = [
-            path for stem, path in sorted(after.items())
-            if stem not in set(records_before)
-            and not stem.startswith(".")
-            and stem != out["attempt"]]
-        self.assertEqual(
-            len(worker_records), 1,
-            msg=f"{label}: el ledger no dejó EXACTAMENTE un registro nuevo "
-                f"del intento del worker además del de la interfaz: "
-                f"{[p.name for p in worker_records]!r}")
-        return fake, json.loads(
-            worker_records[0].read_text(encoding="utf-8"))
+        record_path = self.assert_single_record_per_dispatch(
+            out, records_before)
+        return fake, json.loads(record_path.read_text(encoding="utf-8"))
 
     def test_r2_json_object_model_reported_as_provider_over_id(self) -> None:
         """R2 (PD-6): la fila durable trae `model` = objeto JSON

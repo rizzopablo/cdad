@@ -61,6 +61,15 @@ Mapa test → postcondición (spec 005-010):
        `model_configured` de la config de delegación (A-1 de 006-003
        U4/D3, reemplazo declarado).
 
+A-1 (006-005 U1b, REEMPLAZO DECLARADO en el RED de esa unidad): la
+localización «el registro nuevo del ledger que NO es el de la interfaz» del
+caso 6 (`:431-449`) y las aserciones del registro de la INTERFAZ
+(`:536-543`) se reemplazan por «UN SOLO registro por despacho»: la interfaz
+RELAYA el `attempt` del módulo y no registra (D-14/PD-1), así que el registro
+del despacho ES el del intento que el sobre declara, con `session` y
+`model_reported` de la fila durable. Se conservan las aserciones del registro
+del worker; se retiran las del registro de la interfaz (que ya no existe).
+
 PD-7 (doble fiel): la plantilla FAKE_BINARY_SOURCE migrada + los lectores
 `durable_*` viven en tests/test_005_009_t2_opencode_adapter.py; su fidelidad
 se verifica por comportamiento en las unidades de arriba (variantes →
@@ -425,27 +434,17 @@ class TestPd6WorkerI8FromDurableRow(AdapterCase):
             msg=f"la corrida con fila durable no terminó completed "
                 f"(precondición de la observación I8 del worker): "
                 f"{out['termination']!r}")
-        # El intento declarado (el de la INTERFAZ) vive en el mismo ledger
-        # I8 (frontera del mecanismo reutilizado); su registro NO es el
-        # observado aquí.
-        interface_path = self.assert_attempt_is_in_ledger(out, records_before)
 
-        # El registro I8 del intento del WORKER se localiza por
-        # comportamiento observable: el registro NUEVO del ledger que NO es
-        # el del intento de la interfaz (out['attempt']) — escrito por el
-        # adaptador, sin fijar nombres internos (PD-6).
-        after = dispatch_records(self.root, self.execution_id)
-        worker_records = [
-            path for stem, path in sorted(after.items())
-            if stem not in set(records_before)
-            and not stem.startswith(".")
-            and stem != out["attempt"]]
-        self.assertEqual(
-            len(worker_records), 1,
-            msg=f"el ledger no dejó EXACTAMENTE un registro nuevo del "
-                f"intento del worker además del de la interfaz (PD-6): "
-                f"{[path.name for path in worker_records]!r}")
-        record_path = worker_records[0]
+        # A-1 (006-005 U1b, REEMPLAZO DECLARADO): UN SOLO registro por
+        # despacho — la interfaz RELAYA el `attempt` del módulo y NO registra
+        # (D-14/PD-1), así que la distinción interfaz/worker dentro de la vía
+        # externa desaparece: el registro del despacho ES el del intento que
+        # el sobre declara y su `session`/`model_reported` salen de la
+        # observación del módulo (la fila durable). Se conservan las
+        # aserciones del registro del worker y se retiran las del registro de
+        # la interfaz (que ya no existe).
+        record_path = self.assert_single_record_per_dispatch(
+            out, records_before)
         record = json.loads(record_path.read_text(encoding="utf-8"))
 
         # Esquema cerrado del registro I8 conservado (PD-6).
@@ -514,28 +513,6 @@ class TestPd6WorkerI8FromDurableRow(AdapterCase):
             msg=f"model_configured refleja la exec-config pese a U4/D3 "
                 f"(sin delegación debe ser null): "
                 f"{record['model_configured']!r}")
-
-        # El registro del intento de la INTERFAZ se conserva: `session`
-        # desde el envelope y `model_reported` honestamente null (la
-        # interfaz NO lee el store del destino, PD-6/D6).
-        interface_record = json.loads(
-            interface_path.read_text(encoding="utf-8"))
-        self.assertEqual(
-            set(interface_record), I8_RECORD_KEYS,
-            msg=f"el registro del intento de la interfaz no conserva la "
-                f"forma cerrada (PD-6: el esquema se conserva): "
-                f"{sorted(interface_record)}")
-        self.assertEqual(
-            interface_record.get("session"), out["session"],
-            msg=f"el registro de la interfaz no mantiene `session` desde "
-                f"el envelope (PD-6): {interface_record.get('session')!r} "
-                f"!= {out['session']!r}")
-        self.assertIsNone(
-            interface_record.get("model_reported"),
-            msg=f"el registro del intento de la interfaz no mantiene "
-                f"`model_reported` honestamente null (PD-6: la interfaz "
-                f"no lee el store del destino): "
-                f"{interface_record.get('model_reported')!r}")
 
 
 if __name__ == "__main__":

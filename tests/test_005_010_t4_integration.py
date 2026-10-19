@@ -20,6 +20,14 @@ leen ni se pisan. La variable `CDAD_OPENCODE_MODEL` conserva su significado
 como VALOR del modelo, ahora aportado a `delegation.json`. Nada más de esta
 prueba se relaja: sigue omitida por defecto y no se activa aquí.
 
+A-1 (006-005 U1b, REEMPLAZO DECLARADO en el RED de esa unidad): donde esta
+prueba distinguía el registro I8 del WORKER «además del de la interfaz»
+(`:480-486`) y asertaba el registro de la INTERFAZ (`:540-557`), ahora exige
+UN SOLO registro por despacho: la interfaz RELAYA el `attempt` del módulo y no
+registra (D-14/PD-1), así que el registro del despacho ES el del intento que el
+sobre declara. Se conservan íntegras las aserciones sobre
+`session`/`model_reported`/`provenance` que salían del registro del worker.
+
 OMISIÓN POR DEFECTO (PD-8, verificable sin entorno): esta prueba está
 MARCADA y OMITIDA por defecto; se HABILITA por variable de entorno
 `CDAD_OPENCODE_INTEGRATION=1`. Sin la variable NO corre NADA de runtime:
@@ -477,20 +485,15 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
         # FILA DURABLE con provenance (PD-6); runtime de la configuración de
         # ejecución y model_configured del delegation.json del test
         # (006-003 D3/U4: reformulación declarada).
-        interface_path = self.assert_attempt_is_in_ledger(out, records_before)
-        after = dispatch_records(self.root, self.execution_id)
-        worker_records = [
-            path for stem, path in sorted(after.items())
-            if stem not in set(records_before)
-            and not stem.startswith(".")
-            and stem != out["attempt"]]
-        self.assertEqual(
-            len(worker_records), 1,
-            msg=f"el ledger no dejó EXACTAMENTE un registro nuevo del "
-                f"intento del WORKER además del de la interfaz (PD-6): "
-                f"{[path.name for path in worker_records]!r}")
+        #
+        # A-1 (006-005 U1b, REEMPLAZO DECLARADO): UN SOLO registro por
+        # despacho — la interfaz RELAYA el `attempt` del módulo y no registra
+        # (D-14/PD-1), así que el registro del despacho ES el del intento que
+        # el sobre declara; se conservan las aserciones del registro del
+        # worker y se retira el bloque del registro de la interfaz.
         record = json.loads(
-            worker_records[0].read_text(encoding="utf-8"))
+            self.assert_single_record_per_dispatch(
+                out, records_before).read_text(encoding="utf-8"))
         self.assertEqual(
             set(record), I8_RECORD_KEYS,
             msg=f"el registro I8 del worker no conserva la forma cerrada "
@@ -535,26 +538,6 @@ class TestPd8RealOpenCodeIntegration(AdapterCase):
                 f"única fuente del modelo de la delegación externa; "
                 f"reformulación declarada, la exec-config ya no declara "
                 f"`model`): {record['model_configured']!r}")
-
-        # El registro de la INTERFAZ se conserva: session desde el envelope
-        # y model_reported honestamente null (la interfaz no lee el store,
-        # PD-6/D6).
-        interface_record = json.loads(
-            interface_path.read_text(encoding="utf-8"))
-        self.assertEqual(
-            set(interface_record), I8_RECORD_KEYS,
-            msg=f"el registro del intento de la interfaz no conserva la "
-                f"forma cerrada (PD-6): {sorted(interface_record)}")
-        self.assertEqual(
-            interface_record.get("session"), out["session"],
-            msg="el registro de la interfaz no mantiene `session` desde el "
-                f"envelope (PD-6): {interface_record.get('session')!r}")
-        self.assertIsNone(
-            interface_record.get("model_reported"),
-            msg="el registro del intento de la interfaz no mantiene "
-                "`model_reported` honestamente null (PD-6: la interfaz no "
-                f"lee el store del destino): "
-                f"{interface_record.get('model_reported')!r}")
 
 
 if __name__ == "__main__":
