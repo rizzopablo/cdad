@@ -9821,6 +9821,47 @@
         "docs/specs/006-005-native-path-parity/plan-review-002.md": "1770e2287ff3257372770c28bf469095e49f29159ae9966aabdecceae2a5eb62"
       },
       "note": "re-review focal draft-003; copiado byte a byte (D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-19T02:24:48.529920+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "a18b256f84f459c0cbc04ef58b300fb888241cec3e89465c5c1fd00bbd5b29c7",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-architect-draft-004",
+        "receipt_sha256": "f9ca8b467a170618bed930d7eb318dd845ef1bbc8e9ac009469e353adb3cc882",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/architect-draft-004.md",
+            "c3b20b11eb5a83101f49e314ec282f998774c76d26cf34f359d27cd12ac5ebd4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-architect-draft-004",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-architect-draft-004/receipt.json",
+      "receipt_sha256": "f9ca8b467a170618bed930d7eb318dd845ef1bbc8e9ac009469e353adb3cc882",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/architect-draft-004.md": "c3b20b11eb5a83101f49e314ec282f998774c76d26cf34f359d27cd12ac5ebd4"
+      },
+      "note": "draft-004 (decisiones del owner + escenarios de recorrido) entregado por el adaptador"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9835,7 +9876,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T02:08:50.456225+00:00",
+  "last_updated": "2026-10-19T02:24:48.529920+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9946,7 +9987,7 @@
     "id": "006-005-native-path-parity-architect-draft-004",
     "role": "architect",
     "substage": "draft",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
