@@ -50,6 +50,25 @@ para que ningún assert se caiga en silencio:
   del implementer —y su reclamo, garantizado o no garantizado— se retira del
   texto instalable; el adaptador no declara esa relación (INV-5 reformulada).
 
+ORACLE REPLACEMENT — PD-2(i), barrido del test
+`test_pd2_i_sweep_no_declared_surface_claims_the_installer_removes_the_model_field`
+(006-005 U4 testfix, antes del GREEN; regla A-1):
+
+- **Oráculo reemplazado:** `removal_claim_lines` marcaba cualquier verbo de
+  remoción con la palabra «model» en una ventana de ±90 caracteres, **sin mirar
+  el sujeto**. Una frase cuyo sujeto es un archivo transitorio («removed when the
+  call ends, never carrying a model or a credential value») no afirma que el
+  INSTALADOR quite el campo `model`: es un falso positivo del oráculo.
+- **Postcondición que el test verifica (PD-2(i)/AC-2):** ninguna superficie
+  declarada afirma que **el instalador** quita o recorta el campo `model:`; el
+  instalador despliega los bytes staged sin transformarlos.
+- **Razón:** la afirmación prohibida tiene al **instalador como sujeto** (o como
+  agente pasivo: «… stripped by the installer»). El reemplazo exige ese sujeto
+  —no afloja: «The installer STRIPS the model field» y su forma pasiva siguen
+  detectándose— y conserva intactos los cuatro controles de vacuidad del test
+  (afirmación en inglés y castellano, negaciones «does not strip» y «strips
+  nothing»).
+
 Mapa test → postcondición/criterio (un test por afirmación observable; el
 «ROJO hoy» de la tabla original era el del RED de 005-004 y el GREEN de 005-004
 ya lo resolvió — el estado por test está medido en la sección RED esperado):
@@ -245,13 +264,35 @@ NEGATION_BEFORE_RE = re.compile(
 # de remoción.
 NEGATION_AFTER_RE = re.compile(r"(?i)^[\s,;:]*?(?:nothing|nada)\b")
 
+# PD-2(i) afirma algo SOBRE EL INSTALADOR: el sujeto de la remoción es él (o su
+# agente pasivo, «… stripped by the installer»). Sin sujeto, la frase habla de
+# otra cosa —p. ej. un archivo transitorio que se elimina al terminar la
+# llamada— y no es la postcondición de PD-2(i) (006-005 U4 testfix).
+INSTALLER_SUBJECT_RE = re.compile(
+    r"(?i)\b(?:installer|install\.sh|installation\s+(?:process|script|step|"
+    r"command|run)|instalador|instalaci[oó]n\s+(?:proceso|script|paso|"
+    r"comando))\b"
+)
+PASSIVE_INSTALLER_RE = re.compile(
+    r"(?i)(?:\bby\s+(?:the\s+|this\s+|our\s+)?(?:installer|install\.sh)\b|"
+    r"\bpor\s+(?:el|este)\s+(?:instalador|install\.sh)\b)"
+)
+SUBJECT_WINDOW = 90
+PASSIVE_WINDOW = 60
+
 
 def removal_claim_lines(text: str) -> list[int]:
-    """Líneas que AFIRMAN que algo quita/recorta el campo `model:`.
+    """Líneas que AFIRMAN que **el instalador** quita/recorta el campo `model:`.
 
-    Una NEGACIÓN («the installer does not strip the model field») no es una
-    afirmación de strip: no se marca (el contrato prohíbe afirmar que el
-    instalador quita el campo, no decir que no lo hace).
+    Dos descartes, ambos declarados por el contrato:
+    - una NEGACIÓN («the installer does not strip the model field») no es una
+      afirmación de strip: no se marca (el contrato prohíbe afirmar que el
+      instalador quita el campo, no decir que no lo hace);
+    - una frase sin el INSTALADOR como sujeto/agente («the transient file is
+      removed when the call ends, never carrying a model or a credential
+      value») no afirma nada sobre el instalador y no es PD-2(i). El reemplazo
+      exige el sujeto y no afloja la detección de «The installer STRIPS the
+      model field» (ni de su voz pasiva).
     """
     hits: list[int] = []
     for lineno, line in enumerate(text.splitlines(), start=1):
@@ -272,6 +313,17 @@ def removal_claim_lines(text: str) -> list[int]:
                     continue
                 if requires_object_after and not MODEL_WORD_RE.search(
                     low[match.end():match.end() + 40]
+                ):
+                    continue
+                subject_prefix = low[
+                    max(0, match.start() - SUBJECT_WINDOW):match.start()
+                ]
+                passive_suffix = low[
+                    match.end():match.end() + PASSIVE_WINDOW
+                ]
+                if not (
+                    INSTALLER_SUBJECT_RE.search(subject_prefix)
+                    or PASSIVE_INSTALLER_RE.search(passive_suffix)
                 ):
                     continue
                 hits.append(lineno)
@@ -304,10 +356,18 @@ def _text_files(root: Path) -> list[Path]:
 
 def test_pd2_i_sweep_no_declared_surface_claims_the_installer_removes_the_model_field():
     """PD-2(i)/AC-2: ninguna de las superficies declaradas (`sources/`,
-    `skills/`, `install.sh`) afirma que el instalador quita o recorta el campo
-    `model:`. Control de vacuidad: el barrido recorre un corpus real y el
-    predicado detecta la afirmación que el contrato cita textualmente (y no
-    marca su negación)."""
+    `skills/`, `install.sh`) afirma que **el instalador** quita o recorta el
+    campo `model:`.
+
+    ORACLE REPLACEMENT (006-005 U4 testfix): el predicado anterior marcaba
+    cualquier verbo de remoción con «model» en la ventana, sin mirar el sujeto,
+    y daba falso positivo con una frase sobre un archivo transitorio («removed
+    when the call ends, never carrying a model or a credential value»). La
+    postcondición es la afirmación **del instalador**; el reemplazo exige al
+    instalador como sujeto (o agente pasivo) y **no afloja** la detección de
+    «The installer STRIPS the model field». Control de vacuidad: el barrido
+    recorre un corpus real y el predicado detecta la afirmación que el contrato
+    cita textualmente (y no marca su negación ni frases sin ese sujeto)."""
     # Control de vacuidad (1): el predicado detecta la afirmación del contrato
     # y no su negación. Es la frase que el contrato cita («the installer STRIPS
     # the model field at install time») y su forma correcta.
@@ -335,6 +395,39 @@ def test_pd2_i_sweep_no_declared_surface_claims_the_installer_removes_the_model_
     ) == [], (
         "PD-2(i): el predicado marca «strips nothing» (negación por objeto) "
         "como afirmación de remoción — el barrido daría falsos positivos"
+    )
+    # ORACLE REPLACEMENT (006-005 U4 testfix): una frase sobre OTRO sujeto (el
+    # archivo transitorio que se elimina al terminar la llamada) no afirma que
+    # el instalador quite el campo `model:`; el sujeto es la postcondición.
+    assert removal_claim_lines(
+        "The transient file is removed when the call ends, never carrying a "
+        "model or a credential value."
+    ) == [], (
+        "PD-2(i): el predicado marca como afirmación del INSTALADOR una frase "
+        "cuyo sujeto es un archivo transitorio — el barrido daría falsos "
+        "positivos (006-005 U4 testfix)"
+    )
+    assert removal_claim_lines(
+        "El archivo transitorio se elimina al terminar la llamada; nunca lleva "
+        "un modelo ni el valor de una credencial."
+    ) == [], (
+        "PD-2(i): el predicado marca como afirmación del INSTALADOR una frase "
+        "castellana cuyo sujeto es un archivo transitorio — el barrido daría "
+        "falsos positivos (006-005 U4 testfix)"
+    )
+    # El reemplazo no afloja la detección: la voz pasiva con el instalador como
+    # agente sigue siendo la afirmación prohibida.
+    assert removal_claim_lines(
+        "The model field is stripped by the installer at install time."
+    ) == [1], (
+        "PD-2(i): el predicado no detecta la afirmación en voz pasiva con el "
+        "instalador como agente — el oráculo quedaría flojo"
+    )
+    assert removal_claim_lines(
+        "El campo `model` es eliminado por el instalador al instalar."
+    ) == [1], (
+        "PD-2(i): el predicado no detecta la afirmación pasiva en castellano "
+        "con el instalador como agente — el oráculo quedaría flojo"
     )
 
     # Control de vacuidad (2): el corpus declarado existe y es real.

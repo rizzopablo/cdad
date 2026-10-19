@@ -108,6 +108,24 @@ publicado. Los reformulados acoplados del retiro de A-5
 ``validate-consistency.sh`` F001 y ``validate-odoo-specialization.sh``) se
 cambian en ESTE RED declarando su reemplazo (A-5, sobre la regla A-1); el focal
 del retiro es ``tests/test_006_003_u5p_no_family_requirement.py``.
+
+ORACLE REPLACEMENT — test (10)
+``TestInv4InstallableTextWithoutTmp::test_inv4_installable_skill_text_names_no_tmp``
+(006-005 U4 testfix, antes del GREEN; regla A-1):
+
+- **Oráculo reemplazado:** ``re.compile(r"/tmp\\b")`` — marcaba cualquier
+  subcadena ``/tmp``, incluida una ruta RELATIVA al proyecto como
+  ``.cdad/tmp`` (la raíz temporal del proyecto que 006-005 aprueba en D-5,
+  spec §2.9/§5 D-5).
+- **Postcondición que el test verifica (INV-4, 006-002):** ningún texto
+  instalable nombra la raíz temporal del **HOST** (``/tmp`` **absoluta**); una
+  ruta temporal **relativa al proyecto** no es el ``/tmp`` que INV-4 prohíbe.
+- **Razón:** el producto nombra ``.cdad/tmp`` de forma legítima (la raíz que la
+  política del proyecto declara, 006-005 §2.9); el oráculo por subcadena
+  confundía una ruta relativa con la raíz del host. El reemplazo **aprieta** la
+  regla a la postcondición real (``/tmp`` sin un caracter de ruta delante) y
+  conserva la detección de ``/tmp/...`` del host; el propio test prueba ambas
+  direcciones como controles de vacuidad.
 """
 
 from __future__ import annotations
@@ -546,15 +564,60 @@ class TestRetiredModelMapNotReferenced(unittest.TestCase):
 
 
 class TestInv4InstallableTextWithoutTmp(unittest.TestCase):
-    """INV-4: ningún texto instalable nombra ``/tmp`` (invariante del plan §8
-    punto 4; hoy se cumple en ``skills/`` y este test lo fija como
-    no-regresión)."""
+    """INV-4: ningún texto instalable nombra la raíz temporal del **HOST**.
 
-    TMP_RE = re.compile(r"/tmp\b")
+    ORACLE REPLACEMENT (006-005 U4 testfix): el oráculo anterior
+    (``re.compile(r"/tmp\\b")``) marcaba cualquier subcadena ``/tmp``, incluida
+    una ruta **relativa al proyecto** (``.cdad/tmp``, la raíz temporal aprobada
+    en D-5 de 006-005, §2.9). La postcondición de INV-4 prohíbe el ``/tmp``
+    **absoluto** del host, no un subdirectorio ``tmp`` relativo; el oráculo se
+    aprieta a esa postcondición (no se afloja: ``/tmp/...`` del host se sigue
+    detectando y los controles de vacuidad del test lo prueban).
+    """
+
+    # INV-4 (006-002) prohíbe la raíz temporal del HOST: ``/tmp`` ABSOLUTA. El
+    # caracter anterior decide si la ruta arranca en la raíz: un caracter de
+    # ruta (letra, dígito, ``_``, ``.``, ``~``, ``/``, ``-``) o el cierre de una
+    # expansión (``$``, ``}``) hace que ``/tmp`` sea un segmento RELATIVO
+    # (``.cdad/tmp``, ``foo/tmp``, ``~/tmp``, ``${ROOT}/tmp``) y no la raíz del
+    # host. Un separador (espacio, comillas, backtick, ``(``, ``=``, ``:`` …) o
+    # el inicio del texto deja ``/tmp`` en la raíz.
+    HOST_TMP_RE = re.compile(r"(?<![\w.~/\\$}-])/tmp\b")
 
     def test_inv4_installable_skill_text_names_no_tmp(self) -> None:
-        """INV-4: el árbol instalable de la skill no nombra ``/tmp`` (una ruta
-        temporal del host no puede filtrarse al texto que se distribuye)."""
+        """INV-4 (oráculo reemplazado, 006-005 U4 testfix): el árbol instalable
+        de la skill no nombra la raíz temporal del HOST (``/tmp`` absoluta); una
+        ruta temporal relativa al proyecto (``.cdad/tmp``) no es un ofensor.
+
+        El oráculo anterior (``/tmp\\b`` como subcadena) marcaba ``.cdad/tmp``;
+        la postcondición es la raíz del host, así que el reemplazo exige que
+        ``/tmp`` no venga precedida por un caracter de ruta.
+        """
+        # Controles de vacuidad del oráculo reemplazado: detecta el `/tmp` del
+        # host y ADMITE la ruta relativa al proyecto que el producto nombra
+        # (006-005 §2.9, D-5). Sin estos controles el barrido podría quedar
+        # vacuo o volver a marcar rutas relativas.
+        for host_path in ("/tmp/cdad-run/aux.txt", "aux under /tmp", '"/tmp"'):
+            with self.subTest(host_path=host_path):
+                self.assertIsNotNone(
+                    self.HOST_TMP_RE.search(host_path),
+                    "INV-4: el oráculo reemplazado no detecta `/tmp/...` del "
+                    f"host: {host_path!r} — el barrido sería vacuo",
+                )
+        for project_relative in (
+            ".cdad/tmp",
+            ".cdad/tmp/aux.txt",
+            "foo/tmp/aux.txt",
+            "~/tmp/aux.txt",
+        ):
+            with self.subTest(project_relative=project_relative):
+                self.assertIsNone(
+                    self.HOST_TMP_RE.search(project_relative),
+                    "INV-4: el oráculo reemplazado marca una ruta temporal "
+                    "RELATIVA al proyecto como si fuera la raíz del host: "
+                    f"{project_relative!r}",
+                )
+
         documents = skill_text_files()
         self.assertGreater(
             len(documents), 0,
@@ -565,7 +628,7 @@ class TestInv4InstallableTextWithoutTmp(unittest.TestCase):
         offenders: list[str] = []
         for path in documents:
             text = text_of_any_file(path)
-            for match in self.TMP_RE.finditer(text):
+            for match in self.HOST_TMP_RE.finditer(text):
                 offenders.append(
                     f"{relative(path)}:{line_of(text, match.start())}"
                 )
@@ -573,8 +636,8 @@ class TestInv4InstallableTextWithoutTmp(unittest.TestCase):
         self.assertEqual(
             offenders, [],
             msg=(
-                "INV-4: el texto instalable nombra `/tmp` (ruta temporal del "
-                f"host): {offenders[:20]!r}"
+                "INV-4: el texto instalable nombra la raíz temporal del host "
+                f"(`/tmp` absoluta): {offenders[:20]!r}"
             ),
         )
 
