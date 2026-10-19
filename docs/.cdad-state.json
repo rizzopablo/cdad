@@ -10563,6 +10563,47 @@
         "docs/specs/006-005-native-path-parity/u3-green.md": "49e291f59aae0b951bb08e9efd9256dda8b2547b6df6dc4863f9f415d4de63fa"
       },
       "note": "U3 GREEN a7f1bea: 14/14 focales; regresiones 147 + ampliadas verdes; focales 006-005 70/70 verificados por el orquestador (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T09:29:15.315186+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "624704e4f0597f379b8800185806f2768cba308f1dec5b954f8cd62d96a57eaa",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-009",
+        "receipt_sha256": "cc002287c8a3031b0d39dc01e98568dedc3a557dbe2cd31c0cda5ae5c26ec239",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u5-red.md",
+            "f0c20f884b64e06e901bd5bf7d436c27057e7323b89d04bdebb562818cc51dbb"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-009",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-009/receipt.json",
+      "receipt_sha256": "cc002287c8a3031b0d39dc01e98568dedc3a557dbe2cd31c0cda5ae5c26ec239",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u5-red.md": "f0c20f884b64e06e901bd5bf7d436c27057e7323b89d04bdebb562818cc51dbb"
+      },
+      "note": "U5 RED 43ee3a0: 5 focales en rojo, 1 ancla; A-1 de 005-012 t3 reformulado (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10577,7 +10618,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T09:06:59.679757+00:00",
+  "last_updated": "2026-10-19T09:29:15.315186+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10688,7 +10729,7 @@
     "id": "006-005-native-path-parity-test-writer-red-009",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
