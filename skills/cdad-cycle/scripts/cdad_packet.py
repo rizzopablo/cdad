@@ -64,7 +64,12 @@ ROLE_SUBSTAGES = {
     "reviewer": {"review", "plan-review"},
     "scribe": {"memory"},
 }
-SCOPE_CLASSES = {"contract", "docs", "tests", "colocated-tests", "implementation", "repository-read"}
+# PD-15 (006-005 U3): `temporary` is a first-class write scope of the
+# vocabulary (classify_path_observable already names it from
+# `temporary_roots`); it authorizes writes inside a root the ACCEPTED policy
+# declares, and nothing else (§2.9/INV-16).
+SCOPE_CLASSES = {"contract", "docs", "tests", "colocated-tests", "implementation",
+                 "repository-read", "temporary"}
 EXECUTION_KEYS = set(BINDING_FIELDS) | {"model"}
 # Execution context v2 (PD-3/PD-4): logical identity plus a verifiable policy
 # snapshot. Runtime, model and session are dispatch observations, never part of
@@ -154,6 +159,11 @@ CLASS_BY_TOKEN = {
 LAYOUT_IMPL_ROOTS = (
     "src", "lib", "app", "agents", "skills", "scripts", "sources", "build", "addons",
 )
+# D-5 (006-005 U3, C2): the PROPOSED temporary root — a subdirectory, disjoint
+# from the subtrees the CLI writes (`inbox/`, `packets/`, `executions/`,
+# `runtime/`), never `.cdad/` itself. The owner accepts it; the proposal never
+# touches a project's accepted policy (INV-7).
+DEFAULT_TEMPORARY_ROOT = ".cdad/tmp"
 
 
 def _object(value: Any, label: str) -> dict[str, Any]:
@@ -691,8 +701,43 @@ def _read_bytes(path: Path, label: str) -> bytes:
         raise PolicyError(f"cannot read {label} {path}: {exc}") from exc
 
 
+def _accepted_temporary_roots(execution_document: dict[str, Any],
+                              project_root: Path) -> list[str]:
+    """Temporary roots of the ACCEPTED policy (§2.9/PD-24, D-5).
+
+    The source is the policy revision the execution context already pins and
+    whose digest governs the derived-agent manifest: in a v2 context the
+    verified `policy.snapshot` (checked against `policy_sha256`), in a flat v1
+    context — which carries no snapshot — the project policy file. Both go
+    through `_validate_policy_document`, so PD-18 (a temporary root overlapping
+    product) keeps rejecting the policy itself.
+    """
+    if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
+        if not _policy_present(project_root):
+            return []
+        document = _load_json(_policy_location(project_root), "project policy")
+        _validate_policy_document(document, project_root)
+        return list(document["temporary_roots"])
+    policy = _object(execution_document.get("policy"), "policy")
+    try:
+        raw = base64.b64decode(policy.get("snapshot"), validate=True)
+    except (TypeError, ValueError) as exc:
+        raise PolicyError(f"policy snapshot is not valid base64: {exc}") from exc
+    if hashlib.sha256(raw).hexdigest() != policy.get("sha256"):
+        raise PolicyError(
+            "policy snapshot does not match its recorded sha256: the accepted "
+            "temporary roots cannot be read from this context")
+    try:
+        document = _object(json.loads(raw.decode("utf-8")), "project policy")
+    except (UnicodeError, ValueError) as exc:
+        raise PolicyError(f"cannot parse the accepted policy snapshot: {exc}") from exc
+    _validate_policy_document(document, project_root)
+    return list(document["temporary_roots"])
+
+
 def _validate_scope(scope: Any, *, role: str, write: bool, contract_dir: str,
-                    policy: dict[str, Any], project_root: Path) -> dict[str, Any]:
+                    policy: dict[str, Any], project_root: Path,
+                    temporary_roots: list[str] | None = None) -> dict[str, Any]:
     scope = _object(scope, "scope")
     scope_class = scope.get("class")
     if scope_class not in SCOPE_CLASSES:
@@ -718,6 +763,18 @@ def _validate_scope(scope: Any, *, role: str, write: bool, contract_dir: str,
             contract_root = _project_path(project_root, contract_dir, "contract directory")
             if not _path_is_within(candidate, contract_root):
                 raise PolicyError("contract scope is outside the contract directory")
+        elif scope_class == "temporary":
+            # PD-15 (§2.9/INV-16): a temporary selector is accepted only inside
+            # a root the ACCEPTED policy declares; the empty list authorizes
+            # nothing, and the diagnostic names the file and the field.
+            declared = [_project_path(project_root, root, "temporary_roots")
+                        for root in (temporary_roots or [])]
+            if not any(_path_is_within(candidate, root) for root in declared):
+                raise PolicyError(
+                    f"temporary scope selector {selector!r} is not inside any "
+                    f"temporary_roots declared by {POLICY_RELPATH.as_posix()}: "
+                    f"declared temporary_roots={list(temporary_roots or [])!r} "
+                    f"(the owner declares that list; PD-15)")
         elif scope_class != classified:
             raise PolicyError(f"scope selector is not classified as {scope_class}")
         if key == "path":
@@ -726,7 +783,8 @@ def _validate_scope(scope: Any, *, role: str, write: bool, contract_dir: str,
                 raise PolicyError(f"exact {scope_class} path is not declared by path_policy")
 
     if role == "test-writer":
-        allowed = {"contract", "docs", "tests", "colocated-tests"} if not write else {"tests", "colocated-tests"}
+        allowed = ({"contract", "docs", "tests", "colocated-tests"} if not write
+                   else {"tests", "colocated-tests", "temporary"})
     elif role == "implementer":
         allowed = SCOPE_CLASSES if not write else {"implementation", "docs"}
     else:
@@ -747,6 +805,14 @@ def _scope_contains(scope: dict[str, Any], raw_path: str, contract_dir: str,
         return candidate == scope_path
     if not _path_is_within(candidate, scope_path):
         return False
+    if scope["class"] == "temporary":
+        # PD-17/INV-16: the temporary contains only what is NOT product — a
+        # temporary root is disjoint from the product regions by policy
+        # (PD-18), and a path the classifier calls product or private is never
+        # contained by it.
+        return (classify_path(raw_path, policy, project_root) is None
+                and not _is_private_path(
+                    candidate.relative_to(project_root).as_posix(), policy))
     contract_root = _project_path(project_root, contract_dir, "contract directory")
     actual = "contract" if _path_is_within(candidate, contract_root) else classify_path(raw_path, policy, project_root)
     return actual == scope["class"] or (scope["class"] == "docs" and actual == "docs")
@@ -875,13 +941,21 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     _contract_approval_for(role, contract, state, execution, project_root)
     contract_dir = str(Path(contract["path"]).parent.as_posix())
     policy = execution_document["path_policy"]
+    # PD-15/PD-24 (§2.9): a `temporary` scope is accepted only inside the roots
+    # the ACCEPTED policy declares; both the packet validation and the derived
+    # agent map read the same source.
+    temporary_roots = _accepted_temporary_roots(execution_document, project_root)
     for field in ("inputs", "read_scope", "write_scope", "invariants", "evidence_required"):
         if not isinstance(document.get(field), list):
             raise PolicyError(f"request.{field} must be a list")
     read_scopes = [_validate_scope(x, role=role, write=False, contract_dir=contract_dir,
-                                   policy=policy, project_root=project_root) for x in document["read_scope"]]
+                                   policy=policy, project_root=project_root,
+                                   temporary_roots=temporary_roots)
+                   for x in document["read_scope"]]
     [_validate_scope(x, role=role, write=True, contract_dir=contract_dir,
-                     policy=policy, project_root=project_root) for x in document["write_scope"]]
+                     policy=policy, project_root=project_root,
+                     temporary_roots=temporary_roots)
+     for x in document["write_scope"]]
     for item in document["inputs"]:
         item = _object(item, "request input")
         if set(item) != {"path", "purpose"} or not isinstance(item.get("purpose"), str) or not item["purpose"]:
@@ -1088,6 +1162,52 @@ def _next_packet_id(out_dir: Path, prefix: str) -> str:
     return f"{prefix}-{number:03d}"
 
 
+def _require_ignored_temporary_scope(write_scope: list[dict[str, Any]],
+                                     project_root: Path) -> None:
+    """PD-16 (§2.9/INV-3): a declared temporary must be ignored by Git.
+
+    Read-only `git check-ignore` over the declared selectors; a selector that
+    is not ignored, or a project that is not a Git work tree, fails CLOSED
+    naming both legitimate exits (declare the root in `.gitignore`, or do not
+    request the temporary). Only the temporary class is verified: every other
+    scope keeps today's behavior.
+    """
+    selectors = [scope.get("root", scope.get("path"))
+                 for scope in write_scope
+                 if isinstance(scope, dict) and scope.get("class") == "temporary"]
+    for selector in selectors:
+        if not isinstance(selector, str) or not selector:
+            continue
+        try:
+            proc = subprocess.run(
+                ["git", "check-ignore", "-q", "--", selector],
+                cwd=str(project_root), capture_output=True, text=True)
+        except OSError as exc:
+            raise PolicyError(
+                f"temporary scope {selector!r} cannot be verified: `git "
+                f"check-ignore` is unavailable ({exc}); the legitimate exits are "
+                f"to declare the temporary in .gitignore, or to not request the "
+                f"temporary (omit --write-scope temporary=...)"
+            ) from exc
+        if proc.returncode == 0:
+            continue
+        if proc.returncode == 1:
+            raise PolicyError(
+                f"temporary scope {selector!r} is not ignored by Git: a "
+                f"temporary root must be declared in .gitignore (a Git work "
+                f"tree is required); the legitimate exits are to declare it in "
+                f".gitignore, or to not request the temporary (omit "
+                f"--write-scope temporary=...)"
+            )
+        raise PolicyError(
+            f"temporary scope {selector!r} cannot be verified: {project_root} "
+            f"is not a Git work tree (`git check-ignore` exited "
+            f"{proc.returncode}); the legitimate exits are to declare the "
+            f"temporary in .gitignore inside a Git work tree, or to not "
+            f"request the temporary (omit --write-scope temporary=...)"
+        )
+
+
 def _cwd_path(raw: str) -> Path:
     path = Path(raw)
     return path if path.is_absolute() else Path.cwd() / path
@@ -1106,7 +1226,10 @@ def propose_policy(project_root: Path) -> str:
     document = {
         "schema_version": 1,
         "path_policy": path_policy,
-        "temporary_roots": [],
+        # D-5 (006-005 U3, C1/C2): the default temporary root is a PROPOSAL for
+        # the owner (`.cdad/tmp`, a subdirectory disjoint from the CLI's own
+        # subtrees); the accepted policy of a project is never touched here.
+        "temporary_roots": [DEFAULT_TEMPORARY_ROOT],
     }
     # A proposal that its own validator would reject is not emitted.
     _validate_policy_document(document, project_root)
@@ -2023,6 +2146,7 @@ def _with_role_floor(values: list[str], floors: list[str]) -> list[str]:
 def _validate_corrections(
     request: dict[str, Any], *, role: str,
     contract_dir: str, policy: dict[str, Any], project_root: Path,
+    temporary_roots: list[str] | None = None,
 ) -> None:
     """PD-22 (C2) / 005-005 PD-1 (D1): the resulting assignment — conserved and
     corrected fields alike — passes the same validations as an ordinary prepare,
@@ -2042,7 +2166,8 @@ def _validate_corrections(
     for scope in request["read_scope"]:
         try:
             _validate_scope(scope, role=role, write=False, contract_dir=contract_dir,
-                            policy=policy, project_root=project_root)
+                            policy=policy, project_root=project_root,
+                            temporary_roots=temporary_roots)
         except PolicyError as exc:
             raise PolicyError(
                 f"read_scope: --read-scope is invalid: {exc}; correct it with "
@@ -2056,7 +2181,8 @@ def _validate_corrections(
     for scope in request["write_scope"]:
         try:
             _validate_scope(scope, role=role, write=True, contract_dir=contract_dir,
-                            policy=policy, project_root=project_root)
+                            policy=policy, project_root=project_root,
+                            temporary_roots=temporary_roots)
         except PolicyError as exc:
             raise PolicyError(
                 f"write_scope: --write-scope is invalid: {exc}; correct it with "
@@ -2200,7 +2326,9 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         _validate_corrections(
             new_request, role=role,
             contract_dir=str(Path(contract_path).parent.as_posix()),
-            policy=execution_document["path_policy"], project_root=project_root)
+            policy=execution_document["path_policy"], project_root=project_root,
+            temporary_roots=_accepted_temporary_roots(
+                execution_document, project_root))
         new_state = dict(state)
         new_state["active_packet"] = {
             "id": new_packet_id, "role": role, "substage": substage, "status": "prepared",
@@ -2788,7 +2916,24 @@ def _colocated_test_patterns(path_policy: dict[str, Any]) -> list[str]:
     return patterns
 
 
-def _derived_maps(role: str | None, path_policy: dict[str, Any]) -> dict[str, list[tuple[str, str]]]:
+def _temporary_patterns(temporary_roots: list[str]) -> list[str]:
+    """Patterns a derived agent needs to write inside a declared temporary root.
+
+    Same convention as the private barrier (P-1): the literal root plus its
+    subtree glob, so OpenCode's findLast map covers descendants too. Roots
+    already carrying glob wildcards are emitted verbatim.
+    """
+    patterns: list[str] = []
+    for root in temporary_roots:
+        patterns.append(root)
+        if not any(char in root for char in "*?["):
+            patterns.append(f"{root}/**")
+    return patterns
+
+
+def _derived_maps(role: str | None, path_policy: dict[str, Any],
+                  temporary_roots: list[str] | None = None
+                  ) -> dict[str, list[tuple[str, str]]]:
     """Permission maps (findLast order) for one derived agent (I9/PD-7).
 
     test-writer: deny implementation reads (co-located tests allowed), edits
@@ -2823,6 +2968,13 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any]) -> dict[str, li
             private.append((f"{pattern}/**", "deny"))
     if role == "test-writer":
         colocated = _colocated_test_patterns(path_policy)
+        # PD-24 (§2.9/INV-16): the DECLARED temporary roots are the only paths
+        # that gain permission, emitted next to the role's allow rules and
+        # BEFORE the policy, the derivatives and the private barriers, so
+        # findLast keeps those barriers on top (O-4). With an empty list the
+        # map is byte-identical to today's (control negativo).
+        temporary = [(pattern, "allow")
+                     for pattern in _temporary_patterns(temporary_roots or [])]
         # D2 (005-008/PD-1/PD-6): the declared test tree reopens AFTER the
         # implementation deny and BEFORE `private`, so findLast keeps the
         # private barrier on top while the test-writer can read its tests.
@@ -2833,6 +2985,7 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any]) -> dict[str, li
         edit = ([("*", "deny")]
                 + [(pattern, "allow") for pattern in _test_patterns(path_policy)]
                 + [(pattern, "allow") for pattern in colocated]
+                + temporary
                 + [(policy_pattern, "deny"), (derived_pattern, "deny")]
                 + private)
         return {"read": read, "edit": edit}
@@ -2998,10 +3151,12 @@ def _build_derived_payloads(project_root: Path,
     policy_sha = execution_document["execution"]["policy_sha256"]
     _reject_hand_modified_derived(derived_dir, policy_sha)
     path_policy = execution_document["path_policy"]
+    temporary_roots = _accepted_temporary_roots(execution_document, project_root)
     payloads: list[tuple[str, bytes]] = []
     manifest_agents: dict[str, dict[str, str]] = {}
     for name, origin in sources.items():
-        derived = _rewrite_derived_agent(origin, _derived_maps(_derived_role(name), path_policy))
+        derived = _rewrite_derived_agent(
+            origin, _derived_maps(_derived_role(name), path_policy, temporary_roots))
         payloads.append((name, derived))
         manifest_agents[name] = {
             "source_sha256": _sha256_bytes(origin),
@@ -4110,6 +4265,9 @@ def _publish_generation(
     """
     state_path = project_root / "docs" / ".cdad-state.json"
     _ensure_policy_reconciled(project_root, execution_document)
+    # PD-16 (§2.9/INV-3): a declared temporary must be ignored by Git, verified
+    # read-only before anything is staged. Fails closed, naming both exits.
+    _require_ignored_temporary_scope(request.get("write_scope") or [], project_root)
     # I9: the project-local OpenCode agents derive from the installed sources
     # and the accepted policy. They are computed BEFORE the transaction so a
     # hand-modified derived agent fails loudly without any write; the
