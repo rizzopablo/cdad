@@ -9862,6 +9862,47 @@
         "docs/specs/006-005-native-path-parity/architect-draft-004.md": "c3b20b11eb5a83101f49e314ec282f998774c76d26cf34f359d27cd12ac5ebd4"
       },
       "note": "draft-004 (decisiones del owner + escenarios de recorrido) entregado por el adaptador"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-19T02:31:27.492979+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "348afbefc588f8f1aa5bd2cf449084c338d450d0684bd6c1e42820e57d05168e",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-reviewer-plan-review-003",
+        "receipt_sha256": "1067f0b3a3da9bb9af1d4f10bf71c146581ba087381db33b6460110255fff387",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/plan-review-003.md",
+            "6a84b3948940de61ebd90d8dd3f465a524d550a842d2c0edc75b5b3645af9c54"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "1067f0b3a3da9bb9af1d4f10bf71c146581ba087381db33b6460110255fff387",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/plan-review-003.md": "6a84b3948940de61ebd90d8dd3f465a524d550a842d2c0edc75b5b3645af9c54"
+      },
+      "note": "review draft-004 por escenarios; copiado byte a byte (D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -9876,7 +9917,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T02:24:48.529920+00:00",
+  "last_updated": "2026-10-19T02:31:27.492979+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -9987,7 +10028,7 @@
     "id": "006-005-native-path-parity-reviewer-plan-review-003",
     "role": "reviewer",
     "substage": "plan-review",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "draft-plan",
     "contract_sha256": "0ef834dd86c9fdc49622545aa621a39716582766c4f1149a3220d0efda329b8d"
