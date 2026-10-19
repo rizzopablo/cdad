@@ -10152,13 +10152,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-005-native-path-parity-reviewer-plan-review-004",
-    "role": "reviewer",
-    "substage": "plan-review",
-    "status": "completed",
+    "id": "006-005-native-path-parity-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "draft-plan",
-    "contract_sha256": "75f8c179a42ce77592884df46b0341d200770cb948477bf328681c814d1eb417"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
   },
   "tdd_substage": "red"
 }
