@@ -314,3 +314,12 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
   4. El cliente huérfano terminó y **commiteó** su test (`test: u6 probe e4`) sin que el estado lo registre; `reconcile` repetido sigue en `not-started`.
   5. El chequeo de intento previo (INV-10, doble escritor) solo mira registros con sesión, así que un re-despacho abriría un segundo escritor y repetiría el efecto.
   - El defecto es preexistente: el registro al final viene de 006-001. Pero E4 de 006-005 nombra exactamente este caso («un intento que no vuelve … sin repetir efectos») y la condición (d) de PD-19 del owner presupone que `reconcile` ve el despacho. Es un callejón sin salida para el uso previsto: solo saldría editando el estado a mano, cosa que el método prohíbe.
+- **Enmienda U6-5 (decisión del orquestador bajo la delegación HITL amplia; review con 3 B ⇒ revisión 2 ⇒ re-review focal con E4 re-trazado: apta para RED).** Documentos: `docs/specs/006-005-native-path-parity/u6-5-decision.md` y sus dos reviews.
+  - **Write-ahead:** el módulo externo escribe su registro I8 **provisional** (marca `write-ahead:`) antes de lanzar el cliente, y lo completa **una vez** en toda terminación con la misma observación que hoy escribe la terminación.
+  - **Falla del write-ahead:** cierra antes de lanzar (`blocked`).
+  - **Contratos enmendados:**
+    - 006-001: D-5 (momento del registro y su falla), PD-8 (cláusula pre-despacho, solo para el registro provisional) y §2.6 (marca delante del primer literal);
+    - la regla write-once del ledger admite una compleción única sobre la marca;
+    - 006-005: la fila E4 de §3.1 se acota a la vía externa y el límite nativo D-U65-4 entra a §9 (salida procedimental: el siguiente coordinador ejecuta `record`).
+  - **Deuda:** recuperar como entrega tardía la salida del huérfano que queda en el store (D-U65-5).
+  - El texto de la spec aprobada está fijado por sha en la ejecución: la enmienda se aplica a `spec.md` en el cierre de la feature, con re-pin declarado, igual que los demás hallazgos de U6.
