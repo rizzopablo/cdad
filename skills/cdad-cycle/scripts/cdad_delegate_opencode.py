@@ -1759,10 +1759,11 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
 # --------------------------------------------------------------- envelope
 
 
-def _envelope(*, session: str | None, termination: str, delivery_ref: str | None,
+def _envelope(*, attempt: str | None = None, session: str | None,
+              termination: str, delivery_ref: str | None,
               diagnosis: str | None) -> dict[str, Any]:
     return {
-        "attempt": None,
+        "attempt": _as_text(attempt),
         "session": _as_text(session),
         "termination": termination,
         "delivery_ref": _as_text(delivery_ref),
@@ -1908,6 +1909,14 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     packet_bytes = _read_packet_stdin()
     started_at = _now()
     attempt_id = f"opencode-{uuid.uuid4().hex[:12]}"
+
+    def envelope(**fields: Any) -> dict[str, Any]:
+        """006-005 PD-1/§2.2: declare in THIS attempt's envelope the attempt the
+        adapter registered, so whoever invokes the adapter RELAYS it instead of
+        replacing it (the interface owns no attempt of its own). A termination
+        before the attempt exists declares `None` (nothing was registered)."""
+        return _envelope(attempt=attempt_id, **fields)
+
     mode_effective = _resolve_mode_effective(mode_requested, server_raw)
     # `service.require` (D-10) only has an EFFECT in the service mode; its TYPE
     # is validated above in every mode.
@@ -1967,7 +1976,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=None, session_base="not dispatched",
                              row_state="absent", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination=termination,
+        return envelope(session=None, termination=termination,
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
 
@@ -2180,7 +2189,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="unknown", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session_id, termination="timeout",
+        return envelope(session=session_id, termination="timeout",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
     except AdapterError as exc:
@@ -2190,7 +2199,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=None, session_base="chosen by adapter",
                              row_state="absent", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=None, termination="transport-error",
+        return envelope(session=None, termination="transport-error",
                          delivery_ref=None,
                          diagnosis=_append_note(str(exc), note))
 
@@ -2209,7 +2218,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="unknown", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session_id, termination="blocked",
+        return envelope(session=session_id, termination="blocked",
                          delivery_ref=None,
                          diagnosis=_append_note(str(exc), note))
     store_reads_value = str(outcome["reads"])
@@ -2226,7 +2235,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=session_id, session_base="chosen by adapter",
                              row_state="absent", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session_id, termination="transport-error",
+        return envelope(session=session_id, termination="transport-error",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
     if kind == "timeout":
@@ -2247,7 +2256,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                                         else "absent"),
                              client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session_id, termination="timeout",
+        return envelope(session=session_id, termination="timeout",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
     if kind == "unknown":
@@ -2263,7 +2272,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                                         else "absent"),
                              client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session_id, termination="unknown",
+        return envelope(session=session_id, termination="unknown",
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
 
@@ -2279,7 +2288,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                              session_base=durable_session_base,
                              row_state="present", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=_as_text(row.get("id")), termination="blocked",
+        return envelope(session=_as_text(row.get("id")), termination="blocked",
                          delivery_ref=None,
                          diagnosis=_append_note(identity_diagnosis, note))
 
@@ -2289,7 +2298,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         note = register_note(session=session, session_base=durable_session_base,
                              row_state="present", client_version=client_version,
                              server_version=server_version)
-        return _envelope(session=session, termination=termination,
+        return envelope(session=session, termination=termination,
                          delivery_ref=None,
                          diagnosis=_append_note(diagnosis, note))
 
@@ -2305,12 +2314,12 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             store_reads=store_reads_value,
             prior_check_reads=prior_check_reads_value)
     except (AdapterError, cdad_result.ResultError) as exc:
-        return _envelope(
+        return envelope(
             session=session, termination="blocked", delivery_ref=None,
             diagnosis=(
                 f"the role completed but the durable delivery could not be "
                 f"persisted through receive: {exc}"))
-    return _envelope(session=session, termination="completed",
+    return envelope(session=session, termination="completed",
                      delivery_ref=delivery_ref, diagnosis=dispatch_note)
 
 

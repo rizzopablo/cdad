@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""CDAD dispatch entry — the execution configuration layer (006-005 U1a).
+"""CDAD dispatch entry — the orchestrator's single entry (006-005).
 
-One entry for the orchestrator. This unit carries the **execution
-configuration** and nothing else:
+One entry for the orchestrator, in its two paths, plus the bounded migration
+step. The execution configuration layer is 006-005 U1a; the entry verbs are
+U1b:
 
   * the runtime is resolved **explicitly and uniquely**: it enters by
     `--runtime <X>` (PD-8) and is never read from a project document, so the
@@ -26,21 +27,64 @@ configuration** and nothing else:
     data is never overwritten (INV-7) — supports `--dry-run` and never moves the
     `model` nor a credential value.
 
-The rest of the surface (`dispatch` transport, `record`, `capabilities`) is
-006-005 U1b. The verbs are declared so argv is parsed as the final CLI; the ones
-this unit does not implement fail closed with a named diagnostic instead of
-pretending.
+The entry verbs (U1b):
+
+  * **`dispatch` (external path).** Resolves the runtime and its section,
+    *derives* the internal configuration of the module as a transient file under
+    `.cdad/` (removed when the call ends, never carrying a model or a credential
+    value) and hands the transport to the ONE implementation that already owns
+    it — the common interface `cdad_delegate.delegate`, which transports the
+    published `PACKET.md` byte-identical to the runtime module. The module
+    launches, waits, collects and **registers its own attempt**; this entry
+    relays the module's envelope, `attempt` included, and neither registers nor
+    stages anything (one writer per dispatch, PD-1/D-14). Reusing the interface
+    is deliberate: a second transport implementation could diverge (§12).
+  * **`record` (native path).** Builds the closed-key I8 observation, verifies
+    the association with the evidence of this path (§2.3: the observable store
+    columns, with the O-3 discrimination threshold, `unknown` when a key is not
+    evaluable and a **rejection** when an evaluable key contradicts), registers
+    the attempt through the existing command (`prepare --record-dispatch`) and,
+    when it received the final text, stages it **byte-exact** under `.cdad/inbox`
+    with its `RESULT.json` descriptor, declaring the artifact kind derived from
+    the packet's role and subphase (§2.8/PD-23). It never runs `receive`: the
+    receipt belongs to the re-entry protocol (§2.1).
+  * **`capabilities`.** Asks the runtime module for its declared capabilities
+    (§2.2) and answers the five keys; a module without that surface is declared
+    `native_observation: false` with a `reason` that names the missing surface —
+    never a silent degradation (O-6).
+
+`record` reads the store **once** per invocation (PD-13: no polling, bounded
+timeout) through the module's `--observe` surface, and only when there is a
+motive: the invocation declares correlation inputs (`--session`/`--parent`) or
+there is no byte-exact native result (the store is then the only evidence of the
+association). The core is not a second writer: it never writes
+`docs/.cdad-state.json`, never writes the store, and touches the ledger only
+through the existing command (PD-2/INV-5); every other write stays under
+`.cdad/`.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-import cdad_delegate
+# The canonical CLIs live next to this entry; importing them (never copying
+# them) keeps ONE implementation of every helper (INV-12). `cdad_delegate` owns
+# the destination convention and the user-config location rule; `cdad_result`
+# owns the closed role/subphase -> artifact_kind table this entry derives from.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_delegate  # noqa: E402
+import cdad_result  # noqa: E402
 
 # §2.6: the document, its version and the map of one section per runtime id.
 RUNTIMES_CONFIG_NAME = "runtimes.json"
@@ -70,11 +114,48 @@ FORBIDDEN_SECTION_KEYS = {
 # PD-1 of 005-009: the packet is published under `.cdad/packets/<id>/`.
 PACKETS_RELPATH = Path(".cdad") / "packets"
 PACKET_MD_NAME = "PACKET.md"
+REQUEST_NAME = "REQUEST.json"
+
+# §2.1: the staging surface of the native path (the step the re-entry protocol
+# consumes: `.cdad/inbox/RESULT.json` plus the staged parts it points at).
+INBOX_RELPATH = Path(".cdad") / "inbox"
+DESCRIPTOR_NAME = "RESULT.json"
+# The single part the common delivery produces today (§2.8): one role report.
+DELIVERY_PART_NAME = "role-report"
+# The transient directory of the derived internal configuration (§2.6).
+RUNTIME_RELPATH = Path(".cdad") / "runtime"
+
+# §2.1/§2.4: the closed observation schema and the library that validates it.
+OBSERVATION_KEYS = (
+    "runtime", "model_configured", "model_reported", "session", "started_at",
+    "provenance",
+)
+
+# §2.3: the keys of the native correlation, the store column each one reads and
+# the discriminating subset (O-3: the positive accreditation needs at least one
+# of them; `agent` alone never accredits because two concurrent native
+# dispatches of the same role share it).
+CORRELATION_COLUMNS = {
+    "parent": "parent_id",
+    "agent": "agent",
+    "moment": "time_created",
+    "project": "directory",
+}
+DISCRIMINATING_KEYS = ("parent", "moment", "project")
+
+# §2.2: the capability document of a runtime module.
+CAPABILITY_KEYS = (
+    "native_observation", "external_transport", "session_correlation",
+    "version", "reason",
+)
+
+# Both waits are bounded and declared: a single `--observe` read (PD-13: no
+# polling) and a single `--capabilities` question.
+DEFAULT_OBSERVE_TIMEOUT_SECONDS = 30.0
+CAPABILITIES_TIMEOUT_SECONDS = 30.0
 
 VERBS = ("dispatch", "record", "capabilities", "migrate")
 DEFAULT_VERB = "dispatch"
-# The verbs this unit does not implement yet (006-005 U1b): they fail closed.
-U1A_DEFERRED_VERBS = ("record", "capabilities")
 
 RETIRED_OPTION = "--exec-config"
 
@@ -183,9 +264,43 @@ def _read_document(path: Path) -> Any:
             f"{RUNTIMES_CONFIG_NAME} is not readable JSON ({path}): {exc}") from exc
 
 
+def _load_json(path: Path, label: str) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise DispatchError(f"{label} is not readable JSON ({path}): {exc}") from exc
+
+
 def _section_of(document: Any, runtime: str) -> Any:
     runtimes = document.get(RUNTIMES_KEY) if isinstance(document, dict) else None
     return runtimes.get(runtime) if isinstance(runtimes, dict) else None
+
+
+def _internal_config_path(root: Path, runtime: str) -> Path:
+    """§2.6: the transient file the module reads, inside the already
+    git-ignored coordination space (`.cdad/`), unique per invocation."""
+    return (root / RUNTIME_RELPATH
+            / f".internal-{runtime}-{os.getpid()}.json")
+
+
+def derived_internal_config(root: Path, runtime: str,
+                            section: dict[str, Any]) -> Path:
+    """§2.6: DERIVE the internal configuration of the module from the section.
+
+    It carries only the correspondence keys — never the `model` (which lives in
+    `delegation.json`) nor any credential value — plus the runtime id, which is
+    the value of `--runtime` and is never resolved from a project document. The
+    caller removes the file when the call ends.
+    """
+    directory = root / RUNTIME_RELPATH
+    directory.mkdir(parents=True, exist_ok=True)
+    path = _internal_config_path(root, runtime)
+    document = {key: section[key] for key in SECTION_KEYS if key in section}
+    document["runtime"] = runtime
+    path.write_text(
+        json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8")
+    return path
 
 
 # ------------------------------------------------------------------ migration
@@ -291,39 +406,589 @@ def migrate(runtime: str, legacy_path: str, *, dry_run: bool, as_json: bool) -> 
     return 0
 
 
-# ------------------------------------------------------------------- verbs
+# --------------------------------------------------------------- common shape
 
 
-def dispatch(runtime: str, project_root: str | None, packet: str | None) -> int:
-    """The external path: resolve the runtime, then its configuration section.
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
-    006-005 U1b adds the transport (the module call, the transient derived
-    configuration and the envelope); this unit stops at the configuration and
-    the packet the transport would consume.
+
+def _as_text(value: Any) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def _envelope(*, attempt: str | None, session: str | None, termination: str,
+              delivery_ref: str | None, diagnosis: str | None) -> dict[str, Any]:
+    """§2.1: exactly the keys of `OUTPUT_KEYS`, `termination` in the closed
+    vocabulary the interface declares (`cdad_delegate.TERMINATION_VOCABULARY`)."""
+    if termination not in cdad_delegate.TERMINATION_VOCABULARY:
+        termination = "unknown"
+    return {
+        "attempt": _as_text(attempt),
+        "session": _as_text(session),
+        "termination": termination,
+        "delivery_ref": _as_text(delivery_ref),
+        "diagnosis": _as_text(diagnosis),
+    }
+
+
+def _report_envelope(envelope: dict[str, Any], *, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(envelope, ensure_ascii=False, sort_keys=True))
+        return
+    print(" ".join(
+        f"{key}={envelope[key]!r}" for key in cdad_delegate.OUTPUT_KEYS
+        if envelope.get(key) is not None))
+
+
+def _project_root(raw: str | None) -> Path:
+    root = Path(raw) if raw else Path.cwd()
+    if not root.is_dir():
+        raise DispatchError(f"--project-root is not a directory: {root}")
+    return root.resolve()
+
+
+def _packet_dir(root: Path, packet: str) -> Path:
+    return root / PACKETS_RELPATH / packet
+
+
+def _known_packet(root: Path, packet: str, verb: str) -> tuple[Path, Path]:
+    """Resolve a packet already published by `prepare` (fail closed otherwise)."""
+    directory = _packet_dir(root, packet)
+    packet_md = directory / PACKET_MD_NAME
+    request_path = directory / REQUEST_NAME
+    if not packet_md.is_file() or not request_path.is_file():
+        raise DispatchError(
+            f"unknown packet {packet!r}: no packet published under {directory} — "
+            f"prepare the packet before {verb}")
+    return packet_md, request_path
+
+
+# ------------------------------------------------------- external path (U1b)
+
+
+def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
+             as_json: bool) -> int:
+    """§2.1 (external path): resolve the runtime and its single configuration
+    source, then hand the transport to the ONE implementation that owns it.
+
+    The module registers its own attempt (PD-1) and this entry relays its
+    envelope — `attempt` included — without registering or staging anything.
     """
     resolve_runtime_module(runtime)
-    load_runtime_section(runtime)
+    section = load_runtime_section(runtime)
     if not packet:
         raise DispatchError(
             "dispatch requires --packet <id>: the id of a packet already "
             "published by `cdad_packet.py prepare`")
-    root = Path(project_root) if project_root else Path.cwd()
-    packet_dir = root / PACKETS_RELPATH / packet
-    if not (packet_dir / PACKET_MD_NAME).is_file():
+    root = _project_root(project_root)
+    _known_packet(root, packet, "dispatching")
+    envelope = _transport(runtime, section, root, packet)
+    _report_envelope(envelope, as_json=as_json)
+    return 0
+
+
+def _transport(runtime: str, section: dict[str, Any], root: Path,
+               packet: str) -> dict[str, Any]:
+    """Delegate the external transport to the common interface (one
+    implementation of launch/wait/collect/transport, §2.1/§12)."""
+    derived = derived_internal_config(root, runtime, section)
+    try:
+        output = cdad_delegate.delegate(argparse.Namespace(
+            project_root=str(root),
+            packet=packet,
+            destination=runtime,
+            exec_config=str(derived),
+        ))
+    except cdad_delegate.DelegateError as exc:
+        raise DispatchError(f"the external transport failed: {exc}") from exc
+    finally:
+        derived.unlink(missing_ok=True)
+    return {key: output.get(key) for key in cdad_delegate.OUTPUT_KEYS}
+
+
+# --------------------------------------------------------- native path (U1b)
+
+
+def _observe_timeout(section: dict[str, Any]) -> float:
+    wait = section.get("wait")
+    if isinstance(wait, dict):
+        seconds = wait.get("timeout_seconds")
+        if isinstance(seconds, (int, float)) and seconds > 0:
+            return float(seconds)
+    return DEFAULT_OBSERVE_TIMEOUT_SECONDS
+
+
+def _run_module(module: Path, argv: Sequence[str], *,
+                timeout: float) -> subprocess.CompletedProcess | None:
+    try:
+        return subprocess.run(argv, capture_output=True, text=True,
+                              timeout=timeout, cwd=str(module.parent))
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def observe_model(*, module: Path, runtime: str, section: dict[str, Any],
+                  root: Path, packet: str, session: str | None,
+                  parent: str | None) -> tuple[dict[str, Any] | None, str | None]:
+    """§2.2/§2.3: ONE bounded read of the store through the module's `--observe`.
+
+    Returns the observable row (or `None` when the module answers `null`) and,
+    when the surface is unusable, the reason that **names the missing surface**
+    (never a silent degradation, O-6/INV-4).
+    """
+    derived = derived_internal_config(root, runtime, section)
+    argv = [
+        sys.executable, str(module),
+        "--project-root", str(root),
+        "--packet-id", packet,
+        "--destination", runtime,
+        "--exec-config", str(derived),
+        "--observe",
+    ]
+    if session:
+        argv += ["--session", session]
+    if parent:
+        argv += ["--parent", parent]
+    try:
+        proc = _run_module(module, argv, timeout=_observe_timeout(section))
+    finally:
+        derived.unlink(missing_ok=True)
+    if proc is None:
+        return None, (f"the runtime module {module.name} could not be run to read "
+                      f"the store (`--observe`)")
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout).strip()
+        return None, (f"the runtime module {module.name} answered `--observe` with "
+                      f"rc={proc.returncode}: {detail[:200]}")
+    text = (proc.stdout or "").strip()
+    try:
+        row = json.loads(text)
+    except ValueError:
+        return None, (f"the runtime module {module.name} does not declare the "
+                      f"`--observe` surface of §2.2 (its answer is not the "
+                      f"observable row JSON): {text[:200]!r}")
+    if row is None:
+        return None, None
+    if not isinstance(row, dict):
+        return None, (f"the observable row of `--observe` is not an object: {row!r}")
+    return row, None
+
+
+@dataclass(frozen=True)
+class Correlation:
+    """§2.3: the outcome of the native association for one attempt."""
+
+    verified: bool
+    session: str | None
+    model_reported: str | None
+    note: str
+    model_note: str
+
+
+def _compare_key(observed: Any, declared: Any) -> str:
+    if _as_text(observed) is None or _as_text(declared) is None:
+        return "unknown"
+    return "match" if observed == declared else "contradiction"
+
+
+def _membership_key(observed: Any, root: Path) -> str:
+    """§2.3/INV-15: the project is corroborated BY MEMBERSHIP — the session's
+    directory is the authorized root or lives inside it — never by a rigid
+    `directory == root`."""
+    directory = _as_text(observed)
+    if directory is None:
+        return "unknown"
+    try:
+        resolved = Path(directory).expanduser().resolve()
+    except OSError:
+        return "unknown"
+    if resolved == root:
+        return "match"
+    return "match" if root in resolved.parents else "contradiction"
+
+
+def _instant(value: Any) -> datetime | None:
+    text = _as_text(value)
+    if text is None:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _moment_key(observed: Any, since: str | None) -> str:
+    declared = _instant(since)
+    row_instant = _instant(observed)
+    if declared is None or row_instant is None:
+        return "unknown"
+    if declared.tzinfo is None and row_instant.tzinfo is not None:
+        declared = declared.replace(tzinfo=row_instant.tzinfo)
+    if row_instant.tzinfo is None and declared.tzinfo is not None:
+        row_instant = row_instant.replace(tzinfo=declared.tzinfo)
+    return "match" if row_instant > declared else "contradiction"
+
+
+def _key_states(row: dict[str, Any], request: dict[str, Any], *,
+                parent: str | None, since: str | None,
+                root: Path) -> dict[str, str]:
+    """Evaluate the keys the observed store version exposes.
+
+    A key whose column the row does not carry is simply NOT part of the evidence
+    this version offers (it is not evaluated). A key the row DOES expose but
+    whose declared input is missing is `unknown` — never compared against a
+    supposed value (§2.3).
+    """
+    states: dict[str, str] = {}
+    if CORRELATION_COLUMNS["parent"] in row:
+        states["parent"] = (_compare_key(row.get(CORRELATION_COLUMNS["parent"]),
+                                         parent)
+                            if parent else "unknown")
+    if CORRELATION_COLUMNS["agent"] in row:
+        agent = _as_text(request.get("agent"))
+        states["agent"] = (_compare_key(row.get(CORRELATION_COLUMNS["agent"]), agent)
+                           if agent else "unknown")
+    if CORRELATION_COLUMNS["moment"] in row:
+        states["moment"] = (_moment_key(row.get(CORRELATION_COLUMNS["moment"]), since)
+                           if since else "unknown")
+    if CORRELATION_COLUMNS["project"] in row:
+        states["project"] = _membership_key(
+            row.get(CORRELATION_COLUMNS["project"]), root)
+    return states
+
+
+def correlate(row: dict[str, Any] | None, request: dict[str, Any], *,
+              packet: str, parent: str | None, since: str | None, root: Path,
+              problem: str | None) -> Correlation:
+    """§2.3: three outcomes with their own consequence.
+
+    `verified` when every evaluated key matches and at least one DISCRIMINATING
+    key was evaluated (O-3); `unknown` when a key the store exposes cannot be
+    evaluated or no discriminating key was; and a **rejection** — raised, never
+    returned as `unknown` and never as an accepted delivery — when an evaluable
+    key contradicts.
+    """
+    if row is None:
+        detail = problem or ("the store offered no observable session row")
+        return Correlation(
+            verified=False, session=None, model_reported=None,
+            note=(f"not verified: {detail}; no discriminating key "
+                  f"(parent, moment, project) was evaluated — no session is "
+                  f"accredited (INV-2)"),
+            model_note="not observed: the identity of the attempt is not verified")
+    states = _key_states(row, request, parent=parent, since=since, root=root)
+    contradictions = [key for key in CORRELATION_COLUMNS
+                      if states.get(key) == "contradiction"]
+    if contradictions:
+        named = ", ".join(f"`{key}`" for key in contradictions)
         raise DispatchError(
-            f"unknown packet {packet!r}: no {PACKET_MD_NAME} under {packet_dir} "
-            f"— prepare the packet before dispatching")
+            f"the native identity contradicts the observation of packet "
+            f"{packet!r}: the {named} key does not match — the entry refuses the "
+            f"delivery and never accredits a session the store denies (§2.3, "
+            f"INV-2). The session directory must belong to the authorized "
+            f"project root, and the declared parent/instant must be the observed "
+            f"one")
+    unknowns = [key for key in CORRELATION_COLUMNS
+                if states.get(key) == "unknown"]
+    matched = [key for key in DISCRIMINATING_KEYS if states.get(key) == "match"]
+    session_id = _as_text(row.get("id"))
+    if not unknowns and matched:
+        if session_id is not None:
+            return Correlation(
+                verified=True, session=session_id,
+                model_reported=_as_text(row.get("model")),
+                note=(f"verified: the observable row of the module's single store "
+                      f"read matches the declared evidence "
+                      f"({', '.join(matched)}) — the session comes from the "
+                      f"store, never from the invocation"),
+                model_note=("durable session row (the module's `--observe`): "
+                            "session_v2.model" if _as_text(row.get("model"))
+                            else "the observed row does not carry a model column: "
+                                 "the module did not report a model"))
+        unknowns = [*unknowns, "id"]
+    reasons: list[str] = []
+    if unknowns:
+        reasons.append("not evaluable: "
+                       + ", ".join(f"`{key}`" for key in unknowns))
+    if not matched:
+        reasons.append("no discriminating key (parent, moment, project) was "
+                       "evaluated and matched")
+    note = ("not verified: " + "; ".join(reasons)
+            + " — no session is accredited and nothing is delivered by this "
+              "path unless a byte-exact native result is provided (PD-6/INV-2)")
+    return Correlation(verified=False, session=None, model_reported=None,
+                       note=note,
+                       model_note=("not observed: the identity of the attempt is "
+                                   "not verified"))
+
+
+def _read_native_result(raw: str | None) -> bytes | None:
+    """PD-3/§2.1: the final text exactly as it was received (`FILE` or `-`),
+    never re-typed, summarised nor regenerated; absent means no delivery."""
+    if raw is None:
+        return None
+    if raw == "-":
+        payload = sys.stdin.buffer.read()
+        label = "stdin"
+    else:
+        path = Path(raw)
+        if not path.is_file():
+            raise DispatchError(f"--native-result not found: {path}")
+        try:
+            payload = path.read_bytes()
+        except OSError as exc:
+            raise DispatchError(f"--native-result is not readable ({path}): {exc}") from exc
+        label = str(path)
+    if not payload:
+        raise DispatchError(
+            f"--native-result ({label}) is empty: without final text or artifact "
+            f"there is no delivery (INV-1)")
+    return payload
+
+
+def _observation_payload(*, runtime: str, correlation: Correlation) -> dict[str, Any]:
+    """§2.4/INV-8: the closed-key I8 observation of the native path.
+
+    `model_configured` is null with declared provenance — CDAD does not choose
+    the model of the internal delegation (ADR-033 D2, INV-9) — and `session` is
+    the observed one or null with the declared reason (PD-6).
+    """
+    return {
+        "runtime": runtime,
+        "model_configured": None,
+        "model_reported": correlation.model_reported,
+        "session": correlation.session,
+        "started_at": _now(),
+        "provenance": {
+            "runtime": ("the --runtime flag: the destination runtime id, never "
+                        "read from a project document"),
+            "model_configured": ("CDAD does not choose the model of the internal "
+                                 "delegation (ADR-033 D2): the runtime fixes it"),
+            "model_reported": correlation.model_note,
+            "session": correlation.note,
+            "started_at": "the entry's clock (UTC)",
+        },
+    }
+
+
+def _register_attempt(root: Path, packet: str, request: dict[str, Any],
+                      attempt_id: str, observation: dict[str, Any]) -> None:
+    """PD-1/§2.4: the ONE registration of the native path, written through the
+    command that already owns the ledger and the state transition
+    (`cdad_packet.py prepare --record-dispatch`, INV-5)."""
+    if set(observation) != set(OBSERVATION_KEYS):
+        raise DispatchError(
+            "the observation does not carry the closed schema "
+            f"({', '.join(OBSERVATION_KEYS)})")
+    execution_id = _as_text(request.get("execution_id"))
+    if execution_id is None:
+        raise DispatchError(f"packet {packet!r} request has no execution_id")
+    packet_cli = _SCRIPT_DIR / cdad_delegate.PACKET_CLI_NAME
+    if not packet_cli.is_file():
+        raise DispatchError(
+            f"cannot register the attempt: {cdad_delegate.PACKET_CLI_NAME} is not "
+            f"next to this entry")
+    stage = root / ".cdad" / "executions" / execution_id
+    stage.mkdir(parents=True, exist_ok=True)
+    observation_path = stage / f".{attempt_id}.observation.json"
+    payload = (json.dumps(observation, ensure_ascii=False, sort_keys=True,
+                          indent=2) + "\n").encode("utf-8")
+    try:
+        observation_path.write_bytes(payload)
+    except OSError as exc:
+        raise DispatchError(f"cannot stage the dispatch observation: {exc}") from exc
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(packet_cli), "prepare",
+             "--project-root", str(root),
+             "--record-dispatch", packet,
+             "--attempt-id", attempt_id,
+             "--input", str(observation_path)],
+            capture_output=True, text=True, cwd=str(root))
+    finally:
+        observation_path.unlink(missing_ok=True)
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout).strip()
+        raise DispatchError(
+            f"the attempt {attempt_id!r} could not be registered: {detail[:300]}")
+
+
+def derive_artifact_kind(role: Any, substage: Any) -> str:
+    """§2.8/PD-23/INV-14: the kind of the delivered part comes from the closed
+    role/subphase table (`cdad_result`), never from a hardcoded constant."""
+    role_name = _as_text(role)
+    if role_name is None:
+        raise DispatchError(
+            "the packet request declares no role: the artifact kind of the "
+            "delivered part cannot be derived (§2.8)")
+    kinds = cdad_result._allowed_kinds(role_name, substage if isinstance(substage, str) else "")
+    if "role-report" in kinds:
+        return "role-report"
+    if len(kinds) == 1:
+        return next(iter(kinds))
     raise DispatchError(
-        "the external transport is not available in this build: 006-005 U1a "
-        "carries the execution configuration and the migration step; the entry "
-        "verbs (dispatch transport, record, capabilities) arrive with U1b")
+        f"the closed role/subphase table does not determine a single artifact "
+        f"kind for role {role_name!r}/substage {substage!r}: "
+        f"{sorted(kinds) or 'no kind admitted'} — the delivered part declares one "
+        f"kind (§2.8/PD-23)")
 
 
-def _verb_not_available(verb: str) -> DispatchError:
-    return DispatchError(
-        f"the `{verb}` verb is not available in this build: 006-005 U1a carries "
-        f"the execution configuration and the migration step; `{verb}` arrives "
-        f"with U1b")
+def stage_delivery(root: Path, request: dict[str, Any], packet: str,
+                   attempt_id: str, kind: str, payload: bytes) -> Path:
+    """§2.1/PD-3: stage the byte-exact part under `.cdad/inbox` and write the
+    `RESULT.json` descriptor the re-entry protocol consumes, declaring the kind
+    derived from role and subphase. Nothing here approves anything."""
+    execution_id = _as_text(request.get("execution_id"))
+    feature_id = _as_text(request.get("feature_id"))
+    if execution_id is None or feature_id is None:
+        raise DispatchError(
+            f"packet {packet!r} request lacks execution_id/feature_id")
+    inbox = root / INBOX_RELPATH
+    inbox.mkdir(parents=True, exist_ok=True)
+    part_name = f"{attempt_id}-{DELIVERY_PART_NAME}"
+    staged = inbox / f"{part_name}.md"
+    staged.write_bytes(payload)
+    descriptor = {
+        "schema_version": 1,
+        "execution_id": execution_id,
+        "packet_id": packet,
+        "feature_id": feature_id,
+        "source": {"kind": "staged-file", "sdk_message_ref": None},
+        "parts": [{
+            "name": part_name,
+            "artifact_kind": kind,
+            "staged_path": f"{INBOX_RELPATH.as_posix()}/{part_name}.md",
+        }],
+        "run_evidence_ref": None,
+    }
+    descriptor_path = inbox / DESCRIPTOR_NAME
+    descriptor_path.write_text(
+        json.dumps(descriptor, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8")
+    return descriptor_path
+
+
+def record(runtime: str, project_root: str | None, packet: str | None,
+           attempt_id: str | None, *, native_result: str | None,
+           session: str | None, parent: str | None, since: str | None,
+           as_json: bool) -> int:
+    """§2.1 (native path): the single body of observation + registration + the
+    mechanical staging step; the receipt belongs to the re-entry protocol."""
+    module = resolve_runtime_module(runtime)
+    section = load_runtime_section(runtime)
+    if not packet:
+        raise DispatchError(
+            "record requires --packet <id>: the dispatched packet this attempt "
+            "belongs to")
+    if not attempt_id:
+        raise DispatchError(
+            "record requires --attempt-id <id>: the identity of the attempt this "
+            "invocation registers")
+    root = _project_root(project_root)
+    _known_packet(root, packet, "recording its attempt")
+    request = _load_json(_packet_dir(root, packet) / REQUEST_NAME, "packet request")
+    if not isinstance(request, dict):
+        raise DispatchError(
+            f"the packet request is not an object: {_packet_dir(root, packet) / REQUEST_NAME}")
+    kind = derive_artifact_kind(request.get("role"), request.get("substage"))
+
+    payload = _read_native_result(native_result)
+    # ONE bounded read, only when there is a motive (§2.1/PD-13).
+    row: dict[str, Any] | None = None
+    problem: str | None = None
+    if session or parent or payload is None:
+        row, problem = observe_model(
+            module=module, runtime=runtime, section=section, root=root,
+            packet=packet, session=session, parent=parent)
+        if problem is not None and payload is None:
+            raise DispatchError(
+                f"the native observation is not available and no byte-exact "
+                f"native result was provided: {problem}. Without either there is "
+                f"no delivery by this path (§2.2, INV-4)")
+    else:
+        problem = ("no correlation evidence was declared (--session/--parent) and "
+                   "the byte-exact native result travels with the lower guarantee "
+                   "of PD-6: the store is read only when there is a motive (one "
+                   "bounded read per invocation)")
+    correlation = correlate(row, request, packet=packet, parent=parent,
+                            since=since, root=root, problem=problem)
+
+    _register_attempt(root, packet, request, attempt_id,
+                      _observation_payload(runtime=runtime,
+                                           correlation=correlation))
+    notes = [correlation.note]
+    delivery_ref: str | None = None
+    termination = "unknown"
+    if payload is not None:
+        delivery_ref = str(stage_delivery(root, request, packet, attempt_id,
+                                          kind, payload))
+        termination = "completed"
+    else:
+        notes.append(
+            "no final text or artifact was provided: nothing was staged, no "
+            "descriptor was written and the registered attempt is the only effect "
+            "(PD-4/INV-1, the receipt is the protocol's)")
+    envelope = _envelope(attempt=attempt_id, session=correlation.session,
+                         termination=termination, delivery_ref=delivery_ref,
+                         diagnosis="; ".join(notes))
+    _report_envelope(envelope, as_json=as_json)
+    return 0
+
+
+# -------------------------------------------------------------- capabilities
+
+
+def _uncredited_capabilities(reason: str) -> dict[str, Any]:
+    return {
+        "native_observation": False,
+        "external_transport": False,
+        "session_correlation": False,
+        "version": "unknown",
+        "reason": reason,
+    }
+
+
+def module_capabilities(module: Path) -> dict[str, Any]:
+    """§2.2/PD-10/O-6: the module's declared capabilities, or the fail-closed
+    declaration naming the missing surface (never a silent degradation)."""
+    proc = _run_module(module, [sys.executable, str(module), "--capabilities"],
+                       timeout=CAPABILITIES_TIMEOUT_SECONDS)
+    if proc is None:
+        return _uncredited_capabilities(
+            f"the runtime module {module.name} could not be run to answer "
+            f"`--capabilities` (the surface of §2.2)")
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout).strip()
+        return _uncredited_capabilities(
+            f"the runtime module {module.name} does not declare the "
+            f"`--capabilities` surface of §2.2 (rc={proc.returncode}): "
+            f"{detail[:200]}")
+    text = (proc.stdout or "").strip()
+    try:
+        document = json.loads(text)
+    except ValueError:
+        return _uncredited_capabilities(
+            f"the runtime module {module.name} does not declare the "
+            f"`--capabilities` surface of §2.2 (its answer is not the capability "
+            f"document JSON): {text[:200]!r}")
+    if not isinstance(document, dict) or set(document) != set(CAPABILITY_KEYS):
+        return _uncredited_capabilities(
+            f"the runtime module {module.name} does not declare the capability "
+            f"document of §2.2 (expected {', '.join(CAPABILITY_KEYS)}; got "
+            f"{sorted(document) if isinstance(document, dict) else type(document).__name__})")
+    return document
+
+
+def capabilities(runtime: str, *, as_json: bool) -> int:
+    """PD-10: the declared capabilities of the runtime, from its module."""
+    module = resolve_runtime_module(runtime)
+    document = module_capabilities(module)
+    if as_json:
+        print(json.dumps(document, ensure_ascii=False, sort_keys=True))
+    else:
+        print(" ".join(f"{key}={document[key]!r}" for key in CAPABILITY_KEYS))
+    return 0
 
 
 # ---------------------------------------------------------------------- CLI
@@ -336,8 +1001,10 @@ def build_parser() -> argparse.ArgumentParser:
             "The orchestrator's single entry (006-005). The runtime enters "
             "explicitly by --runtime (PD-8) and its execution configuration is "
             "the runtime section of runtimes.json under the CDAD user config "
-            "(PD-9); the bounded migrate verb moves a retired exec-config into "
-            "it (PD-25)."
+            "(PD-9); `dispatch` runs the external transport through the runtime "
+            "module, `record` registers the attempt of the native path, "
+            "`capabilities` asks the module and the bounded `migrate` verb moves "
+            "a retired exec-config into the section (PD-25)."
         ),
     )
     parser.add_argument(
@@ -352,6 +1019,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--runtime", required=True,
         help="destination runtime id; the id of its runtimes.json section")
+    parser.add_argument(
+        "--attempt-id", default=None,
+        help="record only: the identity of the attempt this invocation registers "
+             "(its record in the dispatch ledger)")
+    parser.add_argument(
+        "--native-result", default=None,
+        help="record only: the file carrying the byte-exact final text of the "
+             "role ('-' reads it from stdin); staged unchanged")
+    parser.add_argument(
+        "--session", default=None,
+        help="record only: the session id the native dispatch observed")
+    parser.add_argument(
+        "--parent", default=None,
+        help="record only: the session that dispatched the native child")
+    parser.add_argument(
+        "--since", default=None,
+        help="record only: the declared instant of the native dispatch (the "
+             "moment key)")
     parser.add_argument(
         "--legacy-exec-config", default=None,
         help="migrate only: the one retired exec-config document to move")
@@ -379,9 +1064,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "only document the migration reads (no location is probed)")
             return migrate(args.runtime, args.legacy_exec_config,
                            dry_run=args.dry_run, as_json=args.json)
-        if args.verb in U1A_DEFERRED_VERBS:
-            raise _verb_not_available(args.verb)
-        return dispatch(args.runtime, args.project_root, args.packet)
+        if args.verb == "capabilities":
+            return capabilities(args.runtime, as_json=args.json)
+        if args.verb == "record":
+            return record(args.runtime, args.project_root, args.packet,
+                          args.attempt_id, native_result=args.native_result,
+                          session=args.session, parent=args.parent,
+                          since=args.since, as_json=args.json)
+        return dispatch(args.runtime, args.project_root, args.packet,
+                        as_json=args.json)
     except DispatchError as exc:
         print(f"cdad_dispatch: {exc}", file=sys.stderr)
         return 1

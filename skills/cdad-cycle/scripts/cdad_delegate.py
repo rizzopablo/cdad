@@ -9,17 +9,18 @@ Destination-agnostic CLI. Given a project, a canonical packet published by
      destination never edits this interface (PD-1/INV-2);
   2. transports the published `PACKET.md` byte-identical to the adapter
      (PD-2/INV-3), never re-rendering nor re-writing the packet rules;
-  3. registers the attempt in the SAME I8 ledger by reusing
-     `cdad_packet.py prepare --record-dispatch`
-     (`.cdad/executions/<execution-id>/dispatches/<attempt>.json`), taking
-     execution_id/packet_id/role/substage FROM THE PUBLISHED PACKET (PD-3)
-     and the observed configuration from `--exec-config` (PD-8);
+  3. RELAYS the attempt its destination declares: the destination module is the
+     ONE writer of the I8 record of an external dispatch (006-005 PD-1/D-14), so
+     this interface never registers a second attempt, never derives one of its
+     own and never writes the ledger itself;
   4. returns the T1 output schema on stdout:
-     `{attempt, session, termination, delivery_ref, diagnosis}`.
+     `{attempt, session, termination, delivery_ref, diagnosis}`, with the
+     `attempt` the destination declared.
 
 It never writes `docs/.cdad-state.json` itself and never creates another ledger
-or state: the only state change is the `prepared -> dispatched` transition the
-reused machinery performs (INV-1). Execution configuration (runtime, binary,
+or state: the only state change of an external dispatch is the
+`prepared -> dispatched` transition the destination's own registration performs
+through the reused machinery (INV-1). Execution configuration (runtime, binary,
 logs, timeouts) arrives by `--exec-config`/flags; the delegated MODEL comes only
 from the delegation config (`delegation.json`, 006-003 D3). No host-specific
 value is embedded here (PD-8/INV-7).
@@ -41,8 +42,6 @@ import os
 import re
 import subprocess
 import sys
-import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -66,10 +65,6 @@ DELEGATION_ENV_FILE_NAME = "opencode-server.env"
 
 class DelegateError(RuntimeError):
     """Fail-closed diagnostic of the delegation interface."""
-
-
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _as_text(value: Any) -> str | None:
@@ -147,16 +142,6 @@ def delegation_credential_env_file() -> str | None:
         return None
     value = document.get("credential_env_file")
     return value if isinstance(value, str) and value else None
-
-
-def delegation_model_provenance(destination: str, role: str | None) -> str:
-    """I8 provenance of `model_configured` (D3: never the exec-config).
-
-    Names the delegation config, never an absolute host path (the I8 record
-    stays portable, 005-009 PD-8).
-    """
-    return (f"delegation config ({DELEGATION_CONFIG_NAME}): "
-            f"models.{destination}.{role or '<role>'}")
 
 
 def delegation_model(destination: str, role: str | None) -> str | None:
@@ -274,78 +259,19 @@ def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
 
 
 def _normalize_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
+    """The declared output schema (T1): the attempt is RELAYED from the
+    destination's own envelope — the module registers and declares it (PD-1 of
+    006-005); this interface never replaces it with one of its own."""
     termination = envelope.get("termination")
     if termination not in TERMINATION_VOCABULARY:
         termination = "unknown"
     return {
+        "attempt": _as_text(envelope.get("attempt")),
         "session": _as_text(envelope.get("session")),
         "termination": termination,
         "delivery_ref": _as_text(envelope.get("delivery_ref")),
         "diagnosis": _as_text(envelope.get("diagnosis")),
     }
-
-
-def _observation(runtime: str | None, model: str | None, session: str | None,
-                 started_at: str, *, model_source: str) -> dict[str, Any]:
-    """Build the closed-key I8 observation document (PD-3/PD-8).
-
-    006-003 D3: `model_configured` comes from the delegation config (never
-    from the exec-config); `model_source` is its provenance.
-    """
-    return {
-        "runtime": runtime,
-        "model_configured": model,
-        "model_reported": None,
-        "session": session,
-        "started_at": started_at,
-        "provenance": {
-            "runtime": "execution config (--exec-config): runtime",
-            "model_configured": model_source,
-            "model_reported": "destination adapter reported no model",
-            "session": "destination adapter envelope: session",
-            "started_at": "delegation interface clock (UTC)",
-        },
-    }
-
-
-def _register_dispatch(project_root: Path, packet_id: str, request: dict[str, Any],
-                       attempt_id: str, observation: dict[str, Any]) -> None:
-    """Register the attempt by reusing `cdad_packet.py prepare --record-dispatch`.
-
-    The observation document is staged under the execution directory (inside
-    the project) and removed afterwards; the record and the state transition
-    are written by the reused machinery in its own ledger (PD-2)."""
-    execution_id = _as_text(request.get("execution_id"))
-    if execution_id is None:
-        raise DelegateError(f"packet {packet_id!r} request has no execution_id")
-    observation_dir = project_root / ".cdad" / "executions" / execution_id
-    observation_dir.mkdir(parents=True, exist_ok=True)
-    observation_path = observation_dir / f".{attempt_id}.observation.json"
-    payload = (json.dumps(observation, ensure_ascii=False, sort_keys=True, indent=2)
-               + "\n").encode("utf-8")
-    packet_cli = Path(__file__).resolve().parent / PACKET_CLI_NAME
-    if not packet_cli.is_file():
-        raise DelegateError(
-            f"cannot register the dispatch: {PACKET_CLI_NAME} is not next to "
-            "the delegation interface")
-    try:
-        observation_path.write_bytes(payload)
-    except OSError as exc:
-        raise DelegateError(f"cannot stage the dispatch observation: {exc}") from exc
-    try:
-        proc = subprocess.run(
-            [sys.executable, str(packet_cli), "prepare",
-             "--project-root", str(project_root),
-             "--record-dispatch", packet_id,
-             "--attempt-id", attempt_id,
-             "--input", str(observation_path)],
-            capture_output=True, text=True, cwd=str(project_root))
-    finally:
-        observation_path.unlink(missing_ok=True)
-    if proc.returncode != 0:
-        detail = (proc.stderr or proc.stdout).strip()
-        raise DelegateError(
-            f"dispatch registration failed for attempt {attempt_id!r}: {detail[:300]}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -378,32 +304,22 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     packet_md, request = _packet_paths(project_root, args.packet)
     config = (_load_json(args.exec_config, "execution config")
               if args.exec_config else {})
-    runtime = _as_text(config.get("runtime"))
     role = _as_text(request.get("role"))
-    # 006-003 D3/§2.2: the effective model comes ONLY from the delegation
-    # config (the value is resolved by destination and role, never persisted);
-    # a `model` left in the exec-config is ignored with a one-line notice.
-    model = delegation_model(destination, role)
+    # 006-003 D3/§2.2: the model of the delegation is NEVER this interface's
+    # business; a `model` left in the exec-config is ignored with a one-line
+    # notice that names the delegation config.
     if _as_text(config.get("model")) is not None:
         _warn_legacy_model(destination, role)
-    started_at = _now()
-    attempt_id = f"delegate-{destination}-{uuid.uuid4().hex[:12]}"
     packet_bytes = packet_md.read_bytes()
     envelope = _run_adapter(adapter, project_root, args.packet, destination,
                             args.exec_config, packet_bytes,
                             _wait_timeout(config))
-    normalized = _normalize_envelope(envelope)
-    observation = _observation(
-        runtime, model, normalized["session"], started_at,
-        model_source=delegation_model_provenance(destination, role))
-    _register_dispatch(project_root, args.packet, request, attempt_id, observation)
-    return {
-        "attempt": attempt_id,
-        "session": normalized["session"],
-        "termination": normalized["termination"],
-        "delivery_ref": normalized["delivery_ref"],
-        "diagnosis": normalized["diagnosis"],
-    }
+    # 006-005 PD-1/D-14: ONE attempt per dispatch, and it is the destination
+    # module's — it registers its own record and declares its attempt in the
+    # envelope; this interface RELAYS it and registers nothing (a second record
+    # with a different observation would make the external path have two
+    # writers of the same attempt).
+    return _normalize_envelope(envelope)
 
 
 def main(argv: list[str] | None = None) -> int:
