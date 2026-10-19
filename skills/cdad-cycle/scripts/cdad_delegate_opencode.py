@@ -246,6 +246,14 @@ STORE_READS_KEY = "store_reads"
 STORE_MOMENT_COLUMN = "time_created"
 STORE_MOMENT_EPOCH_MILLISECONDS = 1000
 
+# 006-005 U6-6 (D-ADP-2): the store's `model` is TEXT carrying either a JSON
+# document (the installed version's shape) or plain text. The useful form of the
+# I8 observation is the one the EXTERNAL path already declares
+# (`_model_reported_from_row`): the module renders it in the observation it hands
+# to the entry, so the native path reports the SAME `model_reported` and never
+# the raw document.
+STORE_MODEL_COLUMN = "model"
+
 # 006-001 T2 (PD-7..PD-11, §2.4/§2.5/§2.7): the wait after the client exits,
 # the classification of the durable row, the ordered termination of the
 # adapter's OWN process group and the prior attempt check.
@@ -2137,8 +2145,10 @@ def _observe_document(store_path: Path, session_id: str | None,
     moment after `--since`; exactly one is returned, more than one is NAMED as
     an ambiguity and nothing is accredited (never a rejection). The returned
     document carries `store_reads`, the accesses of the correlated row performed
-    by this invocation (exactly one). The second element is a diagnostic that
-    does not accredit a row (the entry declares it).
+    by this invocation (exactly one). U6-6/D-ADP-2: its `model` is rendered with
+    the external path's single normalization (`_model_reported_from_row`), so
+    both dispatch paths report the same `model_reported`. The second element is a
+    diagnostic that does not accredit a row (the entry declares it).
     """
     if session_id is None and parent_id is None:
         raise AdapterError(
@@ -2190,6 +2200,13 @@ def _observe_document(store_path: Path, session_id: str | None,
     if row is None:
         return None, detail
     document = dict(row)
+    # U6-6/D-ADP-2: the row the entry consumes carries the model in the form the
+    # external path already pins (`providerID/id`, plain text preserved, never a
+    # fabricated value) — the SAME single implementation, applied where the
+    # module renders its observation.
+    if STORE_MODEL_COLUMN in document:
+        document[STORE_MODEL_COLUMN] = _model_reported_from_row(
+            document[STORE_MODEL_COLUMN])
     document[STORE_READS_KEY] = 1
     return document, detail
 
