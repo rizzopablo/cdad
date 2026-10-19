@@ -1,6 +1,6 @@
 # 006-005-native-path-parity — PLAN (etapa 2, revisión draft-005)
 
-Estado: **BORRADOR no aprobado**, insumo de la re-review focal del dictamen (`plan-review` sobre `draft-plan`, enmienda 006) y de la aprobación de la autoridad vigente, antes del RED.
+Estado: **APROBADO** (draft-005, tras cuatro reviews independientes; ver la marca al final). Habilita el RED por unidad.
 Contrato: epic `plan.md` §11/§12/§13. Spec: la de esta carpeta (misma entrega). Base medida: HEAD `6cbff30a` (draft-004 midió `b235d497`, la review por escenarios `a8865e0c`, draft-003 `b82e6a3` y el dictamen `357c461`; `git diff b235d497..HEAD --stat` es docs-only —5 archivos, todos `docs/`—, las citas de código siguen vigentes y se re-midieron). Anonimización como en la spec. Es un plan de feature: unidades, archivos, RED y gates.
 Corrección de esta revisión (draft-005): (1) **B-1** — U6/PD-22 ya no pide dos recepciones del mismo paquete: el mismo escenario en las dos vías **sobre dos paquetes de la misma ejecución** (elegido y declarado; la transición `delivery` del primero lo deja `completed` y el segundo `prepare` queda desbloqueado), con la evidencia y los `observable_checks` ajustados; (2) **O-2** — la sonda V-14 registra **qué copia del agente** cargó el hijo nativo además de si aplicó el mapa, con la atribución declarada; (3) **O-3** — la acreditación «verificada» exige **al menos una llave discriminante**; con sólo «agente» el resultado es `unknown` (entrega sólo por PD-6) y el oráculo incluye dos despachos nativos concurrentes del mismo rol; (4) **O-4** — el RED de U3b suma fixtures de raíz temporal que solapan una ruta privada y el directorio de derivados, donde `deny` gana; (5) **O-5** — D-9 alineado con la superficie de §2.1 (`--project-root`); (6) **fila del scribe adoptada** (§12): `_allowed_kinds` admite `role-report` para el scribe, con **U7** (RED + regresiones de la tabla), **PD-26** y **E3 sin excepción**.
 Corrección de la revisión anterior (draft-004): decisiones del owner registradas como tomadas (PD-19 aprobada; runtime explícito —O-9 cerrado, V-9 resuelta—; modelo y credencial fuera de `runtimes.json` confirmados); correlación por transporte en U2; permiso del agente derivado en U3 (PD-24); paso de migración `migrate` en U1a (E5, PD-25); O-10 (barrido previo al parseo del verbo); escenarios E1..E5 en la spec §3.1 y en el recorrido de U6 (PD-22).
@@ -414,3 +414,9 @@ Derivado de las fichas de §3 (archivos, RED, regresiones y A-1) para que el CLI
 }
 ```
 
+
+---
+
+Erratas de letra aceptadas en la aprobación (`plan-review-004.md`, opcionales sin efecto en contrato): **O-6**, el recorrido de U6/PD-22 usa un paquete distinto por cada entrega (tres despachos con entrega más el de repetición de E4), nunca dos recepciones del mismo paquete; donde dice «dos paquetes», rige ese invariante. **O-7**, el caso `--exec-config` en `argv` sobre `migrate` del oráculo de PD-9 lo declara el RED de U1a. N-1 (base medida) sin efecto.
+
+Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 2026-10-18; enmienda PD-19 y las decisiones de runtime, modelo y credencial approved by Pablo on 2026-10-18 (`execution.md`, «Decisiones del owner sobre los gates de 006-005»).
