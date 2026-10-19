@@ -772,12 +772,20 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     # PD-10/INV-4 (005-003 T6): the closed field set is EXTENDED with one declared
     # optional property (`plan_task`, the explicit task selector). It is never
     # relaxed: any other unknown key still fails the set equality below.
-    optional = {"plan_task"}
-    if set(document) not in (required, required | optional) or document.get("schema_version") != 1:
+    # PD-7/INV-4 (006-005 U1c): a second declared optional property is added the
+    # same way (`agent`, the role+stack agent that travels in the package); the
+    # closure is not relaxed — the set equality below still rejects every other
+    # unknown key.
+    optional = {"plan_task", "agent"}
+    if (not required <= set(document) <= (required | optional)
+            or document.get("schema_version") != 1):
         raise PolicyError("request fields do not match schema")
     if "plan_task" in document and (
             not isinstance(document["plan_task"], str) or not document["plan_task"]):
         raise PolicyError("request.plan_task must be a non-empty string")
+    if "agent" in document and (
+            not isinstance(document["agent"], str) or not document["agent"]):
+        raise PolicyError("request.agent must be a non-empty string")
     for key in ("packet_id", "execution_id", "feature_id", "role", "substage", "objective", "expected_output"):
         if not isinstance(document.get(key), str) or not document[key]:
             raise PolicyError(f"request.{key} must be a non-empty string")
@@ -4298,6 +4306,22 @@ def _publish_generation(
         raise PolicyError(f"cannot write prepared packet: {exc}") from exc
 
 
+def _packet_agent(role: str, state: dict[str, Any]) -> str:
+    """PD-7 (006-005 U1c, §2.7/D-13): the agent that travels in the package.
+
+    The agent is resolved from the packet's role plus the execution stack
+    declared by the project state (`docs/.cdad-state.json.stack`): with a
+    non-empty stack it is `cdad-<role>-<stack>` (e.g. `cdad-architect-odoo`),
+    without it `cdad-<role>`. It is the field the module translates into its
+    invocation and against which the correlation compares (§2.3), so it stays
+    an ADDITIVE declared property of the request: it never enters the render.
+    """
+    stack = state.get("stack")
+    if isinstance(stack, str) and stack:
+        return f"cdad-{role}-{stack}"
+    return f"cdad-{role}"
+
+
 def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
     """Build request, packet and state binding; write all of them or nothing."""
     if not args.role or not args.substage or not args.objective:
@@ -4460,6 +4484,10 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
             "feature_id": execution["feature_id"],
             "role": role,
             "substage": substage,
+            # PD-7 (006-005 U1c, §2.7/D-13): the agent travels in the package.
+            # Declared OPTIONAL property (validate_request admits it, the render
+            # ignores it): a package published before this feature stays valid.
+            "agent": _packet_agent(role, state),
             "objective": args.objective,
             "contract": contract_object,
             "inputs": [{"path": contract_path, "purpose": "draft plan for review"}
