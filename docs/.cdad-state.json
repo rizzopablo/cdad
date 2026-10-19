@@ -10727,6 +10727,47 @@
         "docs/specs/006-005-native-path-parity/u7-green.md": "659704719111fe7d83df142ec201921c19712f5a395f60bf321f6aaef2cde385"
       },
       "note": "U7 GREEN: fila del scribe admite role-report; focales 006-005 verificados por el orquestador (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T10:31:12.416839+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "d7cb479cfbfd62278f2d3809aa47a9b532a6e4716274d4fdbb7f7d2bd75bc959",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-011",
+        "receipt_sha256": "3cb2d70e45e604e279b44c640f5785619bc8d04d451eb6ca264a0776940190bb",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u4-red.md",
+            "07f7683c29c76ad3145733819df1889eccfd4535e2c21dd7e5c1c7a57ef95220"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-011",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-011/receipt.json",
+      "receipt_sha256": "3cb2d70e45e604e279b44c640f5785619bc8d04d451eb6ca264a0776940190bb",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u4-red.md": "07f7683c29c76ad3145733819df1889eccfd4535e2c21dd7e5c1c7a57ef95220"
+      },
+      "note": "U4 RED 3d23ad6: 6 focales en rojo, 1 ancla; 2 regresiones de oráculos de texto rotas por U1b/U3 (falsos positivos) (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10741,7 +10782,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T10:14:02.937615+00:00",
+  "last_updated": "2026-10-19T10:31:12.416839+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10852,7 +10893,7 @@
     "id": "006-005-native-path-parity-test-writer-red-011",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
