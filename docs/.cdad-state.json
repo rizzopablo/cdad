@@ -10153,6 +10153,47 @@
         "docs/specs/006-005-native-path-parity/u1b-red.md": "8ced237fc1dc7a9be960640132cd9bc49d7bf7c8ca1c82621f4d5d0124019137"
       },
       "note": "U1b RED 27b85a4: 12 focales en rojo + 1 guarda verde (U1a); A-1 de 4 tests reformulados; hallazgo de aislamiento en test_005_010_t1_durable_signal TestPd6 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "red",
+      "substage": null,
+      "at": "2026-10-19T04:47:31.583142+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "6cb310b2f140ffd9ffd325d0e537a2d9894e931ee75b5301d314d374ad337e44",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-003",
+        "receipt_sha256": "cd4eaff427bb0536e4e48e9473fce2a9e7d9b603f33c7a62fd1b24321d548295",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u1b-testfix.md",
+            "c955f2e9c2d3e7f1e370eb42aaded402550316251a1704836fa0cb1c18a1e31d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-003/receipt.json",
+      "receipt_sha256": "cd4eaff427bb0536e4e48e9473fce2a9e7d9b603f33c7a62fd1b24321d548295",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u1b-testfix.md": "c955f2e9c2d3e7f1e370eb42aaded402550316251a1704836fa0cb1c18a1e31d"
+      },
+      "note": "U1b testfix 8bbbdd4: aislamiento de config de usuario en AdapterCase y durable_signal; fallas = solo el RED declarado (copia sanitized por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10167,7 +10208,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T04:32:44.731069+00:00",
+  "last_updated": "2026-10-19T04:47:31.583142+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10278,7 +10319,7 @@
     "id": "006-005-native-path-parity-test-writer-red-003",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
