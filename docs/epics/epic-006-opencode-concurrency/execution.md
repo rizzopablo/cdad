@@ -323,3 +323,14 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
     - 006-005: la fila E4 de §3.1 se acota a la vía externa y el límite nativo D-U65-4 entra a §9 (salida procedimental: el siguiente coordinador ejecuta `record`).
   - **Deuda:** recuperar como entrega tardía la salida del huérfano que queda en el store (D-U65-5).
   - El texto de la spec aprobada está fijado por sha en la ejecución: la enmienda se aplica a `spec.md` en el cierre de la feature, con re-pin declarado, igual que los demás hallazgos de U6.
+- **U6-4** (RED `8fe0d8c`, GREEN `b06bd2f`) y **U6-5** (RED `a0d96b5`, testfix `569682d` por contradicción del oráculo 3 con el 8 que detectó el implementer, GREEN `471db74`) quedan cerrados. Focales de 006-005: 116/116.
+- **Re-recorrido en un proyecto descartable nuevo** (worktree en `83a897f`, con los dos fixes, coordinador en la carpeta de afuera):
+  - **E1 nativo ⇒ verificado** «(parent, moment)», proyecto no evaluable (ancestro). La sesión del registro es la del hijo real y `model_reported` sale del store; `receive` rc=0 y la entrega queda `completed`. E2 nativo desde la carpeta de afuera sigue bloqueado por la copia global (O-2, límite declarado), y esta vez el rol se detuvo sin rodeo.
+  - **E4 ⇒ cumple.** Con el rol en curso, el registro provisional `write-ahead:` ya tenía la sesión elegida. Tras el SIGKILL del grupo de `dispatch` con el cliente vivo:
+    1. `reconcile` ⇒ `dispatched-unknown` (no autoriza repetir);
+    2. el re-despacho ⇒ `blocked` («prior attempt … still LIVE»), sin lanzar un segundo cliente;
+    3. `disposition` ⇒ `failed`, con `validate-state` VALID;
+    4. el siguiente `prepare` procede.
+    - El huérfano terminó y commiteó su test (efecto tardío visible en git). El estado sigue VALID y `reconcile` sigue sin autorizar la repetición. Su salida en el store es la deuda D-U65-5.
+- **V-11 ⇒ cumple.** En otro proyecto descartable, el fixture `stack: odoo` (campo de bootstrap, declarado) da `REQUEST.json.agent` = `cdad-test-writer-odoo`. El despacho externo real (OpenCode v2.0.27) muestra `session_v2.agent` = `cdad-test-writer-odoo` e `idle_outcome` `succeeded`, con un único registro I8 final (sin marca) y la entrega recibida.
+- **Hallazgo U6-6 (paridad, menor):** `model_reported` difiere entre vías. La externa lo normaliza a `<provider>/<model>`; la nativa (`record`) guarda el JSON crudo de `session_v2.model`. La atribución es correcta en las dos, pero la forma no es paritaria, y esta feature es la paridad de la vía nativa. Decisión: se corrige con un RED/GREEN corto, normalizando en el módulo, que conoce su store, igual que el momento de U6-4.
