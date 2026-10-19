@@ -949,11 +949,26 @@ def _uncredited_capabilities(reason: str) -> dict[str, Any]:
     }
 
 
-def module_capabilities(module: Path) -> dict[str, Any]:
+def module_capabilities(module: Path, *, runtime: str,
+                        section: dict[str, Any], root: Path) -> dict[str, Any]:
     """§2.2/PD-10/O-6: the module's declared capabilities, or the fail-closed
-    declaration naming the missing surface (never a silent degradation)."""
-    proc = _run_module(module, [sys.executable, str(module), "--capabilities"],
-                       timeout=CAPABILITIES_TIMEOUT_SECONDS)
+    declaration naming the missing surface (never a silent degradation).
+
+    The runtime section travels to the module on the same channel the external
+    path already uses (§2.6): the derived transient configuration handed by
+    `--exec-config`, removed when the call ends. Without it the module cannot
+    observe the configured binary or store and could only answer `unknown`
+    (U6-1): the capability of a configured runtime is observed, never supposed.
+    """
+    derived = derived_internal_config(root, runtime, section)
+    try:
+        proc = _run_module(
+            module,
+            [sys.executable, str(module), "--capabilities",
+             "--exec-config", str(derived)],
+            timeout=CAPABILITIES_TIMEOUT_SECONDS)
+    finally:
+        derived.unlink(missing_ok=True)
     if proc is None:
         return _uncredited_capabilities(
             f"the runtime module {module.name} could not be run to answer "
@@ -980,10 +995,21 @@ def module_capabilities(module: Path) -> dict[str, Any]:
     return document
 
 
-def capabilities(runtime: str, *, as_json: bool) -> int:
-    """PD-10: the declared capabilities of the runtime, from its module."""
+def capabilities(runtime: str, project_root: str | None, *,
+                 as_json: bool) -> int:
+    """PD-10/PD-25: the declared capabilities of the runtime, from its module.
+
+    The section of `runtimes.json` is resolved first (PD-9: without it the verb
+    fails closed with the single-source diagnostic) and reaches the module as
+    the derived configuration, exactly as the external path delivers it; the
+    answer therefore reports the OBSERVED binary version and store columns of
+    the configured runtime, never a supposed capability (U6-1).
+    """
     module = resolve_runtime_module(runtime)
-    document = module_capabilities(module)
+    section = load_runtime_section(runtime)
+    root = _project_root(project_root)
+    document = module_capabilities(module, runtime=runtime, section=section,
+                                   root=root)
     if as_json:
         print(json.dumps(document, ensure_ascii=False, sort_keys=True))
     else:
@@ -1065,7 +1091,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return migrate(args.runtime, args.legacy_exec_config,
                            dry_run=args.dry_run, as_json=args.json)
         if args.verb == "capabilities":
-            return capabilities(args.runtime, as_json=args.json)
+            return capabilities(args.runtime, args.project_root,
+                                as_json=args.json)
         if args.verb == "record":
             return record(args.runtime, args.project_root, args.packet,
                           args.attempt_id, native_result=args.native_result,
