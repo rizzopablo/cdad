@@ -1266,7 +1266,17 @@ class TestU65ReDispatchLiveSession(U65WriteAheadCase):
         provisional record names the chosen session and its row is live (no
         `time_idle`); re-dispatching the same packet terminates `blocked`
         with `session: null` and does NOT invoke the runtime binary again (no
-        second writer), and the single provisional record stays untouched.
+        second writer).
+
+        testfix: oraculo 3 alineado con D-U65-1 y el oraculo 8. El
+        re-despacho bloqueado es OTRO despacho, y termina ANTES de su propio
+        write-ahead (el intento previo vivo lo bloquea), así que aplica la
+        última viñeta de D-U65-1: registra COMO HOY un registro final. PD-1
+        es un registro POR DESPACHO, así que tras el re-despacho quedan DOS:
+        (i) el provisional del primer despacho queda INTACTO (mismos bytes,
+        marca `write-ahead:` y la sesión elegida); (ii) el registro nuevo es
+        final (sin marca, `session: null`, procedencia de no despachado de
+        §2.6). Es exactamente lo que asserta el oráculo 8.
 
         RED today: no provisional record exists and the re-dispatch invokes
         `run` again."""
@@ -1301,6 +1311,13 @@ class TestU65ReDispatchLiveSession(U65WriteAheadCase):
             len(self.records()), 1,
             msg="E4/PD-19 (U6-5): la caída debe dejar UN registro: %r"
                 % sorted(self.records()))
+        provisional_before = self.provisional_records()
+        self.assertEqual(
+            len(provisional_before), 1,
+            msg="E4/PD-19 (U6-5): la caída debe dejar UN provisional: %r"
+                % sorted(self.records()))
+        provisional_stem = next(iter(provisional_before))
+        provisional_bytes = self.record_bytes(provisional_stem)
         runs_before = len(self.run_calls())
         self.assertEqual(runs_before, 1, msg="fixture: una sola invocación run")
 
@@ -1322,13 +1339,51 @@ class TestU65ReDispatchLiveSession(U65WriteAheadCase):
                 "%r" % [entry.get("argv") for entry in self.run_calls()])
         after = self.records()
         self.assertEqual(
-            len(after), 1,
-            msg="PD-1: el re-despacho bloqueado no debe registrar un segundo "
-                "intento: %r" % sorted(after))
+            len(after), 2,
+            msg="D-U65-1/PD-1: el re-despacho bloqueado es OTRO despacho y "
+                "termina ANTES de su write-ahead: registra COMO HOY un "
+                "registro final propio junto al provisional del primer "
+                "despacho; hay %r" % sorted(after))
+        self.assertIn(
+            provisional_stem, after,
+            msg="E4/PD-19 (U6-5): el provisional del primer despacho debe "
+                "seguir en disco; hay %r" % sorted(after))
+        self.assertEqual(
+            self.record_bytes(provisional_stem), provisional_bytes,
+            msg="E4/PD-19 (U6-5): el registro provisional del primer "
+                "despacho debe quedar INTACTO (mismos bytes) tras el "
+                "re-despacho bloqueado")
+        still = after[provisional_stem]
+        self.assert_provisional_shape(
+            still, "oráculo 3 (provisional del primer despacho)")
+        self.assertEqual(
+            still.get("session"), chosen,
+            msg="E4/PD-19 (U6-5): el provisional intacto conserva la sesión "
+                "elegida por el primer despacho (%r); persistió %r"
+                % (chosen, still.get("session")))
+        new_stems = [stem for stem in after if stem != provisional_stem]
+        self.assertEqual(
+            len(new_stems), 1,
+            msg="D-U65-1: la terminación bloqueada debe dejar UN registro "
+                "nuevo junto al provisional: %r" % sorted(after))
+        terminal = after[new_stems[0]]
+        source = self.assert_final_record(
+            terminal, "oráculo 3 (terminación previa al write-ahead)")
+        self.assertIsNone(
+            terminal.get("session"),
+            msg="006-001 PD-8: una terminación anterior al despacho declara "
+                "`session: null`; vio %r" % terminal.get("session"))
+        self.assertIn(
+            "not dispatched", source,
+            msg="006-001 §2.6: la terminación anterior al write-ahead "
+                "declara la procedencia de no despachado (`not dispatched`): "
+                "%r" % source)
         self.assertEqual(
             len(self.provisional_records()), 1,
-            msg="E4/PD-19 (U6-5): el provisional del intento interrumpido "
-                "debe seguir siendo el único registro")
+            msg="E4/PD-19 (U6-5): solo el primer despacho queda provisional; "
+                "la terminación nueva es final: %r"
+                % {stem: (doc.get("provenance") or {}).get("session")
+                   for stem, doc in self.provisional_records().items()})
 
 
 # ---------------------------------------------------------- oracle 4 (PD-3)
