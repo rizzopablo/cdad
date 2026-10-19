@@ -10194,6 +10194,47 @@
         "docs/specs/006-005-native-path-parity/u1b-testfix.md": "c955f2e9c2d3e7f1e370eb42aaded402550316251a1704836fa0cb1c18a1e31d"
       },
       "note": "U1b testfix 8bbbdd4: aislamiento de config de usuario en AdapterCase y durable_signal; fallas = solo el RED declarado (copia sanitized por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "green",
+      "substage": null,
+      "at": "2026-10-19T05:19:27.102175+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "76b180c7ce9aab189d4c997f5bbe02d327266168c15842e9d2852011b4b39f1e",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "green",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-implementer-green-002",
+        "receipt_sha256": "847a47723993dd58a578fe445e730442fa3930225c1ed668fda926002817496b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u1b-green.md",
+            "b57d4f54b31b141cd2461320e76172cd676302b963a6e1262036723f7ae63215"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-implementer-green-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-implementer-green-002/receipt.json",
+      "receipt_sha256": "847a47723993dd58a578fe445e730442fa3930225c1ed668fda926002817496b",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u1b-green.md": "b57d4f54b31b141cd2461320e76172cd676302b963a6e1262036723f7ae63215"
+      },
+      "note": "U1b GREEN 3af53f1 parcial: 3 oráculos bloqueados por defectos de test (PD-5 subTest con attempt fijo; PD-23 fixture sin aprobación de epic; t1_interface snapshot tardío y attempt constante); testfix pedido (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -10208,7 +10249,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-19T04:47:31.583142+00:00",
+  "last_updated": "2026-10-19T05:19:27.102175+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -10319,7 +10360,7 @@
     "id": "006-005-native-path-parity-implementer-green-002",
     "role": "implementer",
     "substage": "green",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
