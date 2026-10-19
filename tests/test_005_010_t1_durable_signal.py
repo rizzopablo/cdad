@@ -422,12 +422,27 @@ class TestPd6WorkerI8FromDurableRow(AdapterCase):
         la fila (el fixture usa ROW_MODEL != FAKE_MODEL para discriminar
         la fuente por comportamiento); provenance declara la fuente de
         ambos; `runtime` de la config; `model_configured` de la config de
-        delegación (A-1 de 006-003 U4/D3)."""
+        delegación (A-1 de 006-003 U4/D3).
+
+        TESTFIX de aislamiento (006-005 U1b): la premisa de esa última
+        aserción —«esta corrida NO provisiona config de delegación» ⇒
+        `model_configured` null— exige que la INVOCACIÓN de despacho no lea
+        la config de usuario del host: `HOME` y `XDG_CONFIG_HOME` se
+        redirigen a un temporal VACÍO del test (`empty_user_home()`). Se
+        corrige el AISLAMIENTO; la aserción de PD-6 se conserva."""
         self.assert_derived_agents_published()
         fake = self.fake_runtime("pd6-i8-durable", variant="succeeded")
         records_before = dispatch_records(self.root, self.execution_id)
 
-        proc = self.run_opencode(fake)
+        # TESTFIX de aislamiento (006-005 U1b): el despacho corre con
+        # `HOME`/`XDG_CONFIG_HOME` apuntando a un temporal VACÍO del test
+        # (precedente de la misma familia: `delegation_home()` de
+        # tests/test_005_010_t4_integration.py). Sin este aislamiento, el
+        # producto lee el `delegation.json` del USUARIO DEL HOST y
+        # `model_configured` deja de ser null: la premisa de la aserción
+        # final («esta corrida NO provisiona config de delegación») sería
+        # falsa por contaminación del entorno, no por el contrato.
+        proc = self.run_opencode(fake, user_home=self.empty_user_home())
         out = self.envelope(proc, "PD-6 I8 del worker")
         self.assertEqual(
             out["termination"], "completed",

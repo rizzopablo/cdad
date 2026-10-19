@@ -1111,17 +1111,38 @@ class AdapterCase(DelegateCase):
             "sessions_db": fake_dir / "sessions.db",
         }
 
+    def empty_user_home(self) -> Path:
+        """`HOME`/`XDG_CONFIG_HOME` VACÍOS del fixture para UNA invocación de
+        despacho: un temporal del test SIN `cdad/` (ni `delegation.json` ni
+        `runtimes.json`), jamás la config de usuario del host. Lo usan los
+        casos cuya premisa es la AUSENCIA de config de usuario (p.ej.
+        `model_configured` null sin `delegation.json`, A-1 de 006-003 U4/D3):
+        sin este aislamiento el test lee la config del host y la premisa deja
+        de ser cierta. Precedente de la misma familia: `delegation_home()` de
+        tests/test_005_010_t4_integration.py."""
+        home = Path(self._tmp) / "user-home"
+        (home / ".config").mkdir(parents=True, exist_ok=True)
+        return home
+
     def run_opencode(self, fake: dict, *,
                      destination: str = "opencode",
-                     cwd: Path | None = None) -> subprocess.CompletedProcess:
+                     cwd: Path | None = None,
+                     user_home: Path | None = None) -> subprocess.CompletedProcess:
         """Invoca la interfaz STAGEADA con destino `opencode` y la config
         del binario falso (el env del test se hereda al árbol de procesos).
         Con `cwd` dado, el proceso corre EN ese directorio y su PWD ES ese
         mismo directorio (como lo deja un shell `cd`: simulación fiel de un
-        coordinador cuya sesión corre desde un cwd ajeno)."""
-        env = None
+        coordinador cuya sesión corre desde un cwd ajeno). Con `user_home`
+        dado (`empty_user_home()`), `HOME` y `XDG_CONFIG_HOME` se redirigen a
+        ese temporal VACÍO: la corrida NO lee la config de usuario del host
+        (corrige el AISLAMIENTO del caso, nunca su aserción)."""
+        overrides: dict[str, str] = {}
+        if user_home is not None:
+            overrides["HOME"] = str(user_home)
+            overrides["XDG_CONFIG_HOME"] = str(user_home / ".config")
         if cwd is not None:
-            env = {**os.environ, "PWD": str(cwd)}
+            overrides["PWD"] = str(cwd)
+        env = {**os.environ, **overrides} if overrides else None
         return subprocess.run(
             [sys.executable, str(self.staged),
              "--project-root", str(self.root),
