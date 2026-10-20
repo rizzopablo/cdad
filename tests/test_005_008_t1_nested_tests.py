@@ -69,6 +69,31 @@ PD-6 falla SOLO en su control positivo (hermano no privado) por el mismo
 defecto PD-1. TODA falla es AssertionError de comportamiento sobre veredictos
 del oráculo único — no ImportError/SyntaxError/NameError/AttributeError, sin
 nombres de funciones internas ni mocks.
+
+A-1 — REFORMULACIÓN DECLARADA (006-005, decisión B-1 del dictamen de etapa 4)
+`test_pd7_literal_tests_dir_under_impl_not_amplified` exigía que el derivado
+del IMPLEMENTER permitiera editar `webmin-module/module/tests/x.py` —un
+`tests/` literal NO declarado, anidado bajo una raíz de implementación— («los
+mapas expresan exactamente al clasificador»: ni amplificación ni
+sobre-restricción). Ese oráculo se REEMPLAZA: el implementer NUNCA edita
+tests, ni convencionales ni co-ubicados, aunque estén dentro de una raíz de
+implementación. PD ENMENDADA: PD-7 de 005-008 («sin amplificación») se
+ENMIENDA en su eje «ni sobre-restricción» para el IMPLEMENTER —la
+clasificación por ruta NO habilita la escritura de un test dentro de una raíz
+de implementación—; la CLASIFICACIÓN de la política NO cambia (el control
+`validate-policy --classify` sigue exigiendo `implementation` para el
+`tests/` literal NO declarado, y ese control se conserva en el test).
+RAZÓN: `docs/specs/006-005-native-path-parity/review.md` B-1 — la barrera del
+rol es una CONVENCIÓN DEL ROL, no una clasificación de ruta, y el derivado
+aplica la barrera del agente generado restringida por la política, nunca
+ampliada (`docs/epics/epic-006-opencode-concurrency/execution.md`
+§«006-005: review de etapa 4»). Es el MISMO oráculo ya reformulado en
+`tests/test_004_002_t5_reviewfix.py` (A-1): la barrera del rol gana también
+sobre un `tests/` literal anidado bajo una raíz de implementación. Barrido
+declarado sobre `tests/`: ningún otro test fija `allow` del implementer sobre
+un test dentro de una raíz de implementación (los demás fijan `deny` para el
+implementer sobre tests, o `allow` del test-writer, o `allow` del implementer
+sobre código que NO es test).
 """
 
 from __future__ import annotations
@@ -451,9 +476,10 @@ class TestPd7NoAmplification(PerlLayoutProject):
     def test_pd7_literal_tests_dir_under_impl_not_amplified(self) -> None:
         """PD-7: con un directorio literal tests/ anidado bajo la raíz de
         implementación (NO declarado en la política), el test-writer resuelve
-        deny en read y edit, y el implementer allow en edit. Además, NO
-        existe ninguna regla global **/t/** ni **/*.t en los derivados
-        publicados: solo se reabren los árboles/archivos declarados
+        deny en read y edit, y el implementer deny en edit (A-1: gana la
+        BARRERA DEL ROL — ver la declaración A-1 del docstring del módulo).
+        Además, NO existe ninguna regla global **/t/** ni **/*.t en los
+        derivados publicados: solo se reabren los árboles/archivos declarados
         (sondas no declaradas con forma de test Perl + barrido de reglas)."""
         proc = self.prepare_perl(extra_files=(LITERAL_TESTS_DIR,))
         with self.subTest(control="classify", probe=LITERAL_TESTS_DIR):
@@ -489,10 +515,17 @@ class TestPd7NoAmplification(PerlLayoutProject):
                           probe=LITERAL_TESTS_DIR):
             got = verdict(imp, "edit", LITERAL_TESTS_DIR)
             self.assertEqual(
-                got, "allow",
-                msg=f"PD-7: el mapa `edit` de {IMPLEMENTER} resolvió "
-                    f"edit({LITERAL_TESTS_DIR!r}) como {got!r} — "
-                    f"sobre-restricción: es implementación")
+                got, "deny",
+                msg=f"PD-7 (reformulado 006-005/A-1, decisión B-1): el mapa "
+                    f"`edit` de {IMPLEMENTER} resolvió edit({LITERAL_TESTS_DIR!r}) "
+                    f"como {got!r} — la barrera del rol del implementer NIEGA "
+                    f"los tests (convencionales, co-ubicados o declarados) "
+                    f"aunque estén dentro de una raíz de implementación; el "
+                    f"derivado aplica la barrera del agente generado "
+                    f"restringida por la política, nunca ampliada (decisión "
+                    f"B-1). La CLASIFICACIÓN no cambia: el control "
+                    f"`validate-policy --classify` de este test sigue "
+                    f"exigiendo 'implementation' para esa ruta")
         all_pub = require_derived(
             self, self.root,
             tuple(sorted(published_derived(self.root))))
