@@ -12371,13 +12371,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-006-spec-plan-review-architect-draft-001",
-    "role": "architect",
-    "substage": "draft",
-    "status": "completed",
+    "id": "006-006-spec-plan-review-reviewer-plan-review-001",
+    "role": "reviewer",
+    "substage": "plan-review",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "approved-epic-plan",
-    "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
+    "contract_kind": "draft-plan",
+    "contract_sha256": "ede41e53f4c4e35021fc964d4387e4a593d93a6bde21b56e683415c98f33601a"
   },
   "tdd_substage": null
 }
