@@ -34,6 +34,23 @@ Mapa test → hallazgo/postcondición (review-t5 → spec):
 RED hoy (post T5 GREEN): cada test falla por la postcondición del hallazgo
 ausente (AssertionError), no por errores de fixture; los controles positivos
 de cada caso quedan documentados en el docstring.
+
+A-1 — REFORMULACIÓN DECLARADA (006-005, decisión B-1 del dictamen de etapa 4)
+`test_reviewfix_b3_nested_tests_dir_not_amplified` exigía que el derivado del
+IMPLEMENTER permitiera editar `src/tests/x.py` («los mapas expresan
+exactamente al clasificador»: PD-7 de 004-002, ni amplificación ni
+sobre-restricción). Ese oráculo se REEMPLAZA: el implementer NUNCA edita
+tests, ni convencionales ni co-ubicados, aunque estén dentro de una raíz de
+implementación. PD ENMENDADA: PD-7 de 004-002 se enmenda en su eje «ni
+sobre-restricción» para el implementer (la clasificación por ruta no habilita
+la escritura de un test dentro de una raíz de implementación); la
+CLASIFICACIÓN de la política no cambia (el control `validate-policy
+--classify` sigue exigiendo `implementation`). RAZÓN: `review.md` B-1 — la
+barrera del rol es una convención del rol, no una clasificación de ruta, y
+el derivado aplica la barrera del agente generado restringida por la
+política, nunca ampliada (`execution.md` §«006-005: review de etapa 4»).
+Ningún otro test de la suite fijaba `allow` de un test dentro de una raíz de
+implementación para el implementer (barrido declarado sobre `tests/`).
 """
 from __future__ import annotations
 
@@ -369,13 +386,39 @@ class TestT5ReviewFixDeriveds(LayoutProject):
                 msg="B1 control: el derivado implementer no edita tests")
 
     def test_reviewfix_b3_nested_tests_dir_not_amplified(self) -> None:
-        """B3 (PD-7, PD-2): con un directorio literal tests/ anidado bajo una
-        raíz de implementación (src/tests/x.py, que el clasificador da como
-        implementation), el derivado test-writer DENIEGA edit y read, y el del
-        implementer PERMITE editarlo: los mapas expresan exactamente al
-        clasificador (ni amplificación ni sobre-restricción). Control:
-        validate-policy --classify. Conventional: colocated bajo src es por
-        prefijo/sufijo, no por nombre de directorio."""
+        """B3 (PD-7, PD-2) — REFORMULADO por 006-005 (decisión B-1 del
+        dictamen de etapa 4): con un directorio literal tests/ anidado bajo
+        una raíz de implementación (src/tests/x.py, que el clasificador da
+        como implementation), el derivado test-writer DENIEGA edit y read, y
+        el derivado del IMPLEMENTER también deniega EDIT: gana la BARRERA
+        DEL ROL.
+
+        REEMPLAZO (declarado). Este test exigía que el derivado del
+        implementer PERMITIERA editar `src/tests/x.py` («los mapas expresan
+        exactamente al clasificador»: ni amplificación ni sobre-restricción).
+        Ese oráculo se REEMPLAZA por el de la barrera del rol.
+
+        PD ENMENDADA. PD-7 de `docs/specs/004-002-project-execution-bootstrap/
+        spec.md` («los mapas expresan exactamente al clasificador») se
+        ENMIENDA en su eje «ni sobre-restricción» para el IMPLEMENTER: la
+        clasificación por ruta NO habilita la escritura de un test que esté
+        dentro de una raíz de implementación. La CLASIFICACIÓN de la política
+        NO cambia (el control `validate-policy --classify` sigue exigiendo
+        `implementation` para `src/tests/x.py`): lo que se delimita es el
+        PERMISO de escritura del derivado.
+
+        RAZÓN. `docs/specs/006-005-native-path-parity/review.md` B-1 («los
+        allows de implementación anulan la barrera de tests del
+        implementer»): la barrera del rol (`sources/roles/implementer.md`: no
+        editar tests, incluidos los co-ubicados) es una CONVENCIÓN DEL ROL, no
+        una clasificación de ruta; el derivado aplica la barrera del agente
+        generado restringida por la política, nunca ampliada (decisión del
+        orquestador, `docs/epics/epic-006-opencode-concurrency/execution.md`
+        §«006-005: review de etapa 4»).
+
+        Control: el clasificador (la política) NO cambia; lo que se exige es
+        que el permiso del derivado no se amplíe. Conventional: colocated bajo
+        src es por prefijo/sufijo, no por nombre de directorio."""
         self.apply_layout("conventional")
         nested = self.root / "src" / "tests" / "x.py"
         nested.parent.mkdir(parents=True, exist_ok=True)
@@ -398,10 +441,14 @@ class TestT5ReviewFixDeriveds(LayoutProject):
                         f"política (PD-7: nunca ampliar)")
         with self.subTest(agent=IMPLEMENTER, tool="edit"):
             self.assertEqual(
-                verdict(imp, "edit", "src/tests/x.py"), "allow",
-                msg="B3: el mapa del implementer deniega editar "
-                    "src/tests/x.py que la política clasifica implementación "
-                    "— sobre-restricción")
+                verdict(imp, "edit", "src/tests/x.py"), "deny",
+                msg="B3 (reformulado 006-005/B-1): el mapa del implementer "
+                    "resuelve edit ('src/tests/x.py') permitido — la barrera "
+                    "del rol del implementer NIEGA los tests (convencionales, "
+                    "co-ubicados o declarados) aunque estén dentro de una raíz "
+                    "de implementación; el derivado aplica la barrera del "
+                    "agente generado restringida por la política, nunca "
+                    "ampliada (decisión B-1)")
 
     def test_reviewfix_r2_removed_source_orphan_derived_retired(self) -> None:
         """R2 (PD-8/PD-5): si una fuente desaparece del origen y se regenera
