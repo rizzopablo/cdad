@@ -11629,6 +11629,47 @@
         "docs/specs/006-005-native-path-parity/u6fix7b-testfix.md": "1b0345c589f50d0eb33695e16b08ce907041d982f34ea6974d11e11188a72ee3"
       },
       "note": "U6-7b testfix (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "u6fix8-red",
+      "substage": null,
+      "at": "2026-10-20T02:50:21.415912+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "3400bc53975c96e3d32dc0ae97b4964c04ecb319847e31d8ee91434a6a9b348f",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "u6fix8-red",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-test-writer-red-022",
+        "receipt_sha256": "9c94bbb1e7131f726c4f2624cffc16352468eacc50adaae3debac2a9d4985170",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u6fix8-red.md",
+            "47cd0b0ac7592bc0f0bf384c0d49d2c8feb734be88224344194f49350d36154b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-test-writer-red-022",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-test-writer-red-022/receipt.json",
+      "receipt_sha256": "9c94bbb1e7131f726c4f2624cffc16352468eacc50adaae3debac2a9d4985170",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u6fix8-red.md": "47cd0b0ac7592bc0f0bf384c0d49d2c8feb734be88224344194f49350d36154b"
+      },
+      "note": "U6-8 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -11643,7 +11684,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T02:29:06.071677+00:00",
+  "last_updated": "2026-10-20T02:50:21.415912+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -11754,7 +11795,7 @@
     "id": "006-005-native-path-parity-test-writer-red-022",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
