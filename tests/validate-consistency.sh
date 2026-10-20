@@ -758,6 +758,240 @@ else
 fi
 # END 006-004 U4
 
+# BEGIN 006-004 U7 (PD-11, DEC-15, DEC-16) — the live table: durable invariants only
+#
+# Scope (plan §3, ficha U7): this block checks the LIVE table of the project.
+# Its gate runs AFTER the seeding of U5, so it never becomes a dependency of a
+# pending unit (the defect B-1 closed). The block of U4 above checks the
+# template and the procedure; this one checks the seeded table.
+#
+# It carries ONLY durable invariants — properties of coherence that survive an
+# approval and a replacement:
+#   * the decisions section is the first H2 of the table document;
+#   * every line of the table points to a file that EXISTS and lives under
+#     docs/adr/ — the direction is line -> file, never file -> line: the state
+#     of a decision is not derivable from its text (D-3);
+#   * every obsolete line names a replacement, and that replacement EXISTS;
+#   * every role of every line belongs to the closed vocabulary;
+#   * no file pointed to by a line re-enounces the normative text of the
+#     principle (the single house is extended to the lines);
+#   * the note declares that the state is declared by whoever maintains the table.
+#
+# It names NO decision (this block carries no decision id: the control of the
+# unit greps it and finds none), it fixes NO inventory figure (no figure of the
+# inventory: neither the number of lines, nor the number of vigente, nor the
+# number of obsolete, nor the number of excluded) and it requires the state,
+# the roles or the reference of NO line in particular: the seeded inventory and
+# the card of any single decision are punctual evidence (U5/U7), never an
+# assertion (INV-15, INV-16, DEC-15, DEC-16).
+#
+# The wording of the documents is free: every concept is derived, never a fixed
+# phrase. The RED of this unit (tests/test_006_004_u7_seed_verification.py)
+# exercises this block over disposable copies and checks, over the block
+# itself, that it names no decision and fixes no figure of the inventory.
+
+U7_ROOT="${U7_ROOT:-$ROOT}"
+U7_TABLE_DOC="$U7_ROOT/docs/systemPatterns.md"
+U7_ADR_DIR="$U7_ROOT/docs/adr"
+U7_PRINCIPLE_FILE="${U7_PRINCIPLE_FILE:-$ROOT/skills/cdad-cycle/references/design-principles.md}"
+U7_ROLE_VOCAB="architect test-writer implementer reviewer scribe orchestrator"
+U7_SECTION_RE='current[[:space:]]+decisions|decisiones[[:space:]]+vigentes'
+U7_WINDOW=6
+U7_FAILURES=0
+
+if ! declare -F pass >/dev/null 2>&1; then
+  # The block also runs alone (the control of this unit runs it over
+  # disposable copies): without the helpers of the validator it defines its own.
+  pass() { printf 'PASS: %s\n' "$*"; }
+  fail() { printf 'FAIL: %s\n' "$*"; }
+fi
+u7_good() { pass "$*"; }
+u7_bad() { U7_FAILURES=$((U7_FAILURES + 1)); fail "$*"; }
+
+u7_flat() { tr '\n' ' ' | tr -s ' '; }
+
+u7_norm() {
+  # the text normalized: lowercase, alphanumerics only, words separated
+  tr '\n' ' ' | tr -c '[:alnum:]' ' ' | tr -s ' ' | sed -E 's/^ +//; s/ +$//'
+}
+
+u7_section_body() {
+  # the body of the decisions section (an H2) of the table document
+  awk -v pat="$U7_SECTION_RE" '
+    {
+      line = $0
+      if (match(line, /^#+/) > 0) {
+        lvl = RLENGTH
+        head = substr(line, lvl + 1)
+        sub(/^[ \t]+/, "", head)
+        if (!ins) {
+          if (lvl == 2 && tolower(head) ~ pat) { ins = 1; next }
+        } else if (lvl <= 2) { ins = 0; next }
+      }
+      if (ins) print
+    }' "$1"
+}
+
+u7_cell() {
+  # u7_cell <line> <n> — the cell n (from 1) of the line, without backticks
+  printf '%s\n' "$1" | cut -d'|' -f"$(( $2 + 1 ))" | sed -E 's/`//g; s/^[[:space:]]+//; s/[[:space:]]+$//'
+}
+
+# --- PD-11-SECTION: the decisions section is the first H2 --------------------
+if [[ ! -f "$U7_TABLE_DOC" ]]; then
+  u7_bad "006-004 U7 PD-11-SECTION: the table document does not exist (docs/systemPatterns.md)"
+else
+  u7_first_h2="$(grep -m1 -E '^##[[:space:]]' "$U7_TABLE_DOC" | sed -E 's/^#+[[:space:]]+//')"
+  if printf '%s' "$u7_first_h2" | grep -Eqi "$U7_SECTION_RE"; then
+    u7_good "006-004 U7 PD-11-SECTION: the decisions section is the first H2 of the table document"
+  else
+    u7_bad "006-004 U7 PD-11-SECTION: the decisions section is NOT the first H2 (first H2: '${u7_first_h2:-none}')"
+  fi
+
+  u7_body="$(u7_section_body "$U7_TABLE_DOC")"
+  u7_header="$(printf '%s\n' "$u7_body" | grep -m1 -E '^\|')"
+  u7_ncols=0
+  if [[ -n "$u7_header" ]]; then
+    u7_ncols="$(printf '%s\n' "$u7_header" | awk -F'|' '{print NF-2}')"
+  fi
+  u7_table_lines="$(printf '%s\n' "$u7_body" | grep -E '^\|' | grep -vE '^\|[[:space:]]*[-:]+' | tail -n +2)"
+
+  # The normative text of the principle (its statement and its limit), taken
+  # from the single canonical house: the windows of its words are what a file
+  # pointed to by a line must NOT contain.
+  u7_bad_file=0
+  u7_bad_roles=0
+  u7_bad_repl=0
+  u7_bad_principle=0
+
+  u7_windows=()
+  if [[ ! -f "$U7_PRINCIPLE_FILE" ]]; then
+    # Fail closed: without the canonical house the check would be vacuous.
+    u7_bad "006-004 U7 PD-11-PRINCIPLE: the canonical house of the principle does not exist ($U7_PRINCIPLE_FILE): the check cannot be vacuous"
+    u7_bad_principle=1
+  else
+    u7_normative="$(awk '
+      /^\*\*The principle\.\*\*/ { m = 1; sub(/^\*\*The principle\.\*\*[[:space:]]*/, ""); print; next }
+      /^\*\*The limit\.\*\*/     { m = 1; sub(/^\*\*The limit\.\*\*[[:space:]]*/, ""); print; next }
+      /^\*\*[A-Z]/                { m = 0; next }
+      m == 1 { print }
+    ' "$U7_PRINCIPLE_FILE")"
+    read -r -a u7_words <<< "$(printf '%s' "$u7_normative" | u7_norm)"
+    if [[ ${#u7_words[@]} -ge $U7_WINDOW ]]; then
+      for ((i = 0; i + U7_WINDOW <= ${#u7_words[@]}; i++)); do
+        u7_win=""
+        for ((j = 0; j < U7_WINDOW; j++)); do u7_win+="${u7_words[i + j]} "; done
+        u7_windows+=("${u7_win% }")
+      done
+    fi
+  fi
+
+  while IFS= read -r u7_line; do
+    [[ -z "$u7_line" ]] && continue
+    u7_ncells="$(printf '%s\n' "$u7_line" | awk -F'|' '{print NF-2}')"
+    u7_file="$(u7_cell "$u7_line" 1)"
+    u7_state="$(u7_cell "$u7_line" 2)"
+    u7_roles_raw="$(u7_cell "$u7_line" 4)"
+
+    # (a) the line points to a file that exists and lives under docs/adr/
+    if [[ "$u7_file" != docs/adr/* ]]; then
+      u7_bad "006-004 U7 PD-11-FILE: the line '$u7_file' does not point inside docs/adr/"
+      u7_bad_file=$((u7_bad_file + 1))
+    elif [[ ! -f "$U7_ROOT/$u7_file" ]]; then
+      u7_bad "006-004 U7 PD-11-FILE: the line points to a file that does not exist: $u7_file"
+      u7_bad_file=$((u7_bad_file + 1))
+    fi
+
+    # (b) an obsolete line names a replacement, and that replacement exists
+    if [[ "${u7_state,,}" == obsolet* ]]; then
+      u7_repl="$(printf '%s\n' "$u7_state" | grep -oE '[A-Z]{3}-[0-9]+' | head -n1)"
+      if [[ -z "$u7_repl" ]]; then
+        u7_bad "006-004 U7 PD-11-REPLACEMENT: the obsolete line '$u7_file' names no replacement"
+        u7_bad_repl=$((u7_bad_repl + 1))
+      else
+        u7_repl_found=0
+        for u7_cand in "$U7_ADR_DIR/$u7_repl"-*.md; do
+          [[ -e "$u7_cand" ]] && u7_repl_found=1
+        done
+        if [[ "$u7_repl_found" -eq 0 ]]; then
+          u7_bad "006-004 U7 PD-11-REPLACEMENT: the obsolete line '$u7_file' names a replacement that does not exist: $u7_repl"
+          u7_bad_repl=$((u7_bad_repl + 1))
+        fi
+      fi
+    fi
+
+    # (c) the roles of the line belong to the closed vocabulary
+    u7_bad_roles_here=()
+    IFS=',' read -r -a u7_roles <<< "$u7_roles_raw"
+    for u7_role in "${u7_roles[@]}"; do
+      u7_role="$(printf '%s' "$u7_role" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+      [[ -z "$u7_role" ]] && continue
+      if [[ " $U7_ROLE_VOCAB " != *" $u7_role "* ]]; then
+        u7_bad_roles_here+=("$u7_role")
+      fi
+    done
+    if [[ ${#u7_bad_roles_here[@]} -gt 0 ]]; then
+      u7_bad "006-004 U7 PD-11-ROLES: the line '$u7_file' declares a role outside the closed vocabulary: ${u7_bad_roles_here[*]}"
+      u7_bad_roles=$((u7_bad_roles + 1))
+    elif [[ "$u7_ncells" != "$u7_ncols" ]]; then
+      u7_bad "006-004 U7 PD-11-ROLES: the line '$u7_file' does not respect the declared row shape (the table declares $u7_ncols columns, the line has $u7_ncells), so its roles cell ('$u7_roles_raw') cannot be a closed-vocabulary set"
+      u7_bad_roles=$((u7_bad_roles + 1))
+    fi
+
+    # (d) the file pointed to by the line does not re-enounce the principle
+    if [[ ${#u7_windows[@]} -gt 0 && -f "$U7_ROOT/$u7_file" ]]; then
+      u7_norm_file="$(u7_norm < "$U7_ROOT/$u7_file")"
+      for u7_win in "${u7_windows[@]}"; do
+        if [[ "$u7_norm_file" == *"$u7_win"* ]]; then
+          u7_bad "006-004 U7 PD-11-PRINCIPLE: the file pointed to by '$u7_file' re-enounces the normative text of the principle"
+          u7_bad_principle=$((u7_bad_principle + 1))
+          break
+        fi
+      done
+    fi
+  done <<< "$u7_table_lines"
+
+  if [[ "$u7_bad_file" -eq 0 ]]; then
+    u7_good "006-004 U7 PD-11-FILE: every line of the table points to an existing file under docs/adr/"
+  fi
+  if [[ "$u7_bad_repl" -eq 0 ]]; then
+    u7_good "006-004 U7 PD-11-REPLACEMENT: every obsolete line names a replacement that exists"
+  fi
+  if [[ "$u7_bad_roles" -eq 0 ]]; then
+    u7_good "006-004 U7 PD-11-ROLES: every role of every line belongs to the closed vocabulary"
+  fi
+  if [[ "$u7_bad_principle" -eq 0 ]]; then
+    u7_good "006-004 U7 PD-11-PRINCIPLE: no file pointed to by the table re-enounces the normative text of the principle"
+  fi
+
+  # --- PD-11-NOTE: the note declares who declares the state -----------------
+  u7_note_text="$(printf '%s\n' "$u7_body" | u7_flat)"
+  if printf '%s' "$u7_note_text" | grep -Eqi \
+    '(declar[a-z]*[^.]{0,60}state|state[^.]{0,60}declar[a-z]*|declara(ndo)? el estado|estado[^.]{0,60}declar[a-z]*)[^.]{0,300}(maintain[a-z]*|mantien[a-z]*|quien mantiene|who maintains)|(maintain[a-z]*|mantien[a-z]*|quien mantiene|who maintains)[^.]{0,300}(declar[a-z]*[^.]{0,60}state|state[^.]{0,60}declar[a-z]*|declara(ndo)? el estado|estado[^.]{0,60}declar[a-z]*)'; then
+    u7_good "006-004 U7 PD-11-NOTE: the note declares that the state is declared by whoever maintains the table"
+  else
+    u7_bad "006-004 U7 PD-11-NOTE: the note does NOT declare that the state is declared by whoever maintains the table"
+  fi
+fi
+
+# --- PD-11-NO-ID: this block names no decision (control over the block) ------
+U7_SELF_FILE="${U7_SELF_FILE:-${BASH_SOURCE[0]}}"
+u7_self_text="$(sed -n '/^# BEGIN 006-004 U7/,/^# END 006-004 U7/p' "$U7_SELF_FILE" 2>/dev/null || true)"
+if printf '%s' "$u7_self_text" | grep -Eq 'ADR-[0-9]{2,}'; then
+  u7_bad "006-004 U7 PD-11-NO-ID: this block names a decision (it must not: it checks coherence, not identity)"
+else
+  u7_good "006-004 U7 PD-11-NO-ID: this block names no decision"
+fi
+
+# Run alone (the control of this unit runs the block over disposable copies),
+# the block answers with its own exit code; inside the validator the exit code
+# belongs to the final counter of the script.
+if [[ "${U7_STANDALONE:-0}" == "1" && "$U7_FAILURES" -ne 0 ]]; then
+  exit 1
+fi
+
+# END 006-004 U7
+
 echo "############################################"
 echo "# RESULT"
 echo "############################################"
