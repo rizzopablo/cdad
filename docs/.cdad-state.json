@@ -11670,6 +11670,47 @@
         "docs/specs/006-005-native-path-parity/u6fix8-red.md": "47cd0b0ac7592bc0f0bf384c0d49d2c8feb734be88224344194f49350d36154b"
       },
       "note": "U6-8 RED (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "u6fix8-green",
+      "substage": null,
+      "at": "2026-10-20T03:11:45.828916+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "eb97dfbbf7b03e3e0a130e5dbac3912efcdf51df33a9f8a83a0b24b7f5b64d7b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "u6fix8-green",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-implementer-green-017",
+        "receipt_sha256": "77723cac9b71b712fa3f1d0a0d82e6cfc81b2a16afdaa53ab986da0136d3a807",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/u6fix8-green.md",
+            "929d162cbb710b740865dd9744d3f3a82f700b18e2161c2c74ef83b5df85b61c"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-implementer-green-017",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-implementer-green-017/receipt.json",
+      "receipt_sha256": "77723cac9b71b712fa3f1d0a0d82e6cfc81b2a16afdaa53ab986da0136d3a807",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/u6fix8-green.md": "929d162cbb710b740865dd9744d3f3a82f700b18e2161c2c74ef83b5df85b61c"
+      },
+      "note": "U6-8 GREEN (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -11684,7 +11725,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T02:50:21.415912+00:00",
+  "last_updated": "2026-10-20T03:11:45.828916+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -11795,7 +11836,7 @@
     "id": "006-005-native-path-parity-implementer-green-017",
     "role": "implementer",
     "substage": "green",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
