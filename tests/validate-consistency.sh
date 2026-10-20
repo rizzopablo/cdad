@@ -635,6 +635,129 @@ assert_file_has "sources/agents/adapters/opencode.md" '`task`' \
 assert_file_has "agents/cdad-orchestrator.md" '`task`' \
   "005-004 PD-1 (control): the generated OpenCode orchestrator declares its own dispatch tool name"
 
+# BEGIN 006-004 U4 (PD-7, PD-8, PD-9)
+echo "############################################"
+echo "# 006-004 U4 (PD-7, PD-8, PD-9) — the decisions table: template, upkeep, CAS rule"
+echo "############################################"
+
+# Scope (plan §3 ficha U4, DEC-14, B-1): this block checks the TEMPLATE and the
+# PROCEDURE text only. It does NOT look at the live table of the project nor at
+# the ADR directory: those belong to U7's block, whose gate runs after U5's
+# seeding. A block that required the seed would make this unit depend on a
+# pending one — the defect B-1 closed.
+#
+# The wording is free: every concept is derived (vocabulary with alternatives),
+# never a fixed phrase. The RED of this unit (tests/test_006_004_u4_decisions_table.py)
+# derives the same concepts.
+
+U4_TEMPLATE="skills/cdad-cycle/assets/memory-bank-templates/systemPatterns.md"
+U4_STAGE5="skills/cdad-cycle/references/stage-5-merge.md"
+U4_REENTRY="skills/cdad-cycle/references/re-entry.md"
+
+u4_flat() {
+  # u4_flat — the text as ONE line: a concept split by the line wrap is one
+  # concept.
+  tr '\n' ' ' | tr -s ' '
+}
+
+u4_section() {
+  # u4_section <file> <level> <heading-ere>
+  # The body of the section whose heading (of <level>) matches <heading-ere>,
+  # up to the next heading of level <= <level>.
+  awk -v level="$2" -v pat="$3" '
+    {
+      line = $0
+      if (match(line, /^#+/) > 0) {
+        lvl = RLENGTH
+        head = substr(line, lvl + 1)
+        sub(/^[ \t]+/, "", head)
+        if (!insec) {
+          if (lvl == level && tolower(head) ~ pat) { insec = 1; next }
+        } else if (lvl <= level) { insec = 0; next }
+      }
+      if (insec) print
+    }' "$1"
+}
+
+u4_require() {
+  # u4_require <code> <text> <summary> [<label> <ere> ...]
+  # PASS only when EVERY concept is declared; the message names the concepts
+  # that are missing (not the phrases: the wording is free).
+  local code="$1" text="$2" summary="$3"; shift 3
+  local label ere
+  local missing=()
+  while [[ $# -gt 0 ]]; do
+    label="$1"; ere="$2"; shift 2
+    if ! printf '%s' "$text" | grep -Eqi -- "$ere"; then
+      missing+=("$label")
+    fi
+  done
+  if [[ ${#missing[@]} -eq 0 ]]; then
+    pass "006-004 U4 $code: $summary"
+  else
+    fail "006-004 U4 $code: $summary (missing: ${missing[*]})"
+  fi
+}
+
+# --- PD-7: the template carries the section, in the declared place ----------
+u4_first_h2="$(grep -m1 -E '^##[[:space:]]' "$ROOT/$U4_TEMPLATE" | sed -E 's/^#+[[:space:]]+//')"
+if printf '%s' "$u4_first_h2" | grep -Eqi 'current[[:space:]]+decisions|decisiones[[:space:]]+vigentes'; then
+  pass "006-004 U4 PD-7-SECTION: the Memory Bank template carries the decisions section as its first H2"
+else
+  fail "006-004 U4 PD-7-SECTION: the Memory Bank template does NOT carry the decisions section as its first H2 (first H2: '${u4_first_h2:-none}')"
+fi
+
+u4_tpl="$(u4_section "$ROOT/$U4_TEMPLATE" 2 'current[[:space:]]+decisions|decisiones[[:space:]]+vigentes' | u4_flat)"
+u4_require PD-7-SHAPE "$u4_tpl" "the section of the template declares the row shape" \
+  "the file" 'file|archivo|ruta|path' \
+  "the state" 'state|estado|vigente|obsoleto' \
+  "the one-line summary" 'summary|resumen' \
+  "the roles that must consume it" 'roles|consumers|consumidores|who consumes' \
+  "the reference where the rule lives" 'reference|referencia'
+
+u4_require PD-7-NOTE "$u4_tpl" "the section of the template declares the note (the exclusions, and who declares the state)" \
+  "the exclusions" 'exclud[a-z]*|excluid[a-z]*|proposed|propuesto|pending|not (yet )?in force|still pending' \
+  "the state is declared by whoever maintains the table" '(declar[a-z]*[^.]{0,60}state|state[^.]{0,60}declar[a-z]*|declara(ndo)? el estado|estado[^.]{0,60}declar[a-z]*)[^.]{0,300}(maintain[a-z]*|mantien[a-z]*|quien mantiene|who maintains)|(maintain[a-z]*|mantien[a-z]*|quien mantiene|who maintains)[^.]{0,300}(declar[a-z]*[^.]{0,60}state|state[^.]{0,60}declar[a-z]*|declara(ndo)? el estado|estado[^.]{0,60}declar[a-z]*)'
+
+# --- PD-8: the upkeep lives in section 5.4 of stage-5-merge.md -------------
+u4_s5="$(u4_section "$ROOT/$U4_STAGE5" 2 '^5[.]4' | u4_flat)"
+u4_require PD-8-UPKEEP "$u4_s5" "section 5.4 names the upkeep of the table (add the row when an ADR is approved; mark the previous one obsolete)" \
+  "the approval of an ADR" '(adr|decision record)[^.]{0,300}(approv[a-z]*|aprob[a-z]*)|(approv[a-z]*|aprob[a-z]*)[^.]{0,300}(adr|decision record)' \
+  "adding the row" '(add[a-z]*|agrega[a-z]*|append[a-z]*|insert[a-z]*|añad[a-z]*|agreg[a-z]*)[^.]{0,200}(row|fila)|(row|fila)[^.]{0,200}(add[a-z]*|agrega[a-z]*|append[a-z]*|insert[a-z]*|añad[a-z]*|agreg[a-z]*)' \
+  "marking the previous row as obsolete" '(mark[a-z]*|marc[a-z]*|set[a-z]*|pon[a-z]*|declara[a-z]*|pas[a-z]*)[^.]{0,250}(obsolet[a-z]*|obsoleto|deprecat[a-z]*)|(obsolet[a-z]*|obsoleto|deprecat[a-z]*)[^.]{0,250}(mark[a-z]*|marc[a-z]*|set[a-z]*|pon[a-z]*|declara[a-z]*|pas[a-z]*)' \
+  "the previous row" '\bprevious\b|\banterior\b|precedent|\bold\b|replaced|reemplaz[a-z]*|superseded'
+
+# --- PD-9: the general CAS rule lives in step 3 (MATERIALIZE) ---------------
+u4_step3="$(awk '/^[[:space:]]*3\.[[:space:]]+\*\*MATERIALIZE/{on=1; next} on && /^[[:space:]]*4\.[[:space:]]/{on=0} on' "$ROOT/$U4_REENTRY" | u4_flat)"
+u4_require PD-9-CAS "$u4_step3" "step 3 (MATERIALIZE) declares the general CAS rule (the base digest, never the current one, re-dispatch on the new base, no manual merge, no retouched digest)" \
+  "the BASE digest" '\bbase\b[^.]{0,250}(digest|sha256|version|target)|(digest|sha256|version|target)[^.]{0,250}\bbase\b' \
+  "never the CURRENT digest" '(never|not|no|nunca|jamás|sin)\b[^.]{0,250}(current|actual)\b[^.]{0,250}(digest|sha256)|(never|not|no|nunca|jamás|sin)\b[^.]{0,250}(digest|sha256)\b[^.]{0,250}(current|actual)\b' \
+  "re-dispatch with a new packet" 're-?dispatch[a-z]*|re-?despach[a-z]*|new (packet|package|dispatch)|paquete nuevo|nuevo paquete' \
+  "on the NEW base" '(new|nueva|nuevo)\b[^.]{0,120}\bbase\b|\bbase\b[^.]{0,120}(new|nueva|nuevo)' \
+  "no manual merge" '(never|not|no|nunca|jamás|sin)\b[^.]{0,250}(merg[a-z]*|fusi[oó]n|mergear)[^.]{0,250}(by hand|a mano|manually|manual)|(never|not|no|nunca|jamás|sin)\b[^.]{0,250}(by hand|a mano|manually|manual)[^.]{0,250}(merg[a-z]*|fusi[oó]n|mergear)' \
+  "no updating the expected digest" '(never|not|no|nunca|jamás|sin)\b[^.]{0,200}(updat[a-z]*|actualiz[a-z]*|bump[a-z]*|subid[a-z]*|rais[a-z]*|elev[a-z]*|touch[a-z]*|cambi[a-z]*)[^.]{0,200}(expected|digest|sha256)|(never|not|no|nunca|jamás|sin)\b[^.]{0,200}(expected|digest|sha256)[^.]{0,200}(updat[a-z]*|actualiz[a-z]*|bump[a-z]*|subid[a-z]*|rais[a-z]*|elev[a-z]*|touch[a-z]*|cambi[a-z]*)'
+
+# --- PD-8/PD-9: the case of the table lives in the Scribe section -----------
+u4_scribe="$(u4_section "$ROOT/$U4_REENTRY" 3 '^scribe' | u4_flat)"
+u4_require PD-9-SCRIBE "$u4_scribe" "the Scribe section declares the case of the table (two writers; the orchestrator writes its rows directly in docs/; the scribe's arrive by materialization)" \
+  "the two writers" 'two writers|dos escritores|both writers|two authors|dos autores|two parties|dos partes' \
+  "the orchestrator" 'orchestrator|orquestador' \
+  "writing directly in docs/" '(direct[a-z]*|escribe[a-z]*|write[a-z]*)[^.]{0,300}(docs/|`docs`|docs (directory|directorio|tree|árbol))|(docs/|`docs`|docs (directory|directorio|tree|árbol))[^.]{0,300}(direct[a-z]*|escribe[a-z]*|write[a-z]*)' \
+  "with its own commit" '(orchestrator|orquestador)[^.]{0,400}commit|commit[^.]{0,400}(orchestrator|orquestador)' \
+  "the scribe's proposal arrives by materialization" 'scribe[^.]{0,500}materializ[a-z]*|materializ[a-z]*[^.]{0,500}scribe'
+
+# --- PD-7/PD-8 (negative control): the exit gate of stage 5 does not change --
+# The count (7) is the one MEASURED on the tree previous to this feature: the
+# gate does not gain a checkbox (Q6), it does not change.
+u4_gate="$(u4_section "$ROOT/$U4_STAGE5" 2 'exit gate')"
+u4_gate_boxes="$(printf '%s\n' "$u4_gate" | grep -cE '^[[:space:]]*-[[:space:]]*\[[ xX]\]')"
+if [[ "$u4_gate_boxes" -eq 7 ]] && ! printf '%s\n' "$u4_gate" | grep -Eqi 'current decisions|decisiones vigentes|systempatterns'; then
+  pass "006-004 U4 PD-7-GATE: the exit gate of stage 5 keeps its 7 checkboxes and gained none about the decisions table"
+else
+  fail "006-004 U4 PD-7-GATE: the exit gate of stage 5 changed (checkboxes: ${u4_gate_boxes}, expected 7)"
+fi
+# END 006-004 U4
+
 echo "############################################"
 echo "# RESULT"
 echo "############################################"
