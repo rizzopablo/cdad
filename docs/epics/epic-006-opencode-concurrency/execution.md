@@ -358,3 +358,7 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
 - **Redespliegue con U6-7b y U6-8 (misma orden del owner, 2026-10-20)** en `b69bbac`: Verify PASS, y los scripts instalados coinciden con el repo.
   - `--check` FAIL solo por DT-8 (`.pyc` en `__pycache__`) y por «missing staged» de `cdad-orchestrator.md`/`cdad-reviewer.md` de OpenCode: son las copias que el owner personalizó (el reviewer con `model:` propio) y quedaron preservadas.
   - Ninguna de las dos lleva la clave `write`.
+
+## Orden: 006-006 antes que 006-004 (owner, 2026-10-20)
+
+En otro proyecto activo no se pudo pedir la review de un borrador de spec. El reviewer rechazó dos paquetes con razón: el contrato por defecto es la spec aprobada, el plan de la épica no se acepta para el reviewer y `draft-plan` exige `plan-tasks`. El owner aprobó atenderlo ya. Es el punto 1 de la enmienda 006 (006-006, aprobada el 2026-10-18), así que no se abre feature nueva ni se agrega un tipo de contrato: se adelanta **006-006 a 006-004**, tras cerrar 006-005. El orden queda 006-005 → 006-006 → 006-004.
