@@ -362,3 +362,12 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
 ## Orden: 006-006 antes que 006-004 (owner, 2026-10-20)
 
 En otro proyecto activo no se pudo pedir la review de un borrador de spec. El reviewer rechazó dos paquetes con razón: el contrato por defecto es la spec aprobada, el plan de la épica no se acepta para el reviewer y `draft-plan` exige `plan-tasks`. El owner aprobó atenderlo ya. Es el punto 1 de la enmienda 006 (006-006, aprobada el 2026-10-18), así que no se abre feature nueva ni se agrega un tipo de contrato: se adelanta **006-006 a 006-004**, tras cerrar 006-005. El orden queda 006-005 → 006-006 → 006-004.
+
+## 006-005: review de etapa 4 (2026-10-20)
+
+`docs/specs/006-005-native-path-parity/review.md`: 3 B y 2 O. Decisiones del orquestador (HITL delegada):
+- **B-1:** gana la barrera del rol. El implementer nunca edita tests, ni convencionales ni co-ubicados, aunque estén dentro de una raíz de implementación; el derivado aplica la barrera del agente generado restringida por la política, nunca ampliada. Se reemplaza por A-1 el oráculo B3 previo (`test_004_002_t5_reviewfix.py`, que exigía permitir `src/tests/x.py`).
+- **B-2:** la observación se normaliza en una frontera común (momento y modelo), cualquiera sea la forma de seleccionar la fila.
+- **B-3:** las instrucciones distinguen la vía externa (consumir el recibo de `delivery_ref`) de la nativa (`record` escenifica y luego `receive`).
+- **O-1:** se aplica al cierre.
+- **O-2:** deuda.
