@@ -12950,6 +12950,47 @@
         "docs/specs/006-006-spec-plan-review/u3-green.md": "457242b62c87365963289cc215e08e6f915ae1f162b493ebf272095d93214bff"
       },
       "note": "U3 GREEN (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "u4-red",
+      "substage": null,
+      "at": "2026-10-20T14:17:00.677242+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "54631476ddfaf29ad53a3e5db336c3843df4309cb6b876250ddaf39e9fbe5e8d",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "delivery",
+        "stage": "u4-red",
+        "substage": null,
+        "packet_id": "006-006-spec-plan-review-test-writer-red-006",
+        "receipt_sha256": "f9e8d3b703fdd249a31e3209e57d631b1d7bc3f91c090c743e74eab686a11696",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-006-spec-plan-review/u4-red.md",
+            "2d01510aeada3fcdaaa038468868dec82a0eb6054f180837315a642722ee88f1"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-006-spec-plan-review-test-writer-red-006",
+      "receipt_ref": ".cdad/runtime/results/exec-006-006-spec-plan-review-001/006-006-spec-plan-review-test-writer-red-006/receipt.json",
+      "receipt_sha256": "f9e8d3b703fdd249a31e3209e57d631b1d7bc3f91c090c743e74eab686a11696",
+      "artifacts": {
+        "docs/specs/006-006-spec-plan-review/u4-red.md": "2d01510aeada3fcdaaa038468868dec82a0eb6054f180837315a642722ee88f1"
+      },
+      "note": "U4 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12964,7 +13005,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T14:02:34.462725+00:00",
+  "last_updated": "2026-10-20T14:17:00.677242+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -13075,7 +13116,7 @@
     "id": "006-006-spec-plan-review-test-writer-red-006",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298"
