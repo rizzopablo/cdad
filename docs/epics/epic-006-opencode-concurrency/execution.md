@@ -355,3 +355,6 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
   - la compatibilidad del store se verifica por **capacidad**: faltan las columnas que la correlación evalúa ⇒ fail-closed nombrándolas;
   - `binary_version` pasa a opcional e informativo: una diferencia se declara en el diagnóstico y no bloquea, y `migrate` deja de escribirlo.
   - Se corrige con RED/GREEN después de U6-7b.
+- **Redespliegue con U6-7b y U6-8 (misma orden del owner, 2026-10-20)** en `b69bbac`: Verify PASS, y los scripts instalados coinciden con el repo.
+  - `--check` FAIL solo por DT-8 (`.pyc` en `__pycache__`) y por «missing staged» de `cdad-orchestrator.md`/`cdad-reviewer.md` de OpenCode: son las copias que el owner personalizó (el reviewer con `model:` propio) y quedaron preservadas.
+  - Ninguna de las dos lleva la clave `write`.
