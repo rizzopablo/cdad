@@ -27,6 +27,18 @@ Contrato y autoridad:
 QUÉ SE ESCRIBE AQUÍ (un archivo nuevo) y QUÉ SE REFORMULA (A-1)
 
 - Nuevo: `tests/test_006_005_reviewfix.py` (este archivo) — B-1, B-2, B-3.
+- A-1 (reformulación DECLARADA, en el review-fix 2 — B-4 de
+  `docs/specs/006-005-native-path-parity/rereview.md`; la declaración
+  completa vive en `tests/test_006_005_reviewfix2.py`): los dos tests
+  positivos de B-2 acreditaban la fila seleccionada por `--session` SIN
+  declarar `--parent`. El contrato conservado (spec §2.3, PD-5) exige
+  `unknown` cuando la fila EXPONE `parent_id` y la llave no tiene
+  declaración, así que el oráculo positivo DEBE aportar `--parent`:
+  `test_b2_session_selection_accredits_the_row_and_reports_the_model` y
+  `test_b2_session_selection_gives_the_same_result_as_parent_selection`
+  pasan a declararlo. **PD enmendada:** ninguna (el contrato queda
+  intacto; lo que se corrige es el oráculo, que fijaba un comportamiento
+  ausente del contrato).
 - A-1 (reformulación DECLARADA): `tests/test_004_002_t5_reviewfix.py::
   test_reviewfix_b3_nested_tests_dir_not_amplified` exigía que el derivado del
   IMPLEMENTER permitiera editar `src/tests/x.py` («los mapas expresan
@@ -708,19 +720,27 @@ class TestB2SessionSelection(ReviewFixB2Case):
     def test_b2_session_selection_accredits_the_row_and_reports_the_model(
             self) -> None:
         """review-fix B-2 (006-005): la fila seleccionada con `--session`
-        (instante en MILISEGUNDOS posterior a `--since`, agente del paquete y
-        directorio dentro de la raíz) se ACREDITA: el registro I8 lleva la
-        sesión observada y `model_reported` en la forma normalizada
-        `<provider>/<model>` (la misma que fija la vía externa, D-ADP-2).
+        (instante en MILISEGUNDOS posterior a `--since`, padre declarado y
+        coincidente, agente del paquete y directorio dentro de la raíz) se
+        ACREDITA: el registro I8 lleva la sesión observada y
+        `model_reported` en la forma normalizada `<provider>/<model>` (la
+        misma que fija la vía externa, D-ADP-2).
 
         Hoy la selección por `--session` no normaliza el instante: la
         observación es «not evaluable» y ni la sesión ni el modelo se
-        acreditan."""
+        acreditan.
+
+        A-1 (DECLARADO en `tests/test_006_005_reviewfix2.py`, review-fix 2
+        B-4): esta invocación aporta `--parent`. La fila expone `parent_id`
+        y, sin la declaración del padre, esa llave NO es evaluable — el
+        contrato (spec §2.3, PD-5) exige `unknown` y no acredita identidad.
+        El oráculo positivo DEBE declarar la llave que acredita."""
         project = self.new_project()
         self.write_store([self.row(project)])
         before = self.records(project)
 
-        proc = self.record(project, attempt="att-rf-b2-s1-0001", session=CHILD)
+        proc = self.record(project, attempt="att-rf-b2-s1-0001", session=CHILD,
+                           parent=PARENT)
         out = self.envelope(proc, "B-2 (--session, fila coincidente)")
         record = self.single_record(project, before)
 
@@ -754,12 +774,18 @@ class TestB2SessionSelection(ReviewFixB2Case):
         """review-fix B-2 (006-005): la MISMA fila, seleccionada por
         `--session` y por `--parent`, produce el MISMO resultado: la sesión
         acreditada y el mismo `model_reported`. La normalización ocurre en
-        una frontera común, no en un camino y sí en el otro."""
+        una frontera común, no en un camino y sí en el otro.
+
+        A-1 (DECLARADO en `tests/test_006_005_reviewfix2.py`, review-fix 2
+        B-4): la invocación por `--session` DECLARA también `--parent` (la
+        fila expone `parent_id`; sin la declaración, esa llave no es
+        evaluable y el contrato —spec §2.3, PD-5— exige `unknown`). La
+        comparación sigue siendo la MISMA fila y el MISMO resultado."""
         by_session_project = self.new_project()
         self.write_store([self.row(by_session_project)])
         before_session = self.records(by_session_project)
         proc = self.record(by_session_project, attempt="att-rf-b2-s2-0001",
-                           session=CHILD)
+                           session=CHILD, parent=PARENT)
         self.envelope(proc, "B-2 (--session)")
         session_record = self.single_record(by_session_project, before_session)
 
