@@ -111,6 +111,20 @@ ACTIVATION_REGISTRY_REL = Path(".cdad") / "activation.json"
 OPENCODE_AGENTS_SUBDIR = (".config", "opencode", "agents")
 INSTALL_VERSION_MARKER = "version.txt"
 DERIVED_MAP_KEYS = ("read", "grep", "glob", "edit")
+# U6-7b (006-005, E2/PD-24): the `write` key of the installed copy joins the
+# region the derivation replaces — it is RETIRED (removed, never emitted).
+# In OpenCode v2.0.27 the write tool evaluates `edit` and `write` together
+# (findLast): a `write: ask` inherited from an installation prior to the
+# U6-7 fix would override the derived `edit` map — with --auto it approves
+# even what `edit` denies, and without interaction it rejects even what
+# `edit` allows. The effective write verdict of a derived agent must be
+# EXACTLY the verdict of its derived `edit` map.
+DERIVED_RETIRED_MAP_KEYS = ("write",)
+# The `permission` map keys the derivation owns: the replaced ones (read,
+# grep, glob, edit) and the retired one (write). A key is recognized with its
+# scalar form (`  edit: deny`) and with its block form (`  edit:` + children).
+PERMISSION_MAP_KEY_RE = re.compile(
+    r"^  (%s):" % "|".join(DERIVED_MAP_KEYS + DERIVED_RETIRED_MAP_KEYS))
 FAIL_AT_ENV = "CDAD_TEST_FAIL_AT"
 FAIL_AT_RC = 97
 PAUSE_AT_ENV = "CDAD_TEST_PAUSE_AT"
@@ -3106,12 +3120,20 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
 
 
 def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]) -> bytes:
-    """Return origin with its read/grep/glob/edit maps replaced; the rest byte
-    for byte. With no maps the origin is copied verbatim (PD-8/I9).
+    """Return origin with its read/grep/glob/edit maps replaced and its
+    `write` key retired; the rest byte for byte. With no maps the origin is
+    copied verbatim apart from the retired `write` key (PD-8/I9).
 
     R3 (PD-8): every installed source is validated — a source without YAML
     frontmatter fails loudly as a PolicyError (rc 2 with a diagnostic) instead
     of an uncaught ValueError traceback, for every derived role.
+
+    U6-7b (006-005, E2/PD-24): the `write` key of the installed copy belongs
+    to the region the derivation replaces and is NOT emitted. The write tool
+    of OpenCode v2.0.27 evaluates `edit` and `write` together (findLast), so
+    a `write: ask` inherited from an installation prior to the U6-7 fix would
+    override the derived `edit` map. The effective write verdict of a derived
+    agent must be EXACTLY the verdict of its derived `edit` map.
     """
     text = origin.decode("utf-8")
     start = text.find("---")
@@ -3120,8 +3142,6 @@ def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]
         raise PolicyError(
             "installed derived source has no valid YAML frontmatter; cannot "
             "derive the project-local agents (PD-8/I9)")
-    if not maps:
-        return origin
     frontmatter = text[:fm_end]
     rest = text[fm_end:]
     kept: list[str] = []
@@ -3130,25 +3150,43 @@ def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]
     lines = frontmatter.split("\n")
     index = 0
     while index < len(lines):
-        if re.match(r"^  (read|grep|glob|edit):", lines[index]):
+        key_match = PERMISSION_MAP_KEY_RE.match(lines[index])
+        if key_match is None:
+            # R1 (PD-8): an origin whose `permission` is a SCALAR (the
+            # orchestrator's `permission: allow`) cannot receive indented map
+            # children — that is invalid YAML. Replace the scalar with the map
+            # key so the generated block nests as valid YAML; semantically
+            # everything not in the map stays allowed (equivalent to `allow`).
+            if maps and re.match(r"^permission:[ \t]+\S", lines[index]):
+                scalar_permission_at = len(kept)
+                kept.append("permission:")
+                index += 1
+                continue
+            kept.append(lines[index])
+            index += 1
+            continue
+        key = key_match.group(1)
+        # The key and its children (the map block, scalar form included).
+        entry: list[str] = [lines[index]]
+        index += 1
+        while index < len(lines) and lines[index].startswith("    "):
+            entry.append(lines[index])
+            index += 1
+        if key in DERIVED_MAP_KEYS:
+            if not maps:
+                # Nothing to replace: the origin keeps its own map.
+                kept.extend(entry)
+                continue
+            # The replaced keys give the insertion point of the derived block.
             if first_map is None:
                 first_map = len(kept)
-            index += 1
-            while index < len(lines) and lines[index].startswith("    "):
-                index += 1
             continue
-        # R1 (PD-8): an origin whose `permission` is a SCALAR (the
-        # orchestrator's `permission: allow`) cannot receive indented map
-        # children — that is invalid YAML. Replace the scalar with the map key
-        # so the generated block nests as valid YAML; semantically everything
-        # not in the map stays allowed (equivalent to `allow`).
-        if re.match(r"^permission:[ \t]+\S", lines[index]):
-            scalar_permission_at = len(kept)
-            kept.append("permission:")
-            index += 1
-            continue
-        kept.append(lines[index])
-        index += 1
+        # The retired key (`write`): removed with its children, never emitted.
+    if not maps:
+        # No map to replace: the origin is copied verbatim apart from the
+        # retired `write` key (U6-7b) — the read-only roles keep the map
+        # their installed copy declares.
+        return ("\n".join(kept) + rest).encode("utf-8")
     if first_map is not None:
         insert_at = first_map
     elif scalar_permission_at is not None:
