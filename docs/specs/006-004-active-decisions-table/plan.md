@@ -525,3 +525,5 @@ Lo demás de `draft-002` **se conserva**.
 Lo demás de `draft-003` **se conserva**.
 
 Status: **BORRADOR — SIN APROBAR** (draft-004). La aprobación es un acto separado de la autoridad vigente, y precede al RED de cualquier unidad.
+
+Status: Approved by orquestador Claude (HITL delegada epic-006; el owner la mantuvo el 2026-10-20) on 2026-10-20, tras plan-review-001..004 (B-1..B-3, O-1..O-3 cerrados). ADR-034 queda en borrador (adr-034-draft.md) y se aprueba por separado en U5, según el plan.
