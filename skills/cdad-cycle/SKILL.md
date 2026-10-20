@@ -296,7 +296,7 @@ A retry (attempt) must respond to a new hypothesis or new information; an identi
 Stage 1: Discovery          → references/stage-1-discovery.md
    ↓ (gate: terrain mapped)
 Stage 2: Specification      → references/stage-2-specification.md
-   ↓ (gate: spec.md approved by the user)
+   ↓ (gate: draft reviewed — plan-review.md; spec.md approved by the user)
 Stage 3: Anti-gaming TDD    → references/stage-3-tdd.md
    ├─ 3.0 AUDIT: Test-Writer audits the existing suite
    │  └─ Gate: Test Audit approved by the user
@@ -344,6 +344,8 @@ See **Roles contract §2** above for the full table with permissions, artifacts 
 - [ ] Measurable acceptance criteria.
 - [ ] Unambiguous user approval mark: final line `Status: Approved by <X> on <date>` or frontmatter with `approved_by` + `approved_at`.
 - [ ] If the spec is complex (multiple components): `plan.md` exists, passed self-review and is approved together with the spec.
+- [ ] `docs/specs/<feature-id>/plan-review.md` exists (the verdict of the draft review).
+- [ ] Its blockers resolved or explicitly dismissed with written reason.
 
 ### Gate 3→4 — TDD → Review
 

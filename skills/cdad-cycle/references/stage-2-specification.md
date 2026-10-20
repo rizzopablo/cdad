@@ -10,8 +10,9 @@ You do NOT write the spec. You coordinate:
 2. Validate brainstorm closure at re-entry.
 3. Emit handoff to **architect in spec-writing mode**.
 4. Validate the spec draft at re-entry.
-5. Pass the spec to the **user (human or higher-hierarchy autonomous agent) for approval** (by default non-delegable; see the exception in 2.3 if the user explicitly requested delegating it to an agent for this feature).
-6. When the approval arrives (from the user, or agent-delegated under an explicit request), close the stage.
+5. Dispatch the draft review (`plan-review`) and validate its verdict at re-entry.
+6. Pass the spec to the **user (human or higher-hierarchy autonomous agent) for approval** (by default non-delegable; see the exception in 2.3 if the user explicitly requested delegating it to an agent for this feature).
+7. When the approval arrives (from the user, or agent-delegated under an explicit request), close the stage.
 
 ## Sub-phase 2.1 — Socratic brainstorm
 
@@ -41,7 +42,36 @@ Deliver the packet, end the turn.
 
 Validate the spec draft (see `re-entry.md` section "Architect — spec draft").
 
-If it passes: pass it to the user for approval.
+If it passes: run the draft review sub-phase below; then pass it to the user for approval.
+
+## Draft review sub-phase (`plan-review`) — the independent review of the draft, before the approval
+
+The draft does not reach the approval without an independent review of it: the
+reviewer works in a session separate from the author.
+
+- **Dispatch.** Prepare the `reviewer`/`plan-review` packet over the draft (the
+  spec, and the plan when it exists) and dispatch it. The contract carries the
+  form of the object under review (`--object-kind`) and, when the review covers
+  a spec and its plan, the identity of both documents by digest.
+- **Receive the verdict.** The reviewer's verdict comes back as its final text
+  and is materialized as `docs/specs/<feature>/plan-review.md`. Receiving the
+  verdict approves nothing.
+- **Route the blockers.** Every blocker of the verdict goes back to the
+  architect, or is discarded with a written reason by the authority that
+  approves.
+- **Focused re-review.** If the correction changed the design, the corrected
+  draft gets a focused re-review: the new bytes are covered, not a new full
+  round.
+- **Then the approval.** Only when every blocker is closed does the draft go to
+  the approval (the sub-phase below). The verdict never approves the draft.
+
+The review is always mandatory; its depth is proportional (the calibration of
+`references/stage-4-review.md`).
+
+**The exemption's declared form.** The owner may exempt the review. The
+exemption is explicit and registered in the same `stage_history` entry as the
+approval, with the four fields `exempted_by` (the owner who exempts the
+review), `delegated`, `requested_by` (who asked for it) and `reason` (why).
 
 ## Sub-phase 2.3 — Approval (by the user by default; delegable only under an explicit request)
 
@@ -181,6 +211,7 @@ The feature's **minimum acceptance-of-use recipe** — contract / integration / 
 - [ ] Measurable acceptance criteria.
 - [ ] Unequivocal user approval mark.
 - [ ] If the spec is complex (multiple components): `plan.md` exists, passed the self-review, and is approved together with the spec.
+- [ ] `docs/specs/<feature>/plan-review.md` exists (the verdict of the draft review) and every blocker in it is resolved or discarded with a written reason.
 
 When all OK: update the state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, register `approved_by` in `stage_history`). Announce the transition. Emit handoff to test-writer (RED) for postcondition 1.
 

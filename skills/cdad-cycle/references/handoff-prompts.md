@@ -542,11 +542,11 @@ When you finish:
 
 ### Reviewer (subphase `plan-review` — draft plan, PD-2/PD-4)
 
-The same reviewer role reviews a **plan draft** (intention + restrictions + the
-plan object), not a diff. Its procedure lives in the pinned substage source
-`packets/substages/reviewer-plan-review.md` (composed by `prepare` as
-`substages/reviewer-plan-review.md`); this template only shows how to invoke it.
-Do NOT restate the procedure here — reference the source.
+The same reviewer role reviews a **draft** (the object the contract declares: a
+spec, or a plan and its spec), not a diff. Its procedure lives in the pinned
+substage source `packets/substages/reviewer-plan-review.md` (composed by
+`prepare` as `substages/reviewer-plan-review.md`); this template only shows how
+to invoke it. Do NOT restate the procedure here — reference the source.
 
 ```
 python3 skills/cdad-cycle/scripts/cdad_packet.py prepare \
@@ -563,8 +563,15 @@ The **three contract flags are required** (`--contract-kind draft-plan`,
 role default (`approved-feature-spec`) and the pairing guard rejects
 `plan-review` over an approved contract (rc=2). Pass the rendered stdout
 unchanged as the Task prompt. The packet is the execution contract: review the
-draft plan's intention, constraints and plan in a session independent from the
+draft's intention, constraints and object in a session independent from the
 author, without marking it approved or authorizing implementation.
+
+**The form of the reviewed object and its double identity.** The contract
+declares the form of the object under review: `--object-kind spec` when the
+draft is a spec, `--object-kind plan` when it is a plan (without the flag the
+form is `plan`). When the review covers a spec **and** its plan, the plan is
+the main document and the spec is the companion, fixed by digest:
+`--spec-path <path to the spec>` and `--spec-version <version of the spec>`.
 ```
 
 ### Scribe (Stage 5)

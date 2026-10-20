@@ -171,6 +171,30 @@ the authorization, so `prepare` fails for the construction roles with the
 spec approval and carries no hash pin.) Then emit handoff to test-writer (RED)
 for postcondition 1.
 
+### Reviewer — draft review verdict (`plan-review`)
+
+Check:
+- [ ] The verdict names the object it reviewed and that object's digest.
+- [ ] The verdict is materialized as `docs/specs/<feature>/plan-review.md`.
+- [ ] Every blocker of the verdict is resolved in the draft, or discarded with a written reason by the authority that approves.
+- [ ] If the correction changed the design, the focused re-review was dispatched and received.
+
+If it fails: handoff back to the architect with the blockers; then dispatch the focused re-review over the corrected draft.
+
+If it passes: the draft goes to the approval. The verdict never approves it.
+
+**The exemption.** The owner may exempt the draft review. The exemption is explicit and registered in the same `stage_history` entry as the approval, with the four fields `exempted_by`, `delegated`, `requested_by` and `reason`. Without a declared exemption, the review is mandatory.
+
+### Compatibility between product revisions (declared, not corrected)
+
+The digests of the instruction sources are part of the package's identity, so a
+package published with one revision of the instruction sources is not receivable
+after they change: the package is rejected on receipt because it no longer
+matches the canonical render. That rejection is noisy and recoverable, not a
+defect — the CLI does not distinguish the cause and this procedure does not
+change it. The two exits are: finish it under the revision it was published
+with, or prepare a new one under the revision now in force.
+
 ### Test-writer — RED
 
 Check:
