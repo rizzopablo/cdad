@@ -21,3 +21,20 @@ Status: recorrido del orquestador bajo la delegación HITL amplia del owner (202
 |---|---|---|
 | W-1 | un paquete `plan-review` preparado y no despachado no se puede reemplazar: `--replace-packet` valida contra el contrato aprobado y rechaza el `draft-plan` (PD-2), y `disposition` solo admite paquetes despachados; tras editar el borrador, el usuario queda sin salida para la re-review (E4) | corregido (`4f755ac`/`de629b8`); informes `w1-red.md`/`w1-green.md` |
 | W-2 | el adaptador termina con rc=0 incluso con `termination: blocked` (E7); el diagnóstico va en la salida JSON | observación, no se cambia |
+
+## W-1 tras el despliegue del cierre
+
+CLI desplegado en HOME (`86cb942`), en el mismo proyecto descartable:
+
+```text
+prepare e1-w1a rc=0
+006-006-spec-plan-review-reviewer-plan-review-009
+aa83c8a854d41a6980786f6202efd9656d06bb4e1997ab4ceab449bf9bc517db  docs/specs/006-006-spec-plan-review/draft-e1.md
+replace rc=0
+prepare e1-w1b rc=2
+ERROR: active packet '006-006-spec-plan-review-reviewer-plan-review-010' is 'prepared': complete or fail it before preparing a new packet (PD-4)
+006-006-spec-plan-review-reviewer-plan-review-009 f5dfaa449a35492e63d62164ab8653c4c313bc5ade87cf3f6d5d658ea6857153
+010 aa83c8a854d41a6980786f6202efd9656d06bb4e1997ab4ceab449bf9bc517db spec reviewer plan-review
+```
+
+Se prepara el paquete 009 sobre el borrador (`f5dfaa44…`) y se edita el borrador (`aa83c8a8…`). `--replace-packet` da rc=0 y publica el reemplazo 010, que fija el digest nuevo `aa83c8a8…` con forma `spec`. El `prepare` siguiente da rc=2 por PD-4, porque 010 ya es el paquete activo: es lo esperado.

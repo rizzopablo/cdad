@@ -653,6 +653,85 @@ catch-all deny o pares de comandos durante la simplificación.
   `ADR-034` está reservado por el plan del epic para el principio de general antes que específico) y la
   **aprobación del ADR es del owner**, no del cierre de la feature.
 
+### Forma declarada del objeto, identidad condicional y gate supervisado (epic 006, 2026-10-20)
+
+- **La forma del objeto se declara en el encargo; no se infiere, y por omisión falla cerrado.** El contrato
+  declara la forma (`contract.object_kind`: `spec` | `plan`) como **extensión aditiva** del conjunto cerrado de
+  claves (el mismo patrón que `plan_version`), con la **forja** ampliada: un kind `approved-*` que declare las
+  claves nuevas se rechaza **antes de publicar nada**. **Ausente ⇒ `plan`**: el comportamiento vigente no cambia,
+  el oráculo de la puerta `plan-tasks` se conserva sin cambio y **olvidar la bandera produce un rechazo, nunca
+  una aceptación silenciosa**. Se rechazaron y quedaron documentadas las tres inferencias que parecían
+  equivalentes: por el **contenido** (el token `plan-tasks`), por la **ruta** (`spec.md`/`plan.md`) y el
+  **bloque vacío dentro de la spec** (que deja el `purpose` mintiendo y conserva el modelo mental que el rodeo
+  repite). Consecuencia operativa: **una puerta puede exigir la forma y no el contenido**, y los **checks
+  estructurales de un tipo se aplican al documento de ese tipo** (una spec nunca se juzga por las reglas del
+  plan; un plan nunca se juzga por las de una spec).
+- **La identidad doble es por digest, no por cadena de versiones.** Cuando la revisión cubre spec **y** plan, el
+  **principal es el documento más estructurado** (el plan) y la spec es el **acompañante**, y el contrato fija
+  **los dos por digest calculado de los bytes** (nunca afirmado desde fuera: un digest que no coincide con el
+  archivo se rechaza nombrando la divergencia). El digest es lo comparable con `sha256sum`; una cadena de
+  versiones puede coincidir mientras los bytes no. Corolario operativo: **una corrección en cualquiera de los
+  dos documentos invalida la cobertura de la revisión anterior** (re-review **focal**, no ronda nueva), y el
+  objeto revisado **siempre** está fijado por digest: una revisión sin digest fijado no es una revisión.
+- **La identidad de una transición se extiende de forma condicional, para conservar las históricas.** Cuando una
+  invocación **declara** un dato nuevo que debe participar en la identidad, el payload canónico recibe **una**
+  clave **condicional** con **exactamente** los campos declarados (no como `null`: no están). **Sin** la
+  declaración, el payload y la `transition_key` son **byte-idénticos** a los del producto vigente ⇒ las
+  identidades ya registradas siguen reconociéndose como la misma transición y **no hay enmienda** de las
+  garantías aprobadas por otras features (sus oráculos siguen verdes sin cambio de oráculo, y sus archivos de
+  test se **ejecutan** como regresión, para que una forma uniforme futura no pueda colarse en silencio). La regla
+  uniforme vigente («toda clave presente; un insumo ausente vale `null`») **deja de ser la regla**: el precio de
+  conservar las identidades históricas es un payload **condicional**, y esa es una forma de deuda explícita, no
+  un descuido. En la misma línea, **la rama de no-op se califica en vez de eliminarse**: el **replay histórico**
+  (la entrada nombrada **es** la vigente, o no hay vigente que compita) sigue siendo no-op, y la invocación que
+  **colisiona con una entrada histórica que no es la vigente** se **rechaza explícitamente** nombrando la clave
+  que colisiona, la clave de la vigente y **las dos salidas** — nunca un no-op exitoso que deje vigente la
+  aprobación anterior. Escribir una segunda entrada con la clave colisionada **no** es la salida: esa clave ya
+  está en el conjunto de claves sustituidas ⇒ la entrada nueva quedaría inerte para la vigencia y la búsqueda por
+  clave seguiría resolviendo a la vieja ⇒ **la pérdida en silencio, otra vez**. Y una retirada de un valor
+  anterior **no tiene fórmula de identidad propia**: se registra con un **valor distinguible** (un insumo que
+  entra en la identidad y difiere del histórico), porque **añadir una clave de «retirada» volvería a cambiar la
+  identidad de todo lo registrado**.
+- **Un gate supervisado se distingue de un bloqueo del CLI, y la diferencia se mide con un control negativo.**
+  El gate 2→3 (y el exit gate de la etapa que lo contiene) **gana un criterio** —el artefacto del dictamen
+  existe y cada bloqueante está resuelto o descartado con razón escrita— y **ninguna** de esas superficies es
+  un bloqueo del CLI. La prueba de que el gate **no** es un bloqueo es un caso **positivo**: con una aprobación
+  vigente y **sin** dictamen, `prepare` de un rol de construcción **se acepta** (rc=0); el caso **distinto** (sin
+  aprobación) **se rechaza** con `approval pending`. Confundir los dos casos —probar el control negativo contra
+  el punto equivocado— es lo que hace que un gate supervisado se documente como si fuera duro. Y el artefacto
+  del dictamen **nunca** habilita construcción: la habilitación sigue siendo el **pin** de la aprobación.
+- **La compatibilidad de paquetes vale dentro de una revisión del producto, y entre revisiones la consecuencia
+  se declara en vez de corregirse.** Los **digests de las fuentes de instrucción son parte de la identidad del
+  paquete** y la recepción **re-renderiza y compara** ⇒ un paquete publicado antes de un cambio de esas fuentes
+  **no es recibible después**: el rechazo nombra la diferencia con el render canónico. Ese rechazo es **ruidoso
+  y recuperable**, no un defecto: es una **consecuencia inherente** al contrato de paquete, ya juzgada como tal
+  en 005-003 T6 (dictamen F3) con disposición de **deuda declarable** y **sin corregir el renderer**. Corolario
+  de diseño: **una feature que toca una fuente de instrucción se invalida a sí misma** en vuelo ⇒ la salida
+  legítima se **declara donde el orquestador consulta** (`re-entry.md`): **terminarlo bajo la revisión con la que
+  se publicó, o preparar uno nuevo bajo la revisión vigente**. El CLI **no** distingue la causa concreta ni
+  ofrece la salida: es **declaración de procedimiento**, y por eso se verifica por **derivación textual** sobre
+  el reference, no por un comando. Y la garantía de render byte-idéntico (sin las claves nuevas) vale **dentro
+  de una misma revisión**, no entre revisiones.
+- **Referencia operativa:** `skills/cdad-cycle/scripts/cdad_packet.py` (conjunto cerrado del contrato, forja,
+  `prepare` y sus banderas de forma, checks condicionales al documento de forma `plan`, `inputs` por documento,
+  render aditivo, `register-transition` con las tres banderas de exención y el bloque condicional de identidad,
+  rama de no-op calificada y reemplazo de un paquete de borrador preparado),
+  `skills/cdad-cycle/packets/substages/reviewer-plan-review.md` (dueño único de «qué se revisa»),
+  `skills/cdad-cycle/packets/roles/reviewer.md` y `sources/roles/reviewer.md` (el rol y los agentes generados, que
+  **nunca** se editan a mano), `skills/cdad-cycle/SKILL.md` (criterio del gate 2→3 y mapa del ciclo),
+  `skills/cdad-cycle/references/stage-2-specification.md` (subfase de revisión del borrador y exit gate),
+  `references/handoff-prompts.md` (invocación con la forma y la identidad doble) y `references/re-entry.md`
+  (re-entry del dictamen y política de compatibilidad); contrato normativo en
+  `docs/specs/006-006-spec-plan-review/spec.md` (PD-1..PD-16, INV-1..INV-13, D-1..D-15) y recorrido en
+  `docs/specs/006-006-spec-plan-review/u6-acceptance.md`.
+- **ADR sugerido:** sí — la decisión de arquitectura de esta feature (la forma del objeto **declarada** en el
+  contrato con fallo cerrado por omisión, la identidad doble por digest, la **extensión condicional** de la
+  identidad de una transición que conserva las identidades históricas, el gate 2→3 **supervisado** y la
+  compatibilidad acotada a una revisión del producto con la salida **declarada**) es candidata a **ADR** (MADR,
+  con campo **Confidence: High**). **La numeración no se asigna aquí** (el `ADR-034` está reservado por el plan
+  del epic para el principio de general antes que específico) y la **aprobación del ADR es del owner**, no del
+  cierre de la feature.
+
 ### Medición de contexto — registro neutral opcional, medidor read-only que nunca aprueba (epic 005, 2026-10-11)
 
 - **El formato de medición es neutral respecto del runtime y opcional para la metodología.** El

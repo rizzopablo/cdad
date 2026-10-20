@@ -4,6 +4,189 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-20 — Feature: 006-006-spec-plan-review (epic 006)
+
+**Cerrada el 2026-10-20 (ciclo técnico completo; el gate de suite completa lo corre quien cierra, política
+declarada en el paquete).**
+Quinta unidad de `epic-006-opencode-concurrency`: la **revisión independiente de un borrador de especificación
+antes del RED**, como capacidad de primera clase del recorrido y no como rodeo. **Contrato:** `spec.md` sha256
+`4d029a11…` (PD-1..PD-16, INV-1..INV-13, D-1..D-15, V-1..V-8) + `plan.md` sha256 `1abe9e7b…`, aprobados el
+2026-10-20 por el orquestador bajo la **HITL delegada del epic** (el owner la mantuvo ese día), tras
+`plan-review-001..004` (B-1..B-4 cerrados) y con la **errata B-5** aceptada en la aprobación. **El epic NO se
+cierra.**
+
+**Problema medido (no presupuestado).** En **otro proyecto activo** no se pudo pedir la review de un borrador de
+spec: el reviewer rechazó dos paquetes con razón — el contrato por defecto del reviewer es la spec **aprobada**,
+el plan de la épica no es admisible para el reviewer, y `draft-plan` **exige `plan-tasks`**. El hallazgo central
+del discovery: el CLI **no exige tareas, exige la forma** («el objeto está modelado como un plan»). Medido:
+`{"tasks": []}` pasa las tres validaciones ⇒ la puerta no exige tareas, exige la *forma de plan*. Tres rechazos
+mecánicos y correctos, no un error de uso. La capacidad ya existía (`plan-review` + `draft-plan`) pero **no
+estaba en el recorrido principal** (0 ocurrencias en `agents/`, `sources/` y `SKILL.md`; el gate 2→3 y el exit
+gate de la etapa 2 no la nombraban) y **sólo admitía planes**.
+
+**Qué cambió en el uso real.**
+- **El reviewer revisa un borrador de spec sin plan, de spec+plan o de otra feature**, con la forma **declarada**
+  en el encargo: `prepare --object-kind {spec,plan}`, más `--spec-path` y `--spec-version` cuando la revisión
+  cubre los dos documentos. La forma **nunca se infiere** (ni por el contenido, ni por la ruta, ni por el nombre
+  del kind) y **por omisión es `plan`**, con lo que el comportamiento vigente no cambia: olvidar la bandera
+  produce el rechazo de siempre, nunca una aceptación silenciosa. Una spec se revisa **sin tareas artificiales**
+  (no se inyecta un bloque `plan-tasks` en la spec); los checks del plan se aplican **sólo** al documento cuya
+  forma es `plan`.
+- **El dictamen nombra el objeto y su digest y se materializa en la carpeta de la feature activa.** Con un
+  borrador de **otra** feature, el paquete deja visible que la feature activa es una y el objeto es de otra; el
+  dictamen aterriza **sólo** en `docs/specs/<feature activa>/plan-review.md` (la tabla de destinos no se amplía) y
+  nombra el objeto y su digest. La **identidad doble** es por digest: con spec+plan, el plan es el principal y
+  la spec el acompañante, con **ambos** digests calculados de los bytes; una corrección en cualquiera de los dos
+  invalida la cobertura de la revisión anterior (re-review **focal**, no ronda nueva).
+- **Nada aprueba.** El dictamen no lleva marca de aprobación, el recibo queda `pending`, la autorización de
+  materialización exige `approval_effect: false`, el estado no registra aprobación y el test-writer sigue
+  bloqueado sin el pin de la aprobación de la spec. La revisión del **resultado** (etapa 4) no se toca.
+- **La exención entra en la identidad sólo si se declara.** El owner puede eximir la revisión; la exención es
+  explícita y viaja **en la misma entrada de `stage_history` que la aprobación** (clase `gate`, con
+  `--exempted-by`, `--exemption-reason`, `--requested-by`, `--delegated`). Sus cuatro campos entran en el
+  payload de identidad **sólo en las invocaciones que los declaran**, como **un** bloque `exemption` condicional:
+  sin exención declarada, el payload y la `transition_key` son **byte-idénticos** a los del producto vigente ⇒
+  **las identidades históricas se conservan** y **no hay enmienda** de 005-012 PD-11, 005-014 PD-23 ni
+  006-005 PD-19(b) (sus oráculos siguen verdes sin cambio de oráculo). Repetir la misma orden es **no-op**;
+  **volver a un valor anterior** (A→B→A) **no** puede perderse en silencio: la invocación que colisiona con una
+  entrada histórica que **no** es la vigente se **rechaza explícitamente** (nombra la clave que colisiona, la de
+  la vigente y las dos salidas), nunca un no-op que deje la anterior vigente.
+- **Gate 2→3 supervisado, con `plan-review.md`.** El gate 2→3 y el exit gate de la etapa 2suman un criterio: el
+  artefacto `docs/specs/<feature>/plan-review.md` existe y cada bloqueante está resuelto o descartado con razón
+  escrita. **Ninguna de esas superficies es un bloqueo del CLI**: medido, con aprobación vigente y **sin**
+  dictamen, `prepare` de un rol de construcción **se acepta** (rc=0) — el gate es **supervisado**; y **sin**
+  aprobación, el mismo `prepare` **se rechaza** con `approval pending`. La re-entry del dictamen y la política
+  de compatibilidad quedan declaradas en `re-entry.md`.
+- **Política de compatibilidad entre revisiones.** Los digests de las fuentes de instrucción **son parte de la
+  identidad del paquete** y la recepción re-renderiza y compara ⇒ un paquete publicado antes de un cambio de esas
+  fuentes **no es recibible después** (rechazo ruidoso y recuperable: «packet differs from its canonical
+  rendering»). La **salida** está declarada donde el orquestador consulta: **terminarlo bajo la revisión con la
+  que se publicó, o preparar uno nuevo bajo la vigente**. El CLI **no** distingue la causa ni ofrece la salida:
+  es **declaración de procedimiento**, no un cambio del renderer.
+- **Reemplazo de un paquete de borrador preparado (W-1, corregido).** Antes, un paquete `plan-review`
+  **preparado y nunca despachado** no se podía reemplazar (`prepare` rechazaba por paquete activo `prepared`;
+  `disposition` sólo admite paquetes despachados; `--replace-packet` validaba contra el contrato aprobado y
+  rechazaba el `draft-plan`): tras corregir el borrador, el usuario quedaba **sin salida** para la re-review.
+  Ahora `prepare --replace-packet` **reemplaza un paquete de borrador preparado**, conserva la **forma**
+  (`kind`, `path`, `plan_version`, `object_kind`, `spec_path`/`spec_version`) y **recalcula sólo los digests**
+  desde los bytes actuales; la ruta del contrato aprobado queda **byte a byte idéntica** a la de antes.
+
+**Producto (U1, U5, U2, U3, U4 + el arreglo W-1).** Rango `7f39e24..HEAD`: **59 commits, 46 archivos, +11745/−61**;
+de ellos **14 archivos de producto, +499/−53** (`cdad_packet.py` +410/−… , `SKILL.md`, los tres references de
+procedimiento, el substage y la regla de rol, la fuente del rol y los seis agentes regenerados) y `tests/` suma
+**6 archivos nuevos, +5030/−0**. **Último commit de producto: `de629b8`** (W-1). Orden real:
+**U1** (el objeto declarado en el contrato) → **U5** (la exención registrada e identificada) → **U2** (la fuente
+canónica de «qué se revisa») → **U3** (el recorrido principal, el gate 2→3 y la política de compatibilidad) →
+**U4** (el rol y los agentes generados) → **U6** (recorrido de aceptación) → **W-1** (arreglo del recorrido).
+
+**Aceptación real (U6, proyecto descartable; nunca HOME, nunca el proyecto activo).** Los siete escenarios
+**cumplen**: **E1** spec sin plan (rc=0, paquete con `form: spec` y purpose «draft spec for review», recibo
+`pending`, dictamen materializado con sha idéntico al del part, digest nombrado) · **E2** spec+plan (los checks
+del plan aplican al plan; los dos digests fijados coinciden con `sha256sum`; el dictamen nombra los dos) · **E3**
+borrador de otra feature (rc=0, `feature_id` ≠ carpeta del `contract.path`, un target en la carpeta del objeto ⇒
+rc=2 «outside the allowed root…», el dictamen nombra el objeto y su digest) · **E4** re-review por digest (digest
+fijado ≠ `sha256sum` tras la edición ⇒ la revisión anterior no cubre los bytes nuevos; con bytes sin cambiar
+coincide) — **con el hallazgo W-1 y su corrección** · **E5** el dictamen no aprueba (sin `approved_by` en el
+estado, recibo `pending`, `prepare --role test-writer` con el borrador ⇒ rc=2 «draft-plan contract is
+reviewer-only», `approval_effect: false`) · **E6** coherente que no alcanza la intención (juicio semántico: el
+dictamen declara «BLOCKING · Bucket: h…» y propone un remedio estructural) · **E7** compatibilidad entre revisiones
+(el caso de dos fases: publicación con las fuentes de entonces, recepción con la copia ya cambiada ⇒
+`termination: blocked` con el diagnóstico de la diferencia con el render canónico; la salida declarada en
+`re-entry.md` **no** la ejecuta el producto). El recorrido de **dos revisiones** y el **A→B→A** de U5 se
+ejecutaron con el CLI real en proyectos sintéticos dentro del focal (5 casos de recorrido verdes; el focal
+completo, 14 passed).
+
+**Review (etapa 4) — apta para cierre, 0 bloqueantes / 2 opcionales.** El reviewer (familia distinta a la del
+implementer) verificó los hashes del contrato, la política y las tres fuentes; reprodujo los focales (**72
+passed**) y las regresiones declaradas (**62 passed**); no encontró bloqueantes observables. **O-1** (automatizar
+la selección de vigencia exigida por la errata B-5) ⇒ **deuda**. **O-2** (actualizar la evidencia de aceptación
+tras W-1) ⇒ **aplicado** en la misma ronda (la fila E4 y el estado de W-1 quedaron actualizados). El reviewer
+**no** certificó `make validate` (los informes registran **168 PASS / 1 FAIL**, atribuido a F011 ambiental) y **no**
+ejecutó la suite completa (corresponde a quien cierra).
+
+**Gates.** `make validate` en el GREEN de cierre: **168 PASS / 1 FAIL = F011** (deriva ambiental de la copia
+instalada, clase **DT-8** preexistente). **Suite de cierre: 1404 passed, 5 skipped**, corrida por quien cierra.
+
+**Desplegado.** El owner autorizó el despliegue en HOME de esta feature el 2026-10-20 («cuando necesites hacer
+despliegue hazlo») y existe el script de despliegue de la feature (`.cdad/local/deploy-006-006-u4.sh`:
+respaldo previo, `make staging`, `install.sh --force`, `install.sh --check`). La evidencia de U6 declara que el
+producto probado fue **la copia de HOME desplegada desde HEAD `a276531`** (U1–U5 incluidas). Al cierre se **redesplegó en `86cb942`** (código `de629b8`, con W-1; respaldo en `archive/`), y W-1 se verificó con el CLI desplegado (`u6-acceptance.md`, sección «W-1 tras el despliegue del cierre»).
+
+**Decisiones relevantes.** **D-1** la forma la **declara el encargo** (`contract.object_kind`), nunca el objeto:
+se rechazaron la inferencia por el contenido, por la ruta y el bloque `plan-tasks` vacío dentro de la spec (que
+deja el `purpose` mintiendo y conserva el modelo mental que el rodeo repite). **D-2** por omisión la forma es
+`plan` ⇒ los 11 archivos de test que comparten el fixture de borrador **no se tocan** y el oráculo vigente de la
+puerta `plan-tasks` se conserva sin cambio. **D-3** la identidad doble viaja como **dos documentos fijados por
+digest**, no como una cadena de versiones (el digest es lo comparable con `sha256sum`). **D-4** los checks del
+plan se aplican **al documento cuya forma es `plan`**, sin excepciones ni listas de excepciones. **D-5** la
+revisión es **siempre obligatoria**, con profundidad proporcional; **no hay exención por defecto**. **D-6** la
+exención se registra **en la entrada que abre el gate** (se rechazaron la entrada libre, la clase de transición
+nueva, el texto en la `note` y el `approved_by`). **D-8** el dictamen de un borrador de otra feature **vive en la
+carpeta de la feature activa** y nombra el objeto; ampliar la tabla cerrada de destinos quedó fuera de alcance.
+**D-9** «el dictamen nombra el digest» es **obligación de procedimiento**, no un enforcement nuevo en
+`materialize` (el CAS protege el destino, no el objeto; atar texto libre a un digest haría frágil la recepción).
+**D-10** el gate 2→3 es **supervisado**: un bloqueo duro en el CLI estaba excluido. **D-11** se conservan los
+nombres (`draft-plan`, `plan-review`, `plan_version`, `plan-tasks`), con la **deuda de nombre declarada** (cambiar
+el enum cerrado de kinds, los enums de schema, la plantilla y los oráculos de 004-003 es un trabajo acotado pero
+de coordinación). **D-12** la compatibilidad se **acota a una revisión del producto** y su consecuencia **se
+declara, no se corrige** (mismo precedente que 005-003 T6/F3: consequence inherente al contrato de paquete,
+ruidosa y recuperable). **D-13/D-14** la exención entra en la identidad **sólo cuando se declara** (forma
+condicional): es el precio de conservar las identidades ya registradas, y por eso **no hay enmienda** de ninguna
+garantía anterior. **D-15** la colisión con una entrada histórica que **no** es la vigente **se rechaza**: escribir
+una segunda entrada con esa clave la dejaría inerte para la vigencia y la búsqueda por clave seguiría resolviendo
+a la vieja ⇒ la pérdida en silencio, otra vez. **Trade-offs declarados:** el gate 2→3 puede saltarse (el CLI no
+verifica el dictamen; la mitigación es la disciplina del gate, no el enforcement); la exención es un **acto de
+autoridad registrado, no una firma**; la retirada de la exención **no tiene fórmula de identidad propia** y se
+registra con un **valor distinguible**; el payload de identidad **deja de ser uniforme** (la regla vigente «toda
+clave presente; un insumo ausente vale `null`»).
+
+**Deuda detectada (abierta).**
+- **O-1 (review, opcional)** — **automatizar la selección de vigencia** exigida por la errata B-5: los tests
+  comprueban que `prepare` acepta el contrato, pero eso **no demuestra** que el selector devuelva **sólo B** y
+  después **sólo C**, excluyendo las entradas sustituidas (comparten pin). El reviewer lo verificó **por
+  separado** con las transiciones reales (`selected_only_B=True excludes_A=True`; `withdrawal_rc=0
+  selected_only_C=True excludes_A_and_B=True`) ⇒ **no se observó defecto de vigencia; falta conservar esa
+  comprobación como regresión automática**. Remedio: añadir las aserciones del selector al recorrido, manteniendo
+  `prepare` como comprobación adicional de habilitación.
+- **W-2 (observación)** — el adaptador termina con **rc=0** aunque el resultado sea `termination: blocked` (E7);
+  el diagnóstico va en la salida JSON. Observación, **no se cambia**.
+- **Pendientes de cierre de esta feature** — **suite completa** (la corre quien cierra) y **redespliegue del fix
+  W-1** (no registrado en el repo; la fila E4 apunta a un «despliegue del cierre» cuya sección no existe).
+- **Deuda declarada por la spec (§10)**: **deuda de nombre** (`draft-plan`/`plan-review`/`plan_version`/
+  `plan-tasks` siguen diciendo «plan» aunque el objeto sea una spec) · **deuda de la puerta `plan-tasks`** (el
+  nombre del token) · **ADR-013 O-C** (el `contract.path` de un borrador puede ser cualquier ruta del proyecto;
+  fuera de alcance) · **deuda de la ambientación** (el dictamen de otra feature no puede vivir en su carpeta) ·
+  **deuda de la exención en el CLI** (el nombre del owner viaja como texto declarado, no como identidad
+  criptográfica) · **deuda de la compatibilidad entre revisiones** (declarada, no defecto) · **deuda de la
+  identidad de la retirada** (se registra con un valor distinguible). **La frontera de 005-014 E-4 no se amplía**:
+  sigue REFERIDA a las entradas sin `transition_key_payload`.
+- **Heredada de 006-005, sin cambios**: **U6-2** (ningún productor de `observed_changes` ⇒ `scope_validation`
+  queda `unknown`) · **O-2** (coordinador fuera de la raíz ⇒ copia global de los agentes) · **D-U65-4** (sin
+  write-ahead nativo) · **D-U65-5** (recuperar del store la salida del huérfano como entrega tardía) · **O-2 y O-3
+  de las reviews de 006-005** · el **límite de transporte del paquete nativo** (la cabecera JSON de `PACKET.md`
+  supera 2000 caracteres y la herramienta de lectura del runtime la trunca) · **DT-8** (F011 por deriva de la
+  copia instalada) y el **flake conocido del margen de la espera bajo carga** (clase DT-9).
+
+**Lecciones de proceso.**
+(1) **Una puerta puede exigir la forma y no el contenido**: el CLI no exigía tareas, exigía el token `plan-tasks`
+— y el rodeo del consumidor nacía de modelar el objeto como un plan, no de una regla unreasonable. (2) **Un no-op
+que responde antes de examinar el estado pierde cambios en silencio**: la rama de no-op decidía por la clave y
+respondía **antes** de mirar `--supersedes` y la aprobación vigente, de modo que el recorrido A→B→A devolvía
+éxito **dejando vigente la aprobación anterior**; la corrección **califica** la rama (replay histórico ≠ intento
+de sustituir la vigente) en vez de eliminarla. (3) **Una identidad uniforme no es gratis**: cuatro claves `null`
+cambian la clave **también** de las invocaciones sin exención y de las demás clases ⇒ la forma **condicional**
+(una clave, sólo cuando se declara) es el precio de conservar las identidades ya registradas. (4) **Un oráculo
+puede ser cierto y el consumidor no poder distinguirlo**: `prepare` recibe el contrato, **no la clave de la
+aprobación** (A y B comparten contrato y pin), así que la vigencia se comprueba con el **selector real**, no con
+`prepare` — de ahí la errata B-5.
+
+**Estado del epic.** `epic-006-opencode-concurrency` sigue **abierto** (`features-loop`): **006-001, 006-002,
+006-003, 006-005 y 006-006 `done`, 5/6**. Queda **006-004-active-decisions-table** (enmienda 003, que también
+vehiculiza el principio de general antes que específico, enmienda 005 ⇒ **ADR-034**), en el **orden que fijó el
+owner** (**006-005 → 006-006 → 006-004**). **Siguiente:** `006-004-active-decisions-table`.
+
+---
+
 ## 2026-10-20 — Feature: 006-005-native-path-parity (epic 006)
 
 **Cerrada el 2026-10-20 (ciclo técnico completo; el gate de suite completa lo corre quien cierra, PD-21).**

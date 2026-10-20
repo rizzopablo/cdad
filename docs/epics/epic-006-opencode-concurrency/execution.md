@@ -386,3 +386,12 @@ En otro proyecto activo no se pudo pedir la review de un borrador de spec. El re
 - **Q5:** la revisión es siempre obligatoria, con profundidad proporcional.
 - **Q1:** la exención solo la da el owner, explícita y registrada en `stage_history` (`exempted_by`, `delegated`, `requested_by`, `reason`).
 - La deuda de nombre (`plan-review`/`draft-plan`) queda declarada.
+
+## 006-006 construcción, recorrido y cierre (2026-10-20)
+
+- U2, U3 y U4: RED→GREEN, sin A-1. U5 se cerró con el testfix del fixture (faltaba `delivery`).
+- Owner, 2026-10-20: «estoy esperando este desarrollo para continuar otros proyectos, así que cuando necesites hacer despliegue hazlo». Despliegues en HOME en `a276531` (antes del recorrido) y en `86cb942` (cierre), con respaldo en `archive/`.
+- U6, recorrido real (`u6-acceptance.md`): E1–E7 cumplen. Hallazgo **W-1**: un paquete de borrador preparado no se podía reemplazar. Decisión del orquestador: arreglarlo dentro de la feature (afecta la re-review de E4, que es uso previsto). RED `4f755ac`, GREEN `de629b8`, verificado con el CLI desplegado. **W-2** (rc=0 del adaptador en `blocked`) queda como observación.
+- Review de etapa 4: apta para cierre, 0 B / 2 O. O-2 se aplicó; O-1 pasa a deuda.
+- Suite de cierre: 1404 passed, 5 skipped.
+- Siguiente: 006-004-active-decisions-table. El push queda a la espera de la orden del owner.

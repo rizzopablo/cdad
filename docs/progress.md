@@ -8,6 +8,46 @@ _(ninguna)_
 
 ## Done
 
+- **006-006-spec-plan-review** (2026-10-20, epic 006) — quinta feature de
+  `epic-006-opencode-concurrency`: la **revisión independiente de un borrador de especificación antes del RED**,
+  como capacidad de primera clase del recorrido y no como rodeo. La forma del objeto se **declara** en el
+  encargo (`contract.object_kind`); la revisión entra en el **gate 2→3** (supervisado, con
+  `docs/specs/<feature>/plan-review.md`); el dictamen **nombra el objeto y su digest** y se materializa en la
+  carpeta de la **feature activa**; y la **exención** del owner se registra en la misma entrada de aprobación y
+  entra en la identidad **sólo cuando se declara**. **Contrato:** `spec.md` sha256 `4d029a11…` (PD-1..PD-16,
+  INV-1..INV-13, D-1..D-15, V-1..V-8) + `plan.md` sha256 `1abe9e7b…`, aprobados el 2026-10-20 por el
+  orquestador bajo la **HITL delegada del epic** (el owner la mantuvo ese día), tras `plan-review-001..004`
+  (B-1..B-4 cerrados) y con la **errata B-5** aceptada en la aprobación. **Producto (rango `7f39e24..HEAD`:
+  59 commits, 46 archivos, +11745/−61; de ellos 14 de producto, +499/−53, y `tests/` 6 archivos nuevos,
+  +5030/−0; último commit de producto `de629b8`):** U1 el objeto declarado en el contrato (`--object-kind`,
+  `--spec-path`, `--spec-version`; los checks del plan **sólo** sobre el documento de forma `plan`; por omisión
+  la forma es `plan` ⇒ el comportamiento vigente no cambia) → U5 la exención registrada e **incluida en la
+  identidad de la transición, pero sólo cuando se declara** (bloque `exemption` condicional ⇒ sin exención el
+  payload es byte-idéntico al vigente y **las identidades históricas se conservan**, sin enmienda de 005-012
+  PD-11, 005-014 PD-23 ni 006-005 PD-19(b); el **replay histórico** se distingue del **intento de sustituir la
+  aprobación vigente**, que se rechaza explícitamente) → U2 la fuente canónica de «qué se revisa» (el substage
+  generalizado al objeto de especificación, la regla de rol sin plan-centrismo) → U3 el recorrido principal
+  (subfase y exit gate de la etapa 2, criterio en el gate 2→3, re-entry del dictamen, **política de
+  compatibilidad** declarada) → U4 el rol y los agentes generados (el reviewer declara la etapa 2, el artefacto
+  `plan-review.md` y la revisión de borrador) → U6 **recorrido de aceptación real** (proyecto descartable;
+  E1..E7 **cumplen**: spec sin plan, spec+plan con los dos digests fijados, borrador de **otra** feature con el
+  dictamen en la carpeta de la feature activa, re-review por digest, el dictamen que **no** aprueba, el juicio
+  semántico que declara el bloqueante, y el caso de compatibilidad entre revisiones) → **W-1** el arreglo del
+  recorrido: `prepare --replace-packet` **reemplaza un paquete de borrador preparado** y recalcula los digests
+  desde los bytes actuales (la ruta del contrato aprobado queda byte a byte idéntica). **Review formal: apta
+  para cierre, 0 bloqueantes / 2 opcionales** (O-1 la selección de vigencia de la errata B-5 **no** está
+  automatizada ⇒ deuda; O-2 la evidencia de aceptación tras W-1 **aplicado** en la misma ronda). **Gates:**
+  `make validate` **168 PASS / 1 FAIL = F011** (deriva ambiental de la copia instalada, **DT-8** preexistente);
+  **suite de cierre: 1404 passed, 5 skipped** (la corrió quien cierra). **Desplegado** en HOME por orden del owner (script de despliegue de la feature; la evidencia de
+  U6 declara la copia desplegada desde HEAD `a276531`, U1–U5): **redesplegado al cierre en `86cb942`** (incluye W-1, verificado con el CLI desplegado). **Deuda:** **O-1** (automatizar el
+  selector de vigencia B/C: verificado por separado con las transiciones reales, sin defecto observado), **W-2**
+  (el adaptador termina con rc=0 aunque el resultado sea `blocked`; observación), la **deuda declarada de la
+  spec** (nombre `draft-plan`/`plan-review`/`plan_version`/`plan-tasks`; ADR-013 O-C; ambientación del dictamen;
+  exención como acto de autoridad, no firma; compatibilidad entre revisiones; identidad de la retirada) y la
+  **deuda heredada de 006-005 sin cambios** (U6-2, O-2, D-U65-4, D-U65-5, O-2/O-3 de sus reviews, el límite de
+  transporte del paquete nativo, DT-8 y el flake DT-9). **El epic NO se cierra: 5/6** — queda
+  **006-004-active-decisions-table** (enmienda 003 + 005 ⇒ ADR-034), en el orden del owner
+  (**006-005 → 006-006 → 006-004**). **Siguiente:** `006-004-active-decisions-table`.
 - **006-005-native-path-parity** (2026-10-20, epic 006) — cuarta feature de
   `epic-006-opencode-concurrency`: la **paridad del camino nativo**. El orquestador deja de reconstruir el
   protocolo a mano: una **entrada operativa** (`cdad_dispatch.py`, verbos `dispatch`/`record`/`capabilities`/
