@@ -4,7 +4,7 @@
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
   "active_feature": "006-006-spec-plan-review",
-  "current_stage": "discovery",
+  "current_stage": "tdd",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -12536,6 +12536,51 @@
         "docs/specs/006-006-spec-plan-review/plan-review-004.md": "3a298bf261d7e0ff1c09e5ed32995460d8b7066fc07a20502d00d24319e4e696"
       },
       "note": "plan-review draft-004 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "specification",
+      "substage": "red",
+      "at": "2026-10-20T11:35:36.679152+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "bfc3f4160bfd47fed2e76d49026980fecb3b9de6646436a9b926c66d20665914",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": "orquestador (HITL delegada epic-006)",
+        "contract": {
+          "path": "docs/specs/006-006-spec-plan-review/spec.md",
+          "sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298"
+        },
+        "plan": {
+          "path": "docs/specs/006-006-spec-plan-review/plan.md",
+          "sha256": "1abe9e7bf242b223ea312770a064f1a283e1fc46526ae3202299bbdcad28ea58"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "orquestador (HITL delegada epic-006)",
+      "contract_path": "docs/specs/006-006-spec-plan-review/spec.md",
+      "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298",
+      "plan_path": "docs/specs/006-006-spec-plan-review/plan.md",
+      "plan_sha256": "1abe9e7bf242b223ea312770a064f1a283e1fc46526ae3202299bbdcad28ea58"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12550,7 +12595,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T11:34:45.157433+00:00",
+  "last_updated": "2026-10-20T11:35:36.679152+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12666,5 +12711,5 @@
     "contract_kind": "draft-plan",
     "contract_sha256": "0c8a8d80a35553cea14f2d15eb1f9b05685e6bace3902cd56b64770b88da48da"
   },
-  "tdd_substage": null
+  "tdd_substage": "red"
 }
