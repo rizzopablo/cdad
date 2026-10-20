@@ -52,8 +52,10 @@ Mapa test → postcondición (docstrings «E2/PD-24 (U6-7b)»)
            nunca es `ask`.
     test_u6_7b_derived_test_writer_keeps_tests_docs_and_temporary
         -> PD-24: test-writer: `tests/x.py` allow, `docs/x.md` deny, raíz
-           temporal declarada (`.cdad/tmp/x`) allow; -odoo: tests allow,
-           models deny.
+           temporal declarada (`.cdad/tmp/x`) allow; el derivado -odoo
+           resuelve lo que su propio mapa `edit` resuelve (bajo la
+           política cdad `addons/` no está clasificado: la expectativa
+           concreta del stack odoo va con la política odoo, ver A-1 bis).
     test_u6_7b_derived_implementer_and_readers_keep_their_maps
         -> PD-24: implementer: `tests/x.py` deny, código allow; lectores
            (architect/reviewer/scribe y -odoo): toda ruta deny.
@@ -65,6 +67,13 @@ Mapa test → postcondición (docstrings «E2/PD-24 (U6-7b)»)
         -> E2/PD-24 (U6-7b): publicado el derivado, un `prepare` siguiente
            no reclama edición a mano (rc=0): el retiro de la palanca queda
            registrado en el manifiesto de deriva, no es una divergencia.
+  TestDerivedOdooAgentUnderOdooPolicy
+    test_u6_7b_derived_odoo_test_writer_under_odoo_policy
+        -> PD-24 (testfix, PD-7): con la política odoo, el derivado odoo
+           del test-writer resuelve por la herramienta de escritura
+           `addons/m/tests/test_m.py` = allow y `addons/m/models/m.py` =
+           deny; la palanca `write: ask` de la copia instalada no
+           sobrevive a la derivación.
 
 A-1 — test existente reformulado en este RED
 --------------------------------------------
@@ -84,6 +93,32 @@ Estado RED: con la copia instalada del fixture, los derivados de HEAD
 publicados por `prepare` conservan `  write: ask`, así que el veredicto
 efectivo de escritura resuelve `ask` para cualquier ruta y las aserciones de
 comportamiento fallan por AssertionError (no por ImportError ni por fixture).
+
+A-1 (bis) — TESTFIX de la expectativa odoo (U6-7b, 2026-10-19)
+------------------------------------------------------------
+El GREEN `58af287` dejó verde todo el RED salvo UNA aserción, y el
+implementer demostró que esa aserción contradecía el contrato
+(`docs/specs/006-005-native-path-parity/u6fix7b-green.md` §5): el RED
+exigía que el derivado **odoo** del test-writer permitiera
+`addons/m/tests/test_m.py` bajo una política de layout **cdad**, donde
+`addons/` NO está clasificado (004-002 PD-7: los scopes restringen la
+política, nunca la amplian; 006-005 §2.9: el mapa derivado del test-writer
+es `deny *` + `tests/` + co-ubicados + temporales + barreras). La palanca
+`write: ask` ENMASCARABA la contradicción: en RED todo resolvía `ask` y el
+subtest fallaba por la razón equivocada (la palanca, no la expectativa).
+
+**testfix: la expectativa odoo va con politica odoo (PD-7).** La aserción se
+corrige con una SEGUNDA fixture, con la política odoo (`policy_doc("odoo")`:
+`test_roots=["addons/m/tests"]`,
+`implementation_roots=["addons/m/models","addons/m/views"]`), donde el
+derivado odoo resuelve por la herramienta de escritura
+`addons/m/tests/test_m.py` = allow y `addons/m/models/m.py` = deny — lo
+mismo que ya fija `tests/test_004_002_t5_runtime.py::test_pd7_i9_maps_odoo_layout`
+para el mapa `edit`. Bajo la política cdad, el derivado odoo resuelve lo que
+su propio mapa `edit` resuelve: ninguna ruta de `addons/` está clasificada
+por esa política, y exigirle la expectativa del stack odoo allí ampliaría
+la política desde el test (PD-7). No se cambia nada del producto: sólo la
+expectation y su fixture.
 """
 
 from __future__ import annotations
@@ -172,8 +207,8 @@ def reinsert_write_lever(agent_text: str) -> str:
     )
 
 
-def materialize_layout(root: Path) -> None:
-    for rel in LAYOUT_FILES["cdad"]:
+def materialize_layout(root: Path, layout: str) -> None:
+    for rel in LAYOUT_FILES[layout]:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"# fixture {rel}\n", encoding="utf-8")
@@ -182,15 +217,21 @@ def materialize_layout(root: Path) -> None:
 class InstalledLeverProject(unittest.TestCase):
     """Proyecto descartable + copia INSTALADA pre-fix; `prepare` publica."""
 
+    # Layout de la política del proyecto: `cdad` (el de este repo) u `odoo`
+    # (la política que SÍ clasifica `addons/`). El layout decide qué rutas
+    # existen en el fixture y qué clasifica la política; no cambia el
+    # mecanismo bajo prueba (la palanca instalada y su retiro).
+    LAYOUT = "cdad"
+
     def setUp(self) -> None:
         self._tmp = tempfile.mkdtemp(prefix="cdad-006-005-u67b-")
         self.addCleanup(lambda: subprocess.run(
             ["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         build_project(self.root)
-        materialize_layout(self.root)
+        materialize_layout(self.root, self.LAYOUT)
         (self.root / POLICY_FILE).write_text(
-            json.dumps(policy_doc("cdad"), indent=2, sort_keys=True) + "\n",
+            json.dumps(policy_doc(self.LAYOUT), indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
         # Copia instalada de FIXTURE: agentes generados de HEAD + palanca
@@ -293,14 +334,22 @@ class TestDerivedAgentsIgnoreInstalledWriteLever(InstalledLeverProject):
             self) -> None:
         """E2/PD-24 (U6-7b): test-writer derivado: `tests/x.py` allow,
         `docs/x.md` deny y la raíz temporal declarada (`.cdad/tmp/x`) allow;
-        su variante -odoo: tests allow, models deny."""
+        su variante -odoo: `addons/m/models/m.py` deny y
+        `addons/m/tests/test_m.py` resuelto por su propio mapa `edit`.
+
+        testfix: la expectativa odoo va con politica odoo (PD-7) — bajo la
+        política cdad `addons/` no está clasificado (004-002 PD-7: los
+        scopes restringen la política, nunca la amplian; 006-005 §2.9), así
+        que el derivado odoo resuelve lo que su propio mapa `edit` resuelve.
+        La expectativa concreta del stack odoo (`tests` allow, `models`
+        deny) se exige con la política odoo, en la segunda fixture de este
+        archivo (`TestDerivedOdooAgentUnderOdooPolicy`)."""
         self.require_derived()
         cases = (
             ("cdad-test-writer.md", "tests/x.py", "allow"),
             ("cdad-test-writer.md", "docs/x.md", "deny"),
             ("cdad-test-writer.md", ".cdad/tmp/x", "allow"),
             ("cdad-test-writer.md", "scripts/x.py", "deny"),
-            ("cdad-test-writer-odoo.md", "addons/m/tests/test_m.py", "allow"),
             ("cdad-test-writer-odoo.md", "addons/m/models/m.py", "deny"),
         )
         for agent, probe, expected in cases:
@@ -311,6 +360,20 @@ class TestDerivedAgentsIgnoreInstalledWriteLever(InstalledLeverProject):
                     msg=f"E2/PD-24 (U6-7b): el derivado {agent} debe resolver "
                         f"{expected!r} para {probe!r} por la herramienta de "
                         f"escritura; resolvió {got!r}.")
+        # testfix: la expectativa odoo va con politica odoo (PD-7).
+        agent = "cdad-test-writer-odoo.md"
+        probe = "addons/m/tests/test_m.py"
+        with self.subTest(agent=agent, probe=probe):
+            expected = edit_verdict(self.derived[agent], probe)
+            got = write_verdict(self.derived[agent], probe)
+            self.assertEqual(
+                got, expected,
+                msg=f"E2/PD-24 (U6-7b) (testfix, PD-7): el derivado {agent} "
+                    f"resolvió {got!r} por la herramienta de escritura para "
+                    f"{probe!r}; su propio mapa `edit` resuelve {expected!r}. "
+                    f"Bajo la política cdad `addons/` no está clasificado: la "
+                    f"expectativa del stack odoo no se exige aquí (se exige "
+                    f"con la política odoo).")
 
     def test_u6_7b_derived_implementer_and_readers_keep_their_maps(
             self) -> None:
@@ -395,6 +458,57 @@ class TestDerivedAgentsIgnoreInstalledWriteLeverDrift(InstalledLeverProject):
             after, before,
             msg="E2/PD-24 (U6-7b): la regeneración no es determinista para "
                 "la misma copia instalada y la misma política")
+
+
+class TestDerivedOdooAgentUnderOdooPolicy(InstalledLeverProject):
+    """E2/PD-24 (U6-7b) — testfix: la expectativa odoo va con politica odoo.
+
+    Segunda fixture: la política del proyecto es la **odoo** (la que SÍ
+    clasifica `addons/`: `test_roots=["addons/m/tests"]`,
+    `implementation_roots=["addons/m/models","addons/m/views"]`), y el
+    derivado odoo del test-writer se mide por la herramienta de escritura.
+
+    Con la política cdad `addons/` NO está clasificado: exigirle ahí la
+    expectativa del stack odoo ampliaría la política desde el test (004-002
+    PD-7: los scopes restringen la política, nunca la amplian; 006-005 §2.9).
+    """
+
+    LAYOUT = "odoo"
+
+    def test_u6_7b_derived_odoo_test_writer_under_odoo_policy(self) -> None:
+        """E2/PD-24 (U6-7b) (testfix: la expectativa odoo va con politica
+        odoo (PD-7)): con la política odoo, el derivado odoo del test-writer
+        resuelve por la herramienta de escritura `addons/m/tests/test_m.py`
+        = allow y `addons/m/models/m.py` = deny; la palanca `write: ask` de
+        la copia instalada no sobrevive a la derivación."""
+        self.require_derived()
+        agent = "cdad-test-writer-odoo.md"
+        # Precondición del fixture: la palanca está VIVA en el origen (por
+        # eso la derivación tiene algo que retirar). Sin ella, la
+        # expectativa de abajo no probaría nada.
+        for probe in ("addons/m/tests/test_m.py", "addons/m/models/m.py"):
+            with self.subTest(agent=agent, probe=probe,
+                              fixture="installed-write-ask"):
+                self.assertEqual(
+                    write_verdict(self.installed_texts[agent], probe),
+                    "ask",
+                    msg=f"E2/PD-24 (U6-7b) (precondición del fixture): la "
+                        f"copia instalada de {agent} no resuelve {probe!r} en "
+                        f"`ask`; la palanca no sería efectiva y el caso no "
+                        f"probaría nada.")
+        cases = (
+            ("addons/m/tests/test_m.py", "allow"),
+            ("addons/m/models/m.py", "deny"),
+        )
+        for probe, expected in cases:
+            with self.subTest(agent=agent, probe=probe):
+                got = write_verdict(self.derived[agent], probe)
+                self.assertEqual(
+                    got, expected,
+                    msg=f"E2/PD-24 (U6-7b) (testfix, PD-7): con la política "
+                        f"odoo, el derivado {agent} debe resolver "
+                        f"{expected!r} para {probe!r} por la herramienta de "
+                        f"escritura; resolvió {got!r}.")
 
 
 if __name__ == "__main__":
