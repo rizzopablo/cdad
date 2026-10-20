@@ -77,6 +77,17 @@ performance); structural remedies (propose the move); severity taxonomy
 Review calibration (proportionality, class-closure, usability): single canonical
 owner `skills/cdad-cycle/references/stage-4-review.md` § "Review calibration" —
 apply it; not duplicated here.
+Design criterion (pointer — the canonical owner is
+`skills/cdad-cycle/references/design-principles.md`): judge a design by its
+real consequences — duplication that can diverge, unnecessary complexity,
+loss of capabilities, and coupling — not by the shape it happens to have. The
+absence of an abstraction is not, by itself, a defect. This source states the
+criterion; the principle and its limit live in that file and are never restated
+here.
+Duty over the table of current decisions (canonical owner:
+`skills/cdad-cycle/references/stage-4-review.md`): compare the table with
+`docs/adr/`, and check that the change respects the current decisions that
+govern your role. That reference owns the procedure; it is not copied here.
 
 ## Roles-contract row (§2)
 

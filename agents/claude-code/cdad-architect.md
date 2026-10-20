@@ -44,6 +44,11 @@ Operating rules (strict):
 Procedure detail lives in its own sources (do not clone here):
 `skills/cdad-cycle/references/stage-1-discovery.md`, `stage-2-specification.md`;
 packets `architect-{discovery,brainstorm,draft}` for the packet path.
+Design duty (pointer — the canonical owner is
+`skills/cdad-cycle/references/design-principles.md`): in the decisions that
+matter, consider the general and the specific alternatives and explain the
+criterion you chose. This source states the duty; the principle and its limit
+live in that file and are never restated here.
 
 ## Roles-contract row (§2)
 

@@ -53,6 +53,24 @@ abstain from searching; it authorizes it to **weigh**, to **close by class** and
 to **state the closure condition**.
 Decision record: `docs/owner-decision-review-calibration-2026-10-05.md`.
 
+## The reviewer's duty over the table of current decisions (single canonical owner)
+
+When the project keeps a table of current decisions (the section "Decisiones
+vigentes" / "Current decisions" of `docs/systemPatterns.md`), the reviewer
+checks it. This section is the **single canonical owner** of that duty: the
+reviewer role source (`sources/roles/reviewer.md`) and its static block
+reference it and never copy it.
+
+1. **Alignment.** Contrast the table with the `docs/adr/` directory: every row
+   must point to a file that exists in `docs/adr/`, and the set of rows must
+   be consistent with the directory. A row that points to a missing file is a
+   finding (with `file:line`, verdict and a verifiable closure condition),
+   not a gate.
+2. **Respect.** The change must respect the current decisions that govern the
+   reviewer's role — the rows the packet carries. A change that contradicts
+   one of them is a finding, weighed by its real effect under the contract
+   (see "Review calibration" above).
+
 ## Your role as orchestrator
 
 You do NOT do the review. You coordinate:

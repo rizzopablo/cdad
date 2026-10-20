@@ -468,6 +468,7 @@ The references are **deepening material**, not a condition for understanding the
 | `anti-patterns.md` | If you detect drift signals |
 | `receiving-feedback.md` | When transmitting or receiving feedback from review, user or external PR (Stage 4 fix loop) |
 | `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
+| `design-principles.md` | When a role owes a design duty and you need the canonical wording of the principle behind it (the architect's criterion, the reviewer's judgement and its limit) — the single canonical owner; the roles point at it, they do not restate it |
 
 Load one at a time. Don't keep the whole tree in context.
 
