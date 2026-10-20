@@ -25,7 +25,9 @@ U1b:
     `migrate --runtime X --legacy-exec-config FILE` (PD-25/§2.6.1) moves the
     correspondence keys into the section **only when it does not exist** — user
     data is never overwritten (INV-7) — supports `--dry-run` and never moves the
-    `model` nor a credential value.
+    `model` nor a credential value. U6-8: it does not move the
+    `binary_version` either — the runtime version is observed, so the migration
+    carries no number that can drift.
 
 The entry verbs (U1b):
 
@@ -101,6 +103,15 @@ SECTION_KEYS = (
     "binary", "binary_version", "mode", "server", "service", "auto",
     "sessions_db", "wait",
 )
+
+# §2.6.1 (U6-8): the keys the bounded migration step MOVES. `binary_version`
+# is not one of them: the runtime version is OBSERVED (a difference with the
+# configured one is declared and does not block), so the migration stops
+# carrying a number that can drift. The key stays in the section's vocabulary
+# (the owner may keep it as a note) and the key-by-key correspondence of the
+# missing-section diagnostic keeps naming it.
+MIGRATED_SECTION_KEYS = tuple(
+    key for key in SECTION_KEYS if key != "binary_version")
 
 # §2.6: the key of the delegation config that routes the credential (ADR-033
 # point 6). It is named here only to say the section never carries it.
@@ -333,12 +344,15 @@ def find_retired_option(argv: Sequence[str]) -> str | None:
 
 
 def section_from_legacy(document: dict[str, Any]) -> dict[str, Any]:
-    """§2.6.1: move exactly the correspondence keys.
+    """§2.6.1: move exactly the correspondence keys the migration carries.
 
     `runtime` becomes the section id, and `model`/the credential route are
-    never moved — the report tells where they live instead.
+    never moved — the report tells where they live instead. `binary_version` is
+    not moved either (U6-8): the version is observed at runtime, so the
+    migration does not carry a number that can drift.
     """
-    return {key: document[key] for key in SECTION_KEYS if key in document}
+    return {key: document[key] for key in MIGRATED_SECTION_KEYS
+            if key in document}
 
 
 def migration_target(path: Path, runtime: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -384,7 +398,8 @@ def _migration_report(runtime: str, section: dict[str, Any], path: Path, *,
     and the credential live (they are never moved)."""
     action = "would be written (dry-run)" if dry_run else "written"
     lines = [f"{RUNTIMES_CONFIG_NAME} section `{runtime}` {action} in {path}:"]
-    lines += [f"  {key}: {section[key]}" for key in SECTION_KEYS if key in section]
+    lines += [f"  {key}: {section[key]}"
+              for key in MIGRATED_SECTION_KEYS if key in section]
     lines += [
         f"  model: {cdad_delegate.DELEGATION_CONFIG_NAME} — the delegated model "
         f"is chosen there (ADR-033 D3), never in {RUNTIMES_CONFIG_NAME}",

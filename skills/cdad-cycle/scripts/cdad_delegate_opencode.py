@@ -1455,14 +1455,18 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                       binary_version_configured: str | None) -> dict[str, Any]:
     """Spec §2.3: client version, then `GET /api/info`, within `timeout`.
 
-    Returns {"ok", "termination", "diagnosis", "client_version",
+    Returns {"ok", "termination", "diagnosis", "note", "client_version",
     "server_version", "credential_value"}. `client_version` is always the
-    OBSERVED `--version` fact (I8 provenance); the comparison against the server
-    also considers `binary_version` when the config declares it and it is
-    parseable (spec §2.3 row 4). `credential_value` is the credential this mode
-    resolved (PD-11/§2.5) and is relayed to the caller so it can be injected
-    into the CLIENT process environment (never into the preflight document that
-    is emitted).
+    OBSERVED `--version` fact (I8 provenance) and the ONLY control is the
+    comparison between the two OBSERVED versions (client against server).
+
+    U6-8 (owner decision, `execution.md` §hallazgo U6-8): `binary_version` is
+    OPTIONAL and informative. A difference with the OBSERVED version is
+    DECLARED in the returned `note` and does NOT block: a number written in the
+    configuration is not an observed fact and must never gate the dispatch.
+    `credential_value` is the credential this mode resolved (PD-11/§2.5) and is
+    relayed to the caller so it can be injected into the CLIENT process
+    environment (never into the preflight document that is emitted).
     """
     version_output, version_diag = _invoke_version(binary, timeout)
     if version_diag is not None:
@@ -1518,20 +1522,20 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
                     "`mode: standalone`"),
                 "client_version": observed_client_version,
                 "server_version": server_version}
-    # Row 4 (§2.3, second clause): ALSO compared against `binary_version`
-    # when the config declares it and it parses -- an inconsistent
-    # configuration blocks even when the observed client matches the server.
+    # U6-8 (owner decision): the configured `binary_version` is OPTIONAL and
+    # informative -- the control compares the two OBSERVED versions, never a
+    # number written in the configuration. A difference is DECLARED (it travels
+    # in the note the caller attaches to the diagnosis) and does NOT block.
+    note: str | None = None
     if (configured_client_version is not None
             and configured_client_version != server_version):
-        return {"ok": False, "termination": "blocked",
-                "diagnosis": (
-                    f"server version {server_version!r} does not match the "
-                    f"configured `binary_version` {configured_client_version!r}"
-                    ": prepare a matching server, correct `binary_version` "
-                    "or declare `mode: standalone`"),
-                "client_version": observed_client_version,
-                "server_version": server_version}
-    return {"ok": True, "termination": None, "diagnosis": None,
+        note = (
+            f"the configured `binary_version` {binary_version_configured!r} "
+            f"differs from the observed runtime version {server_version!r}: "
+            "the version is OBSERVED, never read from the configuration — the "
+            "difference is declared and does not block (the compatibility of "
+            "the store is verified by capacity, not by this number)")
+    return {"ok": True, "termination": None, "diagnosis": None, "note": note,
             "client_version": observed_client_version,
             "server_version": server_version,
             "credential_value": credential["value"]}
@@ -2659,6 +2663,10 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         server_for_invoke = server_raw
         standalone_for_invoke = False
         client_credential = preflight.get("credential_value")
+        # U6-8: a configured `binary_version` that differs from the OBSERVED
+        # version is DECLARED (in the diagnosis of this attempt) and does not
+        # block the dispatch.
+        dispatch_note = preflight.get("note")
     elif mode_effective == "service":
         # 006-001 §2.3b (PD-13/PD-14): `service status` once, then the D-11
         # version gate; any declared `server` is ignored and never checked.
