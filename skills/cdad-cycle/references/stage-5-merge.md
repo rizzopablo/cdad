@@ -76,6 +76,15 @@ If the scribe proposed an ADR:
 
 General heuristic: could someone in 6 months ask "why did we do X this way"? If yes → ADR. If no → discard.
 
+**Upkeep of the decisions table.** When an ADR is approved, the orchestrator adds
+its row to the "Current decisions" section of the project's `docs/systemPatterns.md`
+(file, state `vigente`, a one-line summary, the roles that must consume it and the
+reference where its rule lives) and commits it with the `docs(memory):` prefix.
+When the new ADR replaces a previous one, the orchestrator marks the previous row
+as obsolete — it keeps the row, with the replacement named in it — so the history
+stays in the table. The exit gate of this stage does not change: the upkeep is a
+step of the decision, not a new checkbox of the gate.
+
 ## 5.5 — Merge
 
 Once CI is green + Memory Bank committed (+ ADR if applicable):

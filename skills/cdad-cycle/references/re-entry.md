@@ -63,6 +63,18 @@ them the route starts at:
    it is a digest); never infer the target from the payload text. `approval_effect`
    is always `false` — materialization adds no approval mark, does not change
    `semantic_status` and does not update state.
+
+   **The CAS is always against the base.** The digest declared in the
+   authorization (`expected_previous_sha256`) is **always the base digest**: the
+   version of the destination the proposal was prepared on, never the current
+   digest of the destination. Comparing against the current digest does not
+   detect an obsolete proposal; it overwrites the change of the other writer. When
+   the destination changed since that base, the materialization is rejected with
+   the conflict named ("current digest does not match expected_previous_sha256
+   (CAS): refusing to overwrite") and nothing is overwritten. The way out is to
+   **re-dispatch the role with a new packet on the new base**, so the proposal is
+   prepared again over what now exists. Never merge by hand, and never update the
+   expected digest to force the step: both destroy the change of the other writer.
 4. **STATE TRANSITION.** The orchestrator — and only the orchestrator — registers
    the **single** transition in `docs/.cdad-state.json`: map
    `state_transition_requested` `received` to the valid packet state `completed`
@@ -301,6 +313,12 @@ If it passes: pass the drafts to the user for approval.
 > *Edit whatever the scribe got wrong or couldn't know. When you're satisfied, approve; the orchestrator commits with the `docs(memory):` prefix. Let me know when it's committed."*
 
 When the user approves and you commit: validate full CI (gate 5→done). If CI is green and the Memory Bank is updated, close the feature.
+
+**The decisions table has two writers.** The orchestrator writes its own rows
+directly in the project's `docs/` tree, with its own commit (`docs(memory):`); it
+does not go through the scribe's materialization. The scribe's proposal arrives by
+materialization, over the base the orchestrator registered when it prepared the
+scribe's packet.
 
 ---
 
