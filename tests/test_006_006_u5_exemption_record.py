@@ -24,8 +24,11 @@ Fixture: proyecto descartable en un tempdir (política válida, contrato
 pineado, delegación HITL vigente, ejecución v2 y paquete reales) construido
 por el camino legítimo del CLI (`prepare` → `--record-dispatch` → `receive`),
 con el `HOME` del subproceso en un tempdir VACÍO (nunca el HOME real, nunca
-este repo). Los ids del fixture son sintéticos y anónimos. Ninguna mutación
-toca el state de este repo. No hay mocks sobre el plumbing.
+este repo). La fixture de CIERRE registra además la entrega legítima
+(`delivery`), con lo que el paquete activo queda terminal (PD-4) y el LECTOR
+(`prepare`) puede llegar a la comprobación del pin. Los ids del fixture son
+sintéticos y anónimos. Ninguna mutación toca el state de este repo. No hay
+mocks sobre el plumbing.
 
 ORÁCULES DECLARADOS (interfaces que fija este RED, derivadas del contrato):
 
@@ -432,10 +435,23 @@ class _ExemptionFixture(_VigencyFixture):
 
 
 class _ExemptionClosureFixture(_ClosureFixture):
-    """Proyecto descartable listo para CERRAR (recibo durable + aprobación)."""
+    """Proyecto descartable listo para CERRAR (recibo durable + aprobación).
+
+    testfix: la fixture deja el paquete terminal (PD-4) — la entrega legítima
+    se registra por el MISMO camino que `_ExemptionFixture` (`delivery`:
+    `register-transition --transition delivery`), sin lo cual el paquete
+    activo queda `dispatched` y el LECTOR (`prepare`) rechaza por PD-4
+    ANTES de mirar la aprobación: la aserción de vigencia (V-4) mediría el
+    estado del paquete activo, no la vigencia de la exención.
+    """
 
     def __init__(self, base: Path) -> None:
         super().__init__(base, mode="ready")
+        delivered = self.delivery()
+        assert delivered.returncode == 0, (
+            "precondición (fixture, comportamiento existente): la entrega "
+            f"legítima debe registrar la transición (rc=0): "
+            f"{delivered.stdout!r} {delivered.stderr!r}")
 
     def drop_approval(self) -> None:
         """Quita la aprobación `specification` del historial (mutación
