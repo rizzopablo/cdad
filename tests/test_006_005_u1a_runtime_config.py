@@ -73,6 +73,31 @@ test fails on its FIRST behavior assertion (the diagnostic does not name
 the missing template. No failure is an ImportError, SyntaxError or fixture
 error: the script is never imported and the fixture preconditions are asserted
 with their own messages.
+
+A-1 (U6-8 — REFORMULATED IN THE 006-005 U6-8 RED, with the replaced test,
+the amended postcondition and the reason). The owner decision recorded in
+`docs/epics/epic-006-opencode-concurrency/execution.md` (finding U6-8) makes
+`binary_version` OPTIONAL and informative: the control compares the OBSERVED
+versions (client against server), never a number written in the configuration,
+so a difference with the configured one is DECLARED and does not block — and
+the bounded migration step STOPS writing it. Three tests of this file fixed
+the OLD behaviour (the migration carrying `binary_version` into the section)
+and are REFORMULATED here. Amended postcondition: PD-25/§2.6.1 — the section
+is written key by key for the keys the migration moves, and `binary_version`
+is NOT one of them. Reason: the owner decision of the finding U6-8 (a number
+written in the configuration can drift — it was 2.0.27 while the runtime had
+already moved — and the version is observed at runtime):
+
+  * `test_pd9_derived_section_is_inspected_key_by_key` (replaced),
+  * `test_pd25_migrate_without_section_writes_the_section_key_by_key`
+    (replaced),
+  * `test_pd25_migrate_dry_run_does_not_write` (replaced: the section it
+    announces is the one that WOULD be written, and it carries no version).
+
+The key STAYS part of the section's vocabulary and the missing-section
+diagnostic keeps naming it in the key-by-key correspondence, so
+`test_pd9_missing_section_diagnostic_names_file_section_and_correspondence`
+is CONSERVED and untouched.
 """
 
 from __future__ import annotations
@@ -99,6 +124,22 @@ PACKET_ID = "006-005-u1a-fixture-packet"
 
 # §2.6: the keys the section carries and the exact fixture values used to
 # inspect the document key by key. The id of the section is the runtime.
+#
+# A-1 (U6-8 — owner decision, `docs/epics/epic-006-opencode-concurrency/
+# execution.md` §hallazgo U6-8): `binary_version` becomes OPTIONAL and
+# informative — the control compares the OBSERVED versions (client against
+# server), never a number written in the configuration, so a difference with
+# the configured one is DECLARED and does not block — and the bounded
+# migration step STOPS writing it. The key stays part of the section's
+# vocabulary (the owner may keep it as a note) and the missing-section
+# diagnostic keeps naming it in the key-by-key correspondence
+# (`test_pd9_missing_section_diagnostic_names_file_section_and_correspondence`
+# is CONSERVED and untouched); what changes is that the migration does not
+# CARRY the key. REFORMULATED IN THIS RED: the three tests that fixed the
+# OLD behaviour — the migration step carrying `binary_version` into the
+# section — are `test_pd9_derived_section_is_inspected_key_by_key`,
+# `test_pd25_migrate_without_section_writes_the_section_key_by_key` and
+# `test_pd25_migrate_dry_run_does_not_write`.
 SECTION_KEYS: dict[str, object] = {
     "binary": "/fixture/bin/opencode",
     "binary_version": "9.9.9-fixture",
@@ -108,6 +149,12 @@ SECTION_KEYS: dict[str, object] = {
     "auto": True,
     "sessions_db": "/fixture/store/sessions.db",
     "wait": {"timeout_seconds": 42},
+}
+# The keys the migration step WRITES (A-1 / U6-8: `binary_version` is not one
+# of them — the version is observed at runtime, never carried from a
+# document that can drift).
+MIGRATED_SECTION_KEYS: dict[str, object] = {
+    key: value for key, value in SECTION_KEYS.items() if key != "binary_version"
 }
 # §2.6 correspondence: these MUST NOT live in the section (the retired document
 # carried them, the migration must not move them).
@@ -285,8 +332,9 @@ class DispatchCase(unittest.TestCase):
         return section
 
     def assert_section_key_by_key(self, section: dict) -> None:
-        """§2.6: every key moved keeps its value; nothing forbidden moved."""
-        for key, expected in SECTION_KEYS.items():
+        """§2.6: every key the migration moves keeps its value; nothing
+        forbidden moved; and `binary_version` is NOT written (A-1 / U6-8)."""
+        for key, expected in MIGRATED_SECTION_KEYS.items():
             self.assertIn(
                 key, section,
                 "PD-9/§2.6: la sección no tiene la clave `%s` (claves: %s)"
@@ -301,6 +349,12 @@ class DispatchCase(unittest.TestCase):
                 "PD-9/§2.6: la sección NO debe contener `%s` (vive fuera de "
                 "`runtimes.json`; encontrado %r)"
                 % (forbidden, section.get(forbidden)))
+        self.assertNotIn(
+            "binary_version", section,
+            "PD-25/§2.6.1 (A-1, U6-8): la migración NO escribe "
+            "`binary_version` (la versión se OBSERVA; una diferencia con la "
+            "configurada se declara y no bloquea): la sección migrada lo "
+            "contiene (%r)" % section.get("binary_version"))
 
 
 # ---------------------------------------------- PD-8: explicit runtime
@@ -472,7 +526,13 @@ class TestPd9SingleConfigSource(DispatchCase):
         """PD-9/§2.6: the document derived from the retired exec-config is the
         runtime section, inspected key by key; `runtime`, `model` and the
         credential do not move. Once it exists, the entry reads it as the
-        single source (no further config diagnostic)."""
+        single source (no further config diagnostic).
+
+        A-1 (U6-8, owner decision): the section is inspected key by key for
+        the keys the migration WRITES; `binary_version` is NOT one of them
+        (the version is observed at runtime, a difference with the configured
+        one is declared and does not block, and `migrate` stops writing it).
+        """
         legacy = self.write_legacy()
         migrated = self.run_dispatch(
             "migrate", "--runtime", VALID_RUNTIME,
@@ -670,7 +730,14 @@ class TestPd25MigrationStep(DispatchCase):
             self) -> None:
         """PD-25/§2.6.1: no section ⇒ rc=0, the section is written key by key,
         with no `model`, no credential value, and the output says where they
-        live."""
+        live.
+
+        A-1 (U6-8, owner decision): the section is written key by key for the
+        keys the migration moves; `binary_version` is NOT written (the version
+        is OBSERVED at runtime — a difference with the configured one is
+        declared and does not block — so the migration stops carrying a
+        version number that can drift).
+        """
         legacy = self.write_legacy()
         result = self.run_dispatch(
             "migrate", "--runtime", VALID_RUNTIME,
@@ -744,7 +811,12 @@ class TestPd25MigrationStep(DispatchCase):
 
     def test_pd25_migrate_dry_run_does_not_write(self) -> None:
         """PD-25/§2.6.1: `--dry-run` writes nothing and prints the section it
-        would write, key and value by key and value."""
+        would write, key and value by key and value.
+
+        A-1 (U6-8, owner decision): the section it announces is the one the
+        migration WOULD write — and `binary_version` is not part of it (the
+        version is OBSERVED at runtime and the migration stops writing it).
+        """
         legacy = self.write_legacy()
         before = snapshot_tree(self.base)
 
@@ -763,13 +835,13 @@ class TestPd25MigrationStep(DispatchCase):
         self.assertFalse(
             self.runtimes_path().exists(),
             "PD-25/§2.6.1: `--dry-run` creó `runtimes.json`")
-        missing_keys = [key for key in SECTION_KEYS if key not in output]
+        missing_keys = [key for key in MIGRATED_SECTION_KEYS if key not in output]
         self.assertEqual(
             missing_keys, [],
             "PD-25/§2.6.1: `--dry-run` no imprime la sección que escribiría; "
             "faltan las claves %r:\n%s" % (missing_keys, tail(output, 40)))
         missing_values = [
-            str(value) for value in SECTION_KEYS.values()
+            str(value) for value in MIGRATED_SECTION_KEYS.values()
             if str(value) not in output
         ]
         self.assertEqual(
@@ -777,6 +849,11 @@ class TestPd25MigrationStep(DispatchCase):
             "PD-25/§2.6.1: `--dry-run` no imprime los valores de la sección "
             "que escribiría; faltan %r:\n%s"
             % (missing_values, tail(output, 40)))
+        self.assertNotIn(
+            str(SECTION_KEYS["binary_version"]), output,
+            "PD-25/§2.6.1 (A-1, U6-8): `--dry-run` no anuncia una versión que "
+            "la migración no escribe (`binary_version`=%r):\n%s"
+            % (SECTION_KEYS["binary_version"], tail(output, 40)))
 
     def test_pd25_migrate_missing_legacy_file_fails_naming_the_path(
             self) -> None:
