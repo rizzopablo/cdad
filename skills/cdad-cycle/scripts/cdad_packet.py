@@ -5163,7 +5163,8 @@ def _transition_identity_payload(*, execution_id: str, feature_id: str,
                                  approved_by: str | None,
                                  contract: dict[str, str] | None,
                                  plan: dict[str, str] | None,
-                                 closure: dict[str, str] | None
+                                 closure: dict[str, str] | None,
+                                 exemption: dict[str, Any] | None = None
                                  ) -> dict[str, Any]:
     """PD-10 (B2): the canonical payload of the transition identity — the
     declared tuple PLUS the inputs that have an effect on the entry or on the
@@ -5181,8 +5182,17 @@ def _transition_identity_payload(*, execution_id: str, feature_id: str,
 
     Writing this payload in the entry (`transition_key_payload`, §2.2) makes
     the identity checkable FROM the state, and makes the version boundary
-    explicit: an entry WITHOUT it was registered under the previous formula."""
-    return {
+    explicit: an entry WITHOUT it was registered under the previous formula.
+
+    006-006 PD-9 (R-11/R-12/R-13): the owner's exemption enters the identity
+    ONLY when the invocation DECLARES it, as ONE conditional block (`exemption`)
+    that carries EXACTLY the declared fields (the fields not declared are not
+    in it, not as `null`). Without a declared exemption the payload keeps its
+    16 keys, so its canonical serialization —and therefore the
+    `transition_key`— is byte for byte the one of the previous product: the
+    historical identities are preserved and no guarantee of a previous feature
+    is amended (D-14)."""
+    payload = {
         "execution_id": execution_id,
         "feature_id": feature_id,
         "transition": transition,
@@ -5201,6 +5211,9 @@ def _transition_identity_payload(*, execution_id: str, feature_id: str,
         "plan": plan,
         "closure": closure,
     }
+    if exemption is not None:
+        payload["exemption"] = exemption
+    return payload
 
 
 def _transition_key(payload: dict[str, Any]) -> str:
@@ -5246,6 +5259,51 @@ def _registered_transition(state: dict[str, Any], key: str) -> dict[str, Any] | 
         if isinstance(entry, dict) and entry.get("transition_key") == key:
             return entry
     return None
+
+
+def _vigente_spec_approval(state: dict[str, Any], feature_id: str,
+                            contract_path: str, contract_sha256: str
+                            ) -> dict[str, Any] | None:
+    """The VIGENTE `specification` approval that competes with a new one
+    (PD-14/D-8): the entries the reader considers vigente
+    (`_approved_spec_entries`, which ignores the superseded ones) whose pin
+    NAMES the current bytes of the contract — the same selection the PD-14
+    rule already consumes, never a second declaration of it.
+
+    006-006 PD-9 (R-14): this selection is what QUALIFIES the no-op branch —
+    the replay of the entry this function returns is a no-op; an invocation
+    that collides with a HISTORICAL entry while this one competes is not."""
+    for item in _approved_spec_entries(state, feature_id):
+        if (item.get("contract_path") == contract_path
+                and item.get("contract_sha256") == contract_sha256):
+            return item
+    return None
+
+
+def _transition_collision_message(feature_id: str, contract_path: str,
+                                  key: str, vigente_key: str) -> str:
+    """006-006 PD-9 (R-14(b)/D-15): the EXPLICIT rejection of an invocation
+    that collides with a HISTORICAL entry while a VIGENTE approval competes.
+
+    The rejection NAMES the colliding key (and that it is NOT the vigente one),
+    the key of the vigente one and the TWO legitimate exits: register the
+    change with a distinguishable value, or reconcile the history. It happens
+    BEFORE any write, so the state stays byte for byte identical (INV-7)."""
+    return (
+        f"state incoherent: this invocation collides with the historical "
+        f"transition_key {key!r}, which is NOT the vigente `specification` "
+        f"approval of feature {feature_id!r} for the contract "
+        f"{contract_path!r} (the vigente one is {vigente_key!r}); that "
+        f"colliding key is already in the set of superseded keys, so a new "
+        f"entry with it would stay inert for the vigency and the change "
+        f"would be lost in silence. Two legitimate exits: (i) register the "
+        f"change with a DISTINGUISHABLE value — an input that enters the "
+        f"identity and differs from the historical one (cite the owner's "
+        f"decision as evidence with `--artifact <path>`, or approve different "
+        f"bytes of the contract) — so that the new entry has its own key and "
+        f"becomes the vigente one; (ii) RECONCILE the history: withdraw or "
+        f"re-approve the current approval so that the intended payload is the "
+        f"one that becomes vigente (PD-9/R-14/D-15)")
 
 
 def _resolve_evidence_digest(raw: str, label: str) -> tuple[str, str]:
@@ -5553,6 +5611,19 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
         raise PolicyError(
             "state incoherent: --transition gate requires --approve-by <text>: the entry "
             "records the declared approver (PD-5/PD-6)")
+    if (args.exempted_by is not None or args.exemption_reason is not None
+            or args.requested_by is not None or args.delegated):
+        # 006-006 PD-9 (§2.7): the owner's exemption travels IN the approval
+        # that opens the gate, so the class `gate` is the ONLY one that admits
+        # it. The rejection happens BEFORE any effect, so the state stays byte
+        # for byte identical (INV-7), and it NAMES the admitted class.
+        if transition != "gate":
+            raise PolicyError(
+                f"state incoherent: the exemption flags (--exempted-by, "
+                f"--exemption-reason, --requested-by, --delegated) are only "
+                f"admissible in the class `gate`; --transition {transition!r} "
+                f"is not that class, so the exemption has no entry to be "
+                f"registered in (PD-9)")
     if transition == "closure" and (
             not isinstance(args.approve_by, str) or not args.approve_by.strip()):
         # PD-6: the closure also records WHO approves it; a closure without a
@@ -5883,6 +5954,21 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             path_text, digest = _resolve_evidence_digest(raw, "artifact")
             artifacts[path_text] = digest
 
+        # 006-006 PD-9 (§2.7, R-12): the owner's exemption is DECLARED by the
+        # invocation. The block carries EXACTLY the declared fields (the ones
+        # not declared are not in it, not as `null`) and it is the SAME image
+        # of the fields the entry writes, flat.
+        exemption: dict[str, Any] = {}
+        if transition == "gate":
+            if args.exempted_by is not None:
+                exemption["exempted_by"] = args.exempted_by
+            if args.exemption_reason is not None:
+                exemption["reason"] = args.exemption_reason
+            if args.requested_by is not None:
+                exemption["requested_by"] = args.requested_by
+            if args.delegated:
+                exemption["delegated"] = True
+
         # PD-10 (B2): the canonical payload of the identity. It is built AFTER
         # the evidence resolution on purpose: the digests it carries are the
         # RESOLVED ones (PD-20), the same ones the entry writes.
@@ -5902,12 +5988,41 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                   {"path": plan_path, "sha256": plan_sha256}),
             closure=(None if closure_path is None else
                      {"path": closure_path, "sha256": closure_sha256}),
+            # R-11: the conditional block; without a declared exemption the
+            # payload keeps its 16 keys and its key stays byte for byte the one
+            # of the previous product (R-13/D-14).
+            exemption=(exemption or None),
         )
         key = _transition_key(payload)
-        if _registered_transition(state, key) is not None:
+        registered = _registered_transition(state, key)
+        if registered is not None:
             # PD-11: an identical repetition is a successful no-op; the state is
             # not written, so it stays byte for byte identical.
-            return _transition_noop_message(transition, stage, key)
+            #
+            # 006-006 PD-9 (R-14, B-4): this branch is QUALIFIED. The replay
+            # of the VIGENTE entry is a no-op (PD-11); an invocation that
+            # collides with a HISTORICAL entry while a VIGENTE approval
+            # competes is NEVER a no-op — it is an attempt to substitute the
+            # vigente approval, and answering it with success would lose the
+            # requested change in silence (D-15).
+            vigente = (_vigente_spec_approval(
+                state, feature_id, contract_path, contract_sha256)
+                if (transition == "gate" and stage == SPEC_GATE_STAGE
+                    and contract_path is not None) else None)
+            if (vigente is None
+                    or vigente.get("transition_key")
+                    == registered.get("transition_key")):
+                return _transition_noop_message(transition, stage, key)
+            if isinstance(args.supersedes, str) and args.supersedes:
+                # (b) with `--supersedes`: the EXPLICIT rejection of the
+                # collision — it names the colliding key (and that it is NOT
+                # the vigente one), the key of the vigente one and the two
+                # exits (D-15).
+                raise PolicyError(_transition_collision_message(
+                    feature_id, contract_path, key,
+                    str(vigente.get("transition_key"))))
+            # without `--supersedes` the rejection is the vigente one of PD-14
+            # (one vigente approval per feature and contract), below.
 
         # PD-12: the structural exclusions fail closed, before any write. The
         # marker split is by condition: a packet that is not dispatched is an
@@ -5997,6 +6112,11 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             if plan_path is not None:
                 entry["plan_path"] = plan_path
                 entry["plan_sha256"] = plan_sha256
+            # 006-006 PD-9 (§2.7, D-6): the owner's exemption travels IN this
+            # entry (the same one that opens the gate), FLAT and only the
+            # declared fields; without the flags the entry carries none of
+            # them (R-11).
+            entry.update(exemption)
         if transition == "closure":
             # PD-9/§2.2: the closure records WHO approves it and the closure
             # document it cites with the digest used (derived or verified).
@@ -6595,6 +6715,20 @@ def build_parser() -> argparse.ArgumentParser:
                           help="the cited plan (the gate of stage 2 pins it)")
     register.add_argument("--plan-sha256", metavar="SHA256",
                           help="optional assertion on the plan digest (PD-20)")
+    # 006-006 PD-9 (§2.7): the owner's exemption, admissible ONLY in the
+    # class `gate` (the CLI rejects it elsewhere, naming the class).
+    register.add_argument("--exempted-by", metavar="TEXT",
+                          help="the owner who exempts the review (class `gate` "
+                               "only; PD-9)")
+    register.add_argument("--exemption-reason", metavar="TEXT",
+                          help="why the review is exempted (class `gate` only; "
+                               "PD-9)")
+    register.add_argument("--requested-by", metavar="TEXT",
+                          help="who requested the exemption (class `gate` only; "
+                               "PD-9)")
+    register.add_argument("--delegated", action="store_true",
+                          help="the exemption was delegated (class `gate` only; "
+                               "PD-9)")
     register.add_argument("--current-stage", metavar="STAGE",
                           help="operational field state.current_stage (closed vocabulary)")
     register.add_argument("--substage", metavar="SUB",
