@@ -687,21 +687,25 @@ def _key_states(row: dict[str, Any], request: dict[str, Any], *,
     A key whose column the row does not carry is simply NOT part of the evidence
     this version offers (it is not evaluated). A key the row DOES expose but
     whose declared input is missing is `unknown` — never compared against a
-    supposed value (§2.3). The parent key is the declared parent ITSELF
-    (§2.3), so a walk that declares none has no parent hypothesis to test and
-    the key is not part of that walk's evidence (B-2).
+    supposed value (§2.3).
+
+    B-4 (006-005 review-fix 2): the CONTRACT is conserved, without amendment.
+    The SELECTION of the row (`--session` or `--parent`) and the SUFFICIENCY
+    of the evidence are two questions: a key the selected row EXPOSES but
+    that nobody declared stays `unknown` — it is named in the diagnosis and it
+    accredits nothing (PD-5/PD-6). Omitting it from the evidence instead
+    would let the remaining keys accredit an identity that the declaration
+    does not support.
     """
     states: dict[str, str] = {}
-    # B-2 (006-005 review-fix): the parent key IS the declared parent (§2.3:
-    # "padre ... declarada con `--parent`"). A walk that declares no parent has
-    # no parent hypothesis to test, so the key is not part of this walk's
-    # evidence — the same treatment a column the observed store version does
-    # not expose receives. The other keys still guard the walk (the agent, the
-    # moment and the project by membership), and a DECLARED parent still
-    # contradicts (a rejection, never `unknown`, INV-2).
-    if parent and CORRELATION_COLUMNS["parent"] in row:
-        states["parent"] = _compare_key(row.get(CORRELATION_COLUMNS["parent"]),
+    # The parent key IS the declared parent (§2.3: "padre ... declarada con
+    # `--parent`"). With a declaration it is compared — a DECLARED parent that
+    # contradicts is a rejection, never `unknown` (INV-2). Without one, the key
+    # the row exposes is `unknown`, not omitted (B-4).
+    if CORRELATION_COLUMNS["parent"] in row:
+        states["parent"] = (_compare_key(row.get(CORRELATION_COLUMNS["parent"]),
                                          parent)
+                            if parent else "unknown")
     if CORRELATION_COLUMNS["agent"] in row:
         agent = _as_text(request.get("agent"))
         states["agent"] = (_compare_key(row.get(CORRELATION_COLUMNS["agent"]), agent)

@@ -20,13 +20,22 @@ is the CLI itself — `python3 scripts/cdad_result.py --help` (the installed
 entrypoint under the skill behaves the same) — and the feature spec
 (`docs/specs/003-002-artifact-tools/spec.md`, §2 and §6–§9). Do not duplicate the
 full interface here: consult `--help` and the spec for the exact flags and
-fields. The protocol has four steps:
+fields. The protocol has four steps — 1. RECEIVE, 2. RECONCILE, 3. MATERIALIZE,
+4. STATE TRANSITION — and the ARRIVAL STATE of the delivery decides which of
+them the route starts at:
+
+| Arrival state | How it arrives | Route from here |
+|---|---|---|
+| **FINAL TEXT pending** — the role's text is not staged yet | the role's FINAL TEXT in the orchestrator's session (a handoff to a new chat, a chat that answers with the text) | stage the **exact bytes** under `.cdad/inbox` with their `RESULT.json` descriptor, then invoke `receive` with that descriptor (step 1) |
+| **Descriptor already staged** — the NATIVE path | the entry's `record` verb (006-005 §2.1) wrote the FINAL TEXT under `.cdad/inbox` with its `RESULT.json` descriptor, byte-exact, and declared the derived artifact kind there | invoke `receive` with that descriptor (step 1) — the bytes are already staged and are not retyped |
+| **Receipt already durable** — the EXTERNAL path | the runtime module received the delivery and the entry's ENVELOPE carries `delivery_ref`, the durable receipt | validate that receipt (`validate-receipt`) and continue with `materialize` and `register-transition` (steps 2-4) — the delivery is **not staged** and **not received again** |
 
 1. **RECEIVE.** The role's output arrives either as FINAL TEXT or as staged parts
-   under `.cdad/inbox` (with a `RESULT.json` descriptor). `receive` only accepts
-   staged parts (`source.kind="staged-file"`, regular files under the fixed
-   `.cdad/inbox` inbox), so a FINAL TEXT payload must first be **staged by the
-   orchestrator** — a prior mechanical step, before invoking `receive`:
+   under `.cdad/inbox` (with a `RESULT.json` descriptor) — the two arrival
+   states that this step covers. `receive` only accepts staged parts
+   (`source.kind="staged-file"`, regular files under the fixed `.cdad/inbox`
+   inbox), so a FINAL TEXT payload must first be **staged by the orchestrator**
+   — a prior mechanical step, before invoking `receive`:
    - write the **exact bytes** of the role's FINAL TEXT under `.cdad/inbox`
      (one file per part), **without retyping, summarizing or regenerating** them;
    - write the `RESULT.json` descriptor that points to them (`source.kind`,
@@ -35,12 +44,6 @@ fields. The protocol has four steps:
      is the feature spec (§3/§4) and the CLI** — consult them; do not duplicate
      the interface here;
    - only then invoke `receive` with that descriptor.
-
-   On the native path this staging is **mechanical**: the entry's `record` verb
-   (006-005 §2.1) writes the FINAL TEXT under `.cdad/inbox` with its
-   `RESULT.json` descriptor, byte-exact and without retyping, and declares the
-   derived artifact kind there. The manual step above remains for the other
-   transports (handoff to a new chat, external CLI dispatch).
 
    Staging is transport, not authority: it approves nothing and grants the role
    no write permission. The staged bytes **are** the original (identical) — what
@@ -76,15 +79,22 @@ fields. The protocol has four steps:
 ## Transport equivalence: one receipt route
 
 Native delegation does not change the delivery contract: the role returns its
-**FINAL TEXT** in the **orchestrator's session**, and the orchestrator stages
-the **exact bytes** under `.cdad/inbox` with their `RESULT.json` descriptor,
-**without retyping, summarizing or regenerating** them. The staged bytes are
-the original ones, and receiving approves nothing — `semantic_status` stays
+**FINAL TEXT** in the **orchestrator's session**, and the **exact bytes** are
+staged under `.cdad/inbox` with their `RESULT.json` descriptor, **without
+retyping, summarizing or regenerating** them (on the native path the entry's
+`record` verb does that staging mechanically). The staged bytes are the
+original ones, and receiving approves nothing — `semantic_status` stays
 `pending`.
 
 The transport equivalence holds for every transport: it is the same route —
-`receive` → `validate-receipt` → `materialize` → the state transition — for
-the handoff to a new chat and for the CLI adapter.
+the arrival state decides where the route starts, and from the durable receipt
+on it is `validate-receipt` → `materialize` → the state transition — for the
+handoff to a new chat and for the CLI adapter.
+
+`receive` is the first step of the route only for the arrival states that carry
+the role's bytes (a FINAL TEXT to stage, or a descriptor already staged); a
+delivery that arrives with its receipt already durable starts at the validation
+of that receipt.
 
 ---
 
