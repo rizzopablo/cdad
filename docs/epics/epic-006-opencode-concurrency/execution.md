@@ -413,3 +413,7 @@ El owner abrió la feature («Adelante con la siguiente feature»). Discovery: `
 - **Q6:** el orquestador mantiene la tabla cuando se aprueba un ADR. No cambia el exit gate de stage 5.
 - **Tope de filas por paquete:** declarado y fail-closed (D-6), con el valor que proponga la spec.
 - **ADR-034:** la fuente única es una referencia del skill. La obligación de cada rol va en la fuente del rol y en su bloque estático, con un puntero (D-2). La aprobación del ADR-034 la hace el orquestador bajo la HITL delegada; el owner puede vetarla.
+
+## 006-004 U5: siembra (2026-10-20)
+
+El orquestador aprueba el **ADR-034** bajo la HITL delegada; el dueño puede vetarlo. Se materializó con `Accepted` y se sembró la tabla «Decisiones vigentes» de este repo: 26 filas y 8 `Proposed` excluidos. Evidencia: `docs/specs/006-004-active-decisions-table/u5-seeding.md`.

@@ -2,6 +2,45 @@
 
 Convenciones técnicas, patrones, y reglas estructurales del proyecto. Este archivo se carga al inicio de cada sesión de agente.
 
+## Decisiones vigentes
+
+Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índice de los ADR: dice cuáles están en vigor, a qué roles gobiernan y dónde vive la regla que implantan.
+
+| Archivo | Estado | Resumen | Roles | Referencia |
+|---|---|---|---|---|
+| `docs/adr/ADR-001-modelos-por-etapa.md` | `vigente` | Modelo distinto por etapa CDAD (sub-agentes especializados). Su mapa de modelos por agente no tiene efecto operativo desde ADR-033; su retiro formal es una decisión pendiente del dueño. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-002-arquitectura-repo-fuente-e-install-sh.md` | `vigente` | Repo fuente como única fuente de verdad + install.sh para propagación. | `architect`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-003-orquestador-materializa-artefactos.md` | `vigente` | El orquestador materializa los artefactos de los sub-agentes CDAD read-only. | `architect`, `reviewer`, `scribe`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-004-usuario-aprueba-no-solo-humano.md` | `vigente` | "Usuario" = humano o agente autónomo de mayor jerarquía dueño del proceso. | `architect`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-005-modelos-via-mofgw.md` | `vigente` | Modelos de los agentes CDAD vía mofgw (gateway propio). Su mapa de modelos no tiene efecto operativo desde ADR-033; su retiro formal es una decisión pendiente del dueño. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-006-git-ejecutado-por-agentes-aprobacion-del-usuario.md` | `vigente` | La ejecución de git es de la capa de agentes; la aprobación es del usuario. | `test-writer`, `implementer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-007-perfiles-de-modelos.md` | `obsoleto (reemplazado por ADR-033)` | Perfiles de modelos CDAD (economical | optimus | premium). | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-008-claude-code-como-segundo-runtime.md` | `vigente` | Claude Code como segundo runtime objetivo para CDAD. Sigue vigente para hooks, guard de rutas, agentes claude-code, instalación y validación; la parte de perfiles y modelos la reemplaza ADR-033. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-009-politica-rtk-allowlists.md` | `vigente` | Política de allowlists rtk: pares `X*` + `rtk X*` por rol, denies de subcomandos peligrosos. | `architect`, `test-writer`, `implementer`, `reviewer`, `scribe` | el propio ADR |
+| `docs/adr/ADR-010-modelo-unico-mvp-epic-003.md` | `vigente` | excepción acotada de modelo único para el MVP del epic 003. Excepción acotada al MVP del epic-003, con su regla de vencimiento. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-011-autonomia-supervisada-limites-proporcionales.md` | `vigente` | Autonomía supervisada y límites proporcionales. | `architect`, `test-writer`, `implementer`, `reviewer`, `scribe`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-013-contrato-plan-borrador-revision-sin-aprobacion.md` | `vigente` | El contrato de plan borrador (`draft-plan`) separa revisión de aprobación. | `architect`, `reviewer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-014-recepcion-materializacion-aprobacion-separadas.md` | `vigente` | Recepción, materialización y aprobación son hechos distintos; el recibo nunca aprueba. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-015-guard-progreso-analizador-readonly-juicio-orquestador.md` | `vigente` | El guard de progreso es un analizador read-only; el juicio es del orquestador. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-017-activacion-por-proyecto-raiz-aislada.md` | `vigente` | Activación por proyecto hacia una raíz aislada adoptada (nunca las configuraciones del HOME real). | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-018-clases-de-referencia-declaradas-por-el-escritor.md` | `vigente` | Las clases de referencia de la continuidad (contrato/vivo) las declara el escritor, nunca la ruta. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-019-aprobacion-por-rol-nombra-el-contrato-reemplazo-conserva-el-encargo.md` | `vigente` | La aprobación de contrato por rol nombra el contrato; el reemplazo de paquete conserva y corrige el encargo anterior. | `test-writer`, `implementer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-020-politica-unica-de-evidencia-y-procedencia-declarada.md` | `vigente` | Una sola política de evidencia con dueño canónico y la procedencia de la instalación declarada en el artefacto publicado. | `test-writer`, `implementer`, `reviewer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-021-arranque-guiado-procedimiento-corto-por-referencia.md` | `vigente` | El arranque desde reposo se resuelve con un procedimiento corto que compone por referencia, una entrada de intake y un dueño canónico por objeto de reconocimiento. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-022-mapas-de-permisos-derivados-coherentes-con-el-clasificador.md` | `vigente` | Los mapas de permisos derivados son una proyección coherente del clasificador único: la excepción de tests reabre solo los árboles/archivos declarados y `private` gana por findLast. | `test-writer`, `implementer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-023-delegacion-externa-interfaz-comun-adaptador-por-destino.md` | `vigente` | La delegación externa entre CLI es una interfaz común con un adaptador por destino que reutiliza el mecanismo existente; rol, CLI y modelo son decisiones independientes, la entrega no aprueba el gate y la delegación no amplía autoridad. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-024-medicion-contexto-instrumento-opcional-readonly-no-gate.md` | `vigente` | La medición de contexto es un instrumento opcional, read-only y no-gate. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-031-seleccion-explicita-de-modo-y-servicio-no-gestionado.md` | `vigente` | El modo de ejecución de la delegación externa es explícito y el servicio de fondo no se gestiona; con el servicio corriendo, un fallo termina en `blocked`. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-032-delegacion-por-capa-agente-del-runtime-dueno-del-mecanismo.md` | `vigente` | La delegación se resuelve por capa — el agente del runtime es dueño del mecanismo, la metodología es neutral, el adaptador sólo cruza runtimes y los modelos los fija la configuración. | `architect`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-033-modelos-por-configuracion-sin-perfiles.md` | `vigente` | Los modelos se resuelven por configuración — sin perfiles en el instalador, fuente única en la delegación externa y sin verificación de familia. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-034-principio-general-antes-especifico.md` | `vigente` | Principio de general antes que específico: una casa canónica en el skill y las obligaciones de architect y reviewer. | `architect`, `reviewer` | `skills/cdad-cycle/references/design-principles.md` |
+
+**Nota.**
+
+- El estado de una fila lo declara quien mantiene la tabla: se escribe en la propia fila y no se re-deriva del texto del ADR.
+- La referencia es el lugar donde vive la regla que la decisión implanta: el propio ADR, o el archivo del skill instalable.
+- Quedan fuera los ADR que todavía no están en vigor (`Proposed`): ADR-012, ADR-016, ADR-025, ADR-026, ADR-027, ADR-028, ADR-029 y ADR-030. Cada uno recibe su fila al aprobarse, y entonces esta lista se actualiza.
+
 ## Capas y boundaries
 
 - `agents/*.md` — definición de roles: frontmatter (permisos por path, bash
