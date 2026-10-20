@@ -2285,6 +2285,46 @@ def _validate_corrections(
                 f"--write-scope (PD-22)") from exc
 
 
+def _draft_contract_of_the_day(contract: dict[str, Any],
+                                project_root: Path) -> tuple[dict[str, Any], bytes]:
+    """006-006 W-1 (E4): the declared draft of the day, for the replacement of
+    a `reviewer`/`plan-review` packet over a draft object.
+
+    The FORM of the reviewed object is conserved — its kind, path and version,
+    the declared form (`object_kind`) and the companion identity (path and
+    version); only the DIGESTS are recomputed from the bytes of the day, because
+    the corrected document is what the re-review focal has to cover. The
+    approved contract is NOT re-resolved here: it is not the object this
+    procedure reviews (PD-2).
+    """
+    path = contract.get("path")
+    contract_bytes = _read_bytes(
+        _project_path(project_root, path, "contract.path"), "contract")
+    contract_object: dict[str, Any] = {
+        "kind": contract.get("kind"), "path": path, "sha256": None,
+        "commit": contract.get("commit"),
+    }
+    if "plan_version" in contract:
+        contract_object["plan_version"] = contract["plan_version"]
+    if "object_kind" in contract:
+        contract_object["object_kind"] = contract["object_kind"]
+    # The companion identity travels as it was declared; only its digest is
+    # recomputed. A partial declaration stays partial on purpose: the closed
+    # all-or-none rule (R-6) rejects it in `validate_request`, naming the key.
+    for key in ("spec_path", "spec_version"):
+        if key in contract:
+            contract_object[key] = contract[key]
+    if "spec_path" in contract:
+        companion = _project_path(
+            project_root, contract["spec_path"], "contract.spec_path")
+        if not companion.is_file():
+            raise PolicyError(
+                f"the companion spec document does not exist: {contract['spec_path']}")
+        contract_object["spec_sha256"] = hashlib.sha256(
+            _read_bytes(companion, "contract.spec_path")).hexdigest()
+    return contract_object, contract_bytes
+
+
 def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     """Replace a prepared, never-dispatched, genuinely obsolete packet (PD-7..PD-11).
 
@@ -2350,21 +2390,56 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
             if current_path.is_file():
                 current_sha = hashlib.sha256(_read_bytes(current_path, "contract")).hexdigest()
         contract_drifted = current_sha != registered_sha
+        # 006-006 W-1 (E4): the companion document is part of the reviewed
+        # object (R-8), so a correction that touches only it also obsoletes the
+        # packet — otherwise the re-review focal would stay unreachable.
+        companion_drifted = False
+        registered_companion = contract.get("spec_path")
+        if isinstance(registered_companion, str) and registered_companion:
+            companion_file = _project_path(
+                project_root, registered_companion, "contract.spec_path")
+            if companion_file.is_file():
+                companion_drifted = (hashlib.sha256(
+                    _read_bytes(companion_file, "contract")).hexdigest()
+                    != contract.get("spec_sha256"))
         policy_drifted = recorded_policy != accepted_policy
         # PD-8: replacement is not a shortcut around PD-4. Without verifiable
         # obsolescence (contract digest or accepted policy revision) nothing is
         # published.
-        if not (contract_drifted or policy_drifted):
+        if not (contract_drifted or companion_drifted or policy_drifted):
             raise PolicyError(
                 f"--replace-packet {packet_id!r} refused: no verifiable obsolescence "
                 f"(the packet's contract and policy revision still match the current "
                 f"ones); replacement does not bypass the active-packet rule (PD-8)"
             )
         role, substage = request.get("role"), request.get("substage")
-        contract_kind, contract_path = _contract_for(role, execution)
-        contract_bytes = _read_bytes(
-            _project_path(project_root, contract_path, "contract.path"), "contract")
+        # 006-006 W-1 (E4): the successor is validated over the contract of the
+        # day. When the superseded packet declared a DRAFT object (the
+        # `reviewer`/`plan-review` pair), that contract is the DRAFT itself: the
+        # approved contract is not the object this procedure reviews, so
+        # re-resolving it by role rejected the very re-review focal the
+        # replacement exists to enable (PD-2).
+        if contract.get("kind") == "draft-plan":
+            contract_object, contract_bytes = _draft_contract_of_the_day(
+                contract, project_root)
+        else:
+            approved_kind, approved_path = _contract_for(role, execution)
+            contract_bytes = _read_bytes(
+                _project_path(project_root, approved_path, "contract.path"), "contract")
+            contract_object = {"kind": approved_kind, "path": approved_path,
+                               "sha256": None, "commit": None}
+        contract_kind = contract_object["kind"]
+        contract_path = contract_object["path"]
         digest = hashlib.sha256(contract_bytes).hexdigest()
+        contract_object["sha256"] = digest
+        # 006-006 W-1 (E4): the successor obeys the SAME plan checks a fresh
+        # prepare of that draft would: the plan rules judge only a plan-form
+        # document (INV-5) and a spec is never rejected for lacking tasks.
+        if contract.get("kind") == "draft-plan" and _declared_object_form(
+                contract.get("object_kind"), "contract.object_kind") == "plan":
+            declared_tasks, validation_strategy = _plan_tasks_from_contract(contract_bytes)
+            _check_plan_tasks(declared_tasks)
+            _check_plan_validation_plan(declared_tasks, validation_strategy)
         new_packet_id = _next_packet_id(out_dir, f"{execution['feature_id']}-{role}-{substage}")
         # PD-19 (C2/INV-7): the successor CONSERVES the predecessor's assignment
         # field by field (identity, role, substage, objective and the six
@@ -2406,8 +2481,7 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
             "schema_version": 1,
             "packet_id": new_packet_id,
             "feature_id": execution["feature_id"],
-            "contract": {"kind": contract_kind, "path": contract_path,
-                         "sha256": digest, "commit": None},
+            "contract": contract_object,
             **assignment,
         }
         # PD-10/INV-4 (iv): the successor CONSERVES the declared plan task; the
