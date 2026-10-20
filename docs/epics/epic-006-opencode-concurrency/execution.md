@@ -375,3 +375,14 @@ En otro proyecto activo no se pudo pedir la review de un borrador de spec. El re
 ## Push tras 006-005 (2026-10-20, orden del owner)
 
 `main` a `origin` (`41fc8b6..5328712`, fast-forward, 327 commits). Antes se barrió la anonimización sobre los 216 archivos publicados: rutas del host, ids de sesión, IPs y puertos (el único hallazgo fue el puerto por defecto de OpenCode en un fixture) y nombres de otros proyectos (`sanitize.py`: 0 cambios). No se publicaron ramas privadas ni los archivos sin trackear de otro agente.
+
+## 006-006: discovery y decisiones (2026-10-20)
+
+`docs/specs/006-006-spec-plan-review/discovery.md`. Hallazgo central: el CLI no exige tareas, exige el token `plan-tasks` («el objeto está modelado como un plan»). Decisiones del orquestador (HITL delegada; el owner la mantuvo el 2026-10-20), todas según la recomendación del architect:
+- **Diseño O2:** `contract.object_kind` (`spec`|`plan`) como extensión aditiva del contrato, el mismo patrón que `plan_version`. Sin kind, subfase, agente, etapa ni artefacto nuevos; los checks de plan solo se aplican si la forma es `plan`.
+- **Q4, identidad doble:** cuando la revisión cubre spec y plan, el contrato fija los dos documentos por digest.
+- **Q3:** se permite revisar el borrador de otra feature; el dictamen vive en la carpeta de la feature activa y nombra el objeto y su digest. La tabla de destinos no se amplía.
+- **Q2, gate 2→3:** artefacto `plan-review.md` presente, con cada bloqueante resuelto o descartado con razón escrita. Obligación supervisada, sin bloqueo duro en el CLI.
+- **Q5:** la revisión es siempre obligatoria, con profundidad proporcional.
+- **Q1:** la exención solo la da el owner, explícita y registrada en `stage_history` (`exempted_by`, `delegated`, `requested_by`, `reason`).
+- La deuda de nombre (`plan-review`/`draft-plan`) queda declarada.

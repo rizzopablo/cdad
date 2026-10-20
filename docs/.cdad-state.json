@@ -12167,6 +12167,47 @@
       "approved_by": "orquestador (HITL delegada epic-006, owner presente)",
       "closure_path": "docs/specs/006-005-native-path-parity/closure.md",
       "closure_sha256": "fd12f5dfa4e2d4630e291de069922fb0da46d89e08a7f945f86fed1c96bf7407"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-20T10:44:08.079000+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "9f0527b2db31d9d663d5244c2211d9b6f2256e381c1e83a9f41832edeeddb94f",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "006-006-spec-plan-review-architect-discovery-001",
+        "receipt_sha256": "e10b01aae953d19a6612af5d2ba861f455367aa78e0d663604d8671695bfa723",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-006-spec-plan-review/discovery.md",
+            "9006b5a685d9a5fa0e557a873ed49ee40fc960361f838fa8f0ae9a6dbbfc2da4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-006-spec-plan-review-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-006-spec-plan-review-001/006-006-spec-plan-review-architect-discovery-001/receipt.json",
+      "receipt_sha256": "e10b01aae953d19a6612af5d2ba861f455367aa78e0d663604d8671695bfa723",
+      "artifacts": {
+        "docs/specs/006-006-spec-plan-review/discovery.md": "9006b5a685d9a5fa0e557a873ed49ee40fc960361f838fa8f0ae9a6dbbfc2da4"
+      },
+      "note": "discovery (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12181,7 +12222,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T06:15:43.385206+00:00",
+  "last_updated": "2026-10-20T10:44:08.079000+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12292,7 +12333,7 @@
     "id": "006-006-spec-plan-review-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
