@@ -13324,6 +13324,47 @@
         "docs/specs/006-004-active-decisions-table/architect-draft-001.md": "bfa386466e46b786f41deb70a83bd675563f20fcac718d5217b019dc05ad0ad4"
       },
       "note": "draft 001 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-004-active-decisions-table",
+      "stage": "plan-review",
+      "substage": null,
+      "at": "2026-10-20T18:59:36.169470+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "b3041781f2a1d6b4d17b3ae7c3cb7e6f13f97918f0ff9b2584a5f6aca0f205ad",
+      "transition_key_payload": {
+        "execution_id": "exec-006-004-active-decisions-table-001",
+        "feature_id": "006-004-active-decisions-table",
+        "transition": "delivery",
+        "stage": "plan-review",
+        "substage": null,
+        "packet_id": "006-004-active-decisions-table-reviewer-plan-review-001",
+        "receipt_sha256": "c999fd36ac6a65f93303eff34d75fee86a5233ad9d51d707547f62c1897c49c9",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-004-active-decisions-table/plan-review-001.md",
+            "2c4785bc914536c2a515ed5ea0ffc4a1b0d172388dd1cc19236343dd974c1a4b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-004-active-decisions-table-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-004-active-decisions-table-001/006-004-active-decisions-table-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "c999fd36ac6a65f93303eff34d75fee86a5233ad9d51d707547f62c1897c49c9",
+      "artifacts": {
+        "docs/specs/006-004-active-decisions-table/plan-review-001.md": "2c4785bc914536c2a515ed5ea0ffc4a1b0d172388dd1cc19236343dd974c1a4b"
+      },
+      "note": "plan-review 001 (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -13338,7 +13379,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T18:57:19.530360+00:00",
+  "last_updated": "2026-10-20T18:59:36.169470+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -13449,7 +13490,7 @@
     "id": "006-004-active-decisions-table-reviewer-plan-review-001",
     "role": "reviewer",
     "substage": "plan-review",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "draft-plan",
     "contract_sha256": "2a16f174c69becc94e13a3db1e364b0d82c9424b0e513f4d421fc25dbc175903"
