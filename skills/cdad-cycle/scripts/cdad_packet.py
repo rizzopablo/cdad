@@ -75,6 +75,24 @@ ROLE_SUBSTAGES = {
     "reviewer": {"review", "plan-review"},
     "scribe": {"memory"},
 }
+# 006-004 U1 (R-2/R-4/R-7): the declared shape of ONE decision row that travels
+# in the request (`current_decisions`). The row has the SAME shape the project
+# table declares, so the orchestrator builds the request from the table without
+# translation. The key set is CLOSED: any other key is rejected.
+CURRENT_DECISION_KEYS = frozenset(
+    {"file", "state", "summary", "roles", "reference", "superseded_by"})
+CURRENT_DECISION_REQUIRED_KEYS = frozenset(
+    {"file", "state", "summary", "roles", "reference"})
+# R-2/R-4: closed vocabularies. `state` says whether the decision still governs
+# (it is NOT derivable from the ADR); `roles` names the consumers — the five
+# delegated roles plus `orchestrator`, which is a product role but is never
+# dispatched by a packet.
+CURRENT_DECISION_STATES = ("vigente", "obsoleto")
+CURRENT_DECISION_ROLES = ("architect", "test-writer", "implementer", "reviewer",
+                          "scribe", "orchestrator")
+# R-7: the DECLARED cap of rows per packet. It fails closed, naming the
+# declared number and the cap.
+CURRENT_DECISION_MAX_ROWS = 32
 # PD-15 (006-005 U3): `temporary` is a first-class write scope of the
 # vocabulary (classify_path_observable already names it from
 # `temporary_roots`); it authorizes writes inside a root the ACCEPTED policy
@@ -843,6 +861,142 @@ def _scope_contains(scope: dict[str, Any], raw_path: str, contract_dir: str,
     return actual == scope["class"] or (scope["class"] == "docs" and actual == "docs")
 
 
+def _current_decision_label(row: Any, index: int) -> str:
+    """How a row is named in a diagnostic: by the file it declares (the only
+    datum that identifies a row), else by its position."""
+    if isinstance(row, dict):
+        declared = row.get("file")
+        if isinstance(declared, str) and declared:
+            return declared
+    return f"#{index}"
+
+
+def _validate_current_decision_row(row: Any, index: int, role: str,
+                                   project_root: Path) -> None:
+    """The declared shape of ONE decision row (006-004 U1, R-2..R-6, R-11).
+
+    The row's FORM is the product's business (the CLI checks it); its CONTENT
+    is the project's (the orchestrator declares it). Every rejection names the
+    culprit, and no rejection publishes anything.
+    """
+    label = _current_decision_label(row, index)
+    if not isinstance(row, dict):
+        raise PolicyError(
+            f"current decision row {label} must be a JSON object with the declared "
+            "keys (R-2)")
+    unknown = sorted(set(row) - CURRENT_DECISION_KEYS)
+    if unknown:
+        raise PolicyError(
+            f"current decision row {label} declares unknown key(s): "
+            f"{', '.join(unknown)}; the key set of a row is closed (R-2)")
+    missing = sorted(CURRENT_DECISION_REQUIRED_KEYS - set(row))
+    if missing:
+        raise PolicyError(
+            f"current decision row {label} is missing required key(s): "
+            f"{', '.join(missing)} (R-2)")
+    # R-3: the file exists in the project and is a regular file. `reference` is
+    # NOT verified: it may point at the installed skill tree, which the CLI
+    # cannot resolve (L-4).
+    declared_file = row["file"]
+    if not isinstance(declared_file, str) or not declared_file:
+        raise PolicyError(
+            f"current decision row {label}: file must be a non-empty string (R-2)")
+    try:
+        candidate = _project_path(project_root, declared_file, "current decision file")
+    except PolicyError as exc:
+        raise PolicyError(f"current decision row {label}: {exc} (R-3)") from exc
+    if not candidate.is_file():
+        raise PolicyError(
+            f"current decision row {label}: the file does not exist in the project: "
+            f"{declared_file} (R-3)")
+    # R-2: the state is a closed vocabulary; the offending value is named with it.
+    state = row["state"]
+    if not isinstance(state, str) or state not in CURRENT_DECISION_STATES:
+        raise PolicyError(
+            f"current decision row {label}: state {state!r} is not in the closed "
+            "vocabulary {vigente, obsoleto} (R-2)")
+    # R-11: a row is one line.
+    summary = row["summary"]
+    if not isinstance(summary, str) or not summary:
+        raise PolicyError(
+            f"current decision row {label}: summary must be a non-empty string (R-2)")
+    if "\n" in summary:
+        raise PolicyError(
+            f"current decision row {label}: summary must be ONE line (R-11)")
+    # R-4: the consumers are a closed vocabulary and the list is not empty.
+    roles = row["roles"]
+    if not isinstance(roles, list) or not roles:
+        raise PolicyError(
+            f"current decision row {label}: roles must be a non-empty list (R-2)")
+    for consumer in roles:
+        if not isinstance(consumer, str) or consumer not in CURRENT_DECISION_ROLES:
+            raise PolicyError(
+                f"current decision row {label}: role {consumer!r} is not in the closed "
+                "vocabulary {architect, test-writer, implementer, reviewer, scribe, "
+                "orchestrator} (R-4)")
+    reference = row["reference"]
+    if not isinstance(reference, str) or not reference:
+        raise PolicyError(
+            f"current decision row {label}: reference must be a non-empty string (R-2)")
+    # R-2: `superseded_by` is conditional — REQUIRED with `obsoleto`, FORBIDDEN
+    # with `vigente`.
+    if state == "obsoleto":
+        superseded_by = row.get("superseded_by")
+        if not isinstance(superseded_by, str) or not superseded_by:
+            raise PolicyError(
+                f"current decision row {label}: state 'obsoleto' requires a non-empty "
+                "superseded_by (R-2)")
+    elif "superseded_by" in row:
+        raise PolicyError(
+            f"current decision row {label}: state 'vigente' must not declare "
+            "superseded_by (R-2)")
+    # R-5: EVERY declared row names the role of the packet it travels in.
+    if role not in roles:
+        raise PolicyError(
+            f"current decision row {label} does not name the packet role {role!r}: "
+            "every declared row must name the role of the packet (R-5)")
+    # R-6: only what still governs travels; the obsolete row stays in the
+    # project table (the history) and never reaches a package.
+    if state == "obsoleto":
+        raise PolicyError(
+            f"current decision row {label} is not admissible in a packet: it is "
+            f"obsoleto and superseded by {row['superseded_by']} (R-6)")
+
+
+def _validate_current_decisions(rows: Any, role: str, project_root: Path) -> None:
+    """The declared rows of ONE packet (006-004 U1, R-1..R-7): the closed shape
+    of each row, the admission rules and the declared cap."""
+    if not isinstance(rows, list):
+        raise PolicyError("request.current_decisions must be a list of decision rows")
+    # R-7: the cap fails closed, naming the declared number and the cap.
+    if len(rows) > CURRENT_DECISION_MAX_ROWS:
+        raise PolicyError(
+            f"{len(rows)} current decisions declared in one packet exceeds the cap of "
+            f"{CURRENT_DECISION_MAX_ROWS} rows: declare only the decisions that govern "
+            "the role of the packet (R-7)")
+    for index, row in enumerate(rows, start=1):
+        _validate_current_decision_row(row, index, role, project_root)
+
+
+def _parse_current_decisions(raw_values: list[str]) -> list[dict[str, Any]]:
+    """The `--current-decision` values: one JSON object per row, in the declared
+    order (006-004 U1, R-8)."""
+    rows: list[dict[str, Any]] = []
+    for index, raw in enumerate(raw_values, start=1):
+        try:
+            value = json.loads(raw)
+        except ValueError as exc:
+            raise PolicyError(
+                f"--current-decision (occurrence {index} of {len(raw_values)}) is not "
+                f"valid JSON: {exc}") from exc
+        if not isinstance(value, dict):
+            raise PolicyError(
+                f"--current-decision (occurrence {index} of {len(raw_values)}) must be "
+                "a JSON object")
+        rows.append(value)
+    return rows
+
+
 def validate_request(document: dict[str, Any], execution_document: dict[str, Any],
                      state: dict[str, Any], project_root: Path,
                      contract_bytes_override: bytes | None = None) -> dict[str, Any]:
@@ -867,7 +1021,10 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     # same way (`agent`, the role+stack agent that travels in the package); the
     # closure is not relaxed — the set equality below still rejects every other
     # unknown key.
-    optional = {"plan_task", "agent"}
+    # 006-004 U1 (R-1): a THIRD declared optional property (`current_decisions`,
+    # the decision rows that govern the role of the packet) is added the same
+    # way; the closure is not relaxed either.
+    optional = {"plan_task", "agent", "current_decisions"}
     if (not required <= set(document) <= (required | optional)
             or document.get("schema_version") != 1):
         raise PolicyError("request fields do not match schema")
@@ -886,6 +1043,12 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     role, substage = document["role"], document["substage"]
     if role not in ROLE_SUBSTAGES or substage not in ROLE_SUBSTAGES[role]:
         raise PolicyError("request role/substage pair is invalid")
+    # 006-004 U1 (R-1..R-7): the declared rows are re-validated wherever the
+    # request is validated (`prepare`, `validate-request`, `render`,
+    # `validate-packet`, `receive`): the shape, the file, the admission rules
+    # and the cap are the product's, never the caller's.
+    if "current_decisions" in document:
+        _validate_current_decisions(document["current_decisions"], role, project_root)
     contract = _object(document.get("contract"), "request.contract")
     contract_keys = {"kind", "path", "sha256", "commit"}
     plan_version = contract.get("plan_version")
@@ -2489,6 +2652,11 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # (the contract is re-resolved, never conserved).
         if "plan_task" in request:
             new_request["plan_task"] = request["plan_task"]
+        # 006-004 U1: the successor CONSERVES the declared decision rows, exactly
+        # as it conserves the declared plan task: a correction of the packet does
+        # not silently drop the decisions that govern the role.
+        if "current_decisions" in request:
+            new_request["current_decisions"] = request["current_decisions"]
         # PD-1 (005-005): the complete resulting assignment — conserved and
         # corrected fields alike — passes the same validations as an ordinary
         # prepare, with a diagnostic naming the field, the reason and the
@@ -4782,6 +4950,12 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
     role, substage = args.role, args.substage
     if role not in ROLE_SUBSTAGES or substage not in ROLE_SUBSTAGES[role]:
         raise PolicyError("role/substage pair is invalid")
+    # 006-004 U1 (R-7/R-8): the declared rows are parsed and validated BEFORE the
+    # lock and before any write: a malformed row never publishes a packet (the
+    # fail-closed direction of INV-3).
+    current_decisions = _parse_current_decisions(args.current_decision)
+    if current_decisions:
+        _validate_current_decisions(current_decisions, role, project_root)
 
     # PD-11/I5 + F2: exclusion covers resolution, identity reservation and the
     # whole publication. State, execution and the packet id are read/reserved
@@ -5015,6 +5189,11 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         # absent the request and the packet are byte-identical to today's render.
         if args.plan_task:
             request["plan_task"] = args.plan_task
+        # 006-004 U1 (R-1/R-8): the declared decision rows travel in the request,
+        # in the declared order. Without the declaration the field is ABSENT and
+        # the request (and the render) stay byte-identical to today's.
+        if current_decisions:
+            request["current_decisions"] = current_decisions
         binding_fields = (V2_BINDING_FIELDS if execution_document.get("schema_version") == V2_SCHEMA_VERSION
                           else BINDING_FIELDS)
         new_state = dict(state)
@@ -6739,6 +6918,13 @@ def build_parser() -> argparse.ArgumentParser:
     # contract references; absent, the render is byte-identical.
     prep.add_argument("--plan-task", metavar="TASK_ID",
                       help="declare the plan task this packet implements (PD-10)")
+    # 006-004 U1 (R-8): the declared decision rows that govern the role of the
+    # packet. REPEATABLE: one JSON object per row; the rows travel in the request
+    # in the declared order. Without the flag the request and the packet are
+    # byte-identical to today's.
+    prep.add_argument("--current-decision", action="append", default=[], metavar="JSON",
+                      help="declare a decision row that governs this packet "
+                           "(repeatable; one JSON object per row)")
     # PD-1 (004-003 T1): the explicit declared-draft surface. All three flags
     # select the draft contract object (kind `draft-plan` + its version and
     # path); absent, the role default derivation is unchanged.
@@ -6859,7 +7045,7 @@ def _reject_propose_with_prepare_options(args: argparse.Namespace) -> None:
                args.plan_version, args.plan_task,
                args.object_kind, args.spec_path, args.spec_version)
     lists = (args.input, args.read_scope, args.write_scope, args.invariant,
-             args.evidence)
+             args.evidence, args.current_decision)
     if any(value is not None for value in scalars) or any(lists) or args.new_execution:
         raise PolicyError(
             "--propose-policy is exclusive with ordinary prepare options: "
@@ -6889,6 +7075,7 @@ _ORDINARY_FLAGS = {
     "--invariant": lambda a: a.invariant or None,
     "--evidence": lambda a: a.evidence or None,
     "--input": lambda a: a.input or None,
+    "--current-decision": lambda a: a.current_decision or None,
 }
 _RECONCILE_FLAGS = {
     "--reconcile-policy": lambda a: a.reconcile_policy,
