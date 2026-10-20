@@ -350,3 +350,8 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
 ## Despliegue del fix U6-7 (orden del owner, 2026-10-19)
 
 `.cdad/local/deploy-006-005-u6-7.sh` (mismo procedimiento que 006-003: respaldo en `<workspace>/archive/`, `make staging`, `install.sh --force`, `--check`). Verify PASS, 11 agentes. Los agentes instalados de OpenCode ya no llevan la clave `write`. Los derivados de cada proyecto se rehacen desde la copia instalada en su próximo `prepare`. El owner también cambió los modelos en `delegation.json` por la crisis de proveedores, y autorizó abrir una feature para la review de borradores de spec (contrato `draft-spec`).
+- **Hallazgo U6-8 (operación; criterio del owner: «ligarlo a una versión minor en la config puede ser excesivo»).** OpenCode pasó de v2.0.27 a v2.0.32 con el mismo esquema de `session_v2` (sonda de solo esquema: columnas y tipos iguales). Igual, el despacho quedó `blocked` porque el `binary_version` configurado (2.0.27) no coincidía con el servidor. El orquestador actualizó el valor en `runtimes.json` y en la config local para seguir. **Decisión:**
+  - el control compara versiones **observadas**, cliente contra servidor, nunca contra un número escrito en la config;
+  - la compatibilidad del store se verifica por **capacidad**: faltan las columnas que la correlación evalúa ⇒ fail-closed nombrándolas;
+  - `binary_version` pasa a opcional e informativo: una diferencia se declara en el diagnóstico y no bloquea, y `migrate` deja de escribirlo.
+  - Se corrige con RED/GREEN después de U6-7b.
