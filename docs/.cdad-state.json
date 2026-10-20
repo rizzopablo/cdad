@@ -13785,13 +13785,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-004-active-decisions-table-reviewer-plan-review-004",
-    "role": "reviewer",
-    "substage": "plan-review",
-    "status": "completed",
+    "id": "006-004-active-decisions-table-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "draft-plan",
-    "contract_sha256": "dc0d31fb2fb01023a73c10e5e7692ccb897765275a1707830864e6044846ec06"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3"
   },
   "tdd_substage": "red"
 }
