@@ -12290,6 +12290,47 @@
         "docs/specs/006-006-spec-plan-review/plan-review.md": "57df695248971c3fccc794b8ef1231140a5e172a33b51f644a5fcea5317cd751"
       },
       "note": "plan-review draft-001 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "draft",
+      "substage": null,
+      "at": "2026-10-20T11:06:29.663540+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "44bae9095de11acb1bbf0289794cae1ae8dfe53af06bf13c720a9d9d6fd8ec16",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "delivery",
+        "stage": "draft",
+        "substage": null,
+        "packet_id": "006-006-spec-plan-review-architect-draft-002",
+        "receipt_sha256": "1b5be8d69fc0a20d011f54fea45ab9fdea589605980a4461ca3ed9cdad499fe7",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-006-spec-plan-review/architect-draft-002.md",
+            "ae0777f7858f2cba043c2663439d0e855b492dddc08bdeeebcecc98bce093d73"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-006-spec-plan-review-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-006-006-spec-plan-review-001/006-006-spec-plan-review-architect-draft-002/receipt.json",
+      "receipt_sha256": "1b5be8d69fc0a20d011f54fea45ab9fdea589605980a4461ca3ed9cdad499fe7",
+      "artifacts": {
+        "docs/specs/006-006-spec-plan-review/architect-draft-002.md": "ae0777f7858f2cba043c2663439d0e855b492dddc08bdeeebcecc98bce093d73"
+      },
+      "note": "draft-002 (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12304,7 +12345,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T10:57:49.600856+00:00",
+  "last_updated": "2026-10-20T11:06:29.663540+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12415,7 +12456,7 @@
     "id": "006-006-spec-plan-review-architect-draft-002",
     "role": "architect",
     "substage": "draft",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-epic-plan",
     "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
