@@ -51,6 +51,17 @@ VALID_SUBSTAGES = {
 }
 VALID_CONTRACT_KINDS = {"approved-epic-plan", "approved-unit-contract",
                         "approved-feature-spec", "draft-plan"}
+# 006-006 U1 (R-1..R-8): the reviewed object's FORM is declared in the contract
+# (`object_kind`) and, when the review covers a spec AND a plan, the companion
+# spec is fixed by digest (`spec_path`/`spec_sha256`/`spec_version`). The
+# extension is ADDITIVE: the contract's key set stays closed, and the new keys
+# are carried only when the invocation declares them.
+OBJECT_FORM_VALUES = ("spec", "plan")
+# R-4: absent means `plan` — the fail-closed direction: forgetting the flag
+# produces the vigente rejection, never a silent acceptance.
+DEFAULT_OBJECT_FORM = "plan"
+OBJECT_FORM_CONTRACT_KEYS = ("object_kind", "spec_path", "spec_sha256", "spec_version")
+COMPANION_CONTRACT_KEYS = ("spec_path", "spec_sha256", "spec_version")
 # 005-013 T1: the architect's contract is EITHER the generated unit projection
 # (kind + the file published beside its packet) OR the declared fallback (the
 # whole approved epic plan). The two names live here, with the kinds.
@@ -880,6 +891,12 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     plan_version = contract.get("plan_version")
     if "plan_version" in contract:
         contract_keys = contract_keys | {"plan_version"}
+    # 006-006 U1 (R-1): the declared object form and the companion identity are
+    # an ADDITIVE extension of the closed key set — the four new keys are
+    # admitted, and any other unknown key is still rejected.
+    for optional_key in OBJECT_FORM_CONTRACT_KEYS:
+        if optional_key in contract:
+            contract_keys = contract_keys | {optional_key}
     if set(contract) != contract_keys:
         raise PolicyError("request.contract fields do not match schema")
     # PD-1 (004-003 T1): a draft-plan contract is a first-class, non-approved
@@ -891,11 +908,20 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     if is_draft:
         if not isinstance(plan_version, str) or not plan_version:
             raise PolicyError("draft-plan contract requires a non-empty plan_version")
-    elif plan_version is not None:
-        raise PolicyError(
-            "an approved contract kind must not declare plan_version: a draft plan "
-            "carries its own version and cannot reuse an approved-* kind (PD-1)"
-        )
+    else:
+        # 006-006 U1 (R-2): the declared form and the companion belong to the
+        # draft surface. An `approved-*` kind that declares any of them is a
+        # forgery and is rejected before anything is published.
+        for forged_key in OBJECT_FORM_CONTRACT_KEYS:
+            if forged_key in contract:
+                raise PolicyError(
+                    f"an approved contract kind must not declare {forged_key}: the "
+                    "declared object form and its companion belong to a draft plan (PD-1)")
+        if plan_version is not None:
+            raise PolicyError(
+                "an approved contract kind must not declare plan_version: a draft plan "
+                "carries its own version and cannot reuse an approved-* kind (PD-1)"
+            )
     if not isinstance(contract.get("kind"), str) or contract["kind"] not in VALID_CONTRACT_KINDS:
         raise PolicyError("request.contract kind is invalid")
     # B1/B2 (004-003 T2 review-fix, PD-2 + acceptance criterion 1): the draft
@@ -948,6 +974,32 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     digest = hashlib.sha256(contract_content).hexdigest()
     if contract.get("sha256") != digest:
         raise PolicyError("contract sha256 does not match exact content")
+    # 006-006 U1 (R-3..R-8): the declared form of the reviewed object and the
+    # companion identity. The companion's digest is verified against the file's
+    # bytes exactly like the principal's (R-5): an asserted digest that does not
+    # match the bytes is rejected, naming the divergence.
+    object_form = _declared_object_form(contract.get("object_kind"), "contract.object_kind")
+    if any(key in contract for key in COMPANION_CONTRACT_KEYS):
+        missing_companion = [key for key in COMPANION_CONTRACT_KEYS if key not in contract]
+        if missing_companion:
+            raise PolicyError(
+                "the companion spec identity is all-or-none: missing "
+                + ", ".join(missing_companion) + " (R-6)")
+        if object_form != "plan":
+            raise PolicyError(
+                "the companion document is the spec and only exists over a plan-form "
+                "principal: contract.object_kind must be 'plan' (R-7, R-8)")
+        companion_path = _project_path(project_root, contract["spec_path"], "contract.spec_path")
+        if not companion_path.is_file():
+            raise PolicyError(
+                f"the companion spec document does not exist: {contract['spec_path']}")
+        companion_digest = hashlib.sha256(
+            _read_bytes(companion_path, "contract.spec_path")).hexdigest()
+        if contract["spec_sha256"] != companion_digest:
+            raise PolicyError(
+                "contract.spec_sha256 does not match the companion document's exact "
+                f"content: asserted {contract['spec_sha256']!r}, bytes digest "
+                f"{companion_digest!r}")
     # 005-001 T1 (D6): the role-specific contract approval is enforced here,
     # where both the role and the verified contract bytes are known. This is the
     # single enforcement point for `prepare`, `validate-request`, `render`,
@@ -1040,11 +1092,22 @@ def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
         ],
     })
     canonical = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    contract_lines = [f"- kind: {request['contract']['kind']}",
+                      f"- path: {request['contract']['path']}",
+                      f"- sha256: {request['contract']['sha256']}",
+                      f"- commit: {json.dumps(request['contract']['commit'])}"]
+    # 006-006 U1 (R-9): the declared form and the companion identity are
+    # ADDITIVE — they are emitted only when the contract declares them, so a
+    # package without the new keys keeps the exact bytes of this revision.
+    if request["contract"].get("object_kind"):
+        contract_lines.append(f"- form: {request['contract']['object_kind']}")
+    if request["contract"].get("spec_path"):
+        contract_lines.append(f"- spec_path: {request['contract']['spec_path']}")
+        contract_lines.append(f"- spec_sha256: {request['contract']['spec_sha256']}")
+        contract_lines.append(f"- spec_version: {request['contract']['spec_version']}")
     lines = ["---cdad-packet-json", canonical, "---end-cdad-packet-json", "# CDAD task",
              "", "<!-- cdad-instructions:start -->", static, "<!-- cdad-instructions:end -->",
-             "", "## Objective", request["objective"], "", "## Contract",
-             f"- kind: {request['contract']['kind']}", f"- path: {request['contract']['path']}",
-             f"- sha256: {request['contract']['sha256']}", f"- commit: {json.dumps(request['contract']['commit'])}"]
+             "", "## Objective", request["objective"], "", "## Contract", *contract_lines]
     # PD-10/INV-4: with a declared plan task the packet emits its two declared
     # sections; without it the render is byte-identical (the additive surface).
     lines.extend(_plan_task_sections(request, project_root))
@@ -1137,6 +1200,22 @@ def _contract_for(role: str, execution: dict[str, Any]) -> tuple[str, str]:
             )
         return EPIC_PLAN_KIND, f"docs/epics/{epic_id}/plan.md"
     return "approved-feature-spec", f"docs/specs/{execution['feature_id']}/spec.md"
+
+
+def _declared_object_form(form: Any, label: str) -> str:
+    """006-006 U1 (R-3/R-4): the declared form of the reviewed object.
+
+    `spec` | `plan`; absent means `plan` (the fail-closed direction: forgetting
+    the flag produces the vigente rejection, never a silent acceptance). A value
+    outside the closed set is rejected, naming the value and the admitted forms.
+    """
+    if form is None:
+        return DEFAULT_OBJECT_FORM
+    if form not in OBJECT_FORM_VALUES:
+        raise PolicyError(
+            f"{label} is invalid: {form!r} (the admitted forms are: "
+            f"{', '.join(OBJECT_FORM_VALUES)})")
+    return form
 
 
 def _cli_scope(raw: str, project_root: Path) -> dict[str, Any]:
@@ -2009,6 +2088,9 @@ def _reject_resume_with_ordinary_options(args: argparse.Namespace) -> None:
         ("--contract-kind", args.contract_kind),
         ("--contract-path", args.contract_path),
         ("--plan-version", args.plan_version),
+        ("--object-kind", args.object_kind),
+        ("--spec-path", args.spec_path),
+        ("--spec-version", args.spec_version),
         ("--plan-task", args.plan_task),
     ) if value is not None]
     if args.new_execution:
@@ -4694,6 +4776,44 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                 raise PolicyError(
                     f"draft-plan contract is reviewer-only: role {role!r} cannot "
                     "review a declared draft plan (PD-1, invariant 4)")
+        # 006-006 U1 (R-2): the declared form and the companion identity belong
+        # to the declared-draft surface. Over any other contract they are a
+        # forgery and are rejected before anything is published.
+        if (args.object_kind or args.spec_path or args.spec_version) and not is_declared_draft:
+            raise PolicyError(
+                "the declared object form and its companion belong to a draft-plan "
+                "contract: --object-kind --spec-path --spec-version are not "
+                "admissible over an approved contract (PD-1, R-2)")
+        # 006-006 U1 (R-3/R-4): the form of the reviewed object; absent means
+        # `plan` (the fail-closed direction).
+        object_form = _declared_object_form(args.object_kind, "--object-kind")
+        if args.object_kind is not None:
+            contract_object["object_kind"] = args.object_kind
+        # 006-006 U1 (R-5/R-6/R-7/R-8): the companion identity. The three keys
+        # appear together or not at all; the companion is the spec and only
+        # exists over a plan-form principal; its digest is COMPUTED from the
+        # file's bytes (never asserted from outside).
+        if args.spec_path is not None or args.spec_version is not None:
+            missing_companion = [key for key, value in (
+                ("spec_path", args.spec_path), ("spec_version", args.spec_version))
+                if value is None]
+            if missing_companion:
+                raise PolicyError(
+                    "the companion spec identity is all-or-none: missing "
+                    + ", ".join(missing_companion) + " (R-6)")
+            if object_form != "plan":
+                raise PolicyError(
+                    "the companion document is the spec and only exists over a "
+                    "plan-form principal: declare --object-kind plan (R-7, R-8)")
+            companion_file = _project_path(project_root, args.spec_path, "spec.path")
+            if not companion_file.is_file():
+                raise PolicyError(
+                    f"the companion spec document does not exist: {args.spec_path}")
+            companion_digest = hashlib.sha256(
+                _read_bytes(companion_file, "spec")).hexdigest()
+            contract_object["spec_path"] = args.spec_path
+            contract_object["spec_sha256"] = companion_digest
+            contract_object["spec_version"] = args.spec_version
         contract_object["kind"] = contract_kind
         contract_object["path"] = contract_path
         contract_file = _project_path(project_root, contract_path, "contract.path")
@@ -4715,8 +4835,20 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         # the ```plan-tasks block mandatory: a plan without it (or with a
         # malformed fence) fails loud instead of being published with its
         # checks skipped (F1).
-        if is_declared_draft:
-            declared_tasks, validation_strategy = _plan_tasks_from_contract(contract_bytes)
+        # 006-006 U1 (R-4, §2.2): the plan checks apply ONLY to a principal
+        # whose form is `plan`. A spec is reviewed without artificial tasks:
+        # no `plan-tasks` block is demanded of it, and none is injected into it.
+        if is_declared_draft and object_form == "plan":
+            try:
+                declared_tasks, validation_strategy = _plan_tasks_from_contract(contract_bytes)
+            except PolicyError as exc:
+                # The declared form was NOT declared: name the flag that declares
+                # it. The rejection itself does not change (fail-closed).
+                if args.object_kind is None:
+                    raise PolicyError(
+                        f"{exc} — if the reviewed object is a spec, declare its form "
+                        "with --object-kind spec") from exc
+                raise
             _check_plan_tasks(declared_tasks)
             _check_plan_validation_plan(declared_tasks, validation_strategy)
         out_dir = _cwd_path(args.out_dir) if args.out_dir else project_root / ".cdad" / "packets"
@@ -4787,9 +4919,17 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
             "agent": _packet_agent(role, state),
             "objective": args.objective,
             "contract": contract_object,
-            "inputs": [{"path": contract_path, "purpose": "draft plan for review"}
+            # 006-006 U1 (R-9): ONE input per fixed document, principal first
+            # and companion second, and each entry's purpose names the FORM of
+            # its document.
+            "inputs": ([{"path": contract_path,
+                         "purpose": "draft spec for review" if object_form == "spec"
+                         else "draft plan for review"}]
                        if is_declared_draft else
-                       {"path": contract_path, "purpose": "approved contract"}]
+                       [{"path": contract_path, "purpose": "approved contract"}])
+                      + ([{"path": contract_object["spec_path"],
+                          "purpose": "draft spec for review"}]
+                         if is_declared_draft and "spec_path" in contract_object else [])
                       + [_cli_input(raw) for raw in args.input],
             "read_scope": [_cli_scope(raw, project_root) for raw in args.read_scope] or read_default,
             "write_scope": [_cli_scope(raw, project_root) for raw in args.write_scope] or write_default,
@@ -6411,6 +6551,16 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--contract-kind")
     prep.add_argument("--contract-path")
     prep.add_argument("--plan-version")
+    # 006-006 U1 (R-5): the declared form of the reviewed object and the
+    # companion spec identity. The companion's digest is computed by `prepare`
+    # from the file's bytes, never asserted from outside.
+    prep.add_argument("--object-kind", metavar="FORM",
+                      help="declare the form of the reviewed object: spec or plan "
+                           "(absent means plan)")
+    prep.add_argument("--spec-path", metavar="PATH",
+                      help="the companion spec document (only over a plan-form principal)")
+    prep.add_argument("--spec-version", metavar="VERSION",
+                      help="the version of the companion spec document")
     open_unit_cmd = commands.add_parser(
         "open-unit",
         help="open the next queued unit of the active epic (PD-7, state operation)")
@@ -6498,7 +6648,8 @@ def _reject_propose_with_prepare_options(args: argparse.Namespace) -> None:
                args.replace_packet, args.reason,
                args.reconcile_policy, args.decision_ref, args.record_dispatch,
                args.attempt_id, args.contract_kind, args.contract_path,
-               args.plan_version, args.plan_task)
+               args.plan_version, args.plan_task,
+               args.object_kind, args.spec_path, args.spec_version)
     lists = (args.input, args.read_scope, args.write_scope, args.invariant,
              args.evidence)
     if any(value is not None for value in scalars) or any(lists) or args.new_execution:
@@ -6520,6 +6671,9 @@ _ORDINARY_FLAGS = {
     "--contract-path": lambda a: a.contract_path,
     "--plan-version": lambda a: a.plan_version,
     "--plan-task": lambda a: a.plan_task,
+    "--object-kind": lambda a: a.object_kind,
+    "--spec-path": lambda a: a.spec_path,
+    "--spec-version": lambda a: a.spec_version,
     "--execution-context": lambda a: a.execution_context,
     "--new-execution": lambda a: True if a.new_execution else None,
     "--read-scope": lambda a: a.read_scope or None,
