@@ -12288,6 +12288,14 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": null,
+  "active_packet": {
+    "id": "006-006-spec-plan-review-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-epic-plan",
+    "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
+  },
   "tdd_substage": null
 }
