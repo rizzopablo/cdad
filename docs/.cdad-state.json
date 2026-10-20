@@ -4,7 +4,7 @@
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
   "active_feature": "006-004-active-decisions-table",
-  "current_stage": "discovery",
+  "current_stage": "tdd",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -13611,6 +13611,58 @@
         "docs/specs/006-004-active-decisions-table/plan-review-004.md": "8490e32c59c84e3757f61b5cf14c5961348e429cb74f8b3fe6360756016b1abc"
       },
       "note": "plan-review 004 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-004-active-decisions-table",
+      "stage": "specification",
+      "substage": "red",
+      "at": "2026-10-20T19:34:51.022906+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "139de6b4c73ce70fd690e5d087a5ecc6ac8f2815b1e7b7773cc5db8ce7e1a66f",
+      "transition_key_payload": {
+        "execution_id": "exec-006-004-active-decisions-table-001",
+        "feature_id": "006-004-active-decisions-table",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/006-004-active-decisions-table/plan-review-004.md",
+            "8490e32c59c84e3757f61b5cf14c5961348e429cb74f8b3fe6360756016b1abc"
+          ]
+        ],
+        "approved_by": "orquestador (HITL delegada epic-006)",
+        "contract": {
+          "path": "docs/specs/006-004-active-decisions-table/spec.md",
+          "sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3"
+        },
+        "plan": {
+          "path": "docs/specs/006-004-active-decisions-table/plan.md",
+          "sha256": "6b45058bece731ce4d8c693ad70176de4ffcf57934ac003cf9ccfe47065c84ba"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/006-004-active-decisions-table/plan-review-004.md": "8490e32c59c84e3757f61b5cf14c5961348e429cb74f8b3fe6360756016b1abc"
+      },
+      "note": "gate 2->3: plan-review-004 sin bloqueantes",
+      "approved_by": "orquestador (HITL delegada epic-006)",
+      "contract_path": "docs/specs/006-004-active-decisions-table/spec.md",
+      "contract_sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3",
+      "plan_path": "docs/specs/006-004-active-decisions-table/plan.md",
+      "plan_sha256": "6b45058bece731ce4d8c693ad70176de4ffcf57934ac003cf9ccfe47065c84ba"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -13625,7 +13677,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T19:34:35.748940+00:00",
+  "last_updated": "2026-10-20T19:34:51.022906+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -13741,5 +13793,5 @@
     "contract_kind": "draft-plan",
     "contract_sha256": "dc0d31fb2fb01023a73c10e5e7692ccb897765275a1707830864e6044846ec06"
   },
-  "tdd_substage": null
+  "tdd_substage": "red"
 }
