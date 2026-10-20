@@ -580,6 +580,79 @@ catch-all deny o pares de comandos durante la simplificación.
   `docs/specs/006-003-installer-single-profile-delegation-config/spec.md` (PD-1..PD-8, INV-1..INV-7, D1..D8,
   A-1..A-4, A-5).
 
+### Correlación por transporte, registro write-ahead y barreras que no dependen de la clasificación (epic 006, 2026-10-20)
+
+- **La correlación se demuestra con la evidencia que produce cada transporte, y hay tres resultados, no dos.**
+  **La externa**: el módulo **elige** el id de sesión y correlaciona por él («el adaptador, no el cliente, es el
+  dueño del id de correlación»); **no hay padre que comparar** y **no** se exige la igualdad `directory == raíz`
+  (esa igualdad no prueba el proyecto y rechazaría el recorrido legítimo: coordinador iniciado desde otra
+  carpeta, layout anidado). La identidad del rol se corrobora contra la fila durable. **La nativa**: las llaves
+  son las **columnas observables** del store de la versión declarada —padre, agente, momento y proyecto **por
+  pertenencia** (dentro de la raíz ⇒ coincide; **ancestro ⇒ no evaluable**, no prueba ni contradice; ajeno ⇒
+  contradicción)—. **Umbral de discriminación:** la acreditación positiva exige **al menos una llave discriminante
+  evaluada y coincidente** (padre, momento o proyecto); **«agente» por sí solo no acredita**, porque dos
+  despachos nativos concurrentes del mismo rol comparten agente ⇒ con sólo esa llave el resultado es
+  `unknown`. **Tres resultados con consecuencia propia:** *verificada* (se persiste la sesión observada) ·
+  *no verificable* (`unknown`, **sin entrega por esa vía**, salvo la garantía menor PD-6: con resultado nativo
+  byte-exacto la entrega se persiste con `session: null` y procedencia que declara la identidad no verificada) ·
+  *verificada e incorrecta* (**rechazo** que nombra la llave; **nunca** `unknown`, **nunca** entrega aceptada).
+  Una llave **expuesta pero no declarada** sigue siendo `unknown**: no se omite para acreditar. Una contradicción
+  en cualquier llave evaluable —incluida «agente»— es rechazo. Nunca se compara contra un valor supuesto: sin
+  `agent` en el paquete, esa llave es `unknown`, nunca `cdad-<rol>`.
+- **El registro del intento se escribe antes de que el cliente pueda producir efectos, y se completa una sola
+  vez.** El módulo externo escribe su registro I8 **provisional** (marca legible `write-ahead:` al frente de
+  `provenance.session`, `model_reported` en `null`) **antes de lanzar el cliente**: después de cargar el request,
+  pasar el chequeo de intento previo y elegir el id de sesión. **Si ese registro falla, el cliente no se
+  lanza** y la terminación es `blocked` con el diagnóstico (fail-closed). En **toda** terminación posterior el
+  registro se **completa una vez**: se reemplazan la sesión, el modelo reportado y **todos** los pares de
+  procedencia de terminación; la **identidad** (ejecución, paquete, intento, rol, subfase, runtime, inicio) **no
+  cambia** (si difiere ⇒ rechazo); la compleción **sólo** vale sobre un registro con la marca y produce uno sin
+  ella ⇒ una segunda compleción, o una compleción sobre un registro sin marca, es **rechazo**. La regla
+  write-once del ledger no cambia: **un registro por despacho**. Secuencia de recuperación, sin autorizar
+  repetir efectos: `reconcile` ⇒ `dispatched-unknown`; un re-despacho con la sesión viva ⇒ `blocked` sin
+  invocar el cliente; `disposition` ⇒ `failed` con `validate-state` VALID; el siguiente `prepare` procede.
+  **Límite declarado:** la vía nativa **no** tiene write-ahead (la sesión la crea la herramienta del runtime) ⇒
+  la salida es **procedimental** (el siguiente coordinador ejecuta `record` con `--parent`/`--since`).
+- **La barrera del rol prevalece sobre la clasificación de la política.** En el mapa `edit` del agente derivado,
+  los `allow` de raíces de implementación se emiten **antes** de las prohibiciones de tests convencionales
+  (semántica findLast: gana el `deny`), y el derivado aplica la **barrera del agente generado restringida por la
+  política, nunca ampliada**: clasificar una ruta como «implementación» **no** autoriza a editarla cuando es un
+  test. La clasificación sigue sirviendo para el alcance y el piso de escritura; **no** es autorización. La
+  precedencia se **prueba**, no se declara: el caso que la resuelve es una raíz de implementación con un test
+  convencional dentro, y su reemplazo de oráculo va declarado en el RED.
+- **Las versiones se comparan por observación, no por lo que dice la configuración.** El control de versión
+  compara **observado contra observado** (cliente contra servidor), nunca contra un número escrito en el
+  archivo de config; una diferencia se **declara en el diagnóstico** y **no bloquea**. `binary_version` queda
+  **opcional e informativo**, y el paso de migración deja de escribirlo. La **compatibilidad del store se
+  verifica por capacidad** (si faltan las columnas que la correlación evalúa ⇒ fail-closed nombrándolas), y no
+  por un número de versión guardado.
+- **Una sonda de store registra tipo y unidad, no sólo nombres de columna.** El precedente medido: una sonda que
+  registró los nombres de las columnas dejó que los fixtures **inventaran** la unidad del instante (segundos
+  `REAL` donde el runtime guarda milisegundos epoch `INTEGER`), y el resultado fue que la llave **nunca** pudo
+  evaluarse contra el store real — con la degradación emitida con las mismas palabras que otro caso, lo que
+  escondió la causa. **Tipo y unidad son parte de la observación**; sin ellos, la comparación no se puede hacer y
+  el fixture inventa la realidad.
+- **Una palanca de permiso anulada por el runtime vacía el mapa de rutas.** Los agentes generados llevaban una
+  palanca `write: ask` que la versión instalada **sí evaluaba**: por la precedencia de la última regla, todo
+  pasaba a *ask* —la vía externa escribía **fuera de su alcance** y la nativa no interactiva rechazaba **todo**.
+  El mapa de rutas sólo es una barrera si **ninguna** regla posterior lo anula; por eso la palanca se retiró del
+  generador **y** los derivados dejan de heredarla de una copia instalada vieja (si no, una instalación anterior
+  seguiría anulando el mapa derivado y la protección dependería del estado del entorno, no del repo).
+- **Referencia operativa:** `skills/cdad-cycle/scripts/cdad_dispatch.py` (entrada, verbos, `record`),
+  `skills/cdad-cycle/scripts/cdad_delegate_opencode.py` (credencial, agente, kind, `--capabilities`/`--observe`),
+  `skills/cdad-cycle/scripts/cdad_delegate.py` (la interfaz que deja de registrar y relaya),
+  `skills/cdad-cycle/scripts/cdad_packet.py` (agente en el request, scope `temporary`, permiso del derivado,
+  disposición `failed`), `skills/cdad-cycle/scripts/cdad_result.py` (fila del scribe y tabla cerrada),
+  `skills/cdad-cycle/references/cli-delegation.md` (configuración, borde de adopción) y `re-entry.md` (protocolo
+  por estado de llegada); contrato normativo en
+  `docs/specs/006-005-native-path-parity/spec.md` (PD-1..PD-26, INV-1..INV-16, D-1..D-17) y recorrido en
+  `docs/specs/006-005-native-path-parity/u6-acceptance.md` y `u6-5-decision.md`.
+- **ADR sugerido:** sí — la decisión de arquitectura de esta feature (una entrada con dos vías, correlación por
+  transporte con umbral de discriminación y tres resultados, y registro write-ahead con compleción única) es
+  candidata a **ADR** (MADR, con campo **Confidence: High**). **La numeración no se asigna aquí** (el
+  `ADR-034` está reservado por el plan del epic para el principio de general antes que específico) y la
+  **aprobación del ADR es del owner**, no del cierre de la feature.
+
 ### Medición de contexto — registro neutral opcional, medidor read-only que nunca aprueba (epic 005, 2026-10-11)
 
 - **El formato de medición es neutral respecto del runtime y opcional para la metodología.** El
@@ -730,4 +803,4 @@ los roles. Matriz completa y razones: `docs/adr/ADR-009-politica-rtk-allowlists.
 
 ---
 
-Última actualización: 2026-10-12 (005-003)
+Última actualización: 2026-10-20 (006-005)

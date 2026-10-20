@@ -8,6 +8,57 @@ _(ninguna)_
 
 ## Done
 
+- **006-005-native-path-parity** (2026-10-20, epic 006) — cuarta feature de
+  `epic-006-opencode-concurrency`: la **paridad del camino nativo**. El orquestador deja de reconstruir el
+  protocolo a mano: una **entrada operativa** (`cdad_dispatch.py`, verbos `dispatch`/`record`/`capabilities`/
+  `migrate`) con **vía externa y vía nativa**, **un solo registro I8 por despacho**, **kind de la parte derivado
+  de rol+subfase en las dos vías**, **temporal del test-writer escribible de verdad** y **camino mecánico a
+  `failed`**. **Contrato:** `spec.md` sha256 `3a824be3…` (PD-1..PD-26, INV-1..INV-16, D-1..D-17) + `plan.md`
+  sha256 `21d6954e…`, aprobados el 2026-10-18 bajo la **HITL delegada del epic** (PD-19, runtime explícito y
+  modelo/credencial fuera de `runtimes.json`: decisiones del owner). **Producto (24 archivos, +2769/−435;
+  `tests/` 32 archivos, +16451/−209; rango `43986e2..HEAD`, 194 commits, 122 archivos +30663/−654; último commit
+  de producto `88491b2`):** U1a config por runtime + barrido de `--exec-config` + paso de migración acotado +
+  plantilla de `runtimes.json` (RED `5dbc854`→GREEN `4052939`); U1b entrada única y **registro único** (la
+  interfaz deja de registrar y relaya) (RED `27b85a4`+2 testfix→`3af53f1`); U1c **el agente viaja en el paquete**
+  (rol+`stack` en `REQUEST.json`, render byte-idéntico) (RED `eab7e2f`+testfix→`e958a0c`); U2 módulo de runtime
+  (credencial inyectada al cliente, kind derivado, `--capabilities`/`--observe`, correlación por la evidencia de
+  su vía, fallo cerrado) (RED `9a260c4`→`eb677a9`); U3 temporal **autorizado y escribible** por el agente
+  derivado, con la precedencia de las barreras probada (RED `0b38f07`→`a7f1bea`); U5 la disposición deja el
+  paquete activo en `failed`, idempotente (RED `43ee3a0`→`0a260ab`); U7 la **fila del scribe** admite
+  `role-report` (materializado dentro de `docs/specs/<feature>/`, **Memory Bank rechazado** nombrando la raíz
+  permitida) (RED `ba95af5`→`a2139c5`); U4 mandato con una sola entrada + borde de adopción + agentes
+  regenerados (RED `3d23ad6`+testfix→`014bf2d`). **Aceptación real (U6, proyecto descartable, layout anidado,
+  coordinador fuera de la raíz):** E1..E5 **cumplen** — la externa con sólo paquete y `--runtime` deja **un**
+  registro (el del módulo) con `model_reported` del store y `materialize` rc=0 con bytes idénticos; el informe
+  del scribe se materializa en la carpeta de la spec y se **rechaza** hacia el Memory Bank; la nativa verifica
+  por (parent, moment) y por (parent, moment, project); el auxiliar se **escribe con la herramienta del rol** en
+  las dos vías y su test pasa; E4 deja camino mecánico a `failed`; **V-11** `stack: odoo` de punta a punta
+  (`cdad-test-writer-odoo` en el paquete y en el store) — con `scope_validation: unknown` en ambas vías
+  (**U6-2**, deuda). **Enmiendas del recorrido:** U6-1 `capabilities` no pasaba la sección al módulo
+  (`ed64092`→`caaab97`); U6-3 la llave proyecto con **ancestro no evaluable** (`f6054ce`→`e7c39a5`); U6-4
+  momento en ms y **selección del candidato** (`8fe0d8c`→`b06bd2f`); **U6-5 registro write-ahead** del intento
+  externo con **compleción única** (decisión con dos reviews; `a0d96b5`+testfix→`471db74`); U6-6 paridad de
+  `model_reported` (`12c29a7`→`ef88817`); **U6-7 retirada de la palanca `write: ask`** del generador y **U6-7b**
+  los derivados no la heredan (`8506674`→`028cd79`, `14c2b3c`+testfix→`58af287`); **U6-8 versión por observación,
+  no por config** (`c6e61aa`→`cca7e5d`). **Review formal: 3 bloqueantes / 2 opcionales** (B-1 la barrera del rol
+  prevalece sobre la clasificación; B-2 normalización común del momento y el modelo; B-3 las instrucciones
+  pedían un FINAL TEXT que la entrada no devuelve) y **dos rondas de review-fix** (RED `056c0f1`→GREEN
+  `3ca6597`, testfix A-1 `e99bc5a`; RED `5306a28`→GREEN `88491b2`) con **re-review** (B-1 y B-2 cerrados, B-3
+  parcial, **B-4** nuevo: la llave expuesta sin declaración vuelve a `unknown`) y **re-review focal 2 sin bloqueantes**
+  (B-3 y B-4 cerrados; O-3 nit). **Gates:** `make validate` **168 PASS / 1 FAIL = F011** (deriva ambiental de la
+  copia instalada, **DT-8** preexistente); **suite completa NO ejecutada** (PD-21: la corre quien cierra) ⇒
+  **gate de cierre pendiente**. **Desplegado en el entorno de instalación** por orden del owner el fix U6-7 +
+  U6-7b + U6-8 (`b69bbac`, Verify PASS; los agentes instalados ya no llevan la clave `write`); **los review-fix
+  son posteriores ⇒ redespliegue pendiente** (espera orden del owner). **Deuda:** **U6-2** (ningún productor de
+  `observed_changes` ⇒ el control mecánico de alcance nunca corre), **O-2** (coordinador fuera de la raíz ⇒ copia
+  global de los agentes ⇒ el camino nativo no escribe; límite declarado), **D-U65-4** (sin write-ahead nativo;
+  salida procedimental), **D-U65-5** (recuperar del store la salida del huérfano como entrega tardía),
+  **O-2 de la review** (dos implementaciones de la derivación del kind + fallback del scribe ya innecesario),
+  **O-3 de la re-review 2** (nit: longitud y no identidad de bytes), y el **límite de transporte del paquete
+  nativo** (la cabecera JSON de `PACKET.md` supera 2000 caracteres y la herramienta de lectura del runtime la
+  trunca). **El epic NO se cierra: 4/6** — quedan **006-006-spec-plan-review** y **006-004-active-decisions-table**,
+  en el orden del owner (**006-005 → 006-006 → 006-004**). **Siguiente:** `006-006-spec-plan-review`.
+
 - **006-003-installer-single-profile-delegation-config** (2026-10-18, epic 006) — tercera feature de
   `epic-006-opencode-concurrency`. El instalador y el generador quedan **sin perfiles y sin mapa de modelos**;
   la delegación externa toma el modelo de un **único archivo de configuración**; el instalador **retira sus

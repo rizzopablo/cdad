@@ -12080,6 +12080,47 @@
         "docs/specs/006-005-native-path-parity/rereview2.md": "4763dbec5b97e64b91f2486ac3d58a2643c2d2e66ddfa52f928b6d4a2bd007b3"
       },
       "note": "re-review 2 (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "scribe",
+      "substage": null,
+      "at": "2026-10-20T05:45:26.241936+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "b921f620986337cc86a8148b30b6c4defc7c5fd486684acaefe26fda08f29247",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "delivery",
+        "stage": "scribe",
+        "substage": null,
+        "packet_id": "006-005-native-path-parity-scribe-memory-001",
+        "receipt_sha256": "005bad7a5fbefc261e5b270bdc1583b48f8dc5d271f2f4b6a706dde74ef4947a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-005-native-path-parity/scribe.md",
+            "e789ffdad5bd77e4b270de9b4e7136df39bd73efae9f511c8aac8b8201da1a2f"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-005-native-path-parity-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-005-native-path-parity-001/006-005-native-path-parity-scribe-memory-001/receipt.json",
+      "receipt_sha256": "005bad7a5fbefc261e5b270bdc1583b48f8dc5d271f2f4b6a706dde74ef4947a",
+      "artifacts": {
+        "docs/specs/006-005-native-path-parity/scribe.md": "e789ffdad5bd77e4b270de9b4e7136df39bd73efae9f511c8aac8b8201da1a2f"
+      },
+      "note": "scribe borrador (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12094,7 +12135,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T05:40:20.888796+00:00",
+  "last_updated": "2026-10-20T05:45:26.241936+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12205,7 +12246,7 @@
     "id": "006-005-native-path-parity-scribe-memory-001",
     "role": "scribe",
     "substage": "memory",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"

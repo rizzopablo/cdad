@@ -4,6 +4,178 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-20 — Feature: 006-005-native-path-parity (epic 006)
+
+**Cerrada el 2026-10-20 (ciclo técnico completo; el gate de suite completa lo corre quien cierra, PD-21).**
+Cuarta unidad de `epic-006-opencode-concurrency`: la **paridad del camino nativo**. El orquestador deja de
+reconstruir el protocolo a mano: hay **una entrada operativa** (`cdad_dispatch.py`) con **dos vías** (externa y
+nativa), **un solo registro de intento por despacho**, **el kind de la parte entregada derivado del rol y la
+subfase** (en las dos vías), **el temporal del test-writer escribible de verdad** y **camino mecánico a `failed`**.
+**Contrato:** `spec.md` sha256 `3a824be3…` (PD-1..PD-26, INV-1..INV-16, D-1..D-17) + `plan.md` sha256
+`21d6954e…`, aprobados el 2026-10-18 bajo la **HITL delegada del epic** (PD-19, runtime explícito, modelo y
+credencial fuera de `runtimes.json`: decisiones del owner). **El epic NO se cierra.**
+
+**Problema medido (seis brechas, contadas una a una).** La delegación nativa ejecutaba el encargo pero **no
+trasladaba la preparación** que el adaptador externo sí hace: nadie registraba el intento (sin eso `receive`
+rechaza), ningún encargo concedía un temporal que el test-writer pudiera **escribir**, y un intento que no
+volvía **no tenía camino mecánico a `failed`** (la disposición lo dejaba en `pass`). A eso se sumaban, ya medidas
+en uso real, la **entrada del orquestador sin configuración declarada** (con un exec-config local y un rodeo de
+entorno) y el **agente por stack** que nunca se resolvía. Sexta brecha: el **orquestador que reconstruyó el
+protocolo a mano**. **Todos los deliveries del reviewer de esta feature llegaron copiados a mano** porque el
+kind fijo (`role-report`) no lo admitía: el rodeo ya medido, escalado a defecto real.
+
+**Producto (U1a–U5, U7 + ocho amendments de la aceptación + dos rondas de review-fix).** Rango `43986e2..HEAD`:
+**194 commits, 122 archivos, +30663/−654**; de ellos **24 archivos de producto, +2769/−435** y `tests/` suma
+**32 archivos, +16451/−209**. **Último commit de producto: `88491b2`.**
+
+- **U1a** — `skills/cdad-cycle/scripts/cdad_dispatch.py` (**nuevo**, 1216 líneas): la capa de configuración;
+  `--runtime` **obligatorio en todos los verbos** (la entrada no resuelve runtime de ningún documento), la
+  sección por runtime en `runtimes.json` (**fuente única**), el **barrido de `--exec-config` por token exacto,
+  previo al parseo del verbo** (error de uso con la correspondencia clave por clave) y el **paso acotado de
+  migración** (`migrate`, escribe la sección **sólo si no existe**; `--dry-run` no escribe); plantilla de
+  `runtimes.json` en `install.sh` (**sólo si no existe**, fuera del manifiesto). RED `5dbc854` → GREEN `4052939`.
+- **U1b** — la entrada única con los cuatro verbos (`dispatch` por defecto, `record`, `capabilities`, `migrate`);
+  `record` = **cuerpo único** de observación + registro + escenificación; la **interfaz común deja de registrar**
+  y **relaya** el `attempt` del módulo (un registro por despacho). RED `27b85a4` → GREEN `3af53f1` (con dos
+  testfix declarados: `8bbbdd4`, `b28be34`).
+- **U1c** — el **agente viaja en el paquete**: `prepare` resuelve rol+`stack` y escribe `agent` en
+  `REQUEST.json`; el conjunto cerrado del request lo admite como propiedad opcional; **el render no cambia**
+  (`PACKET.md` byte-idéntico). RED `eab7e2f` → GREEN `e958a0c` (testfix `12e710a`).
+- **U2** — el módulo de runtime: **credencial inyectada** en el entorno del cliente (sólo `mode: server`, nunca en
+  `argv`/logs/registro), **agente del paquete**, **kind derivado de rol+subfase** (deja de ser la constante
+  fija), `--capabilities` y `--observe` (una lectura `mode=ro`, acotada, sin polling), **correlación por la
+  evidencia de su vía** y **fallo cerrado** ante un módulo sin la superficie nueva. RED `9a260c4` → GREEN `eb677a9`.
+- **U3** — el temporal: clase `temporary` validada contra la política, `git check-ignore` en `prepare` y
+  **permiso de edición del agente derivado** para las raíces declaradas, emitido **antes** de las barreras
+  (con las dos colisiones probadas: ruta privada y directorio de derivados). RED `0b38f07` → GREEN `a7f1bea`.
+- **U5** — **camino mecánico a `failed`**: la disposición con las condiciones aprobadas por el owner, idempotente,
+  con `validate-state` VALID y el siguiente `prepare` desbloqueado. RED `43ee3a0` → GREEN `0a260ab`.
+- **U7** — la **fila del scribe** de la tabla cerrada admite `role-report`: el informe del rol se materializa
+  **dentro de `docs/specs/<feature>/`** y el **Memory Bank queda fuera de su alcance** (se rechaza nombrando la
+  raíz permitida). RED `ba95af5` → GREEN `a2139c5`.
+- **U4** — el **mandato con una sola entrada**: intake por el `entry`/`next` que el CLI ya calcula, secciones
+  `delegation`, **borde de adopción** de la migración y referencia de re-entry por estado de llegada; agentes
+  regenerados con `make agents` (nunca a mano). RED `3d23ad6` → GREEN `014bf2d` (testfix de oráculos `b76aa5d`).
+
+**Aceptación real (U6, PD-22) — proyecto descartable, layout anidado, coordinador fuera de la raíz.** Los cinco
+escenarios y la sonda **cumplen**: **E5** (migrar + `capabilities`; repetir la migración da rc≠0 sin pisar) ·
+**E3** (externa con **sólo paquete y `--runtime`**: un registro I8 —el del módulo— con `model_reported` del
+store, parte con kind derivado, `materialize` rc=0 con bytes idénticos; el informe del scribe como `role-report`
+dentro de la carpeta de la spec y **rechazado** hacia el Memory Bank) · **E2** (el auxiliar **escrito con la
+herramienta del rol** en las dos vías tras U6-7: la externa deniega `docs/` y escribe el temporal y `tests/`; la
+nativa, desde la raíz, escribe el auxiliar y su test, el test pasa y el commit toca sólo `tests/`) · **E1**
+(nativa verificada por (parent, moment) desde la carpeta contenedora y por (parent, moment, project) desde la
+raíz; el registro es el del hijo real) · **E4** (intento que no vuelve) · **V-11** (`stack: odoo` de punta a
+punta: `REQUEST.json.agent` = `cdad-test-writer-odoo`, `session_v2.agent` igual, un registro final, entrega
+recibida). **`scope_validation` queda `unknown` en las dos vías** (U6-2, deuda): el recibo no puede probar la
+escritura porque lo ignorado no aparece en el manifiesto.
+
+**Enmiendas del recorrido (U6-1..U6-8), cada una con su RED/GREEN.** **U6-1**: `capabilities` no pasaba la
+sección al módulo ⇒ el paso «migrar → verificar» no verificaba nada (`ed64092`→`caaab97`). **U6-3**: la llave
+proyecto rechazaba al coordinador iniciado en la carpeta contenedora ⇒ pasa a **tres valores** (dentro ⇒ coincide;
+**ancestro ⇒ no evaluable**; ajeno ⇒ contradicción) (`f6054ce`→`e7c39a5`). **U6-4**: el momento nunca era
+evaluable contra el store real y la selección del hijo era arbitraria ⇒ unidades y **candidatos** explícitos
+(`8fe0d8c`→`b06bd2f`). **U6-5 (decisión con dos reviews)**: el registro externo se escribía **al terminar** ⇒
+una muerte del coordinador dejaba un callejón sin salida (`reconcile` decía que repetir era seguro y la
+disposición se negaba) ⇒ **registro write-ahead** (`a0d96b5`+testfix `569682d`→`471db74`). **U6-6**:
+`model_reported` con forma distinta entre vías ⇒ **paridad** (`12c29a7`→`ef88817`). **U6-7**: los agentes
+generados llevaban la palanca `write: ask`, que la versión instalada **sí evalúa** ⇒ la externa escribía fuera
+de alcance y la nativa no interactiva rechazaba todo ⇒ **palanca retirada del generador** (`8506674`→
+`028cd79`); **U6-7b** además, los derivados **no heredan** la palanca de una copia instalada vieja
+(`14c2b3c`+testfix `e58c0a8`→`58af287`). **U6-8**: el control comparaba la versión **escrita en la config**
+contra el servidor ⇒ **versión por observación** (`c6e61aa`→`cca7e5d`).
+
+**Review (etapa 4) — 3 bloqueantes / 2 opcionales**, y dos rondas de review-fix con sus re-reviews. **B-1**: los
+allows de implementación **reabrían tests convencionales** dentro de esas raíces ⇒ **gana la barrera del rol**
+(`3ca6597`, con la enmienda A-1 declarada en dos tests de la familia 004-002/005-008). **B-2**: `--session`
+evitaba la normalización del momento y convertía contradicciones observables en `unknown` ⇒ **frontera común de
+normalización** (momento y modelo). **B-3**: las instrucciones pedían un FINAL TEXT que la entrada no devuelve ⇒
+**la externa consume el recibo de `delivery_ref`; la nativa escenifica con `record` y luego `receive`**. **Re-review**:
+B-1 cerrado, B-2 cerrado **con un bloqueante nuevo (B-4)**: se había eliminado una llave no declarada y se acreditaba
+identidad donde el contrato exige `unknown` ⇒ la llave expuesta sin declaración vuelve a ser `unknown`
+(`88491b2`). **Re-review focal 2**: **sin bloqueantes nuevos; B-3 y B-4 cerrados**; único opcional (O-3, el focal
+externo compara longitud y no identidad de bytes) queda como nit. Dictamen: *apta para cierre respecto de esa
+re-review focal; quedan los gates propios del cierre*.
+
+**Gates.** `make validate` en el GREEN de cierre: **168 PASS / 1 FAIL = F011** (deriva ambiental de la copia
+instalada, clase **DT-8** preexistente; los validadores del repo pasan 168/169). **Suite completa: no ejecutada**
+—PD-21: la corre **una vez quien cierra**. Es el gate que falta para el cierre formal.
+
+**Despliegue.** Por orden del owner se desplegó en el entorno de instalación el fix **U6-7 + U6-7b + U6-8**
+(`b69bbac`, Verify PASS, scripts instalados iguales al repo; los agentes instalados ya no llevan la clave
+`write`). **Los review-fix (B-1..B-4) son posteriores a ese despliegue** ⇒ la copia instalada **no** los contiene:
+el **redespliegue** queda pendiente y es operación de entorno, que **espera orden del owner**. Los derivados de
+cada proyecto se rehacen desde la copia instalada en su próximo `prepare`.
+
+**Decisiones relevantes.**
+**D-1** una sola entrada con dos vías y **regla de transporte declarada**: mismo runtime que el orquestador ⇒
+herramienta nativa + `record`; otro ⇒ despacho externo. **D-2** la integración se **extiende** al módulo por
+destino que ya existe (no hay un módulo nuevo por runtime). **D-3** la correlación la produce **cada transporte**:
+la externa por el **id de sesión que el módulo elige** (sin padre comparable, sin igualdad `directory == raíz`);
+la nativa por **padre + agente + momento + proyecto por pertenencia**, con **umbral de discriminación** (la
+acreditación positiva exige **al menos una llave discriminante**: padre, momento o proyecto; «agente» sólo no
+acredita, porque dos despachos nativos concurrentes del mismo rol lo comparten) y **tres resultados con
+consecuencia propia**: *verificada*, *no verificable* (`unknown`; entrega sólo con la garantía menor PD-6) y
+*verificada e incorrecta* (**rechazo** que nombra la llave; nunca `unknown`, nunca entrega aceptada). **D-4** el
+`kind` de la parte lo fijan rol y subfase en las dos vías (y la fila del scribe admite `role-report` con el
+Memory Bank fuera de alcance). **D-5** el temporal es una clase de scope **escribible**, y su legitimidad se
+prueba con una **escritura real** con la herramienta del rol, no con `scope_validation`. **D-6** la clave del
+`agent` se completa en `REQUEST.json` y **no** entra al render. **D-7** el write-ahead: **provisional antes de
+lanzar el cliente**, fail-closed, y **completado una sola vez** en toda terminación. **D-8** las versiones se
+comparan **por observación** (cliente contra servidor), nunca contra un número escrito en la config;
+`binary_version` queda **informativo** y `migrate` deja de escribirlo. **D-9** el runtime es **explícito** en
+cada despacho. **D-10** el modelo y la credencial **no viven** en `runtimes.json` (el modelo en
+`delegation.json`, la credencial donde ADR-033 punto 6 la puso). **D-11** el `--exec-config` retirado se
+rechaza por **token exacto, antes del parseo del verbo**, en todos los verbos.
+
+**Deuda detectada (abierta).**
+- **U6-2** (preexistente, transversal): **ningún productor de `observed_changes`** ⇒ el recibo sale siempre con
+  `scope_validation: unknown` y el control mecánico «el rol con escritura no salió de su alcance» **nunca corre**;
+  quedan los mapas de permiso del agente y la revisión del diff.
+- **O-2**: con el coordinador **fuera de la raíz**, el runtime aplica la **copia global** de los agentes, cuyos
+  mapas son relativos a otra carpeta ⇒ el camino nativo no puede escribir. **Límite declarado**, con su
+  disparador (la vía nativa recomendada inicia el coordinador en la raíz; la escritura temporal queda cubierta
+  por la vía externa, que fija `PWD` a la raíz). No invalida U3.
+- **D-U65-4**: **sin write-ahead nativo** (por construcción: la sesión la crea la herramienta del runtime); la
+  salida es **procedimental** (el siguiente coordinador ejecuta `record` con `--parent`/`--since`).
+- **D-U65-5**: recuperar del store la salida del huérfano (que llegó a commitear) como **entrega tardía**.
+- **O-2 de la review** (deuda aceptada): la derivación del `kind` tiene **dos implementaciones** (núcleo y
+  módulo) y el módulo conserva un *fallback* del scribe ya innecesario.
+- **O-3 de la re-review focal 2** (nit): el focal externo compara longitud, no identidad de bytes.
+- **Transporte del paquete en la vía nativa**: la línea JSON de cabecera de `PACKET.md` mide **más de 2000
+  caracteres** (2378 en el recorrido) y la herramienta de lectura del runtime **la trunca**; un orquestador que
+  copie el paquete leyéndolo puede no lograr bytes idénticos. La ruta documentada (`cdad_packet.py render` con su
+  stdout pasado sin cambios) despacha bien. Queda como observación para la guía del orquestador nativo.
+- **Pendientes de cierre:** **suite completa** (PD-21, la corre quien cierra) y **redespliegue** de los
+  review-fix (orden del owner). Heredadas y sin cambio: **DT-8** (F011 por deriva de la copia instalada) y el
+  **flake conocido del margen de la espera bajo carga** (clase DT-9), reproducido verde en aislamiento.
+
+**Lecciones de proceso.**
+(1) **Una sonda que registra sólo nombres inventa las unidades**: V-7 registró nombres de columna y no tipos, los
+fixtures supusieron segundos `REAL` y el momento **nunca fue evaluable contra el store real** — la degradación
+salió con las mismas palabras que otro caso. Una sonda de store registra **tipo y unidad**.
+(2) **La clasificación no es autorización**: un `allow` de raíces de implementación reabre tests convencionales
+dentro de ellas (B-1); la **barrera del rol prevalece** sobre la clasificación de la política.
+(3) **Un registro que sólo existe al final deja un callejón sin salida**: la vía externa lo escribía al
+terminar, y una muerte del coordinador producía un paquete que parecía no haber sido despachado — con
+`reconcile` autorizando repetir. El **write-ahead** con **compleción única** cierra el hueco sin abrir un
+segundo escritor.
+(4) **Las instrucciones son parte del contrato**: el texto generado pedía un FINAL TEXT que la entrada no
+devuelve (B-3); el procedimiento referenciado tenía que distinguir **por estado de llegada** (texto pendiente /
+descriptor ya escenificado / recibo ya durable) y **ambos caminos comprobarse** de punta a punta.
+(5) **«El mismo escenario en las dos vías» no puede ser el mismo paquete**: el recibo durable admite **una sola
+finalización por (ejecución, paquete)**; el recorrido se hace sobre **dos paquetes de la misma ejecución**.
+(6) **Una credencial no viaja por `argv` ni por el entorno del orquestador**: la resuelve y la inyecta el módulo
+en el entorno del proceso cliente; el rodeo de entorno que hacía el despachador deja de ser necesario.
+
+**Estado del epic.** `epic-006-opencode-concurrency` sigue **abierto** (`features-loop`): **006-001, 006-002,
+006-003 y 006-005 `done`, 4/6**. Quedan **006-006-spec-plan-review** (revisión independiente de spec y plan
+antes del RED, enmienda 006) y **006-004-active-decisions-table** (enmienda 003, que también vehiculiza el
+principio de general antes que específico, enmienda 005 ⇒ **ADR-034**), en el **orden que fijó el owner**:
+**006-005 → 006-006 → 006-004**. **Siguiente:** `006-006-spec-plan-review`.
+
+---
+
 ## 2026-10-18 — Feature: 006-003-installer-single-profile-delegation-config (epic 006)
 
 **Cerrada el 2026-10-18 (ciclo técnico completo).** Tercera unidad de `epic-006-opencode-concurrency`. El instalador
