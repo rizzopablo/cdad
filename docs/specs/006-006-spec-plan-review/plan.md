@@ -387,3 +387,5 @@ Derivado de las fichas de §3 (archivos, RED, regresiones y A-1) para que el CLI
   ]
 }
 ```
+
+Status: Approved by orquestador Claude (HITL delegada epic-006; el owner la mantuvo el 2026-10-20) on 2026-10-20, tras plan-review-001..004 (B-1..B-4 cerrados). Errata aceptada en la aprobación: **B-5** de `plan-review-004.md`: en U5/U6 la vigencia se comprueba con el selector real de vigencia, que devuelve solo la entrada vigente (B, y luego C) y excluye las sustituidas; `prepare` solo acepta el contrato aprobado y no se le atribuye distinguir qué entrada histórica presentó el solicitante. Se conservan los rechazos, el no-op, la invariancia del estado y la selección de vigencia.
