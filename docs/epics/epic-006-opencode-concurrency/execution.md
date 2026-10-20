@@ -371,3 +371,7 @@ En otro proyecto activo no se pudo pedir la review de un borrador de spec. El re
 - **B-3:** las instrucciones distinguen la vía externa (consumir el recibo de `delivery_ref`) de la nativa (`record` escenifica y luego `receive`).
 - **O-1:** se aplica al cierre.
 - **O-2:** deuda.
+
+## Push tras 006-005 (2026-10-20, orden del owner)
+
+`main` a `origin` (`41fc8b6..5328712`, fast-forward, 327 commits). Antes se barrió la anonimización sobre los 216 archivos publicados: rutas del host, ids de sesión, IPs y puertos (el único hallazgo fue el puerto por defecto de OpenCode en un fixture) y nombres de otros proyectos (`sanitize.py`: 0 cambios). No se publicaron ramas privadas ni los archivos sin trackear de otro agente.
