@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": "006-006-spec-plan-review",
-  "current_stage": "tdd",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -70,8 +70,13 @@
     },
     {
       "id": "006-006-spec-plan-review",
-      "status": "in-progress",
-      "opened_at": "2026-10-20T10:34:29.489695+00:00"
+      "status": "done",
+      "opened_at": "2026-10-20T10:34:29.489695+00:00",
+      "closed_at": "2026-10-20T16:53:39.107872+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/006-006-spec-plan-review/closure.md",
+        "sha256": "011690248bba2b3fab4ecf707f6c62e7553edbd5dd0aef3afa4a66dd05ab738e"
+      }
     }
   ],
   "epic_history": [
@@ -13196,6 +13201,46 @@
         "docs/specs/006-006-spec-plan-review/scribe.md": "b71f7adf80e11f2164f8bf40f6c2f5ea7d4b4edd02764012da99c8ec4e394525"
       },
       "note": "scribe (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "merge",
+      "substage": null,
+      "at": "2026-10-20T16:53:39.107872+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "ca9c2fa8232a79b8670976c9e3d4911ac016e8aabae2e462b750e6812f731614",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "closure",
+        "stage": "merge",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "orquestador (HITL delegada epic-006, owner presente)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/006-006-spec-plan-review/closure.md",
+          "sha256": "011690248bba2b3fab4ecf707f6c62e7553edbd5dd0aef3afa4a66dd05ab738e"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "cierre 006-006",
+      "approved_by": "orquestador (HITL delegada epic-006, owner presente)",
+      "closure_path": "docs/specs/006-006-spec-plan-review/closure.md",
+      "closure_sha256": "011690248bba2b3fab4ecf707f6c62e7553edbd5dd0aef3afa4a66dd05ab738e"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -13210,7 +13255,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T16:21:40.541474+00:00",
+  "last_updated": "2026-10-20T16:53:39.107872+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -13317,14 +13362,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "006-006-spec-plan-review-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "completed",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298"
-  },
+  "active_packet": null,
   "tdd_substage": "red"
 }
