@@ -346,3 +346,7 @@ Lectura de solo esquema (`PRAGMA table_info(session_v2)`, `mode=ro`) del store d
   - **Alcance en el uso real:** la copia instalada en HOME tiene la misma palanca, así que cada despacho externo actual corre sin barrera de escritura efectiva. La auditoría de los commits de rol de esta sesión no muestra escrituras fuera de alcance: los commits `test:` tocaron solo `tests/`.
   - **Decisión del orquestador (HITL delegada):** se corrige ya en el repo dentro de 006-005 (E2 es su escenario), quitando la palanca del generador para todos los roles, con RED/GREEN y una aceptación real que repite P1/P3 y una sonda de rol de solo lectura.
   - El **despliegue en HOME queda para la orden del owner**; hasta entonces, el orquestador audita el diff de cada rol contra su alcance.
+
+## Despliegue del fix U6-7 (orden del owner, 2026-10-19)
+
+`.cdad/local/deploy-006-005-u6-7.sh` (mismo procedimiento que 006-003: respaldo en `<workspace>/archive/`, `make staging`, `install.sh --force`, `--check`). Verify PASS, 11 agentes. Los agentes instalados de OpenCode ya no llevan la clave `write`. Los derivados de cada proyecto se rehacen desde la copia instalada en su próximo `prepare`. El owner también cambió los modelos en `delegation.json` por la crisis de proveedores, y autorizó abrir una feature para la review de borradores de spec (contrato `draft-spec`).
