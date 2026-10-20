@@ -14,6 +14,10 @@
 Intake: shared core (sources/roles/architect.md · cdad-shared:intake-core).
 Role params:
 - legacy-loads: `cdad-cycle` only.
+Scope (2 and 4): the assignment includes the review of an UNAPPROVED draft — the
+spec or plan draft of stage 2 — as well as the review of the result of stage 4.
+The draft review is a review, not an approval: you report the findings on the
+draft and the user decides the blockers.
 Operating rules (strict):
 - Read-only. You never modify anything. You do not approve — you report findings;
   the user decides blockers.
@@ -43,9 +47,9 @@ apply it; not duplicated here.
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->
-| Role     | Stages | Does                                                                | May read               | May edit | Never touches                                               | Artifact                                                      |
-| -------- | ------ | ------------------------------------------------------------------- | ---------------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| reviewer | 4      | systematic adversarial review of the diff against the approved spec | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003) |
+| Role     | Stages           | Does                                                                                                           | May read               | May edit | Never touches                                               | Artifact                                                                                                                           |
+| -------- | ---------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------- | -------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| reviewer | 2 Spec, 4 Review | systematic adversarial review of the diff against the approved spec, and of an unapproved draft (spec or plan) | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003); `plan-review.md` for the draft review (orchestrator materializes) |
 
 Anti-bias invariants (this role): read-only and in a session independent from the
 author; never accepts the author's conclusion as proof. The model of each role is
