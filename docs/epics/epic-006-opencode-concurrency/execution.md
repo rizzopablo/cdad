@@ -395,3 +395,21 @@ En otro proyecto activo no se pudo pedir la review de un borrador de spec. El re
 - Review de etapa 4: apta para cierre, 0 B / 2 O. O-2 se aplicó; O-1 pasa a deuda.
 - Suite de cierre: 1404 passed, 5 skipped.
 - Siguiente: 006-004-active-decisions-table. El push queda a la espera de la orden del owner.
+
+## 006-004 discovery y decisiones (2026-10-20, orquestador bajo HITL delegada)
+
+El owner abrió la feature («Adelante con la siguiente feature»). Discovery: `docs/specs/006-004-active-decisions-table/discovery.md`. Decisiones del orquestador; Q1–Q6 siguen la recomendación del architect:
+
+- **Diseño O1:** campo opcional del request con las filas vigentes, más una sección aditiva del render que solo aparece con filas (sin filas, el render es byte-idéntico). El CLI valida la forma de cada fila y que nombre al rol del paquete. Se descartan:
+  - O2 (el CLI parsea la tabla del proyecto): acopla el producto a un formato de documento;
+  - O3 (texto libre): no es verificable;
+  - O4 (`--input`): no llega al test-writer.
+  La completitud (que el orquestador declare todas las filas del rol) queda como procedimiento, deuda D-1.
+- **Q1:** filas para las decisiones en vigor (Accepted/Verified) y para las reemplazadas, marcadas obsoletas con su reemplazo. Los Proposed no son filas.
+- **Q2:** los roles los declara quien aprueba el ADR, al aprobarlo. El reviewer verifica que los roles existan; no juzga si la asignación es correcta.
+- **Q3:** la feature siembra la tabla de este repo con ADR-034 primero y las decisiones en vigor que puedan justificarse con evidencia, y declara cuáles quedan fuera y por qué.
+- **Q4:** «sin cambios en `status`» abarca el campo Status de los ADR y la máquina de estados. No se normaliza el vocabulario.
+- **Q5:** la plantilla usa `## Current decisions` y este repo `## Decisiones vigentes`, como primer H2. El título no es dependencia del producto.
+- **Q6:** el orquestador mantiene la tabla cuando se aprueba un ADR. No cambia el exit gate de stage 5.
+- **Tope de filas por paquete:** declarado y fail-closed (D-6), con el valor que proponga la spec.
+- **ADR-034:** la fuente única es una referencia del skill. La obligación de cada rol va en la fuente del rol y en su bloque estático, con un puntero (D-2). La aprobación del ADR-034 la hace el orquestador bajo la HITL delegada; el owner puede vetarla.
