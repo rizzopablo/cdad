@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-006-opencode-concurrency",
   "epic_stage": "features-loop",
-  "active_feature": "006-005-native-path-parity",
-  "current_stage": "tdd",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -56,8 +56,13 @@
     },
     {
       "id": "006-005-native-path-parity",
-      "status": "in-progress",
-      "opened_at": "2026-10-18T23:51:12.371423+00:00"
+      "status": "done",
+      "opened_at": "2026-10-18T23:51:12.371423+00:00",
+      "closed_at": "2026-10-20T06:15:43.385206+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/006-005-native-path-parity/closure.md",
+        "sha256": "fd12f5dfa4e2d4630e291de069922fb0da46d89e08a7f945f86fed1c96bf7407"
+      }
     },
     {
       "id": "006-004-active-decisions-table",
@@ -12121,6 +12126,46 @@
         "docs/specs/006-005-native-path-parity/scribe.md": "e789ffdad5bd77e4b270de9b4e7136df39bd73efae9f511c8aac8b8201da1a2f"
       },
       "note": "scribe borrador (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-005-native-path-parity",
+      "stage": "merge",
+      "substage": null,
+      "at": "2026-10-20T06:15:43.385206+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "a5659ce9da8d95434bb7dcd23a0c79cb21aba4c49055ddea715a57186abdee6d",
+      "transition_key_payload": {
+        "execution_id": "exec-006-005-native-path-parity-001",
+        "feature_id": "006-005-native-path-parity",
+        "transition": "closure",
+        "stage": "merge",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "orquestador (HITL delegada epic-006, owner presente)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/006-005-native-path-parity/closure.md",
+          "sha256": "fd12f5dfa4e2d4630e291de069922fb0da46d89e08a7f945f86fed1c96bf7407"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "orquestador (HITL delegada epic-006, owner presente)",
+      "closure_path": "docs/specs/006-005-native-path-parity/closure.md",
+      "closure_sha256": "fd12f5dfa4e2d4630e291de069922fb0da46d89e08a7f945f86fed1c96bf7407"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12135,7 +12180,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T05:45:26.241936+00:00",
+  "last_updated": "2026-10-20T06:15:43.385206+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12242,14 +12287,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "006-005-native-path-parity-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "completed",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
-  },
+  "active_packet": null,
   "tdd_substage": "red"
 }
