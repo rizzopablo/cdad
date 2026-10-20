@@ -742,11 +742,10 @@ def _native_candidate(conn: sqlite3.Connection, parent_id: str,
             f"agent {agent!r} after the declared instant: more than one "
             "candidate is not unique, so no session is accredited (INV-2)")
     if len(candidates) == 1:
-        row, moment = candidates[0]
-        document = dict(row)
-        if moment is not None:
-            document[STORE_MOMENT_COLUMN] = moment.isoformat()
-        return document, None
+        # B-2 (006-005 review-fix): the row is handed RAW; the instant is
+        # normalized at the single boundary of the observation
+        # (`_normalized_observation`), like the row selected by `--session`.
+        return dict(candidates[0][0]), None
     if uninterpretable:
         return None, (
             f"the store's {STORE_MOMENT_COLUMN} value of {uninterpretable} "
@@ -2133,6 +2132,34 @@ def _capabilities_document(config: dict[str, Any],
     }
 
 
+def _normalized_observation(row: dict[str, Any]) -> dict[str, Any]:
+    """The ONE normalization boundary of the observed row (B-2, 006-005).
+
+    The store's `time_created` is an epoch-MILLISECONDS integer and its `model`
+    is the JSON document the runtime wrote; the entry understands an ISO
+    instant and the `<provider>/<model>` form. Both are normalized HERE, so
+    the row the entry consumes is the same document whichever way it was
+    selected — by `--session` or by `--parent`.
+
+    B-2: normalizing only the `--parent` selection made the SAME store read
+    two different verdicts: the row selected by id kept the raw integer (the
+    moment key stayed `unknown`, so the session was never accredited and a
+    contradicting moment degraded to `unknown` instead of the rejection
+    INV-2 demands). U6-6/D-ADP-2: the model is rendered with the external
+    path's single normalization (`_model_reported_from_row`), never a
+    fabricated value.
+    """
+    document = dict(row)
+    if STORE_MOMENT_COLUMN in document:
+        moment = _store_instant(document[STORE_MOMENT_COLUMN])
+        if moment is not None:
+            document[STORE_MOMENT_COLUMN] = moment.isoformat()
+    if STORE_MODEL_COLUMN in document:
+        document[STORE_MODEL_COLUMN] = _model_reported_from_row(
+            document[STORE_MODEL_COLUMN])
+    return document
+
+
 def _observe_document(store_path: Path, session_id: str | None,
                       parent_id: str | None, agent: str | None = None,
                       since: str | None = None
@@ -2203,14 +2230,7 @@ def _observe_document(store_path: Path, session_id: str | None,
         conn.close()
     if row is None:
         return None, detail
-    document = dict(row)
-    # U6-6/D-ADP-2: the row the entry consumes carries the model in the form the
-    # external path already pins (`providerID/id`, plain text preserved, never a
-    # fabricated value) — the SAME single implementation, applied where the
-    # module renders its observation.
-    if STORE_MODEL_COLUMN in document:
-        document[STORE_MODEL_COLUMN] = _model_reported_from_row(
-            document[STORE_MODEL_COLUMN])
+    document = _normalized_observation(row)
     document[STORE_READS_KEY] = 1
     return document, detail
 

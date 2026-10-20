@@ -3018,6 +3018,10 @@ def _temporary_patterns(temporary_roots: list[str]) -> list[str]:
 # scripts/cdad-generate.py `_IMPL_TEST_GLOBS`). The derived map keeps it on top
 # of the policy's declared test roots: under a policy whose test roots do not
 # cover, say, `addons/m/tests/`, "never edit tests" still holds (006-005 U6-7).
+# B-1 (006-005 review-fix): the barrier is emitted AFTER the implementation
+# allows, so it wins over the policy's classification of a test that lives
+# inside an implementation root (the derived is never more permissive than the
+# generated agent it derives from).
 _IMPLEMENTER_TEST_GLOBS = [
     "tests/**", "**/tests/**", "**/*_test.go",
     "**/*.test.js", "**/*.test.ts", "**/*.test.mjs", "**/*.test.cjs",
@@ -3032,8 +3036,9 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
 
     test-writer: deny implementation reads (co-located tests allowed), edits
     only tests. implementer: edits everything except tests — the policy's
-    declared tests plus the role's own test conventions (but never
-    over-restricting a path the policy classifies as implementation). reader:
+    declared tests plus the role's own test conventions, which win over the
+    implementation allows (B-1: a test inside an implementation root stays
+    denied to the implementer, as the generated agent denies it). reader:
     the existing read-only map is kept (edit deny). orchestrator: allow-all
     except the policy. Every role excludes docs/cdad-policy.json AND the
     published derivatives under .opencode/agents/ on edit (invariant 3: the
@@ -3086,19 +3091,22 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + private)
         return {"read": read, "edit": edit}
     if role == "implementer":
-        # PD-7/B3 exactness: every path under an implementation root is
-        # implementation to the policy, so the role barrier below must not
-        # over-restrict it. The allow is emitted AFTER the conventional denies;
-        # the policy's own test/colocated denies come after it and keep
-        # precedence, so a declared test inside an implementation root still
-        # resolves deny.
+        # B-1 (006-005 review-fix): the ROLE BARRIER wins over the policy's
+        # classification. The implementation allows are emitted FIRST, so the
+        # role's own test conventions (`_IMPLEMENTER_TEST_GLOBS`) come AFTER
+        # them and win by findLast: a test that lives inside an implementation
+        # root (`scripts/tests/test_example.py`, `skills/demo/test_example.py`,
+        # `sources/ui/widget.spec.ts`) resolves `deny` for the implementer,
+        # exactly as the GENERATED agent denies it. The policy only RESTRICTS:
+        # its own test/colocated denies, the policy file, the derivatives and
+        # the private paths come last and keep their precedence.
         implementation_allows = [(pattern, "allow")
                                  for pattern in _implementation_patterns(path_policy)]
         denied = (_test_patterns(path_policy)
                   + _colocated_test_patterns(path_policy))
         edit = ([("*", "allow")]
-                + [(pattern, "deny") for pattern in _IMPLEMENTER_TEST_GLOBS]
                 + implementation_allows
+                + [(pattern, "deny") for pattern in _IMPLEMENTER_TEST_GLOBS]
                 + [(pattern, "deny") for pattern in denied]
                 + [(policy_pattern, "deny"), (derived_pattern, "deny")]
                 + private)

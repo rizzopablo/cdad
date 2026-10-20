@@ -687,13 +687,21 @@ def _key_states(row: dict[str, Any], request: dict[str, Any], *,
     A key whose column the row does not carry is simply NOT part of the evidence
     this version offers (it is not evaluated). A key the row DOES expose but
     whose declared input is missing is `unknown` — never compared against a
-    supposed value (§2.3).
+    supposed value (§2.3). The parent key is the declared parent ITSELF
+    (§2.3), so a walk that declares none has no parent hypothesis to test and
+    the key is not part of that walk's evidence (B-2).
     """
     states: dict[str, str] = {}
-    if CORRELATION_COLUMNS["parent"] in row:
-        states["parent"] = (_compare_key(row.get(CORRELATION_COLUMNS["parent"]),
+    # B-2 (006-005 review-fix): the parent key IS the declared parent (§2.3:
+    # "padre ... declarada con `--parent`"). A walk that declares no parent has
+    # no parent hypothesis to test, so the key is not part of this walk's
+    # evidence — the same treatment a column the observed store version does
+    # not expose receives. The other keys still guard the walk (the agent, the
+    # moment and the project by membership), and a DECLARED parent still
+    # contradicts (a rejection, never `unknown`, INV-2).
+    if parent and CORRELATION_COLUMNS["parent"] in row:
+        states["parent"] = _compare_key(row.get(CORRELATION_COLUMNS["parent"]),
                                          parent)
-                            if parent else "unknown")
     if CORRELATION_COLUMNS["agent"] in row:
         agent = _as_text(request.get("agent"))
         states["agent"] = (_compare_key(row.get(CORRELATION_COLUMNS["agent"]), agent)
@@ -992,9 +1000,22 @@ def record(runtime: str, project_root: str | None, packet: str | None,
                    "of PD-6: the store is read only when there is a motive (one "
                    "bounded read per invocation)")
         detail = None
-    correlation = correlate(row, request, packet=packet, parent=parent,
-                            since=since, root=root, problem=problem,
-                            detail=detail)
+    try:
+        correlation = correlate(row, request, packet=packet, parent=parent,
+                                since=since, root=root, problem=problem,
+                                detail=detail)
+    except DispatchError as exc:
+        # §2.3, result 3 (B-2): a contradiction is a REJECTION — the entry
+        # refuses the delivery and DECLARES it in the closed envelope
+        # (`blocked`), the same way the interface reports a blocked
+        # destination: never `unknown`, never an accepted delivery, and
+        # nothing staged. The attempt is NOT registered: an identity the
+        # store denies is not an observation (INV-1/INV-2).
+        envelope = _envelope(attempt=attempt_id, session=None,
+                             termination="blocked", delivery_ref=None,
+                             diagnosis=str(exc))
+        _report_envelope(envelope, as_json=as_json)
+        return 0
 
     _register_attempt(root, packet, request, attempt_id,
                       _observation_payload(runtime=runtime,

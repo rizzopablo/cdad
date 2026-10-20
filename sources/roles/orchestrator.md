@@ -36,11 +36,16 @@ row:
 **Transport rule (row 3).** With the SAME runtime as the orchestrator, transport
 with that runtime's NATIVE dispatch tool (`subagent_type: cdad-<role>`) and
 register the attempt with the entry's `record` verb — the native tool does not
-register it. With ANOTHER runtime, transport with the external entry
+register it. The `record` verb stages the native delivery under `.cdad/inbox` +
+`RESULT.json`; the orchestrator then runs `receive` on it. With ANOTHER runtime,
+transport with the external entry
 `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X` (its own
 contract — the entry's spec — owns that surface and the packet it dispatches,
-never re-typed here), then stage the returned FINAL TEXT through `receive`.
-One dispatch, one attempt, one route: never reconstruct the protocol by hand.
+never re-typed here). That entry returns an ENVELOPE, not a text: its
+`delivery_ref` names the DURABLE RECEIPT the runtime module already received
+and persisted, so the orchestrator validates that receipt and continues the
+protocol — it never runs `receive` again for that route. One dispatch, one
+attempt, one route: never reconstruct the protocol by hand.
 
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:

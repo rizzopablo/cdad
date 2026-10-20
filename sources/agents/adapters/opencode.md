@@ -84,10 +84,11 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   with its fields (`runtime`, `model_configured`, `model_reported`, `session`;
   `null` or `unknown` when unobserved). The legitimate exit is the new-chat
   handoff where the user picks the model.
-- **Receipt.** The native dispatch returns FINAL TEXT in this session, and
-  every route stages that FINAL TEXT the same way. This bullet does not
-  restate the steps: the re-entry wiring composed in this same body (from
-  `sources/roles/orchestrator.md`) already names the command that stages
+- **Receipt.** The native dispatch returns FINAL TEXT in this session, and the
+  native route stages that FINAL TEXT the same way; the external route does not
+  return a FINAL TEXT — its receipt comes from the runtime module. This bullet
+  does not restate the steps: the re-entry wiring composed in this same body
+  (from `sources/roles/orchestrator.md`) already names the command that stages
   those exact bytes under `.cdad/inbox` + `RESULT.json` and the single state
   transition, and the installed `<skill-dir>/references/re-entry.md` owns the
   Orchestrator materialization protocol; the receipt stays
@@ -96,9 +97,11 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   NOT this runtime, dispatch through the entry
   `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X`: it reads
   the execution configuration of that runtime from its section of `runtimes.json`
-  and returns the FINAL TEXT, which is staged through the receipt route above.
-  The retired `--exec-config` is NOT an option of the entry (a usage error that
-  names `runtimes.json`).
+  and returns an ENVELOPE whose `delivery_ref` names the DURABLE RECEIPT the
+  runtime module already received and persisted — the orchestrator validates
+  that receipt and continues the protocol; it never receives that delivery a
+  second time. The retired `--exec-config` is NOT an option of the entry (a
+  usage error that names `runtimes.json`).
 - **Agent travels in the packet (D-ADP-4).** `prepare` resolves the agent and
   writes it as the `agent` field of `REQUEST.json`; the dispatch carries the
   packet byte-identical and the invocation resolves that agent, failing closed
