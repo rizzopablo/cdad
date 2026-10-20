@@ -12703,13 +12703,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-006-spec-plan-review-reviewer-plan-review-004",
-    "role": "reviewer",
-    "substage": "plan-review",
-    "status": "completed",
+    "id": "006-006-spec-plan-review-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "draft-plan",
-    "contract_sha256": "0c8a8d80a35553cea14f2d15eb1f9b05685e6bace3902cd56b64770b88da48da"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298"
   },
   "tdd_substage": "red"
 }
