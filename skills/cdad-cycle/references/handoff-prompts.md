@@ -12,6 +12,11 @@ as either the Task prompt or the copyable new-chat body. A role receiving that
 valid packet follows its static instructions and declared inputs directly; it
 does not reload this skill. `render` re-emits the same bytes from the written files.
 
+When the packet must carry the decisions that govern the role, repeat the
+optional flag `--current-decision '<row JSON>'` — once per row, in the declared
+order — in the same `prepare` invocation; the package then carries the rows it
+declares. The flag is optional: without it the package is byte-identical.
+
 The execution context is written once per feature (keep `.cdad/` out of git):
 
 ```json
@@ -561,7 +566,10 @@ python3 skills/cdad-cycle/scripts/cdad_packet.py prepare \
 The **three contract flags are required** (`--contract-kind draft-plan`,
 `--contract-path`, `--plan-version`): without them `prepare` falls back to the
 role default (`approved-feature-spec`) and the pairing guard rejects
-`plan-review` over an approved contract (rc=2). Pass the rendered stdout
+`plan-review` over an approved contract (rc=2). Add `--current-decision
+'<row JSON>'` (repeatable, once per row, in the declared order) when the
+packet must carry the decisions that govern the reviewer; the flag is
+optional and the package carries the rows it declares. Pass the rendered stdout
 unchanged as the Task prompt. The packet is the execution contract: review the
 draft's intention, constraints and object in a session independent from the
 author, without marking it approved or authorizing implementation.

@@ -1271,6 +1271,10 @@ def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
     lines = ["---cdad-packet-json", canonical, "---end-cdad-packet-json", "# CDAD task",
              "", "<!-- cdad-instructions:start -->", static, "<!-- cdad-instructions:end -->",
              "", "## Objective", request["objective"], "", "## Contract", *contract_lines]
+    # 006-004 U2 (R-9/R-10): the decision rows that govern the role travel in
+    # the package, in their own ADDITIVE section between `## Contract` and the
+    # plan-task block; without rows the render is byte-identical.
+    lines.extend(_current_decisions_sections(request))
     # PD-10/INV-4: with a declared plan task the packet emits its two declared
     # sections; without it the render is byte-identical (the additive surface).
     lines.extend(_plan_task_sections(request, project_root))
@@ -4018,6 +4022,35 @@ def _plan_task_sections(request: dict[str, Any], project_root: Path | None) -> l
     ])
     if ids:
         lines.append("- Applicable references: " + ", ".join(ids))
+    return lines
+
+
+# ---------------------------------------------------------------- 006-004 U2
+# PD-5/R-9/R-10: the ADDITIVE `## Current decisions` section. The rows are the
+# ones the request declares — validated at the boundary by
+# `_validate_current_decisions`; this function only COMPOSES them, one entry per
+# row, in the declared order, each carrying the five declared fields.
+
+
+def _current_decisions_sections(request: dict[str, Any]) -> list[str]:
+    """The `## Current decisions` section of a packet, or [].
+
+    `[]` when the request declares no rows (absent or empty): the render is
+    byte-identical to the one without the feature (R-9, INV-2). With rows: one
+    entry per row, in the declared order, each carrying `file`, `state`,
+    `summary`, `roles` and `reference` (R-10).
+    """
+    rows = request.get("current_decisions")
+    if not rows:
+        return []
+    lines = ["", "## Current decisions"]
+    for row in rows:
+        lines.append("")
+        lines.append(f"- Decision: {row['file']}")
+        lines.append(f"  - state: {row['state']}")
+        lines.append(f"  - summary: {row['summary']}")
+        lines.append(f"  - roles: {', '.join(row['roles'])}")
+        lines.append(f"  - reference: {row['reference']}")
     return lines
 
 
