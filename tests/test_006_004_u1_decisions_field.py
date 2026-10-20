@@ -478,7 +478,14 @@ class TestPd1RowShape(DecisionCase):
             with self.subTest(caso=label):
                 project = self.project()
                 existing = project.write_decision("ADR-001-decision-fixture")
-                row = good_row(existing, **override)
+                # `file` es el PRIMER PARÁMETRO POSICIONAL de `good_row`: pasarlo
+                # también por keyword colisiona («got multiple values for
+                # argument 'file'») y el subcaso muere en el helper, antes de
+                # invocar la CLI. Por eso la variante de `file` se separa del
+                # resto de la variante y se entrega como argumento posicional.
+                kwargs = dict(override)
+                row_file = kwargs.pop("file", existing)
+                row = good_row(row_file, **kwargs)
                 self.assert_rejected_without_publication(
                     project, decision_flags([row]), tokens, f"PD-1 ({label})"
                 )
