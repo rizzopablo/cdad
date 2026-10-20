@@ -13487,13 +13487,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-004-active-decisions-table-reviewer-plan-review-001",
-    "role": "reviewer",
-    "substage": "plan-review",
-    "status": "completed",
+    "id": "006-004-active-decisions-table-architect-draft-002",
+    "role": "architect",
+    "substage": "draft",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "draft-plan",
-    "contract_sha256": "2a16f174c69becc94e13a3db1e364b0d82c9424b0e513f4d421fc25dbc175903"
+    "contract_kind": "approved-epic-plan",
+    "contract_sha256": "d6da11dbed6571039c05b237eb257388c616d290028d6c9c5ce1cf0a3baf9809"
   },
   "tdd_substage": null
 }
