@@ -12581,6 +12581,47 @@
       "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298",
       "plan_path": "docs/specs/006-006-spec-plan-review/plan.md",
       "plan_sha256": "1abe9e7bf242b223ea312770a064f1a283e1fc46526ae3202299bbdcad28ea58"
+    },
+    {
+      "feature": "006-006-spec-plan-review",
+      "stage": "u1-red",
+      "substage": null,
+      "at": "2026-10-20T11:52:30.333838+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "ed2ac1f27af3182cb9e8bb912a2b6938e1ab0b9c95de167b9f47217dea56ba94",
+      "transition_key_payload": {
+        "execution_id": "exec-006-006-spec-plan-review-001",
+        "feature_id": "006-006-spec-plan-review",
+        "transition": "delivery",
+        "stage": "u1-red",
+        "substage": null,
+        "packet_id": "006-006-spec-plan-review-test-writer-red-001",
+        "receipt_sha256": "61b1fb88219ee32be809f21bd85440cf19f0847f14212e7925e168d61988ae29",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-006-spec-plan-review/u1-red.md",
+            "03272bce3cf42c80b21817a733ff7517750987a4e73a5ad6cf2e6b93578f4266"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-006-spec-plan-review-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-006-spec-plan-review-001/006-006-spec-plan-review-test-writer-red-001/receipt.json",
+      "receipt_sha256": "61b1fb88219ee32be809f21bd85440cf19f0847f14212e7925e168d61988ae29",
+      "artifacts": {
+        "docs/specs/006-006-spec-plan-review/u1-red.md": "03272bce3cf42c80b21817a733ff7517750987a4e73a5ad6cf2e6b93578f4266"
+      },
+      "note": "U1 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -12595,7 +12636,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T11:35:36.679152+00:00",
+  "last_updated": "2026-10-20T11:52:30.333838+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -12706,7 +12747,7 @@
     "id": "006-006-spec-plan-review-test-writer-red-001",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "4d029a1178d4dbec6f589b69426402fb46ea7a49f324596837eba82bcd0ad298"
