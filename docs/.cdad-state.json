@@ -13786,6 +13786,47 @@
         "docs/specs/006-004-active-decisions-table/u1-testfix.md": "3887b0797bb5283ce4e44e493892aecd30a19f0395b4570be6de205f593d7106"
       },
       "note": "U1 testfix (copia byte-identical por D-ADP-3)"
+    },
+    {
+      "feature": "006-004-active-decisions-table",
+      "stage": "u2-red",
+      "substage": null,
+      "at": "2026-10-20T20:31:01.187895+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "7fd1474801a5b6db983d0e3651be657069e1da919d5da98766f50042e8df0bc6",
+      "transition_key_payload": {
+        "execution_id": "exec-006-004-active-decisions-table-001",
+        "feature_id": "006-004-active-decisions-table",
+        "transition": "delivery",
+        "stage": "u2-red",
+        "substage": null,
+        "packet_id": "006-004-active-decisions-table-test-writer-red-003",
+        "receipt_sha256": "ff5968c689786a4a7e09a76baca6775b00971d2fcb12ad24d4b015b076ac0332",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-004-active-decisions-table/u2-red.md",
+            "9e3896ba67c0f6acdacdcbc24452d6cab74731aa083a4e86dc7748cee6baa210"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-004-active-decisions-table-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-006-004-active-decisions-table-001/006-004-active-decisions-table-test-writer-red-003/receipt.json",
+      "receipt_sha256": "ff5968c689786a4a7e09a76baca6775b00971d2fcb12ad24d4b015b076ac0332",
+      "artifacts": {
+        "docs/specs/006-004-active-decisions-table/u2-red.md": "9e3896ba67c0f6acdacdcbc24452d6cab74731aa083a4e86dc7748cee6baa210"
+      },
+      "note": "U2 RED (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -13800,7 +13841,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-20T20:14:38.258016+00:00",
+  "last_updated": "2026-10-20T20:31:01.187895+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -13911,7 +13952,7 @@
     "id": "006-004-active-decisions-table-test-writer-red-003",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3"
