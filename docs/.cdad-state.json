@@ -14318,10 +14318,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "006-004-active-decisions-table-test-writer-red-007",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "completed",
+    "id": "006-004-active-decisions-table-implementer-green-006",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3"
