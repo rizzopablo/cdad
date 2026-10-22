@@ -8,6 +8,7 @@ _(ninguna)_
 
 ## Done
 
+- **epic-006-opencode-concurrency** (2026-10-22) — epic cerrado: 6/6 features e integración hecha; AC-7 pendiente del owner (`docs/epics/epic-006-opencode-concurrency/closure.md`).
 - **006-004-active-decisions-table** (2026-10-22, epic 006) — sexta feature de
   `epic-006-opencode-concurrency`: **la tabla de decisiones vigentes del proyecto** y, con ella, la
   **distribución de la decisión que gobierna el trabajo siguiente**. Una decisión aprobada viaja

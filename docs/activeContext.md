@@ -4,6 +4,10 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-22 — Epic: epic-006-opencode-concurrency cerrado (AC-7 pendiente del owner)
+
+Las seis features están cerradas (006-001..006-006) y la integración entre features está hecha con el producto desplegado (`adb7c31`, sin push): un único encargo de revisión de un borrador (006-006) que lleva una decisión vigente (006-004) y se despacha por el adaptador instalado en modo server (006-001/003/005). Detalle en `docs/epics/epic-006-opencode-concurrency/integration.md` y `closure.md`. **AC-7** (reanudar una unidad del otro proyecto activo con la versión desplegada) queda pendiente del owner. La deuda que se lleva está en el `closure.md` del epic.
+
 ## 2026-10-22 — Feature: 006-004-active-decisions-table (epic 006)
 
 **Cerrada el 2026-10-22 (ciclo técnico completo; la suite de cierre la corre quien cierra, política
