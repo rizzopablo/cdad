@@ -14237,6 +14237,47 @@
         "docs/specs/006-004-active-decisions-table/b1-green.md": "064458d55072903dd1932928e1ce784266a47306c8f01721fa286e81d6b422f3"
       },
       "note": "B-1 GREEN (copia sanitized por D-ADP-3)"
+    },
+    {
+      "feature": "006-004-active-decisions-table",
+      "stage": "memory",
+      "substage": null,
+      "at": "2026-10-22T06:54:30.954718+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "e314cdfd4c0cee222020c1fc3bae16d6a6230b89f146b3e315ac723b041b756b",
+      "transition_key_payload": {
+        "execution_id": "exec-006-004-active-decisions-table-001",
+        "feature_id": "006-004-active-decisions-table",
+        "transition": "delivery",
+        "stage": "memory",
+        "substage": null,
+        "packet_id": "006-004-active-decisions-table-scribe-memory-001",
+        "receipt_sha256": "bdfeb64c48bc48742d8a7ebdd11839a951914796383f04afaefd1c301e4d813c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/006-004-active-decisions-table/scribe.md",
+            "e5d8a7716d3414913ef07a767dd026d8ee741cbade9cdc735b74cd689cb985ef"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "006-004-active-decisions-table-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-006-004-active-decisions-table-001/006-004-active-decisions-table-scribe-memory-001/receipt.json",
+      "receipt_sha256": "bdfeb64c48bc48742d8a7ebdd11839a951914796383f04afaefd1c301e4d813c",
+      "artifacts": {
+        "docs/specs/006-004-active-decisions-table/scribe.md": "e5d8a7716d3414913ef07a767dd026d8ee741cbade9cdc735b74cd689cb985ef"
+      },
+      "note": "scribe cierre (copia byte-identical por D-ADP-3)"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14251,7 +14292,7 @@
     "status": "active",
     "epic_id": "epic-006-opencode-concurrency"
   },
-  "last_updated": "2026-10-22T06:35:07.768126+00:00",
+  "last_updated": "2026-10-22T06:54:30.954718+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -14362,7 +14403,7 @@
     "id": "006-004-active-decisions-table-scribe-memory-001",
     "role": "scribe",
     "substage": "memory",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "ee88d4263e880553292aeffd1a07b877c20c6c4f1cfb63866a0f5bf4278e43e3"
