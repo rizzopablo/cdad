@@ -8,11 +8,15 @@ The decisions that govern this project, one row per decision. This section is th
 index of the project's ADRs: it says which ones are in force, and it is the only
 place where that is written down.
 
+The table starts **empty**: a project with no decisions yet has no rows. A row is
+added when a decision is approved; the row of a replaced decision is kept and
+marked obsolete.
+
 | File | State | Summary | Roles | Reference |
 |---|---|---|---|---|
-| `docs/adr/ADR-NNN-<slug>.md` | `vigente` | one line: what the decision decides | `architect`, `reviewer` | `skills/cdad-cycle/references/<file>.md` |
 
-- **File** — the path of the decision's file, relative to the project root.
+- **File** — the path of the decision's file, relative to the project root (for
+  example `docs/adr/ADR-NNN-<slug>.md`).
 - **State** — `vigente` (in force) or `obsoleto` (replaced; the row is kept, with its
   replacement, so the history stays in the table).
 - **Summary** — one line: what the decision decides.
