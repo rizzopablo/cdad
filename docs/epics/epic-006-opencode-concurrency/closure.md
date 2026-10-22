@@ -27,6 +27,7 @@ Integración entre features: `integration.md`.
 - **006-004:** O-1..O-3, W-U6-1 (fidelidad del scribe), W-U6-2 (re-despacho de un paquete ya entregado, a reproducir) y W-U6-3 (el adaptador solo entrega `role-report` hacia el Memory Bank).
 - **Heredada:** `scope_validation: unknown` (falta un productor de `observed_changes`); D-U65-4/5; DT-8/DT-9; las flakes de la suite (`test_pd13_no_management_invocations_in_any_mode`, entre otras).
 - **F011:** deriva ambiental de la copia instalada.
+- **Post-cierre (2026-10-22):** (a) el cuerpo instalado de `cdad-orchestrator` (OpenCode y Claude) dice «consultar la vista `status`» y nombra como CLI instalado sólo `cdad_continuity.py`, que no tiene `status`; la vista vive en `cdad_packet.py status` (sí nombrado en `SKILL.md:252` y `orientation.md` §1). Un agente que no carga el skill antes queda mal orientado. (b) W-2 tiene consumidor real: el envoltorio local de despacho registra el `rc` del adaptador como señal de término. (c) El estado conserva `execution` 006-004, `tdd_substage: red` y `hitl_delegation: active` con el epic cerrado; la delegación termina con el push de epic-006. (d) `status` informa `DRIFT` en la pata `project`; se resuelve con el próximo `prepare`.
 
 ## ADR
 
