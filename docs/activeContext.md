@@ -4,6 +4,209 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-22 — Feature: 006-004-active-decisions-table (epic 006)
+
+**Cerrada el 2026-10-22 (ciclo técnico completo; la suite de cierre la corre quien cierra, política
+declarada en el paquete).**
+Sexta y última unidad de `epic-006-opencode-concurrency`: **la tabla de decisiones vigentes del
+proyecto** y, con ella, **la distribución de la decisión que gobierna el trabajo siguiente**. La
+feature encadena dos cosas: (a) **la decisión que el dueño aprueba viaja en el encargo** del rol al
+que gobierna, y (b) **el principio de general antes que específico** (enmienda 005 del plan del epic)
+encuentra su casa canónica y llega al architect y al reviewer **por el mismo mecanismo de las filas**.
+**Contrato:** `spec.md` sha256 `ee88d426…` (PD-1..PD-13, INV-1..INV-16, DEC-1..DEC-16, L-1..L-7,
+D-1..D-6) + `plan.md`, aprobados el 2026-10-20 por el orquestador bajo la **HITL delegada del epic**
+(el owner la mantuvo ese día), tras `plan-review-001..004` (B-1..B-4 cerrados). **El epic NO se
+cierra** con la feature: el cierre del epic es un acto aparte.
+
+**Problema medido (no presupuestado).** El proyecto tenía **33 ADR** y **ningún índice de
+decisiones**: `grep -rn "Decisiones vigentes\|Current decisions" skills/ sources/ agents/ tests/
+install.sh` → **0**. La sección es **nueva**, no una reorganización. Y el paquete de un rol **no
+podía** llevar las filas por alcance: el alcance de lectura por defecto del test-writer es `contract`
++ `tests` ⇒ `docs/systemPatterns.md` quedaba fuera ⇒ las filas tienen que **viajar en el paquete**,
+no en un archivo que el rol debe abrir. El estado de un ADR **no es derivable** (cuatro vocabularios
+y tres formatos de estado, reemplazos parciales) ⇒ la columna de estado **la declara quien mantiene
+la tabla**, no se re-deriva.
+
+**Qué cambió en el uso real.**
+- **Una decisión vigente puede viajar en el encargo.** Campo **opcional** `current_decisions` del
+  request, declarado con `prepare --current-decision <JSON>` (**repetible**: cada valor es una fila
+  JSON, y las filas quedan en el **orden declarado**). Sin el campo, el paquete es **byte-idéntico**
+  al vigente **dentro de una misma revisión** (INV-2): la aditividad es intra-revisión y así se
+  declara.
+- **La forma de la fila la valida el producto; el contenido, el proyecto.** Conjunto **cerrado** de
+  seis claves (`file`, `state`, `summary`, `roles`, `reference` y `superseded_by` **condicional**:
+  exigido si `obsoleto`, prohibido si `vigente`): `file` debe **existir en el proyecto**; `state` ∈
+  {`vigente`, `obsoleto`}; `summary` de **una línea**; `roles` no vacío dentro del vocabulario
+  cerrado (los cinco roles delegados **más `orchestrator`**). El CLI **no** parsea el documento del
+  proyecto: acoplar el producto a un formato de un markdown ataría el byte del paquete al estado de
+  la tabla.
+- **La fila debe nombrar al rol del paquete** (fail-closed, nombrando la fila y el rol): una fila
+  que no concierne al rol **no viaja**, ni siquiera por descuido. Y **una fila `obsoleto` no es
+  admisible en un paquete**: la decisión reemplazada **conserva su sitio en la tabla** (la historia
+  importa) y **no se distribuye** — la distinción es del producto, no de la disciplina.
+- **Tope de 32 filas por paquete, fail-closed.** 33 filas se rechazan nombrando el número declarado
+  y el tope, **sin publicar nada**. El 32 es un **número declarado**, no un tope atado al inventario
+  (que no sería un tope) ni derivado de él en ningún momento.
+- **Sección `## Current decisions` sólo con filas.** Se emite entre `## Contract` y el bloque de
+  plan-task, una entrada por fila, con sus cinco campos. Sin filas (o con la lista vacía) **no hay
+  diferencia de bytes**; un rol sin filas aplicables recibe un paquete byte-idéntico al de hoy. El
+  **test-writer no gana acceso a `docs/`**: las decisiones le llegan **dentro** del paquete, no por
+  el alcance.
+- **La tabla del proyecto es el índice, y su dueño es el orquestador.** «Decisiones vigentes» es el
+  **primer H2** de `docs/systemPatterns.md` (en la plantilla del Memory Bank: `## Current
+  decisions`), una fila por decisión. El **upkeep** —agregar la fila al aprobarse un ADR y marcar la
+  anterior `obsoleto` **conservándola** con su reemplazo— vive en `references/stage-5-merge.md`
+  §5.4 y **no agrega casillas al exit gate de stage 5**. El **reviewer** la revisa con dos
+  comprobaciones (**alineación** con `docs/adr/` y **respeto** de las decisiones vigentes de su rol),
+  cuyo procedimiento está en su dueño canónico `references/stage-4-review.md`; una fila desalineada
+  es un **hallazgo** con `file:line`, veredicto y condición de cierre, **no** una puerta.
+- **El principio de general antes que específico tiene una casa y dos obligaciones.** El texto
+  normativo **y su límite** viven en **un único archivo** del skill instalable
+  (`skills/cdad-cycle/references/design-principles.md`); el **architect** debe considerar las
+  alternativas generales y específicas y explicar el criterio elegido; el **reviewer** debe evaluar
+  consecuencias reales —duplicación que puede divergir, complejidad innecesaria, pérdida de
+  capacidades y acoplamiento— con el límite explícito de que **la falta de una abstracción no es,
+  por sí sola, un defecto**. El deber de cada rol es **duty**, no una copia: viaja **completo** por
+  la fuente del rol y por el bloque estático del paquete (en la ruta de paquete el rol **no** carga
+  el skill) y **nadie re-enuncia** el texto del principio.
+- **El CAS se hace contra el digest base, y reconciliar es re-despachar.** Ante conflicto
+  («current digest does not match expected_previous_sha256 (CAS): refusing to overwrite») la salida
+  es **re-despachar al rol con un paquete nuevo sobre la base nueva**: **no** se fusiona a mano ni
+  se **actualiza el digest esperado** para forzar el paso (eso borraría el cambio del otro escritor).
+  El orquestador, que mantiene la tabla, escribe sus propias filas **directamente en `docs/`** con
+  su commit y no comparte base con el scribe. La regla es **general** (afecta a toda
+  materialización con CAS) y vive en el protocolo de materialización, no en el caso de la tabla.
+- **El validador permanente lleva invariantes duraderas, no fotografías.** El bloque de
+  `tests/validate-consistency.sh` comprueba **propiedades de coherencia** (cada fila apunta a un
+  archivo que existe bajo `docs/adr/`; toda fila `obsoleto` nombra un reemplazo que existe; todo
+  `roles` está en el vocabulario cerrado; ninguna fila re-enuncia el texto del principio; la nota
+  declara que el estado lo declara quien mantiene la tabla) y **no nombra ningún ADR** ni fija
+  ningún conteo ⇒ **aprobar un ADR nuevo o reemplazar cualquiera de ellos —ADR-034 incluida— no
+  obliga a tocar los tests**. El inventario sembrado (26 filas, 8 `Proposed` excluidos) es
+  **evidencia puntual** de la siembra, no una aserción permanente.
+- **La plantilla nace sin decisiones.** La sección de la plantilla tiene encabezado y separador y
+  **cero filas de datos**; la forma de la fila se explica **en prosa**, fuera de la tabla (una
+  línea que empieza por `|` la leería el comprobador como una decisión). Un proyecto **sin**
+  `docs/adr/` **no queda bloqueado**: `prepare` da rc=0 y sin sección, y el render con la lista
+  vacía es byte-idéntico.
+
+**Producto (U1 → U2 → U3 → U4 → U5 → U7 → U6 + el arreglo B-1).** Rango `86cb942..a815f9b`:
+**67 commits, 65 archivos, +14801/−13**; de ellos **21 archivos de producto, +435/−4**
+(`cdad_packet.py`, `design-principles.md` **nuevo**, las tres referencias de procedimiento, la
+plantilla del Memory Bank, el esquema del request, los dos bloques estáticos, las dos fuentes de
+rol y los **8 agentes regenerados** por el generador) y `tests/` suma **7 archivos nuevos,
++5301/−0**. Orden real: **U1** (la fila declarada, su forma y el tope) → **U2** (la sección aditiva
+del render) → **U3** (el principio: una casa y las dos obligaciones) → **U4** (la tabla y su upkeep:
+sólo plantilla y procedimiento) → **U5** (la siembra de este repo, materializada por el
+orquestador con la aprobación del ADR-034 registrada) → **U7** (la verificación duradera de la
+siembra) → **U6** (recorrido real) → **B-1** (la plantilla nace sin decisiones). Último commit de
+producto: `fc1179b`.
+
+**Aceptación real (U6, PD-12) — proyecto descartable, sin despliegue a HOME.** **E1..E7 y V-5
+cumplen**: la fila llega al rol nombrado y una fila ajena se rechaza nombrando el rol; la fila
+reemplazada queda `obsoleto` en la tabla y fuera del paquete; sin filas aplicables el render es
+byte-idéntico (mismo digest a los dos lados); una fila que apunta a un ADR inexistente se rechaza y
+el reviewer la reporta como **hallazgo**; un proyecto sin `docs/adr/` funciona sin cambios; el
+principio está en el árbol instalable y lo nombran los dos roles; y la **cadena del CAS** corre
+completa (base D0 → propuesta → D1 con la fila del orquestador → materialización **rechazada** por
+conflicto → **re-despacho** con paquete nuevo sobre D1 → materialización correcta → documento final
+que **conserva la fila del orquestador** y trae los cambios del rol, con los bytes aplicados
+identificados). **V-5**: un paquete publicado antes de un cambio de las fuentes de instrucción **no
+es recibible después** («packet differs from its canonical rendering»); la salida es terminarlo bajo
+la revisión con la que se publicó o preparar uno nuevo bajo la vigente.
+
+**Review (etapa 4) — 2 bloqueantes / 3 opcionales / 1 abstención.** **B-1** (la plantilla nacía
+declarando una decisión ficticia en proyectos sin ADR): cerrado con **RED/GREEN** (`4d71ccc` →
+`fc1179b`) — la plantilla copiada literalmente a un proyecto sin ADR ahora pasa el comprobador
+permanente. **B-2** (el GREEN de U7 escribió fuera del alcance autorizado: `docs/**` no estaba en
+su paquete y el recibo declaraba `scope_validation: unknown`): resuelto por el **orquestador**, que
+auditó el diff (**una sola línea**: las barras crudas de una celda partían la fila en columnas
+espurias) y **adoptó la corrección bajo su propia autoridad** (el upkeep de la tabla es suyo,
+ADR-003), **sin reescribir historia ni cambiar el oráculo**.
+
+**Gates y despliegue.** `make validate`: **Assert PASS: 182 / Assert FAIL: 1**, y el único FAIL es
+**F011** —deriva entre el árbol instalado y el repo, clase **DT-8**, preexistente y ya declarada.
+**La suite de cierre no se ejecutó**: la corre **una vez quien cierra** (política declarada en el
+paquete). **NO hay despliegue en HOME**: el recorrido se hizo sin tocar la instalación, **por orden
+del owner** (hay una **sesión activa en OpenCode** que no se debe tocar) ⇒ el redespliegue queda
+pendiente de esa orden, y la copia instalada **no** contiene la feature.
+
+**Decisiones relevantes.**
+- **DEC-1** — un **campo opcional del request** más una **sección aditiva del render**; el CLI
+  **no** lee la tabla del proyecto (acoplaría el producto a un formato de documento) y el
+  contenido no viaja como texto libre (no sería verificable).
+- **DEC-2** — la fila tiene una **forma cerrada de seis claves** con `superseded_by` condicional: la
+  **misma** forma sirve al documento y al request ⇒ el orquestador construye el request desde la
+  tabla sin traducción.
+- **DEC-3** — el estado de la fila es `vigente` | `obsoleto`, y **sólo lo vigente viaja**; el
+  binario del plan se respeta y se hace verificable.
+- **DEC-5** — el vocabulario de consumidores incluye `orchestrator` (gobierna el ciclo aunque no sea
+  un rol despachado por paquete; una fila que lo nombra sólo no viaja).
+- **DEC-6** — el tope es **32**, fail-closed y con salida; un tope atado al inventario no sería un
+  tope y uno por bytes no sería determinista.
+- **DEC-7** — el `reference` **no lo verifica el CLI** (puede apuntar al árbol instalado, que el CLI
+  no resuelve) ⇒ esa comprobación es del reviewer; el `file` sí se comprueba.
+- **DEC-9 / DEC-10** — el principio vive en una **referencia nueva** del skill, no en `SKILL.md`
+  (una regla de diseño para dos roles no puede cargar a todos) ni en la referencia del reviewer
+  (mezclar dos dueños crea dos fuentes); el deber del reviewer vive en su referencia canónica.
+- **DEC-11** — la tabla se mantiene en el **evento «ADR aprobado»**, no en el cierre de cada
+  feature: atarla al cierre la deja envejecer sin evento que la mueva. El **exit gate de stage 5 no
+  cambia**.
+- **DEC-13** — el **CAS contra el digest base** y la reconciliación por **re-despacho**; nunca
+  fusionar a mano ni subir el digest esperado. Es **general antes que específica**: vive en el
+  protocolo general de materialización, no como parche de esta tabla.
+- **DEC-15 / DEC-16** — el validador permanente lleva **invariantes duraderas** y **ninguna
+  excepción por identidad**: el inventario y la ficha de una decisión concreta son **evidencia
+  puntual**, no un oráculo.
+
+**Deuda detectada (abierta).**
+- **O-1** (review): la pertenencia a `docs/adr/` se comprueba **sólo por prefijo** ⇒ una ruta con
+  `..` que apunta a un archivo existente en `docs/` pasa el comprobador. No afecta las filas
+  sembradas ni el CLI (que resuelve rutas); queda como deuda del comprobador. *Cierre*: comprobar
+  contención sobre la ruta resuelta, con su negativo.
+- **O-2** (review): el **ADR-034 conserva marcas contradictorias de borrador** (encabezado
+  `Accepted` y a la vez «aprobación pendiente» y `Status: Proposed`). La aprobación separada sí
+  está registrada ⇒ no falta aprobación, sobran marcas residuales. *Cierre*: limpiarlas y
+  describir el borrador como fase histórica.
+- **O-3** (review): falta el **bloque U3** que el plan pedía en `tests/validate-consistency.sh` (los
+  tests Python sí comprueban fuente única, obligaciones y límite) ⇒ discrepancia de superficie de
+  validación. *Cierre*: incorporar la comprobación equivalente o registrar una enmienda que adopte
+  el oráculo Python.
+- **W-U6-1** — **fidelidad del rol**: en las dos propuestas del recorrido el scribe cambió líneas
+  **fuera de lo encargado** (negrita, una palabra, un espacio final) ⇒ el CAS protege la
+  concurrencia, **no** la fidelidad. La salida existente es la **revisión del diff del Memory Bank
+  antes de aprobarlo**.
+- **W-U6-2** (**a verificar**) — el adaptador **volvió a despachar un paquete que ya tenía entrega
+  completa y recibo durable** (el script del recorrido re-despachó el paquete viejo porque `prepare`
+  había fallado, dos veces; dos sesiones huérfanas, de sólo lectura). **Causa no investigada** ⇒ se
+  registra como deuda. *Cierre*: reproducción descartable con argumentos, estado previo, recibo y
+  registro del nuevo despacho, sin tocar las sesiones activas.
+- **W-U6-3** — **ergonomía del CAS hacia el Memory Bank**: el adaptador entrega **una sola parte
+  `role-report`**, cuya raíz permitida es la carpeta de la spec ⇒ materializar hacia el Memory Bank
+  exige que el orquestador reciba la misma entrega con un descriptor propio de clase ya existente
+  en la política cerrada. Las clases existen; lo que falta es que el adaptador las declare.
+- **`scope_validation: unknown`** (deuda heredada de 006-005, ya declarada): ningún productor de
+  `observed_changes` ⇒ el recibo sale siempre en `unknown` y el control mecánico «el rol con
+  escritura no salió de su alcance» **nunca corre**; quedan el mapa de permisos del agente y la
+  revisión del diff. El caso de B-2 es **una instancia más** de esta deuda.
+- **Deuda declarada por la spec**: **L-1** compatibilidad entre revisiones (un paquete publicado
+  antes de un cambio de las fuentes de instrucción no es recibible después; el renderer no se
+  corrige) · **L-3** la **completitud** de la tabla no está garantizada mecánicamente (el producto
+  garantiza la forma, no que toda fila vigente fuera declarada) · **L-4** la verificación del
+  `reference` es del reviewer · **L-5** el exit gate de stage 5 no menciona la tabla ⇒ el kind
+  `scribe-systemPatterns` queda como capacidad latente · **L-6** el esquema del request ya no
+  describe el request vigente (brecha de `agent`, no corregida aquí) · **L-7** el producto **no
+  verifica la base** del CAS: la disciplina es del procedimiento.
+- **Pendientes de cierre**: **suite completa** (la corre quien cierra) y **redespliegue en HOME**
+  (orden del owner). Heredadas y sin cambio: **DT-8** (F011 por deriva de la copia instalada) y el
+  **flake conocido del margen de la espera bajo carga** (clase DT-9).
+
+**Estado del epic y siguiente trabajo en cola.** `epic-006-opencode-concurrency` queda con **6/6
+features cerradas** (006-001, 006-002, 006-003, 006-004, 006-005, 006-006) ⇒ **no queda ninguna
+feature en cola** en el epic. El siguiente trabajo **no es una feature**: es el **cierre del epic**
+(acto de nivel epic, con su propia evidencia) y, antes, los **dos pendientes de cierre** de esta
+feature: la **suite completa** y el **redespliegue en HOME**, que espera la orden del owner.
+
 ## 2026-10-20 — Feature: 006-006-spec-plan-review (epic 006)
 
 **Cerrada el 2026-10-20 (ciclo técnico completo; el gate de suite completa lo corre quien cierra, política

@@ -41,6 +41,120 @@ Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índic
 - La referencia es el lugar donde vive la regla que la decisión implanta: el propio ADR, o el archivo del skill instalable.
 - Quedan fuera los ADR que todavía no están en vigor (`Proposed`): ADR-012, ADR-016, ADR-025, ADR-026, ADR-027, ADR-028, ADR-029 y ADR-030. Cada uno recibe su fila al aprobarse, y entonces esta lista se actualiza.
 
+## Decisiones vigentes: la tabla y su distribución
+
+La sección «Decisiones vigentes» de este archivo (en la plantilla del Memory Bank,
+`## Current decisions`) es el **índice de las decisiones del proyecto**: una fila por decisión, con
+su archivo, su estado, un resumen de una línea, los roles que deben consumirla y la referencia
+donde vive su regla. Este bloque describe **cómo se mantiene, cómo viaja y qué la valida**; la
+tabla en sí la mantiene el orquestador.
+
+### La fila y su forma
+
+- **Forma cerrada de seis claves**: `file` (ruta relativa al proyecto, **debe existir**), `state`
+  (`vigente` | `obsoleto`), `summary` (**una línea**), `roles` (**no vacío**, vocabulario cerrado:
+  los cinco roles delegados más `orchestrator`), `reference` (dónde vive la regla que la decisión
+  implanta) y `superseded_by` (**condicional**: exigido si `state` es `obsoleto`, prohibido si es
+  `vigente`). Cualquier otra clave se rechaza nombrando la clave. La **misma** forma sirve para el
+  documento y para el request ⇒ el orquestador construye el request desde la tabla **sin
+  traducción**.
+- **El estado lo declara quien mantiene la tabla.** No se re-deriva del texto del ADR: el estado de
+  un ADR **no es derivable** (varios vocabularios y formatos, reemplazos parciales). La columna es
+  una **declaración**, y el upkeep es **procedimiento**, no una operación de producto.
+- **Una fila `obsoleto` conserva su sitio** (la historia) y **no se distribuye**: la decisión
+  reemplazada gobierna a nadie.
+- **El CLI no parsea este documento.** El producto valida la **forma** de la fila; el proyecto
+  decide **qué** filas existen y **qué** dice cada una. Acoplar el CLI al formato del documento
+  ataría el byte del paquete al estado de la tabla.
+
+### La fila viaja en el encargo, no por el alcance
+
+- `prepare --current-decision <JSON>` (**repetible**) declara filas; quedan en
+  `request.current_decisions`, en el **orden declarado**, y el render emite la sección
+  `## Current decisions` **sólo** si hay filas (entre `## Contract` y el bloque de plan-task).
+  Sin el campo —o con la lista vacía— el render es **byte-idéntico** al vigente **dentro de una
+  misma revisión** (garantía intra-revisión).
+- **Toda fila declarada debe nombrar al rol del paquete** (fail-closed, nombrando la fila y el
+  rol): una fila que no concierne al rol **no viaja**, ni por descuido. Un rol sin filas aplicables
+  recibe un paquete byte-idéntico al de hoy.
+- **Tope de 32 filas por paquete, fail-closed**, con salida: el diagnóstico nombra el número
+  declarado y el tope. El 32 es un **número declarado**, no un tope atado al inventario ni
+  derivado de él.
+- **Las filas no aprueban nada**: viajan con `semantic_status: pending` y `approval_effect: false`.
+  Una decisión vigente **no** es una aprobación (son hechos distintos).
+- **El alcance por defecto no cambia**: el test-writer **sigue** sin poder leer `docs/`; las
+  decisiones le llegan **dentro** del paquete.
+
+### Las dos responsabilidades sobre la tabla
+
+- **El orquestador la mantiene** (`references/stage-5-merge.md` §5.4): al aprobarse un ADR, agrega
+  la fila (con prefijo `docs(memory):`); si el ADR reemplaza a otro, marca la fila anterior como
+  `obsoleto` **conservándola** con su reemplazo. El **exit gate de stage 5 no cambia**: el upkeep
+  es un paso de la decisión, no una casilla nueva del gate.
+- **El reviewer la revisa** (`references/stage-4-review.md` es el **dueño canónico** de esa
+  comprobación; la fuente del rol y su bloque estático la referencian y no la copian): **alineación**
+  —cada fila apunta a un archivo que existe en `docs/adr/` y el conjunto de filas es coherente con
+  el directorio— y **respeto** —el cambio respeta las decisiones vigentes que gobiernan su rol, las
+  filas que el paquete le lleva—. Una fila desalineada es un **hallazgo** con `file:line`,
+  veredicto y condición de cierre verificable, **no** una puerta.
+
+### El CAS es contra la base, y reconciliar es re-despachar
+
+- El digest declarado en la autorización (`expected_previous_sha256`) es **siempre el digest
+  base**: la versión del destino sobre la que el rol preparó la propuesta, **nunca** el digest
+  actual del destino. Comparar contra el actual **no** detecta una propuesta obsoleta: **pisa** el
+  cambio del otro escritor.
+- Ante conflicto («current digest does not match expected_previous_sha256 (CAS): refusing to
+  overwrite») **no** se sobrescribe, **no** se fusiona a mano y **no** se actualiza el digest
+  esperado para forzar el paso (eso borra el cambio del otro escritor). La salida es
+  **re-despachar al rol con un paquete nuevo sobre la base nueva**, para que la propuesta se rehaga
+  sobre lo que ahora existe; el documento final conserva lo escrito por los dos escritores y la
+  evidencia identifica los bytes aplicados.
+- **La tabla tiene dos escritores**: el orquestador (que escribe sus filas directamente en `docs/`
+  con su commit y no pasa por el CAS) y el scribe (cuya propuesta llega por materialización, sobre
+  la base que el orquestador registró al preparar su paquete).
+
+### El validador permanente lleva invariantes duraderas
+
+- El bloque que mira la tabla viva comprueba **propiedades de coherencia**: cada fila apunta a un
+  archivo que **existe bajo `docs/adr/`**; toda fila `obsoleto` nombra un reemplazo que **existe**;
+  todo `roles` está en el vocabulario cerrado; **ningún** archivo apuntado por una fila re-enuncia
+  el texto normativo del principio; y la nota declara que el estado lo declara quien mantiene la
+  tabla.
+- El bloque **no contiene ningún conteo** (ni de filas, ni de vigentes, ni de obsoletas, ni de
+  excluidas) **ni ninguna comprobación por identidad**: **no nombra ningún ADR** y no exige el
+  estado, los roles ni la referencia de ninguna fila en particular ⇒ **aprobar un ADR nuevo o
+  reemplazar cualquiera de ellos no obliga a tocar los tests**. El inventario sembrado (26 filas, 8
+  `Proposed` excluidos) y la ficha de una fila concreta son **evidencia puntual**, no un oráculo
+  permanente.
+- El **cierre verificable** del comprobador es un caso descartable de tres, **con el mismo
+  comprobador y sin editarlo**: **agregar** un ADR aprobado **pasa**; **reemplazar** una decisión
+  (fila `obsoleto` + fila sucesora `vigente`) **pasa**; una fila con archivo **inexistente**
+  **falla**.
+
+### El principio de general antes que específico: una casa, dos deberes
+
+- El texto normativo del principio **y su límite** viven en **un único archivo** del skill
+  instalable: `skills/cdad-cycle/references/design-principles.md`. Quien necesite el texto exacto,
+  lo lee ahí; el resto de las superficies lo **referencian** y **no lo re-enuncian**.
+- El **deber del architect** y el **criterio del reviewer** son *duty*, no principio: viven en la
+  fuente de cada rol y en su bloque estático de paquete, con un **puntero** al archivo canónico
+  (el bloque estático también los lleva porque, en la ruta de paquete, el rol **no** carga el
+  skill). El procedimiento del deber del reviewer sobre la tabla vive en su referencia canónica.
+- El **límite** del principio es parte del principio: está escrito **junto a él**, en el mismo
+  archivo, y se cita en las dos superficies del reviewer. La falta de una abstracción **no es, por
+  sí sola, un defecto**.
+- El ADR que registra la decisión **no re-enuncia** el texto del principio: lo referencia, igual que
+  lo referencia la fila de la tabla.
+
+### La plantilla nace sin decisiones
+
+- La sección de la plantilla tiene encabezado y separador y **cero filas de datos**; la forma de la
+  fila se explica **en prosa, fuera de la tabla** (una línea que empieza por `|` la leería el
+  comprobador como una decisión y fallaría por archivo inexistente).
+- Un proyecto **sin** `docs/adr/` **no queda bloqueado**: `prepare` de cualquier rol da rc=0 y sin
+  sección, y el render con la lista vacía es byte-idéntico. La sección vacía **no** es una fila.
+
 ## Capas y boundaries
 
 - `agents/*.md` — definición de roles: frontmatter (permisos por path, bash
@@ -921,4 +1035,4 @@ los roles. Matriz completa y razones: `docs/adr/ADR-009-politica-rtk-allowlists.
 
 ---
 
-Última actualización: 2026-10-20 (006-005)
+Última actualización: 2026-10-22 (006-004)

@@ -8,6 +8,59 @@ _(ninguna)_
 
 ## Done
 
+- **006-004-active-decisions-table** (2026-10-22, epic 006) — sexta feature de
+  `epic-006-opencode-concurrency`: **la tabla de decisiones vigentes del proyecto** y, con ella, la
+  **distribución de la decisión que gobierna el trabajo siguiente**. Una decisión aprobada viaja
+  **en el encargo** del rol al que gobierna (campo opcional `current_decisions`, declarado con
+  `prepare --current-decision <JSON>` repetible; la sección `## Current decisions` se emite **sólo
+  con filas** y sin ellas el render es **byte-idéntico** dentro de una misma revisión), y con ella
+  el **principio de general antes que específico** (enmienda 005) encuentra su **casa única** en
+  `skills/cdad-cycle/references/design-principles.md` y llega al **architect** (considerar
+  alternativas generales y específicas y explicar el criterio) y al **reviewer** (evaluar
+  consecuencias reales, con el límite de que la falta de una abstracción no es por sí sola un
+  defecto) como **deber de rol**, sin re-enunciar el texto. **Contrato:** `spec.md` sha256
+  `ee88d426…` (PD-1..PD-13, INV-1..INV-16, DEC-1..DEC-16, L-1..L-7, D-1..D-6) + `plan.md`,
+  aprobados el 2026-10-20 por el orquestador bajo la **HITL delegada del epic** tras
+  `plan-review-001..004` (B-1..B-4 cerrados). **Producto (rango `86cb942..a815f9b`: 67 commits, 65
+  archivos, +14801/−13; de ellos 21 de producto, +435/−4, y `tests/` 7 archivos nuevos, +5301/−0;
+  último commit de producto `fc1179b`):** U1 la fila declarada, su **forma cerrada de seis claves**
+  y el **tope de 32 fail-closed** (la fila debe **nombrar al rol del paquete**; una fila `obsoleto`
+  **no es admisible** en un paquete; `file` debe existir; `roles` en vocabulario cerrado) → U2 la
+  sección aditiva del render, entre `## Contract` y el bloque de plan-task → U3 el principio: una
+  casa y las dos obligaciones (fuente del rol + bloque estático + agentes regenerados) → U4 la tabla
+  y su **upkeep del orquestador** (`stage-5-merge.md` §5.4, **sin** tocar el exit gate), la
+  **regla general del CAS por digest base** y la reconciliación por **re-despacho**
+  (`re-entry.md`) → U5 la **siembra** de este repo: «Decisiones vigentes» como **primer H2** de
+  `docs/systemPatterns.md` con 26 filas (25 `vigente`, 1 `obsoleto`; 8 `Proposed` excluidos) y el
+  **ADR-034** materializado con estado aprobado → U7 el **validador permanente de invariantes
+  duraderas**, que **no nombra ningún ADR** ni fija ningún conteo (aprobar un ADR nuevo o reemplazar
+  cualquiera **no obliga a tocar los tests**) → U6 **recorrido de aceptación real** (proyecto
+  descartable, **sin despliegue a HOME**; E1..E7 y V-5 **cumplen**, incluida la **cadena del CAS**
+  completa: rechazo por conflicto → re-despacho sobre la base nueva → materialización que conserva
+  la fila del orquestador) → **B-1** la **plantilla nace sin decisiones** (fila de ejemplo fuera de
+  la tabla, en prosa: un proyecto sin ADR ya no queda bloqueado). **Review formal: 2 bloqueantes /
+  3 opcionales / 1 abstención** — **B-1** cerrado por RED/GREEN (`4d71ccc` → `fc1179b`);
+  **B-2** resuelto por el **orquestador**, que auditó el diff (una línea) y adoptó la corrección
+  bajo su propia autoridad (el upkeep de la tabla es suyo, ADR-003), sin reescribir historia ni
+  cambiar el oráculo. **Gates:** `make validate` **Assert PASS: 182 / Assert FAIL: 1** (el único
+  FAIL es **F011**, deriva ambiental de la copia instalada, **DT-8** preexistente); **suite de
+  cierre: no ejecutada** (la corre una vez quien cierra, política declarada en el paquete).
+  **Despliegue: NO hay despliegue en HOME**, por orden del owner (hay una sesión activa en
+  OpenCode que no se debe tocar) ⇒ la copia instalada no contiene la feature. **Deuda:** **O-1**
+  (la pertenencia a `docs/adr/` se comprueba sólo por prefijo), **O-2** (el ADR-034 conserva marcas
+  residuales de borrador), **O-3** (falta el bloque U3 pedido en el validador bash; los tests
+  Python sí cubren la fuente única), **W-U6-1** (fidelidad del scribe: el CAS protege la
+  concurrencia, no la fidelidad ⇒ la salida es revisar el diff antes de aprobar), **W-U6-2**
+  (**a verificar**: el adaptador re-despachó un paquete que ya tenía entrega completa y recibo
+  durable; causa no investigada), **W-U6-3** (el adaptador entrega una sola parte `role-report`,
+  cuya raíz permitida es la carpeta de la spec ⇒ materializar hacia el Memory Bank exige un
+  descriptor propio del orquestador), `scope_validation: unknown` (deuda heredada de 006-005: el
+  caso de B-2 es una instancia más) y la deuda declarada de la spec (**L-1** compatibilidad entre
+  revisiones, **L-3** completitud de la tabla, **L-4** verificación del `reference`, **L-5** exit
+  gate de stage 5, **L-6** esquema del request, **L-7** el producto no verifica la base del CAS).
+  **Pendientes de cierre:** suite completa y redespliegue en HOME. **El epic NO se cierra: 6/6**
+  features hechas ⇒ no queda ninguna feature en cola; el siguiente trabajo es el **cierre del
+  epic**, previa la suite de cierre y el redespliegue.
 - **006-006-spec-plan-review** (2026-10-20, epic 006) — quinta feature de
   `epic-006-opencode-concurrency`: la **revisión independiente de un borrador de especificación antes del RED**,
   como capacidad de primera clase del recorrido y no como rodeo. La forma del objeto se **declara** en el
