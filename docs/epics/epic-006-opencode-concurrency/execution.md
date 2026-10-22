@@ -417,3 +417,11 @@ El owner abrió la feature («Adelante con la siguiente feature»). Discovery: `
 ## 006-004 U5: siembra (2026-10-20)
 
 El orquestador aprueba el **ADR-034** bajo la HITL delegada; el dueño puede vetarlo. Se materializó con `Accepted` y se sembró la tabla «Decisiones vigentes» de este repo: 26 filas y 8 `Proposed` excluidos. Evidencia: `docs/specs/006-004-active-decisions-table/u5-seeding.md`.
+
+## 006-004 review de etapa 4: resolución de B-2 (orquestador)
+
+- **Hallazgo:** el GREEN de U7 (`8f41160`) cambió `docs/systemPatterns.md:17` aunque su paquete (`…-implementer-green-005`) solo autorizaba implementación. La entrega quedó con `scope_validation: unknown`.
+- **Auditoría del diff:** una sola línea. En el resumen de la fila de ADR-007, `(economical | optimus | premium)` pasa a `(economical, optimus, premium)`: las barras de la celda partían la fila de la tabla en columnas espurias. No hay ningún otro cambio en `docs/`.
+- **Disposición:** esa parte de la entrega queda **inválida como entrega del rol**. El orquestador **adopta la corrección bajo su propia autoridad**: el upkeep de la tabla es suyo (ADR-003; plan U4/U5, «el orquestador escribe sus propias filas directamente en `docs/`»). Los bytes resultantes son idénticos a los del commit, así que no se reescribe la historia ni se cambia ningún oráculo.
+- **Verificación:** el comprobador de la tabla de `tests/validate-consistency.sh` pasa sobre esos bytes (corrida de cierre).
+- **Deuda:** el adaptador no produce `observed_changes`, por eso `scope_validation` queda `unknown` (U6-2 de 006-005, ya declarada). Este caso es una instancia más de esa deuda.
