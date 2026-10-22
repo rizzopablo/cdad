@@ -1,8 +1,8 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": "epic-006-opencode-concurrency",
-  "epic_stage": "features-loop",
+  "active_epic": null,
+  "epic_stage": null,
   "active_feature": null,
   "current_stage": "idle",
   "audit_status": null,
@@ -363,6 +363,18 @@
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
       "plan_sha256": "b6a59502ff18b6a2826e7cf672b790630d988a597cd6b24213442922ee4f2e63",
       "note": "006-003 suma la credencial del servidor OpenCode: ~/.config/cdad/opencode-server.env (600), credential_env_file y diagnostico de 401 autosuficiente."
+    },
+    {
+      "epic": "epic-006-opencode-concurrency",
+      "stage": "epic-closure",
+      "completed_at": "2026-10-22",
+      "approved_by": "Pablo (HITL delegada a Claude para epic-006)",
+      "requested_by": "usuario",
+      "quote": "Ok, continúa (2026-10-22), tras el despliegue de 006-004",
+      "evidence": "docs/epics/epic-006-opencode-concurrency/closure.md",
+      "closure_path": "docs/epics/epic-006-opencode-concurrency/closure.md",
+      "closure_sha256": "e6f38d00c33f66c636deb2d945afbcc95e0f3915d52a8c3f4405e770933f6c65",
+      "note": "6/6 features done; integracion entre features con el producto desplegado (adb7c31); AC-7 pendiente del owner."
     }
   ],
   "stage_history": [
