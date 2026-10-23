@@ -62,3 +62,14 @@ El dueño: «Tengo que salir. Te delego todo hitl, pero consulta al architect ca
 - **Alcance:** las decisiones de E1/E2 de este epic (alcance, orden, plan), aprobación de spec/plan de sus features, gates, priorización de reviews y Memory Bank con evidencia. Las preguntas abiertas de alcance se resuelven consultando al architect (rol read-only) y quedan registradas con su respuesta.
 - **Reservado al dueño** (igual que en epic-006): despliegue o activación global, cambios en HOME, servicios o procesos compartidos, actualizaciones del runtime, push y publicación.
 - **Vencimiento:** al cerrar, cancelar o revocar el epic. La severidad de los defectos no se relaja.
+
+## 8. Consulta al architect y decisión de E1 — 2026-10-23
+
+Consulta read-only (sesión `ses_e94d835d1ffe…`, agente `cdad-architect`). Respuesta, resumida:
+- **Dos epics, operación primero**, con alcance acotado y aplicando ya los criterios mínimos de capacidad consumible y evidencia positiva. Concurrencia fuera (B3 depende de A, `plan.md:163`).
+- **Incongruencia confirmada en código:** `cdad_packet.py` reconoce disposiciones (`5690-5701`, `5756-5760`) y `cdad_continuity.py` clasifica sólo autoridad/recibo/despacho/materialización (`965-991`, `1010-1017`).
+- **Cinco features:** entrada inequívoca (brechas 3-4; `cdad_packet.py:6709-6743`), recuperación de despacho (2, 5; `--replace-packet` limitado, `6928-6929`), continuidad en los bordes (1; reutilizar `cdad_continuity.py:622-669`), terminación ≠ éxito (6; `cdad_dispatch.py:1011-1022`, `cdad_delegate.py:325-333`), recepción serial real.
+- **Fuera:** brecha 7 (`cdad_result.py:340-361` ya conserva `unknown`), 8-11 al epic siguiente.
+- **Correcciones al borrador:** brecha 1 vale para la ruta observada, no todas; brecha 6 mezcla protocolo y consumo (rc 0 = comando procesado); AC-7.9 es incidente de cumplimiento, no mecanismo; restos históricos de `execution` ya se tratan como tales (`cdad_packet.py:6643-6658`); brecha 11 sin localizador propio; reasignación de S-ITER-01: continuidad/reparación aquí, transferencia/evidencia/consolidación en el epic siguiente.
+
+**Decisión del orquestador (HITL delegada):** se adopta la recomendación. Respuestas a §6: (1) dos epics, `epic-007-reliable-cycle-operation` primero; (2) consumidor: el otro proyecto activo; (3) autoridad: §7. Gate E1 → E2 cumplido. Plan: `docs/epics/epic-007-reliable-cycle-operation/plan.md`.
