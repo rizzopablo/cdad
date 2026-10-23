@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "007-001-unambiguous-entry",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -26,7 +26,8 @@
   "epic_features": [
     {
       "id": "007-001-unambiguous-entry",
-      "status": "queued"
+      "status": "in-progress",
+      "opened_at": "2026-10-23T23:49:18.807243+00:00"
     },
     {
       "id": "007-002-dispatch-recovery",
@@ -14314,7 +14315,7 @@
     "delegated_to": "Claude (sesion de Claude Code, orquestador del proximo epic)",
     "requested_by": "Pablo",
     "requested_at": "2026-10-23",
-    "scope": "proximo epic: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
+    "scope": "epic-007-reliable-cycle-operation: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
     "expires": "al cerrar, cancelar o revocar el epic",
     "publication": "sin push automatico",
     "source": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
@@ -14420,14 +14421,14 @@
     }
   ],
   "execution": {
-    "id": "exec-006-004-active-decisions-table-001",
-    "epic_id": "epic-006-opencode-concurrency",
-    "feature_id": "006-004-active-decisions-table",
-    "scope": "epic-006-opencode-concurrency",
-    "authority_ref": "docs/epics/epic-006-opencode-concurrency/execution.md",
+    "id": "exec-007-001-unambiguous-entry-001",
+    "epic_id": "epic-007-reliable-cycle-operation",
+    "feature_id": "007-001-unambiguous-entry",
+    "scope": "epic-007-reliable-cycle-operation",
+    "authority_ref": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": null,
-  "tdd_substage": "red"
+  "tdd_substage": null
 }
