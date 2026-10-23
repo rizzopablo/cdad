@@ -14471,10 +14471,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-001-unambiguous-entry-architect-discovery-001",
+    "id": "007-001-unambiguous-entry-architect-draft-001",
     "role": "architect",
-    "substage": "discovery",
-    "status": "completed",
+    "substage": "draft",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "5ed7186f3e3006951c162d8eeabd0ba7a52a3109bf4b2705123d04f746035152"
