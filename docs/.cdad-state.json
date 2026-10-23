@@ -1,8 +1,8 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": null,
-  "epic_stage": null,
+  "active_epic": "epic-007-reliable-cycle-operation",
+  "epic_stage": "features-loop",
   "active_feature": null,
   "current_stage": "idle",
   "audit_status": null,
@@ -25,64 +25,24 @@
   },
   "epic_features": [
     {
-      "id": "006-001-opencode-concurrency-reliability",
-      "status": "done",
-      "opened_at": "2026-10-16T15:49:22.967379+00:00",
-      "closed_at": "2026-10-17T22:32:17.525424+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-001-opencode-concurrency-reliability/closure.md",
-        "sha256": "ef3324fb76eb34f73b46a6e0feb278592eb2a5cce281361d83817cbecd1cfae0"
-      }
+      "id": "007-001-unambiguous-entry",
+      "status": "queued"
     },
     {
-      "id": "006-002-delegation-by-layer",
-      "status": "done",
-      "opened_at": "2026-10-17T23:06:35.827974+00:00",
-      "closed_at": "2026-10-18T10:54:54.814612+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-002-delegation-by-layer/closure.md",
-        "sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
-      }
+      "id": "007-002-dispatch-recovery",
+      "status": "queued"
     },
     {
-      "id": "006-003-installer-single-profile-delegation-config",
-      "status": "done",
-      "opened_at": "2026-10-18T11:28:46.153950+00:00",
-      "closed_at": "2026-10-18T23:47:38.736110+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
-        "sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
-      }
+      "id": "007-003-continuity-at-edges",
+      "status": "queued"
     },
     {
-      "id": "006-005-native-path-parity",
-      "status": "done",
-      "opened_at": "2026-10-18T23:51:12.371423+00:00",
-      "closed_at": "2026-10-20T06:15:43.385206+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-005-native-path-parity/closure.md",
-        "sha256": "fd12f5dfa4e2d4630e291de069922fb0da46d89e08a7f945f86fed1c96bf7407"
-      }
+      "id": "007-004-termination-not-success",
+      "status": "queued"
     },
     {
-      "id": "006-004-active-decisions-table",
-      "status": "done",
-      "opened_at": "2026-10-20T18:28:11.457902+00:00",
-      "closed_at": "2026-10-22T07:29:54.953730+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-004-active-decisions-table/closure.md",
-        "sha256": "a99aabfe87ba6ef25765a14fabb642eb68179707d33750af704e160a55425321"
-      }
-    },
-    {
-      "id": "006-006-spec-plan-review",
-      "status": "done",
-      "opened_at": "2026-10-20T10:34:29.489695+00:00",
-      "closed_at": "2026-10-20T16:53:39.107872+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/006-006-spec-plan-review/closure.md",
-        "sha256": "011690248bba2b3fab4ecf707f6c62e7553edbd5dd0aef3afa4a66dd05ab738e"
-      }
+      "id": "007-005-serial-reception",
+      "status": "queued"
     }
   ],
   "epic_history": [
@@ -375,6 +335,18 @@
       "closure_path": "docs/epics/epic-006-opencode-concurrency/closure.md",
       "closure_sha256": "e6f38d00c33f66c636deb2d945afbcc95e0f3915d52a8c3f4405e770933f6c65",
       "note": "6/6 features done; integracion entre features con el producto desplegado (adb7c31); AC-7 pendiente del owner."
+    },
+    {
+      "epic": "epic-007-reliable-cycle-operation",
+      "stage": "epic-plan",
+      "completed_at": "2026-10-23",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueno (2026-10-23)",
+      "requested_by": "usuario",
+      "delegated": true,
+      "evidence": "docs/planning/next-epic-discovery-notes.md §7-§8; plan.md «Cambios al plan»",
+      "plan_path": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
+      "plan_sha256": "713194aac03a1d077db3075d2062322e6ab61919de0a00dfb624146506042440",
+      "note": "Plan aprobado bajo HITL delegada tras consulta al architect (E1) y revision read-only del reviewer (APTO CON AJUSTES, aplicados). Activacion registrada A MANO: no existe operacion del CLI para activar un epic ni plan-review de un plan de epic."
     }
   ],
   "stage_history": [
@@ -14345,8 +14317,9 @@
     "scope": "proximo epic: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
     "expires": "al cerrar, cancelar o revocar el epic",
     "publication": "sin push automatico",
-    "source": "docs/planning/next-epic-discovery-notes.md",
-    "status": "active"
+    "source": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
+    "status": "active",
+    "epic_id": "epic-007-reliable-cycle-operation"
   },
   "last_updated": "2026-10-22T07:29:54.953730+00:00",
   "delegation_history": [

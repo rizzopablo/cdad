@@ -2,8 +2,8 @@
 epic_id: epic-007-reliable-cycle-operation
 epic_name: Operación confiable del ciclo
 created_at: 2026-10-23
-approved_by: <pending>
-approved_at: <pending>
+approved_by: Orquestador (Claude) por HITL delegada del dueño
+approved_at: 2026-10-23
 ---
 
 <!-- cdad:plan-anchors
@@ -15,8 +15,9 @@ approved_at: <pending>
 ## Resumen
 
 El recorrido real de AC-7 (2026-10-22/23) mostró que retomar, despachar y recibir con la versión
-desplegada funciona, pero exige diagnóstico externo en cada paso: la entrada no distingue
-situaciones, un intento abandonado queda irresoluble, la continuidad no acompaña al recorrido y
+desplegada funciona, pero en la ruta observada exigió diagnóstico externo repetido: la entrada no
+distingue situaciones, un intento abandonado queda irresoluble, la ruta no integra la continuidad
+existente en sus bordes y
 algunas señales se leen como éxito sin entrega. Este epic deja ese recorrido serial confiable,
 reutilizando los mecanismos existentes. Planificación y evidencia de capacidades (Epic A de
 Superlite, S-SYS-01) quedan para el epic siguiente.
@@ -49,7 +50,7 @@ Insumos: `docs/planning/next-epic-discovery-notes.md` (E1, con la consulta al ar
 | 2 | 007-002-dispatch-recovery | Una disposición registrada resuelve el intento ante `reconcile`; se prepara un sucesor trazable sin reconstrucción manual | AC-7.3, .4, .6 | 001 | No |
 | 3 | 007-003-continuity-at-edges | El recorrido normal deja continuidad vigente en sus bordes y una reparación se retoma sin repetir intentos | AC-7.1; B2; continuidad de S-ITER-01 | 001; coordinada con 002 | Parcial (con 004) |
 | 4 | 007-004-termination-not-success | El consumidor distingue comando procesado, bloqueo, resultado disponible y recepción; no avanza por rc 0 solo | AC-7.8; W-2 | 001 | Sí (con 003) |
-| 5 | 007-005-serial-reception | Un tramo pendiente autorizado del otro proyecto activo atraviesa entrada–despacho–recepción con la versión adoptada | recepción del epic | 001-004 | No |
+| 5 | 007-005-serial-reception | Un tramo pendiente autorizado del otro proyecto activo atraviesa entrada–despacho–recepción con la versión adoptada | recepción del epic | 001-004 + adopción autorizada por el dueño | No |
 
 Detalle de cada una: su propia spec en `cdad-cycle`. Las líneas de código que sustentan cada
 brecha están en la consulta del architect (discovery notes §8).
@@ -63,9 +64,10 @@ brecha están en la consulta del architect (discovery notes §8).
 ## Criterios de aceptación del epic
 
 - [ ] Las 5 features cerradas individualmente.
-- [ ] **Recorrido feliz:** desde reposo, un orquestador sin ayuda externa identifica la acción correcta en la vista, despacha, registra y recibe una unidad, con continuidad vigente al terminar.
+- [ ] **Recorrido feliz:** desde reposo, un orquestador sin diagnóstico externo ni lectura de implementación (puede ampliar por las referencias que la vista indica) identifica la acción correcta en la vista, despacha, registra y recibe una unidad, con continuidad vigente al terminar.
 - [ ] **Recorrido de fallo:** un intento que falla sin entrega se dispone, `reconcile` deja de reportarlo irresoluble, se prepara el sucesor y se recibe, sin repetir efectos ni editar a mano el state o el encargo.
 - [ ] **Señales:** ningún consumidor documentado de CDAD avanza a «éxito» con un bloqueo o sin entrega.
+- [ ] **Precondición de la recepción:** versión candidata adoptada con autorización vigente del dueño y procedencia comprobada. Si falta, la recepción queda pendiente y registrada; no se sustituye por pruebas controladas ni se activa el candidato globalmente.
 - [ ] **Recepción real** en el otro proyecto activo con evidencia positiva de la capacidad del tramo; lo no observado (p. ej. una reparación que no ocurrió naturalmente) se declara «verificado en entorno controlado, no observado en consumidor».
 - [ ] Sin mecanismos duplicados (intentos, disposición, almacenamiento de continuidad).
 
@@ -85,6 +87,9 @@ brecha están en la consulta del architect (discovery notes §8).
 
 ## Cambios al plan
 
+### 2026-10-23 — Ajustes de la revisión del borrador
+Revisión read-only del reviewer (sesión `ses_e94d5fd29ffe…`, APTO CON AJUSTES, sin BLOCKING): se precisa «sin diagnóstico externo», se explicita la adopción como precondición de 005 y se acota el diagnóstico de continuidad a la ruta observada. Hallazgo de producto: no existe `plan-review` para planes de epic (`prepare` exige feature activa).
+
 ---
 
-Status: Pending approval
+Status: Approved by Orquestador (Claude), por HITL delegada del dueño (2026-10-23), on 2026-10-23
