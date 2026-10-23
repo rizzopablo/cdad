@@ -14339,17 +14339,14 @@
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
   "hitl_delegation": {
-    "delegated_to": "Claude (sesion de Claude Code, orquestador de epic-006)",
+    "delegated_to": "Claude (sesion de Claude Code, orquestador del proximo epic)",
     "requested_by": "Pablo",
-    "requested_at": "2026-10-16",
-    "scope": "epic-006-opencode-concurrency: plan aprobado (§6), spec y plan de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
+    "requested_at": "2026-10-23",
+    "scope": "proximo epic: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
     "expires": "al cerrar, cancelar o revocar el epic",
     "publication": "sin push automatico",
-    "source": "docs/epics/epic-006-opencode-concurrency/execution.md",
-    "status": "revoked",
-    "epic_id": "epic-006-opencode-concurrency",
-    "revoked_at": "2026-10-23",
-    "revoked_reason": "epic-006 cerrado y publicado (1fd2ed3); el próximo epic requiere aprobación del dueño"
+    "source": "docs/planning/next-epic-discovery-notes.md",
+    "status": "active"
   },
   "last_updated": "2026-10-22T07:29:54.953730+00:00",
   "delegation_history": [

@@ -1,7 +1,7 @@
 # Próximo epic — Discovery notes (E1, borrador)
 
 Fecha: 2026-10-23. Estado: **borrador de E1; sin epic creado, sin id, sin cambio de estado.**
-Autoridad: el dueño aprueba alcance y plan; no hay HITL delegada vigente (epic-006 revocada).
+Autoridad: **HITL delegada al orquestador (Claude) el 2026-10-23** — ver §7.
 
 ## 1. Insumos reconciliados
 
@@ -53,3 +53,12 @@ Concurrencia (B3/B4) hasta que la operación serial sea confiable; scheduler, jo
 ## 6. Preguntas abiertas al dueño
 
 Ver la conversación de E1 del 2026-10-23; las respuestas se registran aquí antes del gate E1 → E2.
+
+## 7. Mandato — 2026-10-23
+
+El dueño: «Tengo que salir. Te delego todo hitl, pero consulta al architect cada vez que tengas una duda importante, ok? él te va a apoyar.» (Pablo, 2026-10-23).
+
+- **Delegado:** Claude (sesión de Claude Code en este repo), orquestador.
+- **Alcance:** las decisiones de E1/E2 de este epic (alcance, orden, plan), aprobación de spec/plan de sus features, gates, priorización de reviews y Memory Bank con evidencia. Las preguntas abiertas de alcance se resuelven consultando al architect (rol read-only) y quedan registradas con su respuesta.
+- **Reservado al dueño** (igual que en epic-006): despliegue o activación global, cambios en HOME, servicios o procesos compartidos, actualizaciones del runtime, push y publicación.
+- **Vencimiento:** al cerrar, cancelar o revocar el epic. La severidad de los defectos no se relaja.
