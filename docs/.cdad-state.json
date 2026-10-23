@@ -14308,6 +14308,47 @@
       "approved_by": "Pablo (HITL delegada a Claude para epic-006)",
       "closure_path": "docs/specs/006-004-active-decisions-table/closure.md",
       "closure_sha256": "a99aabfe87ba6ef25765a14fabb642eb68179707d33750af704e160a55425321"
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-23T23:51:07.769854+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "2b285a6601c08a02dd36bc70728b18a646bf17fb399bc258bf9f6b07ba6c48cd",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "007-001-unambiguous-entry-architect-discovery-001",
+        "receipt_sha256": "a7437c5ebf2f3ae8b5adece912e613d681b037ec0e3e71c3346055295985de71",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-001-unambiguous-entry/discovery.md",
+            "da795db57f48543b5c0acd1a4a321cd50bb842c46a3dca6eac8591594bb0c2c5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-001-unambiguous-entry-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-001-unambiguous-entry-001/007-001-unambiguous-entry-architect-discovery-001/receipt.json",
+      "receipt_sha256": "a7437c5ebf2f3ae8b5adece912e613d681b037ec0e3e71c3346055295985de71",
+      "artifacts": {
+        "docs/specs/007-001-unambiguous-entry/discovery.md": "da795db57f48543b5c0acd1a4a321cd50bb842c46a3dca6eac8591594bb0c2c5"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14322,7 +14363,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-22T07:29:54.953730+00:00",
+  "last_updated": "2026-10-23T23:51:07.769854+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -14433,7 +14474,7 @@
     "id": "007-001-unambiguous-entry-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "dispatched",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "5ed7186f3e3006951c162d8eeabd0ba7a52a3109bf4b2705123d04f746035152"
