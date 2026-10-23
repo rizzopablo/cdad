@@ -43,4 +43,4 @@ ADR-031, ADR-032, ADR-033 y ADR-034, todos materializados. No quedan decisiones 
 6. No hay verbo para rehacer un paquete abandonado: el encargo se reconstruye a mano desde el REQUEST anterior (`--replace-packet` sólo admite nunca despachados).
 7. Verbos repartidos entre scripts (`status`/`record`/`prepare` en `cdad_packet.py`/`cdad_dispatch.py`, `begin`/`resume` en `cdad_continuity.py`) y el cuerpo del orquestador no los mapea: tres invocaciones erróneas en el recorrido (`status`, `begin`, `record`).
 8. `cdad_dispatch.py record` sin `--parent`/`--since` devuelve rc 0 «no session accredited» sin entrega (pariente de W-2).
-9. Modelo: sin `model:` en los agentes, la selección automática eligió un modelo gratuito que falló a los 7 s con 0 tokens; el orquestador reportó un modelo que no había pasado.
+9. Modelo: el defecto no es la herencia (sin `model:` en el agente, el subagente nativo toma el del orquestador: comportamiento esperado del entorno), sino que el orquestador pasó modelos explícitos por instrucción externa, contra I8, y un `mofgw/*` caído hizo fallar el despacho. Además el orquestador reportó un modelo que no había pasado.
