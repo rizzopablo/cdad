@@ -22,7 +22,7 @@ Integración entre features: `integration.md`.
 
 ## Deuda que se lleva
 
-- **AC-7:** pendiente del owner (ver `integration.md`).
+- **AC-7:** cumplido el 2026-10-23 (ver `integration.md`).
 - **006-006:** O-1 (automatizar el selector B/C) y W-2 (rc=0 del adaptador con `blocked`).
 - **006-004:** O-1..O-3, W-U6-1 (fidelidad del scribe), W-U6-2 (re-despacho de un paquete ya entregado, a reproducir) y W-U6-3 (el adaptador solo entrega `role-report` hacia el Memory Bank).
 - **Heredada:** `scope_validation: unknown` (falta un productor de `observed_changes`); D-U65-4/5; DT-8/DT-9; las flakes de la suite (`test_pd13_no_management_invocations_in_any_mode`, entre otras).
@@ -32,3 +32,15 @@ Integración entre features: `integration.md`.
 ## ADR
 
 ADR-031, ADR-032, ADR-033 y ADR-034, todos materializados. No quedan decisiones de arquitectura del epic sin documentar.
+
+### Hallazgos de AC-7 (2026-10-23) — familia «continuidad ↔ estado ↔ entrada»
+
+1. La ruta de despacho usada por el consumidor no registra `begin`/`checkpoint`: la continuidad quedó 3 días atrasada y sólo `reconcile` lo detectó (fallo cerrado P1 por contrato aprobado pero no re-anclado).
+2. `status` no expone el gate vigente del contrato; la aprobación estaba en `stage_history[304]` y el orquestador no la encontró. Las notas «NO aprobada» dentro de la spec confunden.
+3. `reconcile` ante `dispatched-unknown` no nombra la salida existente (`register-transition --transition disposition`).
+4. `reconcile` no lee la disposición del estado: el paquete abandonado sigue `dispatched-unknown` para siempre.
+5. `status` usa la misma `entry` (`continuity-reconcile`) para «despacho sin resolver» y «sólo `resume`»; hay que leer `next.route` para distinguirlos.
+6. No hay verbo para rehacer un paquete abandonado: el encargo se reconstruye a mano desde el REQUEST anterior (`--replace-packet` sólo admite nunca despachados).
+7. Verbos repartidos entre scripts (`status`/`record`/`prepare` en `cdad_packet.py`/`cdad_dispatch.py`, `begin`/`resume` en `cdad_continuity.py`) y el cuerpo del orquestador no los mapea: tres invocaciones erróneas en el recorrido (`status`, `begin`, `record`).
+8. `cdad_dispatch.py record` sin `--parent`/`--since` devuelve rc 0 «no session accredited» sin entrega (pariente de W-2).
+9. Modelo: sin `model:` en los agentes, la selección automática eligió un modelo gratuito que falló a los 7 s con 0 tokens; el orquestador reportó un modelo que no había pasado.
