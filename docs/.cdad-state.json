@@ -15210,6 +15210,88 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 007-002: 14 fallos de contrato, 2 guardas"
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T04:54:54.545058+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "3020a87e41ec25b3ac209e30f1648c694ea680956b8e2666f47bf6711e046f5e",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "007-002-dispatch-recovery-architect-draft-001",
+        "receipt_sha256": "5dc6892a19f7659a1b16b65b355e42de837f793c8855723d632cbabf44a87b6c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-002-dispatch-recovery/spec.md",
+            "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-002-dispatch-recovery-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-002-dispatch-recovery-001/007-002-dispatch-recovery-architect-draft-001/receipt.json",
+      "receipt_sha256": "5dc6892a19f7659a1b16b65b355e42de837f793c8855723d632cbabf44a87b6c",
+      "artifacts": {
+        "docs/specs/007-002-dispatch-recovery/spec.md": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-24T04:55:02.849535+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "1f7f5859ab2b55fb236588582fc38439e9b5a503fa05f478b5ba415638192136",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "delivery",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": "007-002-dispatch-recovery-test-writer-red-001",
+        "receipt_sha256": "1a6387878375486c4917f9e9d9ffd16ab797478f830db3ee21f742a87b48d488",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_007_002_dispatch_recovery.py",
+            "f0310ecdc09db9968cb49a796f9b762ce176a06be979eed6ea11ca8fce9196ec"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-002-dispatch-recovery-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-002-dispatch-recovery-001/007-002-dispatch-recovery-test-writer-red-001/receipt.json",
+      "receipt_sha256": "1a6387878375486c4917f9e9d9ffd16ab797478f830db3ee21f742a87b48d488",
+      "artifacts": {
+        "tests/test_007_002_dispatch_recovery.py": "f0310ecdc09db9968cb49a796f9b762ce176a06be979eed6ea11ca8fce9196ec"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15224,7 +15306,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T04:53:39.298818+00:00",
+  "last_updated": "2026-10-24T04:55:02.849535+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15332,13 +15414,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-002-dispatch-recovery-architect-draft-001",
-    "role": "architect",
-    "substage": "draft",
-    "status": "dispatched",
+    "id": "007-002-dispatch-recovery-test-writer-red-001",
+    "role": "test-writer",
+    "substage": "red",
+    "status": "completed",
     "packet_version": 1,
-    "contract_kind": "approved-unit-contract",
-    "contract_sha256": "ea4347fb96e28c814b367cbb27211925ff7f19877010d142b9b0d7de9fdfff09"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
   },
   "tdd_substage": "green"
 }
