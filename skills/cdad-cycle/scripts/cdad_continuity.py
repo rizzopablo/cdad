@@ -979,8 +979,9 @@ def _disposition_state(root: Path) -> tuple[Any, list[str]]:
 
     A project without that file has no disposition (absence, indistinguishable
     from "never registered" — and never a diagnostic); a PRESENT state that
-    cannot be read is reported as a cause, so absence is never disguised as
-    illegibility nor the other way round."""
+    cannot be read or decoded is reported as a cause, so absence is never
+    disguised as illegibility nor the other way round (review-001 B2: a
+    `UnicodeDecodeError` is an unreadable source, not an abort)."""
     path = root / STATE_REL_PATH
     if not path.is_file():
         return None, []
@@ -990,6 +991,12 @@ def _disposition_state(root: Path) -> tuple[Any, list[str]]:
         return None, [
             f"the project state {STATE_REL_PATH} cannot be read "
             f"({exc.strerror or exc}): the disposition cannot be verified"]
+    except UnicodeError:
+        # review-001 B2: undecodable bytes are an ILLEGIBLE source, not an
+        # abort — the envelope is preserved and the cause is reported.
+        return None, [
+            f"the project state {STATE_REL_PATH} is not decodable as UTF-8: "
+            f"the disposition cannot be verified (no reliable signal)"]
     try:
         document = json.loads(raw)
     except ValueError:

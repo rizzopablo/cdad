@@ -5660,6 +5660,10 @@ LATE_DELIVERY_STAGE = "late-delivery"
 # PD-21: the closed vocabulary of `--resolution` (the declared decision over a
 # dispatch that will not come back).
 DISPOSITION_RESOLUTIONS = ("abandoned", "superseded")
+# PD-7/D-13: the closed vocabulary of `--outcome`, the recorded outcome of a
+# postcondition. The identity payload carries it as `postcondition.outcome`, so
+# the canonical verifier and the invocation consume the SAME declaration.
+POSTCONDITION_OUTCOMES = ("red", "green")
 # PD-7: the closed vocabulary of the operational stage field `--current-stage`.
 # Canonical text: skills/cdad-cycle/references/state-detection.md:20-37 (the
 # resting value `idle` included; `done` is the closure result, not a stage of
@@ -5795,12 +5799,13 @@ def _canonical_disposition_cause(entry: dict[str, Any], *, execution_id: str,
     if missing:
         return (f"the `transition_key_payload` is not the producer's complete "
                 f"structure: missing {missing}")
-    unexpected = sorted(set(payload) - DISPOSITION_PAYLOAD_KEYS - {"exemption"})
+    unexpected = sorted(set(payload) - DISPOSITION_PAYLOAD_KEYS)
     if unexpected:
+        # `exemption` belongs to a `gate` (006-006 PD-9) and the producer OMITS
+        # it when no exemption is declared, which is always the case for a
+        # disposition: a payload carrying it is not one this producer emits.
         return (f"the `transition_key_payload` carries fields the producer does "
                 f"not write for a disposition: {unexpected}")
-    if "exemption" in payload and not isinstance(payload["exemption"], dict):
-        return "the `transition_key_payload.exemption` is not an object"
     for field, expected, label in (
             ("execution_id", execution_id, "execution"),
             ("feature_id", feature_id, "feature"),
@@ -5814,8 +5819,14 @@ def _canonical_disposition_cause(entry: dict[str, Any], *, execution_id: str,
     if payload["stage"] != DISPOSITION_STAGE:
         return (f"the `transition_key_payload` carries another stage "
                 f"({payload['stage']!r}, not {DISPOSITION_STAGE!r})")
-    if payload["substage"] is not None and not isinstance(payload["substage"], str):
-        return "the `transition_key_payload.substage` is neither null nor a string"
+    # §2.1.4: the values travel as the CLI RESOLVED them, so they belong to the
+    # closed vocabularies the invocation validates (the producer rejects any
+    # other value before writing).
+    substage = payload["substage"]
+    if substage is not None and (
+            not isinstance(substage, str) or substage not in VALID_SUBSTAGES):
+        return (f"the `transition_key_payload.substage` {substage!r} is outside "
+                f"the closed vocabulary {sorted(VALID_SUBSTAGES)}")
     resolution = entry.get("resolution")
     replaced_by = entry.get("replaced_by")
     if payload["resolution"] != resolution:
@@ -5846,19 +5857,31 @@ def _canonical_disposition_cause(entry: dict[str, Any], *, execution_id: str,
             not isinstance(postcondition, dict)
             or set(postcondition) != {"n", "outcome"}
             or not all(isinstance(postcondition[key], str)
-                       for key in ("n", "outcome"))):
+                       for key in ("n", "outcome"))
+            or re.fullmatch(r"-?[0-9]+", postcondition["n"]) is None
+            or postcondition["outcome"] not in POSTCONDITION_OUTCOMES):
         return ("the `transition_key_payload.postcondition` is not the "
-                "producer's form")
-    if payload["current_stage"] is not None \
-            and not isinstance(payload["current_stage"], str):
-        return "the `transition_key_payload.current_stage` is neither null nor a string"
+                "producer's form (`{\"n\": <integer>, \"outcome\": "
+                "red|green}`)")
+    if payload["current_stage"] is not None and (
+            not isinstance(payload["current_stage"], str)
+            or payload["current_stage"] not in VALID_CURRENT_STAGES):
+        return (f"the `transition_key_payload.current_stage` "
+                f"{payload['current_stage']!r} is outside the closed vocabulary "
+                f"{sorted(VALID_CURRENT_STAGES)}")
     artifacts = payload["artifacts"]
     if not isinstance(artifacts, list) or any(
             not isinstance(item, list) or len(item) != 2
             or not all(isinstance(part, str) for part in item)
+            or not item[0]
+            or re.fullmatch(r"[0-9a-f]{64}", item[1]) is None
             for item in artifacts):
         return ("the `transition_key_payload.artifacts` is not the producer's "
-                "`[path, sha256]` list")
+                "`[path, sha256]` list: each pair is a cited path and its "
+                "64-hex digest")
+    if artifacts != sorted(artifacts):
+        return ("the `transition_key_payload.artifacts` is not sorted by path: "
+                "the producer canonicalizes the list by path")
     for field in ("approved_by", "receipt_sha256", "contract", "plan", "closure"):
         if payload[field] is not None:
             return (f"the `transition_key_payload.{field}` is filled: the "
@@ -7995,7 +8018,7 @@ def build_parser() -> argparse.ArgumentParser:
                           help="cited artifact (repeatable); its digest is derived (PD-20)")
     register.add_argument("--postcondition", metavar="N", type=int,
                           help="the postcondition the delivery records")
-    register.add_argument("--outcome", choices=("red", "green"),
+    register.add_argument("--outcome", choices=POSTCONDITION_OUTCOMES,
                           help="the recorded outcome of --postcondition")
     register.add_argument("--supersedes", metavar="TRANSITION_KEY",
                           help="the entry this transition supersedes (structural vigency)")
