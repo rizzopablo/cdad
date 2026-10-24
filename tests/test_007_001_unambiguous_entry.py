@@ -85,6 +85,13 @@ RED de corrección (review-001, packet test-writer-red-002):
       (REQUEST.json alcanzado por symlink que escapa del árbol de paquetes:
       `pending-work-unresolved` + `desconocida` + causa en `unknowns`)
 
+RED de cierre (review-002, packet test-writer-red-003):
+
+  test_null_history_value_is_unknown_not_absent -> BLOCKING residual
+      (`stage_history`/`epic_history` con clave presente y valor null:
+      `desconocida` con causa en `reason` y en `unknowns`; `[]` sigue
+      produciendo `ausente` en el control del mismo fixture)
+
 Aclaraciones del audit aplicadas aquí:
 
 1. Estado ilegible → `situation=diagnosis` (y `at-rest` exige estado
@@ -2540,6 +2547,156 @@ def test_request_symlink_escape_is_unresolved(tmp_path: Path) -> None:
         unknowns,
         [[_SOURCE_REQUEST], [_CONDITION_ESCAPE]],
         "review-001 BLOCKING 3",
+    )
+
+
+# --------------------- review-002 residual (clave presente, valor null)
+# review-002 distingue PERTENENCIA de clave y VALOR: una fuente de aprobación
+# presente con valor null no es un historial legible y vacío. `[]` conserva el
+# resultado `ausente` (guarda ya cubierta por MALFORMED_SOURCE_CASES y
+# verificado de nuevo como control del MISMO fixture en este test).
+
+_CONDITION_NULL_HISTORY = re.compile(
+    r"(?i)null|none|nil|lista|list|array|tipo|type|shape|estructura|"
+    r"interpret|malform|invalid|unreadable|ilegible|readable|"
+    r"no puede leer|no se puede leer|ausente|absent|missing"
+)
+
+
+def _r2_null_stage_history(base: Path) -> tuple[Path, Path]:
+    """`stage_history` presente con valor null (no es un historial vacío)."""
+    root, home = _case_prepared(base)
+    state = read_state(root)
+    state["stage_history"] = None
+    write_state(root, state)
+    return root, home
+
+
+def _r2_empty_stage_history(base: Path) -> tuple[Path, Path]:
+    """Control: `stage_history` presente y vacío → ausente (guarda vigente)."""
+    root, home = _case_prepared(base)
+    state = read_state(root)
+    state["stage_history"] = []
+    write_state(root, state)
+    return root, home
+
+
+def _r2_null_epic_history(base: Path) -> tuple[Path, Path]:
+    """`epic_history` presente con valor null (no es un historial vacío)."""
+    root, home, _plan_rel = _architect_project(base)
+    state = read_state(root)
+    state["epic_history"] = None
+    write_state(root, state)
+    return root, home
+
+
+def _r2_empty_epic_history(base: Path) -> tuple[Path, Path]:
+    """Control: `epic_history` presente y vacío → ausente (guarda vigente)."""
+    root, home, _plan_rel = _architect_project(base)
+    state = read_state(root)
+    state["epic_history"] = []
+    write_state(root, state)
+    return root, home
+
+
+NULL_HISTORY_CASES = [
+    pytest.param(
+        _r2_null_stage_history,
+        _r2_empty_stage_history,
+        "test-writer",
+        "feature-spec",
+        _SOURCE_STAGE_HISTORY,
+        id="stage-history-null",
+    ),
+    pytest.param(
+        _r2_null_epic_history,
+        _r2_empty_epic_history,
+        "architect",
+        "epic-plan",
+        _SOURCE_EPIC_HISTORY,
+        id="epic-history-null",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "build,control_build,expected_role,expected_object,source_pattern",
+    NULL_HISTORY_CASES,
+)
+def test_null_history_value_is_unknown_not_absent(
+    tmp_path: Path,
+    build,
+    control_build,
+    expected_role: str,
+    expected_object: str,
+    source_pattern: re.Pattern,
+) -> None:
+    """review-002 residual (PC-06/S1, PC-05/A1, §2.3 y §2.4): una fuente de
+    aprobación con la clave presente y valor `null` no puede interpretarse
+    como historial: produce `desconocida` (nunca `ausente`) con una causa de
+    fuente y condición en `reason` y en `unknowns`, conservando los
+    diagnósticos anteriores. `[]` sigue produciendo `ausente` (control del
+    mismo fixture; guarda ya existente)."""
+    control_root, control_home = control_build(tmp_path / "control")
+    control = _document(_status(control_root, control_home))
+    control_ref = _approval_reference(control)
+    assert control_ref["status"] == "ausente", (
+        "review-002/§2.3: un historial presente y VACÍO ([]) sigue siendo "
+        f"ausencia, no desconocida: {control_ref['status']!r}"
+    )
+    assert control_ref["record"] is None, (
+        f"review-002/§2.3: `[]` no inventa registro: {control_ref['record']!r}"
+    )
+    control_unknowns = _key(control, "unknowns")
+
+    root, home = build(tmp_path / "case")
+    proc = _status(root, home)
+    _assert_no_history_token(proc, "review-002")
+    doc = _document(proc)
+    ref = _approval_reference(doc)
+
+    assert ref["role"] == expected_role, (
+        "review-002/§2.3: el rol se resuelve desde el request legible: "
+        f"{ref['role']!r}"
+    )
+    assert ref["object"] == expected_object, (
+        "review-002/§2.3: el objeto se resuelve desde el request legible: "
+        f"{ref['object']!r}"
+    )
+    assert ref["status"] == "desconocida", (
+        "review-002/§2.3 S1-A1: una clave presente con valor null no es un "
+        "historial legible y vacío; el resultado es desconocida, no "
+        f"ausente: {ref['status']!r} (reason={ref['reason']!r})"
+    )
+    assert ref["status"] != "ausente", (
+        "review-002/INV-4: desconocido no equivale a ausente: "
+        f"{ref['status']!r}"
+    )
+    assert ref["record"] is None, (
+        "review-002/§2.3: sin historial interpretable no se fabrica un "
+        f"localizador: {ref['record']!r}"
+    )
+    assert isinstance(ref["reason"], str) and ref["reason"].strip(), (
+        "review-002: `desconocida` explica su causa en `reason`"
+    )
+    _assert_new_cause(
+        [ref["reason"]],
+        [[source_pattern], [_CONDITION_NULL_HISTORY]],
+        "review-002/reason",
+    )
+
+    unknowns = _key(doc, "unknowns")
+    _assert_preserved(control_unknowns, unknowns)
+    new_causes = [entry for entry in unknowns if entry not in control_unknowns]
+    assert new_causes, (
+        "review-002/§2.4: la causa del historial presente con valor null debe "
+        "agregarse a `unknowns` sin sustituir los diagnósticos anteriores: "
+        f"{unknowns!r}"
+    )
+    _assert_new_cause(
+        new_causes,
+        [[source_pattern], [_CONDITION_NULL_HISTORY]],
+        "review-002/unknowns",
     )
 
 
