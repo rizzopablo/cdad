@@ -14436,6 +14436,52 @@
       "contract_sha256": "c88bab66fc12b986cc1b9e2dc6af6887b1a06c5460982a462de99fbbb77498a3",
       "requested_by": "usuario",
       "delegated": true
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T00:03:38.791175+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "2ff3c8dd3efe9bbd0bd5285e485ef6407b9bbad9b28f0143d741e7174d2c9bcd",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-001-unambiguous-entry/spec.md",
+          "sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Enmienda menor post-audit (aclaraciones 1-3 del architect): ilegibilidad -> diagnosis y at-rest exige estado legible; alcance de S3 con el selector vigente; observed_sha256 null explicito en draft-plan.",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-001-unambiguous-entry/spec.md",
+      "contract_sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14450,7 +14496,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T00:00:14.002662+00:00",
+  "last_updated": "2026-10-24T00:03:38.791175+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",

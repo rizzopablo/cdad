@@ -31,7 +31,9 @@ Agregar siempre el campo raíz `situation`, con uno de estos valores:
 | `packet-prepared` | Fuera de diagnóstico, existe paquete activo inequívoco y está `prepared`. |
 | `pending-work-unresolved` | Existe trabajo pendiente según el criterio existente, pero no hay paquete activo inequívoco preparado o despachado; o existe una inconsistencia comprobada en la pertenencia del paquete activo. |
 | `execution-active` | Existe ejecución activa sin las condiciones anteriores. |
-| `at-rest` | No existe ejecución activa ni las condiciones anteriores. |
+| `at-rest` | No existe ejecución activa ni las condiciones anteriores, **y el estado es legible**. |
+
+**Precedencia por ilegibilidad:** si `docs/.cdad-state.json` no puede leerse o interpretarse, `situation=diagnosis`, `verb=diagnose`, `script=null`, `procedure=references/project-start.md`, `source=docs/.cdad-state.json`; se conservan `entry` y `next.route`. No se usa `pending-work-unresolved`: tampoco está probado que exista trabajo pendiente, y `at-rest` exige estado legible (INV-4).
 
 La tabla establece precedencia de arriba abajo. Una inconsistencia de pertenencia se explica en `unknowns`; fuera de `diagnosis`, produce `pending-work-unresolved` y no habilita despacho.
 
@@ -129,7 +131,7 @@ Conservar intacto `authority.approval`. Agregar su hermano `authority.approval_r
 }
 ```
 
-Todos los campos mostrados son obligatorios; `record` y `contract` pueden ser `null`. Cuando se conoce la declaración del contrato pero no pueden leerse sus bytes, `contract` conserva la ruta y el digest declarados, con `observed_sha256=null`.
+Todos los campos mostrados son obligatorios; `record` y `contract` pueden ser `null`. Cuando se conoce la declaración del contrato pero no pueden leerse sus bytes, `contract` conserva la ruta y el digest declarados, con `observed_sha256=null`. Si no se emite el objeto `contract`, no se inventa; si se emite sin haber comprobado bytes (caso `draft-plan`), `observed_sha256` es `null` explícito, nunca omitido.
 
 #### Vocabulario
 
@@ -200,6 +202,8 @@ No es necesario comprobar los bytes del borrador para establecer que su aprobaci
 | S6 | Existe pin coincidente y los bytes actuales coinciden. | `vigente`; primer registro no sustituido con pin coincidente. |
 
 S1 precede a ausencia y sustitución: la clasificación requiere las fuentes legibles indicadas, aunque otra condición pudiera conocerse parcialmente.
+
+**Alcance de S3:** «ninguno no sustituido» se evalúa con el selector vigente, que recoge `supersedes` de cualquier entrada (`_superseded_transition_keys`) y excluye las aprobaciones cuyas claves aparezcan allí. Es alcanzable con una entrada no aprobatoria posterior que sustituya la clave de la única aprobación; el fixture describe el estado observado por el selector, no una secuencia válida del protocolo.
 
 S2 y S3 preceden a las discrepancias: no hay resultados simultáneos «ausente y contrato cambiado» ni «sustituida y contrato cambiado». Las discrepancias adicionales comprobadas pueden explicarse en `reason`, sin cambiar el resultado normativo ni su registro.
 
