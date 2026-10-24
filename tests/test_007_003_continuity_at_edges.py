@@ -125,6 +125,15 @@ Corrección RED-002 (review-001, tres BLOCKING reproducidos):
          conserva su idempotencia byte-idéntica aunque después se abra
          continuidad; una observación realmente distinta sigue rechazándose.
 
+Corrección RED-003 (re-review de review-001, BLOCKING subsistente):
+
+  test_evidence_antecedent_requires_demonstrable_history
+      -> PC-06/§2.3.1/§2.5/INV-7: un antecedente de evidencia que nombra un
+         cuerpo legado sin `prev` es historia no demostrable y no se acredita:
+         la invalidación se rechaza sin publicar enlace, con diagnóstico de
+         historia no demostrable; la misma invalidación sobre una cadena
+         demostrable sigue publicando su enlace.
+
 RED de la corrección (review-001, HEAD 522de92, medido con esta fixture):
 - `verify-begin` acredita un `begin` sobre una cadena cuyo génesis no
   declara `prev` (rc=0 sobre historia no demostrable) → falla la aserción
@@ -135,6 +144,9 @@ RED de la corrección (review-001, HEAD 522de92, medido con esta fixture):
 - Repetir byte-idénticamente un registro durable `continuity: absent`
   después de abrir `begin` devuelve rc=2 → falla la aserción de
   idempotencia.
+- `checkpoint` acepta un antecedente de evidencia sobre un cuerpo legado
+  (historia no demostrable) y publica `seq=2` (rc=0): falla la aserción de
+  rechazo del caso nuevo (HEAD acd51e8, medido con esta misma fixture).
 
 RED hoy (HEAD f557e26, medido con esta misma fixture):
 - `verify-begin` y `checkpoint-receipt` NO existen (`invalid choice`) y
@@ -2900,6 +2912,150 @@ def test_durable_registration_replay_does_not_require_current_continuity(
     ):
         cases.run(label, case)
     cases.raise_if_any("PC-02 replay durable")
+
+
+def test_evidence_antecedent_requires_demonstrable_history(
+        tmp_path: Path) -> None:
+    """PC-06/§2.3.1/§2.5 (re-review de review-001, BLOCKING subsistente): un
+    antecedente de evidencia sólo se acredita si su cuerpo pertenece a la
+    cadena DEMOSTRABLE vigente. Un cuerpo legado sin `prev` —aunque exista,
+    sea legible y su digest coincida con el antecedente— es historia no
+    demostrable y no sirve de antecedente: la invalidación se rechaza sin
+    publicar enlace, con diagnóstico de historia no demostrable. La misma
+    invalidación sobre una cadena demostrable sigue funcionando.
+    """
+    cases = _Cases()
+
+    def legacy_begin_with_evidence(base: Path):
+        """Fixture: `begin` con evidencia `a`, cuyo cuerpo se convierte en
+        legado sin `prev` recalculando digest y cabeza (el cuerpo legado es
+        el único físicamente presente y es el que el antecedente nombra)."""
+        fx = _Project(base)
+        rel, digest = fx.write_reference(
+            "docs/evidence/red-pc-1.txt", "prueba PC-1 (base)\n")
+        begin = json_doc(
+            fx.begin(attempt=1, label="evidence-legacy",
+                     evidence=[evidence_entry("red-pc-1", rel, digest)]),
+            "antecedente no demostrable", "`begin` con la evidencia `a`")
+        base_sha = begin.get("body_sha256")
+        assert isinstance(base_sha, str) and base_sha, (
+            "precondición (fixture): el `begin` publica su `body_sha256`: "
+            f"{begin!r}")
+        head = fx.head("antecedente no demostrable")
+        assert head.get("body_sha256") == base_sha, (
+            "precondición (fixture): la cabeza apunta al cuerpo del `begin`: "
+            f"{head!r}")
+        body = fx.body(base_sha, "antecedente no demostrable")
+        require_prev(body, "antecedente no demostrable", base_sha)
+        body.pop(PREV_KEY)  # cuerpo legado: sin enlace histórico
+        legacy_sha = fx.write_body(body)
+        assert fx.body_path(base_sha).is_file(), (
+            "precondición (fixture): el cuerpo original existe antes de "
+            "reemplazarlo por su variante legada")
+        fx.body_path(base_sha).unlink()
+        head["body_sha256"] = legacy_sha
+        fx.write_head(head)
+
+        stored = load_json(
+            fx.body_path(legacy_sha), "antecedente no demostrable")
+        assert PREV_KEY not in stored, (
+            "precondición (fixture): el cuerpo convertido es legado (sin "
+            f"`prev`); claves: {sorted(stored)}")
+        entries = {item.get("id"): item
+                   for item in stored.get("evidence") or []
+                   if isinstance(item, dict)}
+        assert (entries.get("red-pc-1") or {}).get("reference") == {
+            "path": rel, "sha256": digest}, (
+            "precondición (fixture): el cuerpo legado conserva la evidencia "
+            f"`a` con su referencia; visto {entries.get('red-pc-1')!r}")
+        return fx, rel, digest, legacy_sha
+
+    def invalidation_over_legacy_body() -> None:
+        fx, rel, digest, legacy_sha = legacy_begin_with_evidence(
+            tmp_path / "legacy-antecedent")
+        before_head = fx.head_bytes()
+        before = fx.continuity_files()
+        assert set(fx.bodies()) == {legacy_sha}, (
+            "precondición (fixture): la cadena sólo tiene el cuerpo legado; "
+            f"vistos {sorted(fx.bodies())}")
+        proc = fx.checkpoint(
+            attempt=1, label="invalidate-over-legacy",
+            evidence=[evidence_entry(
+                "red-pc-1", rel, digest, status="invalidada",
+                reason="la reparación cambió el comportamiento verificado",
+                antecedent={"body_sha256": legacy_sha,
+                            "evidence_id": "red-pc-1"})])
+        assert_rejected(
+            proc, "antecedente no demostrable",
+            "la invalidación de evidencia cuyo antecedente vive en un cuerpo "
+            "legado (historia no demostrable)", pattern=CHAIN_PATTERN)
+        assert fx.head_bytes() == before_head, (
+            "§2.3.1/§2.5: el rechazo no reescribe la cabeza")
+        assert fx.continuity_files() == before, (
+            "§2.3.1/§2.5: el rechazo no publica el enlace del checkpoint "
+            "(cabeza y cuerpos intactos)")
+        assert set(fx.bodies()) == {legacy_sha}, (
+            "§2.3.1: el rechazo no agrega un cuerpo nuevo a la cadena; "
+            f"vistos {sorted(fx.bodies())}")
+
+    def invalidation_over_demonstrable_chain() -> None:
+        fx = _Project(tmp_path / "demonstrable-antecedent")
+        rel, digest = fx.write_reference(
+            "docs/evidence/red-pc-1.txt", "prueba PC-1 (base)\n")
+        begin = json_doc(
+            fx.begin(attempt=1, label="evidence-demonstrable",
+                     evidence=[evidence_entry("red-pc-1", rel, digest)]),
+            "cadena demostrable", "`begin` con la evidencia `a`")
+        base_sha = begin.get("body_sha256")
+        assert isinstance(base_sha, str) and base_sha, (
+            "precondición (fixture): el `begin` publica su `body_sha256`: "
+            f"{begin!r}")
+        before_head = fx.head("cadena demostrable")
+        assert before_head.get("body_sha256") == base_sha, (
+            "precondición (fixture): la cabeza es el cuerpo del `begin`: "
+            f"{before_head!r}")
+        assert_rc0(
+            fx.checkpoint(
+                attempt=1, label="invalidate-demonstrable",
+                evidence=[evidence_entry(
+                    "red-pc-1", rel, digest, status="invalidada",
+                    reason="la reparación cambió el comportamiento "
+                           "verificado",
+                    antecedent={"body_sha256": base_sha,
+                                "evidence_id": "red-pc-1"})]),
+            "cadena demostrable",
+            "la misma invalidación sobre una cadena demostrable")
+        head = fx.head("cadena demostrable")
+        assert head.get("seq") == 2, (
+            "cadena demostrable: la invalidación publica un enlace nuevo "
+            f"(seq=2); visto seq={head.get('seq')!r}")
+        body = fx.body(head.get("body_sha256", ""), "cadena demostrable")
+        fx.assert_new_link_coherent(
+            before_head, head, body, "cadena demostrable")
+        entries = {item.get("id"): item
+                   for item in body.get("evidence") or []
+                   if isinstance(item, dict)}
+        entry = entries.get("red-pc-1") or {}
+        assert entry.get("status") == "invalidada", (
+            "§2.5: la evidencia invalidada conserva su estado; visto "
+            f"{entry.get('status')!r}")
+        assert entry.get("reference") == {"path": rel, "sha256": digest}, (
+            "§2.5: la invalidación conserva la identidad de la evidencia "
+            f"invalidada; visto {entry.get('reference')!r}")
+        assert entry.get("antecedent") == {
+            "body_sha256": base_sha, "evidence_id": "red-pc-1"}, (
+            "§2.5: el antecedente acreditable queda trazado; visto "
+            f"{entry.get('antecedent')!r}")
+        assert entry.get("reason"), (
+            "§2.5: la invalidación declara un motivo no vacío")
+
+    for label, case in (
+        ("antecedente sobre cuerpo legado", invalidation_over_legacy_body),
+        ("antecedente sobre cadena demostrable",
+         invalidation_over_demonstrable_chain),
+    ):
+        cases.run(label, case)
+    cases.raise_if_any("PC-06 antecedente demostrable")
 
 
 
