@@ -14517,6 +14517,43 @@
       "artifacts": {},
       "note": "Contrato enmendado tras el audit (aclaraciones del architect): la spec zip cambió y el paquete queda pinneado al hash anterior. El informe se materializó en docs/specs/007-001-unambiguous-entry/test-audit.md (53edbba) y el RED se prepara contra el contrato vigente.",
       "resolution": "abandoned"
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "tdd",
+      "substage": "green",
+      "at": "2026-10-24T00:30:39.407020+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "80b0ef81cd67b46f40dd582bd8b0e8b4c644befb494a5fbbe29cbf35e0e1a73a",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "advance",
+        "stage": "tdd",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "14",
+          "outcome": "red"
+        },
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "RED de 007-001: 15 tests, 38 fallos de asercion, control PC-12 verde"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14531,7 +14568,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T00:05:51.269451+00:00",
+  "last_updated": "2026-10-24T00:30:39.407020+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -14642,10 +14679,10 @@
     "id": "007-001-unambiguous-entry-test-writer-red-001",
     "role": "test-writer",
     "substage": "red",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728"
   },
-  "tdd_substage": null
+  "tdd_substage": "green"
 }
