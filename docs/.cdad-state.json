@@ -14967,10 +14967,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-001-unambiguous-entry-implementer-green-002",
-    "role": "implementer",
-    "substage": "green",
-    "status": "completed",
+    "id": "007-001-unambiguous-entry-reviewer-review-002",
+    "role": "reviewer",
+    "substage": "review",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "55f9723f8b472642ea7ed44358ac16ce05171ecbe5ec99837508509913c175b5"
