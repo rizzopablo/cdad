@@ -15292,6 +15292,40 @@
         "tests/test_007_002_dispatch_recovery.py": "f0310ecdc09db9968cb49a796f9b762ce176a06be979eed6ea11ca8fce9196ec"
       },
       "note": null
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "review",
+      "substage": "review",
+      "at": "2026-10-24T06:01:32.837155+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "595347de8335572ddd91ae1f1f8fce21af5281ad9f1b6308ce0b59deb78e68b4",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "advance",
+        "stage": "review",
+        "substage": "review",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "GREEN 007-002 completo: 16/16 y suite 1523 passed"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15306,7 +15340,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T04:55:02.849535+00:00",
+  "last_updated": "2026-10-24T06:01:32.837155+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15422,5 +15456,5 @@
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
   },
-  "tdd_substage": "green"
+  "tdd_substage": "review"
 }
