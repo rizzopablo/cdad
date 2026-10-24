@@ -14558,13 +14558,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-001-unambiguous-entry-architect-draft-001",
-    "role": "architect",
-    "substage": "draft",
-    "status": "completed",
+    "id": "007-001-unambiguous-entry-test-writer-audit-001",
+    "role": "test-writer",
+    "substage": "audit",
+    "status": "prepared",
     "packet_version": 1,
-    "contract_kind": "approved-unit-contract",
-    "contract_sha256": "5ed7186f3e3006951c162d8eeabd0ba7a52a3109bf4b2705123d04f746035152"
+    "contract_kind": "approved-feature-spec",
+    "contract_sha256": "c88bab66fc12b986cc1b9e2dc6af6887b1a06c5460982a462de99fbbb77498a3"
   },
   "tdd_substage": null
 }
