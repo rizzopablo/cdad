@@ -15454,6 +15454,47 @@
         "docs/specs/007-003-continuity-at-edges/discovery.md": "59f2fefc751c9389273ece6921c991894929c951c6900b5024cf647bb3cbdb21"
       },
       "note": null
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T07:22:14.116078+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "1f1584393faee257809506920bc323431bf5ad8a04e8205003d9593ffd3ce5d3",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "007-003-continuity-at-edges-architect-draft-001",
+        "receipt_sha256": "c9257cb36b0f95d7ed3945d36963d12423a7f136d9f508584763d15acaba5dff",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-003-continuity-at-edges/spec.md",
+            "3a311f603c24a09baba75d6413768280454d2a0240a06b8a33ae8f9201f9d19d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-003-continuity-at-edges-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-003-continuity-at-edges-001/007-003-continuity-at-edges-architect-draft-001/receipt.json",
+      "receipt_sha256": "c9257cb36b0f95d7ed3945d36963d12423a7f136d9f508584763d15acaba5dff",
+      "artifacts": {
+        "docs/specs/007-003-continuity-at-edges/spec.md": "3a311f603c24a09baba75d6413768280454d2a0240a06b8a33ae8f9201f9d19d"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15468,7 +15509,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T07:18:00.037935+00:00",
+  "last_updated": "2026-10-24T07:22:14.116078+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15576,9 +15617,9 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-003-continuity-at-edges-architect-discovery-001",
+    "id": "007-003-continuity-at-edges-architect-draft-001",
     "role": "architect",
-    "substage": "discovery",
+    "substage": "draft",
     "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
