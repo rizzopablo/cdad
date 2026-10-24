@@ -14390,6 +14390,52 @@
         "docs/specs/007-001-unambiguous-entry/spec.md": "7c2f6bdec3419840c31047e2afb5d979d12614f24e982bee1d34581e41a16b1f"
       },
       "note": null
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T00:00:14.002662+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "bcd2c136ae3f14687bb36093bdf5842831c83c40ad3e276d6e56f15bac238fa3",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-001-unambiguous-entry/spec.md",
+          "sha256": "c88bab66fc12b986cc1b9e2dc6af6887b1a06c5460982a462de99fbbb77498a3"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-001-unambiguous-entry/spec.md",
+      "contract_sha256": "c88bab66fc12b986cc1b9e2dc6af6887b1a06c5460982a462de99fbbb77498a3",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14404,7 +14450,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-23T23:53:20.518474+00:00",
+  "last_updated": "2026-10-24T00:00:14.002662+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",

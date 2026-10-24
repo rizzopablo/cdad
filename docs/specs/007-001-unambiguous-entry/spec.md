@@ -1,7 +1,7 @@
 # spec.md — 007-001-unambiguous-entry
 
-**Estado:** borrador; pendiente de aprobación explícita.  
-**Autoridad:** contrato de unidad y discovery aprobado de 007-001.  
+**Estado:** APROBADA el 2026-10-23 por el orquestador (HITL delegada del dueño), tras re-revisión independiente con dictamen APTO y sin hallazgos pendientes.
+**Autoridad:** contrato de unidad y decisiones del orquestador al final del discovery de 007-001.
 **Plan adicional:** no requerido; una única unidad de implementación y revisión.
 
 ## 1. Descripción funcional
@@ -12,7 +12,7 @@ El orquestador debe identificar desde `cdad_packet.py status`:
 2. La siguiente operación, el script que la ejecuta y su procedimiento.
 3. La referencia verificable a la aprobación aplicable al rol y objeto actuales.
 
-La evolución es **aditiva**: conserva `entry`, los campos existentes y sus significados. No crea autoridad, gates, almacenamiento de continuidad ni registros de intentos.
+La evolución es **aditiva**: conserva `entry`, los campos existentes y sus significados. Permite extender `unknowns` con las causas diagnósticas expresamente definidas en esta especificación, sin perder diagnósticos anteriores. No crea autoridad, gates, almacenamiento de continuidad ni registros de intentos.
 
 La implementación canónica está en `skills/cdad-cycle/scripts/cdad_packet.py`; `scripts/cdad_packet.py` sigue siendo su wrapper.
 
@@ -27,15 +27,43 @@ Agregar siempre el campo raíz `situation`, con uno de estos valores:
 | Valor exacto | Condición |
 |---|---|
 | `diagnosis` | La selección existente devuelve `entry=diagnosis`. |
-| `packet-dispatched` | Fuera de diagnóstico, el paquete activo pertenece a la ejecución activa y está `dispatched`. |
-| `packet-prepared` | Fuera de diagnóstico, el paquete activo pertenece a la ejecución activa y está `prepared`. |
-| `pending-work-unresolved` | Existe trabajo pendiente, pero no hay un paquete activo inequívoco preparado o despachado. |
-| `execution-active` | Existe ejecución activa sin trabajo pendiente. |
-| `at-rest` | No existe ejecución activa ni trabajo pendiente. |
+| `packet-dispatched` | Fuera de diagnóstico, existe paquete activo inequívoco y está `dispatched`. |
+| `packet-prepared` | Fuera de diagnóstico, existe paquete activo inequívoco y está `prepared`. |
+| `pending-work-unresolved` | Existe trabajo pendiente según el criterio existente, pero no hay paquete activo inequívoco preparado o despachado; o existe una inconsistencia comprobada en la pertenencia del paquete activo. |
+| `execution-active` | Existe ejecución activa sin las condiciones anteriores. |
+| `at-rest` | No existe ejecución activa ni las condiciones anteriores. |
 
-La tabla establece precedencia de arriba abajo. Una inconsistencia de pertenencia del paquete se clasifica como `pending-work-unresolved`, se explica en `unknowns` y no habilita despacho.
+La tabla establece precedencia de arriba abajo. Una inconsistencia de pertenencia se explica en `unknowns`; fuera de `diagnosis`, produce `pending-work-unresolved` y no habilita despacho.
 
 La ejecución histórica dejada tras cerrar una feature no es ejecución activa. Se conserva el criterio existente de `_active_execution`.
+
+#### Pertenencia y selección mínima
+
+Esta proyección reutiliza los datos de `_active_execution`, `_pending_work`, `state.active_packet` y los bindings existentes de `REQUEST.json`. No ejecuta ni exige la validación integral del paquete.
+
+Un **paquete activo inequívoco** requiere conjuntamente:
+
+1. `_active_execution` devuelve una ejecución con `id` no vacío.
+2. Existe `state.active_packet` con identificador no vacío y estado `prepared` o `dispatched`.
+3. Su identificador permite localizar de forma segura `.cdad/packets/<id>/REQUEST.json` dentro del directorio de paquetes.
+4. El request es un objeto JSON legible.
+5. `request.execution_id` coincide con el `id` de la ejecución activa.
+6. `request.packet_id` coincide con el identificador del paquete en el estado y con el nombre de su directorio.
+7. `request.feature_id` coincide con la feature de la ejecución activa.
+8. Los bindings `role` y `substage` coinciden entre request y `state.active_packet`; ambos son cadenas no vacías.
+
+Estos controles establecen identidad y pertenencia, no autorización ni validez integral. No sustituyen comprobaciones de scopes, inputs, renderizado, contrato/versionado o gates propias de `validate-packet`.
+
+La selección sigue estas reglas:
+
+- **Con `active_packet` explícito:** solo ese registro puede seleccionar el paquete actual. Otros directorios, incluso pendientes y pertenecientes a la misma ejecución, no lo sustituyen ni vuelven ambigua una selección que cumple los controles anteriores.
+- **Con `active_packet` explícito inconsistente:** no buscar otro directorio como fallback. Informar la causa en `unknowns`.
+- **Sin `active_packet`:** los directorios no seleccionan por sí solos un paquete preparado o despachado. El criterio existente de `_pending_work` determina si hay trabajo pendiente: request de la ejecución activa y ausencia de directorio de recibo en su ruta existente.
+- Uno o varios directorios pendientes sin `active_packet` producen `pending-work-unresolved`; no se deduce de ellos un estado de despacho.
+- Los directorios de otras ejecuciones y los ya recibidos no se convierten en trabajo pendiente por esta feature.
+- Un request ilegible no prueba pertenencia a la ejecución activa. Se informa su ilegibilidad en `unknowns` cuando impide resolver el paquete explícito o cuando se observa al examinar los candidatos de pendientes, sin inventar pertenencia ni alterar el predicado existente de `_pending_work`.
+
+Una inconsistencia de identidad o pertenencia es evidencia nueva para `situation` y `unknowns`; no cambia la selección histórica de `entry` ni `next.route`.
 
 ### 2.2 Siguiente operación
 
@@ -73,6 +101,8 @@ Los cuatro campos son obligatorios. `script` es una ruta relativa al directorio 
 
 La operación representa el **primer paso**, no una macro. Para un paquete preparado, el procedimiento sigue siendo validar → `begin` → transporte → registro, según la ruta existente. No sustituye ese protocolo ni autoriza repetir un despacho.
 
+Si los controles nuevos detectan una inconsistencia, `next.operation` indica diagnóstico aunque la prosa histórica de `next.route` conserve su valor por compatibilidad. El orquestador utiliza `situation` y `next.operation` para decidir ese primer paso.
+
 002–004 podrán alimentar esta proyección con evidencia adicional dentro de sus contratos. No cambiarán nombres, tipos o significados de estos campos. Una necesidad de valores adicionales exige una enmienda explícita; no se anticipan estados de entrega que todavía no producen esas features.
 
 ### 2.3 Referencia de aprobación
@@ -99,7 +129,7 @@ Conservar intacto `authority.approval`. Agregar su hermano `authority.approval_r
 }
 ```
 
-Todos los campos mostrados son obligatorios; `record` y `contract` pueden ser `null`.
+Todos los campos mostrados son obligatorios; `record` y `contract` pueden ser `null`. Cuando se conoce la declaración del contrato pero no pueden leerse sus bytes, `contract` conserva la ruta y el digest declarados, con `observed_sha256=null`.
 
 #### Vocabulario
 
@@ -117,37 +147,92 @@ Los cuatro primeros expresan los resultados aprobados en discovery. Los dos últ
 
 `reason` es `null` para `vigente`; en los demás casos contiene una explicación no vacía. Su redacción no es API estable.
 
-#### Fuentes y selección
+#### Fuentes y predicados
 
-1. Resolver el request del paquete activo en `.cdad/packets/<id>/REQUEST.json`, comprobando su pertenencia a la ejecución activa.
+1. Resolver el request del paquete seleccionado conforme a §2.1.
 2. Obtener de ese request el rol y el contrato; no inferirlos de una aprobación histórica.
-3. Para `draft-plan`: `object=draft-plan`, `status=no requerida`, `record=null`. No buscar una aprobación inexistente.
-4. Para architect: `object=epic-plan`; usar el mandato que selecciona `_approved_epic_plan_entry`. Su aprobación no tiene pin de hash del plan.
-5. Para los demás roles: `object=feature-spec`; aplicar los predicados de `_approved_spec_entries` y la comparación de ruta y digest de `_contract_approval_for`.
+3. Si `contract.kind=draft-plan`, el objeto es `draft-plan`, con precedencia sobre el rol.
+4. En otro caso, para architect el objeto es `epic-plan`; usar el mandato seleccionado por `_approved_epic_plan_entry`. Su aprobación no tiene pin de hash del plan.
+5. Para los demás roles, el objeto es `feature-spec`; aplicar los predicados de `_approved_spec_entries` y la comparación de ruta y digest de `_contract_approval_for`.
 
 No modificar los criterios de autorización existentes para acomodar la vista.
 
-Para la spec:
+Para clasificar la spec:
 
-- `vigente`: hay un registro no sustituido que nombra la ruta y el digest declarados, y los bytes actuales del contrato coinciden con ese digest.
-- `contrato cambiado`: existen registros no sustituidos para la feature, pero ninguno satisface la ruta/digest; o los bytes actuales contradicen el digest declarado.
-- `sustituida`: no hay registros aplicables no sustituidos, pero sí registros de aprobación de esa feature excluidos por `supersedes`.
-- `ausente`: no existe registro de aprobación de esa feature.
+- **Registros de aprobación:** entradas de `stage_history` para la feature de la ejecución, con `stage=specification` y `approved_by` no vacío, antes de excluir sustituidas.
+- **Registros no sustituidos:** los que devuelve `_approved_spec_entries`, conservando exactamente su tratamiento de `supersedes`.
+- **Pin coincidente:** igualdad conjunta de `contract_path` y `contract_sha256` con la ruta y el digest declarados en el request.
+- **Bytes coincidentes:** SHA-256 observado del contrato igual al digest declarado en el request.
 
-Cuando hay varios registros elegibles, `vigente` utiliza el primero coincidente en el orden del historial. Para explicar los otros resultados se utiliza el primer candidato de su clase en ese orden. Esta elección hace determinista el localizador sin cambiar qué registros autorizan.
+Para architect, el mandato es exactamente el que selecciona `_approved_epic_plan_entry`, incluidos sus criterios de epic, stage y aprobador. No se introduce filtrado por sustitución ni pin del plan que ese selector no tenga.
 
-`record.pointer` es un JSON Pointer con índice real del historial. `transition_key` puede ser `null` para registros históricos que no lo tengan. No se imprime el historial completo.
+#### Clasificación ordenada
 
-Para architect, `contract` describe el contrato del request cuando es verificable, pero **no se usa su digest como pin del mandato del epic**. Una contradicción comprobada de sus bytes se informa como `contrato cambiado`, conservando el localizador del mandato encontrado.
+Las tablas son normativas: evaluar de arriba abajo y detenerse en la **primera** condición verdadera. Cada fixture tiene exactamente un resultado.
 
-#### Ausencia de información
+**Resolución común, anterior a las tablas por objeto:**
 
-- Sin paquete activo aplicable: `role=null`, `object=null`, `status=desconocida`; no seleccionar una aprobación de una ejecución histórica.
-- Request ausente, ilegible o inconsistente: `status=desconocida`, con causa en `reason` y `unknowns`.
-- Contrato no legible cuando se necesita comprobar sus bytes: `status=desconocida`, nunca `vigente`.
-- Falta de registro comprobada con fuentes legibles: `ausente`, no `desconocida`.
+| Orden | Condición | Resultado |
+|---|---|---|
+| C1 | No existe paquete activo aplicable o no puede establecerse su pertenencia inequívoca. | `desconocida`; `role=null`, `object=null`, `record=null`. |
+| C2 | El request o los datos necesarios para identificar rol y objeto son ausentes, ilegibles o inconsistentes. | `desconocida`; no inferir el objeto ni el rol desde el historial. |
+| C3 | Request aplicable con rol y objeto identificables. | Continuar con la tabla del objeto correspondiente. |
+
+Las causas de request ausente, ilegible o inconsistente se incluyen en `reason` y `unknowns`.
+
+**Objeto `draft-plan`:**
+
+| Orden | Condición | Resultado |
+|---|---|---|
+| D1 | Objeto identificado como `draft-plan`. | `no requerida`; `record=null`; no buscar aprobación. |
+
+No es necesario comprobar los bytes del borrador para establecer que su aprobación no se requiere. `contract` puede describirlo cuando sea verificable; su ilegibilidad no transforma este resultado en una aprobación ausente o cambiada.
+
+**Objeto `feature-spec`:**
+
+| Orden | Condición | Resultado y registro |
+|---|---|---|
+| S1 | No pueden leerse o interpretarse las fuentes necesarias de aprobación, la declaración del contrato o los bytes actuales del contrato. | `desconocida`; no afirmar ausencia ni vigencia. |
+| S2 | Con fuentes legibles, no hay registros de aprobación para la feature. | `ausente`; `record=null`, aunque los bytes contradigan el digest declarado. |
+| S3 | Hay registros de aprobación, pero ninguno no sustituido. | `sustituida`; primer registro sustituido, aunque los bytes hayan cambiado. |
+| S4 | Hay registros no sustituidos, pero ninguno tiene pin coincidente. | `contrato cambiado`; primer registro no sustituido. |
+| S5 | Existe pin coincidente, pero los bytes actuales no coinciden con el digest declarado. | `contrato cambiado`; primer registro no sustituido con pin coincidente. |
+| S6 | Existe pin coincidente y los bytes actuales coinciden. | `vigente`; primer registro no sustituido con pin coincidente. |
+
+S1 precede a ausencia y sustitución: la clasificación requiere las fuentes legibles indicadas, aunque otra condición pudiera conocerse parcialmente.
+
+S2 y S3 preceden a las discrepancias: no hay resultados simultáneos «ausente y contrato cambiado» ni «sustituida y contrato cambiado». Las discrepancias adicionales comprobadas pueden explicarse en `reason`, sin cambiar el resultado normativo ni su registro.
+
+**Objeto `epic-plan` para architect:**
+
+| Orden | Condición | Resultado y registro |
+|---|---|---|
+| A1 | No pueden leerse o interpretarse las fuentes necesarias para seleccionar el mandato o comprobar el contrato del request. | `desconocida`. |
+| A2 | Con fuentes legibles, `_approved_epic_plan_entry` no selecciona mandato. | `ausente`; `record=null`, incluso si los bytes del contrato contradicen su digest declarado. |
+| A3 | Hay mandato, pero los bytes del contrato del request contradicen su digest declarado. | `contrato cambiado`; conservar el mandato seleccionado. |
+| A4 | Hay mandato y los bytes del contrato del request coinciden. | `vigente`; mandato seleccionado. |
+
+Para architect, `contract` describe el contrato del request, **no un pin del mandato del epic**. La discrepancia de pin del plan y el resultado `sustituida` no se aplican: introducirlos cambiaría el predicado existente.
+
+#### Localizadores y determinismo
+
+«Primero» significa primero en el orden real del historial correspondiente.
+
+`record.pointer` es un JSON Pointer con índice real de `stage_history` o `epic_history`. `transition_key` puede ser `null` para registros históricos que no lo tengan. No se imprime el historial completo.
+
+Para `desconocida`, `record` solo puede conservar un registro si su selección ya pudo comprobarse independientemente de la fuente ilegible; en otro caso es `null`. Nunca se fabrica un localizador.
 
 La vista es diagnóstico, no gate: un resultado distinto de `vigente` no modifica por sí solo `entry`, no registra transiciones y no altera el código de salida exitoso de una proyección válida.
+
+### 2.4 Compatibilidad diagnóstica
+
+Los diagnósticos anteriores de `unknowns` se conservan, con su contenido y orden relativo. Pueden añadirse causas concretas por:
+
+- Pertenencia o identidad inconsistente del paquete.
+- Request ausente, ilegible o inconsistente.
+- Fuentes necesarias ilegibles que impiden resolver la referencia de aprobación.
+
+No se exige texto estable para las causas nuevas. Sí se exige que identifiquen la fuente y la condición que impide resolverla. La extensión no habilita eliminar ni sustituir diagnósticos anteriores.
 
 ## 3. Alineación del orquestador
 
@@ -174,38 +259,49 @@ Tests propuestos en `tests/test_007_001_unambiguous_entry.py`, salvo la regresi�
 | ID | Postcondición observable | Test |
 |---|---|---|
 | PC-01 | Los seis escenarios de §2.1 producen exactamente la situación y operación de las tablas, respetando precedencia. | `test_situation_operation_matrix` parametrizado |
-| PC-02 | Paquete preparado indica `validate-packet`; despachado indica `reconcile`; sus scripts y referencias existen. | `test_prepared_and_dispatched_operations` |
+| PC-02 | Paquete preparado inequívoco indica `validate-packet`; despachado inequívoco indica `reconcile`; sus scripts y referencias existen. | `test_prepared_and_dispatched_operations` |
 | PC-03 | Ejecución histórica cerrada no produce `execution-active` ni una aprobación vigente histórica. | `test_closed_execution_is_history` |
-| PC-04 | Pendiente sin paquete inequívoco o con pertenencia inconsistente produce diagnóstico sin script ejecutable; explica la causa. | `test_unresolved_pending_work_is_not_dispatchable` |
-| PC-05 | Architect muestra el mandato real de `epic_history`, con pointer resoluble, sin exigir pin del plan. | `test_architect_approval_uses_epic_mandate` |
-| PC-06 | Los cuatro resultados de aprobación de spec cumplen los predicados de §2.3; el pointer apunta al registro seleccionado. | `test_spec_approval_status_matrix` |
-| PC-07 | Un hash coincidente con ruta ajena y un contrato cuyos bytes cambiaron nunca producen `vigente`. | `test_approval_checks_path_and_current_bytes` |
-| PC-08 | `draft-plan` declara `no requerida` y no inventa registro. | `test_draft_plan_requires_no_approval` |
-| PC-09 | Request/contrato ilegible, ausencia de paquete y falta de registro se distinguen conforme a §2.3. | `test_approval_unknown_vs_absent` |
+| PC-04 | La selección cumple todos los bindings mínimos de §2.1. Pendientes sin paquete inequívoco o con pertenencia inconsistente producen diagnóstico sin script ejecutable y explican su causa. Un paquete explícito válido no se vuelve ambiguo por otros directorios pendientes. | `test_unresolved_pending_work_is_not_dispatchable` parametrizado |
+| PC-05 | Architect muestra el mandato real de `epic_history`, con pointer resoluble, sin exigir pin del plan; sin mandato y con fuentes legibles produce `ausente` conforme a la precedencia A1–A4. | `test_architect_approval_uses_epic_mandate` |
+| PC-06 | Los resultados de aprobación de spec cumplen la tabla ordenada S1–S6 y cada fixture produce exactamente un resultado normativo; el pointer apunta al registro seleccionado. | `test_spec_approval_status_matrix` |
+| PC-07 | Un hash coincidente con ruta ajena y un contrato cuyos bytes cambiaron nunca producen `vigente`; ausencia o sustitución tienen la precedencia definida ante bytes cambiados. | `test_approval_checks_path_and_current_bytes` |
+| PC-08 | `draft-plan` declara `no requerida` y no inventa registro, sin exigir comprobación de bytes para establecer la exención. | `test_draft_plan_requires_no_approval` |
+| PC-09 | Request/contrato ilegible, ausencia de paquete y falta de registro se distinguen conforme a las tablas ordenadas de §2.3. | `test_approval_unknown_vs_absent` |
 | PC-10 | Selección entre varios registros y sustituciones es determinista y coherente con los selectores de autorización existentes. | `test_approval_selection_and_supersession` |
-| PC-11 | La proyección conserva campos anteriores y sus valores para los mismos fixtures; `next.route` conserva la acción natural y su rama condicional. | `test_status_is_additive` y `tests/test_005_011_t3_view_action.py` |
+| PC-11 | Se conservan campos y valores anteriores, excepto la extensión diagnóstica permitida de `unknowns`; `next.route` conserva la acción natural y su rama condicional. Se verifica por separado la compatibilidad estricta y la extensión diagnóstica. | `test_status_is_additive`, `test_status_preserves_and_extends_unknowns` y `tests/test_005_011_t3_view_action.py` |
 | PC-12 | Ejecutar `status` no altera bytes del estado, requests, contratos, historiales ni checkpoints. | `test_status_is_read_only` |
 | PC-13 | La salida sigue siendo un único JSON acotado; superar `--max-bytes` falla sin JSON parcial y con diagnóstico. Agregar historial no seleccionado no aumenta la salida. | `test_status_bound_and_history_independence` |
 | PC-14 | El mapa documentado resuelve a scripts existentes y el cuerpo canónico del orquestador lo referencia; distingue ambos registros de despacho. | `test_orchestrator_references_operation_map` |
 
-PC-06 incluye controles con `supersedes`, registros históricos sin `transition_key`, aprobación ausente y múltiples registros. PC-11 compara la proyección antigua eliminando exclusivamente las tres adiciones: `situation`, `next.operation` y `authority.approval_reference`.
+PC-04 incluye: `execution_id` ajeno, identidad del paquete discordante, feature discordante, rol/substage discordantes, request ilegible, ausencia de `active_packet` con uno o varios directorios pendientes, y selección explícita válida con otros directorios pendientes. Son variaciones de pertenencia y selección, no validación integral.
+
+PC-06 incluye registros históricos sin `transition_key`, múltiples registros, `supersedes`, ausencia de aprobación, todos los registros sustituidos y discrepancias de pin o bytes. Debe incluir las combinaciones bytes cambiados + sin registros y bytes cambiados + todos sustituidos.
+
+PC-11 se verifica en dos grupos:
+
+1. **Compatibilidad estricta:** en fixtures sin las condiciones que añaden diagnósticos conforme a §2.4, eliminar exclusivamente `situation`, `next.operation` y `authority.approval_reference` debe recuperar la proyección antigua completa.
+2. **Extensión diagnóstica:** en fixtures con esas condiciones, al eliminar las tres adiciones todos los campos anteriores salvo `unknowns` deben coincidir exactamente. `unknowns` debe conservar todos los diagnósticos anteriores y su orden relativo, y añadir las causas nuevas requeridas. Se comprueba la extensión por separado, sin exigir igualdad de la lista completa con la antigua.
 
 ## 5. Invariantes verificables
 
-1. **Compatibilidad:** no eliminar, renombrar ni reinterpretar campos anteriores; `entry` conserva su mapa existente.
+1. **Compatibilidad:** no eliminar, renombrar ni reinterpretar campos anteriores; `entry` conserva su mapa existente. `unknowns` admite únicamente la extensión diagnóstica descrita.
 2. **Autoridad única:** la vista reutiliza los criterios de aprobación existentes; no escribe aprobaciones ni autoriza operaciones.
 3. **Sin efectos:** ninguna orientación dispara preparación, continuidad, transporte o recepción.
 4. **Evidencia honesta:** desconocido no equivale a ausente; disponer de un registro no prueba que los bytes actuales estén aprobados.
-5. **Acotación:** límite predeterminado existente de 16.384 bytes; no volcar historiales o contratos.
-6. **Sin mecanismos paralelos:** ningún almacenamiento o registro nuevo de intentos, disposición o continuidad.
-7. **Propietario documental único:** mapa en orientación; orquestador y derivados por referencia/generación.
+5. **Resultado único:** cada referencia de aprobación tiene un solo resultado, determinado por la primera fila aplicable de su tabla.
+6. **Acotación:** límite predeterminado existente de 16.384 bytes; no volcar historiales o contratos.
+7. **Sin mecanismos paralelos:** ningún almacenamiento o registro nuevo de intentos, disposición o continuidad.
+8. **Propietario documental único:** mapa en orientación; orquestador y derivados por referencia/generación.
 
 ## 6. Decisiones de diseño
 
 - **Ampliación frente a reemplazo de `entry`:** se elige ampliación por compatibilidad con consumidores y pruebas existentes.
 - **Una operación inicial frente a una fachada de despacho:** se proyecta el primer paso verificable y se referencia el protocolo; evita esconder varios efectos bajo un verbo nuevo.
 - **Referencia común frente a una aprobación genérica:** una estructura común expresa objetos distintos, pero conserva las reglas específicas de mandato del architect y pin de spec.
-- **Diagnóstico frente a inferencia de entregas:** ante pendientes ambiguos se informa el límite. 001 no interpreta señales de terminación cuya corrección pertenece a 002–004.
+- **Diagnóstico frente a inferencia de entregas:** ante pendientes ambiguos se informa el límite. 007-001 no interpreta señales de terminación cuya corrección pertenece a 002–004.
+- **Bindings mínimos frente a validación integral:** se comprueba identidad y pertenencia para orientar sin convertir `status` en un gate duplicado.
+- **Selección explícita frente a conteo global de directorios:** `active_packet` válido identifica el paquete actual; los demás directorios no anulan esa evidencia.
+- **Decisión ordenada frente a etiquetas simultáneas:** la ilegibilidad precede al juicio de aprobación; ausencia y sustitución preceden a discrepancias. Así se obtiene un resultado único sin alterar los predicados de autorización.
 
 ## 7. Aceptación y límites
 
@@ -226,37 +322,10 @@ Fuera de alcance: recuperación de intentos abandonados, sucesores, integración
 ## 8. Base técnica verificada
 
 - `skills/cdad-cycle/scripts/cdad_packet.py:1772-1904`: selectores y autorización por rol/objeto.
-- `…/cdad_packet.py:6643-6751`: ejecución activa, pendientes, selección de entrada y rutas.
+- `…/cdad_packet.py:1200-1207`: bindings de identidad, rol y substage entre estado y request; comprobaciones adicionales de validación que esta vista no duplica integralmente.
+- `…/cdad_packet.py:6643-6751`: ejecución activa, pertenencia por ejecución, recibos, pendientes, selección de entrada y rutas.
 - `…/cdad_packet.py:6767-6891`: proyección, aprobación actual y límite.
 - `sources/roles/orchestrator.md:28-48,137-176`: árbol de entrada y wiring.
 - `skills/cdad-cycle/references/orientation.md:14-38,65-74`: orientación y operaciones.
-- `tests/test_005_011_t3_view_action.py:451-540`: compatibilidad de preparados y despachados.
-
----
-
-## Informe de ejecución
-
-- **Archivos modificados:** ninguno.
-- **Commit observado:** `5f5fbc58ccd2a622f6f841c12860eea8e14a9786`.
-- **Commit creado:** ninguno.
-- **Tests ejecutados:** ninguno; tarea read-only de especificación.
-- **Estado observado:** ` M docs/.cdad-state.json`; diferencia preexistente, no intervenida. `git diff --stat` informó `1 file changed, 1 insertion(+), 1 deletion(-)`.
-
-Comprobaciones exactas y resultados:
-
-```text
-sha256sum .cdad/packets/007-001-unambiguous-entry-architect-draft-001/UNIT-CONTRACT.md
-5ed7186f3e3006951c162d8eeabd0ba7a52a3109bf4b2705123d04f746035152
-
-sha256sum docs/cdad-policy.json docs/epics/epic-007-reliable-cycle-operation/plan.md
-f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711
-713194aac03a1d077db3075d2062322e6ab61919de0a00dfb624146506042440
-
-git status --short
- M docs/.cdad-state.json
-
-git rev-parse HEAD
-5f5fbc58ccd2a622f6f841c12860eea8e14a9786
-```
-
-Los comandos exactos de lectura (`cat`, `sed -n`, `rg -n`) y sus salidas están registrados en las llamadas de herramientas de esta sesión. No se materializó `spec.md` ni `plan.md`; corresponde al orquestador materializar este texto y solicitar la aprobación.
+- `tests/test_005_011_t3_view_action.py:452-525`: compatibilidad de preparados y despachados.
+- `docs/specs/007-001-unambiguous-entry/discovery.md:45-50`: decisiones del orquestador que confirman evolución aditiva y referencia de aprobación por rol/objeto.
