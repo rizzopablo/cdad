@@ -19,6 +19,8 @@ no service, no agent. Run it by hand, and only when it fits.
 | `reconcile` | execution context + `--packet` | Any orchestrator that retries or resumes after a dispatch — reads 002 receipts/journal, does not repeat an effect | If the receipt is unreadable the result is `unknown` (never fabricated success/failure) |
 | `resume` | execution context (+ optional `--role`, `--max-bytes`) | Any new session that must rebuild goal, decisions-with-rationale, authority, next action | Without a checkpoint it renders an empty `no-checkpoint` projection (rc 0); with `--role` it needs `docs/cdad-policy.json` |
 | `trigger` | execution context + `--packet` (+ optional `--runtime`) | Any orchestrator that rotates a session or resumes long work | Almost always `unknown`: OpenCode does not report a context limit and Claude Code has no reader, so `context_*` stay `null`. Rotate at a **natural task boundary** instead |
+| `verify-begin` | execution context + packet + the INTEGER continuity attempt | Immediately before a transport or a dispatch registration: proves the CURRENT head is the `begin` of that execution, packet and attempt (read-only; a rejection writes nothing) | A historical `begin` under those identifiers, a later `checkpoint` or a `begin` of another packet/attempt never authorizes a new transport |
+| `checkpoint-receipt` | execution context + packet + the INTEGER continuity attempt + the durable receipt | The common close of a reception (`receive`, the external arrival and `validate-receipt --close-continuity` converge here): idempotent by `(execution_id, packet_id, attempt)` and by `(normalized receipt path, digest)` | Without a demonstrable chain to the `begin` of that attempt, or with the head advanced to another packet/attempt, it refuses and never rewinds |
 
 `begin`/`checkpoint`/`reconcile`/`resume` are portable because they only read the
 project files. `trigger` is only a **signal**: it never invents a limit, so in
@@ -58,6 +60,17 @@ CLI carries `record` (`begin`/`checkpoint`), mirrored in `head.json`; a body
 **without** `record` is legacy (P6/D5/O-1).
 `reconcile`/`resume`/`trigger` are read-only and deterministic; `--max-bytes`
 (default 16 KiB) **fails closed without truncating**.
+
+Every body written by `begin`/`checkpoint` also carries an additive historical
+link `prev` (`null` in the genesis, `{checkpoint_sha256, seq}` afterwards). It
+travels inside the body's physical digest but is **excluded** from the
+repetition comparison (the compared content is the whole body minus that single
+top-level field), so `prev` is never user input and never a no-op bypass. A body
+without `prev` is legacy: it stays readable, but a chain that meets one does not
+provide the demonstration a close requires. Bodies may also declare the additive
+`changes` and `evidence` fields (`status` exactly `vigente|invalidada`, with
+reason and antecedent); `resume` projects both, and an invalidated evidence is
+never rehabilitated by byte equality, a changed hash or re-anchoring.
 
 ## Reference classes (003-007)
 

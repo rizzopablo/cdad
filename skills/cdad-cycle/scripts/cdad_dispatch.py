@@ -91,6 +91,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cdad_delegate  # noqa: E402
 import cdad_result  # noqa: E402
+import cdad_continuity  # noqa: E402
 
 # §2.6: the document, its version and the map of one section per runtime id.
 RUNTIMES_CONFIG_NAME = "runtimes.json"
@@ -497,13 +498,18 @@ def _known_packet(root: Path, packet: str, verb: str) -> tuple[Path, Path]:
 
 
 def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
-             as_json: bool) -> int:
+             as_json: bool, continuity_attempt: int | None = None) -> int:
     """§2.1 (external path): resolve the runtime and its single configuration
     source, then hand the transport to the ONE implementation that owns it.
 
     The module registers its own attempt (PD-1) and this entry relays its
     envelope — `attempt` included — without registering or staging anything.
+
+    007-003 §2.2: the pre-transport proof is verified HERE, immediately before
+    the transport (never after its return and never only inside `record`); no
+    other continuity write happens between the proof and the transport.
     """
+    attempt = require_continuity_attempt(continuity_attempt, "dispatch")
     resolve_runtime_module(runtime)
     section = load_runtime_section(runtime)
     if not packet:
@@ -511,14 +517,47 @@ def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
             "dispatch requires --packet <id>: the id of a packet already "
             "published by `cdad_packet.py prepare`")
     root = _project_root(project_root)
-    _known_packet(root, packet, "dispatching")
-    envelope = _transport(runtime, section, root, packet)
+    _, request_path = _known_packet(root, packet, "dispatching")
+    request = _load_json(request_path, "packet request")
+    verify_continuity_begin(root, packet, attempt, request)
+    envelope = _transport(runtime, section, root, packet, attempt)
     _report_envelope(envelope, as_json=as_json)
     return 0
 
 
+def require_continuity_attempt(value: Any, verb: str) -> int:
+    """007-003 §2.1: the integer continuity attempt is mandatory for a new
+    dispatch/registration and is NEVER inferred from the textual attempt id."""
+    if value is None:
+        raise DispatchError(
+            f"{verb} requires --continuity-attempt N: the integer continuity "
+            f"attempt is mandatory for a new dispatch and is never inferred "
+            f"from the textual --attempt-id (007-003 §2.1)")
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise DispatchError(
+            f"--continuity-attempt must be a positive integer; got {value!r}")
+    return value
+
+
+def verify_continuity_begin(root: Path, packet: str, attempt: int,
+                            request: dict[str, Any]) -> None:
+    """007-003 §2.1/§2.2: reuse the ONE verifier (`verify-begin`)."""
+    execution_id = _as_text(request.get("execution_id")) \
+        if isinstance(request, dict) else None
+    if execution_id is None:
+        raise DispatchError(
+            f"packet {packet!r} request has no execution_id: the continuity "
+            f"proof cannot be checked (007-003)")
+    try:
+        cdad_continuity.verify_begin(
+            root, cdad_continuity.execution_context_path(root, execution_id),
+            packet, attempt)
+    except cdad_continuity.ContinuityError as exc:
+        raise DispatchError(f"the dispatch is refused: {exc}") from exc
+
+
 def _transport(runtime: str, section: dict[str, Any], root: Path,
-               packet: str) -> dict[str, Any]:
+               packet: str, continuity_attempt: int) -> dict[str, Any]:
     """Delegate the external transport to the common interface (one
     implementation of launch/wait/collect/transport, §2.1/§12)."""
     derived = derived_internal_config(root, runtime, section)
@@ -528,6 +567,7 @@ def _transport(runtime: str, section: dict[str, Any], root: Path,
             packet=packet,
             destination=runtime,
             exec_config=str(derived),
+            continuity_attempt=continuity_attempt,
         ))
     except cdad_delegate.DelegateError as exc:
         raise DispatchError(f"the external transport failed: {exc}") from exc
@@ -864,10 +904,12 @@ def _observation_payload(*, runtime: str, correlation: Correlation) -> dict[str,
 
 
 def _register_attempt(root: Path, packet: str, request: dict[str, Any],
-                      attempt_id: str, observation: dict[str, Any]) -> None:
+                      attempt_id: str, observation: dict[str, Any],
+                      continuity_attempt: int) -> None:
     """PD-1/§2.4: the ONE registration of the native path, written through the
     command that already owns the ledger and the state transition
-    (`cdad_packet.py prepare --record-dispatch`, INV-5)."""
+    (`cdad_packet.py prepare --record-dispatch`, INV-5). 007-003: the same
+    integer continuity attempt travels with it (never a textual inference)."""
     if set(observation) != set(OBSERVATION_KEYS):
         raise DispatchError(
             "the observation does not carry the closed schema "
@@ -895,10 +937,12 @@ def _register_attempt(root: Path, packet: str, request: dict[str, Any],
              "--project-root", str(root),
              "--record-dispatch", packet,
              "--attempt-id", attempt_id,
+             "--continuity-attempt", str(continuity_attempt),
              "--input", str(observation_path)],
             capture_output=True, text=True, cwd=str(root))
     finally:
         observation_path.unlink(missing_ok=True)
+
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout).strip()
         raise DispatchError(
@@ -963,9 +1007,10 @@ def stage_delivery(root: Path, request: dict[str, Any], packet: str,
 def record(runtime: str, project_root: str | None, packet: str | None,
            attempt_id: str | None, *, native_result: str | None,
            session: str | None, parent: str | None, since: str | None,
-           as_json: bool) -> int:
+           as_json: bool, continuity_attempt: int | None = None) -> int:
     """§2.1 (native path): the single body of observation + registration + the
     mechanical staging step; the receipt belongs to the re-entry protocol."""
+    attempt = require_continuity_attempt(continuity_attempt, "record")
     module = resolve_runtime_module(runtime)
     section = load_runtime_section(runtime)
     if not packet:
@@ -982,6 +1027,9 @@ def record(runtime: str, project_root: str | None, packet: str | None,
     if not isinstance(request, dict):
         raise DispatchError(
             f"the packet request is not an object: {_packet_dir(root, packet) / REQUEST_NAME}")
+    # 007-003 §2.2: `record` cannot bypass the pre-transport proof — it is
+    # verified BEFORE any observation, registration or staged delivery.
+    verify_continuity_begin(root, packet, attempt, request)
     kind = derive_artifact_kind(request.get("role"), request.get("substage"))
 
     payload = _read_native_result(native_result)
@@ -1023,7 +1071,9 @@ def record(runtime: str, project_root: str | None, packet: str | None,
 
     _register_attempt(root, packet, request, attempt_id,
                       _observation_payload(runtime=runtime,
-                                           correlation=correlation))
+                                           correlation=correlation),
+                      attempt)
+
     notes = [correlation.note]
     delivery_ref: str | None = None
     termination = "unknown"
@@ -1174,6 +1224,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--legacy-exec-config", default=None,
         help="migrate only: the one retired exec-config document to move")
     parser.add_argument(
+        "--continuity-attempt", type=int, default=None, metavar="N",
+        help="dispatch/record: the INTEGER continuity attempt of this dispatch "
+             "(007-003; required for a new dispatch or registration, never "
+             "inferred from a textual id)")
+    parser.add_argument(
         "--dry-run", action="store_true",
         help="migrate only: print the section that would be written, write nothing")
     parser.add_argument(
@@ -1191,6 +1246,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(arguments)
     try:
         if args.verb == "migrate":
+            if args.continuity_attempt is not None:
+                raise DispatchError(
+                    "migrate takes no --continuity-attempt: only `dispatch` and "
+                    "`record` transport or register an attempt (007-003)")
             if not args.legacy_exec_config:
                 raise DispatchError(
                     "migrate requires --legacy-exec-config <file>: it is the "
@@ -1198,15 +1257,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             return migrate(args.runtime, args.legacy_exec_config,
                            dry_run=args.dry_run, as_json=args.json)
         if args.verb == "capabilities":
+            if args.continuity_attempt is not None:
+                raise DispatchError(
+                    "capabilities takes no --continuity-attempt: it is a declared "
+                    "surface, not a dispatch (007-003)")
             return capabilities(args.runtime, args.project_root,
                                 as_json=args.json)
         if args.verb == "record":
             return record(args.runtime, args.project_root, args.packet,
                           args.attempt_id, native_result=args.native_result,
                           session=args.session, parent=args.parent,
-                          since=args.since, as_json=args.json)
+                          since=args.since, as_json=args.json,
+                          continuity_attempt=args.continuity_attempt)
         return dispatch(args.runtime, args.project_root, args.packet,
-                        as_json=args.json)
+                        as_json=args.json,
+                        continuity_attempt=args.continuity_attempt)
+
     except DispatchError as exc:
         print(f"cdad_dispatch: {exc}", file=sys.stderr)
         return 1

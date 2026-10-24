@@ -3256,6 +3256,29 @@ def _publish_dispatch_atomic(dispatch_path: Path, dispatch_payload: bytes,
         raise
 
 
+def _require_continuity_begin(project_root: Path, execution_id: str,
+                              packet_id: str, attempt: int) -> None:
+    """007-003 §2.2: the canonical registration's pre-transport proof.
+
+    The ONE verifier of §2.1 is reused (never re-implemented): the CURRENT head
+    must be the `begin` of this execution, packet and continuity attempt, with
+    a current authority and the packet active in the request. Without it no
+    observation, state binding nor staged delivery is published.
+    """
+    # Local import: `cdad_continuity` imports THIS module (one reader of the
+    # store, no second implementation of the proof).
+    import cdad_continuity
+
+    try:
+        cdad_continuity.verify_begin(
+            project_root,
+            cdad_continuity.execution_context_path(project_root, execution_id),
+            packet_id, attempt)
+    except cdad_continuity.ContinuityError as exc:
+        raise PolicyError(
+            f"the dispatch registration is refused: {exc}") from exc
+
+
 def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     """Register one dispatch attempt as an observation (PD-6/I8).
 
@@ -3280,6 +3303,19 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     if (FLAT_NAME.fullmatch(attempt_id) is None or ".." in attempt_id
             or attempt_id in {".", ".."}):
         raise PolicyError(f"--attempt-id must be a plain name ([A-Za-z0-9._-], no path), got {attempt_id!r}")
+    # 007-003 §2.1/§2.2: the continuity attempt is an INTEGER and is NEVER
+    # inferred from the textual --attempt-id.
+    continuity_attempt = getattr(args, "continuity_attempt", None)
+    if continuity_attempt is None:
+        raise PolicyError(
+            "--record-dispatch requires --continuity-attempt N: the integer "
+            "continuity attempt of the dispatch is mandatory and is never "
+            "inferred from the textual --attempt-id (007-003 §2.1)")
+    if not isinstance(continuity_attempt, int) or isinstance(
+            continuity_attempt, bool) or continuity_attempt < 1:
+        raise PolicyError(
+            f"--continuity-attempt must be a positive integer; got "
+            f"{continuity_attempt!r}")
     if len(args.input) != 1:
         raise PolicyError("--record-dispatch requires exactly one --input <observaciones.json>")
     observation_path = _cwd_path(args.input[0])
@@ -3314,9 +3350,12 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
 
         already_recorded = dispatch_path.is_file()
         completion = False
+        identical_replay = False
         if already_recorded:
             existing_payload = _read_bytes(dispatch_path, "dispatch record")
-            if existing_payload != payload:
+            if existing_payload == payload:
+                identical_replay = True
+            else:
                 try:
                     existing_record = json.loads(
                         existing_payload.decode("utf-8"))
@@ -3333,6 +3372,16 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
                 # D-U65-2: the ONE completion of a provisional write-ahead
                 # record. It replaces the observation and leaves a final record.
                 completion = True
+
+        if not identical_replay:
+            # 007-003 §2.2: the canonical registration verifies the
+            # pre-transport proof BEFORE publishing a new record or completing
+            # the provisional observation; `record` cannot bypass it. A
+            # byte-identical repetition of a durable record is NOT a new
+            # transport and keeps its idempotency (that exception never
+            # introduces or modifies an observation).
+            _require_continuity_begin(project_root, execution_id, packet_id,
+                                      continuity_attempt)
 
         # Compute the state transition if it is still pending (B-1): an
         # idempotent retry must still complete it, never early-return.
@@ -7923,6 +7972,13 @@ def build_parser() -> argparse.ArgumentParser:
                       help="register a dispatch attempt observation (I8)")
     prep.add_argument("--attempt-id", metavar="ID",
                       help="flat attempt identifier for --record-dispatch")
+    # 007-003 §2.1/§2.2: the INTEGER continuity attempt of the dispatch. It is
+    # mandatory for a new registration (or the provisional completion) and is
+    # never inferred from the textual --attempt-id.
+    prep.add_argument("--continuity-attempt", type=int, default=None, metavar="N",
+                      help="the INTEGER continuity attempt of a dispatch "
+                           "registration (007-003; required with "
+                           "--record-dispatch)")
     prep.add_argument("--input", action="append", default=[])
     prep.add_argument("--read-scope", action="append", default=[])
     prep.add_argument("--write-scope", action="append", default=[])
@@ -8103,6 +8159,7 @@ _RECONCILE_FLAGS = {
 _RECORD_FAILING_FLAGS = {
     "--record-dispatch": lambda a: a.record_dispatch,
     "--attempt-id": lambda a: a.attempt_id,
+    "--continuity-attempt": lambda a: a.continuity_attempt,
 }
 _RESUME_FLAGS = {"--resume-packet": lambda a: a.resume_packet}
 # `--replace-packet` is the replace-mode SELECTOR; `--reason` belongs to it

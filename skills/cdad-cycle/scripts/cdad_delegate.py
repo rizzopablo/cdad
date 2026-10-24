@@ -45,6 +45,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# The ONE verifier of the pre-transport proof (007-003 §2.1) lives in the
+# continuity CLI; it is imported, never re-implemented.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_continuity  # noqa: E402
+
 TERMINATION_VOCABULARY = (
     "completed", "blocked", "transport-error", "timeout", "cancelled", "unknown",
 )
@@ -226,7 +234,8 @@ def _parse_envelope(stdout: str) -> dict[str, Any] | None:
 
 def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
                  destination: str, exec_config: str | None,
-                 packet_bytes: bytes, timeout: float | None) -> dict[str, Any]:
+                 packet_bytes: bytes, timeout: float | None,
+                 continuity_attempt: int | None = None) -> dict[str, Any]:
     """Invoke the adapter, transporting the packet bytes byte-identical."""
     argv = [sys.executable, str(adapter),
             "--project-root", str(project_root),
@@ -234,6 +243,11 @@ def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
             "--destination", destination]
     if exec_config:
         argv += ["--exec-config", exec_config]
+    # 007-003 §2.3.3: the arrival propagates the SAME integer it received; the
+    # module never infers it from the textual attempt id.
+    if continuity_attempt is not None:
+        argv += ["--continuity-attempt", str(continuity_attempt)]
+
     env = dict(os.environ)
     env["CDAD_DELEGATE_DESTINATION"] = destination
     try:
@@ -287,7 +301,48 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--exec-config", default=None,
                         help="execution configuration JSON "
                              "(runtime/model/binary/logs/wait)")
+    # 007-003 §2.1/§2.2: the INTEGER continuity attempt of this transport. The
+    # adapter confirms the pre-transport proof at its own border, so invoking it
+    # directly never bypasses the precondition.
+    parser.add_argument("--continuity-attempt", type=int, default=None,
+                        metavar="N",
+                        help="the INTEGER continuity attempt of the dispatch "
+                             "(required; never inferred from a textual id)")
     return parser
+
+
+def require_continuity_attempt(value: Any) -> int:
+    """007-003 §2.1: the integer is mandatory and never inferred."""
+    if value is None:
+        raise DelegateError(
+            "--continuity-attempt N is required: the integer continuity attempt "
+            "of the dispatch is mandatory and is never inferred from the "
+            "textual attempt id (007-003)")
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise DelegateError(
+            f"--continuity-attempt must be a positive integer; got {value!r}")
+    return value
+
+
+def verify_transport_proof(project_root: Path, packet_id: str, attempt: int,
+                           request: dict[str, Any]) -> None:
+    """007-003 §2.2: the adapter's OWN border check before the worker launch.
+
+    It reuses the ONE verifier of §2.1 (`verify-begin`), so a direct invocation
+    of this interface cannot bypass the precondition the entry already checks.
+    """
+    execution_id = _as_text(request.get("execution_id"))
+    if execution_id is None:
+        raise DelegateError(
+            f"packet {packet_id!r} request has no execution_id: the continuity "
+            f"proof cannot be checked (007-003)")
+    try:
+        cdad_continuity.verify_begin(
+            project_root,
+            cdad_continuity.execution_context_path(project_root, execution_id),
+            packet_id, attempt)
+    except cdad_continuity.ContinuityError as exc:
+        raise DelegateError(f"the transport is refused: {exc}") from exc
 
 
 def delegate(args: argparse.Namespace) -> dict[str, Any]:
@@ -296,12 +351,16 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         raise DelegateError(f"--project-root is not a directory: {args.project_root}")
     project_root = project_root.resolve()
     destination = args.destination
+    attempt = require_continuity_attempt(
+        getattr(args, "continuity_attempt", None))
     adapter = _adapter_path(destination)
     if not adapter.is_file():
         raise DelegateError(
             f"no adapter for destination {destination!r}: expected adapter "
             f"module {adapter.name} next to the delegation interface")
     packet_md, request = _packet_paths(project_root, args.packet)
+    # §2.2: the proof is verified at THIS border, before the worker is launched.
+    verify_transport_proof(project_root, args.packet, attempt, request)
     config = (_load_json(args.exec_config, "execution config")
               if args.exec_config else {})
     role = _as_text(request.get("role"))
@@ -313,7 +372,7 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     packet_bytes = packet_md.read_bytes()
     envelope = _run_adapter(adapter, project_root, args.packet, destination,
                             args.exec_config, packet_bytes,
-                            _wait_timeout(config))
+                            _wait_timeout(config), attempt)
     # 006-005 PD-1/D-14: ONE attempt per dispatch, and it is the destination
     # module's — it registers its own record and declares its attempt in the
     # envelope; this interface RELAYS it and registers nothing (a second record

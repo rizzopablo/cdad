@@ -154,8 +154,23 @@ here):
   need" is composed in `project-start.md` §11; it is cited, never restated).
   The full state is a **conditional expansion**, loaded only on a concrete need
   that affects the next dispatch, with the motive recorded.
-- `begin` — freeze the write-ahead record before dispatching a packet.
+- `begin` — freeze the write-ahead record before dispatching a packet; it
+  carries the INTEGER continuity attempt (`N`, the integer of the frozen body —
+  never the textual attempt id of the dispatch ledger).
+- **Dispatch order (native transport), in exactly this order and with no other
+  continuity write in between:** `begin` with the continuity attempt `N` →
+  `verify-begin` (read-only: the CURRENT head must be that `begin`, of this
+  execution, packet and attempt, with a current authority) → the native tool →
+  `record` with the same integer. The check is immediately before the native
+  tool, never after its return and never only inside `record`;
+  `--continuity-attempt N` is mandatory for `dispatch`, `record` and the
+  canonical dispatch registration, and a missing or discordant proof refuses
+  the transport before the tool is invoked.
 - `checkpoint` — close each task or sub-phase boundary.
+- `checkpoint-receipt` — the common close of a durable receipt: `receive` runs
+  it after publishing or recognizing the receipt, and the re-entry validation
+  recovers the pending close with `--close-continuity` plus the same integer
+  (one mechanism, three entries; the integer is never inferred).
 - `reconcile` — read-only; before any retry or resume, so no effect repeats.
 - `resume` — read-only; the step **after** the view, and only with an active
   execution, ahead of reading the state by hand.

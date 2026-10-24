@@ -57,6 +57,7 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_packet  # noqa: E402
+import cdad_continuity  # noqa: E402
 
 
 class ResultError(ValueError):
@@ -528,6 +529,66 @@ def _late_vigency(state: dict[str, Any], execution_document: dict[str, Any],
             f"open and its packet dispatched is the normal route")
 
 
+def _continuity_attempt(args: argparse.Namespace) -> int | None:
+    """007-003 §2.3.3: the INTEGER continuity attempt of this reception.
+
+    It is never inferred from the textual `--attempt-id`; the receipt does not
+    carry it either. Without it a reception whose execution has continuity
+    fails closed BEFORE publishing or reclassifying anything.
+    """
+    attempt = getattr(args, "continuity_attempt", None)
+    if attempt is None:
+        return None
+    if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt < 1:
+        raise ResultError(
+            f"--continuity-attempt must be a positive integer (an INTEGER; it "
+            f"is never inferred from the textual --attempt-id); got {attempt!r}")
+    return attempt
+
+
+def _require_continuity_attempt(project_root: Path, descriptor: dict[str, Any],
+                                attempt: int | None) -> None:
+    """007-003 §2.3.3: the close is mandatory when the execution has continuity,
+    so its integer is mandatory too; an execution that never started a chain
+    has nothing to close (007-001/007-002 stay usable)."""
+    if attempt is not None:
+        return
+    if cdad_continuity.continuity_state(project_root,
+                                       descriptor["execution_id"]) == "present":
+        raise ResultError(
+            "receive requires --continuity-attempt N: the execution has a "
+            "continuity chain, so this reception must close it and the integer "
+            "continuity attempt is mandatory (it is NEVER inferred from the "
+            "textual --attempt-id). Nothing was published and no continuity was "
+            "written (§2.3.3)")
+
+
+def _close_durable_receipt(project_root: Path, args: argparse.Namespace,
+                           descriptor: dict[str, Any],
+                           attempt: int | None) -> None:
+    """007-003 §2.3.3: the ONE common close, executed AFTER the durable receipt
+    is published or recognized (idempotent branch included). A failure of the
+    close never deletes nor alters the receipt and never presents the walk as
+    closed: it distinguishes «durable receipt exists» from «continuity
+    pending» (§2.4)."""
+    if attempt is None:
+        return
+    final_dir = _final_dir(project_root, descriptor["execution_id"],
+                           descriptor["packet_id"])
+    receipt_path = final_dir / "receipt.json"
+    try:
+        cdad_continuity.close_durable_receipt(
+            project_root, receipt_path, attempt,
+            execution_context=_cwd_path(args.execution_context),
+            packet=descriptor["packet_id"])
+    except cdad_continuity.ContinuityError as exc:
+        raise ResultError(
+            f"recibo durable existente en {final_dir} pero continuidad "
+            f"pendiente: el cierre del recibo no se registró ({exc}); el "
+            f"recibo NO se elimina ni se altera y la recepción no se repite "
+            f"(§2.4)") from exc
+
+
 def receive(args: argparse.Namespace, project_root: Path) -> bytes:
     # The late mode is a declared flag of THIS operation (PD-13/D-5): the receipt
     # machine is shared; only the vigency precondition is inverted.
@@ -536,6 +597,8 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
     descriptor = _load_json(descriptor_path, "result descriptor")
     _validate_descriptor(descriptor)
     source = _validate_source(descriptor)
+    attempt = _continuity_attempt(args)
+    _require_continuity_attempt(project_root, descriptor, attempt)
     final_dir = _final_dir(project_root, descriptor["execution_id"],
                            descriptor["packet_id"])
 
@@ -545,7 +608,9 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
     if durable is not None:
         parts = _read_parts(descriptor, project_root)
         _require_identical_result(durable, source, parts)
+        _close_durable_receipt(project_root, args, descriptor, attempt)
         return _read_bytes(final_dir / "receipt.json", "durable receipt")
+
 
     state = _load_json(project_root / STATE_RELPATH, "project state")
     execution_document = _load_json(_cwd_path(args.execution_context),
@@ -634,14 +699,18 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
             raise ResultError(
                 "a concurrent publication left no readable durable result")
         _require_identical_result(concurrent, source, parts)
+        _close_durable_receipt(project_root, args, descriptor, attempt)
         return _read_bytes(final_dir / "receipt.json", "durable receipt")
+    _close_durable_receipt(project_root, args, descriptor, attempt)
     return receipt_bytes
+
 
 
 # --------------------------------------------------------- validate-receipt
 
 
-def validate_receipt(args: argparse.Namespace, project_root: Path) -> None:
+def validate_receipt(args: argparse.Namespace,
+                     project_root: Path) -> dict[str, Any] | None:
     receipt_path = _cwd_path(args.receipt)
     receipt = _load_json(receipt_path, "receipt")
     final_dir = _final_dir(project_root, receipt.get("execution_id"),
@@ -649,6 +718,21 @@ def validate_receipt(args: argparse.Namespace, project_root: Path) -> None:
     if not final_dir.is_dir():
         raise ResultError(f"durable result not found for the receipt: {final_dir}")
     _verify_durable(final_dir, receipt)
+    if not getattr(args, "close_continuity", False):
+        # Without the declared options this verb keeps its read-only meaning
+        # (INV-10): it validates and writes nothing.
+        return None
+    # 007-003 §2.3.3: the third re-entry converges on the SAME common close,
+    # recovering the pending closure before continuing the re-entry.
+    attempt = getattr(args, "continuity_attempt", None)
+    if attempt is None:
+        raise ResultError(
+            "--close-continuity requires --continuity-attempt N: the integer "
+            "continuity attempt is never inferred, and the receipt does not "
+            "carry it (§2.3.3)")
+    return cdad_continuity.close_durable_receipt(
+        project_root, receipt_path, attempt)
+
 
 
 # --------------------------------------------------------------- materialize
@@ -1539,10 +1623,25 @@ def build_parser() -> argparse.ArgumentParser:
     receive_parser.add_argument(
         "--late", action="store_true",
         help="receive a staged delivery of an already CLOSED feature (PD-13)")
+    # 007-003 §2.3.3: the INTEGER continuity attempt. It is never derived from
+    # the textual attempt id; a reception whose execution has a continuity chain
+    # fails closed without it.
+    receive_parser.add_argument(
+        "--continuity-attempt", type=int, default=None, metavar="N",
+        help="the INTEGER continuity attempt this reception closes (007-003); "
+             "mandatory when the execution has continuity")
     validate_parser = commands.add_parser(
         "validate-receipt", help="re-verify a durable receipt against its payload")
     validate_parser.add_argument("--project-root")
     validate_parser.add_argument("--receipt", required=True)
+    # 007-003 §2.3.3: recover the pending closure before continuing the
+    # re-entry. Without these options the verb stays read-only.
+    validate_parser.add_argument(
+        "--close-continuity", action="store_true",
+        help="close the receipt's continuity before returning (007-003)")
+    validate_parser.add_argument(
+        "--continuity-attempt", type=int, default=None, metavar="N",
+        help="the INTEGER continuity attempt (required with --close-continuity)")
     materialize_parser = commands.add_parser(
         "materialize", help="copy receipt parts to authorized canonical targets")
     materialize_parser.add_argument("--project-root")
@@ -1579,8 +1678,10 @@ def main(argv: list[str] | None = None) -> int:
             sys.stdout.buffer.write(receive(args, project_root))
             return 0
         if args.command == "validate-receipt":
-            validate_receipt(args, project_root)
+            closed = validate_receipt(args, project_root)
             print("VALID: receipt")
+            if closed is not None:
+                print(json.dumps(closed, ensure_ascii=False, sort_keys=True))
             return 0
         if args.command == "materialize":
             materialize(args, project_root)

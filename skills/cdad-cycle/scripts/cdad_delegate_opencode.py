@@ -1897,11 +1897,13 @@ def _skill_scripts_dir() -> Path | None:
 
 
 def _run_receive(project_root: Path, execution_id: str, packet_id: str,
-                 descriptor_path: Path) -> None:
+                 descriptor_path: Path,
+                 continuity_attempt: int | None = None) -> None:
     """Persist the delivery through the existing `receive` flow (PD-7).
 
     The receipt stays `semantic_status: "pending"`: the delivery is not a gate
-    (INV-5)."""
+    (INV-5). 007-003 §2.3.3: the integer continuity attempt travels with the
+    arrival, so the reception closes it; it is never inferred here."""
     scripts_dir = _skill_scripts_dir()
     if scripts_dir is None:
         raise AdapterError(
@@ -1921,7 +1923,9 @@ def _run_receive(project_root: Path, execution_id: str, packet_id: str,
                                        / execution_id / "execution.json"),
              "--packet", str(packet_dir / "PACKET.md"),
              "--request", str(packet_dir / "REQUEST.json"),
-             "--descriptor", str(descriptor_path)],
+             "--descriptor", str(descriptor_path),
+             *(["--continuity-attempt", str(continuity_attempt)]
+               if continuity_attempt is not None else [])],
             capture_output=True, text=True, cwd=str(project_root))
     except OSError as exc:
         raise AdapterError(f"cannot start the receive flow: {exc}") from exc
@@ -1942,7 +1946,8 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
                       fallback: str = FALLBACK_NONE,
                       model_reported: str | None = None,
                       store_reads: str = "unknown",
-                      prior_check_reads: str = "unknown") -> str:
+                      prior_check_reads: str = "unknown",
+                      continuity_attempt: int | None = None) -> str:
     """Persist the final text through the existing `receive` flow (PD-7).
 
     The receipt stays `semantic_status: "pending"` (delivery is not a gate,
@@ -2007,7 +2012,8 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         encoding="utf-8")
 
     try:
-        _run_receive(project_root, execution_id, packet_id, descriptor_path)
+        _run_receive(project_root, execution_id, packet_id, descriptor_path,
+                     continuity_attempt)
     finally:
         staged.unlink(missing_ok=True)
         descriptor_path.unlink(missing_ok=True)
@@ -2383,6 +2389,11 @@ def build_parser() -> argparse.ArgumentParser:
     # moment key is measured against. The store's unit is known HERE, not there.
     parser.add_argument("--agent", default=None)
     parser.add_argument("--since", default=None)
+    # 007-003 §2.3.3: the integer continuity attempt of the arrival. The
+    # external entry propagates it; the adapter never infers it and hands it to
+    # the SAME common close the re-entry uses.
+    parser.add_argument("--continuity-attempt", type=int, default=None,
+                        metavar="N")
     return parser
 
 
@@ -2394,6 +2405,17 @@ def _read_packet_stdin() -> bytes:
     if not data:
         raise AdapterError("no packet was transported on stdin")
     return data
+
+
+def _continuity_attempt(args: argparse.Namespace) -> int | None:
+    """007-003 §2.3.3: the integer the entry propagated; never inferred."""
+    value = getattr(args, "continuity_attempt", None)
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise AdapterError(
+            f"--continuity-attempt must be a positive integer; got {value!r}")
+    return value
 
 
 def delegate(args: argparse.Namespace) -> dict[str, Any]:
@@ -2928,7 +2950,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             fallback=fallback,
             model_reported=_model_reported_from_row(row.get("model")),
             store_reads=store_reads_value,
-            prior_check_reads=prior_check_reads_value)
+            prior_check_reads=prior_check_reads_value,
+            continuity_attempt=_continuity_attempt(args))
     except (AdapterError, cdad_result.ResultError) as exc:
         return envelope(
             session=session, termination="blocked", delivery_ref=None,

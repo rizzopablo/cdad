@@ -58,6 +58,73 @@
     },
     "next_action": {
       "type": ["string", "null"]
+    },
+    "changes": {
+      "description": "007-003 (§2.5/§2.6): the changes the writer DECLARED in the body being projected. Empty list when the body declares none (a legacy body is never rewritten and nothing is inferred from references, decisions or logs).",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "description": "007-003 (§2.5/§2.6): the evidence of the projected body with its EXPLICIT applicability. An `invalidada` entry keeps its identity (reference untouched), its reason and its antecedent; it is never presented as current accreditation. Empty list for a legacy body.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reference", "status", "reason", "antecedent"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reference": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "status": {
+            "enum": ["vigente", "invalidada"]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "antecedent": {
+            "description": "The traceable antecedent of the applicability: null, or the body and evidence it refers to (same chain).",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["body_sha256", "evidence_id"],
+                "properties": {
+                  "body_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "evidence_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
     }
   }
 }
