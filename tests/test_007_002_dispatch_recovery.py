@@ -713,11 +713,21 @@ class _RecoveryProject:
         return self.receipt_dir(packet_id) / RECEIPT_NAME
 
     def dispatch_files(self) -> list[str]:
-        base = self.root / ".cdad" / "executions" / self.execution_id
+        """Archivos de despacho de la ejecución (`<execution>/dispatches/`).
+
+        El filtro es por la ruta RELATIVA al proyecto: la ruta absoluta del
+        tempdir puede contener la palabra "dispatch" (p. ej. `no-dispatch`) y
+        contaminaría la observación con `execution.json`, que no es evidencia
+        de despacho.
+        """
+        base = (self.root / ".cdad" / "executions" / self.execution_id
+                / "dispatches")
+        if not base.is_dir():
+            return []
         return sorted(
             path.relative_to(self.root).as_posix()
             for path in base.rglob("*")
-            if path.is_file() and "dispatch" in path.as_posix())
+            if path.is_file())
 
     def tree(self) -> dict[str, bytes | None]:
         return tree_snapshot(self.root)
@@ -2235,15 +2245,18 @@ def test_replace_disposed_packet_has_no_extra_effects_and_cannot_repeat(
         "PC-14 violada: el reemplazo no crea recibo del predecesor")
 
     after_tree = fx.tree()
+    successor_dir = f".cdad/packets/{successor}"
     allowed_prefixes = (
-        f".cdad/packets/{successor}/",
+        successor_dir,
+        f"{successor_dir}/",
         f".cdad/packets/{fx.packet_id}/{SUPERSEDED_FILE}",
         STATE_REL,
     )
     unexpected = sorted(
         rel for rel in changed_paths(before_tree, after_tree)
         if not (rel == STATE_REL
-                or rel.startswith(f".cdad/packets/{successor}/")
+                or rel == successor_dir
+                or rel.startswith(f"{successor_dir}/")
                 or rel == f".cdad/packets/{fx.packet_id}/{SUPERSEDED_FILE}"))
     assert not unexpected, (
         "PC-14 violada: la preparación aceptada sólo cambia artefactos de "
