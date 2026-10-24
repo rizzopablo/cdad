@@ -82,6 +82,17 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+# The canonical disposition verification lives in the packet CLI — the producer
+# owns the transition identity (`_transition_identity_payload`/
+# `_transition_key`), so importing it (never re-running it) gives `reconcile`
+# and `prepare --replace-packet` the SAME reader of ONE decision (precedent:
+# cdad_result.py:47-59).
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_packet  # noqa: E402
+
 CHECKPOINT_CONTRACT = "continuity-checkpoint-v1"
 RECORD_CONTRACT = "active-record-v1"
 RECONCILE_CONTRACT = "reconcile-v1"
@@ -962,8 +973,71 @@ def _has_materialization(root: Path, execution_id: str, packet_id: str) -> bool:
     return any(mat_dir.glob("*.json"))
 
 
+def _disposition_state(root: Path) -> tuple[Any, list[str]]:
+    """007-002 §2.1.1: the ONLY source of a disposition is
+    `docs/.cdad-state.json:stage_history`.
+
+    A project without that file has no disposition (absence, indistinguishable
+    from "never registered" — and never a diagnostic); a PRESENT state that
+    cannot be read is reported as a cause, so absence is never disguised as
+    illegibility nor the other way round."""
+    path = root / STATE_REL_PATH
+    if not path.is_file():
+        return None, []
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return None, [
+            f"the project state {STATE_REL_PATH} cannot be read "
+            f"({exc.strerror or exc}): the disposition cannot be verified"]
+    try:
+        document = json.loads(raw)
+    except ValueError:
+        return None, [
+            f"the project state {STATE_REL_PATH} is not valid JSON: the "
+            f"disposition cannot be verified (no reliable signal)"]
+    return document, []
+
+
+def _execution_feature(exec_context: dict[str, Any], state: Any) -> str | None:
+    """The feature of the examined request: the execution context's binding
+    (v2) or, for a flat legacy context, the state's active feature."""
+    execution = exec_context.get("execution")
+    if isinstance(execution, dict):
+        feature = execution.get("feature_id")
+        if isinstance(feature, str) and feature:
+            return feature
+    if isinstance(state, dict):
+        feature = state.get("active_feature")
+        if isinstance(feature, str) and feature:
+            return feature
+    return None
+
+
+def _disposition_signal(root: Path, exec_context: dict[str, Any],
+                        execution_id: str, packet_id: str,
+                        ) -> tuple[dict[str, Any] | None, list[str]]:
+    """§2.2: the canonical disposition that resolved this dispatch, or `None`
+    (with the causes that prevented selecting one).
+
+    The selection itself is the packet CLI's (one decision, two consumers);
+    this function only locates the source and the feature of the request."""
+    state, causes = _disposition_state(root)
+    if state is None:
+        return None, causes
+    feature_id = _execution_feature(exec_context, state)
+    if feature_id is None:
+        return None, causes
+    signal, selection_causes = cdad_packet.disposition_selection(
+        state, execution_id=execution_id, feature_id=feature_id,
+        packet_id=packet_id)
+    return signal, causes + selection_causes
+
+
 def _classify(authority_state: str, receipt_state: str, dispatch: bool,
-              closed: bool) -> tuple[str, list[str]]:
+              closed: bool, disposition: dict[str, Any] | None = None,
+              disposition_causes: list[str] | None = None,
+              ) -> tuple[str, list[str]]:
     if authority_state == "expired":
         return "expired-authority", [
             "the HITL delegation is expired (D4): context may be rebuilt but "
@@ -981,6 +1055,36 @@ def _classify(authority_state: str, receipt_state: str, dispatch: bool,
             "a valid receipt exists: the effect is already received and must "
             "not be duplicated (D10); a receipt is not semantic approval "
             "(invariant 4)"]
+    # 007-002 §2.2 (row 5): a dispatch with no receipt resolved by a canonical
+    # disposition is `disposed` — an OBSERVED result, never an authorization to
+    # repeat the effect (invariant 4).
+    if disposition is not None:
+        if dispatch:
+            resolution = disposition.get("resolution")
+            replaced_by = disposition.get("replaced_by")
+            successor = (f" and declares {replaced_by!r} as its successor"
+                         if replaced_by is not None else "")
+            return "disposed", [
+                f"a canonical disposition is registered for this dispatch "
+                f"({resolution}{successor}): the recorded DECISION resolves a "
+                f"dispatch that will not come back, and it authorizes NO "
+                f"repeat of the predecessor's effect (repeat_effect=false; "
+                f"invariant 4)"]
+        # §2.2: a disposition alone never turns a request with no dispatch
+        # evidence into `disposed`; the contradiction is reported as `unknown`.
+        return "unknown", [
+            "a canonical disposition is registered but the request has no "
+            "dispatch evidence: the decision contradicts the dispatch it "
+            "resolves, so nothing is fabricated (`disposed` and `not-started` "
+            "are both withheld; 007-002 §2.2)"]
+    if disposition_causes:
+        # §2.2 (row 6): an unreadable, inconsistent or ambiguous disposition
+        # source prevents a reliable determination; the causes travel in
+        # `unknowns`.
+        return "unknown", [
+            "the disposition of this request cannot be determined reliably "
+            "(unreadable, inconsistent or ambiguous record); its causes are "
+            "reported in `unknowns` (007-002 §2.2)"]
     if dispatch:
         return "dispatched-unknown", [
             "a dispatch is recorded with no receipt: the session is not "
@@ -1012,9 +1116,16 @@ def _run_reconcile(args: argparse.Namespace) -> int:
         root, execution_id, packet_id)
     dispatch = _has_dispatch(root, execution_id, packet_id)
     closed = _has_materialization(root, execution_id, packet_id)
+    # 007-002 §2.2: the disposition is verified ALWAYS, so a signal that could
+    # be proved is never lost to a higher-precedence classification; an
+    # inconclusive source is a diagnostic, never a fabricated decision.
+    disposition, disposition_causes = _disposition_signal(
+        root, exec_context, execution_id, packet_id)
+    unknowns.extend(disposition_causes)
 
     classification, reasons = _classify(
-        authority_state, receipt_state, dispatch, closed)
+        authority_state, receipt_state, dispatch, closed, disposition,
+        disposition_causes)
 
     # A (review-t2): `expired-authority` stays dominant, but the receipt /
     # materialization / dispatch facts travel in `signals` so the orchestrator
@@ -1029,6 +1140,9 @@ def _run_reconcile(args: argparse.Namespace) -> int:
         },
         "materialization": "closed" if closed else "open",
         "dispatch": "dispatched" if dispatch else "none",
+        # 007-002 §2.2: ALWAYS present — `null` when no disposition could be
+        # selected, the §2.2 object when one was verified.
+        "disposition": disposition,
     }
 
     head_summary = None

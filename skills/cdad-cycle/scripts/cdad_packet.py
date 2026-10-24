@@ -2550,6 +2550,157 @@ def _draft_contract_of_the_day(contract: dict[str, Any],
     return contract_object, contract_bytes
 
 
+# ---------------------------------------------------------------- 007-002 §2.3
+
+
+def _declared_successor_cause(project_root: Path, signal: dict[str, Any], *,
+                              packet_id: str, execution_id: str,
+                              feature_id: str) -> str:
+    """§2.4: a disposition that DECLARES its successor never duplicates it.
+
+    The three cases are reported instead of publishing, each naming its cause,
+    and none of them assigns another identifier or touches the declared one."""
+    declared = signal["replaced_by"]
+    defective_key = signal["record"]["transition_key"]
+    successor_dir = project_root / ".cdad" / "packets" / declared
+    coherent = False
+    if successor_dir.is_dir():
+        try:
+            document = json.loads(
+                (successor_dir / "REQUEST.json").read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            document = None
+        coherent = (
+            isinstance(document, dict)
+            and document.get("packet_id") == declared
+            and document.get("execution_id") == execution_id
+            and document.get("feature_id") == feature_id)
+    if coherent:
+        return (
+            f"state incoherent: packet {packet_id!r} is dispositioned `superseded` "
+            f"and its declared successor {declared!r} already exists and is "
+            f"coherent, so no other identifier is assigned and no other packet is "
+            f"published; the trace already names it (007-002 §2.4.1)"
+        )
+    if successor_dir.is_dir():
+        return (
+            f"state incoherent: the successor {declared!r} declared by the "
+            f"disposition of packet {packet_id!r} exists but its request is "
+            f"unreadable or incoherent (.cdad/packets/{declared}/REQUEST.json "
+            f"does not identify that packet in this execution and feature); the "
+            f"inconsistency is reported and no alternative packet is created "
+            f"(007-002 §2.4.2)"
+        )
+    return (
+        f"state incoherent: the disposition of packet {packet_id!r} declares the "
+        f"successor {declared!r}, which does not exist: no identifier is invented "
+        f"and nothing is published. If the declared successor is wrong, register "
+        f"the corrected disposition with `--supersedes {defective_key}` and a "
+        f"CHANGED resolution (for example `--resolution abandoned`, which also "
+        f"leaves `replaced_by` null): `resolution`/`replaced_by` are part of the "
+        f"canonical identity of the payload while `supersedes` is not, so the "
+        f"corrected entry supersedes the defective one (007-002 §2.4.3)"
+    )
+
+
+def _recovery_eligibility(*, project_root: Path, state: dict[str, Any],
+                          active: dict[str, Any], request: dict[str, Any],
+                          packet_id: str,
+                          execution_document: dict[str, Any]) -> dict[str, Any]:
+    """The CURRENT eligibility of a `failed` packet for the recovery route, and
+    the canonical disposition that resolved it (007-002 §2.3/§2.1).
+
+    The disposition is a HISTORICAL decision; creating the successor is work of
+    the present, so every condition is verified against the state as it is NOW
+    and every rejection names its cause before any write (INV-7). No drift is
+    required: the decision — not an obsolete contract — is the reason of this
+    replacement. Returns the §2.2 signal of the verified disposition."""
+    execution = execution_document["execution"]
+    execution_id = execution["id"]
+    feature_id = execution["feature_id"]
+    _, active_execution_id = _resolve_active_execution(project_root, state)
+    if execution_id != active_execution_id:
+        raise PolicyError(
+            f"state incoherent: the request of packet {packet_id!r} belongs to "
+            f"execution {execution_id!r} and the active execution is "
+            f"{active_execution_id!r}; the recovery replaces the request of the "
+            f"active execution (007-002 §2.3.2)"
+        )
+    if request.get("packet_id") != packet_id:
+        raise PolicyError(
+            f"state incoherent: the request examined for --replace-packet "
+            f"{packet_id!r} is incoherent: REQUEST.json:packet_id is "
+            f"{request.get('packet_id')!r}, so it is the request of another "
+            f"packet (007-002 §2.3.3)"
+        )
+    if request.get("execution_id") != execution_id \
+            or request.get("feature_id") != feature_id:
+        raise PolicyError(
+            f"state incoherent: the request of packet {packet_id!r} belongs to "
+            f"execution {request.get('execution_id')!r} and feature "
+            f"{request.get('feature_id')!r}, not to the active execution "
+            f"{execution_id!r} of feature {feature_id!r} (007-002 §2.3.2)"
+        )
+    active_feature = state.get("active_feature")
+    if active_feature != feature_id:
+        raise PolicyError(
+            f"state incoherent: feature {feature_id!r} is not the open active "
+            f"feature (state.active_feature is {active_feature!r}); the recovery "
+            f"creates work inside the feature of the request, so it must still "
+            f"be open (007-002 §2.3.2/§2.3.7)"
+        )
+    status = _feature_status(state, feature_id)
+    if status in CLOSED_FEATURE_STATUSES:
+        raise PolicyError(
+            f"state incoherent: feature {feature_id!r} is closed (its "
+            f"epic_features entry is {status!r}); the recovery does not create "
+            f"work for a closed feature (007-002 §2.3.7)"
+        )
+    if (request.get("role") != active.get("role")
+            or request.get("substage") != active.get("substage")):
+        raise PolicyError(
+            f"state incoherent: the request of packet {packet_id!r} declares "
+            f"role/substage {request.get('role')!r}/{request.get('substage')!r} "
+            f"and the active packet declares "
+            f"{active.get('role')!r}/{active.get('substage')!r}; the recovery "
+            f"replaces the same assignment (007-002 §2.3.4)"
+        )
+    if _packet_has_receipt(project_root, execution_id, packet_id):
+        raise PolicyError(
+            f"evidence missing: packet {packet_id!r} already has a durable "
+            f"receipt directory at {RESULTS_RELDIR.as_posix()}/{execution_id}/"
+            f"{packet_id}/, so it is outside this recovery: only a dispatch that "
+            f"was never received is resolved by a disposition (007-002 §2.3.8)"
+        )
+    signal, causes = disposition_selection(
+        state, execution_id=execution_id, feature_id=feature_id,
+        packet_id=packet_id)
+    if signal is None:
+        detail = "; ".join(causes) if causes else (
+            f"no entry of {DISPOSITION_RECORD_PATH}:stage_history registers a "
+            f"disposition of this packet")
+        raise PolicyError(
+            f"evidence missing: packet {packet_id!r} is `failed` and is NOT "
+            f"eligible for the recovery route: no canonical verifiable "
+            f"disposition resolves it ({detail}); register the decision with "
+            f"`register-transition --transition disposition --packet "
+            f"{packet_id} --resolution abandoned|superseded` while the feature "
+            f"is open (007-002 §2.3)"
+        )
+    if not _packet_is_dispatched(project_root, execution_id, packet_id):
+        raise PolicyError(
+            f"state incoherent: the disposition of packet {packet_id!r} has no "
+            f"dispatch evidence in execution {execution_id!r}: a disposition "
+            f"resolves a dispatch that will not come back, it never creates one "
+            f"(007-002 §2.3/§2.1)"
+        )
+    if signal["replaced_by"] is not None:
+        raise PolicyError(_declared_successor_cause(
+            project_root, signal, packet_id=packet_id,
+            execution_id=execution_id, feature_id=feature_id))
+    return signal
+
+
 def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     """Replace a prepared, never-dispatched, genuinely obsolete packet (PD-7..PD-11).
 
@@ -2595,12 +2746,25 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
                 f"replaced in the cold; reconciliation of the dispatched packet is "
                 f"required before any new packet is prepared (PD-10)"
             )
-        if status != "prepared":
+        if status not in ("prepared", "failed"):
             raise PolicyError(
-                f"packet {packet_id!r} is {status!r}: only a prepared packet can be replaced"
+                f"packet {packet_id!r} is {status!r}: only a prepared packet, or "
+                f"the active packet a canonical disposition resolved, can be "
+                f"replaced"
             )
         request = _load_json(request_path, "packet request")
         execution_document = _load_execution_context(project_root, request.get("execution_id"))
+        disposition: dict[str, Any] | None = None
+        if status == "failed":
+            # 007-002 §2.3: the recovery route of a dispatch a canonical
+            # disposition resolved. The decision is verified AGAIN here: the
+            # historical record observes a decision, it never authorizes
+            # creating work, so the CURRENT eligibility is what `prepare` checks
+            # (reconcile observes; prepare verifies, INV-7).
+            disposition = _recovery_eligibility(
+                project_root=project_root, state=state, active=active,
+                request=request, packet_id=packet_id,
+                execution_document=execution_document)
         _ensure_policy_reconciled(project_root, execution_document)
         execution = execution_document["execution"]
         contract = _object(request.get("contract"), "packet request.contract")
@@ -2630,8 +2794,11 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         policy_drifted = recorded_policy != accepted_policy
         # PD-8: replacement is not a shortcut around PD-4. Without verifiable
         # obsolescence (contract digest or accepted policy revision) nothing is
-        # published.
-        if not (contract_drifted or companion_drifted or policy_drifted):
+        # published. 007-002 §2.3: the recovery route of a dispositioned
+        # dispatch does NOT require drift — the registered decision, not an
+        # obsolete packet, is the reason to prepare its successor.
+        if disposition is None and not (
+                contract_drifted or companion_drifted or policy_drifted):
             raise PolicyError(
                 f"--replace-packet {packet_id!r} refused: no verifiable obsolescence "
                 f"(the packet's contract and policy revision still match the current "
@@ -2719,6 +2886,12 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # not silently drop the decisions that govern the role.
         if "current_decisions" in request:
             new_request["current_decisions"] = request["current_decisions"]
+        # 006-005 U1c: the same for the declared `agent` — an ADDITIVE property
+        # of the request that the render ignores. It is part of the assignment
+        # the successor replaces, so it travels with it instead of disappearing
+        # without being a declared correction (007-002 §2.4/INV-5).
+        if "agent" in request:
+            new_request["agent"] = request["agent"]
         # PD-1 (005-005): the complete resulting assignment — conserved and
         # corrected fields alike — passes the same validations as an ordinary
         # prepare, with a diagnostic naming the field, the reason and the
@@ -5574,6 +5747,198 @@ def _transition_key(payload: dict[str, Any]) -> str:
     canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True,
                            separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(canonical).hexdigest()
+
+
+# ---------------------------------------------------------------- 007-002 §2.1
+# The canonical disposition: the ONE decision that resolves a dispatch which
+# will not come back. It is READ from `docs/.cdad-state.json:stage_history` (the
+# single source, INV-1) and verified STRUCTURALLY against the identity the
+# producer above writes. The SAME selection is consumed by `reconcile`
+# (cdad_continuity.py) and by the recovery route of `prepare --replace-packet`,
+# so both consumers read one decision, never two.
+DISPOSITION_TRANSITION = "disposition"
+DISPOSITION_RECORD_PATH = "docs/.cdad-state.json"
+# §2.1.4: the COMPLETE payload the producer emits for a disposition. A subset is
+# NOT canonical even when its digest is recomputed; `exemption` is the only
+# additive block the producer may append (006-006 PD-9) and a disposition never
+# declares one.
+DISPOSITION_PAYLOAD_KEYS = frozenset({
+    "execution_id", "feature_id", "packet_id", "transition", "stage",
+    "substage", "resolution", "replaced_by", "postcondition", "current_stage",
+    "artifacts", "approved_by", "contract", "plan", "closure", "receipt_sha256",
+})
+
+
+def _safe_disposition_successor(value: Any) -> bool:
+    """§2.1.7: a declared successor is a NON-EMPTY and SAFE packet identifier
+    (the rule the rest of the CLI uses to locate a packet dir)."""
+    return (isinstance(value, str) and bool(value)
+            and FLAT_NAME.fullmatch(value) is not None and ".." not in value)
+
+
+def _canonical_disposition_cause(entry: dict[str, Any], *, execution_id: str,
+                                 feature_id: str, packet_id: str) -> str | None:
+    """§2.1.4-§2.1.7: why an entry is NOT a canonical verifiable disposition of
+    the examined request, or `None` when it is.
+
+    The check certifies the structural correspondence with the record the
+    producer writes — never the authenticity of its author (that is declared
+    out of scope): the complete payload, its bindings to the request, the entry
+    and payload agreeing on the decision, a canonical resolution/successor and
+    a `transition_key` that RECOMPUTES from that payload."""
+    payload = entry.get("transition_key_payload")
+    if not isinstance(payload, dict):
+        return ("no `transition_key_payload`: the identity of the decision "
+                "cannot be verified (historical records without it do not "
+                "enable this recovery)")
+    missing = sorted(DISPOSITION_PAYLOAD_KEYS - set(payload))
+    if missing:
+        return (f"the `transition_key_payload` is not the producer's complete "
+                f"structure: missing {missing}")
+    unexpected = sorted(set(payload) - DISPOSITION_PAYLOAD_KEYS - {"exemption"})
+    if unexpected:
+        return (f"the `transition_key_payload` carries fields the producer does "
+                f"not write for a disposition: {unexpected}")
+    if "exemption" in payload and not isinstance(payload["exemption"], dict):
+        return "the `transition_key_payload.exemption` is not an object"
+    for field, expected, label in (
+            ("execution_id", execution_id, "execution"),
+            ("feature_id", feature_id, "feature"),
+            ("packet_id", packet_id, "packet")):
+        if payload[field] != expected:
+            return (f"the `transition_key_payload` is bound to another {label} "
+                    f"({payload[field]!r} != {expected!r})")
+    if payload["transition"] != DISPOSITION_TRANSITION:
+        return (f"the `transition_key_payload` is not a disposition "
+                f"({payload['transition']!r})")
+    if payload["stage"] != DISPOSITION_STAGE:
+        return (f"the `transition_key_payload` carries another stage "
+                f"({payload['stage']!r}, not {DISPOSITION_STAGE!r})")
+    if payload["substage"] is not None and not isinstance(payload["substage"], str):
+        return "the `transition_key_payload.substage` is neither null nor a string"
+    resolution = entry.get("resolution")
+    replaced_by = entry.get("replaced_by")
+    if payload["resolution"] != resolution:
+        return (f"the `transition_key_payload.resolution` "
+                f"({payload['resolution']!r}) diverges from the entry's "
+                f"({resolution!r})")
+    if resolution not in DISPOSITION_RESOLUTIONS:
+        return (f"the entry declares a non-canonical resolution {resolution!r} "
+                f"(only {'|'.join(DISPOSITION_RESOLUTIONS)})")
+    if payload["replaced_by"] != replaced_by:
+        return (f"the `transition_key_payload.replaced_by` "
+                f"({payload['replaced_by']!r}) diverges from the entry's "
+                f"({replaced_by!r})")
+    if replaced_by is None:
+        if resolution != "abandoned":
+            return "a `superseded` disposition declares no successor"
+    else:
+        if resolution != "superseded":
+            return "an `abandoned` disposition declares a successor"
+        if not _safe_disposition_successor(replaced_by):
+            return (f"the declared successor {replaced_by!r} is not a safe "
+                    f"packet identifier")
+        if replaced_by == packet_id:
+            return ("the disposition declares the predecessor itself as its "
+                    f"successor ({replaced_by!r})")
+    postcondition = payload["postcondition"]
+    if postcondition is not None and (
+            not isinstance(postcondition, dict)
+            or set(postcondition) != {"n", "outcome"}
+            or not all(isinstance(postcondition[key], str)
+                       for key in ("n", "outcome"))):
+        return ("the `transition_key_payload.postcondition` is not the "
+                "producer's form")
+    if payload["current_stage"] is not None \
+            and not isinstance(payload["current_stage"], str):
+        return "the `transition_key_payload.current_stage` is neither null nor a string"
+    artifacts = payload["artifacts"]
+    if not isinstance(artifacts, list) or any(
+            not isinstance(item, list) or len(item) != 2
+            or not all(isinstance(part, str) for part in item)
+            for item in artifacts):
+        return ("the `transition_key_payload.artifacts` is not the producer's "
+                "`[path, sha256]` list")
+    for field in ("approved_by", "receipt_sha256", "contract", "plan", "closure"):
+        if payload[field] is not None:
+            return (f"the `transition_key_payload.{field}` is filled: the "
+                    f"producer writes it null for a disposition")
+    key = entry.get("transition_key")
+    if not isinstance(key, str) or not key:
+        return "no `transition_key`: the identity of the decision is absent"
+    if key != _transition_key(payload):
+        return (f"the `transition_key` {key!r} does not recompute from its "
+                f"canonical payload")
+    return None
+
+
+def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
+                          packet_id: str,
+                          ) -> tuple[dict[str, Any] | None, list[str]]:
+    """007-002 §2.1/§2.2: the canonical disposition that resolves the dispatch
+    of `packet_id`, or `None` plus the causes that prevented selecting one.
+
+    Read-only: the state document is inspected, never written. The signal has
+    the §2.2 form (`resolution`, `replaced_by`, `record{path,index,key}`); with
+    identical occurrences of ONE decision the FIRST index is referenced (§2.2),
+    and two vigente decisions that differ make the selection impossible (§2.1.9)."""
+    if not isinstance(state, dict):
+        return None, [f"{DISPOSITION_RECORD_PATH}: the project state is not a "
+                      f"JSON object, so no disposition can be read"]
+    history = state.get("stage_history")
+    if not isinstance(history, list):
+        return None, [f"{DISPOSITION_RECORD_PATH}: `stage_history` is not a "
+                      f"list, so the state is not readable as history and no "
+                      f"disposition can be verified"]
+    # §2.1.8: the criterion the state already uses — an entry named by another
+    # entry's `supersedes` is not vigente and does not authorize anything.
+    superseded = _superseded_transition_keys(state)
+    causes: list[str] = []
+    selected: list[tuple[int, dict[str, Any]]] = []
+    for index, entry in enumerate(history):
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("transition") != DISPOSITION_TRANSITION:
+            continue
+        # §2.1.3: another packet/feature is simply another entry, not a faulty
+        # record of THIS request (silent, never a diagnostic).
+        if entry.get("packet_id") != packet_id \
+                or entry.get("feature") != feature_id:
+            continue
+        key = entry.get("transition_key")
+        if isinstance(key, str) and key in superseded:
+            continue
+        cause = _canonical_disposition_cause(
+            entry, execution_id=execution_id, feature_id=feature_id,
+            packet_id=packet_id)
+        if cause is not None:
+            causes.append(
+                f"{DISPOSITION_RECORD_PATH}: stage_history[{index}] is not a "
+                f"canonical disposition of packet {packet_id!r}: {cause}")
+            continue
+        selected.append((index, entry))
+    if not selected:
+        return None, causes
+    decisions = {(item.get("resolution"), item.get("replaced_by"))
+                 for _, item in selected}
+    if len(decisions) > 1:
+        described = sorted(f"{resolution}/{successor}" for resolution, successor
+                           in decisions)
+        causes.append(
+            f"{DISPOSITION_RECORD_PATH}: the vigente dispositions of packet "
+            f"{packet_id!r} contradict each other ({described}); one of them "
+            f"cannot be selected arbitrarily (007-002 §2.1.9)")
+        return None, causes
+    index, entry = selected[0]
+    return {
+        "resolution": entry.get("resolution"),
+        "replaced_by": entry.get("replaced_by"),
+        "record": {
+            "path": DISPOSITION_RECORD_PATH,
+            "index": index,
+            "transition_key": entry.get("transition_key"),
+        },
+    }, causes
 
 
 def _transition_noop_message(transition: str, stage: str, key: str) -> str:
