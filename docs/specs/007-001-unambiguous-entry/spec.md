@@ -118,7 +118,7 @@ Conservar intacto `authority.approval`. Agregar su hermano `authority.approval_r
   "status": "vigente",
   "record": {
     "path": "docs/.cdad-state.json",
-    "pointer": "/stage_history/3",
+    "index": 3,
     "transition_key": null,
     "approved_by": "aprobador registrado"
   },
@@ -222,7 +222,7 @@ Para architect, `contract` describe el contrato del request, **no un pin del man
 
 «Primero» significa primero en el orden real del historial correspondiente.
 
-`record.pointer` es un JSON Pointer con índice real de `stage_history` o `epic_history`. `transition_key` puede ser `null` para registros históricos que no lo tengan. No se imprime el historial completo.
+`record.index` es el índice 0-based, en el historial que determina `object`, del registro seleccionado: `stage_history` para `feature-spec` y `epic_history` para `epic-plan`. No se emite el nombre del historial ni el historial completo: el localizador no contiene el token del historial, de modo que se conserva la garantía PD-1 vigente (`"stage_history" not in stdout`) sin enmendar tests aprobados. `transition_key` puede ser `null` para registros históricos que no lo tengan.
 
 Para `desconocida`, `record` solo puede conservar un registro si su selección ya pudo comprobarse independientemente de la fuente ilegible; en otro caso es `null`. Nunca se fabrica un localizador.
 
@@ -266,8 +266,8 @@ Tests propuestos en `tests/test_007_001_unambiguous_entry.py`, salvo la regresi�
 | PC-02 | Paquete preparado inequívoco indica `validate-packet`; despachado inequívoco indica `reconcile`; sus scripts y referencias existen. | `test_prepared_and_dispatched_operations` |
 | PC-03 | Ejecución histórica cerrada no produce `execution-active` ni una aprobación vigente histórica. | `test_closed_execution_is_history` |
 | PC-04 | La selección cumple todos los bindings mínimos de §2.1. Pendientes sin paquete inequívoco o con pertenencia inconsistente producen diagnóstico sin script ejecutable y explican su causa. Un paquete explícito válido no se vuelve ambiguo por otros directorios pendientes. | `test_unresolved_pending_work_is_not_dispatchable` parametrizado |
-| PC-05 | Architect muestra el mandato real de `epic_history`, con pointer resoluble, sin exigir pin del plan; sin mandato y con fuentes legibles produce `ausente` conforme a la precedencia A1–A4. | `test_architect_approval_uses_epic_mandate` |
-| PC-06 | Los resultados de aprobación de spec cumplen la tabla ordenada S1–S6 y cada fixture produce exactamente un resultado normativo; el pointer apunta al registro seleccionado. | `test_spec_approval_status_matrix` |
+| PC-05 | Architect muestra el mandato real de `epic_history`, con `record.index` 0-based resoluble, sin exigir pin del plan; sin mandato y con fuentes legibles produce `ausente` conforme a la precedencia A1–A4. | `test_architect_approval_uses_epic_mandate` |
+| PC-06 | Los resultados de aprobación de spec cumplen la tabla ordenada S1–S6 y cada fixture produce exactamente un resultado normativo; `record.index` apunta al registro seleccionado. | `test_spec_approval_status_matrix` |
 | PC-07 | Un hash coincidente con ruta ajena y un contrato cuyos bytes cambiaron nunca producen `vigente`; ausencia o sustitución tienen la precedencia definida ante bytes cambiados. | `test_approval_checks_path_and_current_bytes` |
 | PC-08 | `draft-plan` declara `no requerida` y no inventa registro, sin exigir comprobación de bytes para establecer la exención. | `test_draft_plan_requires_no_approval` |
 | PC-09 | Request/contrato ilegible, ausencia de paquete y falta de registro se distinguen conforme a las tablas ordenadas de §2.3. | `test_approval_unknown_vs_absent` |
@@ -298,6 +298,8 @@ PC-11 se verifica en dos grupos:
 8. **Propietario documental único:** mapa en orientación; orquestador y derivados por referencia/generación.
 
 ## 6. Decisiones de diseño
+
+- **Localizador por índice frente a JSON Pointer (2026-10-23, post-GREEN):** el pointer exigido por §2.3 emitía el token `stage_history`, que la garantía PD-1 (vigente en `tests/test_005_003_t1_compact_view.py:228,325`) prohíbe en la salida. El índice 0-based con historial determinado por `object` localiza igual sin emitir el token, sin relajar ninguna garantía y sin enmendar tests aprobados.
 
 - **Ampliación frente a reemplazo de `entry`:** se elige ampliación por compatibilidad con consumidores y pruebas existentes.
 - **Una operación inicial frente a una fachada de despacho:** se proyecta el primer paso verificable y se referencia el protocolo; evita esconder varios efectos bajo un verbo nuevo.

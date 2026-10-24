@@ -14554,6 +14554,139 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED de 007-001: 15 tests, 38 fallos de asercion, control PC-12 verde"
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-24T00:31:35.790800+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "f2db38576d4435855ff04307f9e943b184f4a6839fe6bbecf1f6de508f598aec",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "delivery",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": "007-001-unambiguous-entry-test-writer-red-001",
+        "receipt_sha256": "2f822d8f848a6ab5d7677d18c6e3179daa7215bf075404737c4089d7542ba8d1",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_007_001_unambiguous_entry.py",
+            "4b3093a16b5e1079a9843bb90dad7ef1609d40b38708df61aa717f1518d7ff4a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-001-unambiguous-entry-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-001-unambiguous-entry-001/007-001-unambiguous-entry-test-writer-red-001/receipt.json",
+      "receipt_sha256": "2f822d8f848a6ab5d7677d18c6e3179daa7215bf075404737c4089d7542ba8d1",
+      "artifacts": {
+        "tests/test_007_001_unambiguous_entry.py": "4b3093a16b5e1079a9843bb90dad7ef1609d40b38708df61aa717f1518d7ff4a"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T00:52:26.313280+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "3b8398703fae4f38d7cb41dac0ad0b2af18383f5037de77212fe4817fb6b5bf6",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-001-unambiguous-entry/spec.md",
+          "sha256": "e7902dc64de3e681f78339a093996b484e8d35334035a5f81acd79cf22e02738"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Enmienda post-GREEN: record.index (0-based, historial por object) reemplaza el JSON Pointer que emitia el token stage_history y contradecia PD-1.",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-001-unambiguous-entry/spec.md",
+      "contract_sha256": "e7902dc64de3e681f78339a093996b484e8d35334035a5f81acd79cf22e02738",
+      "requested_by": "usuario",
+      "delegated": true
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T00:57:42.560516+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "e38156ef5f6466b3a81030480913e2d8e0b5477c4f0279bb6b9301dfd13c8efc",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-001-unambiguous-entry/spec.md",
+          "sha256": "55f9723f8b472642ea7ed44358ac16ce05171ecbe5ec99837508509913c175b5"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Correccion editorial PC-05: pointer -> record.index 0-based (alineado con 2.3 y 6).",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-001-unambiguous-entry/spec.md",
+      "contract_sha256": "55f9723f8b472642ea7ed44358ac16ce05171ecbe5ec99837508509913c175b5",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14568,7 +14701,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T00:30:39.407020+00:00",
+  "last_updated": "2026-10-24T00:57:42.560516+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -14676,10 +14809,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-001-unambiguous-entry-test-writer-red-001",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "dispatched",
+    "id": "007-001-unambiguous-entry-implementer-green-001",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728"
