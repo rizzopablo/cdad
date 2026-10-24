@@ -307,21 +307,31 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--continuity-attempt", type=int, default=None,
                         metavar="N",
                         help="the INTEGER continuity attempt of the dispatch "
-                             "(required; never inferred from a textual id)")
+                             "(mandatory when the execution has continuity; "
+                             "never inferred from a textual id)")
     return parser
 
 
-def require_continuity_attempt(value: Any) -> int:
-    """007-003 §2.1: the integer is mandatory and never inferred."""
+def require_continuity_attempt(value: Any) -> int | None:
+    """007-003 §2.1/§2.2 (enmienda): the integer continuity attempt, or `None`
+    when it was omitted — its obligation depends on whether the execution has
+    continuity (never on a textual id)."""
     if value is None:
-        raise DelegateError(
-            "--continuity-attempt N is required: the integer continuity attempt "
-            "of the dispatch is mandatory and is never inferred from the "
-            "textual attempt id (007-003)")
+        return None
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
         raise DelegateError(
             f"--continuity-attempt must be a positive integer; got {value!r}")
     return value
+
+
+def continuity_presence(project_root: Path, request: dict[str, Any]) -> str:
+    """§2.2: presence declared by the execution of this request (fail closed on
+    an unreadable identity)."""
+    execution_id = _as_text(request.get("execution_id")) \
+        if isinstance(request, dict) else None
+    if execution_id is None:
+        return cdad_continuity.CONTINUITY_PRESENT
+    return cdad_continuity.continuity_presence(project_root, execution_id)
 
 
 def verify_transport_proof(project_root: Path, packet_id: str, attempt: int,
@@ -360,7 +370,18 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             f"module {adapter.name} next to the delegation interface")
     packet_md, request = _packet_paths(project_root, args.packet)
     # §2.2: the proof is verified at THIS border, before the worker is launched.
-    verify_transport_proof(project_root, args.packet, attempt, request)
+    # Without the integer it is only mandatory when the execution HAS continuity
+    # (enmienda 2026-10-24): a chainless execution proceeds and the omission is
+    # declared in the attempt record.
+    if attempt is not None:
+        verify_transport_proof(project_root, args.packet, attempt, request)
+    elif continuity_presence(project_root, request) \
+            == cdad_continuity.CONTINUITY_PRESENT:
+        raise DelegateError(
+            "the transport is refused: --continuity-attempt N is required — the "
+            f"execution of packet {args.packet!r} has continuity (a head exists "
+            f"or the context declares it), and the integer is never inferred "
+            f"from a textual attempt id (007-003 §2.2)")
     config = (_load_json(args.exec_config, "execution config")
               if args.exec_config else {})
     role = _as_text(request.get("role"))

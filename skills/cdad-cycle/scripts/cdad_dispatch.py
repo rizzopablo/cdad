@@ -507,9 +507,12 @@ def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
 
     007-003 §2.2: the pre-transport proof is verified HERE, immediately before
     the transport (never after its return and never only inside `record`); no
-    other continuity write happens between the proof and the transport.
+    other continuity write happens between the proof and the transport. The
+    integer is mandatory only for an execution WITH continuity (enmienda
+    2026-10-24); without continuity the dispatch proceeds and the omission is
+    declared in the attempt record.
     """
-    attempt = require_continuity_attempt(continuity_attempt, "dispatch")
+    attempt = _continuity_attempt_or_none(continuity_attempt)
     resolve_runtime_module(runtime)
     section = load_runtime_section(runtime)
     if not packet:
@@ -519,24 +522,41 @@ def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
     root = _project_root(project_root)
     _, request_path = _known_packet(root, packet, "dispatching")
     request = _load_json(request_path, "packet request")
-    verify_continuity_begin(root, packet, attempt, request)
+    if attempt is not None:
+        verify_continuity_begin(root, packet, attempt, request)
+    elif continuity_presence(root, request) == cdad_continuity.CONTINUITY_PRESENT:
+        raise DispatchError(
+            "dispatch requires --continuity-attempt N: the execution of packet "
+            f"{packet!r} has continuity (a head exists or the context declares "
+            f"it), so the integer continuity attempt is mandatory and is never "
+            f"inferred from the textual --attempt-id (007-003 §2.2)")
     envelope = _transport(runtime, section, root, packet, attempt)
     _report_envelope(envelope, as_json=as_json)
     return 0
 
 
-def require_continuity_attempt(value: Any, verb: str) -> int:
-    """007-003 §2.1: the integer continuity attempt is mandatory for a new
-    dispatch/registration and is NEVER inferred from the textual attempt id."""
+def _continuity_attempt_or_none(value: Any) -> int | None:
+    """007-003 §2.1: the integer continuity attempt, or `None` when it was
+    omitted (its scope is decided by `continuity_presence`)."""
     if value is None:
-        raise DispatchError(
-            f"{verb} requires --continuity-attempt N: the integer continuity "
-            f"attempt is mandatory for a new dispatch and is never inferred "
-            f"from the textual --attempt-id (007-003 §2.1)")
+        return None
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
         raise DispatchError(
             f"--continuity-attempt must be a positive integer; got {value!r}")
     return value
+
+
+def continuity_presence(root: Path, request: dict[str, Any]) -> str:
+    """§2.2: the presence declared by the execution of this request.
+
+    An unreadable identity resolves `present` (fail closed): an absence that
+    cannot be proved never relaxes the obligation.
+    """
+    execution_id = _as_text(request.get("execution_id")) \
+        if isinstance(request, dict) else None
+    if execution_id is None:
+        return cdad_continuity.CONTINUITY_PRESENT
+    return cdad_continuity.continuity_presence(root, execution_id)
 
 
 def verify_continuity_begin(root: Path, packet: str, attempt: int,
@@ -557,7 +577,8 @@ def verify_continuity_begin(root: Path, packet: str, attempt: int,
 
 
 def _transport(runtime: str, section: dict[str, Any], root: Path,
-               packet: str, continuity_attempt: int) -> dict[str, Any]:
+               packet: str,
+               continuity_attempt: int | None) -> dict[str, Any]:
     """Delegate the external transport to the common interface (one
     implementation of launch/wait/collect/transport, §2.1/§12)."""
     derived = derived_internal_config(root, runtime, section)
@@ -905,7 +926,7 @@ def _observation_payload(*, runtime: str, correlation: Correlation) -> dict[str,
 
 def _register_attempt(root: Path, packet: str, request: dict[str, Any],
                       attempt_id: str, observation: dict[str, Any],
-                      continuity_attempt: int) -> None:
+                      continuity_attempt: int | None) -> None:
     """PD-1/§2.4: the ONE registration of the native path, written through the
     command that already owns the ledger and the state transition
     (`cdad_packet.py prepare --record-dispatch`, INV-5). 007-003: the same
@@ -937,7 +958,8 @@ def _register_attempt(root: Path, packet: str, request: dict[str, Any],
              "--project-root", str(root),
              "--record-dispatch", packet,
              "--attempt-id", attempt_id,
-             "--continuity-attempt", str(continuity_attempt),
+             *(["--continuity-attempt", str(continuity_attempt)]
+               if continuity_attempt is not None else []),
              "--input", str(observation_path)],
             capture_output=True, text=True, cwd=str(root))
     finally:
@@ -1010,7 +1032,7 @@ def record(runtime: str, project_root: str | None, packet: str | None,
            as_json: bool, continuity_attempt: int | None = None) -> int:
     """§2.1 (native path): the single body of observation + registration + the
     mechanical staging step; the receipt belongs to the re-entry protocol."""
-    attempt = require_continuity_attempt(continuity_attempt, "record")
+    attempt = _continuity_attempt_or_none(continuity_attempt)
     module = resolve_runtime_module(runtime)
     section = load_runtime_section(runtime)
     if not packet:
@@ -1028,8 +1050,17 @@ def record(runtime: str, project_root: str | None, packet: str | None,
         raise DispatchError(
             f"the packet request is not an object: {_packet_dir(root, packet) / REQUEST_NAME}")
     # 007-003 §2.2: `record` cannot bypass the pre-transport proof — it is
-    # verified BEFORE any observation, registration or staged delivery.
-    verify_continuity_begin(root, packet, attempt, request)
+    # verified BEFORE any observation, registration or staged delivery, and
+    # only for an execution WITH continuity (enmienda 2026-10-24). Without
+    # continuity the registration proceeds and DECLARES the omission.
+    if attempt is not None:
+        verify_continuity_begin(root, packet, attempt, request)
+    elif continuity_presence(root, request) == cdad_continuity.CONTINUITY_PRESENT:
+        raise DispatchError(
+            "record requires --continuity-attempt N: the execution of packet "
+            f"{packet!r} has continuity (a head exists or the context declares "
+            f"it), so the integer continuity attempt is mandatory and is never "
+            f"inferred from the textual --attempt-id (007-003 §2.2)")
     kind = derive_artifact_kind(request.get("role"), request.get("substage"))
 
     payload = _read_native_result(native_result)
@@ -1226,7 +1257,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--continuity-attempt", type=int, default=None, metavar="N",
         help="dispatch/record: the INTEGER continuity attempt of this dispatch "
-             "(007-003; required for a new dispatch or registration, never "
+             "(007-003; mandatory when the execution has continuity, never "
              "inferred from a textual id)")
     parser.add_argument(
         "--dry-run", action="store_true",

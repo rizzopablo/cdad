@@ -164,8 +164,11 @@ here):
   `record` with the same integer. The check is immediately before the native
   tool, never after its return and never only inside `record`;
   `--continuity-attempt N` is mandatory for `dispatch`, `record` and the
-  canonical dispatch registration, and a missing or discordant proof refuses
-  the transport before the tool is invoked.
+  canonical dispatch registration whenever the execution has continuity (a
+  head, or a context that declares it); without continuity the dispatch
+  proceeds and the attempt record declares `continuity: absent`, never in
+  silence; a discordant proof refuses the transport before the tool is
+  invoked.
 - `checkpoint` — close each task or sub-phase boundary.
 - `checkpoint-receipt` — the common close of a durable receipt: `receive` runs
   it after publishing or recognizing the receipt, and the re-entry validation

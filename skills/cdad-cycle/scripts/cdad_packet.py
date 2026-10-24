@@ -3303,16 +3303,25 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     if (FLAT_NAME.fullmatch(attempt_id) is None or ".." in attempt_id
             or attempt_id in {".", ".."}):
         raise PolicyError(f"--attempt-id must be a plain name ([A-Za-z0-9._-], no path), got {attempt_id!r}")
-    # 007-003 §2.1/§2.2: the continuity attempt is an INTEGER and is NEVER
-    # inferred from the textual --attempt-id.
+    # 007-003 §2.1/§2.2 (enmienda 2026-10-24): the continuity attempt is an
+    # INTEGER and is NEVER inferred from the textual --attempt-id. It is
+    # mandatory only for an execution WITH continuity (a head, or a context that
+    # declares it); without continuity the registration proceeds and the
+    # omission is DECLARED in the attempt record, never silent.
+    #
+    # Local import: `cdad_continuity` imports THIS module (one reader of the
+    # store, no second implementation of the proof). The canonical directory is
+    # added first because the CLI is also reachable through the thin `scripts/`
+    # wrapper (runpy), where the interpreter's sys.path[0] is the wrapper dir.
+    _script_dir = Path(__file__).resolve().parent
+    if str(_script_dir) not in sys.path:
+        sys.path.insert(0, str(_script_dir))
+    import cdad_continuity
+
     continuity_attempt = getattr(args, "continuity_attempt", None)
-    if continuity_attempt is None:
-        raise PolicyError(
-            "--record-dispatch requires --continuity-attempt N: the integer "
-            "continuity attempt of the dispatch is mandatory and is never "
-            "inferred from the textual --attempt-id (007-003 §2.1)")
-    if not isinstance(continuity_attempt, int) or isinstance(
-            continuity_attempt, bool) or continuity_attempt < 1:
+    if continuity_attempt is not None and (
+            not isinstance(continuity_attempt, int)
+            or isinstance(continuity_attempt, bool) or continuity_attempt < 1):
         raise PolicyError(
             f"--continuity-attempt must be a positive integer; got "
             f"{continuity_attempt!r}")
@@ -3335,6 +3344,10 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
                 f"packet {packet_id!r} belongs to execution "
                 f"{request.get('execution_id')!r}, not the active one {execution_id!r}")
         observation = _load_observation_document(observation_path)
+        # §2.2 (enmienda): does THIS execution have continuity? The declaration
+        # below is the durable, non-silent record of the scope decision.
+        continuity = cdad_continuity.continuity_presence(
+            project_root, execution_id, execution_document)
 
         record = {
             "execution_id": execution_id,
@@ -3344,6 +3357,18 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
             **{field: observation[field] for field in OBSERVATION_TEXT_FIELDS},
             "provenance": observation["provenance"],
         }
+        if continuity == cdad_continuity.CONTINUITY_ABSENT:
+            # §2.2 (enmienda): the OMISSION is declared, never silent. The I8
+            # top-level schema stays CLOSED (007-001/005-009/006-001), so the
+            # `continuity: absent` diagnostic travels in the provenance channel
+            # (field -> source). When continuity exists (the integer was given
+            # and verified) nothing is added, so a durable record keeps the
+            # exact bytes it always had and its byte-identical replay stays
+            # idempotent.
+            record["provenance"] = {
+                **observation["provenance"],
+                cdad_continuity.CONTINUITY_FIELD: continuity,
+            }
         payload = _serialize_dispatch(record)
         dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
                          / DISPATCHES_DIRNAME / f"{attempt_id}.json")
@@ -3380,8 +3405,18 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
             # byte-identical repetition of a durable record is NOT a new
             # transport and keeps its idempotency (that exception never
             # introduces or modifies an observation).
-            _require_continuity_begin(project_root, execution_id, packet_id,
-                                      continuity_attempt)
+            if continuity_attempt is not None:
+                _require_continuity_begin(project_root, execution_id, packet_id,
+                                          continuity_attempt)
+            elif continuity == cdad_continuity.CONTINUITY_PRESENT:
+                # §2.2 (enmienda): an execution WITH continuity cannot register
+                # without the integer — the absence fails CLOSED.
+                raise PolicyError(
+                    "the dispatch registration is refused: the execution "
+                    f"{execution_id!r} has continuity (a head exists or the "
+                    f"context declares it), so --continuity-attempt N is "
+                    f"mandatory for a new registration and is never inferred "
+                    f"from the textual --attempt-id (007-003 §2.2)")
 
         # Compute the state transition if it is still pending (B-1): an
         # idempotent retry must still complete it, never early-return.
@@ -7972,13 +8007,14 @@ def build_parser() -> argparse.ArgumentParser:
                       help="register a dispatch attempt observation (I8)")
     prep.add_argument("--attempt-id", metavar="ID",
                       help="flat attempt identifier for --record-dispatch")
-    # 007-003 §2.1/§2.2: the INTEGER continuity attempt of the dispatch. It is
-    # mandatory for a new registration (or the provisional completion) and is
-    # never inferred from the textual --attempt-id.
+    # 007-003 §2.1/§2.2 (enmienda): the INTEGER continuity attempt of the
+    # dispatch. It is mandatory for a new registration (or the provisional
+    # completion) of an execution WITH continuity, and is never inferred from
+    # the textual --attempt-id; without continuity the omission is declared.
     prep.add_argument("--continuity-attempt", type=int, default=None, metavar="N",
                       help="the INTEGER continuity attempt of a dispatch "
-                           "registration (007-003; required with "
-                           "--record-dispatch)")
+                           "registration (007-003; mandatory for an execution "
+                           "with continuity, declared absent otherwise)")
     prep.add_argument("--input", action="append", default=[])
     prep.add_argument("--read-scope", action="append", default=[])
     prep.add_argument("--write-scope", action="append", default=[])

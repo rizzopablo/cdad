@@ -1835,8 +1835,15 @@ def _observation(runtime: str | None, model: str | None, binary_version: str | N
 
 
 def _register_dispatch(project_root: Path, packet_id: str, request: dict[str, Any],
-                       attempt_id: str, observation: dict[str, Any]) -> None:
-    """Register the attempt in the SAME I8 ledger (reused machinery, PD-2)."""
+                       attempt_id: str, observation: dict[str, Any],
+                       continuity_attempt: int | None = None) -> None:
+    """Register the attempt in the SAME I8 ledger (reused machinery, PD-2).
+
+    007-003 §2.2 (enmienda): the integer continuity attempt the entry
+    propagated travels with the registration. When the execution has no
+    continuity the flag is omitted and the record DECLARES `continuity:
+    absent`; the adapter never infers the integer.
+    """
     execution_id = _as_text(request.get("execution_id"))
     if execution_id is None:
         raise AdapterError(f"packet {packet_id!r} request has no execution_id")
@@ -1860,6 +1867,8 @@ def _register_dispatch(project_root: Path, packet_id: str, request: dict[str, An
              "--project-root", str(project_root),
              "--record-dispatch", packet_id,
              "--attempt-id", attempt_id,
+             *(["--continuity-attempt", str(continuity_attempt)]
+               if continuity_attempt is not None else []),
              "--input", str(observation_path)],
             capture_output=True, text=True, cwd=str(project_root))
     finally:
@@ -1976,7 +1985,8 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         dispatch_flags=dispatch_flags, service_status=service_status,
         fallback=fallback, store_reads=store_reads,
         prior_check_reads=prior_check_reads)
-    _register_dispatch(project_root, packet_id, request, attempt_id, observation)
+    _register_dispatch(project_root, packet_id, request, attempt_id, observation,
+                       continuity_attempt)
 
     inbox = project_root / ".cdad" / "inbox"
     inbox.mkdir(parents=True, exist_ok=True)
@@ -2544,7 +2554,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             prior_check_reads=prior_check_reads_value)
         try:
             _register_dispatch(project_root, args.packet_id, request,
-                               attempt_id, observation)
+                               attempt_id, observation,
+                               _continuity_attempt(args))
         except AdapterError as exc:
             return f"worker record not written: {str(exc)[:200]}"
         return None
@@ -2762,7 +2773,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
         prior_check_reads=prior_check_reads_value)
     try:
         _register_dispatch(project_root, args.packet_id, request, attempt_id,
-                           write_ahead_observation)
+                           write_ahead_observation,
+                           _continuity_attempt(args))
     except AdapterError as exc:
         return envelope(
             session=None, termination="blocked", delivery_ref=None,

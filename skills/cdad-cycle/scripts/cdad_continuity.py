@@ -1064,6 +1064,67 @@ def continuity_state(project_root: Path, execution_id: str) -> str:
     return "present" if directory.is_dir() else "absent"
 
 
+# 007-003 §2.2 (enmienda 2026-10-24): the SCOPE of the mandatory integer. An
+# execution WITH continuity —a head for that `execution_id`, or a context that
+# DECLARES continuity— may not transport nor register without it; an execution
+# WITHOUT continuity proceeds and the omission is DECLARED, never silent.
+CONTINUITY_PRESENT = "present"
+CONTINUITY_ABSENT = "absent"
+CONTINUITY_FIELD = "continuity"
+
+
+def _declares_continuity(document: Any) -> bool:
+    """Whether a context DOCUMENT declares continuity.
+
+    Declared shape (an additive field, never inferred from a path): a
+    `continuity` entry at the top level or under `execution`, worth an object,
+    `true`, or a non-empty string other than the explicit `absent` family. A
+    context that says nothing does NOT declare it.
+    """
+    if not isinstance(document, dict):
+        return False
+    for candidate in (document, document.get("execution")):
+        if not isinstance(candidate, dict):
+            continue
+        value = candidate.get(CONTINUITY_FIELD)
+        if isinstance(value, dict):
+            return True
+        if value is True:
+            return True
+        if isinstance(value, str) and value.strip():
+            return value.strip().lower() not in {
+                CONTINUITY_ABSENT, "none", "no", "false", "never"}
+    return False
+
+
+def continuity_presence(project_root: Path, execution_id: Any,
+                        exec_context: dict[str, Any] | None = None) -> str:
+    """§2.2 (enmienda): does THIS execution have continuity?
+
+    `present` when a continuity head exists for the `execution_id` or the
+    execution context declares continuity; `absent` otherwise. An identity that
+    cannot even be located resolves `present` (fail closed: an unprovable
+    absence never relaxes the obligation).
+    """
+    root = Path(project_root)
+    try:
+        segment = _safe_segment(execution_id, "execution_id")
+    except ContinuityError:
+        return CONTINUITY_PRESENT
+    if _head_path(root, segment).is_file():
+        return CONTINUITY_PRESENT
+    context = exec_context
+    if context is None:
+        path = execution_context_path(root, segment)
+        if path.is_file():
+            try:
+                context = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                context = None
+    return CONTINUITY_PRESENT if _declares_continuity(context) \
+        else CONTINUITY_ABSENT
+
+
 def _durable_receipt(project_root: Path,
                      receipt_path: Path) -> dict[str, Any]:
     """§2.3: validate the receipt with the SAME criteria as `validate-receipt`

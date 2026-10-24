@@ -72,6 +72,16 @@ provide the demonstration a close requires. Bodies may also declare the additive
 reason and antecedent); `resume` projects both, and an invalidated evidence is
 never rehabilitated by byte equality, a changed hash or re-anchoring.
 
+**Scope of the integer (§2.2, amendment 2026-10-24).** `--continuity-attempt N`
+is an INTEGER and is never derived from a textual attempt id. It is mandatory —
+and its absence fails closed — for an execution **with continuity** (a head for
+that execution, or a context that declares `continuity`), which therefore
+cannot transport nor register without it. An execution **without continuity**
+proceeds: the attempt record declares `continuity: absent` in its provenance
+channel, so the omission is visible and auditable, never silent. A reception
+follows the same rule for its close: `receive --continuity-attempt N` is
+mandatory when the execution has continuity.
+
 ## Reference classes (003-007)
 
 `--update.references[]` accepts a bare path (compat string, `class` = `contract`)
