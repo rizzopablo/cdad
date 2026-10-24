@@ -15176,6 +15176,40 @@
       "contract_sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7",
       "requested_by": "usuario",
       "delegated": true
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "tdd",
+      "substage": "green",
+      "at": "2026-10-24T04:53:39.298818+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "87eca01785a960fef025200cd39edfef1e438fb14d5642a75912ac487bfc34e8",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "advance",
+        "stage": "tdd",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "RED 007-002: 14 fallos de contrato, 2 guardas"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15190,7 +15224,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T04:27:15.852214+00:00",
+  "last_updated": "2026-10-24T04:53:39.298818+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15306,5 +15340,5 @@
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "ea4347fb96e28c814b367cbb27211925ff7f19877010d142b9b0d7de9fdfff09"
   },
-  "tdd_substage": null
+  "tdd_substage": "green"
 }
