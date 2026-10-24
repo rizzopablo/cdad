@@ -7082,17 +7082,19 @@ def _history_source(
 
     Spec §2.3 S1/A1: a source that cannot be read or interpreted forbids the
     absence/vigency judgement, so it is reported (source + condition) instead
-    of being read as "no records". An ABSENT key is an empty, legible history:
-    only a present value that is not a list is malformed.
+    of being read as "no records". KEY PRESENCE and VALUE are distinct: an
+    absent key is an empty, legible history; a present value that is not a list
+    — `null` included — is malformed. The cause names the history without
+    emitting its token, so the view keeps the PD-1 guarantee.
     """
-    value = state.get(key)
-    if value is None:
+    if key not in state:
         return [], None
+    value = state[key]
     if not isinstance(value, list):
         return None, (
-            f"approval source malformed: {key} is not a list of records "
-            f"(found {type(value).__name__}); the approval sources cannot be "
-            f"interpreted")
+            f"approval source malformed: the {key.replace('_', ' ')} is not a "
+            f"list of records (found {type(value).__name__}); the approval "
+            f"sources cannot be interpreted")
     return value, None
 
 
