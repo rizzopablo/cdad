@@ -107,6 +107,35 @@ Mapeo test → postcondición (spec §4):
          igualdad, cambio de hash ni reanclaje; los cuerpos antiguos siguen
          leyéndose.
 
+Corrección RED-002 (review-001, tres BLOCKING reproducidos):
+
+  test_verify_begin_requires_demonstrable_history
+      -> PC-01/§2.1/§2.3.1 (BLOCKING 1): un ancestro legado sin `prev` no
+         acredita un `begin` vigente; `verify-begin` rechaza la historia no
+         demostrable sin efectos, mientras una cadena completa equivalente
+         sigue autorizando.
+  test_evidence_update_requires_identity_and_antecedent
+      -> PC-06/§2.5/INV-7 (BLOCKING 2): invalidar con una referencia distinta
+         a la antecedente y sobrescribir una evidencia vigente con otra
+         referencia sin antecedente se rechazan; la invalidación legítima
+         (misma referencia, motivo y antecedente) y la sustitución con
+         identificador nuevo y antecedente siguen funcionando.
+  test_durable_registration_replay_does_not_require_current_continuity
+      -> PC-02/§2.2 (BLOCKING 3): un registro durable `continuity: absent`
+         conserva su idempotencia byte-idéntica aunque después se abra
+         continuidad; una observación realmente distinta sigue rechazándose.
+
+RED de la corrección (review-001, HEAD 522de92, medido con esta fixture):
+- `verify-begin` acredita un `begin` sobre una cadena cuyo génesis no
+  declara `prev` (rc=0 sobre historia no demostrable) → falla la aserción
+  de rechazo.
+- La actualización de evidencia acepta invalidar con otra referencia que la
+  antecedente y sobrescribir una vigente sin antecedente (rc=0) → fallan
+  las dos aserciones de rechazo de §2.5.
+- Repetir byte-idénticamente un registro durable `continuity: absent`
+  después de abrir `begin` devuelve rc=2 → falla la aserción de
+  idempotencia.
+
 RED hoy (HEAD f557e26, medido con esta misma fixture):
 - `verify-begin` y `checkpoint-receipt` NO existen (`invalid choice`) y
   `--continuity-attempt` NO existe en `prepare`/`dispatch`/`record`/
@@ -199,6 +228,10 @@ CONTINUITY_PATTERN = re.compile(
 CHAIN_PATTERN = re.compile(
     r"(?i)prev|legacy|legado|historia|history|demostr|digest|hash|"
     r"integridad|integrity|incoher|chain|cadena")
+# §2.5: diagnósticos de la transición de evidencia (identidad/antecedente).
+EVIDENCE_PATTERN = re.compile(
+    r"(?i)evidenc|antecedent|antecedente|referenc|referencia|identidad|"
+    r"identity")
 
 # El módulo de runtime del FIXTURE (NO producto): registra su invocación y
 # sólo imprime el sobre cuando se lo ejecuta como proceso.
@@ -2556,6 +2589,317 @@ def test_repair_preserves_history_and_invalidates_evidence_explicitly(
     ):
         cases.run(label, case)
     cases.raise_if_any("PC-06")
+
+
+def test_verify_begin_requires_demonstrable_history(tmp_path: Path) -> None:
+    """PC-01/§2.1/§2.3.1 (corrección review-001 BLOCKING 1): un `begin`
+    vigente sólo se acredita si la cadena se demuestra completa desde la
+    cabeza hasta el génesis. Un ancestro legado sin `prev` interrumpe la
+    demostración: `verify-begin` rechaza con diagnóstico de historia no
+    demostrable y sin efectos. Una cadena completa equivalente —mismos
+    identificadores y misma forma, con `prev` en todos los cuerpos nuevos—
+    sigue autorizando.
+
+    RED hoy: `verify-begin` no consulta la demostrabilidad y devuelve rc=0
+    sobre el ancestro legado.
+    """
+    cases = _Cases()
+
+    def legacy_ancestor() -> None:
+        fx = _Project(tmp_path / "legacy")
+        assert_rc0(fx.begin(attempt=1), "historia legada", "`begin`")
+        head = fx.head("historia legada")
+        original_sha = head["body_sha256"]
+        body = fx.body(original_sha, "historia legada")
+        assert PREV_KEY in body, (
+            "precondición (fixture): el cuerpo nuevo declara `prev`")
+        body.pop(PREV_KEY)  # cuerpo legado: sin enlace histórico
+        legacy_sha = fx.write_body(body)
+        assert fx.body_path(original_sha).is_file(), (
+            "precondición (fixture): el cuerpo original existe antes de "
+            "reemplazarlo por su variante legada")
+        fx.body_path(original_sha).unlink()
+        head["body_sha256"] = legacy_sha
+        fx.write_head(head)
+
+        # La compatibilidad permite continuar una cadena iniciada antes del
+        # enlace histórico; lo que no se puede es ACREDITARLA.
+        assert_rc0(fx.begin(attempt=2, label="attempt-2"),
+                   "historia legada", "`begin` sobre la cadena legada")
+        second = fx.head("historia legada")
+        assert second.get("record") == "begin" and \
+            second.get("attempt") == 2, (
+            "precondición (fixture): la cabeza vigente es el `begin` 2: "
+            f"{second!r}")
+        link = fx.body(second["body_sha256"], "historia legada")
+        link_prev = require_prev(
+            link, "historia legada", second["body_sha256"])
+        assert isinstance(link_prev, dict), (
+            "precondición (fixture): §2.3.1 — el enlace nuevo declara `prev` "
+            f"como objeto; visto {link_prev!r}")
+        assert link_prev.get("checkpoint_sha256") == legacy_sha, (
+            "precondición (fixture): el enlace nuevo apunta al ancestro "
+            f"legado {legacy_sha!r}; visto "
+            f"{link_prev.get('checkpoint_sha256')!r}")
+        assert link_prev.get("seq") == 1, (
+            "precondición (fixture): el ancestro legado ocupa la posición 1; "
+            f"visto {link_prev.get('seq')!r}")
+
+        before = fx.tree()
+        proc = fx.verify_begin(attempt=2)
+        assert_rejected(
+            proc, "historia legada",
+            "`verify-begin` sobre una cadena con un ancestro sin `prev` "
+            "(historia no demostrable)", pattern=CHAIN_PATTERN)
+        assert fx.tree() == before, (
+            "§2.1: el rechazo de `verify-begin` no modifica nada (comando de "
+            "solo lectura)")
+
+    def complete_chain() -> None:
+        fx = _Project(tmp_path / "complete")
+        assert_rc0(fx.begin(attempt=1), "cadena completa", "`begin`")
+        assert_rc0(fx.begin(attempt=2, label="attempt-2"), "cadena completa",
+                   "`begin` del intento 2")
+        links = fx.chain("cadena completa")
+        assert len(links) == 2, (
+            "precondición (fixture): §2.3.1 — la cadena completa tiene dos "
+            f"eslabones; vistos {len(links)}")
+        genesis_prev = require_prev(
+            links[-1][1], "cadena completa", links[-1][0])
+        assert genesis_prev is None, (
+            "precondición (fixture): §2.3.1 — el génesis declara "
+            f"`prev=null`; visto {genesis_prev!r}")
+
+        head = fx.head("cadena completa")
+        proof = json_doc(
+            fx.verify_begin(attempt=2), "cadena completa",
+            "`verify-begin` con la cadena completa")
+        for key in ("execution_id", "packet_id", "attempt", "body_sha256",
+                    "seq"):
+            assert key in proof, (
+                "cadena completa: §2.1 — la salida de `verify-begin` declara "
+                f"`{key}`; visto {sorted(proof)}")
+        assert proof["execution_id"] == fx.execution_id
+        assert proof["packet_id"] == fx.packet_id
+        assert proof["attempt"] == 2
+        assert proof["body_sha256"] == head.get("body_sha256"), (
+            "cadena completa: §2.1 — el `begin` acreditado es la cabeza "
+            "vigente")
+        assert proof["seq"] == head.get("seq")
+
+    for label, case in (
+        ("ancestro legado sin prev", legacy_ancestor),
+        ("cadena completa", complete_chain),
+    ):
+        cases.run(label, case)
+    cases.raise_if_any("PC-01 historia demostrable")
+
+
+def test_evidence_update_requires_identity_and_antecedent(
+        tmp_path: Path) -> None:
+    """PC-06/§2.5/INV-7 (corrección review-001 BLOCKING 2): la actualización
+    de evidencia valida la transición contra la entrada antecedente. Se
+    rechazan (a) invalidar una evidencia con una referencia distinta a la de
+    su antecedente y (b) sobrescribir una evidencia vigente con otra
+    referencia sin antecedente. Siguen funcionando la invalidación legítima
+    (misma referencia, motivo y antecedente) y la sustitución con
+    identificador nuevo y antecedente.
+
+    RED hoy: ambas transiciones inválidas devuelven rc=0.
+    """
+    cases = _Cases()
+
+    def base_evidence(base: Path, name: str):
+        fx = _Project(base / name)
+        rel1, sha1 = fx.write_reference(
+            "docs/evidence/red-pc-1.txt", "prueba PC-1 (base)\n")
+        rel2, sha2 = fx.write_reference(
+            "docs/evidence/red-pc-1-fix.txt", "prueba PC-1 (reparada)\n")
+        begin = json_doc(
+            fx.begin(
+                attempt=1, label="evidence-base",
+                evidence=[evidence_entry("red-pc-1", rel1, sha1)]),
+            f"{name}/begin", "`begin` con evidencia")
+        return fx, rel1, sha1, rel2, sha2, begin.get("body_sha256")
+
+    def invalidation_with_foreign_reference() -> None:
+        fx, _, _, rel2, sha2, base_sha = base_evidence(
+            tmp_path, "foreign-reference")
+        before = fx.continuity_files()
+        proc = fx.checkpoint(
+            attempt=1, label="foreign-reference",
+            evidence=[evidence_entry(
+                "red-pc-1", rel2, sha2, status="invalidada",
+                reason="la reparación cambió el comportamiento verificado",
+                antecedent={"body_sha256": base_sha,
+                            "evidence_id": "red-pc-1"})])
+        assert_rejected(
+            proc, "evidencia invalidada con otra referencia",
+            "la invalidación que cambia la referencia de la evidencia "
+            "antecedente (identidad no conservada)",
+            pattern=EVIDENCE_PATTERN)
+        assert fx.continuity_files() == before, (
+            "§2.5/INV-7: el rechazo no escribe ni reemplaza la cabeza")
+
+    def overwrite_active_without_antecedent() -> None:
+        fx, _, _, rel2, sha2, _ = base_evidence(tmp_path, "overwrite")
+        before = fx.continuity_files()
+        proc = fx.checkpoint(
+            attempt=1, label="overwrite-active",
+            evidence=[evidence_entry(
+                "red-pc-1", rel2, sha2, status="vigente",
+                reason="nueva base sin trazabilidad")])
+        assert_rejected(
+            proc, "evidencia vigente sobrescrita",
+            "la sustitución de una evidencia vigente con otra referencia y "
+            "sin antecedente", pattern=EVIDENCE_PATTERN)
+        assert fx.continuity_files() == before, (
+            "§2.5: el rechazo no escribe ni reemplaza la cabeza")
+
+    def legitimate_transitions_still_work() -> None:
+        fx, rel1, sha1, rel2, sha2, base_sha = base_evidence(
+            tmp_path, "legit")
+        invalidated = evidence_entry(
+            "red-pc-1", rel1, sha1, status="invalidada",
+            reason="la reparación cambió el comportamiento verificado",
+            antecedent={"body_sha256": base_sha,
+                        "evidence_id": "red-pc-1"})
+        assert_rc0(
+            fx.checkpoint(attempt=1, label="invalidate-legit",
+                          evidence=[invalidated]),
+            "evidencia legítima",
+            "la invalidación legítima (misma referencia, motivo y "
+            "antecedente)")
+        substitute = evidence_entry(
+            "red-pc-1-fix", rel2, sha2, status="vigente",
+            reason="verifica PC-1 sobre la base reparada",
+            antecedent={"body_sha256": base_sha,
+                        "evidence_id": "red-pc-1"})
+        assert_rc0(
+            fx.checkpoint(attempt=1, label="substitute-legit",
+                          evidence=[substitute]),
+            "evidencia legítima",
+            "la sustitución con identificador nuevo y antecedente")
+
+        projection = json_doc(
+            fx.resume(), "evidencia legítima", "`resume`")["projection"]
+        entries = {
+            item.get("id"): item
+            for item in projection.get("evidence") or []
+            if isinstance(item, dict)
+        }
+        old = entries.get("red-pc-1") or {}
+        assert old.get("status") == "invalidada", (
+            "§2.5: la evidencia invalidada conserva su estado; visto "
+            f"{old.get('status')!r}")
+        assert old.get("reference") == {"path": rel1, "sha256": sha1}, (
+            "§2.5: la evidencia invalidada conserva su identidad "
+            f"(referencia); visto {old.get('reference')!r}")
+        assert old.get("reason") == \
+            "la reparación cambió el comportamiento verificado", (
+            "§2.5: la invalidación legítima conserva su motivo")
+        assert old.get("antecedent") == {
+            "body_sha256": base_sha, "evidence_id": "red-pc-1"}, (
+            "§2.5: la evidencia invalidada conserva el antecedente "
+            f"trazable; visto {old.get('antecedent')!r}")
+        new = entries.get("red-pc-1-fix") or {}
+        assert new.get("status") == "vigente", (
+            "§2.5: la sustitución se declara vigente; visto "
+            f"{new.get('status')!r}")
+        assert new.get("reference") == {"path": rel2, "sha256": sha2}, (
+            "§2.5: la sustitución referencia sus propios bytes; visto "
+            f"{new.get('reference')!r}")
+        assert new.get("antecedent") == {
+            "body_sha256": base_sha, "evidence_id": "red-pc-1"}, (
+            "§2.5: la sustitución declara el antecedente que la explica; "
+            f"visto {new.get('antecedent')!r}")
+
+    for label, case in (
+        ("invalidación con referencia ajena",
+         invalidation_with_foreign_reference),
+        ("sobrescritura sin antecedente", overwrite_active_without_antecedent),
+        ("transiciones legítimas", legitimate_transitions_still_work),
+    ):
+        cases.run(label, case)
+    cases.raise_if_any("PC-06 identidad de la evidencia")
+
+
+def test_durable_registration_replay_does_not_require_current_continuity(
+        tmp_path: Path) -> None:
+    """PC-02/§2.2 (corrección review-001 BLOCKING 3): una ejecución sin
+    continuidad registra su despacho con el diagnóstico explícito
+    `provenance.continuity="absent"`. Abrir después un `begin` no convierte
+    ese registro durable en un transporte nuevo: la repetición byte-idéntica
+    del mismo registro devuelve éxito conservando los bytes, mientras que una
+    observación realmente distinta sigue rechazándose.
+
+    RED hoy: repetir el registro idéntico tras abrir `begin` devuelve rc=2
+    («already exists with different observation data»).
+    """
+    cases = _Cases()
+
+    def absent_record(base: Path) -> tuple[_Project, Path, Path, bytes]:
+        fx = _Project(base)
+        assert not fx.head_path().is_file(), (
+            "precondición (fixture): la ejecución no tiene cabeza de "
+            "continuidad")
+        observation = fx.write_observation()
+        proc = fx.record_dispatch(n=1, with_flag=False,
+                                  observation=observation)
+        assert_rc0(proc, "registro sin continuidad",
+                   "el registro de una ejecución sin continuidad")
+        records = fx.dispatch_files()
+        assert len(records) == 1, (
+            "precondición (fixture): se publica UN registro; vistos "
+            f"{records}")
+        record_path = fx.root / records[0]
+        record = load_json(record_path, "registro sin continuidad")
+        provenance = record.get("provenance")
+        assert isinstance(provenance, dict), (
+            "§2.2: el registro declara `provenance`; visto "
+            f"{record.get('provenance')!r}")
+        assert provenance.get("continuity") == "absent", (
+            "§2.2: la omisión de la continuidad se declara como diagnóstico "
+            f"explícito `continuity: absent`; visto {provenance!r}")
+        return fx, observation, record_path, record_path.read_bytes()
+
+    def identical_replay_survives_continuity_open() -> None:
+        fx, observation, record_path, raw = absent_record(
+            tmp_path / "replay")
+        assert_rc0(fx.begin(attempt=1), "replay durable", "`begin`")
+        proc = fx.record_dispatch(n=1, with_flag=False,
+                                  observation=observation)
+        assert_rc0(proc, "replay durable",
+                   "el replay byte-idéntico del registro durable")
+        assert record_path.read_bytes() == raw, (
+            "§2.2: el replay idéntico conserva los bytes del registro; el "
+            "diagnóstico histórico (`continuity: absent`) no se recalcula")
+        assert fx.dispatch_files() == [record_path.relative_to(
+            fx.root).as_posix()], (
+            "§2.2: el replay no crea otro registro; vistos "
+            f"{fx.dispatch_files()}")
+
+    def different_observation_still_rejected() -> None:
+        fx, _, record_path, raw = absent_record(tmp_path / "different")
+        assert_rc0(fx.begin(attempt=1), "replay con datos distintos",
+                   "`begin`")
+        other = fx.write_observation(
+            session="ses-demo-700-9999", name="other-observation.json")
+        proc = fx.record_dispatch(n=1, with_flag=False, observation=other)
+        assert_rejected(
+            proc, "replay con datos distintos",
+            "el registro de una observación realmente distinta "
+            "(write-once)")
+        assert record_path.read_bytes() == raw, (
+            "§2.2: la observación distinta no modifica el registro durable")
+
+    for label, case in (
+        ("replay idéntico tras abrir continuidad",
+         identical_replay_survives_continuity_open),
+        ("observación distinta", different_observation_still_rejected),
+    ):
+        cases.run(label, case)
+    cases.raise_if_any("PC-02 replay durable")
 
 
 
