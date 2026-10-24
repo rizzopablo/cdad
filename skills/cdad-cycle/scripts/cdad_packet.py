@@ -6816,6 +6816,40 @@ def _safe_packet_component(packet_id: Any) -> bool:
             and packet_id not in {".", ".."})
 
 
+def _request_confinement_cause(project_root: Path, packet_id: str) -> str | None:
+    """The membership cause when the request path leaves the packets tree.
+
+    Spec §2.1 requirement 3: the id locates `.cdad/packets/<id>/REQUEST.json`
+    SAFELY inside the packets directory only while the RESOLVED path (symlinks
+    followed) stays in that tree. The check runs BEFORE opening the file, so an
+    escaping link is never read as an unambiguous packet.
+    """
+    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
+    base = project_root / ".cdad" / "packets"
+    try:
+        resolved_base = base.resolve()
+    except (OSError, RuntimeError) as exc:
+        return (
+            f"packet membership unresolved: the packets directory .cdad/packets "
+            f"cannot be resolved safely ({exc.__class__.__name__}); membership "
+            f"cannot be established")
+    try:
+        resolved = (base / packet_id / "REQUEST.json").resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        return (
+            f"packet membership unresolved: the request {request_rel} cannot be "
+            f"resolved safely ({exc.__class__.__name__}); membership cannot be "
+            f"established")
+    try:
+        resolved.relative_to(resolved_base)
+    except ValueError:
+        return (
+            f"packet membership inconsistent: the request {request_rel} resolves "
+            f"outside the packets tree (symlink escape); the active packet cannot "
+            f"be selected and no fallback directory is used")
+    return None
+
+
 def _resolved_active_packet(
     state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
 ) -> dict[str, Any]:
@@ -6853,6 +6887,10 @@ def _resolved_active_packet(
         return resolution
     request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
     request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    confinement = _request_confinement_cause(project_root, packet_id)
+    if confinement is not None:
+        resolution["cause"] = confinement
+        return resolution
     try:
         request = json.loads(request_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -6941,6 +6979,47 @@ def _unresolved_pending_cause(state: dict[str, Any], project_root: Path) -> str:
         f"packet selects the next dispatch")
 
 
+def _pending_candidate_causes(state: dict[str, Any], project_root: Path) -> list[str]:
+    """Causes observed while EXAMINING the pending-work candidates (§2.1/§2.4).
+
+    With no explicit active packet the directories are only candidates: an
+    unreadable request proves no membership of the active execution, so its
+    unreadability is reported and the candidate is never turned into proven
+    pending work — the existing `_pending_work` predicate stays untouched.
+    """
+    causes: list[str] = []
+    execution = _active_execution(state)
+    execution_id = execution.get("id") if isinstance(execution, dict) else None
+    if not isinstance(execution_id, str) or not execution_id:
+        return causes
+    base = project_root / ".cdad" / "packets"
+    if not base.is_dir():
+        return causes
+    try:
+        entries = sorted(base.iterdir())
+    except OSError:
+        return causes
+    for entry in entries:
+        request_path = entry / "REQUEST.json"
+        if not entry.is_dir() or not request_path.is_file():
+            continue
+        condition: str | None = None
+        try:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            condition = f"cannot read it ({exc.__class__.__name__})"
+        else:
+            if not isinstance(request, dict):
+                condition = "it is not a JSON object (malformed)"
+        if condition is not None:
+            causes.append(
+                f"pending candidate {entry.name!r}: the request "
+                f".cdad/packets/{entry.name}/REQUEST.json is unreadable — "
+                f"{condition}; its membership of the active execution "
+                f"{execution_id!r} cannot be proven")
+    return causes
+
+
 def _observed_digest(project_root: Path, rel: Any) -> str | None:
     """SHA-256 of the current contract bytes, or None when they cannot be read."""
     try:
@@ -6996,45 +7075,76 @@ def _approval_record(index: int, entry: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _history_source(
+    state: dict[str, Any], key: str,
+) -> tuple[list[Any] | None, str | None]:
+    """The history source and, when it cannot be interpreted, its cause.
+
+    Spec §2.3 S1/A1: a source that cannot be read or interpreted forbids the
+    absence/vigency judgement, so it is reported (source + condition) instead
+    of being read as "no records". An ABSENT key is an empty, legible history:
+    only a present value that is not a list is malformed.
+    """
+    value = state.get(key)
+    if value is None:
+        return [], None
+    if not isinstance(value, list):
+        return None, (
+            f"approval source malformed: {key} is not a list of records "
+            f"(found {type(value).__name__}); the approval sources cannot be "
+            f"interpreted")
+    return value, None
+
+
 def _approval_reference(
     state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
     resolution: dict[str, Any],
-) -> dict[str, Any]:
-    """The §2.3 approval reference for the packet selected by §2.1.
+) -> tuple[dict[str, Any], list[str]]:
+    """The §2.3 approval reference for the packet selected by §2.1, and the
+    causes it observed.
 
     Ordered classification: the common resolution C1–C3 first, then the
     object's own normative table (D1, A1–A4, S1–S6). The first true row wins,
     so every reference has exactly one result; `reason` explains any result
-    other than `vigente`. Read-only: it registers nothing and authorizes
-    nothing (INV-2/INV-3).
+    other than `vigente`. The returned causes (request inconsistent, source
+    unreadable, membership) belong in `unknowns` (§2.4), preserving the earlier
+    diagnostics and their relative order. Read-only: it registers nothing and
+    authorizes nothing (INV-2/INV-3).
     """
     def reference(*, role: str | None = None, obj: str | None = None,
                   status: str = APPROVAL_DESCONOCIDA,
                   record: dict[str, Any] | None = None,
                   contract: dict[str, Any] | None = None,
-                  reason: str | None = None) -> dict[str, Any]:
-        return {"role": role, "object": obj, "status": status, "record": record,
-                "contract": contract, "reason": reason}
+                  reason: str | None = None,
+                  cause: str | None = None,
+                  ) -> tuple[dict[str, Any], list[str]]:
+        block = {"role": role, "object": obj, "status": status,
+                 "record": record, "contract": contract, "reason": reason}
+        return block, ([cause] if cause else [])
 
     # C1: no applicable unambiguous active packet (or its membership failed).
     if not resolution["consistent"]:
-        return reference(reason=resolution["cause"] or (
-            "no applicable active packet: state.active_packet does not identify an "
-            "unambiguous prepared or dispatched packet (§2.1), so the applicable "
-            "approval cannot be established"))
+        return reference(
+            reason=resolution["cause"] or (
+                "no applicable active packet: state.active_packet does not identify "
+                "an unambiguous prepared or dispatched packet (§2.1), so the "
+                "applicable approval cannot be established"),
+            cause=resolution["cause"])
 
     request = resolution["request"]
     contract = request.get("contract")
     role = request.get("role")
     # C2: the request cannot identify the role or the object.
     if not isinstance(role, str) or not role.strip():
-        return reference(reason=(
+        reason = (
             "request inconsistent: it carries no role, so the applicable approval "
-            "object cannot be identified and is not inferred from the history"))
+            "object cannot be identified and is not inferred from the history")
+        return reference(reason=reason, cause=reason)
     if not isinstance(contract, dict):
-        return reference(role=role, reason=(
+        reason = (
             "request inconsistent: it carries no contract declaration, so the "
-            "applicable approval object cannot be identified"))
+            "applicable approval object cannot be identified")
+        return reference(role=role, reason=reason, cause=reason)
     kind = contract.get("kind")
     if kind == "draft-plan":
         # D1: a declared draft is a non-approved review object.
@@ -7054,14 +7164,21 @@ def _approval_reference(
 def _architect_approval_reference(
     state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
     contract: dict[str, Any], role: str, reference,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], list[str]]:
     """A1–A4: the architect's mandate is `epic_history`, with NO plan hash pin."""
     block = _declared_contract_block(project_root, contract, read_bytes=True)
     if block is None or block["observed_sha256"] is None:
-        # A1: the request's contract cannot even be described (or its bytes read).
-        return reference(role=role, obj="epic-plan", contract=block, reason=(
+        # A1: the contract of the request cannot be described or its bytes read.
+        reason = (
             "approval unknown: the request's contract declaration or its current "
-            "bytes cannot be read, so the contract of the request cannot be checked"))
+            "bytes are unreadable, so the contract of the request cannot be checked")
+        return reference(role=role, obj="epic-plan", contract=block,
+                         reason=reason, cause=reason)
+    _history, malformed = _history_source(state, "epic_history")
+    if malformed:
+        # A1: the mandate source cannot be interpreted → absence is not proven.
+        return reference(role=role, obj="epic-plan", contract=block,
+                         reason=malformed, cause=malformed)
     epic_id = execution.get("epic_id") if isinstance(execution, dict) else None
     found = _approved_epic_plan_entry_with_index(state, epic_id)
     if found is None:
@@ -7088,17 +7205,22 @@ def _architect_approval_reference(
 def _feature_spec_approval_reference(
     state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
     contract: dict[str, Any], role: str, reference,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], list[str]]:
     """S1–S6: the spec approval is pinned by path AND digest (D3)."""
     block = _declared_contract_block(project_root, contract, read_bytes=True)
-    feature_id = execution.get("feature_id") if isinstance(execution, dict) else None
-    records = _spec_approval_records(state, feature_id)
     if block is None:
         # S1: the declaration itself cannot be interpreted.
-        return reference(role=role, obj="feature-spec", reason=(
-            "approval unknown: the request's contract declaration cannot be "
-            "interpreted (no path or no valid sha256), so absence and vigency "
-            "cannot be asserted"))
+        reason = (
+            "approval unknown: the request's contract declaration is unreadable "
+            "(no path or no valid sha256), so absence and vigency cannot be asserted")
+        return reference(role=role, obj="feature-spec", reason=reason, cause=reason)
+    _history, malformed = _history_source(state, "stage_history")
+    if malformed:
+        # S1: the approval source cannot be interpreted → absence is not proven.
+        return reference(role=role, obj="feature-spec", reason=malformed,
+                         cause=malformed)
+    feature_id = execution.get("feature_id") if isinstance(execution, dict) else None
+    records = _spec_approval_records(state, feature_id)
     superseded = _superseded_transition_keys(state)
     current = [(index, entry) for index, entry in records
                if entry.get("transition_key") not in superseded]
@@ -7111,11 +7233,11 @@ def _feature_spec_approval_reference(
         # supersession are readable); otherwise it is null.
         chosen = pinned or current or records
         record = _approval_record(*chosen[0]) if chosen else None
+        reason = (
+            "approval unknown: the current bytes of the declared contract are "
+            "unreadable, so absence and vigency cannot be asserted")
         return reference(role=role, obj="feature-spec", record=record,
-                         contract=block, reason=(
-                             "approval unknown: the current bytes of the declared "
-                             "contract cannot be read, so absence and vigency "
-                             "cannot be asserted"))
+                         contract=block, reason=reason, cause=reason)
     if not records:
         # S2: legible sources and no approval record for the feature.
         return reference(role=role, obj="feature-spec", status=APPROVAL_AUSENTE,
@@ -7314,9 +7436,18 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         next_block=next_block, resolution=resolution,
         state_error=state_error,
         pending_work=_pending_work(state, project_root, packet))
-    unknowns.extend(situation_causes)
-    authority["approval_reference"] = _approval_reference(
+    reference, reference_causes = _approval_reference(
         state, project_root, active_execution, resolution)
+    authority["approval_reference"] = reference
+    observed_causes: list[str] = list(situation_causes)
+    if resolution["record"] is None:
+        # No explicit active packet: the directories are candidates, and their
+        # unreadability is reported without touching `_pending_work` (§2.1).
+        observed_causes.extend(_pending_candidate_causes(state, project_root))
+    observed_causes.extend(reference_causes)
+    for cause in observed_causes:
+        if cause and cause not in unknowns:
+            unknowns.append(cause)
     next_block = {**next_block, "operation": operation}
 
     document = {
