@@ -56,7 +56,7 @@ cdad_continuity.py checkpoint-receipt
   --packet PACKET_ID --attempt N --receipt RECEIPT.json [--json]
 ```
 
-Reutiliza exclusivamente cabeza y cuerpos existentes. Antes de escribir: valida el recibo con los criterios de `validate-receipt`; comprueba coincidencia de ejecución y paquete; exige un `begin` verificable para `attempt=N`; verifica integridad y encadenamiento; exige autoridad vigente. **No exige** que el paquete siga activo o `dispatched`: una transición posterior no impide recuperar el cierre pendiente.
+Reutiliza exclusivamente cabeza y cuerpos existentes, con **una extensión aditiva** del cuerpo (§2.3.1). Antes de escribir: valida el recibo con los criterios de `validate-receipt`; comprueba coincidencia de ejecución y paquete; exige un `begin` verificable para `attempt=N`; verifica integridad y encadenamiento; exige autoridad vigente. **No exige** que el paquete siga activo o `dispatched`: una transición posterior no impide recuperar el cierre pendiente.
 
 El checkpoint conserva objetivo, decisiones, incertidumbres, presupuesto y evidencia del contexto que cierra, y añade la referencia al recibo y una decisión fundada que expresa **recepción mecánica**, nunca aprobación semántica. Se incorpora al cuerpo, sólo para este cierre:
 
@@ -64,7 +64,63 @@ El checkpoint conserva objetivo, decisiones, incertidumbres, presupuesto y evide
 {"receipt_checkpoint": {"path": "<ruta durable del recibo>", "sha256": "<digest>"}}
 ```
 
-La ruta debe ser la que resuelva el productor existente; el ejemplo no autoriza almacenamiento nuevo. Identidad del cierre: `(execution_id, packet_id, attempt, receipt path, receipt sha256)`. Un cierre idéntico ya presente en la cadena vigente devuelve éxito sin escribir, aunque existan checkpoints posteriores. Un recibo diferente bajo el mismo cierre se rechaza; no se sustituye el antecedente.
+La ruta debe ser la que resuelva el productor existente; el ejemplo no autoriza almacenamiento nuevo.
+
+##### 2.3.1 Enlace histórico aditivo (resuelve BLOCKING 1)
+
+Hoy el cuerpo no guarda su enlace anterior y `prev_checkpoint_sha256` vive sólo en la cabeza, que se reemplaza (`cdad_continuity.py:557-581,609-624,684-688,781-798`). Sin enlace en el cuerpo no puede probarse pertenencia a la cadena vigente ni distinguir un cuerpo huérfano.
+
+Se añade al cuerpo, de forma **aditiva y retrocompatible**, un campo opcional:
+
+```json
+{"prev": {"checkpoint_sha256": "<digest del cuerpo anterior>", "seq": 1}}
+```
+
+Reglas:
+
+- Todo cuerpo **nuevo** escrito por `begin`, `checkpoint` o `checkpoint-receipt` incluye `prev`. En el primer eslabón, `prev` es `null`.
+- Los cuerpos **antiguos** sin `prev` se leen, se proyectan y se verifican como hoy; **no** se reescriben ni cambian de digest.
+- **Pertenencia demostrable:** un cuerpo pertenece a la cadena vigente si y sólo si, partiendo de la cabeza, se encadena por `prev.checkpoint_sha256` hasta el génesis, y `prev.seq` decrece en 1 en cada paso. Un cuerpo sin `prev` (legado) o cuyo encadenamiento no alcance la cabeza es **historia no demostrable**.
+- **Historia no demostrable:** se informa como tal en `unknowns`/diagnóstico del cierre; **no** acredita un cierre ni sirve de antecedente de evidencia. No se borra ni se migra.
+- El límite de bytes y la validación existentes se aplican a `prev`; `prev` no duplica la identidad canónica del checkpoint (sigue siendo el digest del cuerpo).
+
+**`prev` entra en el digest físico; no entra en la comparación de repetición (resuelve BLOCKING 2).** Excluirlo del hash dejaría el enlace fuera de la integridad del cuerpo y rompería el direccionamiento por contenido (`cdad_continuity.py:752-777`; esquema `continuity-checkpoint.schema.json:47-50`). Regla:
+
+> Para decidir una repetición de `begin` o `checkpoint`, el productor compara el contenido canónico de la operación propuesta con el cuerpo íntegro de la cabeza, retirando **únicamente el campo superior `prev`** de ambos objetos; la ausencia histórica de `prev` **no** se transforma en `prev:null` para esa comparación, y no se omite ningún otro campo, incluido `record`. Con la misma clave: contenido idéntico ⇒ éxito sin escribir, conservando cuerpo, digest, secuencia y cabeza; contenido distinto y `begin` ⇒ rechazo split-brain sin escribir; contenido distinto y `checkpoint` ⇒ agrega un enlace. Sólo después de decidir publicar se incorpora el `prev` derivado de la cabeza validada, se serializa el cuerpo completo, se aplica el límite de bytes y se calcula el digest físico. El usuario no proporciona ni controla `prev`.
+
+**Coherencia entre cuerpo y cabeza.** Para un enlace nuevo de posición `s`: `s=1` ⇒ `body.prev=null` y `head.prev_checkpoint_sha256=null`; `s>1` ⇒ `body.prev={checkpoint_sha256:h, seq:s-1}`, `head.prev_checkpoint_sha256=h` y `head.seq=s`. Cada cuerpo anterior se verifica contra su digest y su posición esperada se obtiene del enlace sucesor; `prev.seq` decrece exactamente en uno hasta el génesis. Una discrepancia se rechaza y no se corrige automáticamente. Los cuerpos legados conservan su lectura anterior, pero una cadena que tropieza con uno sin `prev` no proporciona la demostración histórica completa exigida para el cierre. `prev` vive **sólo en el cuerpo**: el envelope es cerrado (`additionalProperties:false`) y no se modifica.
+
+Esto **no** crea un almacenamiento nuevo: usa el mismo cuerpo direccionado por contenido y sólo agrega el puntero que faltaba.
+
+##### 2.3.2 Identidad y unicidad del cierre (resuelve BLOCKING 2)
+
+Se separan **clave de unicidad** y **contenido comparado**:
+
+- **Clave de unicidad:** `(execution_id, packet_id, attempt)`. Determina *cuántos* cierres puede haber: **a lo sumo uno** por paquete e intento.
+- **Contenido comparado:** `(normalized_receipt_path, receipt_sha256)`, donde `normalized_receipt_path` es la ruta durable **resuelta y normalizada** (absoluta canónica del productor, sin symlinks, relativa al proyecto cuando corresponda), nunca el texto crudo del argumento.
+
+Reglas inequívocas:
+
+1. Misma clave y mismo contenido → **éxito sin escribir** (idempotente), aunque existan checkpoints posteriores; el cierre debe seguir siendo localizable por encadenamiento (§2.3.1).
+2. Misma clave y **contenido distinto** (otra ruta normalizada u otro digest) → **rechazo** con diagnóstico que nombra el cierre existente. No se sustituye ni se agrega un segundo cierre.
+3. Rutas que resuelven al mismo archivo canónico son **la misma** ruta a efectos de comparación.
+4. Clave distinta (otro `attempt`) → cierre distinto, sujeto a las mismas reglas.
+
+##### 2.3.3 Origen de `attempt` y orden de reconocimiento (resuelve BLOCKING 3 y el BLOCKING 1 de la re-revisión)
+
+El recibo durable **no contiene** el intento de continuidad y el replay idempotente retorna antes de cargar contexto o request (`cdad_result.py:542-548,599-627`). Por eso el entero **no se infiere nunca**: se recibe explícito en todas las entradas.
+
+- `cdad_result.py receive` gana `--continuity-attempt N`, **obligatorio** cuando ejecuta el cierre; `validate-receipt --close-continuity` ya lo exige (§2.3); la llegada externa con recibo durable lo recibe de su entrada y lo propaga; `receive --late` también lo exige.
+- **Sin `N`:** falla cerrado con diagnóstico que nombra la opción; no escribe continuidad ni reclasifica el recibo.
+
+**Orden normativo — reconocer primero, autorizar después.** `checkpoint-receipt` valida el recibo, normaliza su ruta y verifica identidad de ejecución y paquete; verifica la integridad de la cabeza y del encadenamiento usado como prueba; y **después** busca, **exclusivamente en la cadena demostrable vigente** (§2.3.1), un cierre con clave `(execution_id, packet_id, N)`:
+
+- **Si existe:** compara `(normalized_receipt_path, receipt_sha256)`. Igualdad ⇒ **éxito sin escribir**, devuelve la identidad del cierre existente, y **no exige** cabeza `begin`, paquete activo ni autoridad vigente. Diferencia ⇒ **rechazo** sin escribir, señalando el cierre conflictivo. Varios cierres para la misma clave ⇒ violación de unicidad, rechazo.
+- **Si no existe:** sólo puede agregarse el cierre cuando la cabeza conserva esa misma clave y existe un `begin` íntegro con `record="begin"` y esa clave, **alcanzable desde la cabeza sin atravesar un cambio de clave**. La cabeza puede ser ese `begin` o un checkpoint posterior del mismo intento. Se exige autoridad vigente y las validaciones propias de una escritura. Cabeza de otro paquete o intento ⇒ rechazo como continuidad adelantada; un `begin` histórico no autoriza rebobinar ni cerrar sobre otro intento.
+
+Los cuerpos huérfanos o de historia no demostrable no acreditan ni un cierre ni el `begin` habilitante. **`verify-begin` no se aplica al reconocimiento del cierre**: sigue siendo exclusivo del transporte nuevo (§2.1).
+
+**`receive --late`:** no altera identidad ni algoritmo. El intento sigue siendo obligatorio; sin él se rechaza antes de publicar un recibo nuevo y uno existente permanece intacto. Con intento discordante y sin cierre demostrable se rechaza el cierre. Con cierre durable demostrable e idéntico se devuelve éxito sin efectos, **aunque la cabeza corresponda a otro intento o la ejecución esté cerrada**. No se reclasifica el recibo ni se repite la recepción. El cierre faltante de una ejecución cerrada sigue requiriendo cabeza admisible y autoridad vigente: estar cerrada no autoriza por sí solo.
 
 **Puntos de integración:** `receive` ejecuta el cierre después de publicar o reconocer el recibo durable, también en su rama idempotente; la llegada externa con recibo durable ejecuta el mismo cierre sin volver a staged ni a `receive`; `validate-receipt` gana `--close-continuity --continuity-attempt N` para recuperar el cierre antes de continuar la reentrada (sin esas opciones conserva su comportamiento de solo validación). Las tres entradas de reentrada convergen en el mismo mecanismo.
 
@@ -122,10 +178,10 @@ Archivo propuesto: `tests/test_007_003_continuity_at_edges.py`.
 |---|---|---|
 | PC-01 | Sin `begin` vigente, o con ejecución, paquete, intento, cuerpo o cabeza discordantes, se rechaza el transporte externo antes de lanzar el worker; con prueba válida continúa el transporte existente. | `test_transport_requires_current_matching_begin` |
 | PC-02 | El wiring nativo exige comprobar antes de invocar la herramienta; el registro canónico rechaza un intento nuevo sin la misma prueba, sin publicar estado, observación ni staging; un replay idéntico durable conserva su idempotencia. | `test_native_dispatch_and_registration_require_begin` |
-| PC-03 | Una recepción ordinaria deja recibo durable y checkpoint correspondiente sin modificar `semantic_status=pending`; repetirla no añade enlaces ni repite otros efectos. | `test_receive_closes_continuity_idempotently` |
+| PC-03 | Una recepción ordinaria deja recibo durable y checkpoint correspondiente sin modificar `semantic_status=pending`; repetirla no añade enlaces ni repite otros efectos. Sin `--continuity-attempt` el cierre falla cerrado sin escribir, y un `N` que discrepa de la cabeza se rechaza **salvo que exista un cierre idéntico demostrable**, que devuelve éxito sin escribir (§2.3.3). | `test_receive_closes_continuity_idempotently` |
 | PC-04 | Un recibo durable externo converge al mismo cierre común sin staged ni nueva recepción; repetir la validación con cierre no altera la cadena. | `test_external_durable_receipt_uses_common_continuity_close` |
-| PC-05 | Interrupciones después del recibo y después de la transición se recuperan cerrando únicamente continuidad; recibo y transición permanecen idénticos; cabeza adelantada se rechaza sin rebobinar. | `test_interrupted_receipt_or_transition_recovers_only_missing_checkpoint` |
-| PC-06 | Una reparación conserva el antecedente, proyecta evidencia invalidada con motivo y no la rehabilita por igualdad, cambio de hash o reanclaje; cuerpos antiguos siguen leyéndose. | `test_repair_preserves_history_and_invalidates_evidence_explicitly` |
+| PC-05 | Interrupciones después del recibo y después de la transición se recuperan cerrando únicamente continuidad; recibo y transición permanecen idénticos; cabeza adelantada se rechaza sin rebobinar. Con varios eslabones posteriores el cierre sigue localizándose por encadenamiento, y un cuerpo huérfano no cuenta como cierre ni antecedente. | `test_interrupted_receipt_or_transition_recovers_only_missing_checkpoint` |
+| PC-06 | Replay de cierre: repetirlo de inmediato, tras varios checkpoints y con cabeza de otro intento devuelve éxito y la identidad original sin alterar archivos. Cierres con la misma clave y contenido distinto se rechazan; rutas equivalentes cuentan como la misma; un `attempt` distinto es otro cierre. Repetir `begin` o `checkpoint` idénticos conserva bytes, digest y secuencia; `begin` divergente rechaza y `checkpoint` divergente agrega exactamente un enlace. Alterar `prev` sin actualizar digest, o publicar cabeza/cuerpo incoherentes aun con digest válido, se rechaza sin reparación. Una reparación conserva el antecedente, proyecta evidencia invalidada con motivo y no la rehabilita por igualdad, cambio de hash o reanclaje; cuerpos antiguos siguen leyéndose. | `test_repair_preserves_history_and_invalidates_evidence_explicitly` |
 
 Variaciones obligatorias: PC-01/02 con ausencia de cabeza, cuerpo alterado, `record` histórico ausente, cabeza de otro paquete o intento, checkpoint posterior al begin y autoridad expirada; PC-03/04 con recibo ilegible, identidad ajena y cierre idéntico histórico; PC-05 con fallo de cierre con recibo publicado y recuperación después de transición y antes del siguiente transporte; PC-06 con antecedente inexistente, id duplicado, invalidación sin razón, omisión accidental, identidad nueva, filtrado por rol y exceso de bytes.
 

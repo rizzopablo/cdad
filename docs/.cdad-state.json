@@ -15495,6 +15495,52 @@
         "docs/specs/007-003-continuity-at-edges/spec.md": "3a311f603c24a09baba75d6413768280454d2a0240a06b8a33ae8f9201f9d19d"
       },
       "note": null
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T12:15:01.917213+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "4622411cb928b710bdf51ae2cfb5c30e6d6ab84e20f32809a6246bd423d79dbb",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "5767949c0cd9a4d644ceba1822ef5506c6e9992328a9a7f4f8ecb6b6beeb8e77"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Enmienda 007-003 aprobada tras 3 rondas de plan-review: prev aditivo en el cuerpo con digest fisico y comparacion de repeticion sin prev; identidad de cierre separada (clave vs contenido); reconocimiento antes de autorizacion; attempt explicito en todas las entradas incluido --late.",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-003-continuity-at-edges/spec.md",
+      "contract_sha256": "5767949c0cd9a4d644ceba1822ef5506c6e9992328a9a7f4f8ecb6b6beeb8e77",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15509,7 +15555,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T07:22:14.116078+00:00",
+  "last_updated": "2026-10-24T12:15:01.917213+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
