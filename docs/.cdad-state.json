@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "007-003-continuity-at-edges",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -46,7 +46,8 @@
     },
     {
       "id": "007-003-continuity-at-edges",
-      "status": "queued"
+      "status": "in-progress",
+      "opened_at": "2026-10-24T07:15:21.467545+00:00"
     },
     {
       "id": "007-004-termination-not-success",
@@ -15525,14 +15526,22 @@
     }
   ],
   "execution": {
-    "id": "exec-007-002-dispatch-recovery-001",
+    "id": "exec-007-003-continuity-at-edges-001",
     "epic_id": "epic-007-reliable-cycle-operation",
-    "feature_id": "007-002-dispatch-recovery",
+    "feature_id": "007-003-continuity-at-edges",
     "scope": "epic-007-reliable-cycle-operation",
     "authority_ref": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": null,
-  "tdd_substage": "review"
+  "active_packet": {
+    "id": "007-003-continuity-at-edges-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-unit-contract",
+    "contract_sha256": "1bd02976f25ec9c2283fb1754c19cc34256ea32d65f37d02ed8911be10fb9bc0"
+  },
+  "tdd_substage": null
 }
