@@ -38,7 +38,13 @@ Salida exitosa: `{execution_id, packet_id, attempt, body_sha256, seq}`. El coman
 
 ### 2.2 Integración en los bordes ejecutables
 
-Se añade `--continuity-attempt N` a `cdad_dispatch.py dispatch`, `cdad_dispatch.py record`, `cdad_packet.py prepare --record-dispatch` y las entradas de delegación externa que alcanzan al adaptador. Es **obligatorio** para un despacho o registro nuevo; las entradas externas propagan el mismo entero y no lo deducen del identificador textual.
+Se añade `--continuity-attempt N` a `cdad_dispatch.py dispatch`, `cdad_dispatch.py record`, `cdad_packet.py prepare --record-dispatch` y las entradas de delegación externa que alcanzan al adaptador.
+
+**Cuándo es obligatorio (enmienda 2026-10-24, tras medir el impacto):** una **ejecución con continuidad** —cabeza existente para ese `execution_id` o contexto que declara continuidad— **no** puede transportar ni registrar sin el entero, y la falta **falla cerrada**. Una ejecución **sin continuidad** no se bloquea: el despacho procede y la omisión se declara como diagnóstico explícito (`continuity: absent`) en el registro del intento, nunca en silencio.
+
+Motivo: hacerlo obligatorio para toda ejecución rompía ~200 pruebas preexistentes cuyo andamiaje registra despachos sin cadena (≈50 archivos), es decir, cambiaba el contrato de facto de ejecuciones que no usan la feature. El fallo que esta unidad cierra —un proyecto **con** continuidad que despachaba sin `begin`— queda cubierto por la regla; un proyecto que no abre cadena no puede «olvidar» un `begin` que nunca declaró, y la omisión queda visible.
+
+Las entradas externas propagan el mismo entero y no lo deducen del identificador textual.
 
 **Transporte nativo.** El wiring canónico del orquestador ejecuta, en orden: validación del paquete → `begin` con `attempt=N` → `verify-begin` con los mismos identificadores → herramienta nativa de despacho → `record --continuity-attempt N`. La comprobación está inmediatamente antes de la herramienta nativa, no después de su retorno ni sólo dentro de `record`; entre comprobación y transporte no se ejecuta otra escritura de continuidad. Los cuerpos canónicos de los orquestadores y sus derivados generados declaran esta condición de despacho.
 

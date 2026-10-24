@@ -15582,6 +15582,52 @@
         "tests/test_007_003_continuity_at_edges.py": "19b977e9cf4384950da0833b93c7749fc015d7c76e39502af645b45017c2f1bd"
       },
       "note": null
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T14:52:53.830393+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "af361d59353e1ec100db1490a8308092e48df480caa49be72c935371baa9b9bc",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Enmienda de alcance: el entero es obligatorio para ejecuciones CON continuidad; sin continuidad el despacho procede y la omision se declara (continuity: absent). Evita cambiar de facto el contrato de ~50 archivos de tests ajenos.",
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-003-continuity-at-edges/spec.md",
+      "contract_sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15596,7 +15642,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T13:03:46.861457+00:00",
+  "last_updated": "2026-10-24T14:52:53.830393+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15704,10 +15750,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-003-continuity-at-edges-test-writer-red-001",
-    "role": "test-writer",
-    "substage": "red",
-    "status": "completed",
+    "id": "007-003-continuity-at-edges-implementer-green-001",
+    "role": "implementer",
+    "substage": "green",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
     "contract_sha256": "5767949c0cd9a4d644ceba1822ef5506c6e9992328a9a7f4f8ecb6b6beeb8e77"
