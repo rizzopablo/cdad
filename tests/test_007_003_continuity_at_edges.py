@@ -1406,10 +1406,15 @@ def test_native_dispatch_and_registration_require_begin(tmp_path: Path) -> None:
 
     def registration_without_proof() -> None:
         fx = _Project(tmp_path / "reg-no-proof")
+        # El intento declara continuidad (pasa el entero) pero no abrió cadena:
+        # sin prueba el registro se rechaza. La observación de entrada se
+        # materializa ANTES de los snapshots para que el oráculo mida sólo lo
+        # que escribe el producto (no el propio fixture).
+        observation = fx.write_observation()
         before_tree = fx.tree()
         before_state = fx.state_bytes()
         before_inbox = fx.inbox_files()
-        proc = fx.record_dispatch(n=1)
+        proc = fx.record_dispatch(n=1, observation=observation)
         assert_rejected(
             proc, "PC-02 registro sin prueba",
             "el registro canónico sin `begin` vigente")
@@ -1794,27 +1799,37 @@ def test_external_durable_receipt_uses_common_continuity_close(
     def converges_without_staging() -> None:
         fx = _Project(tmp_path / "converge")
         _orphan_receipt(fx, close_attempt=2)
+        # La reentrada externa NO repite recepción ni staging: recibo, parts,
+        # inbox y estado se comparan contra el estado previo al cierre (§2.4).
         before = _snapshot_receipt_state(fx)
         proc = fx.validate_receipt(close=True, attempt=2)
         assert_rc0(proc, "PC-04 convergencia",
                    "`validate-receipt --close-continuity`")
         fx.assert_close(2, "PC-04 convergencia")
-        _assert_receipt_state_unchanged(fx, before, "PC-04 convergencia")
+        assert fx.receipt_bytes() == before["receipt"], (
+            "PC-04: la convergencia externa no republica ni altera el recibo "
+            "durable")
+        assert fx.parts_files() == before["parts"], (
+            "PC-04: la convergencia externa no repite la recepción (parts)")
+        assert fx.inbox_files() == before["inbox"], (
+            "PC-04: la convergencia externa no repite el staging")
+        assert fx.state_bytes() == before["state"], (
+            f"PC-04/INV-2 — el cierre común no escribe {STATE_REL}")
+        # El cierre SÍ agrega su enlace de continuidad; el snapshot que mide
+        # «repetir no altera la cadena» es el POSTERIOR al cierre.
+        after_close = _snapshot_receipt_state(fx)
 
         # Mismo cierre común: `checkpoint-receipt` lo reconoce sin escribir.
-        before_tree = fx.continuity_files()
         same = fx.checkpoint_receipt(attempt=2)
         assert_rc0(same, "PC-04 convergencia",
                    "`checkpoint-receipt` sobre el cierre ya producido")
-        assert fx.continuity_files() == before_tree, (
-            "PC-04: las dos entradas convergen al mismo cierre (sin escribir)")
+        _assert_receipt_state_unchanged(fx, after_close, "PC-04 convergencia")
 
         # Sin `--close-continuity` sigue siendo sólo validación (INV-10).
         read_only = fx.validate_receipt()
         assert_rc0(read_only, "PC-04 sólo validación",
                    "`validate-receipt` sin cierre")
-        assert fx.continuity_files() == before_tree, (
-            "PC-04/INV-10: `validate-receipt` sin las opciones no escribe")
+        _assert_receipt_state_unchanged(fx, after_close, "PC-04 sólo validación")
 
     def repeated_close_is_stable() -> None:
         fx = _Project(tmp_path / "repeat")
