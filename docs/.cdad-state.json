@@ -15130,6 +15130,52 @@
         "docs/specs/007-002-dispatch-recovery/discovery.md": "3e5bd244c2304384206bcce0241d133ea423c9d7c53503be909729204b9e9641"
       },
       "note": null
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-24T04:27:15.852214+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "a8aaac405008f18ef071949589a15b17abfc9be90fa2a1cb9c5c38bea4b31dec",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-002-dispatch-recovery/spec.md",
+          "sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "usuario",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-002-dispatch-recovery/spec.md",
+      "contract_sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7",
+      "requested_by": "usuario",
+      "delegated": true
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15144,7 +15190,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T04:16:21.549167+00:00",
+  "last_updated": "2026-10-24T04:27:15.852214+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15255,7 +15301,7 @@
     "id": "007-002-dispatch-recovery-architect-draft-001",
     "role": "architect",
     "substage": "draft",
-    "status": "prepared",
+    "status": "dispatched",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "ea4347fb96e28c814b367cbb27211925ff7f19877010d142b9b0d7de9fdfff09"
