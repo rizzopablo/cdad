@@ -71,6 +71,20 @@ Mapeo test → postcondición (spec §4):
       verbo→script documentado, scripts existentes y distinción de los dos
       registros de despacho)
 
+RED de corrección (review-001, packet test-writer-red-002):
+
+  test_malformed_approval_sources_are_unknown_not_absent -> BLOCKING 1
+      (stage_history/epic_history no interpretables como lista: `desconocida`
+      con causa; historiales legibles sin aprobaciones: `ausente`)
+  test_unreadable_contract_cause_reaches_unknowns        -> BLOCKING 2(a)
+      (contrato ilegible: la causa fuente+condición llega a `unknowns`)
+  test_unreadable_pending_candidate_stays_unproven       -> BLOCKING 2(b)
+      (sin `active_packet`: un candidato con REQUEST.json ilegible no se
+      convierte en pendiente probado y `_pending_work` no cambia)
+  test_request_symlink_escape_is_unresolved              -> BLOCKING 3
+      (REQUEST.json alcanzado por symlink que escapa del árbol de paquetes:
+      `pending-work-unresolved` + `desconocida` + causa en `unknowns`)
+
 Aclaraciones del audit aplicadas aquí:
 
 1. Estado ilegible → `situation=diagnosis` (y `at-rest` exige estado
@@ -2138,6 +2152,394 @@ def test_orchestrator_references_operation_map() -> None:
     assert "pending-work-unresolved" in (orchestrator + orientation), (
         "PC-14/§3: el caso pendiente irresuelto debe declararse como "
         "diagnóstico sin despacho (pending-work-unresolved)"
+    )
+
+
+# ---------------------------------------------------------------- review-001
+# RED de corrección (paquete test-writer-red-002): los diagnósticos NUEVOS se
+# prueban por concepto —fuente y condición—, no por texto exacto (aclaración 5
+# del audit); los anteriores, por contenido y orden relativo (§2.4).
+
+_SOURCE_STAGE_HISTORY = re.compile(
+    r"(?i)stage[_ ]history|stage history|historial|history"
+)
+_SOURCE_EPIC_HISTORY = re.compile(
+    r"(?i)epic[_ ]history|epic history|historial|history|mandato|mandate"
+)
+_SOURCE_CONTRACT_BYTES = re.compile(
+    r"(?i)contract|contrato|spec|bytes|docs/specs|digest"
+)
+_CONDITION_MALFORMED_SOURCE = re.compile(
+    r"(?i)lista|list|malform|malformed|corrupt|ilegible|unreadable|interpret|"
+    r"invalid|inv[aá]lid|json|estructura|shape|tipo|type"
+)
+_CONDITION_ESCAPE = re.compile(
+    r"(?i)symlink|enlace|escape|escapa|outside|fuera|confin|pertenencia|"
+    r"membership|unresolved|inconsisten|no pertenece|not inside|not within"
+)
+
+
+# ------------------------------------------------- review-001 BLOCKING 1
+
+
+def _r1_malformed_stage_history(base: Path) -> tuple[Path, Path]:
+    """Fuente de aprobación no interpretable como lista (string)."""
+    root, home = _case_prepared(base)
+    state = read_state(root)
+    state["stage_history"] = "corrupt"
+    write_state(root, state)
+    return root, home
+
+
+def _r1_malformed_stage_history_mapping(base: Path) -> tuple[Path, Path]:
+    """Fuente de aprobación no interpretable como lista (objeto JSON)."""
+    root, home = _case_prepared(base)
+    state = read_state(root)
+    state["stage_history"] = {"corrupt": True}
+    write_state(root, state)
+    return root, home
+
+
+def _r1_malformed_epic_history(base: Path) -> tuple[Path, Path]:
+    """Mandato del epic no interpretable como lista (string)."""
+    root, home, _plan_rel = _architect_project(base)
+    state = read_state(root)
+    state["epic_history"] = "corrupt"
+    write_state(root, state)
+    return root, home
+
+
+def _r1_readable_stage_history_without_approvals(
+    base: Path,
+) -> tuple[Path, Path]:
+    """Historial legible y vacío: no hay registros de aprobación."""
+    root, home = _case_prepared(base)
+    state = read_state(root)
+    state["stage_history"] = []
+    write_state(root, state)
+    return root, home
+
+
+def _r1_readable_epic_history_without_mandate(base: Path) -> tuple[Path, Path]:
+    """Historial legible y vacío: no hay mandato del epic."""
+    root, home, _plan_rel = _architect_project(base)
+    state = read_state(root)
+    state["epic_history"] = []
+    write_state(root, state)
+    return root, home
+
+
+MALFORMED_SOURCE_CASES = [
+    pytest.param(
+        _r1_malformed_stage_history,
+        _r1_readable_stage_history_without_approvals,
+        "desconocida",
+        "test-writer",
+        "feature-spec",
+        [[_SOURCE_STAGE_HISTORY], [_CONDITION_MALFORMED_SOURCE]],
+        id="stage-history-not-a-list",
+    ),
+    pytest.param(
+        _r1_malformed_stage_history_mapping,
+        _r1_readable_stage_history_without_approvals,
+        "desconocida",
+        "test-writer",
+        "feature-spec",
+        [[_SOURCE_STAGE_HISTORY], [_CONDITION_MALFORMED_SOURCE]],
+        id="stage-history-mapping-not-a-list",
+    ),
+    pytest.param(
+        _r1_malformed_epic_history,
+        _r1_readable_epic_history_without_mandate,
+        "desconocida",
+        "architect",
+        "epic-plan",
+        [[_SOURCE_EPIC_HISTORY], [_CONDITION_MALFORMED_SOURCE]],
+        id="epic-history-not-a-list",
+    ),
+    pytest.param(
+        _r1_readable_stage_history_without_approvals,
+        _r1_readable_stage_history_without_approvals,
+        "ausente",
+        "test-writer",
+        "feature-spec",
+        None,
+        id="readable-stage-history-empty-is-absent",
+    ),
+    pytest.param(
+        _r1_readable_epic_history_without_mandate,
+        _r1_readable_epic_history_without_mandate,
+        "ausente",
+        "architect",
+        "epic-plan",
+        None,
+        id="readable-epic-history-empty-is-absent",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "build,control_build,expected_status,expected_role,expected_object,"
+    "cause_groups",
+    MALFORMED_SOURCE_CASES,
+)
+def test_malformed_approval_sources_are_unknown_not_absent(
+    tmp_path: Path,
+    build,
+    control_build,
+    expected_status: str,
+    expected_role: str,
+    expected_object: str,
+    cause_groups: list[list[re.Pattern]] | None,
+) -> None:
+    """review-001 BLOCKING 1 — fuentes de aprobación malformadas (PC-09/S1,
+    PC-05/A1 y PC-11/§2.4): una `stage_history`/`epic_history` que no puede
+    interpretarse como lista impide resolver la referencia → `desconocida`
+    (nunca `ausente`) con causa de fuente y condición en `unknowns`,
+    conservando los diagnósticos anteriores; un historial LEGIBLE sin
+    aprobaciones sigue dando `ausente` y no agrega causas."""
+    control_root, control_home = control_build(tmp_path / "control")
+    control = _document(_status(control_root, control_home))
+    control_unknowns = _key(control, "unknowns")
+
+    root, home = build(tmp_path / "case")
+    doc = _document(_status(root, home))
+    ref = _approval_reference(doc)
+
+    assert ref["role"] == expected_role, (
+        "review-001 BLOCKING 1: el rol se resuelve desde el request legible: "
+        f"{ref['role']!r}"
+    )
+    assert ref["object"] == expected_object, (
+        "review-001 BLOCKING 1: el objeto se resuelve desde el request "
+        f"legible: {ref['object']!r}"
+    )
+    assert ref["status"] == expected_status, (
+        "review-001 BLOCKING 1: resultado incorrecto para el historial del "
+        f"fixture; esperado {expected_status!r}, hoy {ref['status']!r} "
+        f"(reason={ref['reason']!r})"
+    )
+
+    if expected_status == "desconocida":
+        assert ref["status"] != "ausente", (
+            "review-001 BLOCKING 1/§2.3 S1-A1: una fuente NO interpretable no "
+            f"prueba ausencia de aprobación: {ref['status']!r}"
+        )
+        assert ref["record"] is None, (
+            "review-001 BLOCKING 1/§2.3: sin historial interpretable no se "
+            f"fabrica un localizador: {ref['record']!r}"
+        )
+        assert isinstance(ref["reason"], str) and ref["reason"].strip(), (
+            "review-001 BLOCKING 1: `desconocida` explica su causa en `reason`"
+        )
+        unknowns = _key(doc, "unknowns")
+        _assert_preserved(control_unknowns, unknowns)
+        _assert_new_cause(unknowns, cause_groups, "review-001 BLOCKING 1")
+    else:
+        assert ref["status"] != "desconocida", (
+            "review-001 BLOCKING 1/§2.3 S2-A2: un historial legible sin "
+            f"aprobaciones es ausencia, no desconocida: {ref['status']!r}"
+        )
+        assert ref["record"] is None, (
+            f"review-001 BLOCKING 1: `ausente` no inventa registro: {ref['record']!r}"
+        )
+        assert isinstance(ref["reason"], str) and ref["reason"].strip(), (
+            "review-001 BLOCKING 1: `ausente` explica su causa"
+        )
+        assert _key(doc, "unknowns") == control_unknowns, (
+            "review-001 BLOCKING 1/§2.4: un historial legible aunque vacío no "
+            "es una fuente ilegible y no agrega causas a `unknowns`: "
+            f"{_key(doc, 'unknowns')!r} != {control_unknowns!r}"
+        )
+
+
+# ------------------------------------------------- review-001 BLOCKING 2(a)
+
+
+def test_unreadable_contract_cause_reaches_unknowns(tmp_path: Path) -> None:
+    """review-001 BLOCKING 2(a) — contrato ilegible (PC-09/S1, §2.3 C2/S1 y
+    §2.4): el resultado sigue siendo `desconocida`, pero la causa NUEVA debe
+    identificar la fuente (la declaración/bytes del contrato) y la condición
+    (no puede leerse) en `unknowns`, conservando el diagnóstico previo."""
+    control_root, control_home = _case_prepared(tmp_path / "control")
+    control = _document(_status(control_root, control_home))
+    control_unknowns = _key(control, "unknowns")
+    assert isinstance(control_unknowns, list)
+
+    root, home = _case_prepared(tmp_path / "case")
+    (root / CONTRACT_FILE).unlink()
+    doc = _document(_status(root, home))
+    ref = _approval_reference(doc)
+
+    assert ref["status"] == "desconocida", (
+        "review-001 BLOCKING 2(a)/PC-09/S1: sin bytes actuales del contrato no "
+        f"se afirma ausencia ni vigencia: {ref['status']!r}"
+    )
+    assert ref["status"] != "ausente", (
+        "review-001 BLOCKING 2(a)/INV-4: desconocido no equivale a ausente: "
+        f"{ref['status']!r}"
+    )
+    assert isinstance(ref["reason"], str) and ref["reason"].strip(), (
+        "review-001 BLOCKING 2(a): `desconocida` explica su causa en `reason`"
+    )
+
+    unknowns = _key(doc, "unknowns")
+    _assert_preserved(control_unknowns, unknowns)
+    new_causes = [entry for entry in unknowns if entry not in control_unknowns]
+    assert new_causes, (
+        "review-001 BLOCKING 2(a)/§2.4: la causa del contrato ilegible debe "
+        "agregarse a `unknowns` sin sustituir el diagnóstico anterior: "
+        f"{unknowns!r}"
+    )
+    _assert_new_cause(
+        unknowns,
+        [[_SOURCE_CONTRACT_BYTES], [_CONDITION_UNREADABLE]],
+        "review-001 BLOCKING 2(a)",
+    )
+
+
+# ------------------------------------------------- review-001 BLOCKING 2(b)
+
+
+def test_unreadable_pending_candidate_stays_unproven(tmp_path: Path) -> None:
+    """review-001 BLOCKING 2(b) — sin `active_packet` y un candidato con
+    `REQUEST.json` ilegible (§2.1, PC-04 y §2.4): la ilegibilidad se informa
+    en `unknowns`, el candidato NO se convierte en pendiente probado y
+    `_pending_work` no cambia (la situación sigue siendo `execution-active`,
+    como sin candidatos; el mismo candidato legible sí sería
+    `pending-work-unresolved`)."""
+    control_root, control_home = _case_execution_active(tmp_path / "control")
+    control = _document(_status(control_root, control_home))
+    assert _situation(control) == "execution-active", (
+        "review-001 BLOCKING 2(b): control sin candidatos: "
+        f"{control.get('situation')!r}"
+    )
+    control_unknowns = _key(control, "unknowns")
+
+    root, home = _case_prepared(tmp_path / "case")
+    packet_id = _packet_id(root)
+    _request_path(root, packet_id).write_text("{broken", encoding="utf-8")
+    _drop_active_packet(root)
+    doc = _document(_status(root, home))
+
+    assert _situation(doc) == "execution-active", (
+        "review-001 BLOCKING 2(b)/§2.1: un request ilegible no prueba "
+        "pertenencia a la ejecución activa y no puede convertir el candidato "
+        f"en pendiente probado; hoy {doc.get('situation')!r}"
+    )
+    assert _situation(doc) != "pending-work-unresolved", (
+        "review-001 BLOCKING 2(b)/§2.1: la ilegibilidad no inventa trabajo "
+        f"pendiente: {doc.get('situation')!r}"
+    )
+
+    ref = _approval_reference(doc)
+    assert ref["status"] == "desconocida", (
+        "review-001 BLOCKING 2(b)/§2.3 C1: sin paquete activo inequívoco no "
+        f"se establece la aprobación aplicable: {ref['status']!r}"
+    )
+    assert ref["role"] is None and ref["object"] is None, (
+        f"review-001 BLOCKING 2(b)/C1: role/object null: "
+        f"{ref['role']!r}/{ref['object']!r}"
+    )
+    assert ref["record"] is None, (
+        f"review-001 BLOCKING 2(b)/C1: record null: {ref['record']!r}"
+    )
+
+    unknowns = _key(doc, "unknowns")
+    _assert_preserved(control_unknowns, unknowns)
+    _assert_new_cause(
+        unknowns,
+        [[_SOURCE_REQUEST], [_CONDITION_UNREADABLE]],
+        "review-001 BLOCKING 2(b)",
+    )
+
+    # `_pending_work` no cambia: el MISMO candidato con request legible sí
+    # prueba trabajo pendiente (ausencia de recibo en su ruta existente).
+    readable_root, readable_home = _case_pending(tmp_path / "readable")
+    readable = _document(_status(readable_root, readable_home))
+    assert _situation(readable) == "pending-work-unresolved", (
+        "review-001 BLOCKING 2(b): control: un candidato legible de la misma "
+        "ejecución sin recibo sí es trabajo pendiente probado: "
+        f"{readable.get('situation')!r}"
+    )
+
+
+# --------------------------------------------------- review-001 BLOCKING 3
+
+
+def test_request_symlink_escape_is_unresolved(tmp_path: Path) -> None:
+    """review-001 BLOCKING 3 — confinamiento del request (§2.1 requisito 3,
+    PC-04 y §2.4): un `REQUEST.json` alcanzado por un symlink cuya ruta
+    resuelta escapa del árbol de paquetes no puede leerse como paquete activo
+    inequívoco; se rechaza con `pending-work-unresolved`,
+    `approval_reference.status=desconocida` (C1, sin rol/objeto/registro) y
+    una causa de pertenencia en `unknowns`, sin fallback."""
+    control_root, control_home = _case_prepared(tmp_path / "control")
+    control = _document(_status(control_root, control_home))
+    control_unknowns = _key(control, "unknowns")
+
+    root, home = _case_prepared(tmp_path / "case")
+    packet_id = _packet_id(root)
+    request_path = _request_path(root, packet_id)
+    assert request_path.is_file(), f"fixture: falta {request_path}"
+
+    escape_dir = tmp_path / "escape"
+    escape_dir.mkdir()
+    outside = escape_dir / "REQUEST.json"
+    shutil.move(str(request_path), outside)
+    os.symlink(outside, request_path)
+    assert request_path.is_symlink(), (
+        f"fixture: el request no quedó como symlink: {request_path}"
+    )
+    assert root.resolve() not in outside.resolve().parents, (
+        f"fixture: el destino del symlink no escapó del proyecto: {outside}"
+    )
+
+    doc = _document(_status(root, home))
+
+    assert _situation(doc) == "pending-work-unresolved", (
+        "review-001 BLOCKING 3/§2.1: un request que resuelve fuera del árbol "
+        "de paquetes es una inconsistencia de pertenencia del paquete activo "
+        f"y no habilita despacho; hoy {doc.get('situation')!r}"
+    )
+    op = _operation(doc)
+    assert op["verb"] == "diagnose", (
+        f"review-001 BLOCKING 3/§2.2: el escape no ejecuta una operación: {op['verb']!r}"
+    )
+    assert op["script"] is None, (
+        f"review-001 BLOCKING 3/§2.2: diagnose no lleva script: {op['script']!r}"
+    )
+    assert op["procedure"] == "references/project-execution.md", (
+        f"review-001 BLOCKING 3/§2.2: procedimiento esperado: {op['procedure']!r}"
+    )
+    assert op["source"] == "docs/.cdad-state.json:active_packet / .cdad/packets", (
+        "review-001 BLOCKING 3/§2.2: `source` exacto de "
+        f"pending-work-unresolved: {op['source']!r}"
+    )
+
+    ref = _approval_reference(doc)
+    assert ref["status"] == "desconocida", (
+        "review-001 BLOCKING 3/§2.3 C1: sin pertenencia inequívoca no se "
+        f"afirma aprobación: {ref['status']!r}"
+    )
+    assert ref["status"] != "vigente", (
+        "review-001 BLOCKING 3: el identificador seguro no garantiza el "
+        f"confinamiento del request: {ref['status']!r}"
+    )
+    assert ref["role"] is None and ref["object"] is None, (
+        "review-001 BLOCKING 3/C1: la ruta se verifica ANTES de leer; no se "
+        f"inventan rol ni objeto: {ref['role']!r}/{ref['object']!r}"
+    )
+    assert ref["record"] is None, (
+        f"review-001 BLOCKING 3/C1: record null: {ref['record']!r}"
+    )
+
+    unknowns = _key(doc, "unknowns")
+    _assert_preserved(control_unknowns, unknowns)
+    _assert_new_cause(
+        unknowns,
+        [[_SOURCE_REQUEST], [_CONDITION_ESCAPE]],
+        "review-001 BLOCKING 3",
     )
 
 
