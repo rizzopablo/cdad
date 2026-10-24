@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "007-002-dispatch-recovery",
+  "current_stage": "discovery",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -36,7 +36,8 @@
     },
     {
       "id": "007-002-dispatch-recovery",
-      "status": "queued"
+      "status": "in-progress",
+      "opened_at": "2026-10-24T04:13:44.984067+00:00"
     },
     {
       "id": "007-003-continuity-at-edges",
@@ -15201,14 +15202,22 @@
     }
   ],
   "execution": {
-    "id": "exec-007-001-unambiguous-entry-001",
+    "id": "exec-007-002-dispatch-recovery-001",
     "epic_id": "epic-007-reliable-cycle-operation",
-    "feature_id": "007-001-unambiguous-entry",
+    "feature_id": "007-002-dispatch-recovery",
     "scope": "epic-007-reliable-cycle-operation",
     "authority_ref": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": null,
-  "tdd_substage": "memory"
+  "active_packet": {
+    "id": "007-002-dispatch-recovery-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-unit-contract",
+    "contract_sha256": "ea4347fb96e28c814b367cbb27211925ff7f19877010d142b9b0d7de9fdfff09"
+  },
+  "tdd_substage": null
 }
