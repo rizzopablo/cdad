@@ -14482,6 +14482,41 @@
       "contract_sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728",
       "requested_by": "usuario",
       "delegated": true
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "dispatch-disposition",
+      "substage": null,
+      "at": "2026-10-24T00:05:51.269451+00:00",
+      "by": "orchestrator",
+      "transition": "disposition",
+      "transition_key": "e26c996915b64b42691a7cdc1bb88085389c94f128ddefcd762c7e56aaae4403",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "disposition",
+        "stage": "dispatch-disposition",
+        "substage": null,
+        "packet_id": "007-001-unambiguous-entry-test-writer-audit-001",
+        "receipt_sha256": null,
+        "resolution": "abandoned",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-001-unambiguous-entry-test-writer-audit-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Contrato enmendado tras el audit (aclaraciones del architect): la spec zip cambió y el paquete queda pinneado al hash anterior. El informe se materializó en docs/specs/007-001-unambiguous-entry/test-audit.md (53edbba) y el RED se prepara contra el contrato vigente.",
+      "resolution": "abandoned"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -14496,7 +14531,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T00:03:38.791175+00:00",
+  "last_updated": "2026-10-24T00:05:51.269451+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -14604,13 +14639,13 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-001-unambiguous-entry-test-writer-audit-001",
+    "id": "007-001-unambiguous-entry-test-writer-red-001",
     "role": "test-writer",
-    "substage": "audit",
+    "substage": "red",
     "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-feature-spec",
-    "contract_sha256": "c88bab66fc12b986cc1b9e2dc6af6887b1a06c5460982a462de99fbbb77498a3"
+    "contract_sha256": "b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728"
   },
   "tdd_substage": null
 }
