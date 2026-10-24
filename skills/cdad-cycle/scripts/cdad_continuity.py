@@ -721,13 +721,16 @@ def _copy_antecedent(antecedent: Any) -> dict[str, str] | None:
     }
 
 
-def _evidence_history(chain: dict[str, Any]) -> tuple[dict[str, str],
-                                                      set[tuple[str, str]]]:
-    """The declared evidence of the walkable chain, OLDEST first: the latest
-    status per id and the `(body_sha256, evidence_id)` declarations an
-    antecedent may resolve to."""
+def _evidence_history(chain: dict[str, Any]) -> dict[str, Any]:
+    """The declared evidence of the walkable chain, OLDEST first.
+
+    Returns the latest declared status per id, the latest entry per id and the
+    `(body_sha256, evidence_id)` declarations an antecedent may resolve to —
+    the entries themselves, so a transition can be checked against the identity
+    it claims to supersede (§2.5/INV-7)."""
     status: dict[str, str] = {}
-    declared: set[tuple[str, str]] = set()
+    declared: dict[tuple[str, str], dict[str, Any]] = {}
+    latest: dict[str, dict[str, Any]] = {}
     for sha, body in reversed(chain["links"]):
         evidence = body.get("evidence")
         if not isinstance(evidence, list):
@@ -738,18 +741,34 @@ def _evidence_history(chain: dict[str, Any]) -> tuple[dict[str, str],
             evidence_id = entry.get("id")
             if not isinstance(evidence_id, str) or not evidence_id:
                 continue
-            declared.add((sha, evidence_id))
+            declared[(sha, evidence_id)] = entry
+            latest[evidence_id] = entry
             declared_status = entry.get("status")
             if declared_status in EVIDENCE_STATUSES:
                 status[evidence_id] = declared_status
-    return status, declared
+    return {"status": status, "declared": declared, "latest": latest}
+
+
+def _reference_of(entry: dict[str, Any]) -> dict[str, Any] | None:
+    """The identity (safe path + digest) an evidence entry references."""
+    reference = entry.get("reference")
+    if not isinstance(reference, dict):
+        return None
+    return {"path": reference.get("path"), "sha256": reference.get("sha256")}
 
 
 def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
                      chain: dict[str, Any] | None) -> list[dict[str, Any]]:
-    """§2.5: an update that invalidates evidence keeps the other entries; an
-    omitted `evidence` keeps the declared content; an empty list cannot retire
-    evidence in silence; an invalidated identity never returns to `vigente`."""
+    """§2.5/INV-7: an update that invalidates evidence keeps the other entries;
+    an omitted `evidence` keeps the declared content; an empty list cannot
+    retire evidence in silence; an invalidated identity never returns to
+    `vigente`.
+
+    The transition is validated against the ANTECEDENT ENTRY, not merely its
+    existence: an invalidation conserves the identity of the evidence it
+    invalidates (the antecedent's reference, never another one), and replacing a
+    `vigente` entry's reference needs a new id plus a traceable antecedent.
+    """
     declared = update.get("evidence")
     if declared is None:
         inherited = head_body.get("evidence")
@@ -759,7 +778,10 @@ def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
             "update.evidence must be a non-empty list of evidence entries: an "
             f"empty list cannot retire evidence in silence; got {declared!r}")
     chain = chain if chain is not None else {"links": []}
-    status, known = _evidence_history(chain)
+    history = _evidence_history(chain)
+    status = history["status"]
+    known = history["declared"]
+    latest = history["latest"]
     inherited = head_body.get("evidence")
     inherited = inherited if isinstance(inherited, list) else []
     merged: dict[str, dict[str, Any]] = {}
@@ -782,15 +804,53 @@ def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
                 f"evidence id is unique in the body (§2.5)")
         seen.add(evidence_id)
         antecedent = entry.get("antecedent")
+        antecedent_entry: dict[str, Any] | None = None
         if antecedent is not None:
             key = (antecedent["body_sha256"], antecedent["evidence_id"])
-            if key not in known:
+            antecedent_entry = known.get(key)
+            if antecedent_entry is None:
                 raise ContinuityError(
                     f"update.evidence[{index}].antecedent {key!r} resolves to no "
                     f"evidence of this chain: an unknown antecedent is history "
                     f"that cannot be demonstrated (§2.5/§2.3.1)")
+        previous = latest.get(evidence_id)
+        previous_reference = _reference_of(previous) if previous is not None \
+            else None
+        if entry["status"] == "invalidada":
+            # §2.5/INV-7: the invalidation CONSERVES the identity of the
+            # evidence it invalidates — the entry its antecedent names, with
+            # THAT reference. Another identity or another reference is not an
+            # invalidation but a substitution in disguise.
+            if antecedent["evidence_id"] != evidence_id:
+                raise ContinuityError(
+                    f"update.evidence[{index}] invalidates {evidence_id!r} with "
+                    f"the antecedent of another identity "
+                    f"({antecedent['evidence_id']!r}): an invalidation "
+                    f"conserves the identity of the evidence it invalidates "
+                    f"(§2.5/INV-7)")
+            antecedent_reference = (
+                _reference_of(antecedent_entry)
+                if antecedent_entry is not None else None)
+            if antecedent_reference is None or \
+                    entry["reference"] != antecedent_reference:
+                raise ContinuityError(
+                    f"update.evidence[{index}] invalidates {evidence_id!r} with a "
+                    f"reference that is not the antecedent's "
+                    f"({entry['reference']!r} != {antecedent_reference!r}): the "
+                    f"identity of the invalidated evidence is conserved, never "
+                    f"recalculated (§2.5/INV-7)")
         if status.get(evidence_id) == "invalidada" and entry["status"] == "vigente":
             raise ContinuityError(REHABILITATED_MESSAGE.format(id=evidence_id))
+        if entry["status"] != "invalidada" and previous_reference is not None \
+                and entry["reference"] != previous_reference:
+            # §2.5/INV-7: replacing the reference of a declared identity is a
+            # SUBSTITUTION, and a substitution needs a NEW id plus a traceable
+            # antecedent; it is never done in place.
+            raise ContinuityError(
+                f"update.evidence[{index}] replaces the evidence {evidence_id!r} "
+                f"with another reference ({entry['reference']!r} != "
+                f"{previous_reference!r}) keeping its id: a substitution needs a "
+                f"NEW id and an antecedent that explains it (§2.5/INV-7)")
         if evidence_id not in merged:
             order.append(evidence_id)
         merged[evidence_id] = entry
@@ -1010,6 +1070,16 @@ def verify_begin(project_root: Path, execution_context_path: Path,
             f"{attempt}` antes de transportar el paquete {packet_id!r} "
             f"(continuidad)")
     chain = _chain_links(root, execution_id, head)
+    if not chain["demonstrable"]:
+        # §2.1/§2.3.1 (review-001 BLOCKING 1): a `begin` is credited only over a
+        # history demonstrated from the head to the genesis. A legacy ancestor
+        # without `prev` stays READABLE and may still receive new links, but it
+        # cannot accredit a transport — the close rejects the same chain.
+        detail = "; ".join(chain["unknowns"]) or "historia no demostrable"
+        raise ContinuityError(
+            f"cadena no demostrable: {detail} — el `begin` no se acredita sobre "
+            f"historia que no alcanza el génesis con el enlace histórico; el "
+            f"transporte se rechaza sin efectos (§2.1/§2.3.1)")
     body = chain["links"][0][1]
     if head.get("record") != "begin" or body.get("record") != "begin":
         raise ContinuityError(
@@ -1123,6 +1193,29 @@ def continuity_presence(project_root: Path, execution_id: Any,
                 context = None
     return CONTINUITY_PRESENT if _declares_continuity(context) \
         else CONTINUITY_ABSENT
+
+
+def historical_continuity(payload: bytes | None) -> str | None:
+    """§2.2 (review-001 BLOCKING 3): the `continuity` declaration a DURABLE
+    attempt record carries, verbatim.
+
+    It is historical evidence of the registration, never a value recomputed from
+    the current presence: recognizing a byte-identical repetition must preserve
+    the record and its bytes. `None` when the record declares nothing.
+    """
+    if not payload:
+        return None
+    try:
+        document = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if not isinstance(document, dict):
+        return None
+    provenance = document.get("provenance")
+    if not isinstance(provenance, dict):
+        return None
+    value = provenance.get(CONTINUITY_FIELD)
+    return value if isinstance(value, str) and value else None
 
 
 def _durable_receipt(project_root: Path,

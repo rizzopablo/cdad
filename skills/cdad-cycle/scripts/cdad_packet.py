@@ -3279,6 +3279,24 @@ def _require_continuity_begin(project_root: Path, execution_id: str,
             f"the dispatch registration is refused: {exc}") from exc
 
 
+def _record_with_continuity(base: dict[str, Any],
+                            provenance: dict[str, Any],
+                            declaration: dict[str, str] | None
+                            ) -> dict[str, Any]:
+    """The attempt record with its `continuity` declaration, when it has one.
+
+    007-003 §2.2: `continuity: absent` is declared in the record's provenance
+    channel (the I8 top-level schema stays closed); with continuity nothing is
+    added, so a durable record keeps the exact bytes it always had. The
+    declaration is built by the caller from `cdad_continuity.CONTINUITY_FIELD`,
+    the single owner of that vocabulary.
+    """
+    record = dict(base)
+    record["provenance"] = (provenance if declaration is None
+                            else {**provenance, **declaration})
+    return record
+
+
 def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     """Register one dispatch attempt as an observation (PD-6/I8).
 
@@ -3348,55 +3366,62 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
         # below is the durable, non-silent record of the scope decision.
         continuity = cdad_continuity.continuity_presence(
             project_root, execution_id, execution_document)
+        dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
+                         / DISPATCHES_DIRNAME / f"{attempt_id}.json")
+        stored_payload = (_read_bytes(dispatch_path, "dispatch record")
+                          if dispatch_path.is_file() else None)
 
-        record = {
+        base_record = {
             "execution_id": execution_id,
             "packet_id": packet_id,
             "role": request.get("role"),
             "substage": request.get("substage"),
             **{field: observation[field] for field in OBSERVATION_TEXT_FIELDS},
-            "provenance": observation["provenance"],
         }
-        if continuity == cdad_continuity.CONTINUITY_ABSENT:
-            # §2.2 (enmienda): the OMISSION is declared, never silent. The I8
-            # top-level schema stays CLOSED (007-001/005-009/006-001), so the
-            # `continuity: absent` diagnostic travels in the provenance channel
-            # (field -> source). When continuity exists (the integer was given
-            # and verified) nothing is added, so a durable record keeps the
-            # exact bytes it always had and its byte-identical replay stays
-            # idempotent.
-            record["provenance"] = {
-                **observation["provenance"],
-                cdad_continuity.CONTINUITY_FIELD: continuity,
-            }
-        payload = _serialize_dispatch(record)
-        dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
-                         / DISPATCHES_DIRNAME / f"{attempt_id}.json")
+        # 007-003 §2.2 (review-001 BLOCKING 3): a repetition is recognized
+        # against the HISTORICAL declaration. `provenance.continuity` describes
+        # the registration and is never recalculated from the current presence,
+        # so opening a continuity chain later neither rewrites the durable
+        # record nor breaks its byte-identical idempotency.
+        historical = cdad_continuity.historical_continuity(stored_payload)
+        replay_record = _record_with_continuity(
+            base_record, observation["provenance"],
+            {cdad_continuity.CONTINUITY_FIELD: historical}
+            if historical is not None else None)
+        identical_replay = (
+            stored_payload is not None
+            and _serialize_dispatch(replay_record) == stored_payload)
 
-        already_recorded = dispatch_path.is_file()
+        # §2.2 (enmienda): the OMISSION is declared, never silent. The I8
+        # top-level schema stays CLOSED (007-001/005-009/006-001), so the
+        # `continuity: absent` diagnostic travels in the provenance channel
+        # (field -> source). When continuity exists nothing is added, so a
+        # durable record keeps the exact bytes it always had.
+        record = _record_with_continuity(
+            base_record, observation["provenance"],
+            {cdad_continuity.CONTINUITY_FIELD: continuity}
+            if continuity == cdad_continuity.CONTINUITY_ABSENT else None)
+        payload = _serialize_dispatch(record)
+
+        already_recorded = stored_payload is not None
         completion = False
-        identical_replay = False
-        if already_recorded:
-            existing_payload = _read_bytes(dispatch_path, "dispatch record")
-            if existing_payload == payload:
-                identical_replay = True
-            else:
-                try:
-                    existing_record = json.loads(
-                        existing_payload.decode("utf-8"))
-                except (UnicodeDecodeError, ValueError):
-                    existing_record = None
-                rejection = (
-                    None if not isinstance(existing_record, dict)
-                    else _completion_rejection(existing_record, record))
-                if rejection is not None:
-                    raise PolicyError(
-                        f"attempt {attempt_id!r} already exists with different observation data: "
-                        f"refusing to overwrite a dispatch record ({rejection}; idempotent "
-                        f"repeats must be byte-identical)")
-                # D-U65-2: the ONE completion of a provisional write-ahead
-                # record. It replaces the observation and leaves a final record.
-                completion = True
+        if already_recorded and not identical_replay:
+            try:
+                existing_record = json.loads(
+                    stored_payload.decode("utf-8"))
+            except (UnicodeDecodeError, ValueError):
+                existing_record = None
+            rejection = (
+                None if not isinstance(existing_record, dict)
+                else _completion_rejection(existing_record, record))
+            if rejection is not None:
+                raise PolicyError(
+                    f"attempt {attempt_id!r} already exists with different observation data: "
+                    f"refusing to overwrite a dispatch record ({rejection}; idempotent "
+                    f"repeats must be byte-identical)")
+            # D-U65-2: the ONE completion of a provisional write-ahead
+            # record. It replaces the observation and leaves a final record.
+            completion = True
 
         if not identical_replay:
             # 007-003 §2.2: the canonical registration verifies the
