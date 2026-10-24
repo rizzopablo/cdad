@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": "007-001-unambiguous-entry",
-  "current_stage": "discovery",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -26,8 +26,13 @@
   "epic_features": [
     {
       "id": "007-001-unambiguous-entry",
-      "status": "in-progress",
-      "opened_at": "2026-10-23T23:49:18.807243+00:00"
+      "status": "done",
+      "opened_at": "2026-10-23T23:49:18.807243+00:00",
+      "closed_at": "2026-10-24T02:14:25.324918+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-001-unambiguous-entry/closure.md",
+        "sha256": "03d6adfc4f485641407a806ec500fc6f5929bdd31c604906fea55b69903ac6b0"
+      }
     },
     {
       "id": "007-002-dispatch-recovery",
@@ -15043,6 +15048,46 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Review de etapa 4 APTA (review-003). Paso a Memory Bank."
+    },
+    {
+      "feature": "007-001-unambiguous-entry",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-24T02:14:25.324918+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "731a8e3e077d1263a3a3708fd58d42d906d1305e09329897f8779af461b95db2",
+      "transition_key_payload": {
+        "execution_id": "exec-007-001-unambiguous-entry-001",
+        "feature_id": "007-001-unambiguous-entry",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-001-unambiguous-entry/closure.md",
+          "sha256": "03d6adfc4f485641407a806ec500fc6f5929bdd31c604906fea55b69903ac6b0"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "closure_path": "docs/specs/007-001-unambiguous-entry/closure.md",
+      "closure_sha256": "03d6adfc4f485641407a806ec500fc6f5929bdd31c604906fea55b69903ac6b0"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15057,7 +15102,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T02:09:56.406781+00:00",
+  "last_updated": "2026-10-24T02:14:25.324918+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15164,14 +15209,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "007-001-unambiguous-entry-scribe-memory-001",
-    "role": "scribe",
-    "substage": "memory",
-    "status": "prepared",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "55f9723f8b472642ea7ed44358ac16ce05171ecbe5ec99837508509913c175b5"
-  },
+  "active_packet": null,
   "tdd_substage": "memory"
 }
