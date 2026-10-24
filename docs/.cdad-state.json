@@ -15413,6 +15413,47 @@
       "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
       "closure_path": "docs/specs/007-002-dispatch-recovery/closure.md",
       "closure_sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-24T07:18:00.037935+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "b34f8fd3057c7ad1b39ec0a90618cc47cdfbe3e976b079274600ff9ce76d13ba",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "007-003-continuity-at-edges-architect-discovery-001",
+        "receipt_sha256": "57f4195248f6ef6ff6166da03bf4fbae81e6dfdb679a3c4b6663b8ec73416057",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-003-continuity-at-edges/discovery.md",
+            "59f2fefc751c9389273ece6921c991894929c951c6900b5024cf647bb3cbdb21"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-003-continuity-at-edges-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-003-continuity-at-edges-001/007-003-continuity-at-edges-architect-discovery-001/receipt.json",
+      "receipt_sha256": "57f4195248f6ef6ff6166da03bf4fbae81e6dfdb679a3c4b6663b8ec73416057",
+      "artifacts": {
+        "docs/specs/007-003-continuity-at-edges/discovery.md": "59f2fefc751c9389273ece6921c991894929c951c6900b5024cf647bb3cbdb21"
+      },
+      "note": null
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15427,7 +15468,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T07:14:58.113604+00:00",
+  "last_updated": "2026-10-24T07:18:00.037935+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15538,7 +15579,7 @@
     "id": "007-003-continuity-at-edges-architect-discovery-001",
     "role": "architect",
     "substage": "discovery",
-    "status": "prepared",
+    "status": "completed",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "1bd02976f25ec9c2283fb1754c19cc34256ea32d65f37d02ed8911be10fb9bc0"
