@@ -109,6 +109,19 @@ Mapeo test → postcondición:
          vocabulario, forma ni significado nuevos en `situation`,
          `next.operation` ni `authority.approval_reference`.
 
+  test_reconcile_rejects_noncanonical_disposition_payload_with_recomputed_key
+      -> PC-10/§2.1.4 (corrección review-001, BLOCKING 1): un payload que el
+         productor no puede emitir —`exemption={}`, `current_stage`/`substage`
+         fuera de sus vocabularios cerrados, `artifacts` con digest que no es
+         SHA-256— sigue sin ser canónico aun con `transition_key` recalculado;
+         no habilita `disposed` ni `--replace-packet`, y la disposición
+         legítima sigue funcionando (control anti-sobrecorrección).
+  test_reconcile_survives_undecodable_state_with_unknown
+      -> PC-10/PC-13/§2.2 fila 6 (corrección review-001, BLOCKING 2): un
+         `docs/.cdad-state.json` con codificación ilegible conserva el envelope
+         (`rc=0`, `signals.disposition: null`) y diagnostica la causa en
+         `unknowns`, sin traceback y sin escrituras.
+
 RED hoy (HEAD 2afdc18, medido con esta misma fixture):
 - `reconcile` publica el envelope `reconcile-v1` con
   `signals.receipt|materialization|dispatch` pero SIN `signals.disposition`, y
@@ -2441,3 +2454,214 @@ def test_dispatch_recovery_preserves_007_001_status_contract(
     assert set(reference_after) == set(reference), (
         "PC-16 violada: la forma de `authority.approval_reference` no cambia "
         "con la recuperación")
+
+
+# ---------------------------------------- PC-10 (corrección review-001)
+
+
+def test_reconcile_rejects_noncanonical_disposition_payload_with_recomputed_key(
+        tmp_path: Path) -> None:
+    """PC-10/§2.1.4 — corrección review-001 BLOCKING 1.
+
+    Una disposición REAL del productor, mutada a una forma que el productor NO
+    puede emitir y con `transition_key` RECALCULADO correctamente, sigue sin ser
+    canónica:
+
+      (a) `exemption={}` — `exemption` pertenece a `gate`, no a `disposition`,
+          y el productor lo omite cuando no hay exención;
+      (b) `current_stage` fuera de su vocabulario cerrado;
+      (c) `substage` fuera de su vocabulario cerrado (coherente con la entrada);
+      (d) `artifacts` con digests que no son SHA-256.
+
+    En los cuatro casos `signals.disposition` es `null`, la causa queda en
+    `unknowns` y `--replace-packet` se rechaza sin publicar ni escribir.
+
+    Control: la disposición legítima (sin mutar) sigue clasificando `disposed` y
+    habilitando el sucesor — la corrección no puede volverse un rechazo global.
+
+    RED (review-001): el verificador admite las cuatro variantes; con
+    `current_stage` inválido incluso publica el sucesor.
+    """
+    def base_fixture(slug: str) -> tuple[_RecoveryProject, dict, dict]:
+        fx = _RecoveryProject(tmp_path / slug)
+        assert fx.dispatch().returncode == 0, (
+            f"precondición (fixture {slug}): el despacho se registra (rc=0)")
+        assert fx.dispose("abandoned").returncode == 0, (
+            f"precondición (fixture {slug}): la disposición real se registra")
+        state = fx.read_state()
+        entry = copy.deepcopy(_disposition_entries(state)[-1])
+        assert set(entry.get("transition_key_payload") or {}) == PAYLOAD_KEYS, (
+            f"precondición (fixture {slug}): el payload real es el completo "
+            f"del productor: {sorted(entry.get('transition_key_payload') or {})}")
+        return fx, state, entry
+
+    def assert_variant_rejected(slug: str, label: str, mutate) -> None:
+        fx, state, entry = base_fixture(slug)
+        crafted = _craft(entry, lambda candidate: mutate(candidate, fx))
+        assert canonical_digest(crafted["transition_key_payload"]) == crafted[
+            "transition_key"], (
+            f"precondición (fixture {slug}): la clave se recalcula "
+            "correctamente sobre el payload mutado")
+        state = copy.deepcopy(state)
+        state["stage_history"][-1] = crafted
+        fx.write_state(state)
+        before_tree = fx.tree()
+        before_state = fx.state_bytes()
+
+        doc = envelope(fx.reconcile(), label)
+        assert doc.get("classification") != "disposed", (
+            f"{label}: PC-10/§2.1.4 violada — un payload que el productor no "
+            "puede emitir NO habilita `disposed`, ni con `transition_key` "
+            f"recalculado; visto {doc.get('classification')!r}")
+        assert disposition_signal(doc, label) is None, (
+            f"{label}: PC-10/§2.1.4 violada — la variante no canónica no se "
+            "presenta como disposición verificable (`signals.disposition: null`)")
+        unknowns = doc.get("unknowns")
+        assert isinstance(unknowns, list) and unknowns, (
+            f"{label}: PC-10/§2.2 violada — la variante no canónica se "
+            f"diagnostica con causa en `unknowns`: {unknowns!r}")
+        assert any(re.search(
+            r"dispos|transition|payload|canon|verif|stage|substage|artifact|"
+            r"historial|history", str(item).lower()) for item in unknowns), (
+            f"{label}: PC-10/§2.2 violada — la causa identifica la fuente (la "
+            f"disposición/payload): {unknowns!r}")
+
+        proc = fx.replace()
+        out = proc.stdout + proc.stderr
+        assert proc.returncode != 0, (
+            f"{label}: PC-10/§2.3/INV-7 violada — la variante no canónica "
+            f"tampoco habilita el reemplazo; rc={proc.returncode}: {out!r}")
+        assert PACKET_BEGIN not in proc.stdout, (
+            f"{label}: el rechazo no publica un sucesor")
+        fx.assert_no_effects(label, before_tree, before_state)
+
+    def add_exemption(entry: dict, _fx: _RecoveryProject) -> None:
+        entry["transition_key_payload"]["exemption"] = {}
+        entry["transition_key"] = canonical_digest(
+            entry["transition_key_payload"])
+
+    def invalid_current_stage(entry: dict, _fx: _RecoveryProject) -> None:
+        entry["transition_key_payload"]["current_stage"] = "not-a-stage"
+        entry["transition_key"] = canonical_digest(
+            entry["transition_key_payload"])
+
+    def invalid_substage(entry: dict, _fx: _RecoveryProject) -> None:
+        entry["transition_key_payload"]["substage"] = "not-a-substage"
+        entry["substage"] = "not-a-substage"
+        entry["transition_key"] = canonical_digest(
+            entry["transition_key_payload"])
+
+    def invalid_artifact_digest(entry: dict, fx: _RecoveryProject) -> None:
+        artifact = str(fx.root / SPEC_REL)
+        entry["transition_key_payload"]["artifacts"] = [
+            [artifact, "z" * 64],
+            [artifact, "not-a-sha256"],
+        ]
+        entry["transition_key"] = canonical_digest(
+            entry["transition_key_payload"])
+
+    def control() -> None:
+        fx, state, _entry = base_fixture("control")
+        doc = envelope(fx.reconcile(), "control")
+        assert doc.get("classification") == "disposed", (
+            "control: una disposición legítima sigue clasificando `disposed`; "
+            f"visto {doc.get('classification')!r}")
+        signal = assert_disposed_signal(
+            disposition_signal(doc, "control"), "control")
+        assert signal["resolution"] == "abandoned", (
+            f"control: la señal conserva la resolución: {signal['resolution']!r}")
+        assert signal["replaced_by"] is None, (
+            f"control: `abandoned` no declara sucesor: {signal['replaced_by']!r}")
+        assert signal["record"]["index"] == len(entries(state)) - 1, (
+            "control: la referencia localiza la entrada de la disposición; "
+            f"visto {signal['record']['index']!r}")
+        assert_reference_locates_entry(state, signal, "control")
+
+        proc = fx.replace()
+        out = proc.stdout + proc.stderr
+        assert proc.returncode == 0, (
+            "control: la disposición legítima sigue habilitando el sucesor "
+            f"(rc=0); rc={proc.returncode}: {out!r}")
+        successors = [pid for pid in fx.packet_ids() if pid != fx.packet_id]
+        assert len(successors) == 1, (
+            f"control: se publica UN sucesor nuevo: {fx.packet_ids()}")
+        active = fx.read_state().get("active_packet") or {}
+        assert active.get("id") == successors[0], (
+            f"control: `active_packet` apunta al sucesor: {active!r}")
+        assert active.get("status") == "prepared", (
+            f"control: el sucesor queda `prepared`: {active!r}")
+
+    cases = _Cases()
+    cases.run("exemption={}", lambda: assert_variant_rejected(
+        "exemption", "PC-10 (exemption={})", add_exemption))
+    cases.run("current_stage fuera de vocabulario", lambda: assert_variant_rejected(
+        "current-stage", "PC-10 (current_stage fuera de vocabulario)",
+        invalid_current_stage))
+    cases.run("substage fuera de vocabulario", lambda: assert_variant_rejected(
+        "substage", "PC-10 (substage fuera de vocabulario)", invalid_substage))
+    cases.run("artifacts con digest no SHA-256", lambda: assert_variant_rejected(
+        "artifacts", "PC-10 (artifacts con digest no SHA-256)",
+        invalid_artifact_digest))
+    cases.run("control", control)
+    cases.raise_if_any("PC-10 (payload no canónico)")
+
+
+def test_reconcile_survives_undecodable_state_with_unknown(
+        tmp_path: Path) -> None:
+    """PC-10/PC-13/§2.2 fila 6 — corrección review-001 BLOCKING 2.
+
+    Con continuidad y despacho válidos, un `docs/.cdad-state.json` cuyos bytes
+    no son UTF-8 (`b"\\xff"`) es una FUENTE ILEGIBLE: `reconcile` conserva el
+    envelope (`rc=0`, JSON válido, `signals.disposition: null`) y diagnostica
+    la causa en `unknowns`, sin traceback y sin escribir nada.
+
+    RED (review-001): la lectura de texto deja escapar `UnicodeDecodeError`
+    (rc=1, stdout vacío y traceback en lugar del envelope con `unknown`).
+    """
+    fx = _RecoveryProject(tmp_path)
+    assert fx.dispatch().returncode == 0, (
+        "precondición (fixture): el despacho se registra (rc=0)")
+    assert fx.dispose("abandoned").returncode == 0, (
+        "precondición (fixture): la disposición se registra")
+    assert fx.execution_context_path().is_file(), (
+        "precondición (fixture): la continuidad de la ejecución es válida")
+    assert fx.dispatch_files(), (
+        "precondición (fixture): hay evidencia de despacho")
+    state_path = fx.root / STATE_REL
+    state_path.write_bytes(b"\xff")
+    assert state_path.read_bytes() == b"\xff", (
+        "precondición (fixture): el estado observado no es UTF-8")
+    before_tree = fx.tree()
+    before_state = fx.state_bytes()
+
+    proc = fx.reconcile()
+    out = proc.stdout + proc.stderr
+    assert proc.returncode == 0, (
+        "PC-10/§2.2 fila 6 violada: un estado con codificación ilegible NO "
+        f"aborta `reconcile` (rc=0); rc={proc.returncode}: {out!r}")
+    assert "Traceback" not in out and "UnicodeDecodeError" not in out, (
+        "PC-10/§2.2 fila 6 violada: el estado ilegible se diagnostica, no se "
+        f"propaga como excepción: {out!r}")
+
+    doc = envelope(proc, "PC-10 (estado no decodificable)")
+    assert doc.get("classification") == "unknown", (
+        "PC-10/§2.2 fila 6 violada: el estado ilegible produce `unknown` (no "
+        f"`dispatched-unknown` ni `disposed`); visto {doc.get('classification')!r}")
+    assert disposition_signal(doc, "PC-10 (estado no decodificable)") is None, (
+        "PC-10 violada: sin fuente legible no hay disposición admisible "
+        "(`signals.disposition: null`)")
+    unknowns = doc.get("unknowns")
+    assert isinstance(unknowns, list) and unknowns, (
+        "PC-10/§2.2 violada: la causa del estado ilegible queda en "
+        f"`unknowns`: {unknowns!r}")
+    assert any(re.search(
+        r"state|estado|cdad-state|utf-?8|decod|encoding|ilegible|unreadable|"
+        r"corrupt", str(item).lower()) for item in unknowns), (
+        f"PC-10/§2.2 violada: la causa identifica la fuente ilegible: {unknowns!r}")
+
+    assert fx.tree() == before_tree, (
+        "PC-13/INV-2 violada: `reconcile` con una fuente ilegible sigue siendo "
+        "de SOLO LECTURA; el árbol cambió en "
+        f"{sorted(changed_paths(before_tree, fx.tree()))}")
+    assert fx.state_bytes() == before_state, (
+        "PC-13/INV-2 violada: `reconcile` no reescribe el estado ilegible")
