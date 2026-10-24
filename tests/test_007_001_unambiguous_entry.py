@@ -3,10 +3,13 @@
 y referencia verificable de aprobación.
 
 Contract: docs/specs/007-001-unambiguous-entry/spec.md
-(sha256 b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728,
-APROBADA 2026-10-23) §2.1 (situación y pertenencia mínima), §2.2 (siguiente
-operación), §2.3 (referencia de aprobación: vocabulario, fuentes, tablas
-C1–C3, D1, S1–S6, A1–A4, localizadores), §2.4 (compatibilidad diagnóstica),
+(sha256 base b09f5410dd8ac7fd64e8c4784d500a4f87de3ac8e5c83e7c477ba656a90c4728,
+APROBADA 2026-10-23; enmienda aprobada 2026-10-23: el localizador es
+`record.index` 0-based en el historial que determina `object`, según §2.3
+«Localizadores y determinismo» y §6) §2.1 (situación y pertenencia mínima),
+§2.2 (siguiente operación), §2.3 (referencia de aprobación: vocabulario,
+fuentes, tablas C1–C3, D1, S1–S6, A1–A4, localizadores), §2.4 (compatibilidad
+diagnóstica),
 §3 (alineación del orquestador), §4 PC-01…PC-14, §5 INV-1…INV-8.
 
 Audit: docs/specs/007-001-unambiguous-entry/test-audit.md (matriz de
@@ -39,7 +42,8 @@ Mapeo test → postcondición (spec §4):
   test_unresolved_pending_work_is_not_dispatchable -> PC-04 (8 variaciones de
       pertenencia y selección; parametrizado)
   test_architect_approval_uses_epic_mandate        -> PC-05 (mandato real de
-      `epic_history`, pointer resoluble, sin pin del plan; A2/A3/A4)
+      `epic_history`, `record.index` 0-based resoluble, sin pin del plan;
+      A2/A3/A4)
   test_spec_approval_status_matrix                 -> PC-06 (tabla S1–S6,
       parametrizada, con las combinaciones bytes cambiados + sin registros y
       bytes cambiados + todos sustituidos)
@@ -84,8 +88,8 @@ Aclaraciones del audit aplicadas aquí:
 Riesgos declarados por el audit que estos tests fijan: `next.route` es prosa
 congelada por los tests PD-5 (la acción estructurada va en `next.operation`);
 `entry` no se toca; límite de 16.384 B con fixture rico; `big_doc ==
-small_doc` (pointer al primer registro aplicable, sin contadores derivados
-del historial); en reposo `next.operation.source` NO es
+small_doc` (`record.index` del primer registro aplicable en su historial, sin
+contadores derivados del historial); en reposo `next.operation.source` NO es
 `docs/.cdad-state.json:execution`.
 """
 
@@ -146,7 +150,7 @@ APPROVAL_STATUSES = {
 }
 APPROVAL_OBJECTS = {"epic-plan", "feature-spec", "draft-plan", None}
 REFERENCE_KEYS = {"role", "object", "status", "record", "contract", "reason"}
-RECORD_KEYS = {"path", "pointer", "transition_key", "approved_by"}
+RECORD_KEYS = {"path", "index", "transition_key", "approved_by"}
 CONTRACT_KEYS = {"path", "declared_sha256", "observed_sha256"}
 OPERATION_KEYS = ("verb", "script", "procedure", "source")
 
@@ -377,9 +381,11 @@ def _approval_reference(doc: dict) -> dict:
         assert record["path"] == STATE_FILE, (
             f"PC-11: `record.path` no apunta al estado: {record['path']!r}"
         )
-        assert isinstance(record["pointer"], str) and record["pointer"].startswith(
-            "/"
-        ), f"PC-11: `record.pointer` no es un JSON Pointer: {record['pointer']!r}"
+        index = record["index"]
+        assert isinstance(index, int) and not isinstance(index, bool) and index >= 0, (
+            "PC-11: `record.index` debe ser un entero 0-based en el historial "
+            f"que determina `object` (§2.3): {index!r}"
+        )
         assert record["transition_key"] is None or isinstance(
             record["transition_key"], str
         ), f"PC-11: `record.transition_key` inválido: {record['transition_key']!r}"
@@ -416,31 +422,49 @@ def _approval_reference(doc: dict) -> dict:
     return ref
 
 
-def _resolve_pointer(document: dict, pointer: str):
-    """Resuelve un JSON Pointer sobre el estado (localizador verificable)."""
-    assert isinstance(pointer, str) and pointer.startswith("/"), (
-        f"PC-11: pointer inválido: {pointer!r}"
+def _assert_no_history_token(
+    proc: subprocess.CompletedProcess, label: str
+) -> None:
+    """PD-1 (§2.3): el localizador no emite el nombre del historial."""
+    for token in ("stage_history", "epic_history"):
+        assert token not in proc.stdout, (
+            f"{label}/PD-1: la salida emite el token del historial {token!r}; "
+            "el localizador debe ser `record.index`"
+        )
+
+
+_HISTORY_BY_OBJECT = {
+    "feature-spec": "stage_history",
+    "epic-plan": "epic_history",
+}
+
+
+def _resolve_record(document: dict, object_kind: str, record: dict):
+    """Resuelve `record.index` en el historial real que determina `object`.
+
+    Oráculo independiente: sea `object=feature-spec` (historial
+    `stage_history`) o `object=epic-plan` (historial `epic_history`), el índice
+    entero 0-based debe identificar el registro esperado en el orden real del
+    historial del fixture (§2.3, «Localizadores y determinismo»).
+    """
+    history_key = _HISTORY_BY_OBJECT.get(object_kind)
+    assert history_key is not None, (
+        "PC-11: `record.index` sólo localiza registros de `feature-spec` o "
+        f"`epic-plan`; object={object_kind!r}"
     )
-    node: object = document
-    for raw in pointer.split("/")[1:]:
-        token = raw.replace("~1", "/").replace("~0", "~")
-        if isinstance(node, list):
-            assert token.isdigit() and int(token) < len(node), (
-                f"PC-11: pointer {pointer!r} no resuelve (índice {token!r} "
-                f"fuera de rango; lista de {len(node)})"
-            )
-            node = node[int(token)]
-        elif isinstance(node, dict):
-            assert token in node, (
-                f"PC-11: pointer {pointer!r} no resuelve (falta {token!r}); "
-                f"claves: {sorted(node)}"
-            )
-            node = node[token]
-        else:
-            raise AssertionError(
-                f"PC-11: pointer {pointer!r} atraviesa un escalar: {node!r}"
-            )
-    return node
+    index = _member(record, "index", "record")
+    assert isinstance(index, int) and not isinstance(index, bool) and index >= 0, (
+        f"PC-11: `record.index` debe ser un entero 0-based: {index!r}"
+    )
+    history = _member(document, history_key, "estado del fixture")
+    assert isinstance(history, list), (
+        f"PC-11: `{history_key}` no es una lista en el estado: {history!r}"
+    )
+    assert index < len(history), (
+        f"PC-11: `record.index`={index} fuera de rango en `{history_key}` "
+        f"(historial de {len(history)} registros)"
+    )
+    return history[index]
 
 
 def _assert_preserved(old: object, new: object) -> None:
@@ -1146,12 +1170,14 @@ def _architect_project(base: Path) -> tuple[Path, Path, str]:
 def test_architect_approval_uses_epic_mandate(tmp_path: Path) -> None:
     """PC-05/§2.3 A2–A4: para architect el objeto es `epic-plan` y el registro
     es exactamente el mandato que selecciona `_approved_epic_plan_entry` en
-    `epic_history` — con pointer resoluble y SIN exigir pin del plan (A4 →
-    vigente; A3 → contrato cambiado conservando el mandato; A2 → ausente con
-    fuentes legibles)."""
+    `epic_history` — con `record.index` 0-based resoluble y SIN exigir pin del
+    plan (A4 → vigente; A3 → contrato cambiado conservando el mandato; A2 →
+    ausente con fuentes legibles)."""
     root, home, plan_rel = _architect_project(tmp_path)
 
-    doc = _document(_status(root, home))
+    proc = _status(root, home)
+    _assert_no_history_token(proc, "PC-05")
+    doc = _document(proc)
     ref = _approval_reference(doc)
     assert ref["role"] == "architect", (
         f"PC-05: el rol del request es architect: {ref['role']!r}"
@@ -1169,11 +1195,13 @@ def test_architect_approval_uses_epic_mandate(tmp_path: Path) -> None:
     mandate = _member(state, "epic_history", "state del fixture")[0]
     record = ref["record"]
     assert record is not None, "PC-05: A4 conserva el mandato seleccionado"
-    assert record["pointer"] == "/epic_history/0", (
-        f"PC-05: pointer del mandato incorrecto: {record['pointer']!r}"
+    assert record["index"] == 0, (
+        f"PC-05: índice 0-based del mandato incorrecto: {record['index']!r}"
     )
-    resolved = _resolve_pointer(state, record["pointer"])
-    assert isinstance(resolved, dict), f"PC-05: el pointer no resuelve a un objeto"
+    resolved = _resolve_record(state, "epic-plan", record)
+    assert isinstance(resolved, dict), (
+        "PC-05: `record.index` no resuelve a un objeto del historial"
+    )
     assert resolved.get("stage") == "epic-plan", (
         f"PC-05: el registro seleccionado no es el mandato: {resolved!r}"
     )
@@ -1310,35 +1338,35 @@ SPEC_CASES = [
             contract_bytes=CHANGED_BYTES,
         ),
         "sustituida",
-        "/stage_history/0",
+        0,
         "superseded",
         id="s3-all-superseded-bytes-changed",
     ),
     pytest.param(
         dict(history=[_spec_entry(contract_path="docs/specs/999-999-other/spec.md")]),
         "contrato cambiado",
-        "/stage_history/0",
+        0,
         "non-pin",
         id="s4-no-pin-match-foreign-path",
     ),
     pytest.param(
         dict(history=[_spec_entry()], contract_bytes=CHANGED_BYTES),
         "contrato cambiado",
-        "/stage_history/0",
+        0,
         "pin-matching",
         id="s5-bytes-changed-pin-matches",
     ),
     pytest.param(
         dict(history=[_history_entry(), _spec_entry()]),
         "vigente",
-        "/stage_history/1",
+        1,
         "pin-matching",
         id="s6-vigente-keyless-record",
     ),
     pytest.param(
         dict(history=[_spec_entry(transition_key=K1), _spec_entry(transition_key=K2)]),
         "vigente",
-        "/stage_history/0",
+        0,
         "pin-matching",
         id="s6-multiple-records-first-selected",
     ),
@@ -1348,18 +1376,19 @@ SPEC_CASES = [
 # ---------------------------------------------------------------- PC-06
 
 
-@pytest.mark.parametrize("build,expected_status,pointer,record_kind", SPEC_CASES)
+@pytest.mark.parametrize("build,expected_status,expected_index,record_kind", SPEC_CASES)
 def test_spec_approval_status_matrix(
     tmp_path: Path,
     build: dict,
     expected_status: str,
-    pointer: str | None,
+    expected_index: int | str | None,
     record_kind: str | None,
 ) -> None:
     """PC-06/§2.3 S1–S6: cada fixture produce EXACTAMENTE un resultado
     normativo de la tabla ordenada (incluidas las combinaciones bytes
-    cambiados + sin registros y bytes cambiados + todos sustituidos) y el
-    pointer apunta al registro seleccionado en el historial real."""
+    cambiados + sin registros y bytes cambiados + todos sustituidos) y
+    `record.index` (0-based) apunta al registro seleccionado en el historial
+    real que determina `object`."""
     root, home = _spec_case(tmp_path, **build)
 
     state = read_state(root)
@@ -1368,7 +1397,9 @@ def test_spec_approval_status_matrix(
         "fixture: el paquete activo debe seguir preparado"
     )
 
-    doc = _document(_status(root, home))
+    proc = _status(root, home)
+    _assert_no_history_token(proc, "PC-06")
+    doc = _document(proc)
     ref = _approval_reference(doc)
     assert ref["object"] == "feature-spec", (
         f"PC-06: objeto esperado feature-spec: {ref['object']!r}"
@@ -1400,20 +1431,20 @@ def test_spec_approval_status_matrix(
     )
 
     record = ref["record"]
-    if pointer is None:
+    if expected_index is None:
         assert record is None, (
             f"PC-06: este resultado no conserva registro: {record!r}"
         )
         return
     assert record is not None, "PC-06: el resultado selecciona un registro"
-    if pointer != "any-valid":
-        assert record["pointer"] == pointer, (
-            f"PC-06: pointer incorrecto; esperado {pointer!r}, "
-            f"hoy {record['pointer']!r}"
+    if expected_index != "any-valid":
+        assert record["index"] == expected_index, (
+            f"PC-06: índice incorrecto; esperado {expected_index!r}, "
+            f"hoy {record['index']!r}"
         )
-    resolved = _resolve_pointer(state, record["pointer"])
+    resolved = _resolve_record(state, ref["object"], record)
     assert isinstance(resolved, dict), (
-        f"PC-06: el pointer no resuelve a un objeto: {resolved!r}"
+        f"PC-06: `record.index` no resuelve a un objeto: {resolved!r}"
     )
     assert resolved.get("stage") == "specification", (
         f"PC-06: el registro seleccionado no es una aprobación: {resolved!r}"
@@ -1505,7 +1536,7 @@ def test_approval_checks_path_and_current_bytes(tmp_path: Path) -> None:
         "PC-07/S3: con todos los registros sustituidos el resultado es "
         f"sustituida aunque los bytes hayan cambiado: {ref['status']!r}"
     )
-    assert ref["record"] is not None and ref["record"]["pointer"] == "/stage_history/0", (
+    assert ref["record"] is not None and ref["record"]["index"] == 0, (
         "PC-07/S3: se conserva el primer registro sustituido: "
         f"{ref['record']!r}"
     )
@@ -1675,7 +1706,7 @@ def test_approval_unknown_vs_absent(
             f"{ref['contract']!r}"
         )
         if ref["record"] is not None:
-            _resolve_pointer(read_state(root), ref["record"]["pointer"])
+            _resolve_record(read_state(root), ref["object"], ref["record"])
     elif reason_kind == "s2":
         assert ref["role"] == "test-writer"
         assert ref["object"] == "feature-spec"
@@ -1707,12 +1738,12 @@ def test_approval_selection_and_supersession(tmp_path: Path) -> None:
         f"PC-10: la aprobación no sustituida está vigente: {first['status']!r}"
     )
     record = first["record"]
-    assert record is not None and record["pointer"] == "/stage_history/1", (
-        "PC-10: se selecciona la aprobación NO sustituida, no la primera: "
-        f"{record!r}"
+    assert record is not None and record["index"] == 1, (
+        "PC-10: se selecciona la aprobación NO sustituida (índice 1), no la "
+        f"primera: {record!r}"
     )
     state = read_state(root)
-    resolved = _resolve_pointer(state, record["pointer"])
+    resolved = _resolve_record(state, first["object"], record)
     assert resolved.get("transition_key") == K2, (
         f"PC-10: el registro seleccionado debe ser el de clave K2: {resolved!r}"
     )
@@ -1750,11 +1781,11 @@ def test_approval_selection_and_supersession(tmp_path: Path) -> None:
     assert ref["status"] == "sustituida", (
         f"PC-10: todos sustituidos → sustituida: {ref['status']!r}"
     )
-    assert ref["record"] is not None and ref["record"]["pointer"] == "/stage_history/0", (
+    assert ref["record"] is not None and ref["record"]["index"] == 0, (
         "PC-10: `sustituida` conserva el PRIMER registro sustituido: "
         f"{ref['record']!r}"
     )
-    assert _resolve_pointer(read_state(root), ref["record"]["pointer"]).get(
+    assert _resolve_record(read_state(root), ref["object"], ref["record"]).get(
         "transition_key"
     ) == K1, "PC-10: el primer registro sustituido es el de clave K1"
 
@@ -1963,8 +1994,8 @@ def test_status_bound_and_history_independence(tmp_path: Path) -> None:
     """PC-13/INV-6: la salida sigue siendo un único JSON acotado (16.384 B);
     superar `--max-bytes` falla cerrado sin JSON parcial y con diagnóstico; y
     agregar historial no seleccionado no aumenta ni altera la salida
-    (`big_doc == small_doc`: el pointer apunta al primer registro aplicable,
-    sin contadores derivados del historial)."""
+    (`big_doc == small_doc`: `record.index` es el del primer registro
+    aplicable en su historial, sin contadores derivados del historial)."""
     root, home = _case_prepared(tmp_path)
     small_proc = _status(root, home)
     small = _document(small_proc)
