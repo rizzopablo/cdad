@@ -4,6 +4,54 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-24 — Feature: 007-002-dispatch-recovery (epic 007)
+
+**Cerrada el 2026-10-24** tras review APTO. Segunda unidad de `epic-007-reliable-cycle-operation`:
+hace que una decisión ya registrada sea **consumible** en vez de un callejón sin salida.
+**Contrato:** `docs/specs/007-002-dispatch-recovery/spec.md` (PC-1..PC-16, INV-1..INV-8).
+**Review:** `review-001` **NO APTO** (2 BLOCKING reproducidos) → re-review **APTO**. Evidencia focal:
+`tests/test_007_002_dispatch_recovery.py` (18 casos) + regresión **105 passed**.
+
+**Qué cambió en el uso real.**
+- **`reconcile` reconoce `disposed`**: un despacho sin recibo resuelto por una disposición canónica
+  deja de informarse `dispatched-unknown`. Se agrega **siempre** `signals.disposition` —`null` o
+  `{resolution, replaced_by, record:{path, index, transition_key}}`, con `record.index` 0-based
+  (ADR-035)— y se conserva el envelope, `reconcile-v1`, `rc=0`, `repeat_effect=false`, `escalate=false`.
+- **La precedencia no se invierte**: autoridad expirada, recibo ilegible, recibo legible y
+  materialización siguen dominando; las señales comprobadas viajan igual. Una disposición **sin
+  evidencia de despacho** produce `unknown`, no `disposed`.
+- **`prepare --replace-packet` acepta un `failed` dispuesto** y lo reemplaza **sin exigir deriva**,
+  conservando el encargo, los pisos de rol y `plan_task`/`current_decisions`, publicando
+  `.superseded.json` y dejando el predecesor byte a byte idéntico. El `failed` aislado se rechaza sin
+  publicar. `replaced_by` declarado se respeta en sus tres casos (existente coherente, incoherente,
+  inexistente), sin prometer una corrección que el productor no permite.
+
+**Verificador canónico único (ADR-036).** La identidad la produce `cdad_packet`; `cdad_continuity`
+**importa** ese verificador y la selección la ejerce una sola función. Exige la **estructura completa**
+del payload con vocabularios cerrados y artefactos canónicos: un subconjunto con hash recalculado no es
+la decisión. Devuelve causas, no excepciones.
+
+**Correcciones que exigió la review.** B-1: el lector admitía payloads que el productor no puede emitir
+(`exemption={}`, `current_stage` fuera de vocabulario, digests no SHA-256) y con hash recalculado llegó a
+publicar un sucesor. B-2: un estado con codificación ilegible (`b"\xff"`) abortaba `reconcile` con
+traceback porque `read_text` sólo capturaba `OSError`; ahora es fuente ilegible y el envelope se conserva
+con `unknown` y causa.
+
+**Trazabilidad.** RED `30d7419`, GREEN `9db0d28`, fixtures `21f14f7`, RED de corrección `e21f248`,
+GREEN `33dca6c`. Producto: 2 archivos, +516/−7; tests: 1 archivo nuevo, 18 casos.
+
+**Desvío de proceso declarado.** El paquete de GREEN **no llegó a prepararse**; el trabajo se registró por
+sus commits, sin paquete ni recibo del implementer, y la feature no ejerció la cadena de recepción.
+
+**Límite declarado.** Corregir una disposición conservando `resolution` y `replaced_by` idénticos es
+imposible con el productor vigente (la identidad no incluye `supersedes` ⇒ no-op); la vía practicable es
+cambiar la resolución con `--supersedes`. Forzar lo otro exige cambiar el escritor: queda como deuda.
+
+**Deuda.** Corrección «en el mismo sentido»; diagnósticos sin formato estable; sin autenticación del autor;
+historial sin payload no recuperable ni migrado; **sin desplegar en HOME**; heredadas (DT-8/F011,
+`scope_validation: unknown`, DT-9, W-U6-*). **El epic sigue abierto: 2/5.** Siguiente:
+`007-003-continuity-at-edges`.
+
 ## 2026-10-23 — Feature: 007-001-unambiguous-entry (epic 007)
 
 **Cerrada el 2026-10-23** (ciclo técnico completo; la suite completa la corre quien cierra). Primera

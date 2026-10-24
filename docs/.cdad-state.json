@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": "007-002-dispatch-recovery",
-  "current_stage": "discovery",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -36,8 +36,13 @@
     },
     {
       "id": "007-002-dispatch-recovery",
-      "status": "in-progress",
-      "opened_at": "2026-10-24T04:13:44.984067+00:00"
+      "status": "done",
+      "opened_at": "2026-10-24T04:13:44.984067+00:00",
+      "closed_at": "2026-10-24T07:14:58.113604+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-002-dispatch-recovery/closure.md",
+        "sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
+      }
     },
     {
       "id": "007-003-continuity-at-edges",
@@ -15367,6 +15372,46 @@
         "docs/specs/007-002-dispatch-recovery/review-001.md": "1430d7c3bc01c87361119a9f1ce73064027afd5b6d3499ea32e751254ea9ee42"
       },
       "note": null
+    },
+    {
+      "feature": "007-002-dispatch-recovery",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-24T07:14:58.113604+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "362ade07ee0112c18c829eca90ece8dc6f9254da4925f4349b2e9abc7537c176",
+      "transition_key_payload": {
+        "execution_id": "exec-007-002-dispatch-recovery-001",
+        "feature_id": "007-002-dispatch-recovery",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-002-dispatch-recovery/closure.md",
+          "sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "closure_path": "docs/specs/007-002-dispatch-recovery/closure.md",
+      "closure_sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15381,7 +15426,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T06:06:06.745622+00:00",
+  "last_updated": "2026-10-24T07:14:58.113604+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15488,14 +15533,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "007-002-dispatch-recovery-reviewer-review-001",
-    "role": "reviewer",
-    "substage": "review",
-    "status": "completed",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "c1aa1af94b34a98d7375f8b5fc67dca154768075b287a053cf3f54c4ebf2e0f7"
-  },
+  "active_packet": null,
   "tdd_substage": "review"
 }

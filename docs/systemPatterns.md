@@ -35,6 +35,7 @@ Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índic
 | `docs/adr/ADR-033-modelos-por-configuracion-sin-perfiles.md` | `vigente` | Los modelos se resuelven por configuración — sin perfiles en el instalador, fuente única en la delegación externa y sin verificación de familia. | `orchestrator` | el propio ADR |
 | `docs/adr/ADR-034-principio-general-antes-especifico.md` | `vigente` | Principio de general antes que específico: una casa canónica en el skill y las obligaciones de architect y reviewer. | `architect`, `reviewer` | `skills/cdad-cycle/references/design-principles.md` |
 | `docs/adr/ADR-035-localizador-de-aprobacion-por-indice-no-json-pointer.md` | `vigente` | El localizador del registro de aprobación se emite por `index` 0-based con el historial determinado por `object` (`stage_history` para `feature-spec`, `epic_history` para `epic-plan`), no como JSON Pointer: verifica igual sin emitir el token que PD-1 prohíbe en la vista. | `orchestrator` | el propio ADR |
+| `docs/adr/ADR-036-verificador-canonico-del-productor-importado-por-consumidores.md` | `vigente` | La verificación de una decisión registrada la ejerce un único verificador del productor, que los consumidores importan; exige la estructura completa, no un subconjunto con hash válido. | `orchestrator` | el propio ADR |
 
 **Nota.**
 
