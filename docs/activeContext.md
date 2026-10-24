@@ -4,6 +4,51 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-23 — Feature: 007-001-unambiguous-entry (epic 007)
+
+**Cerrada el 2026-10-23** (ciclo técnico completo; la suite completa la corre quien cierra). Primera
+unidad de `epic-007-reliable-cycle-operation` y la que define la **interfaz que consumen 002–004**.
+**Contrato:** `docs/specs/007-001-unambiguous-entry/spec.md` sha256 `55f9723f…` (PC-01..PC-14,
+INV-1..INV-8, §2.1–§2.4, §6), aprobado bajo la **HITL delegada del dueño** del epic-007.
+**Review:** `review-001` NO APTO (3 BLOCKING reproducidos por CLI) → `review-002` NO APTO (residual
+`null`) → `review-003` **APTO** sin hallazgos. Evidencia focal: **202 passed** (feature + regresión
+005-003/005-011/005-012/005-013); `tests/test_007_001_unambiguous_entry.py` nuevo, 49 casos.
+
+**Qué cambió en el uso real.** `cdad_packet.py status` dejó de ser prosa a interpretar y pasa a
+nombrar, todo **aditivo** (`entry`, `next.route`, `next.source`, `authority.approval` conservan
+nombre, valor y significado; PC-11 lo verifica en dos grupos):
+- **`situation`**: seis valores con precedencia (`diagnosis`, `packet-dispatched`, `packet-prepared`,
+  `pending-work-unresolved`, `execution-active`, `at-rest`); estado ilegible ⇒ `diagnosis` y `at-rest`
+  exige estado legible.
+- **`next.operation`**: `{verb, script, procedure, source}`, el **primer paso** (no una macro), con
+  rutas relativas al skill instalado; `diagnose` es indicación al operador, no subcomando.
+- **`authority.approval_reference`**: `{role, object, status, record, contract, reason}` con
+  clasificación por **tablas ordenadas** (C1–C3 / D1 / S1–S6 / A1–A4, un resultado por fixture) y seis
+  estados (`vigente`, `ausente`, `sustituida`, `contrato cambiado`, `no requerida`, `desconocida`).
+  Es diagnóstico, no gate: no cambia `entry`, no registra transiciones, no altera el rc.
+- **`unknowns`** conserva diagnóstico previo (contenido y orden) y sólo **extiende** causas (§2.4).
+- **Mapa verbo→script con dueño único** en `references/orientation.md`, citado por
+  `sources/roles/orchestrator.md` y los agentes generados; distingue `prepare --record-dispatch` del
+  verbo `record` de transporte.
+- Sigue **read-only** (PC-12) y **acotada** a 16.384 B (PC-13).
+
+**Qué cierra.** AC-7.2 (no había gate vigente localizable), AC-7.5 (`entry` compartida) y AC-7.7
+(verbos sin mapa) del epic-006. No cierra AC-7.1/.3/.4/.6/.8 ni la recepción: son 007-002..005.
+
+**Decisiones.** Localizador **`record.index`** 0-based con historial determinado por `object`
+(ADR-035) en lugar de JSON Pointer, que emitía el token `stage_history` y contradecía PD-1; el índice
+cumple la verificabilidad sin enmendar tests aprobados. Bindings mínimos de pertenencia (ocho
+controles) sin convertir la vista en gate. Confinamiento de la ruta resuelta del request antes de leer
+(un symlink que escapaba producía `packet-prepared`/`vigente`). Clave ausente / `[]` / `null` /
+ilegible se distinguen: sólo los dos primeros son `ausente`.
+
+**Deuda que deja.** `reason` y causas de `unknowns` sin redacción estable (no parseables); `status`
+es observación de archivos, no transacción atómica; el índice no nombra el historial; los bordes
+`pending-work-unresolved`/`execution-active` quedan hasta 002–004; suite completa no consta
+ejecutada; la **copia instalada en HOME no tiene la feature** (`grep -c approval_reference` → 0) y el
+despliegue es reservado al dueño. Se mantiene la deuda heredada del epic (brecha 7, `W-U6-*`, flakes,
+F011). **Siguiente:** `007-002-dispatch-recovery`.
+
 ## 2026-10-22 — Epic: epic-006-opencode-concurrency cerrado (AC-7 pendiente del owner)
 
 Las seis features están cerradas (006-001..006-006) y la integración entre features está hecha con el producto desplegado (`adb7c31`, sin push): un único encargo de revisión de un borrador (006-006) que lleva una decisión vigente (006-004) y se despacha por el adaptador instalado en modo server (006-001/003/005). Detalle en `docs/epics/epic-006-opencode-concurrency/integration.md` y `closure.md`. **AC-7** (reanudar una unidad del otro proyecto activo con la versión desplegada) queda pendiente del owner. La deuda que se lleva está en el `closure.md` del epic.

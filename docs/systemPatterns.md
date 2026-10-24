@@ -34,6 +34,7 @@ Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índic
 | `docs/adr/ADR-032-delegacion-por-capa-agente-del-runtime-dueno-del-mecanismo.md` | `vigente` | La delegación se resuelve por capa — el agente del runtime es dueño del mecanismo, la metodología es neutral, el adaptador sólo cruza runtimes y los modelos los fija la configuración. | `architect`, `orchestrator` | el propio ADR |
 | `docs/adr/ADR-033-modelos-por-configuracion-sin-perfiles.md` | `vigente` | Los modelos se resuelven por configuración — sin perfiles en el instalador, fuente única en la delegación externa y sin verificación de familia. | `orchestrator` | el propio ADR |
 | `docs/adr/ADR-034-principio-general-antes-especifico.md` | `vigente` | Principio de general antes que específico: una casa canónica en el skill y las obligaciones de architect y reviewer. | `architect`, `reviewer` | `skills/cdad-cycle/references/design-principles.md` |
+| `docs/adr/ADR-035-localizador-de-aprobacion-por-indice-no-json-pointer.md` | `vigente` | El localizador del registro de aprobación se emite por `index` 0-based con el historial determinado por `object` (`stage_history` para `feature-spec`, `epic_history` para `epic-plan`), no como JSON Pointer: verifica igual sin emitir el token que PD-1 prohíbe en la vista. | `orchestrator` | el propio ADR |
 
 **Nota.**
 

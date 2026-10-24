@@ -4,10 +4,11 @@ Estado de features del proyecto.
 
 ## In progress
 
-_(ninguna)_
+- **epic-007-reliable-cycle-operation** (2026-10-23) — **1/5** features cerradas (007-001). Restan `007-002-dispatch-recovery` (siguiente), `007-003-continuity-at-edges`, `007-004-termination-not-success` y `007-005-serial-reception`. Los criterios del epic siguen abiertos: el recorrido feliz, el de fallo y la recepción real no se dan por cumplidos con una sola feature.
 
 ## Done
 
+- **007-001-unambiguous-entry** (2026-10-23, epic 007) — primera feature de `epic-007-reliable-cycle-operation`: la vista compacta nombra la situación, la siguiente operación y la aprobación aplicable. Evolución aditiva (`entry`, `next.route`, `next.source`, `authority.approval` intactos). Contrato `spec.md` sha256 `55f9723f…` (PC-01..PC-14), aprobado bajo HITL delegada; incluye la enmienda `record.index`. Producto: `situation`, `next.operation` `{verb,script,procedure,source}`, `authority.approval_reference` con tablas ordenadas C1–C3/D1/S1–S6/A1–A4, mapa verbo→script con dueño único, confinamiento del request, read-only y límite 16 KiB. Review: NO APTO (3 BLOCKING) → NO APTO (residual `null`) → **APTO**; 202 passed focales. Cierra AC-7.2/.5/.7 del epic-006. Deuda: `reason`/`unknowns` sin redacción estable; `status` no es transacción; índice derivado de `object`; suite completa no consta; copia instalada sin la feature. Siguiente: `007-002-dispatch-recovery`.
 - **epic-006-opencode-concurrency** (2026-10-22) — epic cerrado: 6/6 features e integración hecha; AC-7 pendiente del owner (`docs/epics/epic-006-opencode-concurrency/closure.md`).
 - **006-004-active-decisions-table** (2026-10-22, epic 006) — sexta feature de
   `epic-006-opencode-concurrency`: **la tabla de decisiones vigentes del proyecto** y, con ella, la
