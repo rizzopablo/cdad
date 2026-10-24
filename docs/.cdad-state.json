@@ -15252,10 +15252,10 @@
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
   "active_packet": {
-    "id": "007-002-dispatch-recovery-architect-discovery-001",
+    "id": "007-002-dispatch-recovery-architect-draft-001",
     "role": "architect",
-    "substage": "discovery",
-    "status": "completed",
+    "substage": "draft",
+    "status": "prepared",
     "packet_version": 1,
     "contract_kind": "approved-unit-contract",
     "contract_sha256": "ea4347fb96e28c814b367cbb27211925ff7f19877010d142b9b0d7de9fdfff09"
