@@ -154,3 +154,36 @@ path**. Recovery is legitimate only within the contract:
 
 A blocked step is declared, not patched over: the actionable error names what is
 missing and how to continue, and the block is reported to the orchestrator.
+
+## 6. Operation → executable owner (single documented map)
+
+The compact view also projects `situation` and `next.operation`
+(`verb`/`script`/`procedure`/`source`). This section is the **single owner** of
+the verb → script map; the orchestrator and the derived agents **cite** it and
+never copy the table. `script` and `procedure` are relative to the installed
+`<skill-dir>`.
+
+| Verb | Executable owner |
+|---|---|
+| `status` | `scripts/cdad_packet.py` |
+| `validate-packet` | `scripts/cdad_packet.py` |
+| `open-unit` | `scripts/cdad_packet.py` |
+| `prepare` | `scripts/cdad_packet.py` |
+| `render` | `scripts/cdad_packet.py` |
+| `prepare --record-dispatch` | `scripts/cdad_packet.py` |
+| `begin` | `scripts/cdad_continuity.py` |
+| `checkpoint` | `scripts/cdad_continuity.py` |
+| `reconcile` | `scripts/cdad_continuity.py` |
+| `resume` | `scripts/cdad_continuity.py` |
+| `trigger` | `scripts/cdad_continuity.py` |
+| `receive` | `scripts/cdad_result.py` |
+
+`prepare --record-dispatch` registers the dispatch of an already prepared
+packet; it is **not** the `record` verb of the transport entry (native/external
+transport keeps its own reference and is never a fictional subcommand of
+`cdad_packet.py`). `diagnose` is an operator indication of `next.operation`, not
+a subcommand: it carries no script.
+
+`next.operation` is the **first verifiable step**, never a macro. For a prepared
+packet it says `validate-packet`; the procedure then continues with the
+protocol above (validate → `begin` → transport → register).

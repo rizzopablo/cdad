@@ -170,6 +170,40 @@ DEFAULT_VIEW_MAX_BYTES = 16_384
 ENTRY_CONTINUITY_RECONCILE = "continuity-reconcile"
 ENTRY_NEXT_UNIT = "next-unit"
 ENTRY_DIAGNOSIS = "diagnosis"
+# 007-001 (spec §2.1–§2.3): the additive operational projection. `situation`
+# has a normative, top-to-bottom precedence; `next.operation` fixes the FIRST
+# verifiable step (never a macro) and `authority.approval_reference` classifies
+# the applicable approval. None of them is a gate: a value other than
+# `vigente` changes no entry, registers nothing and keeps the successful exit.
+SITUATION_DIAGNOSIS = "diagnosis"
+SITUATION_PACKET_DISPATCHED = "packet-dispatched"
+SITUATION_PACKET_PREPARED = "packet-prepared"
+SITUATION_PENDING_UNRESOLVED = "pending-work-unresolved"
+SITUATION_EXECUTION_ACTIVE = "execution-active"
+SITUATION_AT_REST = "at-rest"
+# (verb, script, procedure); script/procedure are relative to the INSTALLED
+# skill directory, not the consumer project. `diagnose` is an operator
+# indication, never a new subcommand, so it carries script=null.
+OPERATION_BY_SITUATION: dict[str, tuple[str, str | None, str]] = {
+    SITUATION_DIAGNOSIS: ("diagnose", None, "references/project-start.md"),
+    SITUATION_PACKET_DISPATCHED: (
+        "reconcile", "scripts/cdad_continuity.py", "references/continuity.md"),
+    SITUATION_PACKET_PREPARED: (
+        "validate-packet", "scripts/cdad_packet.py", "references/orientation.md"),
+    SITUATION_PENDING_UNRESOLVED: (
+        "diagnose", None, "references/project-execution.md"),
+    SITUATION_EXECUTION_ACTIVE: (
+        "resume", "scripts/cdad_continuity.py", "references/continuity.md"),
+    SITUATION_AT_REST: (
+        "open-unit", "scripts/cdad_packet.py", "references/project-start.md"),
+}
+APPROVAL_VIGENTE = "vigente"
+APPROVAL_AUSENTE = "ausente"
+APPROVAL_SUSTITUIDA = "sustituida"
+APPROVAL_CONTRATO_CAMBIADO = "contrato cambiado"
+APPROVAL_NO_REQUERIDA = "no requerida"
+APPROVAL_DESCONOCIDA = "desconocida"
+STATE_RELPATH_TEXT = "docs/.cdad-state.json"
 # D5 (005-001 T3): the resting value between features. `current_stage == IDLE_STAGE`
 # is valid iff `active_feature` is null; single editable definition of the
 # invariant lives in skills/cdad-cycle/references/state-detection.md:27-30.
@@ -1769,21 +1803,34 @@ class _ProjectLock:
         return False
 
 
-def _approved_epic_plan_entry(state: dict[str, Any], epic_id: str | None) -> dict[str, Any] | None:
-    """The architect's mandate: an `epic_history` entry for the active epic with
-    `stage == "epic-plan"` and a non-empty `approved_by` (D1). Either the `epic`
-    or the `epic_id` key names the epic; there is no hash pin (D2, the epic plan
-    is the epic's live mandate, not a frozen feature contract)."""
+def _approved_epic_plan_entry_with_index(
+        state: dict[str, Any], epic_id: str | None,
+) -> tuple[int, dict[str, Any]] | None:
+    """The architect's mandate and its real `epic_history` index (D1/D2).
+
+    Single definition of the mandate predicate: `_approved_epic_plan_entry`
+    (authorization) and the read-only approval reference (§2.3 A1–A4) both
+    consume it, so the projection can never select a different mandate.
+    """
     history = state.get("epic_history")
     if isinstance(history, list):
-        for item in history:
+        for index, item in enumerate(history):
             if not isinstance(item, dict):
                 continue
             if (item.get("epic", item.get("epic_id")) == epic_id
                     and item.get("stage") == "epic-plan"
                     and isinstance(item.get("approved_by"), str) and item["approved_by"]):
-                return item
+                return index, item
     return None
+
+
+def _approved_epic_plan_entry(state: dict[str, Any], epic_id: str | None) -> dict[str, Any] | None:
+    """The architect's mandate: an `epic_history` entry for the active epic with
+    `stage == "epic-plan"` and a non-empty `approved_by` (D1). Either the `epic`
+    or the `epic_id` key names the epic; there is no hash pin (D2, the epic plan
+    is the epic's live mandate, not a frozen feature contract)."""
+    found = _approved_epic_plan_entry_with_index(state, epic_id)
+    return None if found is None else found[1]
 
 
 def _superseded_transition_keys(state: dict[str, Any]) -> set[str]:
@@ -1807,6 +1854,23 @@ def _superseded_transition_keys(state: dict[str, Any]) -> set[str]:
     return superseded
 
 
+def _spec_approval_records(
+        state: dict[str, Any], feature_id: str,
+) -> list[tuple[int, dict[str, Any]]]:
+    """Spec-approval records for the feature with their real `stage_history`
+    index, BEFORE excluding superseded ones (§2.3): the ordered classification
+    S3 needs the first superseded record and its `record.index` locator."""
+    history = state.get("stage_history")
+    if not isinstance(history, list):
+        return []
+    return [
+        (index, item) for index, item in enumerate(history)
+        if isinstance(item, dict) and item.get("feature") == feature_id
+        and item.get("stage") == "specification"
+        and isinstance(item.get("approved_by"), str) and item["approved_by"]
+    ]
+
+
 def _approved_spec_entries(state: dict[str, Any], feature_id: str) -> list[dict[str, Any]]:
     """Spec-approval records for the feature: `stage_history` entries with the
     feature, `stage == "specification"` and a non-empty `approved_by`. The
@@ -1818,15 +1882,9 @@ def _approved_spec_entries(state: dict[str, Any], feature_id: str) -> list[dict[
     named by another entry's `supersedes` is ignored from then on. The
     predicate is additive: the pin rule (D3/PD-18) is consumed untouched and a
     history without `supersedes` selects exactly as before (PD-17/INV-3)."""
-    history = state.get("stage_history")
-    if not isinstance(history, list):
-        return []
     superseded = _superseded_transition_keys(state)
-    return [item for item in history
-            if isinstance(item, dict) and item.get("feature") == feature_id
-            and item.get("stage") == "specification"
-            and isinstance(item.get("approved_by"), str) and item["approved_by"]
-            and item.get("transition_key") not in superseded]
+    return [item for _, item in _spec_approval_records(state, feature_id)
+            if item.get("transition_key") not in superseded]
 
 
 def _contract_approval_for(role: str, contract: dict[str, Any], state: dict[str, Any],
@@ -4504,9 +4562,9 @@ def _authorization_withdrawn(state: dict[str, Any], epic_id: str
     if _approved_epic_plan_entry(state, epic_id) is None:
         return {
             "marker": "approval pending",
-            "detail": (f"epic_history has no entry with epic {epic_id!r}, stage "
+            "detail": (f"the epic plan history has no entry with epic {epic_id!r}, stage "
                        f"'epic-plan' and a non-empty approved_by"),
-            "exit": ("register the epic-plan approval in epic_history (stage "
+            "exit": ("register the epic-plan approval in the epic plan history (stage "
                      "'epic-plan', approved_by) under the current HITL, or "
                      "restore the hitl_delegation"),
         }
@@ -4516,7 +4574,7 @@ def _authorization_withdrawn(state: dict[str, Any], epic_id: str
             "marker": "state incoherent",
             "detail": "the hitl_delegation record is missing",
             "exit": ("restore the hitl_delegation for the active epic, or "
-                     "register the epic-plan approval in epic_history"),
+                     "register the epic-plan approval in the epic plan history"),
         }
     if (delegation.get("revoked_at") is not None
             or delegation.get("status") == "revoked"):
@@ -4525,7 +4583,7 @@ def _authorization_withdrawn(state: dict[str, Any], epic_id: str
             "detail": ("the hitl_delegation is revoked (status 'revoked' / "
                        "revoked_at set)"),
             "exit": ("restore the hitl_delegation for the active epic, or "
-                     "register the epic-plan approval in epic_history"),
+                     "register the epic-plan approval in the epic plan history"),
         }
     status = delegation.get("status")
     if status is not None and status != "active":
@@ -4533,7 +4591,7 @@ def _authorization_withdrawn(state: dict[str, Any], epic_id: str
             "marker": "state incoherent",
             "detail": f"the hitl_delegation is not active (status {status!r})",
             "exit": ("restore the hitl_delegation for the active epic, or "
-                     "register the epic-plan approval in epic_history"),
+                     "register the epic-plan approval in the epic plan history"),
         }
     return None
 
@@ -6751,6 +6809,394 @@ def _next_route(entry: str, packet: dict[str, Any] | None) -> dict[str, str]:
             "source": "docs/.cdad-state.json:current_stage"}
 
 
+def _safe_packet_component(packet_id: Any) -> bool:
+    """Whether the id locates `.cdad/packets/<id>/REQUEST.json` safely (§2.1)."""
+    return (isinstance(packet_id, str)
+            and FLAT_NAME.fullmatch(packet_id) is not None
+            and packet_id not in {".", ".."})
+
+
+def _resolved_active_packet(
+    state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """The explicit active packet and its MINIMUM identity/membership bindings.
+
+    Spec §2.1: an unambiguous active packet requires a non-empty id, a
+    `prepared`/`dispatched` status, a safely locatable request, and the
+    request/state/execution bindings (execution_id, packet_id, feature_id,
+    role, substage). These controls establish identity and membership only —
+    never authorization, scopes, inputs or the full `validate-packet`.
+
+    Returns `record` (the state block when it declares an active status),
+    `status`, `request` (only when every binding holds), `consistent`, and the
+    concrete `cause` when it does not. An explicit inconsistent selection is
+    NEVER replaced by another directory: the cause is reported instead.
+    """
+    resolution: dict[str, Any] = {
+        "record": None, "status": None, "request": None,
+        "consistent": False, "cause": None,
+    }
+    active = state.get("active_packet")
+    if not isinstance(active, dict):
+        return resolution
+    status = active.get("status")
+    if status not in ACTIVE_PACKET_STATUSES:
+        return resolution
+    resolution["record"] = active
+    resolution["status"] = status
+    packet_id = active.get("id")
+    if not _safe_packet_component(packet_id):
+        resolution["cause"] = (
+            f"packet membership inconsistent: state.active_packet carries no "
+            f"safely locatable id ({packet_id!r}), so .cdad/packets/<id>/REQUEST.json "
+            f"cannot be resolved (packet identity invalid)")
+        return resolution
+    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
+    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    try:
+        request = json.loads(request_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        resolution["cause"] = (
+            f"packet membership unreadable: cannot read the request {request_rel} of "
+            f"the active packet {packet_id!r} ({exc.__class__.__name__}); membership "
+            f"cannot be established (request unreadable)")
+        return resolution
+    if not isinstance(request, dict):
+        resolution["cause"] = (
+            f"packet membership unreadable: the request {request_rel} is not a JSON "
+            f"object (malformed request); membership cannot be established")
+        return resolution
+    resolution["request"] = request
+    execution_id = execution.get("id") if isinstance(execution, dict) else None
+    if not isinstance(execution_id, str) or not execution_id:
+        resolution["cause"] = (
+            f"packet membership unresolved: the request {request_rel} names the "
+            f"active packet {packet_id!r} but there is no active execution to "
+            f"establish its membership (request/execution identity mismatch)")
+        return resolution
+    if request.get("execution_id") != execution_id:
+        resolution["cause"] = (
+            f"packet membership inconsistent: the request execution_id "
+            f"{request.get('execution_id')!r} does not match the active execution "
+            f"{execution_id!r} (request/execution identity mismatch)")
+        return resolution
+    if request.get("packet_id") != packet_id:
+        resolution["cause"] = (
+            f"packet membership inconsistent: the request packet_id "
+            f"{request.get('packet_id')!r} does not match state.active_packet.id "
+            f"and the packet directory name {packet_id!r} (packet identity mismatch)")
+        return resolution
+    feature_id = execution.get("feature_id")
+    if not isinstance(feature_id, str) or not feature_id:
+        resolution["cause"] = (
+            f"packet membership inconsistent: the active execution carries no "
+            f"feature to compare with the request feature_id "
+            f"{request.get('feature_id')!r} (feature identity mismatch)")
+        return resolution
+    if request.get("feature_id") != feature_id:
+        resolution["cause"] = (
+            f"packet membership inconsistent: the request feature_id "
+            f"{request.get('feature_id')!r} does not match the active feature "
+            f"{feature_id!r} (feature identity mismatch)")
+        return resolution
+    role = active.get("role")
+    substage = active.get("substage")
+    if (not isinstance(role, str) or not role.strip()
+            or not isinstance(substage, str) or not substage.strip()
+            or request.get("role") != role or request.get("substage") != substage):
+        resolution["cause"] = (
+            f"packet membership inconsistent: the request role/substage "
+            f"{request.get('role')!r}/{request.get('substage')!r} does not match "
+            f"state.active_packet {role!r}/{substage!r} (role/substage identity mismatch)")
+        return resolution
+    resolution["consistent"] = True
+    return resolution
+
+
+def _unresolved_pending_cause(state: dict[str, Any], project_root: Path) -> str:
+    """The concrete cause of `pending-work-unresolved` under the EXISTING
+    criterion: pending packet directories of the active execution with no
+    `state.active_packet` selecting one of them (§2.1/§2.4)."""
+    directories: list[str] = []
+    base = project_root / ".cdad" / "packets"
+    execution = _active_execution(state)
+    execution_id = execution.get("id") if isinstance(execution, dict) else None
+    if base.is_dir() and isinstance(execution_id, str) and execution_id:
+        try:
+            entries = sorted(base.iterdir())
+        except OSError:
+            entries = []
+        for entry in entries:
+            if (entry.is_dir() and (entry / "REQUEST.json").is_file()
+                    and _packet_request_belongs_to_execution(
+                        entry / "REQUEST.json", execution_id)
+                    and not _packet_has_receipt(project_root, execution_id, entry.name)):
+                directories.append(entry.name)
+    listed = ", ".join(repr(name) for name in directories[:3]) or "none legible"
+    if len(directories) > 3:
+        listed = f"{listed} and {len(directories) - 3} more"
+    return (
+        f"pending packet directories without state.active_packet: unresolved work "
+        f"under .cdad/packets ({listed}); no unambiguous prepared or dispatched "
+        f"packet selects the next dispatch")
+
+
+def _observed_digest(project_root: Path, rel: Any) -> str | None:
+    """SHA-256 of the current contract bytes, or None when they cannot be read."""
+    try:
+        candidate = _project_path(project_root, rel, "contract path")
+    except PolicyError:
+        return None
+    if not candidate.is_file():
+        return None
+    try:
+        return hashlib.sha256(candidate.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _declared_contract_block(
+    project_root: Path, contract: Any, *, read_bytes: bool,
+) -> dict[str, Any] | None:
+    """The §2.3 `contract` block of the request declaration, or None.
+
+    `declared_sha256` is the request's own digest. `observed_sha256` is the
+    SHA-256 of the CURRENT bytes and is an EXPLICIT null — never omitted — when
+    they cannot be read or when the result does not require checking them
+    (`draft-plan`, D1). A declaration with no path or no valid digest cannot be
+    described: S1/A1 reports the contract as unknown instead of inventing it.
+    """
+    if not isinstance(contract, dict):
+        return None
+    path = contract.get("path")
+    declared = contract.get("sha256")
+    if not isinstance(path, str) or not path.strip():
+        return None
+    if not isinstance(declared, str) or re.fullmatch(r"[0-9a-f]{64}", declared) is None:
+        return None
+    observed = _observed_digest(project_root, path) if read_bytes else None
+    return {"path": path, "declared_sha256": declared, "observed_sha256": observed}
+
+
+def _approval_record(index: int, entry: dict[str, Any]) -> dict[str, Any]:
+    """A resolvable locator for the SELECTED record (never a fabricated one).
+
+    Spec §2.3 «Localizadores y determinismo»: the locator is the 0-based
+    `index` inside the history that determines `object` (`stage_history` for
+    `feature-spec`, `epic_history` for `epic-plan`). It names no history and no
+    JSON Pointer, so the view keeps the vigente PD-1 guarantee (the history
+    token is never emitted) while the record stays verifiable.
+    """
+    key = entry.get("transition_key")
+    return {
+        "path": STATE_RELPATH_TEXT,
+        "index": index,
+        "transition_key": key if isinstance(key, str) else None,
+        "approved_by": entry.get("approved_by"),
+    }
+
+
+def _approval_reference(
+    state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
+    resolution: dict[str, Any],
+) -> dict[str, Any]:
+    """The §2.3 approval reference for the packet selected by §2.1.
+
+    Ordered classification: the common resolution C1–C3 first, then the
+    object's own normative table (D1, A1–A4, S1–S6). The first true row wins,
+    so every reference has exactly one result; `reason` explains any result
+    other than `vigente`. Read-only: it registers nothing and authorizes
+    nothing (INV-2/INV-3).
+    """
+    def reference(*, role: str | None = None, obj: str | None = None,
+                  status: str = APPROVAL_DESCONOCIDA,
+                  record: dict[str, Any] | None = None,
+                  contract: dict[str, Any] | None = None,
+                  reason: str | None = None) -> dict[str, Any]:
+        return {"role": role, "object": obj, "status": status, "record": record,
+                "contract": contract, "reason": reason}
+
+    # C1: no applicable unambiguous active packet (or its membership failed).
+    if not resolution["consistent"]:
+        return reference(reason=resolution["cause"] or (
+            "no applicable active packet: state.active_packet does not identify an "
+            "unambiguous prepared or dispatched packet (§2.1), so the applicable "
+            "approval cannot be established"))
+
+    request = resolution["request"]
+    contract = request.get("contract")
+    role = request.get("role")
+    # C2: the request cannot identify the role or the object.
+    if not isinstance(role, str) or not role.strip():
+        return reference(reason=(
+            "request inconsistent: it carries no role, so the applicable approval "
+            "object cannot be identified and is not inferred from the history"))
+    if not isinstance(contract, dict):
+        return reference(role=role, reason=(
+            "request inconsistent: it carries no contract declaration, so the "
+            "applicable approval object cannot be identified"))
+    kind = contract.get("kind")
+    if kind == "draft-plan":
+        # D1: a declared draft is a non-approved review object.
+        return reference(
+            role=role, obj="draft-plan", status=APPROVAL_NO_REQUERIDA,
+            record=None,
+            contract=_declared_contract_block(project_root, contract, read_bytes=False),
+            reason="review object declared as `draft-plan`: its approval is not "
+                   "required (§2.3 D1)")
+    if role == "architect":
+        return _architect_approval_reference(
+            state, project_root, execution, contract, role, reference)
+    return _feature_spec_approval_reference(
+        state, project_root, execution, contract, role, reference)
+
+
+def _architect_approval_reference(
+    state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
+    contract: dict[str, Any], role: str, reference,
+) -> dict[str, Any]:
+    """A1–A4: the architect's mandate is `epic_history`, with NO plan hash pin."""
+    block = _declared_contract_block(project_root, contract, read_bytes=True)
+    if block is None or block["observed_sha256"] is None:
+        # A1: the request's contract cannot even be described (or its bytes read).
+        return reference(role=role, obj="epic-plan", contract=block, reason=(
+            "approval unknown: the request's contract declaration or its current "
+            "bytes cannot be read, so the contract of the request cannot be checked"))
+    epic_id = execution.get("epic_id") if isinstance(execution, dict) else None
+    found = _approved_epic_plan_entry_with_index(state, epic_id)
+    if found is None:
+        # A2: sources are legible and there is no mandate.
+        return reference(role=role, obj="epic-plan", status=APPROVAL_AUSENTE,
+                         contract=block, reason=(
+                             f"approval absent: the epic plan history has no mandate for the "
+                             f"active epic {epic_id!r} (stage 'epic-plan' with a "
+                             f"non-empty approved_by); the plan pin does not apply"))
+    index, mandate = found
+    record = _approval_record(index, mandate)
+    if block["observed_sha256"] != block["declared_sha256"]:
+        # A3: the mandate exists but the request's contract bytes drifted.
+        return reference(role=role, obj="epic-plan",
+                         status=APPROVAL_CONTRATO_CAMBIADO, record=record,
+                         contract=block, reason=(
+                             "the current bytes of the request's contract do not "
+                             "match its declared digest: the contract changed after "
+                             "the mandate"))
+    return reference(role=role, obj="epic-plan", status=APPROVAL_VIGENTE,
+                     record=record, contract=block)
+
+
+def _feature_spec_approval_reference(
+    state: dict[str, Any], project_root: Path, execution: dict[str, Any] | None,
+    contract: dict[str, Any], role: str, reference,
+) -> dict[str, Any]:
+    """S1–S6: the spec approval is pinned by path AND digest (D3)."""
+    block = _declared_contract_block(project_root, contract, read_bytes=True)
+    feature_id = execution.get("feature_id") if isinstance(execution, dict) else None
+    records = _spec_approval_records(state, feature_id)
+    if block is None:
+        # S1: the declaration itself cannot be interpreted.
+        return reference(role=role, obj="feature-spec", reason=(
+            "approval unknown: the request's contract declaration cannot be "
+            "interpreted (no path or no valid sha256), so absence and vigency "
+            "cannot be asserted"))
+    superseded = _superseded_transition_keys(state)
+    current = [(index, entry) for index, entry in records
+               if entry.get("transition_key") not in superseded]
+    pinned = [(index, entry) for index, entry in current
+              if entry.get("contract_path") == block["path"]
+              and entry.get("contract_sha256") == block["declared_sha256"]]
+    if block["observed_sha256"] is None:
+        # S1: the current contract bytes cannot be read. The record may be kept
+        # only when its selection is already proven WITHOUT those bytes (pin and
+        # supersession are readable); otherwise it is null.
+        chosen = pinned or current or records
+        record = _approval_record(*chosen[0]) if chosen else None
+        return reference(role=role, obj="feature-spec", record=record,
+                         contract=block, reason=(
+                             "approval unknown: the current bytes of the declared "
+                             "contract cannot be read, so absence and vigency "
+                             "cannot be asserted"))
+    if not records:
+        # S2: legible sources and no approval record for the feature.
+        return reference(role=role, obj="feature-spec", status=APPROVAL_AUSENTE,
+                         contract=block, reason=(
+                             f"approval absent: no history entry registers the feature "
+                             f"{feature_id!r} with stage 'specification' and a "
+                             f"non-empty approved_by"))
+    if not current:
+        # S3: every approval record was superseded; keep the FIRST one.
+        index, entry = records[0]
+        return reference(role=role, obj="feature-spec", status=APPROVAL_SUSTITUIDA,
+                         record=_approval_record(index, entry),
+                         contract=block, reason=(
+                             "approval superseded: every approval record for the "
+                             "feature was replaced by a later entry"))
+    if not pinned:
+        # S4: no non-superseded record pins the contract of the request.
+        index, entry = current[0]
+        return reference(role=role, obj="feature-spec",
+                         status=APPROVAL_CONTRATO_CAMBIADO,
+                         record=_approval_record(index, entry),
+                         contract=block, reason=(
+                             "the contract changed: no approval record names the "
+                             "request's contract path and declared digest"))
+    index, entry = pinned[0]
+    record = _approval_record(index, entry)
+    if block["observed_sha256"] != block["declared_sha256"]:
+        # S5: the pin matches but the CURRENT bytes changed.
+        return reference(role=role, obj="feature-spec",
+                         status=APPROVAL_CONTRATO_CAMBIADO, record=record,
+                         contract=block, reason=(
+                             "the contract changed: the current bytes do not match "
+                             "the declared digest, so the approval does not cover them"))
+    # S6: matching pin AND matching current bytes.
+    return reference(role=role, obj="feature-spec", status=APPROVAL_VIGENTE,
+                     record=record, contract=block)
+
+
+def _situation_projection(
+    *, state: dict[str, Any], project_root: Path, entry: str,
+    next_block: dict[str, str], resolution: dict[str, Any],
+    state_error: str | None, pending_work: bool,
+) -> tuple[str, dict[str, Any], list[str]]:
+    """The §2.1 precedence (top to bottom) and the §2.2 first step + causes.
+
+    An unreadable state precedes everything (`diagnosis`, with the state as the
+    source); `at-rest` requires a legible state. A membership inconsistency is
+    reported but never selects a fallback packet.
+    """
+    causes: list[str] = []
+    if state_error:
+        situation = SITUATION_DIAGNOSIS
+        source = STATE_RELPATH_TEXT
+    elif entry == ENTRY_DIAGNOSIS:
+        situation = SITUATION_DIAGNOSIS
+        source = next_block["source"]
+    elif resolution["consistent"]:
+        situation = (SITUATION_PACKET_DISPATCHED
+                     if resolution["status"] == "dispatched"
+                     else SITUATION_PACKET_PREPARED)
+        source = "docs/.cdad-state.json:active_packet.status"
+    elif resolution["cause"]:
+        situation = SITUATION_PENDING_UNRESOLVED
+        source = "docs/.cdad-state.json:active_packet / .cdad/packets"
+        causes.append(resolution["cause"])
+    elif pending_work:
+        situation = SITUATION_PENDING_UNRESOLVED
+        source = "docs/.cdad-state.json:active_packet / .cdad/packets"
+        causes.append(_unresolved_pending_cause(state, project_root))
+    elif _active_execution(state) is not None:
+        situation = SITUATION_EXECUTION_ACTIVE
+        source = "docs/.cdad-state.json:execution"
+    else:
+        situation = SITUATION_AT_REST
+        source = "docs/.cdad-state.json:active_feature"
+    verb, script, procedure = OPERATION_BY_SITUATION[situation]
+    operation = {"verb": verb, "script": script, "procedure": procedure,
+                 "source": source}
+    return situation, operation, causes
+
+
 def _plan_marker(project_root: Path, state: dict[str, Any]) -> bool:
     """Whether the feature/epic plan marker is present (spec §2.1 `project`)."""
     feature_id = state.get("active_feature")
@@ -6856,6 +7302,22 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
     entry = _entry_selection(
         state=state, project_root=project_root, packet=packet,
         policy_present=policy_present)
+    next_block = _next_route(entry, packet)
+
+    # 007-001: the additive operational projection (spec §2.1–§2.3). Read-only:
+    # it reuses `_active_execution`, `_pending_work`, `state.active_packet` and
+    # the request bindings; it neither validates the whole packet nor writes.
+    active_execution = _active_execution(state)
+    resolution = _resolved_active_packet(state, project_root, active_execution)
+    situation, operation, situation_causes = _situation_projection(
+        state=state, project_root=project_root, entry=entry,
+        next_block=next_block, resolution=resolution,
+        state_error=state_error,
+        pending_work=_pending_work(state, project_root, packet))
+    unknowns.extend(situation_causes)
+    authority["approval_reference"] = _approval_reference(
+        state, project_root, active_execution, resolution)
+    next_block = {**next_block, "operation": operation}
 
     document = {
         "project": {
@@ -6873,8 +7335,9 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         "packet": packet,
         "authority": authority,
         "version": version,
-        "next": _next_route(entry, packet),
+        "next": next_block,
         "entry": entry,
+        "situation": situation,
         "unknowns": unknowns,
         # PD-11 (005-013 T1): the additive, READ-ONLY unit-contract block. It
         # reports the mode and (in fallback) the reason; it writes nothing.

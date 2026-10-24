@@ -33,6 +33,15 @@ row:
 | 4 | `continuity-reconcile` + no packet + active execution | `resume` and continue the active work |
 | 5 | `next-unit` | `open-unit` |
 
+**Structured orientation (007-001).** Read `situation` and `next.operation`
+(`verb`, `script`, `procedure`, `source`) from the same view. `entry` stays the
+compatible grouping; `situation` and `next.operation` name the first verifiable
+step, and the verb → script map is owned by `references/orientation.md` §6 and
+cited here — never copied. `pending-work-unresolved` is a **diagnosis without
+dispatch**: report the cause it names in `unknowns` and dispatch nothing. A
+`situation` inconsistent with `entry` means the new membership controls found a
+defect: diagnose it instead of dispatching.
+
 **Transport rule (row 3).** With the SAME runtime as the orchestrator, transport
 with that runtime's NATIVE dispatch tool (`subagent_type: cdad-<role>`) and
 register the attempt with the entry's `record` verb — the native tool does not
