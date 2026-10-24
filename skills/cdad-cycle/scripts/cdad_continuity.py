@@ -722,12 +722,18 @@ def _copy_antecedent(antecedent: Any) -> dict[str, str] | None:
 
 
 def _evidence_history(chain: dict[str, Any]) -> dict[str, Any]:
-    """The declared evidence of the walkable chain, OLDEST first.
+    """The HISTORICAL reading of the declared evidence, OLDEST first.
 
     Returns the latest declared status per id, the latest entry per id and the
-    `(body_sha256, evidence_id)` declarations an antecedent may resolve to —
-    the entries themselves, so a transition can be checked against the identity
-    it claims to supersede (§2.5/INV-7)."""
+    `(body_sha256, evidence_id)` declarations of every walkable body — the
+    entries themselves, so a transition can be checked against the identity it
+    claims to supersede (§2.5/INV-7).
+
+    This reading is compatible with legacy bodies on purpose: they stay readable
+    and their declared evidence still informs status and identity. Whether a
+    declaration may be CREDITED as an antecedent is a different question,
+    decided by the caller against `chain["demonstrable"]` (§2.3.1).
+    """
     status: dict[str, str] = {}
     declared: dict[tuple[str, str], dict[str, Any]] = {}
     latest: dict[str, dict[str, Any]] = {}
@@ -768,6 +774,11 @@ def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
     existence: an invalidation conserves the identity of the evidence it
     invalidates (the antecedent's reference, never another one), and replacing a
     `vigente` entry's reference needs a new id plus a traceable antecedent.
+
+    Only the DEMONSTRABLE chain accredits an antecedent (§2.3.1): the historical
+    reading stays compatible with legacy bodies, but a body of non-demonstrable
+    history —one whose walk trips over a `prev`-less ancestor— serves no
+    antecedent.
     """
     declared = update.get("evidence")
     if declared is None:
@@ -777,11 +788,16 @@ def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
         raise ContinuityError(
             "update.evidence must be a non-empty list of evidence entries: an "
             f"empty list cannot retire evidence in silence; got {declared!r}")
-    chain = chain if chain is not None else {"links": []}
+    chain = chain if chain is not None else {"links": [],
+                                             "demonstrable": False,
+                                             "unknowns": []}
     history = _evidence_history(chain)
     status = history["status"]
-    known = history["declared"]
     latest = history["latest"]
+    # §2.3.1/§2.5: the reading above is historical; ACCREDITATION is not. An
+    # antecedent resolves only inside the demonstrable chain.
+    demonstrable = bool(chain.get("demonstrable"))
+    creditable_antecedents = history["declared"] if demonstrable else {}
     inherited = head_body.get("evidence")
     inherited = inherited if isinstance(inherited, list) else []
     merged: dict[str, dict[str, Any]] = {}
@@ -807,7 +823,19 @@ def _merged_evidence(update: dict[str, Any], head_body: dict[str, Any],
         antecedent_entry: dict[str, Any] | None = None
         if antecedent is not None:
             key = (antecedent["body_sha256"], antecedent["evidence_id"])
-            antecedent_entry = known.get(key)
+            if not demonstrable:
+                # §2.3.1: history that does not reach the genesis through
+                # `prev` is not demonstrable, so it accredits NO antecedent —
+                # even when the body exists, is readable and is the one the
+                # antecedent names.
+                detail = "; ".join(chain.get("unknowns") or []) \
+                    or "la cadena no alcanza el génesis con el enlace histórico"
+                raise ContinuityError(
+                    f"update.evidence[{index}].antecedent {key!r} resolves to "
+                    f"historia no demostrable ({detail}): un cuerpo legado sin "
+                    f"`prev` no sirve de antecedente de evidencia "
+                    f"(§2.3.1/§2.5)")
+            antecedent_entry = creditable_antecedents.get(key)
             if antecedent_entry is None:
                 raise ContinuityError(
                     f"update.evidence[{index}].antecedent {key!r} resolves to no "
