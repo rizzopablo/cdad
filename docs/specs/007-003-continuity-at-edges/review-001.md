@@ -1,19 +1,24 @@
-# Plan-review de la spec 007-003 — 2026-10-24
+# Review de etapa 4 — 007-003-continuity-at-edges (2026-10-24)
 
-Dictamen: **NO APTO**. Tres BLOCKING, todos de contrato (no de redacción).
+Dictamen: **NO APTO**. Tres BLOCKING reproducidos por CLI.
 
-## BLOCKING 1 — la cadena histórica exigida no puede reconstruirse con el almacenamiento descrito
-`spec.md:59-67,94-98,139-140` frente a `cdad_continuity.py:557-581,609-624,684-688,781-798`.
-El cuerpo no incorpora el enlace anterior; `prev_checkpoint_sha256` vive sólo en la cabeza, que se reemplaza, y la verificación mira únicamente el cuerpo inmediatamente anterior. Tras varios checkpoints hay cuerpos direccionados por contenido pero no sus enlaces, así que no puede probarse pertenencia a la cadena vigente. Afecta PC-03/04/06: dos implementaciones válidas pueden aceptar huérfanos o rechazar cierres legítimos.
-**Cierre exigido:** representación aditiva del enlace histórico dentro del almacenamiento existente, sin reescribir cuerpos antiguos, y tratamiento explícito de historia no demostrable; caso con varios enlaces posteriores y un cuerpo huérfano que no cuente.
+## BLOCKING 1 — se autoriza transporte sobre historia no demostrable
+`cdad_continuity.py:1012-1033`. `verify_begin()` obtiene `chain` pero ignora `chain["demonstrable"]`; un ancestro legado sin `prev` interrumpe la demostración sin excepción. Reproducido: cuerpo legado sin `prev` → `begin(attempt=2)` → `verify-begin --attempt 2` devuelve rc=0 y `seq=2`. Incumple §2.1 y §2.3.1, y permite transportar algo cuyo cierre posterior rechazará por no demostrable.
+**Cierre:** exigir demostración completa antes de acreditar el `begin`, conservando la lectura compatible de legados; rechazo sin efectos con diagnóstico.
 
-## BLOCKING 2 — la identidad del cierre incluye los datos cuya discrepancia debe detectar
-`spec.md:67`. Con identidad `(execution_id, packet_id, attempt, path, sha256)`, cambiar ruta o digest produce otro cierre, no un conflicto. Falta separar clave de unicidad de contenido comparado y declarar normalización de la ruta durable.
-**Cierre exigido:** clave de unicidad distinta del contenido, normalización de ruta, y casos de mismo paquete/intento con digest distinto y rutas equivalentes.
+## BLOCKING 2 — la actualización de evidencia sustituye identidad sin conservar antecedente
+`cdad_continuity.py:784-796`. El merge comprueba que el antecedente exista, no que corresponda a la identidad invalidada ni que conserve su referencia; tampoco exige antecedente al sustituir una entrada vigente. Dos reproducciones rc=0: invalidar `a` (referencia A) con referencia B y antecedente de A; sobrescribir `a` vigente con referencia B sin antecedente. Incumple §2.5, PC-06 e INV-7.
+**Cierre:** validar la transición contra la entrada antecedente; conservar la identidad de la evidencia invalidada; exigir trazabilidad en sustituciones (identificador nuevo y antecedente).
 
-## BLOCKING 3 — falta el origen de `attempt` en la recepción automática
-`spec.md:41,54-59,69,163` frente a `cdad_result.py:542-548,599-627`. El recibo no contiene el intento de continuidad y el replay durable retorna antes de cargar contexto/request. §7 resuelve la propagación para despacho y registro, no para recepción.
-**Cierre exigido:** declarar cómo todas las entradas de recepción reciben o recuperan `N` sin deducirlo del `attempt-id` textual, qué ocurre si falta o discrepa, y cubrirlo en PC-03/04/05 incluido `receive --late`.
+## BLOCKING 3 — abrir continuidad rompe el replay de un registro durable anterior
+`cdad_packet.py:3357-3398`. `provenance.continuity="absent"` se recalcula desde la presencia actual. Reproducido: registrar sin continuidad (rc=0) → `begin` (rc=0) → repetir el registro idéntico ⇒ rc=2 «already exists with different observation data». Incumple la excepción de replay durable (§2.2, PC-02).
+**Cierre:** conservar el diagnóstico histórico al reconocer una repetición, sin recalcularlo; una observación realmente distinta sigue rechazándose.
 
-## Observaciones
-No hay duplicación con 007-001/007-002 ni registro de intentos nuevo. `changes`/`evidence` mantiene separada la aplicabilidad de la deriva. §7 (agregar, no reescribir) es compatible con `receive --late`, pero depende de resolver identidad e historia.
+## Resto
+`d531839` no relaja oráculos. Suite específica 6 passed; los hallazgos son variantes no cubiertas. No se certificó la suite completa.
+
+## Re-review (2026-10-24): 3 BLOCKING cerrados, 1 subsistente
+
+- Cerrados: historia no demostrable en `verify-begin`; identidad de la evidencia; replay durable.
+- **BLOCKING subsistente:** `_evidence_history()` incorpora entradas de `chain["links"]` sin comprobar `chain["demonstrable"]` (`cdad_continuity.py:724-750,808-815`). Reproducido: `begin` con evidencia → convertir el cuerpo en legado sin `prev` → `checkpoint` que invalida con antecedente sobre ese cuerpo ⇒ rc=0, publica `seq=2`. Una invalidación cuyo antecedente es inadmisible no debe acreditarse.
+- Regresión: 140 passed.

@@ -4,6 +4,34 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-24 — Feature: 007-003-continuity-at-edges (epic 007)
+
+**Cerrada el 2026-10-24** tras review APTO (`a51e9b8`). Tercera unidad de `epic-007`: la continuidad
+deja de depender de prosa y se exige en los **bordes ejecutables**. **Contrato:** `spec.md`
+(PC-01..PC-06, INV-1..INV-10). **Review:** NO APTO (3 BLOCKING por CLI) → 1 subsistente → **APTO**.
+Evidencia: `tests/test_007_003_continuity_at_edges.py` (10 casos) + suite completa **1537 passed**.
+
+- **`verify-begin`** (read-only): antes de transportar se exige cabeza `record="begin"` con
+  `execution_id`/`packet_id`/`attempt` coincidentes y encadenamiento **demostrable** hasta el génesis.
+  Un `begin` histórico, un checkpoint posterior o un ancestro legado sin `prev` ya no habilitan transporte.
+- **`checkpoint-receipt`**: cierre común e idempotente de recepción para las tres entradas de reentrada,
+  con unicidad por `(execution_id, packet_id, attempt)` y contenido `(ruta normalizada, sha256)`.
+  Cerrar no recibe, materializa ni aprueba.
+- **`prev` aditivo en el cuerpo**: la pertenencia a la cadena ya no reside sólo en la cabeza reemplazable;
+  entra en el digest físico y se retira sólo en la comparación de repetición; legados legibles.
+- **`changes`/`evidence`** con `vigente|invalidada`, motivo y antecedente; invalidar no se rehabilita por
+  igualdad de bytes, cambio de hash ni reanclaje, y un antecedente sobre historia no demostrable se rechaza.
+
+**Alcance del flag.** `--continuity-attempt` es obligatorio **sólo con continuidad** y ahí falla cerrado;
+sin continuidad el despacho procede y declara `provenance.continuity: "absent"`. Hacerlo universal rompía
+~200 pruebas de andamiaje. No se infiere del `attempt-id` textual.
+
+**Trazabilidad.** `5708c69`, `d531839`, `a36e73e`, `9209d15`, `533b804`, `acd51e8`, `25fb0c2`, `a51e9b8`.
+
+**Deuda.** La herramienta nativa sigue siendo invocable fuera del wiring: garantía procedimental, no
+sandbox. La aplicabilidad de la evidencia la declara el escritor. Persisten DT-9 (flake de esperas),
+DT-8/F011, `scope_validation: unknown`, W-U6-*. **Epic abierto: 3/5.** Siguiente: `007-004-termination-not-success`.
+
 ## 2026-10-24 — Feature: 007-002-dispatch-recovery (epic 007)
 
 **Cerrada el 2026-10-24** tras review APTO. Segunda unidad de `epic-007-reliable-cycle-operation`:

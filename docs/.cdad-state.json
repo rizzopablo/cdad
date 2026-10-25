@@ -3,8 +3,8 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": "007-003-continuity-at-edges",
-  "current_stage": "discovery",
+  "active_feature": null,
+  "current_stage": "idle",
   "audit_status": null,
   "review_status": {
     "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
@@ -46,8 +46,13 @@
     },
     {
       "id": "007-003-continuity-at-edges",
-      "status": "in-progress",
-      "opened_at": "2026-10-24T07:15:21.467545+00:00"
+      "status": "done",
+      "opened_at": "2026-10-24T07:15:21.467545+00:00",
+      "closed_at": "2026-10-25T00:28:59.981962+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-003-continuity-at-edges/closure.md",
+        "sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
+      }
     },
     {
       "id": "007-004-termination-not-success",
@@ -15662,6 +15667,122 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN 007-003 completo; suite 1533 passed"
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "dispatch-disposition",
+      "substage": null,
+      "at": "2026-10-24T18:59:56.140415+00:00",
+      "by": "orchestrator",
+      "transition": "disposition",
+      "transition_key": "ac32da4d62f04deda58e646388ba6491f405dcce68839e2a8d6e08bc49a36c75",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "disposition",
+        "stage": "dispatch-disposition",
+        "substage": null,
+        "packet_id": "007-003-continuity-at-edges-implementer-green-001",
+        "receipt_sha256": null,
+        "resolution": "abandoned",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-003-continuity-at-edges-implementer-green-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Contrato enmendado tras preparar el paquete (alcance del flag): receive rechaza el pin. El trabajo esta entregado y commiteado (a36e73e + 9209d15), con suite 1533 passed. La revision se prepara contra la spec vigente.",
+      "resolution": "abandoned"
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-10-24T19:05:14.634224+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "5317be5f134b43e72006377aa7d4a66c71c1e27342f456a2a4108270756d1b21",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "delivery",
+        "stage": "review",
+        "substage": null,
+        "packet_id": "007-003-continuity-at-edges-reviewer-review-001",
+        "receipt_sha256": "39895520438400f101ccb7f224669832a53f12a4366a1468d87a7b1eefc71abf",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-003-continuity-at-edges/review-001.md",
+            "4e1755040b759c0dd02f1239e6f6eb8c26b019337564b08992f09fe4ceb5863d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-003-continuity-at-edges-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-003-continuity-at-edges-001/007-003-continuity-at-edges-reviewer-review-001/receipt.json",
+      "receipt_sha256": "39895520438400f101ccb7f224669832a53f12a4366a1468d87a7b1eefc71abf",
+      "artifacts": {
+        "docs/specs/007-003-continuity-at-edges/review-001.md": "4e1755040b759c0dd02f1239e6f6eb8c26b019337564b08992f09fe4ceb5863d"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-003-continuity-at-edges",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-25T00:28:59.981962+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "4456ccbe9df524b3096e8f07f908615889aa9fa9b93f1934ea266559420d7e57",
+      "transition_key_payload": {
+        "execution_id": "exec-007-003-continuity-at-edges-001",
+        "feature_id": "007-003-continuity-at-edges",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-003-continuity-at-edges/closure.md",
+          "sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "closure_path": "docs/specs/007-003-continuity-at-edges/closure.md",
+      "closure_sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15676,7 +15797,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-24T18:59:50.553963+00:00",
+  "last_updated": "2026-10-25T00:28:59.981962+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15783,14 +15904,6 @@
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   },
-  "active_packet": {
-    "id": "007-003-continuity-at-edges-implementer-green-001",
-    "role": "implementer",
-    "substage": "green",
-    "status": "dispatched",
-    "packet_version": 1,
-    "contract_kind": "approved-feature-spec",
-    "contract_sha256": "5767949c0cd9a4d644ceba1822ef5506c6e9992328a9a7f4f8ecb6b6beeb8e77"
-  },
+  "active_packet": null,
   "tdd_substage": "review"
 }
