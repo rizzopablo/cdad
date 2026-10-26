@@ -4,6 +4,475 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-26 — Feature: 007-005-serial-reception (epic 007)
+
+**Cerrada el 2026-10-26** tras review de **4 rondas → APTO** (sesiones `ses_e8678bf0affe0TJlgin9ZgvOYZ`,
+`ses_e867568fdfferpr70l8glyAbLB`, `ses_e8672ba4affe9zzS8rvBl9xxL1`, `ses_e8670d43effeCuzEW50G5RIivm`):
+ronda 1 **NO APTO**, ronda 2 **NO APTO**, ronda 3 **1 bloqueante**, ronda 4 **APTO**. Séptima y última
+unidad del plan de `epic-007`: **recepción serial real** — la primera vez que un paquete de CDAD
+atraviesa **entre proyectos** el recorrido completo con la versión adoptada `538ec57`. La unidad **no
+añade comportamiento al producto**: su resultado es **evidencia** (manifiesto verificable + declaración
+explícita de límites y de lo no observado).
+**Contrato:** `docs/specs/007-005-serial-reception/spec.md` (PC-01..PC-08 + AJ1–AJ4), aprobada el
+2026-10-26 bajo HITL delegada; **PC-03 enmendada** por `amendment-pc03.md` (ver abajo).
+**Evidencia:** `docs/specs/007-005-serial-reception/evidence/manifest.json` — **31 entradas**, rutas
+parametrizadas por alias, digest por entrada, cobertura por PC y límite por entrada; verificación
+privada en el consumidor: **31/31 entradas, 8/8 postcondiciones, 7 documentos escaneados sin
+filtraciones, PASS**. **Suite completa (gate de cierre): 1705 passed, 5 skipped, 0 failed.**
+
+**Qué se observó (tramo real, consumidor inactivo).**
+- **Entrada:** `status` = `continuity-reconcile`/`execution-active`, autoridad `active`, versión
+  `COHERENT` (proyecto, agentes, CLI y Claude Code en `538ec57`).
+- **Paquete:** `prepare --role architect --substage draft`, scope de escritura vacío; contrato por
+  fallback al plan del epic (diagnóstico registrado).
+- **Antes del transporte:** `begin` con **N=1** (seq 16) declarando lo ya resuelto por el antecedente
+  (digest) y la pregunta diferencial restante; `verify-begin` válido para ese paquete y ese N.
+- **Despacho:** sesión raíz **en el consumidor**; `record` verificó `parent`, `moment` y `project`;
+  `delivery=staged`. `model_reported` observado del almacén y `model_configured` nulo con procedencia
+  explícita (**CDAD no elige modelo**).
+- **Recepción y cierre:** `receive --continuity-attempt 1` → recibo **VALID** con
+  `semantic_status=pending`; `checkpoint-receipt` **seq 17** enlazado por `prev` al seq 16 con el
+  digest del recibo; transición de entrega registrada; `status` final `execution-active → resume`;
+  `reconcile` clasifica **`received`** y **`repeat_effect=false`**.
+- **Los cuatro PC de producto que 007-004 dejó como contrato** quedan ejercidos en uso real: `delivery`
+  consumido por su valor (`staged` → `receive`), recibo validado contra los bytes del informe, cierre de
+  continuidad enlazado, y ninguna lectura de `rc` como acreditación de entrega.
+
+**Enmienda PC-03: sustitución contractual retrospectiva autorizada.** PC-03 exigía `verify-begin`
+«inmediatamente antes del único despacho». En un despacho entre proyectos la verificación y el
+transporte ocurren en **sesiones distintas**, y los registros del producto **no capturan el intervalo
+de reloj**: el requisito, tal como estaba escrito, **no era observable**. La enmienda lo sustituye por
+una condición de **identidad y adyacencia lógica** — (1) `verify-begin` devuelve `seq` y
+`body_sha256` del `begin`; (2) el cierre tiene `prev.seq`/`prev.checkpoint_sha256` de ese mismo cuerpo;
+(3) no hay checkpoint intermedio — acreditada con la cadena **seq 16 → seq 17**
+(`body_sha256 dedb50df…`). Se registra como **sustitución**, no como cumplimiento: conserva identidad y
+adyacencia, **elimina la garantía temporal**, y **el requisito original de inmediatez no se cumple y se
+declara no observado**. No se repitió el recorrido para fabricar la captura.
+
+**Decisión relevante — la desviación de presupuesto, declarada y aceptada.** El tramo se despachó **dos
+veces**: (a) la primera sesión hija se creó desde la **raíz del repositorio CDAD**; `record` rechazó la
+identidad (`termination=blocked`, `delivery=none`, `delivery_ref=null`, `session=null`) y **no registró
+el intento**; (b) la segunda, con raíz en el consumidor, produjo `staged` y la recepción válida. **No
+hubo duplicación de efectos** (el primer intento no escribió estado, paquetes ni continuidad, y ambas
+sesiones eran read-only), pero **sí dos ejecuciones del mismo encargo**. La autoridad delegada aceptó la
+desviación (`deviation-2026-10-26.md`) con condiciones: **sólo la recepción aceptada acredita entrega**,
+el informe del intento rechazado **no se usa como evidencia**, el rechazo se declara **fallo observado**
+y el tramo **no se presenta como ejecución feliz sin fallos**. El rechazo es el comportamiento
+contratado — la identidad nativa exige sesión raíz en el proyecto autorizado —, no un defecto. La
+aceptación es revocable por el dueño; si se revoca, la feature no puede cerrarse con este expediente.
+Trade-off asumido: se conserva el registro honesto de dos ejecuciones antes que re-ejecutar hasta
+obtener un tramo «limpio».
+
+**Deuda técnica detectada.**
+1. **`REC-NEXT-ACTION-STALE` (nueva, observada):** el **cuerpo** del checkpoint de recepción conserva el
+   `next_action` previo («despachar el mismo paquete») aunque ya referencia el recibo. La vista compacta
+   (`resume`) y `reconcile` protegen contra repetir el efecto, pero **un lector del cuerpo puede
+   re-despachar**. Se registra para decisión y alcance propios; **no se repara en esta unidad**.
+2. `SUITE-CONTAMINATION` y `SUSP-*` siguen abiertas; no afectan este tramo.
+3. **Límites declarados del expediente:** fallos de runtime, timeout, cuota, reparación y retiro **no
+   observados** en el tramo; el informe entregado responde a la pregunta diferencial pero **no está
+   aprobado** (`semantic_status=pending`) — recibir no aprueba; las **identidades de sesión** y la
+   **resolución alias→ruta** quedan privadas del consumidor; `reconcile` declara «historia anterior
+   conservada, no demostrable» — el encadenamiento acredita **el borde observado**, no toda la historia
+   previa.
+4. El **envoltorio privado** (`deleg.sh`) se retiró del recorrido de aceptación: prepara y lanza, pero
+   **no integra** `begin`, `verify-begin` ni el consumo de `delivery`, y no acredita recepción. Queda
+   como lanzador parcial, no como indicador de éxito.
+
+**Siguiente en cola: no hay feature pendiente — el epic.** `epic-007` queda **7/7 features cerradas y
+el epic ABIERTO**: sus criterios no se dan por cumplidos con la suma de unidades. Falta (i) la **suite
+completa** y el gate de cierre que declara el orquestador; (ii) el **recorrido feliz desde reposo**
+— esta unidad **no lo acredita**: la entrada observada fue una **ejecución activa**, no un reposo, y la
+desviación de dos transportes impide presentarla como recorrido sin fallos; (iii) el **recorrido de
+fallo** como **uso real** (007-002/007-004 aportan el mecanismo y el contrato, no la observación); (iv)
+la **reparación natural, el retiro y la suspensión** en un tramo real. La **recepción real** del epic
+—el criterio que esta unidad vino a cerrar— **sí queda aportada, con la desviación aceptada y con el
+alcance declarado en `closure.md` §«Criterio del epic»**.
+
+---
+
+## 2026-10-26 — Feature: 007-004-termination-not-success (epic 007)
+
+**Cerrada el 2026-10-26** tras review de **3 rondas → 0 bloqueantes** (sesión
+`ses_e8747b264ffev3rxxRyB0r1SNe`, reviewer `openai/gpt-6.1-sol`): ronda 1 **NO APTO con 3 bloqueantes
++ 1 menor**, ronda 2 **1 bloqueante** (el mismo B3, cerrado a medias) y ronda 3 **APTO** con ese
+bloqueante cerrado. Cuarta unidad del plan de `epic-007`: **terminar no es tener éxito** — el sobre de
+delegación declara explícitamente **qué entrega existe** (`delivery: none | staged | received`), y ni
+`rc` ni `termination` acreditan recepción, cierre de continuidad ni aprobación. Es además la
+**primera aplicación real de 007-007**: la unidad se **suspendió** (`2026-10-26T02:18`) para trabajar
+007-006 y se **reanudó explícitamente** (`2026-10-26T13:16`, `resume-unit`), conservando identidad,
+binding y digests, sin re-despachar ni repetir recepción; el tramo final del RED y del review-fix
+(`cdf66b3`, `7694be7`) se completó después de la reanudación, con entrega y gate registrados a las
+13:26.
+**Contrato:** `docs/specs/007-004-termination-not-success/spec.md` (PC-01..PC-18, INV-1..INV-11),
+aprobada el 2026-10-24 bajo HITL delegada tras plan-review APTO CON AJUSTES.
+**Evidencia:** `tests/test_007_004_termination_not_success.py` — **18 funciones, una por PC**,
+parametrizadas (581 líneas). Reviewer: ronda 1 **50 passed** focal (+ **17 passed** de regresión
+006-005 U1b), ronda 2 **83 passed** (focal + U1b) y ronda 3 **6 passed** (sólo PC-05). **La suite
+completa se estaba ejecutando al escribir esta entry: el resultado y el gate de cierre los declara el
+orquestador** — el reviewer se abstuvo expresamente de certificarla en las tres rondas.
+
+**Qué cambió en el uso real.**
+- **`delivery` en el sobre** (`attempt, session, termination, delivery, delivery_ref, diagnosis`),
+  vocabulario cerrado: `none` (no acredita entrega consumible; `delivery_ref` nulo y **no prueba
+  ausencia** de cambios ni de efectos durables), `staged` (referencia al descriptor existente de
+  partes preparadas, pendiente de recepción), `received` (referencia al recibo durable existente,
+  **pendiente de validación** por el consumidor). `delivery_ref` sigue siendo **una sola** referencia:
+  no se agrega un segundo campo, ni un recibo, ni un registro, ni un almacén.
+- **Tabla exhaustiva de combinaciones.** Válidas: `completed+staged` (ruta nativa `record`),
+  `completed+received` (llegada externa), y `blocked` / `transport-error` / `timeout` / `cancelled` /
+  `unknown` **+ `none` + `null`**. Todo lo demás es inválido, en particular: `completed+none`;
+  terminación no completada con `staged` o `received`; `none` con referencia no nula; `staged`/
+  `received` sin referencia, vacía o de tipo incorrecto; vocabulario desconocido; descriptor
+  presentado como recibo (o al revés) al validar el artefacto; y **una combinación estructuralmente
+  válida pero incompatible con la ruta**.
+- **Productores.** `record` con payload válido → `completed+staged` (descriptor); `record` con
+  intento registrado y sin payload → `unknown+none`; `record` con correlación contradictoria →
+  `blocked+none` sin registrar el intento ni preparar entrega; el adaptador OpenCode concluido con
+  recibo → `completed+received`, y **`completed` sin ruta de recibo falla cerrado como
+  `transport-error`** en lugar de emitir `completed+none`; `cdad_delegate.py` **retransmite** los seis
+  campos (sin registrar, sin recibir, sin preparar otra entrega) y sus fallos propios son
+  `timeout+none` / `transport-error+none`; `dispatch` retransmite el sobre externo validado.
+- **La ruta externa no acepta `staged`.** `completed+staged` es válido para `record` nativo, pero en
+  la llegada externa el módulo del runtime es dueño de la recepción: se rechaza como respuesta de
+  protocolo (`transport-error+none+null`), sin staging ni recepción.
+- **Rechazo de contradicciones (§4.4), fail-closed y sin efectos de aceptación**: no se retransmite,
+  no se corrige en silencio hacia un éxito, no se registra ni materializa, se diagnostica con
+  `transport-error+none+null` y **se conservan las identidades utilizables** del sobre original. La
+  contradicción **no se repara borrando la referencia**.
+- **Compatibilidad histórica acotada.** La **ausencia** de `delivery` es la única condición que la
+  activa (un campo presente con `null`, valor desconocido o tipo incorrecto **no** es un histórico
+  válido). El consumidor usa el **contexto conocido** de la operación, nunca el nombre del archivo:
+  en la llegada externa, `completed` es recepción sólo si la referencia **ES** el recibo durable de
+  *este* encargo y el verificador canónico del productor lo acepta. No se prueban rutas alternativas
+  hasta encontrar una que permita avanzar.
+- **Consumo con dueños únicos.** `references/cli-delegation.md` es dueño de la forma, vocabularios,
+  tabla, histórico y significado de `rc`; `references/re-entry.md` es dueño del **procedimiento de
+  consumo** por ruta (`none` → no avanzar; `staged` → `receive` existente y después validar el
+  recibo; `received` → sólo validar, sin otra recepción ni vuelta a staging), con las obligaciones de
+  continuidad de 007-003 antes de efectos posteriores y el **gate decidido por separado**.
+  `sources/roles/orchestrator.md` y los dos adaptadores **remiten** y no copian la tabla; la ruta
+  **FINAL TEXT sin sobre** conserva su camino propio.
+- **`rc` intacto:** `0` cuando la interfaz produce un sobre (aunque comunique bloqueo, timeout o
+  rechazo de protocolo), errores previos sin sobre con su `rc` no cero, y el `rc` interno del
+  adaptador no sustituye un sobre válido. Sin `--strict-exit`.
+- **Orientación y continuidad sin redefinirse**: forma y vocabulario de `situation`/`next.operation`
+  (007-001) y el cierre de continuidad con N explícito y recuperación por
+  `validate-receipt --close-continuity --continuity-attempt N` (007-003) quedan iguales; el sobre no
+  introduce una situación de éxito ni una transición automática.
+
+**Decisiones relevantes.** (1) **Distinción general de entrega en vez de parchear `blocked`**: la
+ambigüedad entre resultado preparado y recibo durable es la misma enfermedad, y tratarla una sola vez
+en el sobre evita dos reglas que se contradicen; el precio es un campo nuevo en todas las rutas.
+(2) **Conservar `rc`** frente a migrarlo: preserva el contrato publicado y evita una migración shell,
+a costa de que la protección dependa de **validar el sobre y seguir la ruta correcta**, nunca de leer
+`rc` como éxito funcional. (3) **Ninguna autoridad persistente nueva**: `delivery` describe el
+artefacto existente, no lo valida ni lo reemplaza (consecuencia directa de ADR-014). (4) **Una
+definición por responsabilidad**: esquema en delegación, consumo en reentrada, y fuentes/adaptadores
+por referencia — el menor O1 de la ronda 1 era exactamente la duplicación de acciones en la fuente del
+orquestador, y se retiró regenerando ambos derivados. (5) **La normalización histórica valida y
+vincula** en lugar de contentarse con «archivo observable» (corrección de B1): el localizador y el
+verificador son **del productor** — `cdad_result.durable_receipt_path`
+(`<root>/.cdad/runtime/results/<execution>/<packet>/receipt.json`) y `cdad_result.validate_receipt`,
+importados (ADR-036), no una ruta compuesta por el consumidor ni una heurística de sufijo; el
+trade-off es que el consumidor depende de la regla del productor en vez de tener la suya.
+(6) **Rechazar la contradicción en vez de normalizarla** (corrección de B2): una terminación no
+completada con referencia se diagnostica, exista o no el artefacto, porque borrar la referencia
+convertía un fallo de protocolo en una no-entrega válida.
+
+**Trazabilidad.** RED `1eedb3e` (red-001, declarado incompleto), `62770d6` (red-002), `9190b94` y
+`e7a4336` (red-003: PC-03 por directorio hermano, PC-11 histórico externo exacto y oráculos
+endurecidos de PC-09/13/17/18 con regresión diferencial de orientación); GREEN `8a151a7`; conjunto
+cerrado de claves de la interfaz `930d1ba` (la comparación por igualdad de conjuntos **no** se
+debilitó); huecos de tests de la review ronda 1 `6c5e0da`; fix B1/B2/O1 `2118794`; fixtures de
+adaptador que ahora emiten `delivery` `cdf66b3`; PC-05 con terminación exacta `7694be7`. Producto: 9
+archivos, **+457/−54** —`cdad_delegate.py`, `cdad_delegate_opencode.py`, `cdad_dispatch.py`,
+`cdad_result.py`, `cli-delegation.md`, `re-entry.md`, `sources/roles/orchestrator.md` y los dos
+adaptadores de `sources/agents/adapters/`— más los dos orquestadores regenerados (+36/−10 cada uno);
+tests: `test_007_004_termination_not_success.py` (581 líneas), `test_005_009_t1_interface.py`
+(+2/−1) y el fixture de `test_007_003_continuity_at_edges.py` que ahora emite `delivery`. Contexto del
+camino: el primer RED quedó bloqueado por la génesis legado de la continuidad (`verify-begin`,
+resuelto con la enmienda §2.3.1 de 007-003 y `docs/decisions/reanchor-exec-007-004-termination-not-success-001.md`),
+una cuota semanal agotada dejó sin test-writer al despacho, y la unidad se suspendió para trabajar
+007-006.
+
+**Deuda técnica detectada.**
+- **Límite declarado de la barrera de validación:** la retransmisión **explícita** `completed+received`
+  **no revalida** el recibo — `cdad_delegate.py` conserva el sobre tal cual y la validación pertenece
+  al consumidor (§6.2: `validate-receipt` antes de continuar). Sólo la **normalización histórica**
+  valida y vincula. El trade-off es deliberado (el relay no registra ni recibe otra vez), pero
+  significa que la primera barrera ante un adaptador que declare `received` con una referencia
+  inválida es el consumidor, no la llegada.
+- **Efectos inciertos honestos:** `delivery=none` no prueba ausencia de cambios ni de efectos durables;
+  el `transport-error` que clasifica una respuesta de protocolo no utilizable **no prueba ausencia de
+  efectos** del intento original (se reconcilian por las rutas existentes).
+- **Sin runtime externo real ni despliegue en HOME** (la versión adoptada registra `6b3da4e`): la
+  adopción del envoltorio privado `.cdad/local/deleg.sh` y de los consumidores externos es
+  verificación de **007-005**, no de esta feature; ninguna capacidad nueva existe aún en la copia
+  instalada.
+- **Regresiones agrupadas no certificadas** (abstención de la ronda 1): las corridas de 007-001/003/007
+  agotaron los límites de 120 y 300 s sin resumen final, así que **no se declaran verdes**; la
+  inspección del diff no halló cambios en sus algoritmos. Es deuda de **consolidación de la suite**
+  (ver abajo).
+- **`SUITE-CONTAMINATION` (media, heredada) sigue abierta:** tests que pasan aislados y fallan en
+  corridas grandes por HOME/XDG no aislados (`test_005_009_t2_opencode_adapter*`,
+  `test_006_001_t1b_service_mode*`) — la corrida de cierre de esta feature es justamente el escenario
+  que la expone, así que un fallo aislado en la suite completa no debe leerse como regresión de
+  007-004 sin aislamiento previo.
+- **Estado del proyecto a revisar en el cierre:** `review_status` del state sigue siendo el **heredado
+  de 005-014** (la suspensión lo conservó y las tres rondas de esta feature no lo reescribieron) y
+  `current_stage` dice `discovery`; ninguna de las dos cosas refleja el trabajo real. Lo declaro como
+  observación verificable, no como defecto: la decisión y la eventual corrección son del orquestador.
+- **Heredadas sin cambios:** `SUSP-GUARD`, **`SUSP-LOCK`** (los escritores de continuidad no comparten
+  el lock del proyecto), `SUSP-APPROVAL`, `SUSP-IDENTITY`, DT-8/F011, DT-9, `scope_validation: unknown`,
+  W-U6-*, ausencia de CI.
+
+**Próxima feature en cola.** `007-005-serial-reception` (`queued`; requiere **versión adoptada**): es
+la que puede ejercer la recepción real y la revisión del envoltorio local, es decir lo que esta
+feature **no** declara demostrado. Antes o en paralelo, el **despliegue** (orden del dueño): sin él,
+ni `delivery` (007-004) ni `withdraw`/`republish-agents` (007-006) existen en la copia instalada.
+Transversal y ya visible en las tres rondas: la **consolidación de la suite** (contaminación entre
+tests por HOME/XDG, corridas agrupadas que agotan límites sin resumen final). El epic queda **6/7**.
+
+---
+
+## 2026-10-26 — Feature: 007-006-withdraw-and-republish (epic 007)
+
+**Cerrada el 2026-10-26** tras review de **2 rondas → APTO** (sesión
+`ses_e894213beffebC8huMXrjC1Hb8`; la ronda 1 fue NO APTO con 3 bloqueantes, los tres cerrados en la
+ronda 2). Sexta unidad del plan de `epic-007`: dos bloqueos independientes dejan de resolverse por
+rodeo — un paquete `prepared` que nunca se va a despachar **se retira explícitamente con motivo**, y
+los agentes derivados del proyecto **se republican sin fabricar un paquete**. **Contrato:**
+`docs/specs/007-006-withdraw-and-republish/spec.md` (PC-01..PC-13, consolidadas en 8 por AJ3,
+I1..I7) con los ajustes AJ1–AJ4 y las tres **notas registradas en la implementación** (que registran
+lo que el GREEN precisó y no amplían el alcance aprobado).
+**Evidencia:** `tests/test_007_006_withdraw_and_republish.py` — 15 funciones parametrizadas → **61
+casos** en la corrida del reviewer (ronda 2; 56 en la ronda 1), regresión revisada **31 passed**
+(`checkpoint_vs_begin` + `writeahead` + `suspend_resume_units`) y `validate-state` **VALID**. **La
+suite completa se estaba ejecutando al escribir esta entry: el resultado y el gate de cierre los
+declara el orquestador** — el reviewer se abstuvo expresamente de certificarla.
+
+**Qué cambió en el uso real.**
+- **`register-transition --transition withdraw --packet P --note "motivo"`** (`cdad_packet.py`):
+  retira el paquete **activo `prepared`** cuya ausencia de despacho y efectos es verificable. Exige
+  identidad coherente entre estado, request publicado y ejecución, y motivo no vacío; etiqueta
+  canónica `stage: "packet-withdrawal"` y `resolution: "withdrawn"` **implícita** (no se pide
+  `--resolution`). El estado terminal **reutiliza `failed`**: la distinción semántica vive en la
+  entrada (`transition: "withdraw"`, `resolution: "withdrawn"`), nunca en un estado nuevo y nunca
+  como fallo de ejecución (I1). Sólo cambian `active_packet.status`, la entrada de `stage_history` y
+  `last_updated`; `REQUEST.json`, `PACKET.md`, el contexto y el resto de los archivos quedan byte a
+  byte (I2) y el siguiente `prepare` queda libre sin reemplazo.
+- **Rechazo de todo efecto positivo o inconcluso**, nombrando fuente y causa: despacho registrado,
+  registro ilegible o de identidad no establecible, cualquier archivo de resultado (aunque no haya
+  recibo válido), materialización (aunque el registro sea ilegible), disposición o selección de
+  disposición no verificable, paquete distinto/no activo/no `prepared`, continuidad no verificable,
+  motivo vacío. **Inconcluso nunca se lee como ausente** (I3): se consume el criterio conservador del
+  reanclaje (`cdad_continuity._require_reanchor_effect_free`) en lugar de un detector propio, y un
+  registro de despacho cuyo `packet_id` no tiene request publicado es **INCONCLUSA** en el ámbito
+  examinado. El diagnóstico nombra **el efecto más avanzado** (materialización por delante de recibo o
+  archivo de resultado).
+- **Ningún flag ajeno se ignora** (PC-07): los 21 campos de las otras clases (aprobación, recibo,
+  artefactos, resultado, avance operacional, cierre, supersesión) producen rechazo sin cambios, antes
+  del lock y de toda escritura.
+- **Idempotencia por motivo** (I4): la repetición idéntica es éxito **sin escrituras** ni entrada
+  nueva; un motivo **distinto** para un retiro ya registrado es **conflicto (rc 1)**, no otra decisión.
+- **Continuidad del retiro (AJ2).** Si existe cabeza vigente del mismo paquete, se anexa **un**
+  `record: "checkpoint"` enlazado por `prev` que conserva objetivo, decisiones, incertidumbres,
+  referencias, `changes` y **`evidence` con su clasificación y sus antecedentes**, y sólo agrega la
+  decisión de retiro (que cita la clave de transición y el motivo) y un `next_action` «no despachar;
+  preparar un nuevo encargo». **No se crea `begin`, recibo ni `receipt_checkpoint`**: no hubo
+  entrega. Una cabeza de **otro** paquete se conserva byte a byte; sin cabeza no se fabrica cadena;
+  una cabeza ilegible, íntegramente no demostrable o en split-brain **bloquea** el retiro en lugar de
+  presumirla ajena.
+- **`republish-agents --project-root ROOT`** (`cdad_packet.py`): republica los agentes derivados del
+  proyecto y su manifiesto desde la instalación resuelta, **reutilizando** `_build_derived_payloads`
+  y sus garantías (permisos, temporales aceptados, procedencia, manifiesto, detección de modificación
+  local y retiro de los nombres administrados que la fuente dejó de publicar). **No prepara paquete
+  ni fabrica uno auxiliar**; admite un paquete activo `prepared`, `dispatched` o terminal y **no
+  opera sobre él**: estado de ciclo, paquetes, política y continuidad quedan idénticos (I5). Bytes ya
+  coincidentes ⇒ éxito sin reescritura de destinos. Sin fuentes instaladas, o sin contexto v2 y
+  política aceptada verificables ⇒ **rechazo explícito**, sin contexto creado ni política aceptada por
+  efecto lateral. Conserva **literalmente** el `model:` instalado, incluida su ausencia (I6): CDAD no
+  elige modelo.
+- **Resolución del DRIFT de `project`.** Sin cambiar la forma de `compact-view-v1`, el bloque de
+  versión sigue nombrando la pata que diverge y, **sólo** cuando la única divergente es `project`,
+  ofrece `republish-agents --project-root ROOT` ejecutado con el script instalado. Otras patas no
+  reciben promesa alguna. Se conserva `packet-prepared → validate-packet` **incluso con `begin`
+  vigente y DRIFT** (estar preparado no demuestra intención de retirar) y, tras un retiro, el paquete
+  terminal no se selecciona como pendiente ni se propone para despacho: con ejecución activa y sin
+  otros pendientes corresponde `execution-active → resume`.
+- **Guarda por unidad suspendida (AJ1).** `withdraw` y `republish-agents` aplican la guarda de
+  007-007 antes del replay idempotente, y la resuelven **por la unidad propietaria del paquete
+  citado** —vía `suspended_units[].unit_state.active_packet` o el `feature_id` del `REQUEST.json`
+  publicado—, no por la unidad activa: el paquete de una suspendida se rechaza con **rc 1** y
+  diagnóstico que nombra paquete y unidad, mientras una unidad activa distinta **no** queda bloqueada
+  para operar sobre lo propio (el comportamiento de la ronda 1 devolvía rc 2 y perdía la
+  clasificación). `suspended_units` se conserva íntegro, `open-unit` y la selección explícita no
+  cambian y la reanudación de una suspendida no se ofrece desde estos verbos.
+- **Publicación transaccional.** El retiro publica **en una sola transacción** el cuerpo del
+  checkpoint, su cabeza y el estado: `cdad_continuity.plan_write` **calcula y no publica**, y el
+  llamador publica el plan junto con sus propios artefactos; el rollback restaura los destinos ya
+  reemplazados y retira sólo lo que la operación creó, sin tocar entradas ajenas, con recuperación de
+  transacción interrumpida. `republish-agents` rechaza destinos que no pueden ser archivo regular
+  **antes** de escribir un temporal y, si falla un reemplazo posterior, restaura los ya hechos: ni un
+  rechazo ni un error dejan un conjunto parcial de derivados.
+
+**Decisiones relevantes.** (1) **Reutilizar el terminal `failed`** en lugar de introducir un estado
+nuevo: el vocabulario de estados de paquete no crece y la semántica queda auditable en la entrada; el
+trade-off declarado es que un lector que mire sólo `active_packet.status` no distingue retiro de
+fallo —la distinción se exige leerla de la transición—. (2) **Retiro y disposición no se fusionan**:
+la disposición resuelve un despacho que no volverá; el retiro declara que el encargo **nunca llegó** a
+despacharse, y por eso se rechaza ante cualquier efecto y no se amplía el vocabulario de
+`disposition`. (3) **Republicación desacoplada del ciclo de paquetes**: resolver el DRIFT no debe
+costar un encargo nuevo ni tocar el estado; el precio es que el verbo exige fuentes instaladas y una
+política aceptada verificables, y por eso no promete reparar las otras patas de versión. (4) **Seam
+transaccional en el producto de continuidad**: el checkpoint de acompañamiento se **planifica**, no se
+publica por su cuenta — es la corrección estructural del bloqueante de la ronda 1, no un parche local
+del retiro. (5) **Extensión por referencia**: 007-001 (orientación) y 007-002 (borde de efectos del
+despacho) se extienden **por referencia a este documento**; sus bytes aprobados y sus pins de
+`specification` quedan intactos (`73f26ad`).
+**Trazabilidad.** RED `25227ec`; GREEN `5fc685f`; fixture de materialización `79c1cd1`; contrato
+cerrado de 007-002 sin tocar `73f26ad`; re-aprobación del gate con las notas de implementación
+`1dc6f3a`; casos de la review ronda 2 (transaccionales y guarda por unidad) `dd095bc`; fix de
+publicación transaccional y guarda por unidad `17b11d5`; contrato y gate de la fixture AJ1 `679305d`.
+Producto (rango `25227ec..HEAD`): **7 archivos, +822/−73** —`cdad_packet.py`, `cdad_continuity.py`,
+las cuatro references (`project-execution.md` §10 nuevo, `continuity.md`, `orientation.md`,
+`re-entry.md`) y `sources/roles/orchestrator.md` (wiring de recuperación por referencia)— más los dos
+orquestadores regenerados con `make agents`; tests: 1 archivo nuevo, +1777.
+
+**Deuda técnica detectada.**
+- **Cobertura de PC-13 declarada inexacta por el reviewer (ronda 2):** los casos nuevos bloquean la
+  **preparación** de temporales y comprueban ausencia de cambios, pero **no demuestran el rollback
+  posterior al primer reemplazo**; el comentario del test que afirma un fallo «después de publicar el
+  checkpoint» es inexacto. El rollback sobrevenido durante los reemplazos está **revisado por
+  inspección, no certificado empíricamente** (abstención expresa del reviewer).
+- **Suite completa y regresión proporcional: no certificadas por el reviewer**; el gate de cierre es
+  del orquestador (y es la condición de esta entry).
+- **Caso 105 no resuelto como «caso real»** (AJ4): la evidencia integrada es la fixture de identidad
+  genérica con las dos rutas —`prepared + begin + DRIFT → republish` y `→ withdraw`— y su composición
+  en ambos órdenes; el proyecto externo **no se inspeccionó** y no se declara resuelto.
+- **Sin desplegar en HOME** (la versión adoptada registra `6b3da4e`): **ninguna de las dos
+  capacidades existe en la copia instalada**, así que un DRIFT real de `project` no se repara aún con
+  el CLI instalado. El despliegue es lo que habilita el uso real y cierra además la excepción de
+  arranque heredada.
+- **Heredadas sin cambios:** `SUSP-GUARD`, **`SUSP-LOCK`** (los escritores de continuidad no comparten
+  el lock del proyecto: la transacción de 007-006 cubre el estado y lo que el propio verbo publica, no
+  un escritor concurrente de continuidad), `SUSP-APPROVAL`, `SUSP-IDENTITY`,
+  **`SUITE-CONTAMINATION`**, DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, ausencia de CI.
+
+**Próxima feature en cola.** `007-004-termination-not-success` — **hoy suspendida** (abierta en
+`discovery`, con entregas RED y `review_status` heredado de 005-014, discrepancias que la suspensión
+**conserva**, no repara): se reanuda **explícitamente** por el ciclo (`resume-unit --feature`) y
+recién entonces su paquete preparado queda gobernable. Ojo con el orden real de las salidas: mientras
+la unidad siga suspendida, el retiro de su paquete es un estado protegido (AJ1, rc 1) — la guarda
+impide el atajo, y la salida es reanudar y después decidir con los verbos existentes (retirar si el
+encargo no se despachará, o disponer si se despachó). Después `007-005-serial-reception` (`queued`,
+requiere versión adoptada) y, transversal, el **despliegue**. Orden acordado: 007-007 → 007-006 →
+007-004 → 007-005. El epic queda **5/7**.
+
+---
+
+## 2026-10-25 — Feature: 007-007-suspend-resume-units (epic 007)
+
+**Cerrada el 2026-10-25** tras review de **4 rondas → APTO CON AJUSTES** (sesión
+`ses_e8ad5f723ffenb7IaCoN0egiCv`). Séptima unidad del plan de `epic-007` (alta aprobada por el
+dueño el 2026-10-25): una unidad se interrumpe en un **borde seguro**, se trabaja otra y la primera
+se **reanuda explícitamente**, sin perder estado, identidad ni trazabilidad y sin repetir efectos.
+**Contrato:** `docs/specs/007-007-suspend-resume-units/spec.md` (PC-01..PC-17, consolidadas en 10
+postcondiciones normativas por A5; INV-1..INV-8) con los ajustes A1–A5 del orquestador.
+**Evidencia:** `tests/test_007_007_suspend_resume_units.py` (16 casos, parametrizados), suite
+completa **1582 passed / 38 failed — todos del RED de 007-004** (esperados), gate por superficie
+**947 passed**. **Excepción de arranque acotada** (handoff 2026-10-25): los despachos de la feature
+fueron por subagente nativo, sin `begin`/`record` ni recibo; sustituye el recibo la spec aprobada
+más los commits.
+
+**Qué cambió en el uso real.**
+- **`suspend-unit --feature ID --reason TEXT` y `resume-unit --feature ID`** (`cdad_packet.py`), con
+  `--feature` obligatorio en ambos: no hay selección por directorio reciente, orden de suspensión ni
+  única candidata (I8). Códigos: `0` éxito, `2` rechazo de entrada, coherencia, vigencia, seguridad o
+  lock ocupado, con diagnóstico que nombra unidad, fuente del bloqueo y acción necesaria.
+- **`suspended_units`**: campo aditivo del estado (ausente = `{}`; presente mal formado =
+  incoherencia) que conserva por id el `unit_state`, `resume_checks`, motivo y fecha. Se agrega a
+  `assets/state-template.json` y la entrada del epic pasa a `status: "suspended"`.
+- **Borde seguro.** Sin paquete seleccionado no hay trabajo irresuelto; `prepared` exige ausencia
+  verificable de despacho, resultados, materializaciones y disposiciones incompatibles; `dispatched`
+  se rechaza (primero recibir o disponer por las rutas existentes); el terminal exige resolución
+  demostrable por recibo/disposición; señales ilegibles, discordantes o inconclusas se rechazan. No
+  alcanza con leer `active_packet.status`: el examen cubre los intentos pendientes de la ejecución.
+  **RED es borde válido** si su entrega está recibida y no hay despacho pendiente.
+- **Reanudación conservadora.** Se construye una vista candidata con `unit_state` restaurado, **sin
+  publicarla**, y se verifica identidad y binding contra el contexto existente, epic y autoridad
+  vigentes, política y versión, integridad de referencias y digests de `resume_checks`, validación y
+  aprobación del paquete conservado (contrato pineado) y la cadena de continuidad. Una referencia
+  ausente o alterada bloquea sin efectos; el verbo **no aprueba sustituciones** ni tiene opción de
+  omisión.
+- **Continuidad.** Con cabeza existente se anexan `checkpoint` enlazados por `prev` (decisión con
+  motivo y `next_action` «no despachar; reanudar explícitamente ID» al suspender; decisión de
+  reanudación y la siguiente acción previa al suspender al reanudar), conservando identidad,
+  autoridad, paquete, intento y antecedentes. **No se crea `begin`, recibo, `receipt_checkpoint` ni
+  una ejecución nueva**; sin cabeza no se fabrica cadena.
+- **Ningún consumidor permite avanzar una suspendida (A2, I7).** `prepare`, `register-transition`
+  (todas las transiciones), `cdad_dispatch.py dispatch`/`record`, `cdad_continuity.py`
+  `begin`/`checkpoint`/`checkpoint-receipt`/`reanchor` y `cdad_result.py receive` (incluidos replay
+  durable y `--late`, comprobado **antes** del retorno temprano) resuelven la unidad desde su propia
+  identidad y rechazan. Las lecturas (`status`, `verify-begin`, `reconcile`, `resume`, `validate-*`)
+  siguen permitidas y no habilitan avance; `receive` deja leer y validar recibos ya existentes.
+- **Orientación (A4).** `compact-view-v1` suma `suspended_units` (orden determinista por
+  `feature_id`, `[]` si no hay) y, sin unidad activa con suspendidas coherentes,
+  `situation: "units-suspended"` con `next.operation.verb: "select-unit"` —**instrucción de
+  selección, no verbo nuevo de CLI**— y `next.alternatives` (`resume-unit` con `--feature`
+  obligatorio; `open-unit` sólo si hay unidades elegibles). No elige ni abre por su cuenta.
+- **Publicación transaccional.** Estado, historial y avance de cabeza se publican bajo el lock del
+  proyecto con rollback ante fallo y recuperación de transacción interrumpida; la repetición de
+  `suspend-unit` sobre lo ya suspendido (o de `resume-unit` sobre lo ya activo) devuelve `2` sin
+  escrituras ni checkpoints extra. `open-unit` admite reposo con suspendidas, conserva el registro y
+  abre sólo una `queued` elegible, sin ignorar dependencias incompletas.
+
+**Decisiones relevantes.** (1) **Registro por id, no pila**: se conserva el binding activo y se
+agrega `suspended_units`; es el incremento serial, no un mapa de ejecuciones concurrentes —
+paralelismo (B3/B4) queda para el epic siguiente. (2) **Estado de unidad separado del estado del
+proyecto**: se preservan valor *y* presencia/ausencia de `active_feature`, `current_stage`,
+`tdd_substage`, `postconditions_status`, `audit_status`, `review_status`, `active_packet` y
+`execution` (inventario normativo único, sin listas divergentes por operación); no se archivan ni
+restauran `stage_history`, `epic_history`, `epic_features`, autoridad, política, aprobador, versión
+ni metadatos. (3) **Continuidad enlazada, no regenerada.** (4) **Suspensión no es retiro**: un
+`prepared` sigue preparado; no se usa `withdraw`, no se marca éxito ni se cierra (I2). (5)
+**Verificación conservadora**: reanudar no vuelve vigente evidencia que cambió ni reinterpreta otro
+contrato como aprobado. Trade-off asumido: la restauración exige que el contrato vivo esté
+reconciliado antes de reanudar (un impacto de planificación no invalida retrospectivamente el
+contrato recibido, pero bloquea hasta la decisión existente).
+
+**Trazabilidad.** RED `04e002b`; fixtures y compatibilidad de status `34fc6a1`, `0fc5602`,
+`86a91c6`, `1f1f1ea`; GREEN `d785058`; endurecimiento de bordes `91729ed` → `9145fe5`; pins antes de
+suspender `c4fa1b6` → `51212a6`; aperturas vacías y estado gestionado `084cb64` → `276f14b`;
+continuidad sin estado gestionado `d3b253a`; INV-4a en la fuente del orquestador `e877751` (más los
+agentes regenerados). Producto: **13 archivos, +634/−11**; tests: 2 archivos, +546/−7 (incluye la
+compatibilidad de `test_007_001`).
+
+**Deuda técnica detectada.**
+- La clasificación **gestionado/standalone** de la continuidad se elude retirando además el registro
+  canónico: **no es frontera de seguridad** y no habilita despacho (decisión MVP declarada).
+- Los escritores de continuidad **no comparten el lock del proyecto**: la publicación transaccional
+  de `suspend-unit`/`resume-unit` no cubre la cabeza de continuidad. Preexistente.
+- **No se re-verifica la aprobación** ante borrado manual del historial.
+- La **identidad la suministra el llamador** (B1 de la ronda 1): puede apuntar a otra unidad y eludir
+  la guarda si además se manipulan los insumos.
+- **Contaminación entre tests en corridas grandes** (`test_005_009_t2_opencode_adapter*`,
+  `test_006_001_t1b_service_mode*`): pasan en aislamiento y fallan con vecinos; es integridad de la
+  suite (HOME/XDG no aislados), no regresión de producto.
+- Heredadas sin cambios: DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, ausencia de CI.
+- **Sin desplegar en HOME** (la versión adoptada registra `6b3da4e`): el despliegue cierra la
+  excepción de arranque y habilita el uso real.
+
+**Próxima feature en cola.** `007-006-withdraw-and-republish` (`depends_on: [007-007]`): retirar un
+paquete `prepared` nunca despachado con motivo y republicar agentes derivados sin `prepare`. Orden
+acordado: 007-007 → **007-006** → 007-004 → 007-005 (esta última requiere versión adoptada). Primera
+operación tras el despliegue autorizado: **suspender realmente 007-004** (abierta en `discovery` con
+entregas RED y `review_status` heredado de 005-014 — discrepancias que la suspensión **conserva**, no
+repara) y abrir 007-006 por el ciclo. El epic queda **4/7**.
+
+---
+
 ## 2026-10-24 — Feature: 007-003-continuity-at-edges (epic 007)
 
 **Cerrada el 2026-10-24** tras review APTO (`a51e9b8`). Tercera unidad de `epic-007`: la continuidad

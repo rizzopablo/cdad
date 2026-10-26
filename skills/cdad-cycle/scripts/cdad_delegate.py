@@ -13,9 +13,21 @@ Destination-agnostic CLI. Given a project, a canonical packet published by
      ONE writer of the I8 record of an external dispatch (006-005 PD-1/D-14), so
      this interface never registers a second attempt, never derives one of its
      own and never writes the ledger itself;
-  4. returns the T1 output schema on stdout:
-     `{attempt, session, termination, delivery_ref, diagnosis}`, with the
-     `attempt` the destination declared.
+  4. returns the output schema on stdout:
+     `{attempt, session, termination, delivery, delivery_ref, diagnosis}`, with
+     the `attempt` the destination declared.
+
+007-004: the envelope carries an explicit `delivery`. This interface is an
+EXTERNAL arrival, so the only delivery it can relay is `received` (the runtime
+module already persisted the receipt) or `none`; a `staged` delivery belongs to
+the native `record` path and is refused here (§4.3). A historical envelope (no
+`delivery` key) is interpreted by the CONTEXT of this arrival: `completed` is a
+received landing only when its reference is the durable receipt of this errand
+and the producer's verifier accepts it (ADR-036), and a non-completed
+termination never carries a reference (§5). An envelope that cannot be
+classified fails closed as `transport-error + none + null` (§4.4). The shape,
+the vocabulary, the combinations and the historical rule are owned by
+`references/cli-delegation.md`.
 
 It never writes `docs/.cdad-state.json` itself and never creates another ledger
 or state: the only state change of an external dispatch is the
@@ -52,11 +64,19 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_continuity  # noqa: E402
+# 007-004 §5/ADR-036: the durable receipt of an errand is verified, and located,
+# by its producer (`cdad_result`); this interface imports both rules.
+import cdad_result  # noqa: E402
 
 TERMINATION_VOCABULARY = (
     "completed", "blocked", "transport-error", "timeout", "cancelled", "unknown",
 )
-OUTPUT_KEYS = ("attempt", "session", "termination", "delivery_ref", "diagnosis")
+# 007-004 §4.1: the closed delivery vocabulary. `none` acredits no consumable
+# delivery; `staged` names the existing descriptor of the native path; `received`
+# names the existing durable receipt of an external arrival.
+DELIVERY_VOCABULARY = ("none", "staged", "received")
+OUTPUT_KEYS = ("attempt", "session", "termination", "delivery", "delivery_ref",
+               "diagnosis")
 DESTINATION_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 FLAT_NAME = re.compile(r"[A-Za-z0-9._-]+")
 ADAPTER_PREFIX = "cdad_delegate_"
@@ -254,38 +274,177 @@ def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
         proc = subprocess.run(argv, input=packet_bytes, capture_output=True,
                               cwd=str(project_root), timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
-        return {"termination": "timeout", "session": None, "delivery_ref": None,
+        return {"attempt": None, "termination": "timeout", "session": None,
+                "delivery": "none", "delivery_ref": None,
                 "diagnosis": f"destination {destination!r} did not answer within "
                              f"{timeout} seconds"}
     except OSError as exc:
-        return {"termination": "transport-error", "session": None,
-                "delivery_ref": None,
+        return {"attempt": None, "termination": "transport-error", "session": None,
+                "delivery": "none", "delivery_ref": None,
                 "diagnosis": f"destination {destination!r} could not be started: {exc}"}
     stdout = proc.stdout.decode("utf-8", errors="replace")
     stderr = proc.stderr.decode("utf-8", errors="replace").strip()
     envelope = _parse_envelope(stdout)
     if envelope is None:
-        return {"termination": "transport-error", "session": None,
-                "delivery_ref": None,
+        return {"attempt": None, "termination": "transport-error", "session": None,
+                "delivery": "none", "delivery_ref": None,
                 "diagnosis": f"destination {destination!r} returned no envelope "
                              f"(rc={proc.returncode}): {stderr[:200]}"}
     return envelope
 
 
-def _normalize_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
-    """The declared output schema (T1): the attempt is RELAYED from the
-    destination's own envelope — the module registers and declares it (PD-1 of
-    006-005); this interface never replaces it with one of its own."""
-    termination = envelope.get("termination")
-    if termination not in TERMINATION_VOCABULARY:
-        termination = "unknown"
+def _legacy_receipt_cause(project_root: Path, request: dict[str, Any],
+                          packet_id: str, reference: str) -> str | None:
+    """§5/ADR-036: why a historical reference is NOT this errand's receipt.
+
+    The reference is accepted only when it IS the one durable receipt of this
+    errand — the receipt of its (execution, packet), whose location rule and
+    verifier are the producer's (`cdad_result`, imported and never re-made) —
+    and that receipt passes `validate-receipt`. A descriptor, a plain text, a
+    receipt of another errand or a copy elsewhere is not a received landing.
+    """
+    execution_id = _as_text(request.get("execution_id"))
+    if execution_id is None:
+        return ("the packet request declares no execution_id: the receipt of this "
+                "errand cannot be located (007-004 §5)")
+    try:
+        expected = cdad_result.durable_receipt_path(
+            project_root, execution_id, packet_id)
+    except cdad_result.ResultError as exc:
+        return f"the receipt of this errand cannot be located: {exc}"
+    candidate = Path(reference)
+    if not candidate.is_absolute():
+        candidate = project_root / candidate
+    try:
+        if candidate.resolve() != expected.resolve():
+            return (f"the historical reference {reference!r} is not the durable "
+                    f"receipt of this errand ({expected}): a descriptor, a plain "
+                    f"text or another errand's receipt acredits no reception "
+                    f"(007-004 §5)")
+        cdad_result.validate_receipt(
+            argparse.Namespace(receipt=str(expected)), project_root)
+    except (cdad_result.ResultError, OSError) as exc:
+        return (f"the historical reference {reference!r} does not validate as the "
+                f"receipt of this errand: {exc} (007-004 §5)")
+    return None
+
+
+def _rejection(envelope: dict[str, Any], diagnosis: str) -> dict[str, Any]:
+    """§4.4: an unusable adapter answer is diagnosed, never relayed as a
+    delivery, and the usable identities of the original are kept unchanged."""
     return {
         "attempt": _as_text(envelope.get("attempt")),
         "session": _as_text(envelope.get("session")),
-        "termination": termination,
-        "delivery_ref": _as_text(envelope.get("delivery_ref")),
-        "diagnosis": _as_text(envelope.get("diagnosis")),
+        "termination": "transport-error",
+        "delivery": "none",
+        "delivery_ref": None,
+        "diagnosis": diagnosis,
     }
+
+
+def _accepted(attempt: Any, session: Any, termination: str, delivery: str,
+              delivery_ref: str | None, diagnosis: Any) -> dict[str, Any]:
+    return {
+        "attempt": _as_text(attempt),
+        "session": _as_text(session),
+        "termination": termination,
+        "delivery": delivery,
+        "delivery_ref": _as_text(delivery_ref),
+        "diagnosis": _as_text(diagnosis),
+    }
+
+
+def interpret_arrival(envelope: dict[str, Any], project_root: Path,
+                      request: dict[str, Any],
+                      packet_id: str) -> dict[str, Any]:
+    """007-004 §4.2/§4.3/§5: classify an EXTERNAL arrival's envelope.
+
+    This interface relays the destination module's envelope: it performs no
+    reception and stages nothing, so `completed + staged` is refused here — the
+    module owns the existing reception and only `received` is a valid external
+    landing (§4.3). A historical envelope (no `delivery` key) is interpreted by
+    the known context of THIS arrival: `completed` is a received landing only
+    when its reference IS the durable receipt of this errand and the producer's
+    verifier accepts it, and any non-completed termination carries no reference
+    (§5). Everything outside the closed table is a protocol response that is not
+    usable (§4.4).
+    """
+    termination = envelope.get("termination")
+    if not isinstance(termination, str) or termination not in TERMINATION_VOCABULARY:
+        return _rejection(
+            envelope,
+            f"the destination declared an unknown termination {termination!r}: "
+            f"expected one of {', '.join(TERMINATION_VOCABULARY)} (007-004 §4.2)")
+    reference = envelope.get("delivery_ref")
+    if "delivery" in envelope:
+        delivery = envelope.get("delivery")
+        if not isinstance(delivery, str) or delivery not in DELIVERY_VOCABULARY:
+            return _rejection(
+                envelope,
+                f"the destination declared an unknown delivery {delivery!r}: "
+                f"expected one of {', '.join(DELIVERY_VOCABULARY)} (007-004 §4.2)")
+        if delivery == "none":
+            if reference is not None:
+                return _rejection(
+                    envelope,
+                    "the destination declared delivery=none with a delivery_ref: "
+                    "a delivery without credit is contradictory (007-004 §4.2)")
+            if termination == "completed":
+                return _rejection(
+                    envelope,
+                    "the destination declared completed with delivery=none: a "
+                    "completed attempt without a delivery is contradictory "
+                    "(007-004 §4.2)")
+            return _accepted(envelope.get("attempt"), envelope.get("session"),
+                             termination, "none", None, envelope.get("diagnosis"))
+        if _as_text(reference) is None:
+            return _rejection(
+                envelope,
+                f"the destination declared delivery={delivery} without a "
+                f"non-empty delivery_ref (007-004 §4.2)")
+        if termination != "completed":
+            return _rejection(
+                envelope,
+                f"the destination declared {termination} with "
+                f"delivery={delivery}: only a completed attempt carries a "
+                f"delivery (007-004 §4.2)")
+        if delivery == "staged":
+            return _rejection(
+                envelope,
+                "the external arrival declared completed/staged: the runtime "
+                "module owns the reception, so an external landing is only "
+                "received; staged belongs to the native record path "
+                "(007-004 §4.3)")
+        return _accepted(envelope.get("attempt"), envelope.get("session"),
+                         "completed", "received", reference,
+                         envelope.get("diagnosis"))
+    # §5 — historical envelope: its absence of `delivery` is the ONLY condition
+    # that activates this interpretation. The reference is never accepted by its
+    # name nor because the artifact exists: only the errand's own receipt,
+    # verified by its producer, is a received landing.
+    if termination == "completed":
+        if _as_text(reference) is None:
+            return _rejection(
+                envelope,
+                "the historical envelope declares completed without a non-empty "
+                "delivery_ref: it cannot be a received landing (007-004 §5)")
+        cause = _legacy_receipt_cause(project_root, request, packet_id, reference)
+        if cause is not None:
+            return _rejection(envelope, cause)
+        return _accepted(envelope.get("attempt"), envelope.get("session"),
+                         "completed", "received", reference,
+                         envelope.get("diagnosis"))
+    if reference is not None:
+        # A termination that denies the delivery cannot carry a reference: the
+        # contradiction is never normalized away by dropping the reference.
+        return _rejection(
+            envelope,
+            f"the historical envelope declares {termination} with a reference "
+            f"{reference!r}: only a completed termination carries a reference, "
+            f"and the heritage of the delivery is never repaired by removing it "
+            f"(007-004 §4.2/§5)")
+    return _accepted(envelope.get("attempt"), envelope.get("session"),
+                     termination, "none", None, envelope.get("diagnosis"))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -398,8 +557,9 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # module's — it registers its own record and declares its attempt in the
     # envelope; this interface RELAYS it and registers nothing (a second record
     # with a different observation would make the external path have two
-    # writers of the same attempt).
-    return _normalize_envelope(envelope)
+    # writers of the same attempt). 007-004: the relay classifies the delivery
+    # of this external arrival instead of trusting `termination` alone.
+    return interpret_arrival(envelope, project_root, request, args.packet)
 
 
 def main(argv: list[str] | None = None) -> int:

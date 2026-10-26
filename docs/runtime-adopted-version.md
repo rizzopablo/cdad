@@ -5,6 +5,15 @@ este mismo proyecto. Mantenido por el orquestador.
 
 ## Versión vigente
 
+## Despliegue 2026-10-24 — epic-007 (007-001..003)
+
+- **Commit instalado:** `6b3da4e` (`~/version.txt`). Autorización del dueño: «Si necesitas desplegar puedes hacerlo» (2026-10-24). Script: `.cdad/local/deploy-007-001-003.sh`; respaldo previo en `<workspace>/archive/20261024-2354-cdad-pre-007-001-003`; rollback: copiar el respaldo sobre HOME.
+- **Borde del otro proyecto activo:** paquete `prepared`, sin despacho en vuelo; su orquestador estaba detenido por cuota del proveedor.
+- **Instalado y verificado:** skills (`cdad_packet.py status` con `situation`; `cdad_continuity.py` con `verify-begin` y `checkpoint-receipt`) y el agente orquestador (OpenCode y Claude Code).
+- **Preservado sin tocar (12 conflictos):** los 10 agentes de rol de OpenCode que el dueño configuró con `model:` y que el runtime 2.1.4 reescribió al formato nuevo de permisos (`permissions:` en lista), más `.pyc` (DT-8). Por eso `install.sh --check` da FAIL «missing staged agents/opencode/cdad-<rol>.md»: no es un fallo de instalación sino la preservación de la configuración del dueño.
+- **Hallazgo (deuda):** el generador emite agentes de OpenCode en el formato de permisos anterior (`permission:` mapa) mientras el runtime observado es 2.1.4 y migró los agentes del dueño. Antes del próximo despliegue de agentes de rol: verificar el formato vigente del runtime y si el instalador debe fusionar `model:` del dueño en lugar de preservar el archivo completo.
+
+
 | Campo | Valor |
 |---|---|
 | Commit | `29a4805` (005-012, 005-013, 005-014 y el saneamiento de contenido), desplegado el 2026-10-14 |

@@ -51,6 +51,8 @@ Insumos: `docs/planning/next-epic-discovery-notes.md` (E1, con la consulta al ar
 | 3 | 007-003-continuity-at-edges | El recorrido normal deja continuidad vigente en sus bordes y una reparación se retoma sin repetir intentos | AC-7.1; B2; continuidad de S-ITER-01 | 001; coordinada con 002 | Parcial (con 004) |
 | 4 | 007-004-termination-not-success | El consumidor distingue comando procesado, bloqueo, resultado disponible y recepción; no avanza por rc 0 solo | AC-7.8; W-2 | 001 | Sí (con 003) |
 | 5 | 007-005-serial-reception | Un tramo pendiente autorizado del otro proyecto activo atraviesa entrada–despacho–recepción con la versión adoptada | recepción del epic | 001-004 + adopción autorizada por el dueño | No |
+| 6 | 007-006-withdraw-and-republish | Un paquete `prepared` nunca despachado se retira con motivo y libera `prepare`; los agentes derivados se republican sin `prepare` | deadlock PD-4/PD-8/PD-21 y DRIFT del otro proyecto activo | 007 (se abre por el ciclo tras suspender 004) | No |
+| 7 | 007-007-suspend-resume-units | Una unidad se suspende en borde seguro, se trabaja otra y se reanuda la primera sin perder estado ni repetir efectos | serialidad sin preempción (excepción de arranque) | 003 | No |
 
 Detalle de cada una: su propia spec en `cdad-cycle`. Las líneas de código que sustentan cada
 brecha están en la consulta del architect (discovery notes §8).
@@ -93,3 +95,7 @@ Revisión read-only del reviewer (sesión `ses_e94d5fd29ffe…`, APTO CON AJUSTE
 ---
 
 Status: Approved by Orquestador (Claude), por HITL delegada del dueño (2026-10-23), on 2026-10-23
+
+## Cambios al plan
+
+- **2026-10-25 — altas 007-006 y 007-007 (cambio de alcance, aprobado por el dueño).** Motivo: el ciclo serial no permitía pausar una unidad ni retirar un paquete `prepared` nunca despachado; ambas carencias obligaron a dos excepciones de arranque y bloquean al otro proyecto activo. Aprobación del dueño: «ok» a 007-006 y «lo que falta ahora es suspender, cambiar de unidad, y reanudar luego. Eso destraba el bloqueo, el paralelismo queda planificado» (paralelismo: B3/B4 de Superlite, epic siguiente). 007-007 se desarrolla con excepción de arranque acotada (handoff 2026-10-25); al desplegarse, 007-004 se suspende y 007-006 se abre por el ciclo. La reparación de génesis legado (enmienda de 007-003) ya cerró bajo su propia excepción.

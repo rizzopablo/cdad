@@ -3,26 +3,6 @@
   "stack": null,
   "active_epic": "epic-007-reliable-cycle-operation",
   "epic_stage": "features-loop",
-  "active_feature": null,
-  "current_stage": "idle",
-  "audit_status": null,
-  "review_status": {
-    "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
-    "reviewer": "mofgw/glm-5.3-flash (familia distinta a la del implementer mofgw/deepseek-v4.1-flash)",
-    "review_path": "docs/specs/005-014-closure-replay/review.md",
-    "review_sha256": "f61c290029585f9d0e4386733b6e8dd599a4e1312c7af8af1fc9d905ada82a12",
-    "criterion": "criterio de review vigente 2026-10-12 (execution.md): se bloquea lo que compromete el resultado, la evidencia o el uso previsto; a deuda lo que no tiene impacto material",
-    "disposition": "Sin bloqueantes. Los 4 opcionales (O-1 la rama cerrada no exige --closure-path y la omision cae en PD-25/PD-27c; O-2 --feature '' se trata como ausente; O-3 el limite declarado de PD-23 se extiende a los --artifact citados; O-4 el mensaje de PD-25 no nombra receive --late) van a deuda del cierre: mejora o variante sin impacto material. Actualizacion MANUAL declarada: el campo derivado no tiene dueno en la operacion de transiciones (deuda D-2 de 005-012)."
-  },
-  "postconditions_status": {
-    "1": "green",
-    "7": "green",
-    "3": "green",
-    "4": "red",
-    "5": "green",
-    "6": "green",
-    "8": "green"
-  },
   "epic_features": [
     {
       "id": "007-001-unambiguous-entry",
@@ -56,11 +36,49 @@
     },
     {
       "id": "007-004-termination-not-success",
-      "status": "queued"
+      "status": "done",
+      "opened_at": "2026-10-25T02:44:55.280321+00:00",
+      "closed_at": "2026-10-26T17:28:42.909796+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-004-termination-not-success/closure.md",
+        "sha256": "97470b889603fd68ef0b325942739352b5a035ce30653e680e24dbbf43af78a6"
+      }
     },
     {
       "id": "007-005-serial-reception",
-      "status": "queued"
+      "status": "done",
+      "opened_at": "2026-10-26T18:26:58.339061+00:00",
+      "closed_at": "2026-10-26T18:53:42.654096+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-005-serial-reception/closure.md",
+        "sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
+      }
+    },
+    {
+      "id": "007-006-withdraw-and-republish",
+      "status": "done",
+      "depends_on": [
+        "007-007-suspend-resume-units"
+      ],
+      "opened_at": "2026-10-26T02:19:18.819233+00:00",
+      "closed_at": "2026-10-26T07:36:00.320264+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-006-withdraw-and-republish/closure.md",
+        "sha256": "fd87b476f84b646de360b3fdac7f5266e8ccff16b5223ae05cc9cfa750817785"
+      }
+    },
+    {
+      "id": "007-007-suspend-resume-units",
+      "status": "done",
+      "depends_on": [
+        "007-003-continuity-at-edges"
+      ],
+      "opened_at": "2026-10-26T02:18:13.850790+00:00",
+      "closed_at": "2026-10-26T02:18:38.824700+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/007-007-suspend-resume-units/closure.md",
+        "sha256": "a7f15f029dc1ddeedb60b6342b9648f5e14c8803e7762669c759ba065fed60cd"
+      }
     }
   ],
   "epic_history": [
@@ -15783,6 +15801,975 @@
       "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
       "closure_path": "docs/specs/007-003-continuity-at-edges/closure.md",
       "closure_sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-25T02:47:30.045135+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "a989414b8a4f5387c7928672211f730a07d3b5a761da9240efc197b0c557ad7d",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "007-004-termination-not-success-architect-discovery-001",
+        "receipt_sha256": "6bfeed55936101ab86fe9676dde06b4481d5b92287fb29100253d045d533efb3",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-004-termination-not-success/discovery.md",
+            "a33ac3ae37ad2bb390aef533d85b80ad3a0c4b29308188f47173664a1690dbcc"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-004-termination-not-success-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-004-termination-not-success-001/007-004-termination-not-success-architect-discovery-001/receipt.json",
+      "receipt_sha256": "6bfeed55936101ab86fe9676dde06b4481d5b92287fb29100253d045d533efb3",
+      "artifacts": {
+        "docs/specs/007-004-termination-not-success/discovery.md": "a33ac3ae37ad2bb390aef533d85b80ad3a0c4b29308188f47173664a1690dbcc"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-25T02:49:59.889702+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "8eae0ca4ed7c02488810043f87fc388e05d780ec41d97966bed8525501a9df96",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "007-004-termination-not-success-architect-draft-001",
+        "receipt_sha256": "afb7ea46bd29532411c7fd746a32377b48e146a0b047f87b1debaba240ee3369",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-004-termination-not-success/spec.md",
+            "d8973563f1cea0a430cacdcaf5ed08985c7159d0980baa9efb2f43780735679b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-004-termination-not-success-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-004-termination-not-success-001/007-004-termination-not-success-architect-draft-001/receipt.json",
+      "receipt_sha256": "afb7ea46bd29532411c7fd746a32377b48e146a0b047f87b1debaba240ee3369",
+      "artifacts": {
+        "docs/specs/007-004-termination-not-success/spec.md": "d8973563f1cea0a430cacdcaf5ed08985c7159d0980baa9efb2f43780735679b"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-25T02:51:28.537090+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "69002e108ae66722889130fdf9cac00206f62e822efde892f405774116d93350",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+        "contract": {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "a91deabd6e450c7f08a8dfa9bda8427ad5f85855c6712c65f91ff73b34152785"
+        },
+        "plan": {
+          "path": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
+          "sha256": "713194aac03a1d077db3075d2062322e6ab61919de0a00dfb624146506042440"
+        },
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (Claude) por HITL delegada del dueño",
+      "contract_path": "docs/specs/007-004-termination-not-success/spec.md",
+      "contract_sha256": "a91deabd6e450c7f08a8dfa9bda8427ad5f85855c6712c65f91ff73b34152785",
+      "plan_path": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
+      "plan_sha256": "713194aac03a1d077db3075d2062322e6ab61919de0a00dfb624146506042440",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-25T14:53:46.085867+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "db06c1e93b25bb9bd8674224ebacc1966202ebafac3661cb7bc04396172a9f37",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "delivery",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": "007-004-termination-not-success-test-writer-red-001",
+        "receipt_sha256": "d16e653a8cf8b63c4efa91d50b0b55e60d404dea5ea1c5c01c4130a710dc2ce8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_007_004_termination_not_success.py",
+            "f42aca7938855722530f55f9f71c61cbe43f023a6a1e3e6eafd09c5076b4889d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-004-termination-not-success-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-004-termination-not-success-001/007-004-termination-not-success-test-writer-red-001/receipt.json",
+      "receipt_sha256": "d16e653a8cf8b63c4efa91d50b0b55e60d404dea5ea1c5c01c4130a710dc2ce8",
+      "artifacts": {
+        "tests/test_007_004_termination_not_success.py": "f42aca7938855722530f55f9f71c61cbe43f023a6a1e3e6eafd09c5076b4889d"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-25T22:12:00.303900+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "531db92b75fc8df7bad280afbcdce34deb7fcfef1ab1087e3b9474668039c1df",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "delivery",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": "007-004-termination-not-success-test-writer-red-002",
+        "receipt_sha256": "08c3f3d3720902c802153b7247d11129d552ad62423f3ee345a3cefcc72d11c7",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_007_004_termination_not_success.py",
+            "3f73a3b2eeb7e8c90bdf197cc25b94c4d8c18f957fb0c8001636e4938eb5a395"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-004-termination-not-success-test-writer-red-002",
+      "receipt_ref": ".cdad/runtime/results/exec-007-004-termination-not-success-001/007-004-termination-not-success-test-writer-red-002/receipt.json",
+      "receipt_sha256": "08c3f3d3720902c802153b7247d11129d552ad62423f3ee345a3cefcc72d11c7",
+      "artifacts": {
+        "tests/test_007_004_termination_not_success.py": "3f73a3b2eeb7e8c90bdf197cc25b94c4d8c18f957fb0c8001636e4938eb5a395"
+      },
+      "note": null
+    },
+    {
+      "transition": "suspend",
+      "feature": "007-004-termination-not-success",
+      "at": "2026-10-26T02:18:10.945425+00:00",
+      "reason": "pausar 007-004 para cerrar 007-007 y destrabar 007-006 (decisión del dueño 2026-10-25)"
+    },
+    {
+      "feature": "007-007-suspend-resume-units",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T02:18:38.527076+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "2f3cd4f2e7a8c44937495ea9ca80d7b08bcbe8c7b7e85e4fcabce89c93585316",
+      "transition_key_payload": {
+        "execution_id": "exec-007-007-suspend-resume-units-001",
+        "feature_id": "007-007-suspend-resume-units",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-007-suspend-resume-units/spec.md",
+      "contract_sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-007-suspend-resume-units",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-26T02:18:38.824700+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "2d91392a2c63ceaf27b43de301927e52a0ee8b13d02426f414460b5253570109",
+      "transition_key_payload": {
+        "execution_id": "exec-007-007-suspend-resume-units-001",
+        "feature_id": "007-007-suspend-resume-units",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-007-suspend-resume-units/closure.md",
+          "sha256": "a7f15f029dc1ddeedb60b6342b9648f5e14c8803e7762669c759ba065fed60cd"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "closure_path": "docs/specs/007-007-suspend-resume-units/closure.md",
+      "closure_sha256": "a7f15f029dc1ddeedb60b6342b9648f5e14c8803e7762669c759ba065fed60cd"
+    },
+    {
+      "feature": "007-006-withdraw-and-republish",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T02:20:50.607310+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "cbac01e1b32929be7cc5a83e97c4714f0ed3d6e4ed84caedddce44cd9dc038c8",
+      "transition_key_payload": {
+        "execution_id": "exec-007-006-withdraw-and-republish-001",
+        "feature_id": "007-006-withdraw-and-republish",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "894697900b2774dfe691808b943cb1a6a8907376ab39bf692fd2c16bb38a67e9"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+      "contract_sha256": "894697900b2774dfe691808b943cb1a6a8907376ab39bf692fd2c16bb38a67e9",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-006-withdraw-and-republish",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T05:45:15.772596+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "ca9a05eda8df4478f7882f22bf10d97deb9e976dfdb5b679a13752b1e0ab4b65",
+      "transition_key_payload": {
+        "execution_id": "exec-007-006-withdraw-and-republish-001",
+        "feature_id": "007-006-withdraw-and-republish",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+      "contract_sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-006-withdraw-and-republish",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-26T07:36:00.320264+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "021b9f8ca69ec0f3042712b77d74943946534f5d464a3ea78ea3abc986b580c2",
+      "transition_key_payload": {
+        "execution_id": "exec-007-006-withdraw-and-republish-001",
+        "feature_id": "007-006-withdraw-and-republish",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-006-withdraw-and-republish/closure.md",
+          "sha256": "fd87b476f84b646de360b3fdac7f5266e8ccff16b5223ae05cc9cfa750817785"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "closure_path": "docs/specs/007-006-withdraw-and-republish/closure.md",
+      "closure_sha256": "fd87b476f84b646de360b3fdac7f5266e8ccff16b5223ae05cc9cfa750817785"
+    },
+    {
+      "transition": "resume",
+      "feature": "007-004-termination-not-success",
+      "at": "2026-10-26T13:16:02.680954+00:00"
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-26T13:26:26.046210+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "79b93166638ccf8f67678f57d723423b3ffdba34768cac8928ba627b2fbe34ed",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "delivery",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": "007-004-termination-not-success-test-writer-red-003",
+        "receipt_sha256": "6c7c160e53632a764e4e233a55e4e80deee412179853c107d87e2174033a9c9f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_007_004_termination_not_success.py",
+            "a4466551cc239f37ddc2eb9031e53ff8521518f780abb6bd0d11ea01157a0053"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-004-termination-not-success-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-007-004-termination-not-success-001/007-004-termination-not-success-test-writer-red-003/receipt.json",
+      "receipt_sha256": "6c7c160e53632a764e4e233a55e4e80deee412179853c107d87e2174033a9c9f",
+      "artifacts": {
+        "tests/test_007_004_termination_not_success.py": "a4466551cc239f37ddc2eb9031e53ff8521518f780abb6bd0d11ea01157a0053"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "tdd",
+      "substage": null,
+      "at": "2026-10-26T13:26:26.504420+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "236bc6a61242e9e752ea3418cf3846ef4d04fab91bec86f75b7316ac088fde4e",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "gate",
+        "stage": "tdd",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-004-termination-not-success",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-26T17:28:42.909796+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "9232e874743ce8b31c64f56f89f72e90c48dbdd315c8a6aaa07918d951dedf00",
+      "transition_key_payload": {
+        "execution_id": "exec-007-004-termination-not-success-001",
+        "feature_id": "007-004-termination-not-success",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-004-termination-not-success/closure.md",
+          "sha256": "97470b889603fd68ef0b325942739352b5a035ce30653e680e24dbbf43af78a6"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "closure_path": "docs/specs/007-004-termination-not-success/closure.md",
+      "closure_sha256": "97470b889603fd68ef0b325942739352b5a035ce30653e680e24dbbf43af78a6"
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-26T18:30:00.748582+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "efec2b54c0027088304ac719815feb510873dfd9c645e5c48a4a547f1706e137",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "007-005-serial-reception-architect-discovery-001",
+        "receipt_sha256": "a19f977fb9764d4cd8e8ec569b9be79848d412992b9a065a61a1c2900f3d1982",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-005-serial-reception/discovery.md",
+            "f441630cb830caee1800e62ef59f89934d3b472b0326a24369a4747b0d7216e5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-005-serial-reception-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-005-serial-reception-001/007-005-serial-reception-architect-discovery-001/receipt.json",
+      "receipt_sha256": "a19f977fb9764d4cd8e8ec569b9be79848d412992b9a065a61a1c2900f3d1982",
+      "artifacts": {
+        "docs/specs/007-005-serial-reception/discovery.md": "f441630cb830caee1800e62ef59f89934d3b472b0326a24369a4747b0d7216e5"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-26T18:30:01.044223+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "f050346d0b891a7c28ff440f5e71db447f9fd32d350d9ec698aeebb7bcd73583",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "gate",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T18:30:59.198884+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "7b9e59d3ebe24291318adb0e8f752d39789dc9eec8a4dbacd1597a9a970c2d94",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "advance",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T18:32:01.223570+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "e4cddd3ac2d4c039140d09ac60ca8314260a53c8dab2cd9ca428899e06fc39d7",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "advance",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T18:36:22.437244+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "6cbfbb4e706031c1c34e094f4685a48e0adf975178c4c745c5352de358899af2",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "007-005-serial-reception-architect-draft-001",
+        "receipt_sha256": "16e69099977ce9e9899998d2740ffbf76eb08512bc26420ffaa3961291325e6f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-005-serial-reception/spec.md",
+            "f899b3c9647e6982e84ee150863337837f1dc3d12efab8fe3e5c88f76a5e556c"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-005-serial-reception-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-005-serial-reception-001/007-005-serial-reception-architect-draft-001/receipt.json",
+      "receipt_sha256": "16e69099977ce9e9899998d2740ffbf76eb08512bc26420ffaa3961291325e6f",
+      "artifacts": {
+        "docs/specs/007-005-serial-reception/spec.md": "f899b3c9647e6982e84ee150863337837f1dc3d12efab8fe3e5c88f76a5e556c"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T18:38:15.082121+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "408e68a17ff4d02f93b6087a20cc6e8c9f85ea6bbd52bb3c9f9606a617f8bcf0",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-005-serial-reception/spec.md",
+          "sha256": "b200415f9e1530fbe6452ff3b4c807f978a999c487b8560bbbe2ea566abe58dc"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-005-serial-reception/spec.md",
+      "contract_sha256": "b200415f9e1530fbe6452ff3b4c807f978a999c487b8560bbbe2ea566abe58dc",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-10-26T18:44:21.694918+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "32bd79ddfbafe6d6225bcd5352f045c0febba52a9ec6dc5e066f72172d1c2bf7",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "advance",
+        "stage": "review",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T18:50:05.244311+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "d0fdae75cb18141023f7bd2accf20a3e4433f3414f2ceb7366b40214cfa401d3",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-005-serial-reception/spec.md",
+          "sha256": "6392448b31efa614623ebcec0a6e40b10ecf2a8073e92c425386ac114a4368eb"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-005-serial-reception/spec.md",
+      "contract_sha256": "6392448b31efa614623ebcec0a6e40b10ecf2a8073e92c425386ac114a4368eb",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "specification-amendment",
+      "substage": null,
+      "at": "2026-10-26T18:53:04.040336+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "401141147523d5bbcf1ad48c8cb950188bd67af36431f992f5c25a8b6f6fe197",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "gate",
+        "stage": "specification-amendment",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-005-serial-reception/amendment-pc03.md",
+          "sha256": "9c9839ef52d1fa2681b2616f05271cb6acfaf417ef0ab26edc44372f43be02e7"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-005-serial-reception/amendment-pc03.md",
+      "contract_sha256": "9c9839ef52d1fa2681b2616f05271cb6acfaf417ef0ab26edc44372f43be02e7",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-005-serial-reception",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-26T18:53:42.654096+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "cb85cc4e842b895f08c8036428f08cfd7550909bc9ec954e992fac1eaced5435",
+      "transition_key_payload": {
+        "execution_id": "exec-007-005-serial-reception-001",
+        "feature_id": "007-005-serial-reception",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-005-serial-reception/closure.md",
+          "sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "closure_path": "docs/specs/007-005-serial-reception/closure.md",
+      "closure_sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
@@ -15797,7 +16784,7 @@
     "status": "active",
     "epic_id": "epic-007-reliable-cycle-operation"
   },
-  "last_updated": "2026-10-25T00:28:59.981962+00:00",
+  "last_updated": "2026-10-26T18:53:42.654096+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -15895,15 +16882,36 @@
       "epic_id": "epic-006-opencode-concurrency"
     }
   ],
+  "suspended_units": {},
+  "active_feature": null,
+  "current_stage": "idle",
+  "tdd_substage": null,
+  "postconditions_status": {
+    "1": "green",
+    "7": "green",
+    "3": "green",
+    "4": "red",
+    "5": "green",
+    "6": "green",
+    "8": "green"
+  },
+  "audit_status": null,
+  "review_status": {
+    "verdict": "0 bloqueantes / 4 opcionales / 3 abstenciones",
+    "reviewer": "mofgw/glm-5.3-flash (familia distinta a la del implementer mofgw/deepseek-v4.1-flash)",
+    "review_path": "docs/specs/005-014-closure-replay/review.md",
+    "review_sha256": "f61c290029585f9d0e4386733b6e8dd599a4e1312c7af8af1fc9d905ada82a12",
+    "criterion": "criterio de review vigente 2026-10-12 (execution.md): se bloquea lo que compromete el resultado, la evidencia o el uso previsto; a deuda lo que no tiene impacto material",
+    "disposition": "Sin bloqueantes. Los 4 opcionales (O-1 la rama cerrada no exige --closure-path y la omision cae en PD-25/PD-27c; O-2 --feature '' se trata como ausente; O-3 el limite declarado de PD-23 se extiende a los --artifact citados; O-4 el mensaje de PD-25 no nombra receive --late) van a deuda del cierre: mejora o variante sin impacto material. Actualizacion MANUAL declarada: el campo derivado no tiene dueno en la operacion de transiciones (deuda D-2 de 005-012)."
+  },
+  "active_packet": null,
   "execution": {
-    "id": "exec-007-003-continuity-at-edges-001",
+    "id": "exec-007-005-serial-reception-001",
     "epic_id": "epic-007-reliable-cycle-operation",
-    "feature_id": "007-003-continuity-at-edges",
+    "feature_id": "007-005-serial-reception",
     "scope": "epic-007-reliable-cycle-operation",
     "authority_ref": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
-  },
-  "active_packet": null,
-  "tdd_substage": "review"
+  }
 }

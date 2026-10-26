@@ -1,0 +1,456 @@
+{
+ "schema": "cdad-evidence-manifest-v1",
+ "feature": "007-005-serial-reception",
+ "consumer": {
+  "alias": "el consumidor activo",
+  "root": "<consumer>",
+  "version": "538ec57"
+ },
+ "generated_at": "2026-10-26T18:47:36+00:00",
+ "entries": [
+  {
+   "alias": "status-inicial",
+   "path": "<consumer>/.cdad/local/reception-005/01-status-before.json",
+   "sha256": "1cefbd40c690e625129007b5f6215d9a91ae5816a68046ac8e89040680caef65",
+   "bytes": 2235,
+   "role": "observado",
+   "description": "vista compacta: entrada, situación, autoridad y versión",
+   "coverage": [
+    "PC-01",
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/01-status-before.json\"",
+   "limit": null
+  },
+  {
+   "alias": "version-check",
+   "path": "<consumer>/.cdad/local/reception-005/03-version.txt",
+   "sha256": "ee1b40a3556ec1f67218dc227890a4ebec8487977cc0080b3e780e3974a2b348",
+   "bytes": 355,
+   "role": "observado",
+   "description": "procedencia y coherencia de la instalación adoptada",
+   "coverage": [
+    "PC-01"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/03-version.txt\"",
+   "limit": null
+  },
+  {
+   "alias": "version-adoptada",
+   "path": "<home>/version.txt",
+   "sha256": "c7ce64c4ebeee8b18b07ba8d9d1b64e755a2f2161e645877c9a617d5edc10163",
+   "bytes": 41,
+   "role": "observado",
+   "description": "marcador de la versión adoptada en HOME",
+   "coverage": [
+    "PC-01"
+   ],
+   "command": "sha256sum \"$C/<home>/version.txt\"",
+   "limit": "la autorización de despliegue es una decisión del dueño registrada en el handoff de CDAD, no un archivo"
+  },
+  {
+   "alias": "continuidad-previa",
+   "path": "<consumer>/.cdad/local/reception-005/02-resume-before.json",
+   "sha256": "9a4796948601111f008fd5baea03ecfadc4b21297ab257d4770d0151bd30654c",
+   "bytes": 1299,
+   "role": "observado",
+   "description": "continuidad vigente antes del tramo",
+   "coverage": [
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/02-resume-before.json\"",
+   "limit": null
+  },
+  {
+   "alias": "prepare-stdout",
+   "path": "<consumer>/.cdad/local/reception-005/04-prepare.out",
+   "sha256": "1b2faa631a4d144b85eeeb124dd65e4d3645e71a1f8e1eab3315710e7fd2c258",
+   "bytes": 5210,
+   "role": "observado",
+   "description": "paquete canónico (mismos bytes que PACKET.md)",
+   "coverage": [
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/04-prepare.out\"",
+   "limit": null
+  },
+  {
+   "alias": "prepare-diagnostico",
+   "path": "<consumer>/.cdad/local/reception-005/04-prepare.err",
+   "sha256": "8724d057a934f1a04384437054c57c002bf278ed1c02c2a5e5770301cc97277e",
+   "bytes": 191,
+   "role": "observado",
+   "description": "diagnóstico de contrato: fallback al plan del epic",
+   "coverage": [
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/04-prepare.err\"",
+   "limit": null
+  },
+  {
+   "alias": "delta-decision",
+   "path": "<consumer>/.cdad/local/reception-005/05-update.json",
+   "sha256": "6e5ce99875b4ca77b4bedf801d9205fdb96832a3d28c934c354bba72ef6b79cd",
+   "bytes": 854,
+   "role": "observado",
+   "description": "decisión del delta con digest del antecedente",
+   "coverage": [
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/05-update.json\"",
+   "limit": null
+  },
+  {
+   "alias": "begin",
+   "path": "<consumer>/.cdad/local/reception-005/05-begin.json",
+   "sha256": "3c744fadd8b4fd43950efbedbe86db13cf0bfab9eb65fc59811b9ff41abcd72a",
+   "bytes": 464,
+   "role": "observado",
+   "description": "begin con N entero y seq",
+   "coverage": [
+    "PC-03"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/05-begin.json\"",
+   "limit": null
+  },
+  {
+   "alias": "continuidad-begin-body",
+   "path": "<consumer>/.cdad/executions/<execution>/continuity/bodies/dedb50df7d7c8ce4a1300aee1a685a1c22db15b983669884a602f5b89d3eac0e.json",
+   "sha256": "dedb50df7d7c8ce4a1300aee1a685a1c22db15b983669884a602f5b89d3eac0e",
+   "bytes": 1111,
+   "role": "observado",
+   "description": "cuerpo del begin (seq 16)",
+   "coverage": [
+    "PC-03"
+   ],
+   "command": "sha256sum \"$C/.cdad/executions/<execution>/continuity/bodies/dedb50df7d7c8ce4a1300aee1a685a1c22db15b983669884a602f5b89d3eac0e.json\"",
+   "limit": null
+  },
+  {
+   "alias": "verify-begin",
+   "path": "<consumer>/.cdad/local/reception-005/06-verify-begin.json",
+   "sha256": "987f0c950ab8e08f1da997616918eab27a4b278c94ef49c5eaba6d8afa682cd1",
+   "bytes": 247,
+   "role": "observado",
+   "description": "verificación pretransporte",
+   "coverage": [
+    "PC-03"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/06-verify-begin.json\"",
+   "limit": "ejecutado antes del primer transporte; el despacho aceptado reutilizó la misma cabeza sin escrituras de continuidad intermedias — la inmediatez temporal no está capturada"
+  },
+  {
+   "alias": "record-rechazado",
+   "path": "<consumer>/.cdad/local/reception-005/08-record.json",
+   "sha256": "15c13ca9905b76e590d145bbe361eed94afef30df364cf94b8d8f2294006478d",
+   "bytes": 496,
+   "role": "observado",
+   "description": "transporte rechazado por identidad: blocked/none, sin registro",
+   "coverage": [
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/08-record.json\"",
+   "limit": "el producto no registró el intento; la sesión rechazada sí ejecutó el trabajo (desviación de presupuesto declarada)"
+  },
+  {
+   "alias": "despacho-rechazado",
+   "path": "<consumer>/.cdad/local/reception-005/23-blocked-attempt.json",
+   "sha256": "dc7444df52f01ff58400ea5fedf0513085ad361ffa8205c8f3cde1abe98a89be",
+   "bytes": 707,
+   "role": "observado",
+   "description": "expediente privado del primer transporte rechazado",
+   "coverage": [
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/23-blocked-attempt.json\"",
+   "limit": null
+  },
+  {
+   "alias": "informe-final",
+   "path": "<consumer>/.cdad/local/reception-005/09-final-<packet>.txt",
+   "sha256": "3e4a1ab04f7b8ad1e60decafb42a8b190aef8a6fa8487f931fbbd5c08c0abf36",
+   "bytes": 5125,
+   "role": "observado",
+   "description": "bytes originales del informe entregado",
+   "coverage": [
+    "PC-06"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/09-final-<packet>.txt\"",
+   "limit": null
+  },
+  {
+   "alias": "record-verificado",
+   "path": "<consumer>/.cdad/local/reception-005/10-record.json",
+   "sha256": "276d631587a90a8fccd12055922fd5cfa9b391c4154cb932da095a78de08fed3",
+   "bytes": 434,
+   "role": "observado",
+   "description": "sobre staged con correlación parent/moment/project",
+   "coverage": [
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/10-record.json\"",
+   "limit": null
+  },
+  {
+   "alias": "receive",
+   "path": "<consumer>/.cdad/local/reception-005/11-receive.json",
+   "sha256": "c0f05dc1da72f8eede68e02e6dcef0d839caa0cfec9491bba62290099a8fd0b2",
+   "bytes": 1001,
+   "role": "observado",
+   "description": "recepción por delivery=staged y cierre solicitado",
+   "coverage": [
+    "PC-05",
+    "PC-07"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/11-receive.json\"",
+   "limit": null
+  },
+  {
+   "alias": "validate-receipt",
+   "path": "<consumer>/.cdad/local/reception-005/12-validate-receipt.txt",
+   "sha256": "733b597e308920ffa0ad4433235c0c4b639999f330bdaf63c9e8bbb479a9dcc8",
+   "bytes": 15,
+   "role": "observado",
+   "description": "recibo VALID",
+   "coverage": [
+    "PC-06"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/12-validate-receipt.txt\"",
+   "limit": null
+  },
+  {
+   "alias": "receipt-sha",
+   "path": "<consumer>/.cdad/local/reception-005/14-receipt-sha.txt",
+   "sha256": "af48497da69977f22c9f2d01efe2adc7e29475682ab7bb7a7905eb8893499668",
+   "bytes": 65,
+   "role": "observado",
+   "description": "digest del recibo usado en la transición",
+   "coverage": [
+    "PC-06"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/14-receipt-sha.txt\"",
+   "limit": null
+  },
+  {
+   "alias": "delivery-transition",
+   "path": "<consumer>/.cdad/local/reception-005/15-delivery.txt",
+   "sha256": "ad080571e87e19592b1c315888c4bac3923a8842874735caac98412429d00682",
+   "bytes": 537,
+   "role": "observado",
+   "description": "transición de entrega registrada en el estado",
+   "coverage": [
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/15-delivery.txt\"",
+   "limit": null
+  },
+  {
+   "alias": "historial-entrega",
+   "path": "<consumer>/.cdad/local/reception-005/22-history-entry.json",
+   "sha256": "f506110e14c186fd1ce299f43ab8a8461502166218a2b0243560894899f73089",
+   "bytes": 1440,
+   "role": "observado",
+   "description": "extracto de la entrada de historial canónico de la entrega",
+   "coverage": [
+    "PC-01",
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/22-history-entry.json\"",
+   "limit": null
+  },
+  {
+   "alias": "status-final",
+   "path": "<consumer>/.cdad/local/reception-005/16-status-final.json",
+   "sha256": "376705638ebe133ba7b009d315d3179aa86a593b71d6e272480c6ac9c11dc97d",
+   "bytes": 2235,
+   "role": "observado",
+   "description": "entrada final y siguiente operación",
+   "coverage": [
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/16-status-final.json\"",
+   "limit": null
+  },
+  {
+   "alias": "reconcile",
+   "path": "<consumer>/.cdad/local/reception-005/17-reconcile.json",
+   "sha256": "2a6fa218b5646c6dc9803afc787ebada3aaa4e4b0f46e29b13453a7e847784f1",
+   "bytes": 936,
+   "role": "observado",
+   "description": "clasificación received, repeat_effect=false",
+   "coverage": [
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/17-reconcile.json\"",
+   "limit": null
+  },
+  {
+   "alias": "continuidad-final",
+   "path": "<consumer>/.cdad/local/reception-005/18-resume-final.json",
+   "sha256": "88fc993dff32c414879145a24c7cd6536513416cee59ddffec523a3d7e190ccc",
+   "bytes": 1794,
+   "role": "observado",
+   "description": "proyección final de la continuidad",
+   "coverage": [
+    "PC-07",
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/18-resume-final.json\"",
+   "limit": null
+  },
+  {
+   "alias": "continuidad-receipt-body",
+   "path": "<consumer>/.cdad/executions/<execution>/continuity/bodies/b759d57b8b05c66cc37dc65c2329d14f409ce944cae10791fac0a8c5d5e2462d.json",
+   "sha256": "b759d57b8b05c66cc37dc65c2329d14f409ce944cae10791fac0a8c5d5e2462d",
+   "bytes": 1602,
+   "role": "observado",
+   "description": "cuerpo del cierre de recibo (seq 17)",
+   "coverage": [
+    "PC-07"
+   ],
+   "command": "sha256sum \"$C/.cdad/executions/<execution>/continuity/bodies/b759d57b8b05c66cc37dc65c2329d14f409ce944cae10791fac0a8c5d5e2462d.json\"",
+   "limit": "conserva el next_action previo («despachar el mismo paquete»): brecha de orientación declarada, no reparada aquí"
+  },
+  {
+   "alias": "antecedente",
+   "path": "<consumer>/.cdad/inbox/native-arch076-1-role-report.md",
+   "sha256": "6e286062e757122c8c6df354ee9662308ac04932fac0bef6d943089f52784c4a",
+   "bytes": 7574,
+   "role": "observado",
+   "description": "dictamen antecedente que abrió la pregunta diferencial",
+   "coverage": [
+    "PC-02"
+   ],
+   "command": "sha256sum \"$C/.cdad/inbox/native-arch076-1-role-report.md\"",
+   "limit": null
+  },
+  {
+   "alias": "estado-consumidor",
+   "path": "<consumer>/docs/.cdad-state.json",
+   "sha256": "f5ea96de7df08c712497dd4fcd23000f5677dd0304c102e8e781b5f0a6fe72af",
+   "bytes": 773697,
+   "role": "observado",
+   "description": "estado canónico completo del consumidor",
+   "coverage": [
+    "PC-01",
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/docs/.cdad-state.json\"",
+   "limit": "su digest cambia con cada transición; el extracto de historial acota la evidencia de la entrega"
+  },
+  {
+   "alias": "paquete-packet",
+   "path": "<consumer>/.cdad/packets/<packet>/PACKET.md",
+   "sha256": "1b2faa631a4d144b85eeeb124dd65e4d3645e71a1f8e1eab3315710e7fd2c258",
+   "bytes": 5210,
+   "role": "observado",
+   "description": "contrato del encargo",
+   "coverage": [
+    "PC-02",
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/packets/<packet>/PACKET.md\"",
+   "limit": null
+  },
+  {
+   "alias": "paquete-request",
+   "path": "<consumer>/.cdad/packets/<packet>/REQUEST.json",
+   "sha256": "969115c68f31b0e978125fa9f484f012e348ad3be6c25f5edbd668c5d3defb20",
+   "bytes": 2235,
+   "role": "observado",
+   "description": "identidad, scopes y contrato",
+   "coverage": [
+    "PC-02",
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/packets/<packet>/REQUEST.json\"",
+   "limit": null
+  },
+  {
+   "alias": "recibo",
+   "path": "<consumer>/.cdad/runtime/results/<execution>/<packet>/receipt.json",
+   "sha256": "c0f05dc1da72f8eede68e02e6dcef0d839caa0cfec9491bba62290099a8fd0b2",
+   "bytes": 1001,
+   "role": "observado",
+   "description": "recibo durable del productor",
+   "coverage": [
+    "PC-05",
+    "PC-06",
+    "PC-07"
+   ],
+   "command": "sha256sum \"$C/.cdad/runtime/results/<execution>/<packet>/receipt.json\"",
+   "limit": null
+  },
+  {
+   "alias": "cabeza-continuidad",
+   "path": "<consumer>/.cdad/executions/<execution>/continuity/head.json",
+   "sha256": "ad0ecf58ead05a1a64816b1943886b6db289dbdd6cb49f1e7e5709848999c608",
+   "bytes": 469,
+   "role": "observado",
+   "description": "cabeza con el cierre del recibo",
+   "coverage": [
+    "PC-07"
+   ],
+   "command": "sha256sum \"$C/.cdad/executions/<execution>/continuity/head.json\"",
+   "limit": null
+  },
+  {
+   "alias": "registro-despacho",
+   "path": "<consumer>/.cdad/executions/<execution>/dispatches/native-<packet>.json",
+   "sha256": "e3f3c7d9040033ff9fc7626c08d6a887ed389e215c55c311e0d06906a1ffae03",
+   "bytes": 908,
+   "role": "observado",
+   "description": "registro canónico del intento verificado",
+   "coverage": [
+    "PC-04"
+   ],
+   "command": "sha256sum \"$C/.cdad/executions/<execution>/dispatches/native-<packet>.json\"",
+   "limit": null
+  },
+  {
+   "alias": "comandos",
+   "path": "<consumer>/.cdad/local/reception-005/24-commands.md",
+   "sha256": "fff30d638ac987f4927b9785ef69b57c9e7879fc190dbbd1d41cb6c77cbd086f",
+   "bytes": 2248,
+   "role": "observado",
+   "description": "secuencia de comandos del tramo",
+   "coverage": [
+    "PC-01",
+    "PC-02",
+    "PC-03",
+    "PC-04",
+    "PC-05",
+    "PC-06",
+    "PC-07",
+    "PC-08"
+   ],
+   "command": "sha256sum \"$C/.cdad/local/reception-005/24-commands.md\"",
+   "limit": "reconstrucción declarada por el operador; no es un log capturado"
+  }
+ ],
+ "resolution": {
+  "path": "<consumer>/.cdad/local/reception-005/20-manifest-resolution.json",
+  "visibility": "privada"
+ },
+ "verification": {
+  "command": "python3 \"$C/.cdad/local/reception-005/verify-manifest.py\" --manifest <ruta de este manifiesto> --resolution \"$C/.cdad/local/reception-005/20-manifest-resolution.json\" --docs-root <ruta del directorio de la unidad en CDAD>",
+  "covers": [
+   "PC-01",
+   "PC-02",
+   "PC-03",
+   "PC-04",
+   "PC-05",
+   "PC-06",
+   "PC-07",
+   "PC-08"
+  ]
+ },
+ "limits": [
+  "no observado: fallos de runtime, timeout, cuota, reparación y retiro durante el tramo",
+  "dos sesiones de arquitecto: la primera entrega fue rechazada por identidad (sin registro ni efectos); desviación de presupuesto declarada y aceptada",
+  "la inmediatez temporal de verify-begin respecto del despacho aceptado no está capturada; la cabeza no cambió entre ambos",
+  "el cuerpo del cierre conserva el next_action previo: brecha de orientación declarada",
+  "el informe entregado no está aprobado: semantic_status=pending",
+  "la resolución alias→ruta real y las identidades de sesión son privadas del consumidor"
+ ]
+}

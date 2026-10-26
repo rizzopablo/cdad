@@ -262,10 +262,10 @@ this section is the operative reference.
 `register-transition` records an explicit orchestrator decision over a transition
 of the durable state: receiving a delivery (`delivery`), approving a gate
 (`gate`), advancing a stage (`advance`), closing a feature (`closure`), the late
-reception of a delivery for an already-closed feature (`late-delivery`) and the
+reception of a delivery for an already-closed feature (`late-delivery`), the
 disposition of a dispatched packet with no receipt (`disposition`, with
 `--resolution <abandoned|superseded>` and `--replaced-by` when the resolution is
-`superseded`).
+`superseded`) and the retirement of the active prepared packet (`withdraw`, §10).
 
 ```sh
 python3 <skill>/scripts/cdad_packet.py register-transition --project-root <root> \
@@ -275,3 +275,65 @@ python3 <skill>/scripts/cdad_packet.py register-transition --project-root <root>
 The operation, its classes and their checks are the contract of the approved
 feature spec (`docs/specs/005-012-transition-registration/spec.md` §2.1-§2.3);
 this section names the operation, it does not restate the checks.
+
+## 10. Retirar un paquete preparado y republicar los agentes derivados
+
+Two INDEPENDENT operations of `cdad_packet.py`. Neither of them prepares a packet,
+and each solves exactly one of the two blocks: an assignment that never reached a
+dispatch, and derived agents that lag behind the installed source.
+
+```sh
+# retirar el paquete ACTIVO `prepared` que nunca llegó a despacharse
+python3 <skill>/scripts/cdad_packet.py register-transition --project-root <root> \
+    --transition withdraw --packet <packet-id> --note "<motivo>"
+
+# republicar los agentes derivados del proyecto desde la instalación resuelta
+python3 <skill>/scripts/cdad_packet.py republish-agents --project-root <root>
+```
+
+**`withdraw` is not a disposition and not a replacement** (§8). The disposition
+resolves a dispatch that will not come back; the retirement declares that the
+assignment never reached a dispatch. That is why it is rejected before ANY positive
+or inconclusive effect signal — a dispatch record (unreadable or identity-less
+included), any result file, a materialization or a disposition — and why the
+`disposition` vocabulary is not widened to carry the opposite meaning. Its terminal
+effect reuses `active_packet.status = "failed"`; the semantic distinction lives in
+the entry (`transition: "withdraw"`, `resolution: "withdrawn"`, the canonical
+`stage: "packet-withdrawal"`), so the retirement never presents itself as an
+execution failure, a dispatch, a delivery, an approval or a closure (I1). The
+package, its request, the context and the rest of the artifacts stay byte for byte
+(I2), and the next `prepare` is free to publish a new assignment.
+
+An identical repetition (same motive) succeeds without writing anything; a
+DIFFERENT motive for an already registered retirement is a conflict (rc 1), never
+another decision. With a suspended unit the retirement of its packet is a protected
+state (rc 1): resume the unit explicitly or retire another packet. The withdrawal
+also closes the CURRENT continuity head of the same packet with a linked checkpoint
+that keeps the goal, the decisions, the evidence and its classification intact and
+only adds the retirement decision — no receipt and no `receipt_checkpoint` are
+created, because nothing was delivered (`references/continuity.md`).
+
+The complete contract — checks, rejections, idempotency and continuity — is the
+approved spec `docs/specs/007-006-withdraw-and-republish/spec.md` §«Contrato CLI»;
+this section names the operations and their place, it does not restate the checks.
+
+**`republish-agents`** republishes the project's derived agents and their manifest
+from the resolved installed source, reusing the constructor and the publication
+guarantees of `prepare` (permissions, accepted temporaries, provenance, manifest,
+local hand-modification detection and retirement of the administered names the
+source stopped deploying). It admits an active packet `prepared`, `dispatched` or
+terminal and **does not operate on it**: the cycle state, the packets, the policy
+and the continuity stay identical (I5). Matching bytes are a success without
+rewriting the destination; with no installed source — or without a verifiable v2
+context and accepted policy revision — it rejects explicitly instead of claiming a
+republication it did not publish. It inherits the installed `model:`, absence
+included: CDAD does not choose the model (I6).
+
+## Suspended units
+
+`suspend-unit --feature ID --reason TEXT` and `resume-unit --feature ID` are
+explicit serial-unit operations. Their safe-boundary, integrity and publication
+contracts live in `docs/specs/007-007-suspend-resume-units/spec.md`; every
+mutating consumer rejects a suspended unit before effects. `open-unit` may run
+from idle while retaining the registry, but it opens only an eligible queued
+entry and never selects a suspended unit.

@@ -29,10 +29,19 @@ python3 "<skill-dir>/scripts/cdad_packet.py" status --project-root ROOT
   `prepared`/`dispatched` packet, or an active execution), `next-unit` (resting
   with no pending work) or `diagnosis` (incomplete configuration). It is a map,
   **not** an inference by `current_stage` or by the word "inicializar".
+- `situation` names the operational state, and a coherent `prepared` packet is
+  `packet-prepared` **even with a vigente `begin` and a version DRIFT**: being
+  prepared never proves that the owner wants to dispatch that assignment, and its
+  `next.operation` stays `validate-packet`. A WITHDRAWN packet is terminal
+  (`project-execution.md` §10): the view never selects it as pending, and with an
+  active execution and no other pending work the route is
+  `execution-active → resume`.
 - `next` names the route **and its declared source**; with a `prepared` packet
   the route names the **natural action — dispatch it** (validate → `begin` →
   `--record-dispatch`), with `--replace-packet` only as the **conditional
-  branch** (a changed contract, `project-execution.md` §164-182); `unknowns[]`
+  branch** (a changed contract, `project-execution.md` §8) and
+  `register-transition --transition withdraw` as the **explicit alternative**
+  when the assignment will not be dispatched (§10); `unknowns[]`
   names the causes of what could not be projected (**never** a fabricated `0`).
 - Above the limit the view **fails closed** (rc≠0) with no partial projection and
   a diagnostic that names the limit and `--max-bytes N`.
@@ -72,6 +81,8 @@ to the context; the **complete** evidence stays available **by reference**.
 | Record a dispatch attempt | `<skill-dir>/scripts/cdad_packet.py prepare --record-dispatch PACKET_ID --input docs/attempt.json` | After dispatching | `--record-dispatch`, `--input` | — | moves the active packet to `dispatched` |
 | Continuity write-ahead | `<skill-dir>/scripts/cdad_continuity.py begin --project-root ROOT --execution-context EXEC.json --update UPDATE.json` | Before dispatching, to freeze the checkpoint | `--execution-context`, `--update` | `--max-bytes` default 16 KiB | freezes the write-ahead checkpoint; fails closed above the byte limit without truncating |
 | Open the next unit | `<skill-dir>/scripts/cdad_packet.py open-unit --project-root ROOT [--feature ID]` | At rest, to open the next `queued` unit (PD-7) | `--project-root` (relative or absolute, resolved against the cwd) | opens the **first** `queued` of `epic_features` | writes `active_feature`, the entry `in-progress`+`opened_at` and `current_stage=discovery` atomically under the lock; refuses a unit already open or a declared dependency not `done` |
+| Retire a prepared packet | `<skill-dir>/scripts/cdad_packet.py register-transition --transition withdraw --packet PACKET_ID --note TEXT` | The active packet is `prepared` and the assignment will never be dispatched | `--packet`, `--note` | terminal `failed` + entry `withdraw`/`withdrawn`; frees the next `prepare` | keeps the package and closes the current continuity head with a withdrawal checkpoint (no receipt); `project-execution.md` §10 |
+| Republish the derived agents | `<skill-dir>/scripts/cdad_packet.py republish-agents --project-root ROOT` | The `status` version block reports `DRIFT` with the `project` leg divergent | `--project-root` | writes no packet and no state | republishes `.opencode/agents/` + manifest from the resolved installed source; keeps the installed `model:`; `project-execution.md` §10 |
 
 ### Project root resolution
 
@@ -128,9 +139,11 @@ The view's `version` block reports that distinction (an **additive** extension
 of 005-003 §2.4: `verdict`/`verified`/`cause` are conserved). Ante un `DRIFT`
 the block **names the leg that diverges** (`project` / `agents` / `CLI` /
 `claude-code`), **read** from the check's own lines — never inferred — and,
-**only** when that leg is `project`, **what resolves it**: the next `prepare`
-republishes the project's derived agents (`project-execution.md` §143-146).
-Another leg gets **no** promise; absence carries **no** resolution clause.
+**only** when that leg is `project`, **what resolves it**: the independent
+`republish-agents --project-root ROOT`, run with the installed script, which
+republishes the project's derived agents from the resolved source without
+preparing a packet (`project-execution.md` §10). Another leg gets **no**
+promise; absence carries **no** resolution clause.
 
 **The absent meter.** The 005-002 meter may be **absent** from the installed
 skills (the "medidor no instalado" case). That is declared **ausencia** (version
@@ -171,6 +184,8 @@ never copy the table. `script` and `procedure` are relative to the installed
 | `prepare` | `scripts/cdad_packet.py` |
 | `render` | `scripts/cdad_packet.py` |
 | `prepare --record-dispatch` | `scripts/cdad_packet.py` |
+| `register-transition --transition withdraw` | `scripts/cdad_packet.py` |
+| `republish-agents` | `scripts/cdad_packet.py` |
 | `begin` | `scripts/cdad_continuity.py` |
 | `checkpoint` | `scripts/cdad_continuity.py` |
 | `reconcile` | `scripts/cdad_continuity.py` |
@@ -187,3 +202,9 @@ a subcommand: it carries no script.
 `next.operation` is the **first verifiable step**, never a macro. For a prepared
 packet it says `validate-packet`; the procedure then continues with the
 protocol above (validate → `begin` → transport → register).
+
+When no unit is active but `suspended_units` is non-empty, compact status uses
+`situation: units-suspended`, `next.operation.verb: select-unit`, a sorted
+`suspended_units` summary, and explicit `next.alternatives`; it never selects a
+unit automatically. The vocabulary and fields are defined by
+`docs/specs/007-007-suspend-resume-units/spec.md`.

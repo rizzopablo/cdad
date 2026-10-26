@@ -105,7 +105,8 @@ they are read from the **published packet** (PD-3).
   "attempt": "delegate-<destination>-<id>",
   "session": "ses-... | null",
   "termination": "completed | blocked | transport-error | timeout | cancelled | unknown",
-  "delivery_ref": "<durable path or null>",
+  "delivery": "none | staged | received",
+  "delivery_ref": "<descriptor, durable receipt or null>",
   "diagnosis": "<actionable text or null>"
 }
 ```
@@ -115,11 +116,118 @@ they are read from the **published packet** (PD-3).
 - `session` is the identity of the role session when the adapter reports one;
   otherwise `null` (honest unknown).
 - `termination` is the cause of termination (vocabulary below).
-- `delivery_ref` points at the durable final delivery when one exists.
+- `delivery` is the delivery state of the envelope (vocabulary below). It is
+  **mandatory** in every envelope a producer of this interface emits.
+- `delivery_ref` is the ONE reference of the delivery: the existing descriptor
+  (`staged`) or the existing durable receipt (`received`); `null` when
+  `delivery` is `none`. There is no second reference field.
+- `diagnosis` explains a rejection, a block or a protocol failure.
 
 Exit code is `0` when the interface produced the schema; a fail-closed
 diagnostic (rc≠0, message on stderr) is returned when the destination has no
 adapter or the invocation cannot be resolved.
+
+**`rc` semantics (007-004 §7).** `rc=0` means that an envelope was produced, not
+that the errand succeeded: a `blocked`, `timeout` or protocol rejection is also
+`rc=0`. Errors that end without an envelope (unresolvable destination, invalid
+flags) keep their non-zero `rc`. The destination's internal rc never replaces a
+valid envelope, and `rc=0` without a usable envelope acredits no delivery.
+
+## Delivery vocabulary and valid combinations (007-004 §4)
+
+This section is the **owner** of the envelope shape, the vocabularies, the
+combinations and the historical compatibility of the delivery. The consumption
+procedure — which route a consumer follows for each `delivery` — is owned by
+`references/re-entry.md`; roles and adapters point to both and never restate
+them.
+
+`delivery` is closed: `none | staged | received`.
+
+| `delivery` | Contract |
+|---|---|
+| `none` | The envelope acredits no consumable delivery; `delivery_ref` is `null`. It does **not** prove the absence of changes or of durable effects that must be reconciled. |
+| `staged` | The reference identifies the existing descriptor of prepared parts, still pending reception (native `record` path). |
+| `received` | The reference identifies the existing durable receipt, pending validation by the consumer (external arrival). |
+
+`R` below means a non-empty string that references the artifact of the declared
+kind. Structural validity does not replace the validation of the artifact.
+
+| `termination` | `delivery` | `delivery_ref` | Validity |
+|---|---|---|---|
+| `completed` | `staged` | R: descriptor | Valid for the native `record` producer. |
+| `completed` | `received` | R: receipt | Valid for the external arrival. |
+| `blocked` | `none` | `null` | Valid. |
+| `transport-error` | `none` | `null` | Valid. |
+| `timeout` | `none` | `null` | Valid. |
+| `cancelled` | `none` | `null` | Valid. |
+| `unknown` | `none` | `null` | Valid. |
+| Any other combination | Any | Any | **Invalid.** |
+
+In particular: `completed` with `none` is contradictory; a termination other
+than `completed` with `staged` or `received` is contradictory; `none` with a
+non-null reference is contradictory; `staged`/`received` without a reference,
+with an empty reference or with a reference of the wrong type is invalid; an
+unknown vocabulary value is invalid; a descriptor presented as a receipt (or the
+reverse) is rejected when the artifact is validated; a structurally valid
+combination that is incompatible with the route is also rejected.
+
+### Producer rules
+
+| Producer or route | Result | Required envelope |
+|---|---|---|
+| `cdad_dispatch.py record`, payload prepared correctly | Staged descriptor | `completed + staged` + reference to the descriptor. |
+| `record`, registered attempt without payload | No delivery | `unknown + none + null`. |
+| `record`, contradictory correlation | Rejection without registration or staging | `blocked + none + null` + diagnosis. |
+| `cdad_delegate_opencode.py`, reception finished correctly | Durable receipt | `completed + received` + reference to the receipt. |
+| OpenCode, non-completed termination | No acredited delivery | the corresponding termination `+ none + null`. |
+| `cdad_delegate.py`, valid adapter answer | Relay | preserves identity, termination, delivery and reference; registers and receives nothing. |
+| `cdad_delegate.py`, own timeout or transport without a usable envelope | Diagnostic | `timeout` or `transport-error`, `none`, `null`. |
+| `cdad_dispatch.py dispatch` | External arrival | relays the validated envelope; prepares and receives no other delivery. |
+
+On these EXTERNAL routes `completed + staged` is not an acceptable landing: the
+external runtime module owns the existing reception, so `staged` belongs to the
+native `record` path only. A producer of this interface therefore never emits
+`completed + staged`; when an adapter does, the arrival is refused as a protocol
+response (`transport-error + none + null`) and nothing is staged or received.
+
+### Rejection of contradictions (§4.4)
+
+A producer that follows this contract never emits an invalid combination. When
+the interface receives a contradictory or wrongly typed envelope from an
+adapter it (1) does not relay it as a valid delivery, (2) does not silently
+correct it into a success, (3) registers no attempt, receives nothing and
+materializes nothing, (4) emits a protocol diagnostic as
+`transport-error + none + null`, and (5) keeps the usable identities of the
+original envelope without inventing replacements. A consumer that meets an
+invalid envelope directly stops and diagnoses; the process `rc` never
+authorizes ignoring that condition.
+
+### Historical compatibility (§5)
+
+The **absence** of `delivery` is the only condition that activates the
+historical interpretation: a key present with `null`, an unknown value or a
+wrong type is not a valid historical envelope. The consumer uses the known
+context of the operation — never the file name, never a `RESULT.json` suffix and
+never a path that merely looks like a receipt:
+
+| Historical context | Condition | Permitted interpretation |
+|---|---|---|
+| Native `record` | `completed` and a non-empty reference | Candidate to `staged`; validate the descriptor and its binding through the existing reception before receiving. |
+| External arrival through `dispatch` or `cdad_delegate.py` | `completed` and a reference that IS the durable receipt of this errand and passes `validate-receipt` | Candidate to `received`; validate the receipt and its binding before continuing. |
+| Any of the known routes | Non-completed termination and a `null` reference | `none`; do not advance. |
+| Any of the known routes | Non-completed termination with a non-null reference, whether the artifact exists or not | Contradiction: stop and diagnose (`transport-error + none + null`). The reference is never removed to normalize the envelope into an acceptance. |
+| Unknown context, a reference that is not this errand's receipt, a descriptor, a plain text, a contradictory combination | — | Stop and diagnose. |
+
+Additional rules: a historical reference is not accepted because of its name nor
+because the artifact it names exists; the reference must be **the** durable
+receipt of this errand — the single receipt of its execution and packet, located
+by the producer's own rule — and the producer's canonical verifier
+(`cdad_result.py validate-receipt`, imported per ADR-036) must accept it, so a
+descriptor, a plain text or another errand's receipt is refused instead of being
+announced as `received`; an updated producer always emits `delivery`; historical
+artifacts are never rewritten and no substitute receipt is created; validation
+uses the existing machinery (the descriptor through the existing reception, the
+receipt through `validate-receipt`).
 
 ## Termination vocabulary (PD-6/D4)
 
@@ -146,7 +254,10 @@ Invoked by the interface as a subprocess:
   [--exec-config <config.json>]` (that last flag is internal to the interface;
   the orchestrator never passes it).
 - **stdout**: one JSON envelope with the same keys as the output schema
-  (`attempt` may be `null`; the interface fills it).
+  (`attempt` may be `null`; the interface fills it). The envelope declares
+  `delivery` explicitly: `completed + received + <receipt>` when the adapter
+  persisted the reception, and `<termination> + none + null` otherwise (007-004
+  §4.3).
 - **exit code**: `0` when the adapter ran; non-zero only for adapter-internal
   errors.
 
@@ -161,7 +272,8 @@ An adapter must:
    receipt), never on the invocation client's rc, with no invented callback
    (PD-5/INV-4);
 3. capture the role's final text and its referenced evidence, and persist the
-   delivery through the existing `receive` (PD-7);
+   delivery through the existing `receive` (PD-7) — the only delivery this
+   route may acredit is `received` with that receipt (007-004 §4.3);
 4. report `runtime`, `model_configured`, `model_reported`, `session` honestly —
    `null`/`unknown` when not observed (PD-8).
 

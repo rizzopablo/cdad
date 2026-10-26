@@ -116,10 +116,12 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   NOT this runtime, dispatch through the entry
   `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X`: it reads
   the execution configuration of that runtime from its section of `runtimes.json`
-  and returns an ENVELOPE whose `delivery_ref` names the DURABLE RECEIPT the
-  runtime module already received and persisted — the orchestrator validates
-  that receipt and continues the protocol; it never receives that delivery a
-  second time. The retired `--exec-config` is NOT an option of the entry (a
+  and returns an ENVELOPE. Consume that envelope by its `delivery`, with the
+  procedure of `<skill-dir>/references/re-entry.md`, whose shape, vocabulary,
+  combinations and historical rule are owned by
+  `<skill-dir>/references/cli-delegation.md`; neither `rc` nor `termination`
+  alone authorizes advancing, and the orchestrator never receives that delivery
+  a second time. The retired `--exec-config` is NOT an option of the entry (a
   usage error that names `runtimes.json`).
 - **Agent travels in the packet (D-ADP-4).** `prepare` resolves the agent and
   writes it as the `agent` field of `REQUEST.json`; the dispatch carries the

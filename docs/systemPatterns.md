@@ -234,6 +234,68 @@ tabla en sí la mantiene el orquestador.
   vuelve `ok` en la traza: es `unknown`, no éxito. Versión operativa adoptada para el
   uso: `939f501` (raíz aislada); el lector en vivo es deuda, no producto.
 
+### Ciclo confiable — retiro, republicación y publicación transaccional (epic 007, 2026-10-26)
+
+- **El retiro es una transición terminal con motivo, separada de la disposición.** Retirar declara
+  que el encargo **nunca llegó** a despacharse; disponer resuelve un despacho que no volverá. Son
+  actos distintos y el vocabulario de `disposition` **no** se amplía para cargar el significado
+  contrario. El terminal reutiliza el estado de paquete existente y la distinción semántica viaja en
+  la entrada de la transición, no en un estado nuevo: un lector que sólo mira `active_packet.status`
+  no distingue un retiro de un fallo, y debe leer la transición. Lugares: `project-execution.md` §10 y
+  el contrato de `docs/specs/007-006-withdraw-and-republish/spec.md` (que este archivo **no**
+  re-enuncia).
+- **Resolver la versión no cuesta un encargo.** La republicación de derivados es un verbo
+  independiente del ciclo de paquetes: publica desde la instalación resuelta y deja estado, paquetes,
+  política y continuidad idénticos, heredando el modelo instalado en vez de elegirlo. La orientación
+  sólo ofrece esa resolución para la pata `project` del `DRIFT`; las otras patas no reciben promesa
+  (`references/orientation.md`).
+- **Publicación transaccional compartida: el checkpoint de acompañamiento se planifica, no se
+  publica.** Quien necesite cerrar la continuidad junto con un cambio propio **no** debe invocar el
+  publicador de continuidad por su cuenta: pide el plan (`cdad_continuity.plan_write`, que calcula y
+  no escribe) y publica las escrituras en **su** transacción, con rollback que restaura lo reemplazado
+  y retira sólo lo creado. Es el patrón por defecto para cualquier verbo futuro que necesite estado y
+  continuidad coherentes.
+- **Límite declarado:** la transacción cubre el estado y lo que el propio verbo publica; la cabeza de
+  continuidad **no** comparte el lock del proyecto (`SUSP-LOCK`, deuda de 007-007), así que no protege
+  frente a un escritor de continuidad concurrente.
+
+### Entrega declarada en el sobre — `delivery` y el consumo por ruta (epic 007, 2026-10-26)
+
+- **Terminar no acredita entregar.** Un sobre de delegación declara explícitamente qué existe para
+  consumir: `delivery` ∈ `none | staged | received`, con `delivery_ref` única (descriptor preparado,
+  recibo durable, o nada). Ni `rc`, ni `termination`, ni la llegada de un archivo prueban recepción,
+  cierre de continuidad ni aprobación: **entrega declarada y artefacto validado son hechos distintos**
+  (ADR-014). Un `none` honesto **no** prueba ausencia de cambios ni de efectos durables.
+- **Dos dueños documentales y nadie más.** La **forma, el vocabulario, la tabla de combinaciones, la
+  compatibilidad histórica y el significado de `rc`** viven en
+  `skills/cdad-cycle/references/cli-delegation.md`; el **procedimiento de consumo por ruta** vive en
+  `skills/cdad-cycle/references/re-entry.md`. `sources/roles/orchestrator.md` y los adaptadores
+  **remiten**: copiar la tabla es el defecto que la review de 007-004 encontró como duplicación
+  parcial. La llegada **FINAL TEXT sin sobre** conserva su ruta propia (staging → `receive`).
+- **Consumo por ruta, sin repetir efectos.** `none` → no se avanza a materialización, transición
+  exitosa ni gate (se diagnostica y se reconcilian efectos); `staged` → `receive` existente sobre el
+  descriptor y después validación del recibo; `received` → **sólo** `validate-receipt`, sin otra
+  recepción ni vuelta a staging. Las obligaciones de continuidad se cumplen antes de efectos
+  posteriores, y el **gate se decide por separado**.
+- **La validación histórica usa el verificador del productor, no una heurística.** Que un sobre no
+  declare `delivery` es la **única** puerta al histórico; el contexto conocido de la operación decide
+  la interpretación (nunca el nombre del archivo ni el sufijo `RESULT.json`), y en la llegada externa
+  la referencia sólo se acepta si **es** el recibo durable de *ese* encargo — localizado por
+  `cdad_result.durable_receipt_path` y verificado por `cdad_result.validate_receipt`, **importados**
+  (ADR-036). «El archivo existe» no acredita ni recibo ni vinculación. Corolario: cada artefacto
+  durable expone su **localizador** desde el productor; los consumidores lo importan, no lo componen.
+- **Las contradicciones se rechazan, no se reparan.** Una combinación fuera de la tabla cerrada, un
+  vocabulario desconocido, un tipo incorrecto o una referencia en una terminación que la niega se
+  diagnostican como respuesta de protocolo no utilizable (`transport-error + none + null`), sin
+  registro, recepción ni materialización, conservando las identidades utilizables del sobre original.
+  **Borrar la referencia para que el sobre «cierre» es el antipatrón**: convierte un fallo de
+  protocolo en una no-entrega válida. Tampoco se acepta una combinación válida en abstracto que la
+  **ruta** no admite (una llegada externa nunca acredita `staged`).
+- **Límite declarado (007-004).** La **retransmisión explícita** `completed+received` conserva el
+  sobre sin revalidarlo: la verificación es del consumidor, por diseño (el relay no registra ni recibe
+  otra vez). Sólo la normalización histórica valida y vincula. Y la protección contra leer `rc` como
+  éxito depende de **validar el sobre y seguir la ruta**, no del código de salida, que se conserva.
+
 ## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
 
 ### Palanca `write: ask` (2026-09-12; enmienda de ubicación 2026-09-13)
@@ -1015,6 +1077,31 @@ Los modelos del workspace envuelven comandos en `rtk` (proxy CLI), así que
 las allowlists por comando llevan SIEMPRE el par (`"pytest*"` y
 `"rtk pytest*"`), con los subcomandos peligrosos de rtk denegados en todos
 los roles. Matriz completa y razones: `docs/adr/ADR-009-politica-rtk-allowlists.md`.
+
+### Feature de evidencia (2026-10-26, 007-005)
+
+Una unidad de CDAD puede cerrarse **sin cambio de producto** cuando lo que aporta es **evidencia**:
+demostrar en uso real un recorrido que el producto ya implementa. Reglas que quedaron observadas:
+
+- **El resultado es un manifiesto verificable, no una narración.** Cada entrada lleva alias estable,
+  ruta **parametrizada** (`<consumer>`, `<home>`, `<project>`), `sha256`, bytes, rol, comando
+  reproducible, **cobertura de PC** y **límite declarado por entrada** (`cdad-evidence-manifest-v1`).
+- **La resolución alias→ruta es privada y separada del manifiesto.** El manifiesto viaja al proyecto
+  de proceso; la resolución (rutas reales, identidades de sesión) queda en el consumidor. Verificar
+  exige **ambos** → el manifiesto es auditable sin publicar el entorno.
+- **Lo no observado se declara, no se rellena.** Fallos de runtime, timeout, cuota, reparación y retiro
+  aparecen como límites; un requisito **no observable** (p. ej. un intervalo de reloj que el producto no
+  registra) se sustituye **contractualmente y con autorización**, declarando que el original **no se
+  cumple** — nunca se repite el recorrido hasta que el registro «encaje».
+- **Despacho entre proyectos: la sesión debe ser raíz del proyecto autorizado.** Una sesión creada en
+  la raíz de CDAD es **rechazada por identidad** (`blocked` + `delivery=none`, sin registrar el
+  intento): es el contrato, no un fallo. El rechazo **no acredita entrega** aunque la sesión haya
+  ejecutado el trabajo, y su informe **no se usa como evidencia** (`deviation-2026-10-26.md`).
+- **Recibir no aprueba.** El recibo válido deja `semantic_status=pending`; la aprobación del contenido
+  y el gate son decisiones separadas.
+
+Normativo en `docs/specs/007-005-serial-reception/{spec.md,closure.md,amendment-pc03.md}`; la
+verificación se apoya en el verificador canónico del productor (**ADR-036**), no en un validador propio.
 
 ## Convenciones de tests
 

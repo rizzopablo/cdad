@@ -27,8 +27,8 @@ them the route starts at:
 | Arrival state | How it arrives | Route from here |
 |---|---|---|
 | **FINAL TEXT pending** — the role's text is not staged yet | the role's FINAL TEXT in the orchestrator's session (a handoff to a new chat, a chat that answers with the text) | stage the **exact bytes** under `.cdad/inbox` with their `RESULT.json` descriptor, then invoke `receive` with that descriptor (step 1) |
-| **Descriptor already staged** — the NATIVE path | the entry's `record` verb (006-005 §2.1) wrote the FINAL TEXT under `.cdad/inbox` with its `RESULT.json` descriptor, byte-exact, and declared the derived artifact kind there | invoke `receive` with that descriptor (step 1) — the bytes are already staged and are not retyped |
-| **Receipt already durable** — the EXTERNAL path | the runtime module received the delivery and the entry's ENVELOPE carries `delivery_ref`, the durable receipt | validate that receipt (`validate-receipt`) and continue with `materialize` and `register-transition` (steps 2-4) — the delivery is **not staged** and **not received again** |
+| **Descriptor already staged** — the NATIVE path | the entry's `record` verb (006-005 §2.1) wrote the FINAL TEXT under `.cdad/inbox` with its `RESULT.json` descriptor, byte-exact, and declared the derived artifact kind there; the entry's ENVELOPE declares `delivery=staged` with that descriptor | invoke `receive` with that descriptor (step 1) — the bytes are already staged and are not retyped |
+| **Receipt already durable** — the EXTERNAL path | the runtime module received the delivery; the entry's ENVELOPE declares `delivery=received` and carries `delivery_ref`, the durable receipt | validate that receipt (`validate-receipt`) and continue with `materialize` and `register-transition` (steps 2-4) — the delivery is **not staged** and **not received again** |
 
 1. **RECEIVE.** The role's output arrives either as FINAL TEXT or as staged parts
    under `.cdad/inbox` (with a `RESULT.json` descriptor) — the two arrival
@@ -88,6 +88,46 @@ them the route starts at:
    (receiving never approves a gate). On retry, reconcile first and do not
    repeat a change already reflected in state.
 
+**A retirement is NOT a re-entry.** `register-transition --transition withdraw`
+(`project-execution.md` §10) declares that the assignment never reached a
+dispatch: it receives nothing, validates no output and approves nothing. Never use
+it to "close" a role's output, to resolve a dispatch that did not come back (that
+is `disposition`) or to free an already dispatched packet. Its scope is exactly the
+active `prepared` packet with no positive or inconclusive effect signal.
+
+## Consumption by `delivery` (mandatory procedure, 007-004 §6.2)
+
+This procedure governs the arrivals **that carry an envelope**. An arrival as
+FINAL TEXT without an envelope keeps its existing route (staging under
+`.cdad/inbox` → `receive`, step 1 above): this procedure never makes it depend
+on an envelope. The envelope's shape, vocabulary, valid combinations and
+historical compatibility are owned by `references/cli-delegation.md`; read them
+there and never restate them here.
+
+1. **Read and check the envelope.** If `delivery` is absent the envelope is
+   historical: apply the historical table of `references/cli-delegation.md` and
+   the known context of this operation — never the file name.
+2. **Reject** contradictions, insufficient context and unverifiable artifacts.
+   No acceptance effect happens for such an envelope.
+3. **Consume according to `delivery`:**
+
+   | `delivery` | Action |
+   |---|---|
+   | `none` | Do not advance to materialization, a successful transition or a gate. Diagnose, consult the existing orientation, and reconcile the effects when the corresponding contract says so. |
+   | `staged` | Run the existing `receive` on that descriptor; then validate the receipt and continue the re-entry. Do not prepare or rewrite the parts again. |
+   | `received` | Validate the existing receipt (`validate-receipt`) and continue the re-entry. Do not run another `receive` and do not go back to staging. |
+
+4. **Satisfy the continuity obligations (007-003)** before continuing with later
+   effects: a durable reception already carries its common closure; when that
+   closure is missing, recover it with the existing
+   `validate-receipt --close-continuity --continuity-attempt N` (the integer is
+   never derived from `attempt`).
+5. **Materialize and register only the pending, authorized effects** under their
+   existing contracts (steps 3-4 above).
+6. **Decide the gate separately.** `rc=0`, `termination=completed` and
+   `delivery=received` are not an approval: the receipt keeps
+   `semantic_status: "pending"` and materializing adds none.
+
 ## Transport equivalence: one receipt route
 
 Native delegation does not change the delivery contract: the role returns its
@@ -107,6 +147,10 @@ handoff to a new chat and for the CLI adapter.
 the role's bytes (a FINAL TEXT to stage, or a descriptor already staged); a
 delivery that arrives with its receipt already durable starts at the validation
 of that receipt.
+
+`receive` rejects a suspended unit before receipt replay, continuity closure, or
+`--late` processing. Existing receipts remain readable/validatable; they are
+not accepted as a new receive while suspended. See the 007-007 contract.
 
 ---
 

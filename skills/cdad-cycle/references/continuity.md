@@ -21,6 +21,7 @@ no service, no agent. Run it by hand, and only when it fits.
 | `trigger` | execution context + `--packet` (+ optional `--runtime`) | Any orchestrator that rotates a session or resumes long work | Almost always `unknown`: OpenCode does not report a context limit and Claude Code has no reader, so `context_*` stay `null`. Rotate at a **natural task boundary** instead |
 | `verify-begin` | execution context + packet + the INTEGER continuity attempt | Immediately before a transport or a dispatch registration: proves the CURRENT head is the `begin` of that execution, packet and attempt (read-only; a rejection writes nothing) | A historical `begin` under those identifiers, a later `checkpoint` or a `begin` of another packet/attempt never authorizes a new transport |
 | `checkpoint-receipt` | execution context + packet + the INTEGER continuity attempt + the durable receipt | The common close of a reception (`receive`, the external arrival and `validate-receipt --close-continuity` converge here): idempotent by `(execution_id, packet_id, attempt)` and by `(normalized receipt path, digest)` | Without a demonstrable chain to the `begin` of that attempt, or with the head advanced to another packet/attempt, it refuses and never rewinds |
+| `checkpoint` (withdrawal) | the same writer, invoked by `register-transition --transition withdraw` | The retirement of the active `prepared` packet: closes its current head with one linked checkpoint that keeps the evidence and adds the retirement decision | A packet that was dispatched or has any effect, or a head of another packet (conserved), or no head (nothing is fabricated) |
 
 `begin`/`checkpoint`/`reconcile`/`resume` are portable because they only read the
 project files. `trigger` is only a **signal**: it never invents a limit, so in
@@ -71,6 +72,26 @@ provide the demonstration a close requires. Bodies may also declare the additive
 `changes` and `evidence` fields (`status` exactly `vigente|invalidada`, with
 reason and antecedent); `resume` projects both, and an invalidated evidence is
 never rehabilitated by byte equality, a changed hash or re-anchoring.
+
+Suspension and resumption append linked checkpoints to an existing valid head;
+they do not create a `begin` or fabricate a chain. While a unit is suspended,
+`begin`, `checkpoint`, `checkpoint-receipt` and `reanchor` are blocked. See the
+canonical suspension contract in `docs/specs/007-007-suspend-resume-units/spec.md`.
+
+**Technically a withdrawal** (`register-transition --transition withdraw`,
+`project-execution.md` §10) closes the CURRENT head of the retired packet the
+same way: it appends one linked `record: "checkpoint"` through this same writer,
+which keeps the goal, the decisions, the uncertainties, the references, `changes`
+and `evidence` — its `status` and its antecedents — untouched and only adds the
+retirement decision (citing the transition key and the motive) and a new
+`next_action` ("do not dispatch; prepare a new assignment"). No `begin` and,
+above all, **no receipt and no `receipt_checkpoint`** is created: nothing was
+delivered. A head of ANOTHER packet is conserved byte for byte (its chain is not
+ours to advance); with no head, no continuity is fabricated; a head that cannot
+be read, verified or demonstrated blocks the retirement instead of being assumed
+to belong to another packet.
+
+For a legacy head, stop transport and obtain approval from `reanchor --dry-run`; never auto-reanchor. The explicit `reanchor` command preserves the prior bodies outside the demonstrable segment; its approval boundary and byte-limit exception are defined only in `docs/specs/007-003-continuity-at-edges/amendment-legacy-reanchor.md` §2.3.1 and §10. A fresh `begin` is still required before transport.
 
 **Scope of the integer (§2.2, amendment 2026-10-24).** `--continuity-attempt N`
 is an INTEGER and is never derived from a textual attempt id. It is mandatory —

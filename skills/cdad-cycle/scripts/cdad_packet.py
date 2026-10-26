@@ -5,21 +5,30 @@ from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
 from datetime import date, datetime, timezone
 import fcntl
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from typing import Any
 
 
 class PolicyError(ValueError):
     """A user-supplied execution or state document violates the contract."""
+
+
+class StateConflict(ValueError):
+    """A PROTECTED state the operation must not change (rc=1, the class rc=1 the
+    continuity CLI already uses): the state — not the invocation — is the reason
+    of the rejection, and no effect is published (007-006 AJ1/PC-06)."""
 
 
 BINDING_FIELDS = (
@@ -181,6 +190,7 @@ SITUATION_PACKET_PREPARED = "packet-prepared"
 SITUATION_PENDING_UNRESOLVED = "pending-work-unresolved"
 SITUATION_EXECUTION_ACTIVE = "execution-active"
 SITUATION_AT_REST = "at-rest"
+SITUATION_UNITS_SUSPENDED = "units-suspended"
 # (verb, script, procedure); script/procedure are relative to the INSTALLED
 # skill directory, not the consumer project. `diagnose` is an operator
 # indication, never a new subcommand, so it carries script=null.
@@ -196,6 +206,8 @@ OPERATION_BY_SITUATION: dict[str, tuple[str, str | None, str]] = {
         "resume", "scripts/cdad_continuity.py", "references/continuity.md"),
     SITUATION_AT_REST: (
         "open-unit", "scripts/cdad_packet.py", "references/project-start.md"),
+    SITUATION_UNITS_SUSPENDED: (
+        "select-unit", "scripts/cdad_packet.py", "references/orientation.md"),
 }
 APPROVAL_VIGENTE = "vigente"
 APPROVAL_AUSENTE = "ausente"
@@ -604,6 +616,7 @@ def _validate_idle_coherence(state: dict[str, Any]) -> bool:
     """
     active_feature = state.get("active_feature")
     current_stage = state.get("current_stage")
+    _validate_suspended_registry(state)
     if active_feature is None and current_stage != IDLE_STAGE:
         raise PolicyError(
             f"state incoherent: active_feature is null but current_stage is "
@@ -628,6 +641,507 @@ def _validate_idle_coherence(state: dict[str, Any]) -> bool:
             )
         return True
     return False
+
+
+_UNIT_STATE_FIELDS = ("active_feature", "current_stage", "tdd_substage",
+                      "postconditions_status", "audit_status", "review_status",
+                      "active_packet", "execution")
+
+
+def _validate_suspended_registry(state: dict[str, Any]) -> dict[str, Any]:
+    """Validate the additive suspension registry without treating absence as corruption."""
+    registry = state.get("suspended_units", {})
+    if not isinstance(registry, dict):
+        raise PolicyError("suspended_units must be an object")
+    features = state.get("epic_features", [])
+    if not isinstance(features, list):
+        raise PolicyError("epic_features must be a list")
+    for feature_id, item in registry.items():
+        required = {"feature_id", "epic_id", "suspended_at", "reason",
+                    "unit_state", "resume_checks"}
+        if not isinstance(feature_id, str) or not isinstance(item, dict):
+            raise PolicyError(f"suspended unit {feature_id!r} must be an object keyed by feature id")
+        if required - set(item):
+            raise PolicyError(f"suspended unit {feature_id!r} missing fields: {', '.join(sorted(required - set(item)))}")
+        unit_state = item.get("unit_state")
+        try:
+            datetime.fromisoformat(item.get("suspended_at", "").replace("Z", "+00:00"))
+        except (AttributeError, ValueError) as exc:
+            raise PolicyError(f"suspended unit {feature_id!r} has invalid suspended_at timestamp") from exc
+        if (item.get("feature_id") != feature_id or not isinstance(item.get("suspended_at"), str)
+                or not isinstance(item.get("reason"), str) or not item["reason"].strip()
+                or not isinstance(unit_state, dict)
+                or set(unit_state) - set(_UNIT_STATE_FIELDS)
+                or unit_state.get("active_feature") != feature_id
+                or feature_id == state.get("active_feature")
+                or not isinstance(item.get("resume_checks"), dict)):
+            raise PolicyError(f"suspended unit {feature_id!r} has incoherent identity/binding")
+        matches = [entry for entry in features if isinstance(entry, dict)
+                   and entry.get("id") == feature_id and entry.get("status") == "suspended"]
+        if len(matches) != 1:
+            raise PolicyError(f"suspended unit {feature_id!r} must occur once in epic_features with status suspended")
+        if item.get("epic_id") != state.get("active_epic"):
+            raise PolicyError(f"suspended unit {feature_id!r} epic_id does not match active_epic")
+        execution = unit_state.get("execution")
+        if not isinstance(execution, dict) or execution.get("feature_id") != feature_id:
+            raise PolicyError(f"suspended unit {feature_id!r} execution identity does not match")
+        for path, digest in item["resume_checks"].items():
+            if not isinstance(path, str) or not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise PolicyError(f"suspended unit {feature_id!r} has malformed resume check {path!r}")
+    ids: set[str] = set()
+    for index, entry in enumerate(features):
+        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str) or not entry["id"]:
+            raise PolicyError(f"epic_features[{index}] must declare a non-empty string id")
+        if entry["id"] in ids:
+            raise PolicyError(f"epic_features contains duplicate unit identity {entry['id']!r}")
+        ids.add(entry["id"])
+    return registry
+
+
+def _suspended_unit_for(state: dict[str, Any], feature_id: str | None) -> None:
+    if feature_id and feature_id in _validate_suspended_registry(state):
+        raise PolicyError(f"unit {feature_id!r} is suspended; resume with resume-unit --feature {feature_id}")
+
+
+def _resume_digest_checks(project_root: Path, state: dict[str, Any]) -> dict[str, str]:
+    checks: dict[str, str] = {}
+    binding = state.get("execution")
+    if isinstance(binding, dict) and isinstance(binding.get("id"), str):
+        rel = f"{EXECUTIONS_DIR.as_posix()}/{binding['id']}/execution.json"
+        paths = [rel]
+        packet = state.get("active_packet")
+        request_doc = None
+        if isinstance(packet, dict) and packet.get("id"):
+            request_rel = f".cdad/packets/{packet['id']}/REQUEST.json"
+            paths.extend((request_rel, f".cdad/packets/{packet['id']}/PACKET.md"))
+            request_path = project_root / request_rel
+            if request_path.is_file():
+                request_doc = _load_json(request_path, "suspended packet request")
+                contract_path = (request_doc.get("contract") or {}).get("path")
+                if isinstance(contract_path, str) and contract_path:
+                    paths.append(contract_path)
+        for relpath in paths:
+            path = _project_path(project_root, relpath, "suspension reference")
+            if path.is_file():
+                checks[relpath] = hashlib.sha256(path.read_bytes()).hexdigest()
+        policy = project_root / POLICY_RELPATH
+        if policy.is_file():
+            checks[POLICY_RELPATH.as_posix()] = hashlib.sha256(policy.read_bytes()).hexdigest()
+        if isinstance(packet, dict) and packet.get("id"):
+            receipt = (project_root / ".cdad/runtime/results" / binding["id"] /
+                       packet["id"] / "receipt.json")
+            if receipt.is_file():
+                checks[receipt.relative_to(project_root).as_posix()] = hashlib.sha256(receipt.read_bytes()).hexdigest()
+        continuity_dir = project_root / EXECUTIONS_DIR / binding["id"] / "continuity"
+        head_path = continuity_dir / "head.json"
+        if head_path.is_file():
+            head = _load_json(head_path, "continuity head")
+            digest = head.get("body_sha256")
+            body_path = continuity_dir / "bodies" / f"{digest}.json" if isinstance(digest, str) else None
+            if body_path is not None and body_path.is_file():
+                body = _load_json(body_path, "continuity body")
+                for evidence in body.get("evidence", []):
+                    if not isinstance(evidence, dict) or evidence.get("status") != "vigente":
+                        continue
+                    ref = evidence.get("reference")
+                    path = ref.get("path") if isinstance(ref, dict) else None
+                    if isinstance(path, str) and path:
+                        target = _project_path(project_root, path, "continuity evidence")
+                        if target.is_file():
+                            checks[path] = hashlib.sha256(target.read_bytes()).hexdigest()
+    return checks
+
+
+def _verify_suspend_pins(project_root: Path, state: dict[str, Any]) -> None:
+    """Reject stale or missing pinned inputs before any suspension side effect."""
+    binding = state.get("execution")
+    packet = state.get("active_packet")
+    if not isinstance(binding, dict):
+        raise PolicyError("cannot suspend: execution binding is missing")
+
+    if isinstance(packet, dict):
+        request_rel = f".cdad/packets/{packet['id']}/REQUEST.json"
+        request_path = _project_path(project_root, request_rel, "suspended packet request")
+        if not request_path.is_file():
+            raise PolicyError(f"cannot suspend: pinned request is missing: {request_rel}")
+        request = _load_json(request_path, "suspended packet request")
+        contract = request.get("contract")
+        if not isinstance(contract, dict):
+            raise PolicyError(f"cannot suspend: pinned contract declaration is missing in {request_rel}")
+        contract_path = contract.get("path")
+        contract_digest = contract.get("sha256")
+        if not isinstance(contract_path, str) or not contract_path:
+            raise PolicyError(f"cannot suspend: pinned contract path is missing in {request_rel}")
+        if not isinstance(contract_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", contract_digest):
+            raise PolicyError(f"cannot suspend: pinned contract digest is invalid in {request_rel}: {contract_path}")
+        if packet.get("contract_sha256") != contract_digest:
+            raise PolicyError(f"cannot suspend: pinned contract digest disagrees with active packet: {contract_path}")
+        target = _project_path(project_root, contract_path, "pinned contract")
+        if not target.is_file():
+            raise PolicyError(f"cannot suspend: pinned contract is missing: {contract_path}")
+        actual = hashlib.sha256(target.read_bytes()).hexdigest()
+        if actual != contract_digest:
+            raise PolicyError(f"cannot suspend: pinned contract digest changed: {contract_path}")
+
+    binding_id = binding.get("id")
+    if not isinstance(binding_id, str) or not binding_id:
+        raise PolicyError("cannot suspend: execution binding has invalid identity")
+    continuity_dir = project_root / EXECUTIONS_DIR / binding_id / "continuity"
+    head_path = continuity_dir / "head.json"
+    if not head_path.is_file():
+        return
+    head = _load_json(head_path, "continuity head")
+    body_digest = head.get("body_sha256")
+    if not isinstance(body_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", body_digest):
+        raise PolicyError(f"cannot suspend: continuity head has invalid body digest: {head_path.relative_to(project_root)}")
+    body_path = continuity_dir / "bodies" / f"{body_digest}.json"
+    if not body_path.is_file():
+        raise PolicyError(f"cannot suspend: continuity head body is missing: {body_path.relative_to(project_root)}")
+    body = _load_json(body_path, "continuity body")
+    evidence = body.get("evidence", [])
+    if not isinstance(evidence, list):
+        raise PolicyError(f"cannot suspend: continuity evidence is malformed: {body_path.relative_to(project_root)}")
+    for index, entry in enumerate(evidence):
+        if not isinstance(entry, dict) or entry.get("status") != "vigente":
+            continue
+        reference = entry.get("reference")
+        path = reference.get("path") if isinstance(reference, dict) else None
+        digest = reference.get("sha256") if isinstance(reference, dict) else None
+        if not isinstance(path, str) or not path:
+            raise PolicyError(f"cannot suspend: vigente evidence[{index}] has no declared path")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise PolicyError(f"cannot suspend: vigente evidence[{index}] has invalid declared digest: {path}")
+        evidence_path = _project_path(project_root, path, "continuity evidence")
+        if not evidence_path.is_file():
+            raise PolicyError(f"cannot suspend: vigente evidence is missing: {path}")
+        actual = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+        if actual != digest:
+            raise PolicyError(f"cannot suspend: vigente evidence digest changed: {path}")
+
+
+def suspend_unit(args: argparse.Namespace, project_root: Path) -> str:
+    feature_id = args.feature
+    if not isinstance(args.reason, str) or not args.reason.strip():
+        raise PolicyError("suspend-unit requires a non-empty --reason")
+    with _ProjectLock(project_root):
+        cleanup_stale_transactions(project_root)
+        state_path = project_root / "docs" / ".cdad-state.json"
+        state = _load_json(state_path, "project state")
+        if state.get("active_feature") != feature_id:
+            raise PolicyError(f"unit {feature_id!r} is not the active unit")
+        if not isinstance(state.get("execution"), dict):
+            raise PolicyError(f"unit {feature_id!r} has no execution binding")
+        execution_document, _ = _resolve_active_execution(project_root, state)
+        validate_state(execution_document, state, project_root)
+        _validate_suspended_registry(state)
+        packet = state.get("active_packet")
+        packet_status = packet.get("status") if isinstance(packet, dict) else None
+        _require_suspend_safe_boundary(project_root, state, execution_document, feature_id)
+        features = state.get("epic_features")
+        if not isinstance(features, list):
+            raise PolicyError("epic_features must be a list")
+        matches = [i for i, entry in enumerate(features)
+                   if isinstance(entry, dict) and entry.get("id") == feature_id]
+        if len(matches) != 1:
+            raise PolicyError(f"unit {feature_id!r} must occur exactly once in epic_features")
+        _verify_suspend_pins(project_root, state)
+        unit_state = {key: state[key] for key in _UNIT_STATE_FIELDS if key in state}
+        checkpoint = _continuity_unit_checkpoint(
+            project_root, state, feature_id,
+            f"Suspended: {args.reason.strip()}",
+            f"Do not dispatch; explicitly resume with resume-unit --feature {feature_id}")
+        registry = dict(state.get("suspended_units", {}))
+        registry[feature_id] = {
+            "feature_id": feature_id, "epic_id": state.get("active_epic"),
+            "suspended_at": datetime.now(timezone.utc).isoformat(),
+            "reason": args.reason.strip(), "unit_state": unit_state,
+            "resume_checks": _resume_digest_checks(project_root, state),
+            "resume_next_action": checkpoint[2] if checkpoint else None,
+        }
+        updated = dict(state)
+        updated["suspended_units"] = registry
+        updated["epic_features"] = list(features)
+        updated["epic_features"][matches[0]] = {**features[matches[0]], "status": "suspended"}
+        updated.update({"active_feature": None, "current_stage": IDLE_STAGE,
+                        "tdd_substage": None, "postconditions_status": {},
+                        "audit_status": None, "review_status": None,
+                        "active_packet": None, "execution": None})
+        updated["stage_history"] = [*state.get("stage_history", []), {
+            "transition": "suspend", "feature": feature_id,
+            "at": datetime.now(timezone.utc).isoformat(), "reason": args.reason.strip()}]
+        try:
+            _publish_owned_atomically([(state_path, _serialize_document(updated))])
+        except (OSError, PolicyError):
+            _restore_continuity_head(checkpoint)
+            raise
+    return f"suspended unit {feature_id!r}: {args.reason.strip()}\n"
+
+
+def _has_dispatch_evidence(project_root: Path, state: dict[str, Any]) -> bool:
+    execution = state.get("execution")
+    execution_id = execution.get("id") if isinstance(execution, dict) else None
+    if not execution_id:
+        return True
+    path = project_root / EXECUTIONS_DIR / execution_id / "dispatches"
+    return path.exists() and any(path.iterdir())
+
+
+def _require_suspend_safe_boundary(project_root: Path, state: dict[str, Any],
+                                   execution_document: dict[str, Any],
+                                   feature_id: str) -> None:
+    """Conservatively classify durable effects for every packet in the execution."""
+    execution = execution_document.get("execution", {})
+    execution_id = execution.get("id") if isinstance(execution, dict) else None
+    if not isinstance(execution_id, str) or not execution_id:
+        raise PolicyError(f"unit {feature_id!r} has no verifiable execution identity")
+    packet = state.get("active_packet")
+    active_packet_id = packet.get("id") if isinstance(packet, dict) else None
+    dispatch_dir = project_root / EXECUTIONS_DIR / execution_id / "dispatches"
+    dispatches: list[dict[str, Any]] = []
+    if dispatch_dir.exists():
+        if not dispatch_dir.is_dir():
+            raise PolicyError(f"unit {feature_id!r} dispatch source is inconclusive: {dispatch_dir}")
+        for path in sorted(dispatch_dir.glob("*.json")):
+            try:
+                doc = _load_json(path, "execution dispatch")
+            except PolicyError as exc:
+                raise PolicyError(f"unit {feature_id!r} inconclusive dispatch at {path}: {exc}") from exc
+            if doc.get("execution_id") != execution_id or not isinstance(doc.get("packet_id"), str):
+                raise PolicyError(f"unit {feature_id!r} inconclusive dispatch identity at {path}")
+            dispatches.append(doc)
+
+    packet_ids = {doc["packet_id"] for doc in dispatches}
+    if isinstance(active_packet_id, str):
+        packet_ids.add(active_packet_id)
+    result_root = project_root / ".cdad" / "runtime" / "results" / execution_id
+    if result_root.exists():
+        if not result_root.is_dir():
+            raise PolicyError(f"unit {feature_id!r} result source is inconclusive: {result_root}")
+        packet_ids.update(child.name for child in result_root.iterdir() if child.is_dir())
+
+    import cdad_continuity
+    for packet_id in sorted(packet_ids):
+        result_dir = result_root / packet_id
+        receipt_path = result_dir / "receipt.json"
+        receipt_valid = _is_durable_receipt(project_root, execution_id, packet_id, feature_id)
+        if receipt_path.exists() and not receipt_valid:
+            raise PolicyError(f"unit {feature_id!r} result receipt is inconclusive or discordant: {receipt_path}")
+        if result_dir.is_dir() and any(p.is_file() for p in result_dir.rglob("*")) and not receipt_valid:
+            raise PolicyError(f"unit {feature_id!r} has staged/result effects without a resolving receipt: {result_dir}")
+        materialization_dir = project_root / ".cdad" / "runtime" / "materializations" / execution_id / packet_id
+        if materialization_dir.is_dir() and any(materialization_dir.glob("*.json")) and not receipt_valid:
+            raise PolicyError(f"unit {feature_id!r} has unresolved materialization: {materialization_dir}")
+        if any(doc["packet_id"] == packet_id for doc in dispatches) and not receipt_valid:
+            try:
+                disposition, causes = cdad_continuity._disposition_signal(
+                    project_root, execution_document, execution_id, packet_id)
+            except Exception as exc:
+                raise PolicyError(f"unit {feature_id!r} dispatch disposition is inconclusive for {packet_id}: {exc}") from exc
+            if causes:
+                raise PolicyError(f"unit {feature_id!r} dispatch disposition is inconclusive for {packet_id}: {'; '.join(causes)}")
+            if disposition is None:
+                raise PolicyError(f"unit {feature_id!r} has unresolved dispatched packet {packet_id}; receive or dispose it first")
+
+    inbox = project_root / ".cdad" / "inbox"
+    if inbox.is_dir():
+        for descriptor_path in sorted(inbox.rglob("RESULT.json")):
+            try:
+                descriptor = _load_json(descriptor_path, "staged result descriptor")
+            except PolicyError as exc:
+                raise PolicyError(f"unit {feature_id!r} inconclusive staged result at {descriptor_path}: {exc}") from exc
+            if descriptor.get("execution_id") == execution_id:
+                packet_id = descriptor.get("packet_id")
+                if not isinstance(packet_id, str) or not _is_durable_receipt(project_root, execution_id, packet_id, feature_id):
+                    raise PolicyError(f"unit {feature_id!r} has staged result descriptor without durable receipt: {descriptor_path}")
+
+
+def _is_durable_receipt(project_root: Path, execution_id: str,
+                        packet_id: str, feature_id: str) -> bool:
+    try:
+        import cdad_result
+        receipt = cdad_result._load_durable_receipt(
+            project_root / cdad_result.RESULTS_RELPATH / execution_id / packet_id)
+    except (OSError, ValueError, cdad_result.ResultError):
+        return False
+    return bool(receipt and receipt.get("execution_id") == execution_id
+                and receipt.get("packet_id") == packet_id
+                and receipt.get("feature_id") == feature_id)
+
+
+def _has_durable_receipt(project_root: Path, state: dict[str, Any]) -> bool:
+    execution = state.get("execution")
+    packet = state.get("active_packet")
+    if not isinstance(execution, dict) or not isinstance(packet, dict):
+        return False
+    packet_id, execution_id = packet.get("id"), execution.get("id")
+    if not packet_id or not execution_id:
+        return False
+    try:
+        import cdad_result
+        final_dir = project_root / cdad_result.RESULTS_RELPATH / execution_id / packet_id
+        receipt = cdad_result._load_durable_receipt(final_dir)
+    except (OSError, ValueError, cdad_result.ResultError):
+        return False
+    return bool(receipt and receipt.get("execution_id") == execution_id
+                and receipt.get("packet_id") == packet_id
+                and receipt.get("feature_id") == state.get("active_feature"))
+
+
+def resume_unit(args: argparse.Namespace, project_root: Path) -> str:
+    feature_id = args.feature
+    if not feature_id:
+        raise PolicyError("resume-unit requires explicit --feature ID")
+    # Accept the historical public lock marker as a busy signal as well as the
+    # current flock rendezvous file; never mutate while either is held.
+    if (project_root / ".cdad" / "project.lock").exists():
+        raise PolicyError(f"cannot resume unit {feature_id!r}: project lock is busy")
+    with _ProjectLock(project_root):
+        cleanup_stale_transactions(project_root)
+        state_path = project_root / "docs" / ".cdad-state.json"
+        state = _load_json(state_path, "project state")
+        if not _validate_idle_coherence(state):
+            raise PolicyError(f"cannot resume {feature_id!r}: another unit is active")
+        registry = _validate_suspended_registry(state)
+        record = registry.get(feature_id)
+        if not isinstance(record, dict):
+            raise PolicyError(f"unit {feature_id!r} is not suspended")
+        for relpath, digest in record.get("resume_checks", {}).items():
+            path = _project_path(project_root, relpath, "resume reference")
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise PolicyError(f"cannot resume {feature_id!r}: resume reference changed or missing: {relpath}")
+        delegation = state.get("hitl_delegation")
+        if isinstance(delegation, dict) and (delegation.get("status") == "revoked"
+                                              or delegation.get("revoked_at") is not None):
+            raise PolicyError(f"cannot resume {feature_id!r}: current authority is revoked")
+        unit_state = record.get("unit_state")
+        if not isinstance(unit_state, dict) or unit_state.get("active_feature") != feature_id:
+            raise PolicyError(f"suspended unit {feature_id!r} has invalid unit_state")
+        updated = dict(state)
+        for key in _UNIT_STATE_FIELDS:
+            updated.pop(key, None)
+        updated.update(unit_state)
+        updated["suspended_units"] = {key: val for key, val in registry.items() if key != feature_id}
+        features = list(state["epic_features"])
+        index = next(i for i, entry in enumerate(features) if entry.get("id") == feature_id)
+        features[index] = {**features[index], "status": "in-progress"}
+        updated["epic_features"] = features
+        context_ref = record.get("unit_state", {}).get("execution")
+        if isinstance(context_ref, dict) and context_ref.get("id"):
+            context_path = project_root / EXECUTIONS_DIR / context_ref["id"] / "execution.json"
+            if context_path.is_file():
+                execution_document = _load_json(context_path, "suspended execution context")
+                _validate_v2_state(execution_document, updated, project_root)
+        checkpoint = _continuity_unit_checkpoint(
+            project_root, updated, feature_id,
+            f"Resumed suspended unit {feature_id}",
+            record.get("resume_next_action") or "Continue the preserved assignment")
+        updated["stage_history"] = [*state.get("stage_history", []), {
+            "transition": "resume", "feature": feature_id,
+            "at": datetime.now(timezone.utc).isoformat()}]
+        try:
+            _publish_owned_atomically([(state_path, _serialize_document(updated))])
+        except (OSError, PolicyError):
+            _restore_continuity_head(checkpoint)
+            raise
+    return f"resumed unit {feature_id!r}\n"
+
+
+def _continuity_checkpoint_update(project_root: Path, state: dict[str, Any],
+                                  feature_id: str, decision: str,
+                                  rationale: str, next_action: str
+                                  ) -> tuple[Path, dict[str, Any], str | None] | None:
+    """Build the `--update` of one checkpoint over the CURRENT head, WITHOUT
+    writing anything: the canonical writer consumes it as its own input.
+
+    Returns `(execution context path, update, the head's previous
+    next_action)`, or None when the execution has no head (continuity is never
+    invented). A head that cannot be read or demonstrated rejects."""
+    binding = state.get("execution")
+    if not isinstance(binding, dict) or not binding.get("id"):
+        return None
+    execution_id = binding["id"]
+    context = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+    head = project_root / EXECUTIONS_DIR / execution_id / "continuity" / "head.json"
+    # Continuity files live beneath the execution's continuity store; if no head
+    # exists, neither a suspension nor a retirement invents one.
+    if not head.is_file():
+        return None
+    try:
+        import cdad_continuity
+        head_document = cdad_continuity._load_head(project_root, execution_id)
+        chain = cdad_continuity._chain_links(project_root, execution_id, head_document)
+    except Exception as exc:
+        raise PolicyError(f"unit {feature_id!r} continuity chain is invalid: {exc}") from exc
+    prior_body = chain["links"][0][1]
+    packet_id, attempt = prior_body.get("packet_id"), prior_body.get("attempt")
+    if not isinstance(packet_id, str) or not isinstance(attempt, int):
+        raise PolicyError(f"unit {feature_id!r} continuity head lacks packet/attempt identity")
+    prior_action = prior_body.get("next_action")
+    decisions = list(prior_body.get("decisions", []))
+    decisions.append({"decision": decision, "rationale": rationale})
+    references = []
+    for reference in prior_body.get("references", []):
+        if not isinstance(reference, dict) or not isinstance(reference.get("path"), str):
+            raise PolicyError(f"unit {feature_id!r} continuity reference is malformed")
+        item = {"path": reference["path"], "class": reference.get("class", "contract")}
+        if "fields" in reference:
+            item["fields"] = reference["fields"]
+        references.append(item)
+    update = {"packet_id": packet_id, "attempt": attempt,
+              "goal": prior_body.get("goal"), "decisions": decisions,
+              "uncertainties": prior_body.get("uncertainties", []),
+              "next_action": next_action, "references": references}
+    if "budget" in prior_body:
+        update["budget"] = prior_body["budget"]
+    return context, update, prior_action if isinstance(prior_action, str) else None
+
+
+def _continuity_unit_checkpoint(project_root: Path, state: dict[str, Any],
+                                feature_id: str, decision: str,
+                                next_action: str, *,
+                                rationale: str = "Explicit suspend/resume operation",
+                                expected_packet_id: str | None = None
+                                ) -> tuple[Path, bytes, str | None] | None:
+    """Append a checkpoint only when a valid continuity head already exists.
+
+    007-006 §Continuidad del retiro builds its plan with
+    `_continuity_checkpoint_update` and publishes it in its own transaction, so
+    it does not use this immediate writer: `rationale` and
+    `expected_packet_id` stay here for the suspend/resume callers."""
+    import cdad_continuity
+    planned = _continuity_checkpoint_update(
+        project_root, state, feature_id, decision, rationale, next_action)
+    if planned is None:
+        return None
+    context, update, prior_action = planned
+    if expected_packet_id is not None and update.get("packet_id") != expected_packet_id:
+        # The head is another packet's: its bytes are conserved as they are.
+        return None
+    binding = state["execution"]
+    head = (project_root / EXECUTIONS_DIR / binding["id"] / "continuity"
+            / "head.json")
+    with tempfile.TemporaryDirectory(prefix="cdad-suspend-") as temp:
+        update_path = Path(temp) / "update.json"
+        update_path.write_bytes(_serialize_document(update, sorted_keys=True))
+        previous_head = head.read_bytes()
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                cdad_continuity._run_write(
+                    "checkpoint", argparse.Namespace(
+                        project_root=str(project_root), execution_context=str(context),
+                        update=str(update_path), max_bytes=None, json=True))
+        except (OSError, ValueError, cdad_continuity.ContinuityError) as exc:
+            raise PolicyError(f"unit {feature_id!r} continuity checkpoint failed: {exc}") from exc
+        return head, previous_head, prior_action
+
+
+def _restore_continuity_head(checkpoint: tuple[Path, bytes, str | None] | None) -> None:
+    if checkpoint is None:
+        return
+    path, previous_bytes, _ = checkpoint
+    temp_path = path.with_name(path.name + ".restore")
+    temp_path.write_bytes(previous_bytes)
+    os.replace(temp_path, path)
 
 
 def validate_state(execution_document: dict[str, Any], state: dict[str, Any], project_root: Path) -> str:
@@ -3052,24 +3566,48 @@ def _serialize_document(document: dict[str, Any], *, sorted_keys: bool = False) 
 def _publish_owned_atomically(writes: list[tuple[Path, bytes]]) -> None:
     """Publish several files with temp files and atomic renames (PD-11).
 
-    All temp files are written first, then renamed into place, so an error
-    during preparation leaves the previous generation intact; the owner's
-    transaction files are registered for recovery. Foreign entries are never
-    touched."""
+    All temp files are written first, then renamed into place. 007-006
+    (review-002) makes the publication TRANSACTIONAL and not merely atomic:
+
+    - a destination that cannot BE a regular file (an existing directory, or an
+      entry this transaction cannot replace) is rejected BEFORE any temp is
+      written, naming it — no generation is half substituted;
+    - a failure anywhere in the replacements RESTORES the bytes of the
+      destinations already replaced and REMOVES the ones this call created
+      (a temporary whose path is occupied by a directory is never deleted: it
+      is not ours).
+
+    A rejection therefore leaves the inventory and the bytes identical. Foreign
+    entries are never touched."""
+    for target, _payload in writes:
+        if target.exists() and not target.is_file():
+            raise PolicyError(
+                f"cannot publish {target.name}: the destination exists and is not a "
+                f"regular file ({target}); the publication is refused before writing "
+                f"and no generation is substituted (PD-11/007-006)")
     temps: list[tuple[Path, Path]] = []
-    committed: list[tuple[Path, Path]] = []
+    committed: list[tuple[Path, bytes | None]] = []
     try:
         for target, payload in writes:
             tmp = target.with_name(target.name + ".tmp")
             tmp.write_bytes(payload)
             temps.append((tmp, target))
         for tmp, target in temps:
+            previous = target.read_bytes() if target.is_file() else None
             os.replace(tmp, target)
-            committed.append((tmp, target))
+            committed.append((target, previous))
     except OSError as exc:
         for tmp, _target in temps:
             try:
                 tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
+        for target, previous in reversed(committed):
+            try:
+                if previous is None:
+                    target.unlink(missing_ok=True)
+                else:
+                    target.write_bytes(previous)
             except OSError:
                 pass
         raise PolicyError(f"cannot publish reconciliation: {exc}") from exc
@@ -5317,6 +5855,11 @@ def _packet_agent(role: str, state: dict[str, Any]) -> str:
 
 
 def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
+    state_path = project_root / "docs" / ".cdad-state.json"
+    if state_path.is_file():
+        _suspended_unit_for(_load_json(state_path, "project state"),
+                            getattr(args, "feature", None) or
+                            _load_json(state_path, "project state").get("active_feature"))
     """Build request, packet and state binding; write all of them or nothing."""
     if not args.role or not args.substage or not args.objective:
         raise PolicyError("prepare requires --role, --substage and --objective")
@@ -5357,10 +5900,15 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                 else:
                     published = False
                 if published:
-                    raise PolicyError(
-                        f"active packet {active.get('id')!r} is {active.get('status')!r}: complete or "
-                        f"fail it before preparing a new packet (PD-4)"
-                    )
+                    if active.get("status") == "dispatched" and _has_durable_receipt(project_root, state):
+                        # A verified durable receipt resolves the old dispatch:
+                        # preparing the next packet cannot repeat that effect.
+                        pass
+                    else:
+                        raise PolicyError(
+                            f"active packet {active.get('id')!r} is {active.get('status')!r}: complete or "
+                            f"fail it before preparing a new packet (PD-4)"
+                        )
                 state = dict(state)
                 state["active_packet"] = None
                 state["execution"] = None
@@ -5693,6 +6241,7 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
                 f"state is not at rest: unit {state.get('active_feature')!r} is "
                 f"already open (current_stage {state.get('current_stage')!r}); "
                 f"complete or close it before opening the next unit")
+        _validate_suspended_registry(state)
         features = state.get("epic_features")
         if not isinstance(features, list):
             raise PolicyError(
@@ -5754,7 +6303,7 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
 # adds the `gate` class over that base (PD-5/PD-6); the remaining classes are
 # added by later tasks of the same feature, over this base.
 TRANSITION_CLASSES = ("delivery", "advance", "gate", "closure", "late-delivery",
-                      "disposition")
+                      "disposition", "withdraw")
 # PD-14: the stage-2 approval gate — the only transition whose vigency is
 # structural per `(feature, contract_path)` (D-8: `supersedes`).
 SPEC_GATE_STAGE = "specification"
@@ -6147,6 +6696,498 @@ def _transition_collision_message(feature_id: str, contract_path: str,
         f"one that becomes vigente (PD-9/R-14/D-15)")
 
 
+# ---------------------------------------------------------------- 007-006 §CLI
+# `withdraw` (`007-006 §Retirar`): the EXPLICIT retirement of the ACTIVE packet
+# that never reached a dispatch. Its terminal effect reuses the existing
+# terminal state `failed` (007-006 decision 1): the semantic distinction lives
+# in the entry (`transition: "withdraw"`, `resolution: "withdrawn"`), never in
+# a new packet status and never as a statement of execution failure.
+WITHDRAW_TRANSITION = "withdraw"
+# The canonical label of the class (§Decisiones 1/§Contrato CLI): the class does
+# NOT accept `--stage`, so the identity key never depends on a free text.
+WITHDRAW_STAGE = "packet-withdrawal"
+# The implicit resolution: the retire never requires `--resolution`, and the
+# closed vocabulary of `disposition` is NOT extended (decision 2).
+WITHDRAW_RESOLUTION = "withdrawn"
+# §Contrato CLI: the fields of the OTHER classes. They are not ignored: the
+# class rejects each of them, naming it, before any effect (PC-07), because none
+# of them belongs to this act.
+WITHDRAW_FOREIGN_FLAGS = (
+    ("--stage", lambda a: a.stage),
+    ("--resolution", lambda a: a.resolution),
+    ("--replaced-by", lambda a: a.replaced_by),
+    ("--approve-by", lambda a: a.approve_by),
+    ("--contract-path", lambda a: a.contract_path),
+    ("--contract-sha256", lambda a: a.contract_sha256),
+    ("--plan-path", lambda a: a.plan_path),
+    ("--plan-sha256", lambda a: a.plan_sha256),
+    ("--exempted-by", lambda a: a.exempted_by),
+    ("--exemption-reason", lambda a: a.exemption_reason),
+    ("--requested-by", lambda a: a.requested_by),
+    ("--delegated", lambda a: True if a.delegated else None),
+    ("--current-stage", lambda a: a.current_stage),
+    ("--substage", lambda a: a.substage),
+    ("--receipt", lambda a: a.receipt),
+    ("--artifact", lambda a: a.artifact or None),
+    ("--postcondition", lambda a: a.postcondition),
+    ("--outcome", lambda a: a.outcome),
+    ("--supersedes", lambda a: a.supersedes),
+    ("--closure-path", lambda a: a.closure_path),
+    ("--closure-sha256", lambda a: a.closure_sha256),
+)
+
+
+def _reject_withdraw_foreign_flags(args: argparse.Namespace) -> None:
+    """PC-07: an option of another class is NOT silently ignored by `withdraw`.
+
+    Everything is resolved before the lock and before any write, so the
+    rejection leaves every persistent file byte for byte identical (INV-7)."""
+    foreign = [flag for flag, present in WITHDRAW_FOREIGN_FLAGS
+               if present(args) is not None]
+    if foreign:
+        raise PolicyError(
+            f"state incoherent: --transition {WITHDRAW_TRANSITION} does not accept "
+            f"{', '.join(foreign)}: the retirement declares only --packet and --note, "
+            f"carries the canonical label {WITHDRAW_STAGE!r} and the implicit "
+            f"resolution {WITHDRAW_RESOLUTION!r}, and approves, receives, closes or "
+            f"supersedes nothing (007-006 §Contrato CLI)")
+
+
+def _withdraw_reason(args: argparse.Namespace) -> str:
+    """§Retirar: `--note` carries the MANDATORY motive of the retirement (a
+    retirement without a declared motive has nothing to register)."""
+    note = args.note
+    if not isinstance(note, str) or not note.strip():
+        raise PolicyError(
+            f"state incoherent: --transition {WITHDRAW_TRANSITION} requires a non-empty "
+            f"--note <motivo>: the reason of the retirement is mandatory and cannot be "
+            f"absent or empty (007-006 §Contrato CLI)")
+    return note
+
+
+def _packet_owner_unit(state: dict[str, Any], project_root: Path | None,
+                       packet_id: str) -> str | None:
+    """§AJ1: which unit OWNS the cited packet, from the existing sources only.
+
+    The suspension registry carries the unit's own state at the moment it was
+    suspended (`unit_state.active_packet`), and the published request carries
+    the `feature_id` the packet belongs to; the request survives the suspension,
+    so either source resolves the owner. An unknown owner is None: the guard
+    then applies only its general branch, never a guess."""
+    if not _safe_packet_component(packet_id):
+        return None
+    for feature_id, item in sorted(state.get("suspended_units", {}).items()):
+        if not isinstance(item, dict):
+            continue
+        unit_state = item.get("unit_state")
+        active = unit_state.get("active_packet") if isinstance(unit_state, dict) else None
+        if isinstance(active, dict) and active.get("id") == packet_id:
+            return feature_id
+    if project_root is None:
+        return None
+    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    if not request_path.is_file():
+        return None
+    try:
+        request = _load_json(request_path, "packet request")
+    except PolicyError:
+        return None
+    feature_id = request.get("feature_id")
+    return feature_id if isinstance(feature_id, str) and feature_id else None
+
+
+def _suspended_conflict(state: dict[str, Any], action: str, *,
+                        packet_id: str | None = None,
+                        project_root: Path | None = None) -> None:
+    """007-006 AJ1: the SHARED suspension guard (007-007/A2), applied before the
+    idempotent replay of the retirement and before any republication.
+
+    The guard is PER UNIT. With a cited packet, the unit that owns it decides:
+    a suspended owner blocks the operation even when another unit is active
+    (the packet of a suspended unit is a protected state), and an active unit
+    that is not suspended is never blocked by a suspension that is not its own.
+    Without a packet — or when the owner cannot be resolved — the general
+    branch applies: a suspended unit is never selected implicitly.
+
+    The rejection is a conflict (rc=1) that changes nothing, and it never
+    resumes anything: resuming is always an explicit
+    `resume-unit --feature <id>`."""
+    registry = _validate_suspended_registry(state)
+    if not registry:
+        return
+    if packet_id is not None:
+        owner = _packet_owner_unit(state, project_root, packet_id)
+        if owner in registry:
+            raise StateConflict(
+                f"state conflict: the packet {packet_id!r} belongs to the SUSPENDED unit "
+                f"{owner!r}: a suspended unit's packet is a protected state and is never "
+                f"selected implicitly — resume it explicitly with "
+                f"`resume-unit --feature {owner}` (007-007/A2, 007-006 AJ1)")
+    active = state.get("active_feature")
+    if isinstance(active, str) and active and active not in registry:
+        return  # another unit is active and is not suspended
+    ids = ", ".join(repr(item) for item in sorted(registry))
+    raise StateConflict(
+        f"state conflict: cannot {action} while {ids} is suspended; a suspended unit "
+        f"is a protected state and is never selected implicitly — resume it explicitly "
+        f"with `resume-unit --feature <id>` (007-007/A2, 007-006 AJ1)")
+
+
+def _withdraw_entry(state: dict[str, Any], *, feature_id: str,
+                    packet_id: str) -> dict[str, Any] | None:
+    """The withdrawal already registered for this packet, if any.
+
+    The lookup is over the whole history on purpose: the replay is independent
+    of the head and of continuity, and a retirement is registered once per
+    packet (§Contrato CLI)."""
+    history = state.get("stage_history")
+    if not isinstance(history, list):
+        return None
+    for entry in history:
+        if (isinstance(entry, dict)
+                and entry.get("transition") == WITHDRAW_TRANSITION
+                and entry.get("feature") == feature_id
+                and entry.get("packet_id") == packet_id):
+            return entry
+    return None
+
+
+def _require_withdrawable_packet(project_root: Path, state: dict[str, Any],
+                                 execution_id: str, packet_id: str) -> None:
+    """§Retirar/§Rechazos: the cited packet must be the ACTIVE one, `prepared`,
+    and its published request must agree with the state and the execution.
+
+    Everything is checked before any effect, so a rejection leaves the tree
+    identical (§Rechazos)."""
+    active = state.get("active_packet")
+    active_id = active.get("id") if isinstance(active, dict) else None
+    if active_id != packet_id:
+        raise PolicyError(
+            f"state incoherent: --packet {packet_id!r} is not the active packet "
+            f"({active_id!r}); the retirement retires the ACTIVE prepared packet of the "
+            f"open feature and never another one (007-006 §Retirar)")
+    status = active.get("status")
+    if status != "prepared":
+        raise PolicyError(
+            f"state incoherent: the active packet {packet_id!r} is {status!r}, not "
+            f"'prepared'; only a prepared packet — never a dispatched, completed or "
+            f"failed one — can be withdrawn (007-006 §Rechazos)")
+    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
+    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    if not request_path.is_file():
+        raise PolicyError(
+            f"state incoherent: the active packet {packet_id!r} has no published request at "
+            f"{request_rel} of the execution {execution_id!r}, so its identity cannot be "
+            f"verified and it is not withdrawn (007-006 §Retirar)")
+    request = _load_json(request_path, "packet request")
+    feature_id = state.get("active_feature")
+    for field, expected in (("execution_id", execution_id),
+                            ("packet_id", packet_id),
+                            ("feature_id", feature_id)):
+        if request.get(field) != expected:
+            raise PolicyError(
+                f"state incoherent: the published request {request_rel} declares {field} "
+                f"{request.get(field)!r} and the state/execution declare {expected!r}; the "
+                f"identity of the packet is incoherent and it is not withdrawn "
+                f"(007-006 §Retirar)")
+
+
+def _require_effect_free_packet(project_root: Path, execution_id: str,
+                                packet_id: str) -> None:
+    """§Rechazos/I3: the CONSERVATIVE effect-free criterion of the reanchor
+    (`cdad_continuity._require_reanchor_effect_free`), consumed — never copied.
+
+    Any positive or INCONCLUSIVE signal — a dispatch record (even an unreadable
+    or identity-less one), any result file, a materialization record, a
+    disposition — blocks the retirement: inconclusive is never read as absent,
+    and `_has_dispatch` alone is not enough (it skips unreadable JSON)."""
+    import cdad_continuity
+    try:
+        cdad_continuity._require_reanchor_effect_free(
+            project_root, execution_id, packet_id)
+    except cdad_continuity.ContinuityError as exc:
+        raise PolicyError(
+            f"evidence present or inconclusive: the packet {packet_id!r} cannot be "
+            f"withdrawn as never dispatched — {exc} (007-006 §Rechazos)")
+
+
+def _withdraw_continuity_plan(project_root: Path, state: dict[str, Any], *,
+                              execution_id: str, packet_id: str, decision: str,
+                              rationale: str, next_action: str
+                              ) -> list[tuple[Path, bytes]] | None:
+    """§Continuidad del retiro (AJ2): PLAN the retirement checkpoint through the
+    CANONICAL continuity writer of 007-003/007-007, so it is published in the
+    SAME transaction as the state (review-002).
+
+    The writer inherits the goal, the decisions, the uncertainties, `changes`
+    and — AJ2 — `evidence`, its classification and its antecedents untouched;
+    it only adds the retirement decision and changes `next_action`. A head that
+    belongs to ANOTHER packet is conserved as it is (its bytes are not ours to
+    advance): the history of the retirement is enough. A head that cannot be
+    read, verified or demonstrated blocks the retirement (never "another
+    packet"). Returns the writes (body first, head last) or None when nothing
+    must be appended."""
+    import cdad_continuity
+    head_path = (project_root / EXECUTIONS_DIR / execution_id / "continuity"
+                 / "head.json")
+    if not head_path.is_file():
+        return None  # no head: continuity is never fabricated (decision 4)
+    try:
+        cdad_continuity._detect_split_brain(project_root, execution_id, packet_id)
+    except cdad_continuity.ContinuityError as exc:
+        raise PolicyError(
+            f"continuity not verifiable: the chain of the execution {execution_id!r} "
+            f"cannot be demonstrated ({exc}); the packet is not withdrawn (007-006 "
+            f"§Continuidad del retiro)") from exc
+    planned = _continuity_checkpoint_update(
+        project_root, state, state.get("active_feature"), decision, rationale,
+        next_action)
+    if planned is None:
+        return None
+    context, update, _prior_action = planned
+    if update.get("packet_id") != packet_id:
+        return None  # the head is another packet's: its bytes are conserved
+    try:
+        plan = cdad_continuity.plan_write(
+            project_root, context, update, command="checkpoint")
+    except cdad_continuity.ContinuityError as exc:
+        raise PolicyError(
+            f"continuity not verifiable: the retirement checkpoint of the packet "
+            f"{packet_id!r} cannot be planned ({exc}); the packet is not withdrawn "
+            f"(007-006 §Continuidad del retiro)") from exc
+    return list(plan["writes"])
+
+
+def _withdraw_state(state: dict[str, Any], *, execution_id: str,
+                    feature_id: str, packet_id: str, note: str, by: str | None,
+                    at: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    """§Retirar: the state effect and the entry, both computed in memory.
+
+    Only `active_packet.status`, the appended entry and `last_updated` change:
+    the artifacts, the request, the packet, the context and the history stay
+    exactly as they are (I2, PC-01)."""
+    payload = _transition_identity_payload(
+        execution_id=execution_id, feature_id=feature_id,
+        transition=WITHDRAW_TRANSITION, stage=WITHDRAW_STAGE, substage=None,
+        packet_id=packet_id, receipt_sha256=None,
+        resolution=WITHDRAW_RESOLUTION, replaced_by=None, postcondition=None,
+        current_stage=None, artifacts={}, approved_by=None, contract=None,
+        plan=None, closure=None)
+    key = _transition_key(payload)
+    entry: dict[str, Any] = {
+        "feature": feature_id,
+        "stage": WITHDRAW_STAGE,
+        "substage": None,
+        "at": at,
+        "by": by,
+        "transition": WITHDRAW_TRANSITION,
+        "transition_key": key,
+        "transition_key_payload": payload,
+        "supersedes": None,
+        "approval_effect": False,
+        "packet_id": packet_id,
+        "receipt_ref": None,
+        "receipt_sha256": None,
+        "artifacts": {},
+        "note": note,
+        "resolution": WITHDRAW_RESOLUTION,
+    }
+    active = state.get("active_packet")
+    new_state = dict(state)
+    new_state["active_packet"] = {**active, "status": "failed"}
+    new_state["stage_history"] = [*(state.get("stage_history") or []), entry]
+    new_state["last_updated"] = at
+    return new_state, entry
+
+
+def _withdraw_noop_message(packet_id: str, key: str) -> str:
+    """§Contrato CLI: the identical repetition of a registered retirement is a
+    success with NO effects — the state and the continuity chain are not
+    written, so both stay byte for byte identical (I4)."""
+    return (
+        f"transition already registered: {WITHDRAW_TRANSITION} of packet "
+        f"{packet_id} ({key}); no-op, no effects\n"
+        f"no-op detail: the registered entry already carries this motive, so "
+        f"neither the state nor the continuity chain were written "
+        f"(007-006 §Contrato CLI)\n")
+
+
+def withdraw_transition(args: argparse.Namespace, project_root: Path) -> str:
+    """007-006 §Retirar: retire the active `prepared` packet that never reached
+    a dispatch.
+
+    Declaration, not judgement: the CLI never decides whether the assignment
+    should be retired (it is the orchestrator's decision); it verifies that the
+    declared retirement is mechanically possible and registers it, with no
+    receipt, no approval and no dispatch (I1)."""
+    _reject_withdraw_foreign_flags(args)
+    note = _withdraw_reason(args)
+    packet_id = args.packet
+    if not isinstance(packet_id, str) or not packet_id:
+        raise PolicyError(
+            f"state incoherent: --transition {WITHDRAW_TRANSITION} requires --packet "
+            f"<packet-id>: the retirement cites the active packet it retires "
+            f"(007-006 §Retirar)")
+    state_path = project_root / "docs" / ".cdad-state.json"
+    with _ProjectLock(project_root):
+        cleanup_stale_transactions(project_root)
+        state = _load_json(state_path, "project state")
+        # AJ1: the shared suspension guard precedes everything, the replay
+        # included, and it is PER UNIT: the packet of a suspended unit is never
+        # retired or re-retired, while another active unit is never blocked by
+        # a suspension that is not its own.
+        _suspended_conflict(state, "retire a packet", packet_id=packet_id,
+                            project_root=project_root)
+        execution_document, execution_id = _resolve_active_execution(project_root, state)
+        if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
+            raise PolicyError(
+                "withdraw requires an active v2 execution context: the packet of a flat "
+                "(v1) context carries no verifiable identity (007-006 §Retirar)")
+        feature_id = state.get("active_feature")
+        if not isinstance(feature_id, str) or not feature_id:
+            raise PolicyError(
+                "state incoherent: there is no active feature to withdraw a packet for "
+                "(state.active_feature is null); the retirement retires the packet of the "
+                "open feature and never fabricates one (007-006 §Retirar)")
+        # §Contrato CLI: repetition is idempotent BY MOTIVE. An identical
+        # repetition is a success with no writes; a DIFFERENT motive is a
+        # conflict, never another decision — the registered one stands.
+        registered = _withdraw_entry(state, feature_id=feature_id,
+                                     packet_id=packet_id)
+        if registered is not None:
+            if registered.get("note") == note:
+                return _withdraw_noop_message(
+                    packet_id, str(registered.get("transition_key")))
+            raise StateConflict(
+                f"state conflict: the packet {packet_id!r} was already withdrawn with a "
+                f"DIFFERENT motive (registered transition_key "
+                f"{registered.get('transition_key')!r}); a retirement is registered once "
+                f"and a different motive is not another decision — repeat the registered "
+                f"motive, or prepare a new assignment (007-006 §Retirar)")
+        _require_withdrawable_packet(project_root, state, execution_id, packet_id)
+        _require_effect_free_packet(project_root, execution_id, packet_id)
+        at = datetime.now(timezone.utc).isoformat()
+        new_state, entry = _withdraw_state(
+            state, execution_id=execution_id, feature_id=feature_id,
+            packet_id=packet_id, note=note, by=args.by, at=at)
+        # §Continuidad del retiro (AJ2) + review-002: the retirement checkpoint
+        # is PLANNED, never written on its own, so the body, the head and the
+        # state are published in ONE transaction. A real write failure anywhere
+        # therefore leaves the tree identical: no new body, the previous head
+        # and the previous state (a created target is removed, a replaced one
+        # restored).
+        continuity_writes = _withdraw_continuity_plan(
+            project_root, state, execution_id=execution_id, packet_id=packet_id,
+            decision=(f"Withdrew prepared packet {packet_id} "
+                      f"(transition_key {entry['transition_key']})"),
+            rationale=note,
+            next_action=(f"Do not dispatch packet {packet_id}: it was withdrawn before "
+                         f"its dispatch; prepare a new assignment")) or []
+        _publish_owned_atomically([
+            *continuity_writes,
+            (state_path, _serialize_document(new_state)),
+        ])
+    lines = [
+        f"withdrawn packet {packet_id} of {feature_id}",
+        f"resolution: {WITHDRAW_RESOLUTION}",
+        f"transition_key: {entry['transition_key']}",
+        f"note: {note}",
+        f"stage: {WITHDRAW_STAGE}",
+    ]
+    if continuity_writes:
+        lines.append("continuity: withdrawal checkpoint appended to the current head")
+    else:
+        lines.append("continuity: nothing was appended (no head of this packet, or the "
+                     "head already carried this retirement); nothing was fabricated")
+    return "\n".join(lines) + "\n"
+
+
+def republish_agents(args: argparse.Namespace, project_root: Path) -> str:
+    """007-006 §Republicar: republish the project's derived agents (and their
+    manifest) from the resolved installed source, WITHOUT a packet.
+
+    It reuses the constructor and the publication guarantees the preparation
+    already has (`_build_derived_payloads`: permissions, accepted temporaries,
+    provenance, manifest, hand-modification detection and retirement of the
+    previously administered names), so it never re-derives a second way. It
+    touches NO cycle state, NO packet, NO policy and NO continuity (I5), and it
+    inherits the installed `model:` literally (I6): the derivation changes
+    permissions, never a model, and the CLI never chooses one."""
+    with _ProjectLock(project_root):
+        cleanup_stale_transactions(project_root)
+        state = _load_json(project_root / "docs" / ".cdad-state.json",
+                           "project state")
+        # AJ1: the derived agents derive from the ACTIVE binding; a suspended
+        # unit is never selected implicitly, and a suspension has no binding.
+        _suspended_conflict(state, "republish the derived agents")
+        execution_document, execution_id = _resolve_active_execution(
+            project_root, state)
+        if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
+            raise PolicyError(
+                "republish-agents requires the active v2 execution context: the accepted "
+                f"policy revision of execution {execution_id!r} cannot be verified "
+                "(007-006 §Republicar)")
+        # §Republicar: the bound execution and its ACCEPTED policy revision are
+        # verified as coherent before anything is derived; without a verifiable
+        # context/policy there is nothing to publish against (and the operation
+        # never creates a context nor accepts a policy by side effect).
+        _validate_v2_state(execution_document, state, project_root)
+        _ensure_policy_reconciled(project_root, execution_document)
+        derived_spec = _build_derived_payloads(project_root, execution_document)
+        if derived_spec is None:
+            raise PolicyError(
+                "republish-agents refused: there is no installed OpenCode agents source to "
+                "derive from "
+                f"({DERIVED_AGENTS_ENV}, the activation registry {ACTIVATION_REGISTRY_REL.as_posix()} "
+                f"or the default {DEFAULT_DERIVED_SOURCE}); the operation never claims a "
+                "republication it did not publish (007-006 §Republicar)")
+        derived_dir, payloads, manifest_bytes, retired = derived_spec
+        manifest_path = derived_dir / DERIVED_MANIFEST_NAME
+        # §Republicar/I4: matching bytes are a success WITHOUT rewriting the
+        # destination (its mtime stays); the whole set is computed before the
+        # publication so an error never leaves a partial set of derivatives.
+        derived_writes: list[tuple[Path, bytes]] = [
+            (derived_dir / name, payload) for name, payload in payloads
+            if not _same_bytes(derived_dir / name, payload)
+        ]
+        writes = list(derived_writes)
+        if not _same_bytes(manifest_path, manifest_bytes):
+            writes.append((manifest_path, manifest_bytes))
+        created: list[Path] = []
+        if writes and not derived_dir.exists():
+            created = _create_dirs_tracked(derived_dir)
+        try:
+            if writes:
+                _publish_owned_atomically(writes)
+        except (OSError, PolicyError):
+            _remove_empty_dirs(created)
+            raise
+        # R2/PD-8: only the names the PREVIOUS manifest declared are retired —
+        # a foreign file is never touched. The generation is already published.
+        for name in retired:
+            try:
+                (derived_dir / name).unlink(missing_ok=True)
+            except OSError:
+                pass
+    return (
+        f"republished derived agents for execution {execution_id} from "
+        f"{_describe_installation(_derived_source_dir(project_root))}\n"
+        f"published: {len(writes)} file(s); unchanged: "
+        f"{len(payloads) - len(derived_writes)} derivative(s); "
+        f"retired: {len(retired)}\n"
+        f"manifest: {DERIVED_RELPATH.as_posix()}/{DERIVED_MANIFEST_NAME}\n"
+    )
+
+
+def _same_bytes(path: Path, payload: bytes) -> bool:
+    """§Republicar/I4: whether the destination already carries exactly these
+    bytes (then it is not rewritten)."""
+    try:
+        return path.is_file() and path.read_bytes() == payload
+    except OSError:
+        return False
+
+
 def _resolve_evidence_digest(raw: str, label: str) -> tuple[str, str]:
     """PD-20: read `<path>[=<sha256>]` and DERIVE the digest from the current
     bytes, unless a 64-hex assertion follows the LAST `=`. Here the CLI only
@@ -6401,6 +7442,15 @@ def _authority_note(state: dict[str, Any], source: str | None) -> str:
 
 
 def register_transition(args: argparse.Namespace, project_root: Path) -> str:
+    state_path = project_root / "docs" / ".cdad-state.json"
+    if state_path.is_file():
+        current_state = _load_json(state_path, "project state")
+        target_feature = getattr(args, "feature", None) or current_state.get("active_feature")
+        if target_feature is None and _validate_suspended_registry(current_state):
+            suspended_id = sorted(current_state["suspended_units"])[0]
+            raise PolicyError(f"transition has no active unit; {suspended_id!r} is suspended, "
+                              f"resume with resume-unit --feature {suspended_id}")
+        _suspended_unit_for(current_state, target_feature)
     """Register one explicit transition decision under the single writer.
 
     Everything (vocabulary, referenced evidence, identity) is resolved BEFORE
@@ -7180,9 +8230,19 @@ def _version_verdict(project_root: Path) -> dict[str, Any]:
             # project's derived agents. Another leg gets no promise (inventing
             # one would over-promise what `prepare` does not fix).
             if divergent == ["project"]:
+                # 007-006 §Orientación y versión: the verified resolution names
+                # the INDEPENDENT verb (`republish-agents --project-root ROOT`,
+                # run with the installed script). It replaces the previous
+                # "the next `prepare` republishes…" promise: the project's
+                # derived agents can be republished without preparing another
+                # packet, and the other legs still get no promise.
                 projection["resolution"] = (
-                    "the next `prepare` republishes the project's derived agents "
-                    "from the project source (project-execution.md §143-146)")
+                    "run `republish-agents --project-root ROOT` with the installed "
+                    "script (scripts/cdad_packet.py): it republishes the project's "
+                    "derived agents and their manifest from the resolved installed "
+                    "source, without preparing a packet — no `prepare` is needed and "
+                    "the cycle state is not touched (project-execution.md §10; "
+                    "orientation.md §4)")
             projection["cause"] = (
                 f"version not verified as coherent: the check reports a "
                 f"divergence (verdict {verdict}, rc {proc.returncode}); any "
@@ -7809,6 +8869,9 @@ def _situation_projection(
     elif _active_execution(state) is not None:
         situation = SITUATION_EXECUTION_ACTIVE
         source = "docs/.cdad-state.json:execution"
+    elif _validate_suspended_registry(state):
+        situation = SITUATION_UNITS_SUSPENDED
+        source = "docs/.cdad-state.json:suspended_units"
     else:
         situation = SITUATION_AT_REST
         source = "docs/.cdad-state.json:active_feature"
@@ -7850,6 +8913,13 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
     if state_error:
         unknowns.append(state_error)
         state = {}
+    registry_error = None
+    try:
+        _validate_suspended_registry(state)
+    except PolicyError as exc:
+        registry_error = str(exc)
+        state_error = state_error or f"suspended_units incoherent: {exc}"
+        unknowns.append(state_error)
 
     policy_present = (project_root / POLICY_RELPATH).is_file()
     if not policy_present:
@@ -7948,6 +9018,22 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         if cause and cause not in unknowns:
             unknowns.append(cause)
     next_block = {**next_block, "operation": operation}
+    registry = {} if registry_error else _validate_suspended_registry(state)
+    suspended_projection = [
+        {"feature_id": feature_id, "suspended_at": item["suspended_at"],
+         "reason": item["reason"],
+         "stage": item["unit_state"].get("current_stage"),
+         "substage": item["unit_state"].get("tdd_substage")}
+        for feature_id, item in sorted(registry.items())
+    ]
+    if situation == SITUATION_UNITS_SUSPENDED:
+        next_block["alternatives"] = [
+            {"verb": "resume-unit", "script": "scripts/cdad_packet.py",
+             "args_required": ["--feature"]},
+             *([{"verb": "open-unit", "script": "scripts/cdad_packet.py",
+                 "args_required": _open_unit_alternative_args(state)}]
+              if _open_unit_alternative_args(state) is not None else []),
+        ]
 
     document = {
         "project": {
@@ -7968,6 +9054,7 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         "next": next_block,
         "entry": entry,
         "situation": situation,
+        "suspended_units": suspended_projection,
         "unknowns": unknowns,
         # PD-11 (005-013 T1): the additive, READ-ONLY unit-contract block. It
         # reports the mode and (in fallback) the reason; it writes nothing.
@@ -7983,6 +9070,21 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
             "does not grow with the state history; pass a larger --max-bytes N to obtain more, "
             "or consult the concrete source by reference")
     return payload
+
+
+def _open_unit_alternative_args(state: dict[str, Any]) -> list[str] | None:
+    features = state.get("epic_features")
+    if not isinstance(features, list):
+        return None
+    queued = [entry for entry in features if isinstance(entry, dict)
+              and entry.get("status") == _QUEUED_UNIT_STATUS]
+    for index, entry in enumerate(queued):
+        try:
+            _check_open_unit_dependencies(entry, features)
+        except PolicyError:
+            continue
+        return [] if index == 0 else ["--feature"]
+    return None
 
 
 class _Parser(argparse.ArgumentParser):
@@ -8082,6 +9184,13 @@ def build_parser() -> argparse.ArgumentParser:
     open_unit_cmd.add_argument(
         "--feature", metavar="ID",
         help="open this epic_features entry; it must exist and be queued")
+    suspend = commands.add_parser("suspend-unit", help="suspend the active unit at a safe boundary")
+    suspend.add_argument("--project-root")
+    suspend.add_argument("--feature", required=True, metavar="ID")
+    suspend.add_argument("--reason", required=True, metavar="TEXT")
+    resume_unit_cmd = commands.add_parser("resume-unit", help="resume one explicitly selected suspended unit")
+    resume_unit_cmd.add_argument("--project-root")
+    resume_unit_cmd.add_argument("--feature", required=True, metavar="ID")
     # PD-1..PD-4/PD-7/PD-20 (005-012 T1): the operation that registers an
     # explicit transition decision (`transition-registration-v1`). It is
     # symmetric to `open-unit`: one subcommand, one contract, discoverable by
@@ -8092,7 +9201,8 @@ def build_parser() -> argparse.ArgumentParser:
              "(state operation)")
     register.add_argument("--project-root")
     register.add_argument("--transition", choices=TRANSITION_CLASSES, required=True,
-                          help="the decision class (closed vocabulary)")
+                          help="the decision class (closed vocabulary; `withdraw` "
+                               "retires the active prepared packet, 007-006)")
     register.add_argument("--stage", metavar="TOKEN",
                           help="the historical label of the transition (a plain token)")
     register.add_argument("--feature", metavar="ID",
@@ -8147,8 +9257,18 @@ def build_parser() -> argparse.ArgumentParser:
                           help="the declared disposition of a dispatch (PD-21)")
     register.add_argument("--replaced-by", metavar="PACKET_ID",
                           help="the packet that replaces a `superseded` dispatch (PD-21)")
-    register.add_argument("--note", metavar="TEXT")
+    register.add_argument("--note", metavar="TEXT",
+                          help="annotation of the invocation; `--transition withdraw` "
+                               "requires it as the mandatory motive (007-006)")
     register.add_argument("--by", metavar="ROLE")
+    # 007-006 §Republicar: the independent republication of the project's derived
+    # agents. It publishes NO packet and touches no cycle decision, so it is its
+    # own verb (never a `prepare` with a synthetic packet).
+    republish = commands.add_parser(
+        "republish-agents",
+        help="republish the project's derived agents and their manifest from the "
+             "resolved installed source, without a packet (007-006)")
+    republish.add_argument("--project-root")
     metric = commands.add_parser("validate-metric")
     metric.add_argument("--project-root")
     metric.add_argument("--record", required=True)
@@ -8320,8 +9440,20 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "open-unit":
             sys.stdout.write(open_unit(args, project_root))
             return 0
+        if args.command == "suspend-unit":
+            sys.stdout.write(suspend_unit(args, project_root))
+            return 0
+        if args.command == "resume-unit":
+            sys.stdout.write(resume_unit(args, project_root))
+            return 0
         if args.command == "register-transition":
+            if args.transition == WITHDRAW_TRANSITION:
+                sys.stdout.write(withdraw_transition(args, project_root))
+                return 0
             sys.stdout.write(register_transition(args, project_root))
+            return 0
+        if args.command == "republish-agents":
+            sys.stdout.write(republish_agents(args, project_root))
             return 0
         if args.command == "prepare":
             if args.propose_policy:
@@ -8360,6 +9492,11 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "validate-state":
             state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+            registry = _validate_suspended_registry(state)
+            if args.execution_context and registry:
+                candidate = _load_json(_cwd_path(args.execution_context), "execution context")
+                suspended_id = candidate.get("execution", {}).get("feature_id")
+                _suspended_unit_for(state, suspended_id)
             if _validate_idle_coherence(state):
                 print(f"VALID: {IDLE_STAGE}")
                 return 0
@@ -8398,6 +9535,9 @@ def main(argv: list[str] | None = None) -> int:
                     raise PolicyError("packet differs from canonical rendering")
             return 0
         raise PolicyError(f"unknown command: {args.command}")
+    except StateConflict as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     except PolicyError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2

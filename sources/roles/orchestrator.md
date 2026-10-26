@@ -50,11 +50,15 @@ register it. The `record` verb stages the native delivery under `.cdad/inbox` +
 transport with the external entry
 `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X` (its own
 contract — the entry's spec — owns that surface and the packet it dispatches,
-never re-typed here). That entry returns an ENVELOPE, not a text: its
-`delivery_ref` names the DURABLE RECEIPT the runtime module already received
-and persisted, so the orchestrator validates that receipt and continues the
-protocol — it never runs `receive` again for that route. One dispatch, one
-attempt, one route: never reconstruct the protocol by hand.
+never re-typed here). That entry returns an ENVELOPE, not a text, and its
+`delivery` — never its `rc` and never its `termination` by itself — decides the
+route: the runtime module has already received the delivery, so `delivery_ref`
+names the DURABLE RECEIPT it persisted, and that receipt is validated before
+continuing — never another `receive` and never a second staging. Consume the
+envelope with the mandatory procedure of
+`<skill-dir>/references/re-entry.md`, whose shape, vocabulary, combinations and
+historical rule are owned by `<skill-dir>/references/cli-delegation.md`. One
+dispatch, one attempt, one route: never reconstruct the protocol by hand.
 
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
@@ -148,6 +152,7 @@ contracts are in `<skill-dir>/references/continuity.md` — its reference-classe
 section declares `contract` vs `living`; the installed CLI is
 `<skill-dir>/scripts/cdad_continuity.py` — its interfaces are never duplicated
 here):
+- On legacy continuity, stop transport, obtain approval with `reanchor --dry-run`, and never auto-reanchor.
 - **Session entry (every new session):** the first action is to load the
   `cdad-cycle` skill and consult its read-only compact view `status`, by
   reference to `orientation.md` §1 (the rule "view first, expand on a concrete
@@ -202,9 +207,28 @@ here):
   single state transition; only the orchestrator writes `docs/.cdad-state.json`
   and `receive` never approves.
 
+Recovery wiring (installed contracts in `<skill-dir>/references/`; the checks are
+owned by the specs they cite and are never restated here):
+- **A prepared assignment that will not be dispatched** — the `withdraw` class of
+  `register-transition` (`references/project-execution.md` §10) retires the ACTIVE
+  `prepared` packet citing it and a non-empty motive: terminal `failed` plus the
+  entry `withdraw`/`withdrawn`, the package and files conserved, the current
+  continuity head closed with a withdrawal checkpoint and no receipt. It is not a
+  `disposition` (that resolves a dispatch) and not a replacement (that publishes a
+  successor); the checks are owned by
+  `docs/specs/007-006-withdraw-and-republish/spec.md`.
+- **`DRIFT` whose only divergent leg is `project`** — `republish-agents
+  --project-root ROOT` with the installed script republishes the project's derived
+  agents and their manifest from the resolved installation without preparing a
+  packet and without touching the cycle state or the continuity; the compact view
+  names it as the resolution of that leg (`references/orientation.md` §4). Another
+  divergent leg has no such promise.
+
 Procedure detail lives in its own sources (do not clone here):
 `skills/cdad-cycle/references/` (stages, gates, handoff-prompts, re-entry,
-anti-patterns).
+anti-patterns); suspending, re-taking and retiring a unit, and republishing its
+derived agents, are defined by `references/project-execution.md` and
+`references/orientation.md`.
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->

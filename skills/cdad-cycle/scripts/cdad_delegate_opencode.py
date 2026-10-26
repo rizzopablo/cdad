@@ -6,8 +6,9 @@ convention (`cdad_delegate_<id>.py` next to `cdad_delegate.py`, PD-1). The
 interface runs this module as a subprocess with the published `PACKET.md` bytes
 on stdin and `--project-root`, `--packet-id`, `--destination` and
 `--exec-config` on argv, and reads ONE JSON envelope
-`{attempt, session, termination, delivery_ref, diagnosis}` from stdout (see
-`references/cli-delegation.md`).
+`{attempt, session, termination, delivery, delivery_ref, diagnosis}` from stdout
+(see `references/cli-delegation.md`, which owns the delivery vocabulary and the
+valid combinations, 007-004).
 
 What this adapter does, and why (contract decisions D5/D6):
 
@@ -2315,11 +2316,27 @@ def _run_observe(args: argparse.Namespace) -> int:
 def _envelope(*, attempt: str | None = None, session: str | None,
               termination: str, delivery_ref: str | None,
               diagnosis: str | None) -> dict[str, Any]:
+    """007-004 §4.3: this module has ONE durable delivery — the receipt that
+    `receive` published — so a `completed` termination is declared `received`
+    with its path, and every other termination declares `none` with no
+    reference. A `completed` without a receipt path cannot claim a reception:
+    it fails closed as a protocol response instead of emitting a contradictory
+    envelope (§4.2: `completed + none` and `completed` without a reference are
+    invalid)."""
+    reference = _as_text(delivery_ref)
+    if termination == "completed" and reference is None:
+        termination = "transport-error"
+        diagnosis = _append_note(
+            diagnosis,
+            "the role completed but the durable receipt path is missing: no "
+            "reception is declared (007-004 §4.2)")
+    delivery = "received" if termination == "completed" else "none"
     return {
         "attempt": _as_text(attempt),
         "session": _as_text(session),
         "termination": termination,
-        "delivery_ref": _as_text(delivery_ref),
+        "delivery": delivery,
+        "delivery_ref": reference if delivery == "received" else None,
         "diagnosis": _as_text(diagnosis),
     }
 

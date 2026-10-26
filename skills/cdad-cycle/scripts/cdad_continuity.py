@@ -580,6 +580,38 @@ def _require_current_authority(exec_context: dict[str, Any]) -> None:
         "authorizes effects (D4)")
 
 
+def _require_reanchor_authority(root: Path,
+                               exec_context: dict[str, Any]) -> None:
+    delegation = _delegation(exec_context)
+    if not delegation:
+        return  # Direct owner approval is valid without a delegation record.
+    status = delegation.get("state", delegation.get("status"))
+    if status is not None and status not in ("active", "current"):
+        raise ContinuityError("registered delegation vigencia is not verifiable")
+    if delegation.get("revoked_at") is not None or status in {
+            "expired", "revoked", "user-revoked", "revoked-by-user"}:
+        raise ContinuityError("HITL delegation is expired or revoked")
+    reference = delegation.get("authority_ref")
+    if not isinstance(reference, str) or not reference.strip():
+        raise ContinuityError("registered delegation has no verifiable authority_ref")
+    rel = _normalize_reference(reference)
+    authority_path = (root / rel).resolve()
+    if root not in authority_path.parents or not authority_path.is_file():
+        raise ContinuityError("registered delegation authority_ref is not a readable project file")
+    if "expires_on" in delegation:
+        expires_on = delegation.get("expires_on")
+        if not isinstance(expires_on, str):
+            raise ContinuityError("delegation expires_on is invalid")
+        try:
+            expiry = date.fromisoformat(expires_on)
+        except ValueError as exc:
+            raise ContinuityError("delegation expires_on is invalid") from exc
+        if expiry < date.today():
+            raise ContinuityError("HITL delegation is expired")
+    elif status not in ("active", "current"):
+        raise ContinuityError("registered delegation vigencia is not verifiable")
+
+
 def _canonical_body(exec_context: dict[str, Any], update: dict[str, Any],
                     references: list[dict[str, str]],
                     record: str, *,
@@ -934,20 +966,36 @@ def _same_key(head: dict[str, Any], body: dict[str, Any]) -> bool:
             and head.get("attempt") == body.get("attempt"))
 
 
-def _run_write(command: str, args: argparse.Namespace) -> int:
-    root = Path(args.project_root)
-    exec_context = _load_execution_context(
-        root, _resolve(root, args.execution_context))
-    update = _read_json(_resolve(root, args.update), "update")
-    if not isinstance(update, dict):
-        raise ContinuityError("update must be a JSON object")
+def plan_write(root: Path, execution_context_path: Path, update: dict[str, Any],
+               *, command: str = "checkpoint",
+               max_bytes: int | None = None) -> dict[str, Any]:
+    """Compute — never publish — the atomic writes of ONE continuity write.
+
+    007-006 (review-002) needs the checkpoint of a retirement to travel in the
+    SAME transaction as the state: the caller asks for the plan and publishes
+    `writes` together with its own artifacts, so a failure leaves the chain and
+    the state untouched. `writes` is empty for an identical repetition (a
+    no-op), and `envelope` is the document the CLI prints.
+
+    Returns `{"writes": [(path, bytes), …], "envelope": {…}}`: the canonical
+    body first and the head that chains it second."""
+    exec_context = _load_execution_context(root, execution_context_path)
+    return _plan_write(root, exec_context, update, command=command,
+                       max_bytes=max_bytes)
+
+
+def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any],
+                *, command: str,
+                max_bytes: int | None) -> dict[str, Any]:
+    """`plan_write` over an already loaded execution context (the CLI reads it
+    once, exactly as before)."""
     _require_key_fields(update)
     _require_content_fields(update)
     _require_current_authority(exec_context)
     record = "begin" if command == "begin" else "checkpoint"
     declared_changes = _declared_changes(update)
 
-    max_bytes = args.max_bytes if args.max_bytes is not None else DEFAULT_MAX_BYTES
+    limit = max_bytes if max_bytes is not None else DEFAULT_MAX_BYTES
     references = _digest_references(root, update.get("references"))
     execution_id = exec_context["execution_id"]
     head = _load_head(root, execution_id)
@@ -968,7 +1016,7 @@ def _run_write(command: str, args: argparse.Namespace) -> int:
     body = _canonical_body(exec_context, update, references, record,
                            changes=changes, evidence=evidence)
 
-    if head is not None and _same_key(head, body):
+    if head is not None and head.get("record") != "reanchor" and _same_key(head, body):
         # Same idempotency key. §2.3.1: the repetition comparison is the whole
         # content of the head body minus its single top-level `prev`; `prev`
         # itself is derived from the validated head, so it never reaches this
@@ -976,9 +1024,16 @@ def _run_write(command: str, args: argparse.Namespace) -> int:
         if _content_without_prev(head_body) == body:
             no_op = dict(head)
             no_op["no_op"] = True
-            _emit(no_op)
-            return 0
-        if command != "checkpoint":
+            return {"writes": [], "envelope": no_op}
+        resumed_unit = (
+            head_body.get("record") == "checkpoint"
+            and isinstance(head_body.get("decisions"), list)
+            and any(isinstance(item, dict)
+                    and isinstance(item.get("decision"), str)
+                    and item["decision"].startswith("Resumed suspended unit ")
+                    for item in head_body.get("decisions", []))
+        )
+        if command != "checkpoint" and not (command == "begin" and resumed_unit):
             raise ContinuityError(
                 "split-brain: a "
                 f"{command} with the same idempotency key (execution_id="
@@ -1005,19 +1060,35 @@ def _run_write(command: str, args: argparse.Namespace) -> int:
     published = dict(body)
     published[PREV_FIELD] = prev_link
     body_bytes = _canonical_bytes(published)
-    if len(body_bytes) > max_bytes:
+    if len(body_bytes) > limit:
         raise ContinuityError(
-            f"projection exceeds --max-bytes {max_bytes} "
+            f"projection exceeds --max-bytes {limit} "
             f"(canonical body is {len(body_bytes)} bytes); refusing to truncate")
     body_sha256 = _sha256(body_bytes)
 
     envelope = _checkpoint_envelope(exec_context, body, body_sha256, body_bytes,
-                                    references, head, max_bytes)
-    _write_synced(_body_path(root, execution_id, body_sha256), body_bytes)
-    _write_synced(_head_path(root, execution_id),
-                  (json.dumps(envelope, indent=2, sort_keys=True,
-                              ensure_ascii=False) + "\n").encode("utf-8"))
-    _emit(envelope)
+                                    references, head, limit)
+    head_bytes = (json.dumps(envelope, indent=2, sort_keys=True,
+                             ensure_ascii=False) + "\n").encode("utf-8")
+    return {
+        "writes": [(_body_path(root, execution_id, body_sha256), body_bytes),
+                   (_head_path(root, execution_id), head_bytes)],
+        "envelope": envelope,
+    }
+
+
+def _run_write(command: str, args: argparse.Namespace) -> int:
+    root = Path(args.project_root)
+    exec_context = _load_execution_context(
+        root, _resolve(root, args.execution_context))
+    update = _read_json(_resolve(root, args.update), "update")
+    if not isinstance(update, dict):
+        raise ContinuityError("update must be a JSON object")
+    plan = _plan_write(root, exec_context, update, command=command,
+                       max_bytes=args.max_bytes)
+    for path, data in plan["writes"]:
+        _write_synced(path, data)
+    _emit(plan["envelope"])
     return 0
 
 
@@ -1651,6 +1722,11 @@ def _require_head_coherence(execution_id: str, head: dict[str, Any],
                 f"cadena incoherente: la cabeza declara {field}="
                 f"{head.get(field)!r} y su cuerpo declara {field}="
                 f"{body.get(field)!r}; la cabeza no describe ese cuerpo")
+    if body.get("record") == "reanchor":
+        if body.get(PREV_FIELD) is not None or head.get("seq") != 1 \
+                or head.get("prev_checkpoint_sha256") is not None:
+            raise ContinuityError("reanclaje incoherente: debe ser génesis seq 1")
+        return
     if PREV_FIELD not in body:
         # Legacy body: its link cannot be proven. Readable, never demonstrable.
         return
@@ -1728,7 +1804,11 @@ def _chain_links(root: Path, execution_id: str,
                     f"cadena incoherente: el cuerpo {sha[:12]}… declara "
                     f"`prev: null` (génesis) pero la cadena espera la posición "
                     f"{expected_seq}")
-            return {"links": links, "demonstrable": True, "unknowns": []}
+            if body.get("record") == "reanchor":
+                _validate_reanchor_body(root, execution_id, body)
+            return {"links": links, "demonstrable": True,
+                    "unknowns": (["historia anterior conservada, no demostrable"]
+                                 if body.get("record") == "reanchor" else [])}
         if not isinstance(prev, dict) or set(prev) != PREV_LINK_KEYS:
             raise ContinuityError(
                 f"cadena incoherente: `prev` del cuerpo {sha[:12]}… debe ser "
@@ -1745,6 +1825,187 @@ def _chain_links(root: Path, execution_id: str,
                 f"decrecer en 1 (esperado {expected_seq - 1}, visto "
                 f"{previous_seq!r})")
         sha, expected_seq = previous_sha, previous_seq
+
+
+def _validate_reanchor_body(root: Path, execution_id: str,
+                            body: dict[str, Any]) -> None:
+    anchor = body.get("legacy_anchor")
+    inventory = body.get("pre_anchor_bodies")
+    if not isinstance(anchor, dict) or anchor.get("execution_id") != execution_id \
+            or not _is_digest(anchor.get("head_sha256")) \
+            or not _is_int(anchor.get("head_seq")) or anchor["head_seq"] < 1:
+        raise ContinuityError("reanclaje inválido: legacy_anchor incoherente")
+    if not isinstance(anchor.get("reason"), str) or not anchor["reason"].strip():
+        raise ContinuityError("reanclaje inválido: motivo vacío")
+    if not isinstance(inventory, list) or inventory != sorted(set(inventory)) \
+            or any(not _is_digest(item) for item in inventory):
+        raise ContinuityError("reanclaje inválido: inventario no canónico")
+    for digest in inventory:
+        raw = _body_path(root, execution_id, digest).read_bytes()
+        if _sha256(raw) != digest:
+            raise ContinuityError(f"cuerpo archivado corrupto: {digest}")
+        try:
+            archived = json.loads(raw.decode("utf-8"))
+        except (UnicodeError, ValueError) as exc:
+            raise ContinuityError(f"cuerpo archivado ilegible: {digest}") from exc
+        if not isinstance(archived, dict) or archived.get("execution_id") != execution_id:
+            raise ContinuityError(f"cuerpo archivado de otra ejecución: {digest}")
+
+
+def _legacy_inventory(root: Path, execution_id: str) -> list[str]:
+    directory = _continuity_dir(root, execution_id) / "bodies"
+    result = []
+    if directory.is_dir():
+        for path in sorted(directory.glob("*.json")):
+            digest = path.stem
+            if not _is_digest(digest):
+                continue
+            raw = path.read_bytes()
+            if _sha256(raw) != digest:
+                raise ContinuityError(f"cuerpo de continuidad corrupto: {digest}")
+            try:
+                doc = json.loads(raw.decode("utf-8"))
+            except (UnicodeError, ValueError) as exc:
+                raise ContinuityError(
+                    f"cuerpo de continuidad ilegible: {digest}") from exc
+            if isinstance(doc, dict) and doc.get("execution_id") == execution_id:
+                result.append(digest)
+    return sorted(set(result))
+
+
+def _approval_fields(path: Path) -> dict[str, str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ContinuityError(f"no se puede leer aprobación: {exc}") from exc
+    match = re.match(r"\A---\s*\n(.*?)\n---\s*(?:\n|$)", text, re.S)
+    if not match:
+        raise ContinuityError("aprobación sin frontmatter válido")
+    fields = {}
+    for line in match.group(1).splitlines():
+        key, sep, value = line.partition(":")
+        if sep:
+            value = value.strip().strip('"\'')
+            if key in fields:
+                raise ContinuityError(f"campo duplicado en aprobación: {key}")
+            fields[key.strip()] = value
+    required = ("reanchor_execution_id", "reanchor_head_sha256",
+                "reanchor_inventory_sha256", "approved_by", "approved_at")
+    if any(not fields.get(key) for key in required):
+        raise ContinuityError("aprobación incompleta")
+    try:
+        date.fromisoformat(fields["approved_at"])
+    except ValueError as exc:
+        raise ContinuityError("approved_at debe ser YYYY-MM-DD") from exc
+    return fields
+
+
+def _run_reanchor(args: argparse.Namespace) -> int:
+    root = Path(args.project_root).resolve()
+    context = _load_execution_context(root, _resolve(root, args.execution_context))
+    execution_id = context["execution_id"]
+    head = _load_head(root, execution_id)
+    if head is None:
+        raise ContinuityError("no existe cabeza de continuidad para reanclar")
+    old_sha = head.get("body_sha256")
+    chain = _chain_links(root, execution_id, head)
+    if chain["links"][-1][1].get("record") == "reanchor":
+        original = chain["links"][-1][1]
+        if args.dry_run:
+            raise ContinuityError("la historia ya está reanclada")
+        saved_approval = original["legacy_anchor"]["approval_ref"]
+        approval_rel = _normalize_reference(args.approval_ref)
+        approval_path = (root / approval_rel).resolve()
+        if root not in approval_path.parents or not approval_path.is_file():
+            raise ContinuityError("approval-ref debe ser archivo regular dentro del proyecto")
+        if args.expected_head != original["legacy_anchor"]["head_sha256"] \
+                or args.reason != original["legacy_anchor"]["reason"] \
+                or approval_rel != saved_approval.get("path") \
+                or _sha256(approval_path.read_bytes()) != saved_approval.get("sha256"):
+            raise ContinuityError("conflicto: el reanclaje vigente tiene otros parámetros")
+        anchor_sha, anchor_body = chain["links"][-1]
+        anchor_raw = _canonical_bytes(anchor_body)
+        field_size = max(0, len(_canonical_bytes({
+            "pre_anchor_bodies": anchor_body["pre_anchor_bodies"]})) - 2)
+        env = {"schema_version": SCHEMA_VERSION, "checkpoint": CHECKPOINT_CONTRACT,
+               "execution_id": execution_id, "packet_id": anchor_body.get("packet_id"),
+               "attempt": anchor_body.get("attempt"), "record": "reanchor", "seq": 1,
+               "body_sha256": anchor_sha, "prev_checkpoint_sha256": None,
+               "references": [], "bytes": len(anchor_raw),
+               "max_bytes": DEFAULT_MAX_BYTES + field_size, "no_op": True,
+               "legacy_anchor": anchor_body["legacy_anchor"],
+               "pre_anchor_bodies": anchor_body["pre_anchor_bodies"],
+               "pre_anchor_inventory_sha256": _sha256(
+                   _canonical_bytes(anchor_body["pre_anchor_bodies"])),
+               "idempotent": True}
+        _emit(env); return 0
+    current = _legacy_inventory(root, execution_id)
+    body, _ = _verify_body(root, execution_id, head)
+    if chain["demonstrable"]:
+        raise ContinuityError("la cadena ya es demostrable; no se puede reanclar")
+    if args.expected_head and args.expected_head != old_sha:
+        raise ContinuityError("expected-head no coincide con la cabeza vigente")
+    _require_reanchor_effect_free(root, execution_id, head.get("packet_id"))
+    _require_reanchor_authority(root, context)
+    inventory_sha = _sha256(_canonical_bytes(current))
+    if args.dry_run:
+        _emit({"execution_id": execution_id, "head_sha256": old_sha,
+               "head_seq": head.get("seq"), "body_count": len(current),
+               "pre_anchor_inventory_sha256": inventory_sha})
+        return 0
+    approval_rel = _normalize_reference(args.approval_ref)
+    approval_path = (root / approval_rel).resolve()
+    if not approval_path.is_file() or root not in approval_path.parents:
+        raise ContinuityError("approval-ref debe ser archivo regular dentro del proyecto")
+    fields = _approval_fields(approval_path)
+    approval_sha = _sha256(approval_path.read_bytes())
+    if fields["reanchor_execution_id"] != execution_id \
+            or fields["reanchor_head_sha256"] != old_sha \
+            or fields["reanchor_inventory_sha256"] != inventory_sha:
+        raise ContinuityError("la aprobación no coincide con ejecución/cabeza/inventario")
+    approval = {"path": approval_rel, "sha256": approval_sha}
+    published = {"schema_version": SCHEMA_VERSION, "execution_id": execution_id,
+                 "packet_id": body.get("packet_id"), "attempt": body.get("attempt"),
+                 "record": "reanchor", "goal": body.get("goal"),
+                 "authority": _authority(context), "decisions": [],
+                 "uncertainties": [], "next_action": None, "references": [],
+                 "legacy_anchor": {"execution_id": execution_id,
+                                   "head_sha256": old_sha, "head_seq": head.get("seq"),
+                                   "reason": args.reason, "approval_ref": approval},
+                 "pre_anchor_bodies": current, "prev": None}
+    raw = _canonical_bytes(published); digest = _sha256(raw)
+    ordinary_limit = args.max_bytes if getattr(args, "max_bytes", None) is not None \
+        else DEFAULT_MAX_BYTES
+    if ordinary_limit < 1:
+        raise ContinuityError("--max-bytes must be positive")
+    field_size = max(0, len(_canonical_bytes({"pre_anchor_bodies": current})) - 2)
+    without_inventory = dict(published)
+    without_inventory.pop("pre_anchor_bodies")
+    if len(_canonical_bytes(without_inventory)) > ordinary_limit:
+        raise ContinuityError(
+            f"reanchor body excluding inventory exceeds ordinary limit {ordinary_limit}")
+    effective_limit = ordinary_limit + field_size
+    if len(raw) > effective_limit:
+        raise ContinuityError(
+            f"reanchor body exceeds effective --max-bytes {effective_limit} "
+            f"(canonical body is {len(raw)} bytes)")
+    if _load_head(root, execution_id) != head \
+            or _legacy_inventory(root, execution_id) != current:
+        raise ContinuityError("head or inventory changed before reanchor publication")
+    env = {"schema_version": SCHEMA_VERSION, "checkpoint": CHECKPOINT_CONTRACT,
+           "execution_id": execution_id, "packet_id": body.get("packet_id"),
+           "attempt": body.get("attempt"), "record": "reanchor", "seq": 1,
+           "body_sha256": digest, "prev_checkpoint_sha256": None,
+           "references": [], "bytes": len(raw), "max_bytes": effective_limit,
+           "no_op": False}
+    _write_synced(_body_path(root, execution_id, digest), raw)
+    _write_synced(_head_path(root, execution_id),
+                  (json.dumps(env, indent=2, sort_keys=True) + "\n").encode())
+    env.update({"legacy_anchor": published["legacy_anchor"],
+                "pre_anchor_bodies": current,
+                "pre_anchor_inventory_sha256": inventory_sha,
+                "idempotent": False})
+    _emit(env); return 0
 
 
 def _reference_digest(root: Path, reference: dict[str, Any]) -> str | None:
@@ -1849,7 +2110,18 @@ def _detect_split_brain(root: Path, execution_id: str, packet_id: str) -> None:
     if not bodies_dir.is_dir():
         return
     by_key: dict[tuple[Any, Any, Any], list[str]] = {}
+    head = _load_head(root, execution_id)
+    archived: set[str] = set()
+    if head is not None:
+        chain = _chain_links(root, execution_id, head)
+        genesis = chain["links"][-1][1]
+        if genesis.get("record") == "reanchor":
+            archived = set(genesis.get("pre_anchor_bodies", []))
     for path in sorted(bodies_dir.glob("*.json")):
+        if path.stem in archived:
+            if _sha256(path.read_bytes()) != path.stem:
+                raise ContinuityError(f"cuerpo archivado corrupto: {path.stem}")
+            continue
         try:
             document = json.loads(path.read_bytes().decode("utf-8"))
         except (OSError, ValueError):
@@ -1862,6 +2134,8 @@ def _detect_split_brain(root: Path, execution_id: str, packet_id: str) -> None:
         # P6: a checkpoint link is not a divergent head; only non-checkpoint
         # bodies (begins/legacy/orphans) count under one key.
         if document.get("record") == "checkpoint":
+            continue
+        if document.get("record") == "reanchor":
             continue
         key = (document.get("execution_id"), document.get("packet_id"),
                document.get("attempt"))
@@ -1887,6 +2161,74 @@ def _has_dispatch(root: Path, execution_id: str, packet_id: str) -> bool:
         if isinstance(document, dict) and document.get("packet_id") == packet_id:
             return True
     return False
+
+
+def _require_reanchor_effect_free(root: Path, execution_id: str,
+                                 packet_id: str) -> None:
+    """The CONSERVATIVE «no effect yet» criterion of the reanchor, shared with
+    the retirement of a prepared packet (007-006 §Rechazos: the packet CLI
+    consumes this same function and never a divergent detector).
+
+    A signal that cannot be interpreted is INCONCLUSIVE, never absent: an
+    unreadable dispatch record, a missing/discordant identity (also when the
+    named packet has no published request in the examined scope), any result
+    file, a materialization record and a disposition all block the operation."""
+    state_path = root / STATE_REL_PATH
+    state = _read_json(state_path, "project state") if state_path.is_file() else {}
+    active = state.get("active_packet") if isinstance(state, dict) else None
+    if not isinstance(active, dict) or active.get("id") != packet_id \
+            or active.get("status") != "prepared":
+        raise ContinuityError("the packet is not in prepared status")
+
+    dispatch_dir = _dispatch_dir(root, execution_id)
+    if dispatch_dir.is_dir():
+        for path in sorted(dispatch_dir.glob("*.json")):
+            try:
+                doc = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, ValueError) as exc:
+                raise ContinuityError(
+                    f"inconclusive dispatch signal at {path}: {exc}") from exc
+            if not isinstance(doc, dict):
+                raise ContinuityError(f"inconclusive dispatch signal at {path}")
+            recorded_execution = doc.get("execution_id")
+            recorded_packet = doc.get("packet_id")
+            if recorded_execution != execution_id \
+                    or not isinstance(recorded_packet, str) or not recorded_packet.strip():
+                raise ContinuityError(
+                    f"inconclusive dispatch signal at {path}: missing or discordant identity")
+            if recorded_packet == packet_id:
+                raise ContinuityError("a dispatch is already registered for the packet")
+            # 007-006 §Rechazos: a dispatch record of this execution whose
+            # packet has NO published request in the project has an identity
+            # that cannot be established in the EXAMINED scope — a record that
+            # was renamed to another packet, or a stale/foreign one. It is
+            # inconclusive, never "another packet's dispatch", so it blocks the
+            # operation instead of reading as an absent effect (I3).
+            if not (root.joinpath(*PACKETS_TREE, recorded_packet)
+                    / REQUEST_NAME).is_file():
+                raise ContinuityError(
+                    f"inconclusive dispatch signal at {path}: the record names the "
+                    f"packet {recorded_packet!r}, which has no published request "
+                    f"({'/'.join(PACKETS_TREE)}/{recorded_packet}/{REQUEST_NAME}); "
+                    f"its identity cannot be established in the examined scope")
+
+    # The STRONGEST effect is reported first: a materialization (copies already
+    # landed in the project) is further than a receipt or a staged file, and the
+    # diagnostic must name the concrete state that blocks the operation
+    # (007-006 §Rechazos: source and cause). Both orders reject; this one names
+    # what actually happened when both signals are present.
+    if _has_materialization(root, execution_id, packet_id):
+        raise ContinuityError("a materialization is already registered for the packet")
+    result_dir = _results_dir(root, execution_id, packet_id)
+    if result_dir.is_dir() and any(path.is_file() for path in result_dir.rglob("*")):
+        raise ContinuityError("a receipt/effect file already exists for the packet")
+
+    disposition, causes = _disposition_signal(
+        root, {"execution_id": execution_id}, execution_id, packet_id)
+    if causes:
+        raise ContinuityError("disposition is inconclusive: " + "; ".join(causes))
+    if disposition is not None:
+        raise ContinuityError("a disposition is already registered for the packet")
 
 
 def _receipt_signal(root: Path, execution_id: str, packet_id: str,
@@ -2059,13 +2401,13 @@ def _run_reconcile(args: argparse.Namespace) -> int:
     exec_context = _load_execution_context(
         root, _resolve(root, args.execution_context))
     execution_id = exec_context["execution_id"]
-    packet_id = _safe_segment(args.packet, "packet")
-
     head = _load_head(root, execution_id)
+    packet_id = _safe_segment(args.packet or (head or {}).get("packet_id"), "packet")
     report_list: list[dict[str, Any]] = []
+    chain = None
     if head is not None:
-        body, _ = _verify_body(root, execution_id, head)
-        _verify_chain(root, execution_id, head)
+        chain = _chain_links(root, execution_id, head)
+        body = chain["links"][0][1]
         report_list = _reference_reports(root, body.get("references"), body)
 
     _detect_split_brain(root, execution_id, packet_id)
@@ -2081,6 +2423,8 @@ def _run_reconcile(args: argparse.Namespace) -> int:
     disposition, disposition_causes = _disposition_signal(
         root, exec_context, execution_id, packet_id)
     unknowns.extend(disposition_causes)
+    if chain is not None:
+        unknowns.extend(item for item in chain.get("unknowns", []) if item not in unknowns)
 
     classification, reasons = _classify(
         authority_state, receipt_state, dispatch, closed, disposition,
@@ -2366,6 +2710,7 @@ def _run_resume(args: argparse.Namespace) -> int:
     # fails closed without repair. Legacy bodies stay readable.
     chain = _chain_links(root, execution_id, head)
     body = chain["links"][0][1]
+    _detect_split_brain(root, execution_id, body.get("packet_id"))
     report_list = _reference_reports(root, body.get("references"), body)
 
     projection = _projection(body, exec_context, role=role, policy=policy)
@@ -2406,12 +2751,22 @@ def _build_parser() -> argparse.ArgumentParser:
         command = sub.add_parser(name, help=help_text)
         command.add_argument("--project-root", required=True)
         command.add_argument("--execution-context", required=True)
-        command.add_argument("--update", required=True)
+        command.add_argument("--update")
         command.add_argument("--max-bytes", type=int, default=None)
         command.add_argument("--json", action="store_true")
 
     add_write("begin", "write-ahead a checkpoint (idempotent on an identical head)")
     add_write("checkpoint", "append a new checkpoint link to the chain")
+
+    reanchor = sub.add_parser("reanchor", help="explicitly re-anchor legacy history")
+    reanchor.add_argument("--project-root", required=True)
+    reanchor.add_argument("--execution-context", required=True)
+    reanchor.add_argument("--expected-head")
+    reanchor.add_argument("--approval-ref")
+    reanchor.add_argument("--reason")
+    reanchor.add_argument("--max-bytes", type=int, default=None)
+    reanchor.add_argument("--dry-run", action="store_true")
+    reanchor.add_argument("--json", action="store_true")
 
     verify = sub.add_parser(
         "verify-begin",
@@ -2441,7 +2796,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "reconcile", help="reconcile the dispatched work (read-only)")
     reconcile.add_argument("--project-root", required=True)
     reconcile.add_argument("--execution-context", required=True)
-    reconcile.add_argument("--packet", required=True)
+    reconcile.add_argument("--packet", default=None)
     reconcile.add_argument("--json", action="store_true")
 
     resume = sub.add_parser("resume", help="verify and render the active projection")
@@ -2462,11 +2817,61 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _managed_context_without_state(root: Path, context_path: Path,
+                                   context: dict[str, Any]) -> bool:
+    """Classify managed contexts from their location or matching execution record."""
+    executions_root = (root / ".cdad" / "executions").resolve()
+    try:
+        context_path.resolve().relative_to(executions_root)
+        return True
+    except ValueError:
+        pass
+
+    execution_id = _execution_identity(context)
+    if not isinstance(execution_id, str) or not execution_id:
+        return False
+    _safe_segment(execution_id, "execution_id")
+    record_path = executions_root / execution_id / "execution.json"
+    if not record_path.exists():
+        return False
+    if not record_path.is_file():
+        raise ContinuityError(
+            f"managed execution record is not a file: {record_path}")
+    record = _read_json(record_path, "managed execution record")
+    if not isinstance(record, dict) or _execution_identity(record) != execution_id:
+        raise ContinuityError(
+            f"managed execution record identity is incoherent: {record_path}")
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
+        if args.command in {"begin", "checkpoint", "checkpoint-receipt", "reanchor"}:
+            root = Path(args.project_root).resolve()
+            context_path = _resolve(root, args.execution_context)
+            context = cdad_packet._load_json(context_path, "execution context")
+            state_path = root / "docs" / ".cdad-state.json"
+            if state_path.exists():
+                state = cdad_packet._load_json(state_path, "project state")
+                execution = context.get("execution")
+                feature_id = execution.get("feature_id") if isinstance(execution, dict) else None
+                cdad_packet._suspended_unit_for(state, feature_id)
+            elif _managed_context_without_state(root, context_path, context):
+                execution_id = _execution_identity(context)
+                raise ContinuityError(
+                    "project state is missing for managed execution "
+                    f"{execution_id!r}; refusing continuity write")
         if args.command in ("begin", "checkpoint"):
+            if not args.update:
+                raise ContinuityError(f"{args.command} requires --update JSON")
             return _run_write(args.command, args)
+        if args.command == "reanchor":
+            if not args.dry_run and (not args.expected_head or not args.approval_ref
+                                     or not args.reason):
+                sys.stderr.write("reanchor requires --expected-head, --approval-ref and --reason\n")
+                return 2
+            return _run_reanchor(args)
         if args.command == "verify-begin":
             _emit(verify_begin(Path(args.project_root),
                                _resolve(Path(args.project_root),

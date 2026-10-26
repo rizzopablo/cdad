@@ -305,6 +305,7 @@ envelope = {
     "attempt": "attempt-fixture-007-003",
     "session": "ses-fixture-007-003",
     "termination": "completed",
+    "delivery": "received",
     "delivery_ref": str(FINAL),
     "diagnosis": None,
 }

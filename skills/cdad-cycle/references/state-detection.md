@@ -36,6 +36,11 @@ Full schema (all possible fields, including the epic ones):
 (those are the five: discovery|specification|tdd|review|merge, plus `done` at
 closure); it is the resting value between features.
 
+An idle state may also contain `suspended_units`. Validate that registry as
+part of state coherence; it does not make any suspended feature active. Select
+the intended unit explicitly with `resume-unit --feature ID`, or choose an
+eligible queued unit with `open-unit` (see `project-execution.md`).
+
 That is the source of truth. **But still do a sanity check** against the real files of step 2: if the state file says `current_stage: tdd` but there are no tests in the repo, it is outdated and you notify the user.
 
 **Active epic detection**: if the state file has a non-null `active_epic` field, the current feature belongs to an epic. This does NOT change the flow of `cdad-cycle` (the feature runs the same way), but it does change three things:

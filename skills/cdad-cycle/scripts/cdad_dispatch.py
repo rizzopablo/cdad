@@ -92,6 +92,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 import cdad_delegate  # noqa: E402
 import cdad_result  # noqa: E402
 import cdad_continuity  # noqa: E402
+import cdad_packet  # noqa: E402
 
 # §2.6: the document, its version and the map of one section per runtime id.
 RUNTIMES_CONFIG_NAME = "runtimes.json"
@@ -448,15 +449,20 @@ def _as_text(value: Any) -> str | None:
 
 
 def _envelope(*, attempt: str | None, session: str | None, termination: str,
-              delivery_ref: str | None, diagnosis: str | None) -> dict[str, Any]:
+              delivery: str, delivery_ref: str | None,
+              diagnosis: str | None) -> dict[str, Any]:
     """§2.1: exactly the keys of `OUTPUT_KEYS`, `termination` in the closed
-    vocabulary the interface declares (`cdad_delegate.TERMINATION_VOCABULARY`)."""
+    vocabulary the interface declares (`cdad_delegate.TERMINATION_VOCABULARY`)
+    and `delivery` in the closed delivery vocabulary (007-004 §4.1)."""
     if termination not in cdad_delegate.TERMINATION_VOCABULARY:
         termination = "unknown"
+    if delivery not in cdad_delegate.DELIVERY_VOCABULARY:
+        delivery = "none"
     return {
         "attempt": _as_text(attempt),
         "session": _as_text(session),
         "termination": termination,
+        "delivery": delivery,
         "delivery_ref": _as_text(delivery_ref),
         "diagnosis": _as_text(diagnosis),
     }
@@ -522,6 +528,7 @@ def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
     root = _project_root(project_root)
     _, request_path = _known_packet(root, packet, "dispatching")
     request = _load_json(request_path, "packet request")
+    _reject_suspended_request(root, request)
     if attempt is not None:
         verify_continuity_begin(root, packet, attempt, request)
     elif continuity_presence(root, request) == cdad_continuity.CONTINUITY_PRESENT:
@@ -1046,6 +1053,7 @@ def record(runtime: str, project_root: str | None, packet: str | None,
     root = _project_root(project_root)
     _known_packet(root, packet, "recording its attempt")
     request = _load_json(_packet_dir(root, packet) / REQUEST_NAME, "packet request")
+    _reject_suspended_request(root, request)
     if not isinstance(request, dict):
         raise DispatchError(
             f"the packet request is not an object: {_packet_dir(root, packet) / REQUEST_NAME}")
@@ -1095,8 +1103,8 @@ def record(runtime: str, project_root: str | None, packet: str | None,
         # nothing staged. The attempt is NOT registered: an identity the
         # store denies is not an observation (INV-1/INV-2).
         envelope = _envelope(attempt=attempt_id, session=None,
-                             termination="blocked", delivery_ref=None,
-                             diagnosis=str(exc))
+                             termination="blocked", delivery="none",
+                             delivery_ref=None, diagnosis=str(exc))
         _report_envelope(envelope, as_json=as_json)
         return 0
 
@@ -1106,22 +1114,36 @@ def record(runtime: str, project_root: str | None, packet: str | None,
                       attempt)
 
     notes = [correlation.note]
+    delivery = "none"
     delivery_ref: str | None = None
     termination = "unknown"
     if payload is not None:
         delivery_ref = str(stage_delivery(root, request, packet, attempt_id,
                                           kind, payload))
         termination = "completed"
+        delivery = "staged"
     else:
         notes.append(
             "no final text or artifact was provided: nothing was staged, no "
             "descriptor was written and the registered attempt is the only effect "
             "(PD-4/INV-1, the receipt is the protocol's)")
     envelope = _envelope(attempt=attempt_id, session=correlation.session,
-                         termination=termination, delivery_ref=delivery_ref,
+                         termination=termination, delivery=delivery,
+                         delivery_ref=delivery_ref,
                          diagnosis="; ".join(notes))
     _report_envelope(envelope, as_json=as_json)
     return 0
+
+
+def _reject_suspended_request(root: Path, request: dict[str, Any]) -> None:
+    state = _load_json(root / "docs" / ".cdad-state.json", "project state")
+    execution_id = request.get("execution_id")
+    feature_id = None
+    if isinstance(execution_id, str):
+        context = root / ".cdad" / "executions" / execution_id / "execution.json"
+        context_doc = _load_json(context, "execution context")
+        feature_id = context_doc.get("execution", {}).get("feature_id")
+    cdad_packet._suspended_unit_for(state, feature_id)
 
 
 # -------------------------------------------------------------- capabilities

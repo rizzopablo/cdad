@@ -107,7 +107,7 @@ PACKET_BEGIN = "---cdad-packet-json"
 TERMINATION_VOCABULARY = {
     "completed", "blocked", "transport-error", "timeout", "cancelled", "unknown",
 }
-OUTPUT_KEYS = {"attempt", "session", "termination", "delivery_ref", "diagnosis"}
+OUTPUT_KEYS = {"attempt", "session", "termination", "delivery", "delivery_ref", "diagnosis"}
 # Forma cerrada del registro I8 (esquema aprobado; discovery §2.2).
 I8_RECORD_KEYS = {
     "execution_id", "packet_id", "role", "substage", "runtime",
@@ -403,6 +403,7 @@ else:
         "attempt": attempt or _ATTEMPT,
         "session": _SESSION,
         "termination": "completed",
+        "delivery": "received",
         "delivery_ref": str(_FINAL_PATH),
         "diagnosis": None,
     }

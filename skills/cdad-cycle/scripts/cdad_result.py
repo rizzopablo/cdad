@@ -70,6 +70,9 @@ MATERIALIZE_RELPATH = RUNTIME_RELPATH / "materializations"
 INBOX_RELPATH = Path(".cdad") / "inbox"
 EXECUTIONS_RELPATH = Path(".cdad") / "executions"
 STATE_RELPATH = Path("docs") / ".cdad-state.json"
+# The ONE name of the durable receipt inside the result directory of an
+# (execution, packet); `durable_receipt_path` is its ONE location rule.
+RECEIPT_NAME = "receipt.json"
 BUNDLE_LIMIT_BYTES = 1024 * 1024
 ASSETS_DIR = _SCRIPT_DIR.parent / "assets"
 ARTIFACT_POLICY_NAME = "artifact-policy.json"
@@ -214,6 +217,19 @@ def _final_dir(project_root: Path, execution_id: str, packet_id: str) -> Path:
     return (project_root / RESULTS_RELPATH
             / _segment(execution_id, "execution_id")
             / _segment(packet_id, "packet_id"))
+
+
+def durable_receipt_path(project_root: Path, execution_id: Any,
+                         packet_id: Any) -> Path:
+    """The ONE location of the durable receipt of an (execution, packet).
+
+    003-002 publishes one result directory per errand; its receipt is
+    `<root>/.cdad/runtime/results/<execution_id>/<packet_id>/receipt.json`.
+    Consumers that must decide whether a reference IS that receipt import this
+    rule (ADR-036) instead of composing the path themselves; the segments are
+    validated here, so a forged identity is rejected.
+    """
+    return _final_dir(project_root, execution_id, packet_id) / RECEIPT_NAME
 
 
 # --------------------------------------------------------------- descriptor
@@ -430,7 +446,7 @@ def _verify_durable(final_dir: Path, receipt: dict[str, Any]) -> None:
 def _load_durable_receipt(final_dir: Path) -> dict[str, Any] | None:
     if not final_dir.is_dir():
         return None
-    receipt_path = final_dir / "receipt.json"
+    receipt_path = final_dir / RECEIPT_NAME
     if not receipt_path.is_file():
         raise ResultError(f"durable result is incomplete: missing {receipt_path.name}")
     receipt = _load_json(receipt_path, "durable receipt")
@@ -479,7 +495,7 @@ def _publish(final_dir: Path, parts: list[dict[str, Any]], bundle_bytes: bytes,
         for part in parts:
             _write_synced(tmp_dir / "parts" / f"{part['name']}.utf8", part["data"])
         _write_synced(tmp_dir / "bundle.json", bundle_bytes)
-        _write_synced(tmp_dir / "receipt.json", receipt_bytes)
+        _write_synced(tmp_dir / RECEIPT_NAME, receipt_bytes)
         _fsync_dir(tmp_dir / "parts")
         _fsync_dir(tmp_dir)
         try:
@@ -575,7 +591,7 @@ def _close_durable_receipt(project_root: Path, args: argparse.Namespace,
         return
     final_dir = _final_dir(project_root, descriptor["execution_id"],
                            descriptor["packet_id"])
-    receipt_path = final_dir / "receipt.json"
+    receipt_path = final_dir / RECEIPT_NAME
     try:
         cdad_continuity.close_durable_receipt(
             project_root, receipt_path, attempt,
@@ -596,6 +612,8 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
     descriptor_path = _cwd_path(args.descriptor)
     descriptor = _load_json(descriptor_path, "result descriptor")
     _validate_descriptor(descriptor)
+    state = _load_json(project_root / STATE_RELPATH, "project state")
+    cdad_packet._suspended_unit_for(state, descriptor.get("feature_id"))
     source = _validate_source(descriptor)
     attempt = _continuity_attempt(args)
     _require_continuity_attempt(project_root, descriptor, attempt)
@@ -609,10 +627,9 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
         parts = _read_parts(descriptor, project_root)
         _require_identical_result(durable, source, parts)
         _close_durable_receipt(project_root, args, descriptor, attempt)
-        return _read_bytes(final_dir / "receipt.json", "durable receipt")
+        return _read_bytes(final_dir / RECEIPT_NAME, "durable receipt")
 
 
-    state = _load_json(project_root / STATE_RELPATH, "project state")
     execution_document = _load_json(_cwd_path(args.execution_context),
                                     "execution context")
     request = _load_json(_cwd_path(args.request), "packet request")
@@ -700,7 +717,7 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
                 "a concurrent publication left no readable durable result")
         _require_identical_result(concurrent, source, parts)
         _close_durable_receipt(project_root, args, descriptor, attempt)
-        return _read_bytes(final_dir / "receipt.json", "durable receipt")
+        return _read_bytes(final_dir / RECEIPT_NAME, "durable receipt")
     _close_durable_receipt(project_root, args, descriptor, attempt)
     return receipt_bytes
 
@@ -942,6 +959,9 @@ def _apply_copy(copy: dict[str, Any], journal: dict[str, dict[str, str]],
 
 
 def materialize(args: argparse.Namespace, project_root: Path) -> None:
+    receipt = _load_json(_cwd_path(args.receipt), "durable receipt")
+    state = _load_json(project_root / STATE_RELPATH, "project state")
+    cdad_packet._suspended_unit_for(state, receipt.get("feature_id"))
     authorization_path = _cwd_path(args.authorization)
     authorization_bytes = _read_bytes(authorization_path, "materialize authorization")
     authorization = _load_json(authorization_path, "materialize authorization")

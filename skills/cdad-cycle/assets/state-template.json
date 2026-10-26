@@ -9,6 +9,7 @@
   "audit_status": null,
   "postconditions_status": {},
   "epic_features": [],
+  "suspended_units": {},
   "stage_history": [],
   "epic_history": [],
   "approver": "<TODO: name of the spec approver>",

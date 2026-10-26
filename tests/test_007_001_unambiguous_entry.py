@@ -1819,10 +1819,10 @@ def test_status_is_additive(tmp_path: Path) -> None:
     diagnósticos, la proyección conserva TODOS los campos y valores
     anteriores (`entry`, `next.route` con su acción natural y su rama
     condicional, `next.source`, `authority.approval`, `packet`, `epic`,
-    `feature`, `execution`, `project`, `version`, `unit_contract`) y las
-    únicas adiciones son `situation`, `next.operation` y
-    `authority.approval_reference`: quitarlas recupera la proyección antigua
-    completa."""
+     `feature`, `execution`, `project`, `version`, `unit_contract`) y las
+     adiciones declaradas son `situation`, `suspended_units`, `next.operation`
+     y `authority.approval_reference`: descontar únicamente esos campos nuevos
+     recupera la proyección anterior completa."""
     root, home = _case_prepared(tmp_path)
     state = read_state(root)
     packet = _member(state, "active_packet", "state del fixture")
@@ -1831,10 +1831,14 @@ def test_status_is_additive(tmp_path: Path) -> None:
     doc = _document(_status(root, home))
     assert _situation(doc) == "packet-prepared"
 
-    # Sólo las tres adiciones declaradas (raíz y ubicaciones exactas).
-    assert set(doc) == OLD_TOP_LEVEL | {"situation"}, (
+    # A4 añade el resumen incluso vacío; no se descuenta ningún otro campo.
+    assert set(doc) == OLD_TOP_LEVEL | {"situation", "suspended_units"}, (
         "PC-11: la proyección debe contener los campos anteriores más "
-        f"`situation` y nada más; hoy {sorted(doc)}"
+        f"`situation` y `suspended_units`; hoy {sorted(doc)}"
+    )
+    assert doc["suspended_units"] == [], (
+        "PC-11/A4: sin unidades suspendidas la adición es exactamente []: "
+        f"{doc['suspended_units']!r}"
     )
     next_block = _next(doc)
     assert set(next_block) == {"route", "source", "operation"}, (
