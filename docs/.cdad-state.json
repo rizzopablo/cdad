@@ -1,86 +1,9 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": "epic-007-reliable-cycle-operation",
-  "epic_stage": "features-loop",
-  "epic_features": [
-    {
-      "id": "007-001-unambiguous-entry",
-      "status": "done",
-      "opened_at": "2026-10-23T23:49:18.807243+00:00",
-      "closed_at": "2026-10-24T02:14:25.324918+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-001-unambiguous-entry/closure.md",
-        "sha256": "03d6adfc4f485641407a806ec500fc6f5929bdd31c604906fea55b69903ac6b0"
-      }
-    },
-    {
-      "id": "007-002-dispatch-recovery",
-      "status": "done",
-      "opened_at": "2026-10-24T04:13:44.984067+00:00",
-      "closed_at": "2026-10-24T07:14:58.113604+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-002-dispatch-recovery/closure.md",
-        "sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
-      }
-    },
-    {
-      "id": "007-003-continuity-at-edges",
-      "status": "done",
-      "opened_at": "2026-10-24T07:15:21.467545+00:00",
-      "closed_at": "2026-10-25T00:28:59.981962+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-003-continuity-at-edges/closure.md",
-        "sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
-      }
-    },
-    {
-      "id": "007-004-termination-not-success",
-      "status": "done",
-      "opened_at": "2026-10-25T02:44:55.280321+00:00",
-      "closed_at": "2026-10-26T17:28:42.909796+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-004-termination-not-success/closure.md",
-        "sha256": "97470b889603fd68ef0b325942739352b5a035ce30653e680e24dbbf43af78a6"
-      }
-    },
-    {
-      "id": "007-005-serial-reception",
-      "status": "done",
-      "opened_at": "2026-10-26T18:26:58.339061+00:00",
-      "closed_at": "2026-10-26T18:53:42.654096+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-005-serial-reception/closure.md",
-        "sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
-      }
-    },
-    {
-      "id": "007-006-withdraw-and-republish",
-      "status": "done",
-      "depends_on": [
-        "007-007-suspend-resume-units"
-      ],
-      "opened_at": "2026-10-26T02:19:18.819233+00:00",
-      "closed_at": "2026-10-26T07:36:00.320264+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-006-withdraw-and-republish/closure.md",
-        "sha256": "fd87b476f84b646de360b3fdac7f5266e8ccff16b5223ae05cc9cfa750817785"
-      }
-    },
-    {
-      "id": "007-007-suspend-resume-units",
-      "status": "done",
-      "depends_on": [
-        "007-003-continuity-at-edges"
-      ],
-      "opened_at": "2026-10-26T02:18:13.850790+00:00",
-      "closed_at": "2026-10-26T02:18:38.824700+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/007-007-suspend-resume-units/closure.md",
-        "sha256": "a7f15f029dc1ddeedb60b6342b9648f5e14c8803e7762669c759ba065fed60cd"
-      }
-    }
-  ],
+  "active_epic": null,
+  "epic_stage": "idle",
+  "epic_features": [],
   "epic_history": [
     {
       "stage": "epic-plan",
@@ -383,6 +306,99 @@
       "plan_path": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
       "plan_sha256": "713194aac03a1d077db3075d2062322e6ab61919de0a00dfb624146506042440",
       "note": "Plan aprobado bajo HITL delegada tras consulta al architect (E1) y revision read-only del reviewer (APTO CON AJUSTES, aplicados). Activacion registrada A MANO: no existe operacion del CLI para activar un epic ni plan-review de un plan de epic."
+    },
+    {
+      "stage": "epic-closure",
+      "completed_at": "2026-10-26T21:49:30.075903+00:00",
+      "note": "epic-007: 8/8 features; recorrido feliz observado en 007-008 (alcance declarado); recorrido de fallo no observado como uso real; deuda SUITE-CONTAMINATION y SUSP-* al epic 008",
+      "epic_features": [
+        {
+          "id": "007-001-unambiguous-entry",
+          "status": "done",
+          "opened_at": "2026-10-23T23:49:18.807243+00:00",
+          "closed_at": "2026-10-24T02:14:25.324918+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-001-unambiguous-entry/closure.md",
+            "sha256": "03d6adfc4f485641407a806ec500fc6f5929bdd31c604906fea55b69903ac6b0"
+          }
+        },
+        {
+          "id": "007-002-dispatch-recovery",
+          "status": "done",
+          "opened_at": "2026-10-24T04:13:44.984067+00:00",
+          "closed_at": "2026-10-24T07:14:58.113604+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-002-dispatch-recovery/closure.md",
+            "sha256": "b8647a73f366d8ec2869e3c7d6c7e73b99a9338d3a03d20e367f5fea26044e67"
+          }
+        },
+        {
+          "id": "007-003-continuity-at-edges",
+          "status": "done",
+          "opened_at": "2026-10-24T07:15:21.467545+00:00",
+          "closed_at": "2026-10-25T00:28:59.981962+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-003-continuity-at-edges/closure.md",
+            "sha256": "4cfa1111dae15fc67f28dc295ae142d06fecd576915229b73b9b91a82e77742f"
+          }
+        },
+        {
+          "id": "007-004-termination-not-success",
+          "status": "done",
+          "opened_at": "2026-10-25T02:44:55.280321+00:00",
+          "closed_at": "2026-10-26T17:28:42.909796+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-004-termination-not-success/closure.md",
+            "sha256": "97470b889603fd68ef0b325942739352b5a035ce30653e680e24dbbf43af78a6"
+          }
+        },
+        {
+          "id": "007-005-serial-reception",
+          "status": "done",
+          "opened_at": "2026-10-26T18:26:58.339061+00:00",
+          "closed_at": "2026-10-26T18:53:42.654096+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-005-serial-reception/closure.md",
+            "sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
+          }
+        },
+        {
+          "id": "007-006-withdraw-and-republish",
+          "status": "done",
+          "depends_on": [
+            "007-007-suspend-resume-units"
+          ],
+          "opened_at": "2026-10-26T02:19:18.819233+00:00",
+          "closed_at": "2026-10-26T07:36:00.320264+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-006-withdraw-and-republish/closure.md",
+            "sha256": "fd87b476f84b646de360b3fdac7f5266e8ccff16b5223ae05cc9cfa750817785"
+          }
+        },
+        {
+          "id": "007-007-suspend-resume-units",
+          "status": "done",
+          "depends_on": [
+            "007-003-continuity-at-edges"
+          ],
+          "opened_at": "2026-10-26T02:18:13.850790+00:00",
+          "closed_at": "2026-10-26T02:18:38.824700+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-007-suspend-resume-units/closure.md",
+            "sha256": "a7f15f029dc1ddeedb60b6342b9648f5e14c8803e7762669c759ba065fed60cd"
+          }
+        },
+        {
+          "id": "007-008-receipt-next-action",
+          "status": "done",
+          "opened_at": "2026-10-26T20:31:03.540235+00:00",
+          "closed_at": "2026-10-26T21:49:13.053692+00:00",
+          "closure_evidence": {
+            "path": "docs/specs/007-008-receipt-next-action/closure.md",
+            "sha256": "70365b83f7f1ec8ec777e3e234528c209381a4d62c3e8852cbdab9c7da4532a4"
+          }
+        }
+      ]
     }
   ],
   "stage_history": [
@@ -16770,21 +16786,300 @@
       "approved_by": "Orquestador (HITL delegada del dueño)",
       "closure_path": "docs/specs/007-005-serial-reception/closure.md",
       "closure_sha256": "133ec4dac86277fc05d04bd9337a674ef4234a8b5f6650140b74cd1a276c4bdf"
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-26T20:34:08.247838+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "d897eccb0c92ae29654f5546a7d41cfb0236b9d80622420bf6bd5530e8125a92",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "007-008-receipt-next-action-architect-discovery-001",
+        "receipt_sha256": "bb5420ea52b3cd542091b4be78d9c76f6162dca9c8ed1519641012f9cc5f394b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-008-receipt-next-action/discovery.md",
+            "816044063123af19e59c52aafde3be74b9be3463a102b56949f692d199507966"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-008-receipt-next-action-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-008-receipt-next-action-001/007-008-receipt-next-action-architect-discovery-001/receipt.json",
+      "receipt_sha256": "bb5420ea52b3cd542091b4be78d9c76f6162dca9c8ed1519641012f9cc5f394b",
+      "artifacts": {
+        "docs/specs/007-008-receipt-next-action/discovery.md": "816044063123af19e59c52aafde3be74b9be3463a102b56949f692d199507966"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-26T20:34:08.563627+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "84870f1a3a8090ae29325bc5457f74993c1994958a65aeb1e81967f6f043f81d",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "gate",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T20:34:08.872597+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "cb36d294c255990bf4a8d1721de8d71870ff8ac0b9ef22af36407251083f54d9",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "advance",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T20:35:59.973758+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "37da4c5d5f4085790b6f131ad7a8371bdff10fb63fa2c6aa860aba1e29c6453c",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "007-008-receipt-next-action-architect-draft-001",
+        "receipt_sha256": "c77233257b408ac32c3f1a8cb246745e976367daa45d08239c1d500b13c27362",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/007-008-receipt-next-action/spec.md",
+            "8d0de7d3f9791ada7a6e37e9855d8afa802634410a45bf9e14067ac58971158c"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "007-008-receipt-next-action-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-007-008-receipt-next-action-001/007-008-receipt-next-action-architect-draft-001/receipt.json",
+      "receipt_sha256": "c77233257b408ac32c3f1a8cb246745e976367daa45d08239c1d500b13c27362",
+      "artifacts": {
+        "docs/specs/007-008-receipt-next-action/spec.md": "8d0de7d3f9791ada7a6e37e9855d8afa802634410a45bf9e14067ac58971158c"
+      },
+      "note": null
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T20:36:53.250461+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "66da648f76bcf09178cccfd380a850d8c61327a95863e8a222f4f3398baef97c",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "ddead58101d097d14524728882650929152b6a6c55de7bec47f478f117069184"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-008-receipt-next-action/spec.md",
+      "contract_sha256": "ddead58101d097d14524728882650929152b6a6c55de7bec47f478f117069184",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-26T21:01:07.550957+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "32e725a561d3c32971ea1e239104f1c9d24a1fa36b78e7716b8da38c2bda194b",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Orquestador CDAD",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "contract_path": "docs/specs/007-008-receipt-next-action/spec.md",
+      "contract_sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+      "requested_by": "Orquestador CDAD",
+      "delegated": true
+    },
+    {
+      "feature": "007-008-receipt-next-action",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-26T21:49:13.053692+00:00",
+      "by": "orchestrator",
+      "transition": "closure",
+      "transition_key": "f163076cf6d8eaf2be738b345bf0d9e7879e4392124c5e49aeeeac3f412f448d",
+      "transition_key_payload": {
+        "execution_id": "exec-007-008-receipt-next-action-001",
+        "feature_id": "007-008-receipt-next-action",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Orquestador (HITL delegada del dueño)",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/007-008-receipt-next-action/closure.md",
+          "sha256": "70365b83f7f1ec8ec777e3e234528c209381a4d62c3e8852cbdab9c7da4532a4"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": null,
+      "approved_by": "Orquestador (HITL delegada del dueño)",
+      "closure_path": "docs/specs/007-008-receipt-next-action/closure.md",
+      "closure_sha256": "70365b83f7f1ec8ec777e3e234528c209381a4d62c3e8852cbdab9c7da4532a4"
     }
   ],
   "approver": "Pablo (HITL delegada a Claude para epic-006)",
-  "hitl_delegation": {
-    "delegated_to": "Claude (sesion de Claude Code, orquestador del proximo epic)",
-    "requested_by": "Pablo",
-    "requested_at": "2026-10-23",
-    "scope": "epic-007-reliable-cycle-operation: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
-    "expires": "al cerrar, cancelar o revocar el epic",
-    "publication": "sin push automatico",
-    "source": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
-    "status": "active",
-    "epic_id": "epic-007-reliable-cycle-operation"
-  },
-  "last_updated": "2026-10-26T18:53:42.654096+00:00",
+  "hitl_delegation": null,
+  "last_updated": "2026-10-26T21:49:13.053692+00:00",
   "delegation_history": [
     {
       "delegated_to": "Claude (orquestador de este epic)",
@@ -16880,6 +17175,19 @@
       "source": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "status": "active",
       "epic_id": "epic-006-opencode-concurrency"
+    },
+    {
+      "delegated_to": "Claude (sesion de Claude Code, orquestador del proximo epic)",
+      "requested_by": "Pablo",
+      "requested_at": "2026-10-23",
+      "scope": "epic-007-reliable-cycle-operation: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
+      "expires": "al cerrar, cancelar o revocar el epic",
+      "publication": "sin push automatico",
+      "source": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
+      "status": "active",
+      "epic_id": "epic-007-reliable-cycle-operation",
+      "closed_at": "2026-10-26T21:52:12.448387+00:00",
+      "closure_reason": "epic-007 cerrado"
     }
   ],
   "suspended_units": {},
@@ -16906,9 +17214,9 @@
   },
   "active_packet": null,
   "execution": {
-    "id": "exec-007-005-serial-reception-001",
+    "id": "exec-007-008-receipt-next-action-001",
     "epic_id": "epic-007-reliable-cycle-operation",
-    "feature_id": "007-005-serial-reception",
+    "feature_id": "007-008-receipt-next-action",
     "scope": "epic-007-reliable-cycle-operation",
     "authority_ref": "docs/epics/epic-007-reliable-cycle-operation/plan.md",
     "model_policy": "ordinary",

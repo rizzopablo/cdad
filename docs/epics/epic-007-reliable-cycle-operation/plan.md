@@ -53,6 +53,7 @@ Insumos: `docs/planning/next-epic-discovery-notes.md` (E1, con la consulta al ar
 | 5 | 007-005-serial-reception | Un tramo pendiente autorizado del otro proyecto activo atraviesa entrada–despacho–recepción con la versión adoptada | recepción del epic | 001-004 + adopción autorizada por el dueño | No |
 | 6 | 007-006-withdraw-and-republish | Un paquete `prepared` nunca despachado se retira con motivo y libera `prepare`; los agentes derivados se republican sin `prepare` | deadlock PD-4/PD-8/PD-21 y DRIFT del otro proyecto activo | 007 (se abre por el ciclo tras suspender 004) | No |
 | 7 | 007-007-suspend-resume-units | Una unidad se suspende en borde seguro, se trabaja otra y se reanuda la primera sin perder estado ni repetir efectos | serialidad sin preempción (excepción de arranque) | 003 | No |
+| 8 | 007-008-receipt-next-action | El cierre de recibo no hereda la acción previa al despacho: deja de prescribir re-despachar | `REC-NEXT-ACTION-STALE` observado en 007-005 | 003, 005 | No |
 
 Detalle de cada una: su propia spec en `cdad-cycle`. Las líneas de código que sustentan cada
 brecha están en la consulta del architect (discovery notes §8).
@@ -65,7 +66,7 @@ brecha están en la consulta del architect (discovery notes §8).
 
 ## Criterios de aceptación del epic
 
-- [ ] Las 5 features cerradas individualmente.
+- [ ] Las features del plan cerradas individualmente.
 - [ ] **Recorrido feliz:** desde reposo, un orquestador sin diagnóstico externo ni lectura de implementación (puede ampliar por las referencias que la vista indica) identifica la acción correcta en la vista, despacha, registra y recibe una unidad, con continuidad vigente al terminar.
 - [ ] **Recorrido de fallo:** un intento que falla sin entrega se dispone, `reconcile` deja de reportarlo irresoluble, se prepara el sucesor y se recibe, sin repetir efectos ni editar a mano el state o el encargo.
 - [ ] **Señales:** ningún consumidor documentado de CDAD avanza a «éxito» con un bloqueo o sin entrega.
@@ -99,3 +100,14 @@ Status: Approved by Orquestador (Claude), por HITL delegada del dueño (2026-10-
 ## Cambios al plan
 
 - **2026-10-25 — altas 007-006 y 007-007 (cambio de alcance, aprobado por el dueño).** Motivo: el ciclo serial no permitía pausar una unidad ni retirar un paquete `prepared` nunca despachado; ambas carencias obligaron a dos excepciones de arranque y bloquean al otro proyecto activo. Aprobación del dueño: «ok» a 007-006 y «lo que falta ahora es suspender, cambiar de unidad, y reanudar luego. Eso destraba el bloqueo, el paralelismo queda planificado» (paralelismo: B3/B4 de Superlite, epic siguiente). 007-007 se desarrolla con excepción de arranque acotada (handoff 2026-10-25); al desplegarse, 007-004 se suspende y 007-006 se abre por el ciclo. La reparación de génesis legado (enmienda de 007-003) ya cerró bajo su propia excepción.
+
+### 2026-10-26 — alta 007-008 (cambio de alcance, aprobado por el orquestador bajo HITL delegada)
+
+Motivo: 007-005 observó en uso real que el cuerpo del cierre de recibo conserva el `next_action`
+previo al despacho («despachar el mismo paquete»), aunque ya referencia el recibo. La vista compacta
+y `reconcile` protegen contra repetir el efecto, pero un lector del cuerpo puede re-despachar. La
+unidad es acotada: sólo el `next_action` del cierre de recibo; conserva goal, decisiones,
+incertidumbres, referencias, evidencia, presupuesto, `prev` y `receipt_checkpoint`; no añade campos,
+almacenes ni estados. Aprobación: el plan del epic faculta al orquestador para altas y specs de
+features bajo la delegación HITL del dueño (ver «Autoridad»). Su primer despacho, desde reposo,
+aporta además la observación del recorrido feliz que faltaba para el cierre del epic.

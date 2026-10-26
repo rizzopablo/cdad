@@ -1431,7 +1431,9 @@ def _closing_body(exec_context: dict[str, Any], head_body: dict[str, Any],
         "authority": head_body.get("authority", _authority(exec_context)),
         "decisions": decisions,
         "uncertainties": list(head_body.get("uncertainties") or []),
-        "next_action": head_body.get("next_action"),
+        "next_action": (
+            "recibo recibido mecánicamente; no repetir despacho/recepción; "
+            "revisar el resultado sin presumir aprobación"),
         "references": list(head_body.get("references") or []),
         RECEIPT_CHECKPOINT_FIELD: receipt_reference,
         PREV_FIELD: {

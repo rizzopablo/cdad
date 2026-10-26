@@ -4,6 +4,168 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-26 — Cierre del epic: epic-007-reliable-cycle-operation (8/8)
+
+**Epic cerrado el 2026-10-26 con 8/8 unidades en `done`**, cada una con su `closure.md`
+(`docs/epics/epic-007-reliable-cycle-operation/closure.md`). Atacó el problema que dejó el epic
+anterior: **la operación serial del ciclo dependía de diagnóstico externo, de prosa y de reconstrucción
+manual del estado**. El resultado es que el recorrido ordinario —entrar desde reposo, despachar,
+registrar, recibir y dejar continuidad vigente— se sostiene con verbos del producto, y los bordes que
+antes se resolvían a mano (intento abandonado, paquete que no se despachará, unidad que hay que
+pausar, recibo cuyo cuerpo prescribía volver a despachar) tienen acto propio.
+
+**Qué se entrega** (una línea por unidad, la evidencia vive en cada `closure.md`): entrada que nombra
+situación, siguiente operación con su script y aprobación verificable (007-001); disposición de un
+intento abandonado y sucesor trazable sin reconstrucción manual (007-002); continuidad exigida en los
+bordes —`begin`/`verify-begin` antes del despacho, `checkpoint-receipt` después de la recepción— con
+reparación explícita de historia legada por `reanchor` (007-003); `delivery` (`none | staged |
+received`) con tabla cerrada, donde ni `rc` ni `termination` acreditan entrega (007-004); recepción
+**real** entre proyectos con la versión adoptada (007-005); retiro con motivo de un paquete `prepared`
+nunca despachado y republicación de derivados sin `prepare` (007-006); suspender y reanudar una unidad
+en borde seguro sin perder identidad ni repetir efectos (007-007); y la acción del cierre de recibo,
+que deja de prescribir re-despachar (007-008).
+
+**Criterios del epic — cumplidos y no observados.**
+- **Features cerradas individualmente: cumplido**, 8/8 con cierre y evidencia.
+- **Recorrido feliz desde reposo: observado, con alcance declarado.** Lo aporta 007-008: `status` en
+  `next-unit`/`at-rest` → `open-unit` → `prepare` → `begin` (seq 1) → `verify-begin` → despacho →
+  `record` verificado → `receive` → `checkpoint-receipt`, con segunda vuelta hasta cabeza **seq 4**.
+  **Alcance:** el recorrido observado es el de **entrada y despacho packetizado de discovery y spec**;
+  los despachos de **RED, GREEN y review** se hicieron con el subagente nativo **sin paquete**, de modo
+  que esas subfases no tienen registro de continuidad. Es una **desviación de método declarada**, no
+  del producto, y el criterio no se presenta como recorrido sin desvíos.
+- **Recorrido de fallo: NO observado como uso real.** El mecanismo y el contrato existen y están
+  verificados en entorno controlado (007-002 disposición/`reconcile`; 007-003 y 007-004 continuidad y
+  `delivery`), pero **no ocurrió naturalmente en un consumidor** durante el epic. Se declara así; no se
+  convierte en verde.
+- **Señales: cumplido por contrato y ejercido.** 007-004 define la tabla y los productores; 007-005
+  consumió `staged` por su valor y rechazó un transporte por identidad sin acreditarlo. **Límite:** no
+  hay inventario completo de consumidores documentados.
+- **Precondición de la recepción: cumplido.** Versión `538ec57` desplegada con autorización del dueño,
+  respaldo previo y `COHERENT` en el consumidor.
+- **Recepción real: cumplido con desviación aceptada.** 007-005: dos transportes; el primero rechazado
+  por identidad, sin registro ni efectos. Declarado, aceptado y revocable por el dueño.
+- **Sin mecanismos duplicados: cumplido.** No hay intentos, disposición, recibo ni almacén nuevos; el
+  manifiesto de evidencia de 007-005 es evidencia, no mecanismo.
+
+**Gate de cierre: la suite NO se declara verde.** Corrida de cierre: **1721 passed, 5 skipped, 1
+failed**; el fallo (`test_006_001_t2_wait_recovery.py::TestPd7…`) **pasa aislado** y es la
+contaminación entre tests ya declarada (`SUITE-CONTAMINATION`), no una regresión de las unidades. Se
+registra como límite del cierre, no como verde.
+
+**Retrospectiva.**
+- **Funcionó:** el **gate por superficie** —descubrió 29 tests de continuidad que los gates focales
+  ocultaban, incluida una regresión real—; las **rondas de review adversarial**, que cerraron escapes
+  reales en 007-004 y 007-006 antes del cierre; la **recepción real** como unidad de evidencia, que
+  aportó el defecto que 007-008 vino a cerrar; y la **suspensión**, que permitió cambiar de unidad sin
+  excepciones de arranque.
+- **No funcionó / a corregir:** la **suite crece por historia y no por capacidad** (≈134k líneas de
+  tests contra ≈21k de producto) con contaminación por HOME/XDG no aislados; los **despachos de rol
+  sin paquete renderizado** en varios casos, con lo que su continuidad no quedó registrada; y una
+  postcondición (**PC-03 de 007-005**) se escribió **sin ser observable**, obligando a una sustitución
+  contractual en lugar de a un cumplimiento.
+
+**Deuda que pasa al epic siguiente** (borrador E1, todavía **sin id ni plan aprobado**; no se nombra
+como «epic 008» porque aún no existe como tal):
+1. **`SUITE-CONTAMINATION` (media):** auditoría de la suite por capacidad, aislamiento de HOME/XDG por
+   test y decisión sobre las ≈134k líneas de tests heredadas. Es la deuda que más veces reapareció en
+   el epic y la que impide declarar una suite verde.
+2. **Despachos sin paquete (media):** la práctica de este epic **no debe repetirse**; el ciclo debe
+   **exigir paquete para cada subfase de rol**. Hoy **no lo verifica**: es una exigencia del método,
+   sin mecanismo, y por eso no se registra como ADR (ver abajo).
+3. **`SUSP-GUARD`, `SUSP-LOCK`, `SUSP-APPROVAL`, `SUSP-IDENTITY`:** límites declarados de la
+   suspensión (el más relevante, `SUSP-LOCK`: los escritores de continuidad no comparten el lock del
+   proyecto, así que la publicación transaccional no cubre la cabeza).
+4. **Heredadas:** DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, ausencia de CI.
+5. **Pendiente del dueño, fuera del epic:** publicación/push (reservada) y la decisión de arranque del
+   epic siguiente.
+
+**Observación para el orquestador (verificada, no corregida por el scribe).** El estado ya está en
+reposo (`active_epic: null`, `epic_stage: idle`, `active_feature: null`), pero `hitl_delegation`
+**sigue con `status: "active"` y `epic_id: "epic-007-reliable-cycle-operation"`**, cuando su propio
+campo `expires` dice «al cerrar, cancelar o revocar el epic». Corresponde archivarla en
+`delegation_history` y dejar `hitl_delegation` en `null` —coherente con lo hecho al cerrar epic-005—;
+el scribe no lo ejecuta porque es escritura de estado.
+
+**El cierre NO implica publicar.** La publicación sigue reservada al dueño; no se hizo push como parte
+del cierre.
+
+---
+
+## 2026-10-26 — Feature: 007-008-receipt-next-action (epic 007)
+
+**Cerrada el 2026-10-26** tras **review de 2 rondas** (ronda 1 **sin bloqueantes** con 2 mejoras
+opcionales; ronda 2 con ambas **cerradas** y sin hallazgos pendientes). Octava y última unidad del
+plan de `epic-007`: el **cierre de recibo deja de heredar la acción previa al despacho**. El único
+cambio de producto es el valor de `next_action` en el productor común del cierre: lo que antes se
+copiaba del cuerpo anterior («despachar el mismo paquete») pasa a ser la acción canónica
+
+> `recibo recibido mecánicamente; no repetir despacho/recepción; revisar el resultado sin presumir aprobación`
+
+**Contrato:** `docs/specs/007-008-receipt-next-action/spec.md` (PC-01..PC-06 + AJ1–AJ4). Discovery
+en `discovery.md`; resultado y límites en `closure.md`.
+
+**Qué se cambia y qué no.** Se sustituye **sólo** el `next_action` al construir un cierre **nuevo**.
+Se conservan `goal`, `authority`, decisiones previas (más exactamente una `RECEIPT_DECISION`, ahora
+contractual por AJ4), `uncertainties`, `references`, `budget`, `changes`, `evidence`,
+`receipt_checkpoint` y `prev`, con sus reglas de construcción intactas. No cambia la identidad
+(ejecución/paquete/intento; ruta normalizada/digest), ni el reconocimiento del replay —que sigue
+precediendo a la construcción—, ni `semantic_status`, ni la forma de `status`, ni aparecen campos,
+almacenes, estados, migraciones o aprobaciones implícitas.
+
+**Evidencia.** RED `fbadfdc` (17 casos; **15 en rojo** por la acción heredada, y los dos restantes
+protegen la **no migración** de historia y la acción de contextos **no recibidos**). GREEN `af03944`:
+**+3/−1** sobre `_closing_body` en `cdad_continuity.py`, sin tocar consumidores ni historia; **115
+casos focales verdes** (007-008 + 007-003/004/007). Oráculos endurecidos después del GREEN: `45e1749`
+(snapshots de recibo y de partes, `no_op` e identidad del replay) y `20a1762` (PC-02 compara la
+**decisión mecánica completa** de AJ4, declarada de forma independiente en el test, no importada del
+productor). `458138d` registra AJ4 en la spec y en el estado. **Desplegado `20a1762`** en HOME con
+respaldo previo.
+
+**Suite completa: 1721 passed, 5 skipped, 1 failed.** El fallo es
+`test_006_001_t2_wait_recovery.py::TestPd7…`, que **pasa aislado** (`1 passed`): es la contaminación
+entre tests ya declarada (`SUITE-CONTAMINATION`), no una regresión de esta unidad. **La suite no se
+declara verde** y no se presenta como gate cumplido.
+
+**Decisiones relevantes.**
+1. **Resolver en el productor común, no en cada consumidor.** El hecho que invalida la acción previa
+   —el recibo existe y valida— es el mismo en las tres entradas (recepción ordinaria, recibo externo,
+   recuperación), y `_closing_body` ya era el productor compartido. Trade-off asumido: `resume`
+   proyecta **literalmente** la cabeza, así que el arreglo **no** corrige la proyección de cierres ya
+   escritos; se prefirió un punto único de verdad antes que tres parches de lectura.
+2. **Texto canónico frente a `null`.** `null` elimina la orden obsoleta pero pierde orientación, y la
+   suspensión/reanudación transforma una acción ausente en una instrucción genérica: se elige texto
+   explícito. Trade-off: el literal pasa a ser **contrato**; cambiarlo será otra unidad.
+3. **Compatibilidad histórica deliberada.** Ningún cuerpo se migra ni se recalcula: un cierre antiguo
+   **sigue mostrando** la acción obsoleta, con sus bytes y digests intactos. Trade-off aceptado: el
+   defecto persiste en la historia a cambio de no reescribirla.
+
+**Deuda técnica detectada.**
+1. **`SUITE-CONTAMINATION` (media, abierta):** reaparece en la corrida de cierre (un test, aislado
+   verde). Cierra este epic y pasa al siguiente junto con la auditoría por capacidad y el aislamiento
+   de HOME/XDG.
+2. **El literal canónico es contrato:** cualquier cambio de redacción exige unidad y aprobación
+   propias; no es texto editable.
+3. **Cierres históricos con acción obsoleta:** límite declarado, no defecto; quien lea el cuerpo de un
+   cierre viejo puede seguir encontrando la orden de re-despacho.
+4. **Los cierres de 007-008 se corrieron con declaración de desviación:** RED, GREEN y las dos rondas
+   de review se despacharon con el **subagente nativo, sin paquete renderizado**
+   (`prepare`/`begin`/`record`/`receive`), así que **no hay registro de continuidad de esas
+   subfases**; su evidencia son los commits y los tests. No afecta al producto y se declara.
+5. Heredadas sin cambios: `SUSP-GUARD`/`SUSP-LOCK`/`SUSP-APPROVAL`/`SUSP-IDENTITY`, DT-8/F011, DT-9,
+   `scope_validation: unknown`, W-U6-*, ausencia de CI.
+
+**Recorrido feliz desde reposo — la evidencia que el epic necesitaba.** La unidad se abrió con el
+ciclo **en reposo**: `status` = `next-unit`/`at-rest` → `open-unit`; `prepare` (architect/discovery) →
+`begin` (seq 1) → `verify-begin` → despacho → `record` verificado (`parent`/`moment`; `project` no
+evaluable por ser ancestro) → `receive` con recibo válido → `checkpoint-receipt`; segunda vuelta
+(architect/draft) hasta cabeza **seq 4** con el cierre enlazado al recibo. Es **entrada desde reposo +
+despacho packetizado**; no cubre un recorrido de fallo y no se presenta como tal.
+
+**Siguiente en cola: ninguna unidad.** El **epic 007 cierra 8/8** (ver la entry de cierre arriba).
+
+---
+
 ## 2026-10-26 — Feature: 007-005-serial-reception (epic 007)
 
 **Cerrada el 2026-10-26** tras review de **4 rondas → APTO** (sesiones `ses_e8678bf0affe0TJlgin9ZgvOYZ`,

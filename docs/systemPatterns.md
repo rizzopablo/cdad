@@ -296,6 +296,27 @@ tabla en sí la mantiene el orquestador.
   otra vez). Sólo la normalización histórica valida y vincula. Y la protección contra leer `rc` como
   éxito depende de **validar el sobre y seguir la ruta**, no del código de salida, que se conserva.
 
+### Cierre de recibo — la acción prescribe revisar, no re-despachar (epic 007, 2026-10-26)
+
+- **Un hecho nuevo sustituye la proyección heredada, y la corrección vive en el productor.** El cierre
+  de recibo acredita un hecho que el cuerpo anterior no conocía (el recibo existe y valida), así que
+  **no hereda** la acción que prescribió el despacho: escribe una acción canónica —recibir es mecánico,
+  no se repite despacho ni recepción, y revisar **no** presume aprobación (ADR-014)—. Se corrige en el
+  **productor común** del cierre, no en `resume`, en la llegada externa ni en la recuperación: el hecho
+  que invalida la acción previa es el mismo en las tres entradas. Contrato en
+  `docs/specs/007-008-receipt-next-action/spec.md`, que este archivo **no** re-enuncia.
+  **Contrapartida asumida:** `resume` proyecta literalmente la cabeza, así que un cierre **histórico**
+  conserva su acción obsoleta; la compatibilidad hacia atrás se elige sobre la reescritura de historia.
+- **Cuidado con leer el cuerpo como instrucción vigente.** El `next_action` de un checkpoint es la
+  orientación de **su** momento; quien decide qué hacer ahora es la vista compacta y `reconcile`, no el
+  texto de un cuerpo viejo. Un cierre anterior a esta regla puede seguir prescribiendo re-despachar.
+- **Lección de proceso del epic 007 (sin mecanismo todavía):** toda subfase de rol —RED, GREEN,
+  review— se despacha con paquete renderizado (`prepare`/`begin`/`verify-begin`/`record`/`receive`).
+  Sin paquete, la subfase **no tiene continuidad registrada** y su única evidencia son commits y tests;
+  en el epic la excepción se repitió en varias unidades y se declaró en cada cierre. **El ciclo no lo
+  verifica hoy**, así que esto es una **exigencia del método**, no una garantía del producto, y queda
+  como deuda prioritaria del epic siguiente.
+
 ## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
 
 ### Palanca `write: ask` (2026-09-12; enmienda de ubicación 2026-09-13)

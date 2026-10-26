@@ -3,7 +3,7 @@
 Cambios publicados del proyecto CDAD. El historial de desarrollo completo permanece en el
 repositorio local; este archivo resume cada publicación.
 
-## 2026-10-26 — Epic 007 «Operación confiable del ciclo» (7/7) y reparación de génesis legado
+## 2026-10-26 — Epic 007 «Operación confiable del ciclo» (8/8, cerrado) y reparación de génesis legado
 
 **Publicado como un único commit de resumen.** El detalle por unidad vive en
 `docs/specs/<feature>/` y en `docs/progress.md`; el estado del epic, en
@@ -30,6 +30,9 @@ repositorio local; este archivo resume cada publicación.
   un paquete `prepared` que no se despachará y libera `prepare`; `republish-agents` republica los
   agentes derivados sin preparar paquete, conservando el `model:` instalado. Publicación transaccional
   con rollback.
+- **007-008 — Acción del cierre de recibo.** Un cierre nuevo deja de heredar la orden previa al despacho
+y escribe una acción canónica: recibir es mecánico, no se repite despacho ni recepción, y revisar no
+presume aprobación. Los cierres históricos no se migran.
 - **007-007 — Suspender y reanudar.** Una unidad se suspende en un borde seguro, se trabaja otra y la
   primera se reanuda explícitamente, sin perder identidad ni repetir efectos. Primera aplicación real
   durante la propia épica.
@@ -49,8 +52,11 @@ repositorio local; este archivo resume cada publicación.
 - `SUITE-CONTAMINATION`: tests que pasan aislados y fallan en corridas grandes por HOME/XDG no
   aislados; auditoría de la suite por capacidad pendiente.
 - `SUSP-GUARD`, `SUSP-LOCK`, `SUSP-APPROVAL`, `SUSP-IDENTITY` y heredadas (DT-8/F011, DT-9, CI).
-- El epic queda **7/7 y abierto**: el recorrido feliz desde reposo y el recorrido de fallo como uso
-  real no están observados.
+- El epic **cierra 8/8**. El recorrido feliz desde reposo quedó **observado con alcance declarado**
+  (entrada y despachos packetizados de 007-008; RED/GREEN/review nativos sin paquete, desviación
+  declarada en su cierre). El recorrido de fallo **no se observó como uso real**: su mecanismo está
+  verificado en entorno controlado. La suite de cierre fue 1721 passed, 5 skipped, 1 failed aislado
+  verde (`SUITE-CONTAMINATION`), y no se declara verde.
 
 ### Corrección editorial
 
