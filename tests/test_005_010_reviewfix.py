@@ -64,8 +64,10 @@ Mapa test → postcondición (spec 005-010) y hallazgo:
        PD-5 (R3) — idle_outcome no declarado → unknown, sin recibo.
   8  TestR2ModelReportedFromDurableRow::test_r2_json_object_model_reported_as_provider_over_id
        PD-6 (R2) — objeto JSON de la fila → I8 'providerID/id'.
-  9  TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved
-       PD-6 (R2 contracara) — texto plano de la fila → se conserva.
+  9  (retirado, 008-002 T4) R2 contracara texto plano → preservado por
+       test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::
+       test_pd6_worker_i8_session_and_model_from_durable_row (controles
+       C1/C2/C3 de tests/test_008_002_variant_controls.py).
 
 RED esperado (estado vigente post GREEN de 005-010, según review.md):
   (1)  falla: el vigente clasifica TimeoutExpired del destino como
@@ -97,41 +99,29 @@ import unittest
 
 from test_005_009_t1_interface import I8_RECORD_KEYS, dispatch_records
 from test_005_009_t2_opencode_adapter import (
-    ROW_MODEL,
     ROW_MODEL_NORMALIZED,
     ROW_MODEL_OBJECT,
-    TEST_WAIT_TIMEOUT_SECONDS,
     UNKNOWN_OUTCOME,
     AdapterCase,
     durable_last_assistant_text,
     durable_session_rows,
 )
+from suite_signal_helpers import assert_diag_actionable, rewrite_config
 
 # R1 (review): el diagnóstico del caso cuelga NO debe AFIRMAR un rc
 # («failed in transport (rc=…)» con un rc que nunca se verificó: el
 # cliente no retornó; el adaptador lo mató). Un diagnóstico honesto puede
 # DECIR que no hubo rc; no puede aficionar uno con valor.
 RC_CLAIM_RE = re.compile(r"rc\s*=\s*[-0-9]")
-# Cota superior generosa para probar que la espera NO queda desacotada
-# (INV-4): la corrida entera (interfaz + adaptador + cota del fixture) es
-# de segundos; márgenes por la sobrecarga interna conocida del adaptador
-# (hallazgo de flakiness registrado en la fixture). No fija un número
-# interno del producto: la cota declarada es `wait.timeout_seconds`.
-BOUNDED_WAIT_UPPER_SECONDS = 30
-
-
-def assert_diag_actionable(case: unittest.TestCase, out: dict,
-                           label: str) -> str:
-    """Salida legítima ante bloqueo/terminación no completada: diagnóstico
-    accionable no vacío (vocabulario de la spec §2)."""
-    diagnosis = out.get("diagnosis")
-    case.assertIsInstance(
-        diagnosis, str, msg=f"{label}: el diagnóstico no es texto")
-    case.assertTrue(
-        diagnosis.strip(),
-        msg=f"{label}: diagnóstico vacío (la salida legítima exige un "
-            f"diagnóstico accionable)")
-    return diagnosis
+# 008-005 PC-6, sitios 2 y 3 (T-B): liveness, no cotas de reloj. Par de
+# hipótesis de cada sitio original: correcto = retorno inmediato (hecho ya
+# conocido) o terminación `timeout` a la cota de `wait.timeout_seconds`;
+# defecto = esperar el plazo que la cota vigila o el sleep natural del
+# cliente. La decisión que esas cotas custodiaban (terminación, ausencia de
+# rc, espera acotada por `wait.timeout_seconds`) ya está assertada en el
+# mismo test; el techo de duración no aporta discriminación adicional y se
+# declara liveness, no cota.
+LIVENESS_UPPER_SECONDS = 60
 
 
 # ------------------------------------------------------------------- R1
@@ -214,9 +204,11 @@ class TestR1TimeoutVsTransportError(AdapterCase):
             msg=f"la terminación timeout declaró entrega (PD-5: sólo "
                 f"completed persiste entrega): {out.get('delivery_ref')!r}")
         self.assertLess(
-            elapsed, BOUNDED_WAIT_UPPER_SECONDS,
-            msg=f"la espera quedó DESACOTADA ({elapsed:.2f}s >= margen; "
-                f"INV-4: la espera es acotada por wait.timeout_seconds)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, PC-6): la espera no retornó "
+                f"({elapsed:.2f}s >= guardia de liveness; INV-4: la espera "
+                f"acotada por wait.timeout_seconds ya está assertada en la "
+                f"terminación `timeout`)")
 
     def test_r1_unstartable_binary_stays_transport_error(self) -> None:
         """R1 (contracara, PD-5): un binario que NO ARRANCA (la ruta de
@@ -226,16 +218,13 @@ class TestR1TimeoutVsTransportError(AdapterCase):
         hubo invocación que pudiera crearla)."""
         self.assert_derived_agents_published()
         fake = self.fake_runtime("r1-no-start", variant="succeeded")
-        config = json.loads(fake["config"].read_text(encoding="utf-8"))
         missing = fake["dir"] / "bin" / "opencode-falta"
         self.assertFalse(
             missing.exists(),
             msg="precondición (fixture): la ruta del binario ausente "
                 "existe")
-        config["binary"] = str(missing)
-        fake["config"].write_text(
-            json.dumps(config, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8")
+        rewrite_config(fake["config"],
+                       lambda config: config.update(binary=str(missing)))
 
         proc = self.run_opencode(fake)
         out = self.envelope(proc, "R1 binario que no arranca")
@@ -281,11 +270,7 @@ class TestR4WaitConfigFailClosed(AdapterCase):
         (fake, envelope)."""
         self.assert_derived_agents_published()
         fake = self.fake_runtime(name, variant="succeeded")
-        config = json.loads(fake["config"].read_text(encoding="utf-8"))
-        mutate(config)
-        fake["config"].write_text(
-            json.dumps(config, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8")
+        rewrite_config(fake["config"], mutate)
         proc = self.run_opencode(fake)
         return fake, self.envelope(proc, name)
 
@@ -422,10 +407,11 @@ class TestR3IdleOutcomeEdgeVariants(AdapterCase):
                 f"exige el texto final): {out.get('delivery_ref')!r}")
         self.assert_no_receipt_fabricated("R3 sin texto")
         self.assertLess(
-            elapsed, TEST_WAIT_TIMEOUT_SECONDS,
-            msg=f"la rama 'succeeded sin texto' esperó de más "
-                f"({elapsed:.2f}s >= cota; PD-5: el hecho ya conocido no "
-                f"se degrada a timeout)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, PC-6): la rama 'succeeded sin "
+                f"texto' no retornó ({elapsed:.2f}s >= guardia de "
+                f"liveness; PD-5: la decisión ya está assertada en la "
+                f"terminación `blocked`)")
 
     def test_r3_undeclared_idle_outcome_is_unknown_without_receipt(self) -> None:
         """R3 (PD-5): fila con `idle_outcome` NO declarado por el
@@ -545,30 +531,6 @@ class TestR2ModelReportedFromDurableRow(AdapterCase):
             msg="provenance['model_reported'] no declara la fuente (PD-6)")
         self.assertTrue(
             source.strip(), msg="provenance['model_reported'] vacío")
-
-    def test_r2_plain_text_row_model_is_preserved(self) -> None:
-        """R2 (contracara, PD-6): si la fila trae el modelo como TEXTO
-        PLANO, `model_reported` se conserva tal cual (la normalización
-        sólo aplica a la forma objeto; la regla no cambia el caso
-        vigente)."""
-        fake, record = self._worker_i8_record(
-            "R2 modelo texto plano", variant="succeeded",
-            name="r2-model-plain")
-
-        rows = durable_session_rows(fake["sessions_db"])
-        self.assertEqual(
-            [row.get("model") for row in rows], [ROW_MODEL],
-            msg="fixture: la fila no trae el modelo como texto plano "
-                f"{ROW_MODEL!r} (precondición rota)")
-        self.assertEqual(
-            set(record), I8_RECORD_KEYS,
-            msg=f"la forma del registro I8 no es la cerrada aprobada "
-                f"(PD-6): {sorted(record)}")
-        self.assertEqual(
-            record["model_reported"], ROW_MODEL,
-            msg=f"`model_reported` alteró el modelo de TEXTO PLANO de la "
-                f"fila (R2: sólo la forma objeto se normaliza; PD-6): "
-                f"{record['model_reported']!r} != {ROW_MODEL!r}")
 
 
 if __name__ == "__main__":

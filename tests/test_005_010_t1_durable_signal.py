@@ -100,13 +100,22 @@ from test_005_009_t2_opencode_adapter import (
     FAKE_MODEL,
     FAKE_RUNTIME,
     ROW_MODEL,
-    TEST_WAIT_TIMEOUT_SECONDS,
     VARIANT_TERMINATION,
     AdapterCase,
     durable_last_assistant_text,
     durable_messages,
     durable_session_rows,
 )
+from suite_signal_helpers import text_hits
+
+# 008-005 PC-6, sitios 4 y 5 (T-B): liveness, no cota de reloj. Par de
+# hipótesis de cada sitio original: correcto = fallo cerrado inmediato del
+# hecho ya conocido (< 1 s); defecto = esperar el plazo de
+# `wait.timeout_seconds` (5 s). El techo admisible de la regla (>= 10x la
+# conducta correcta ~ 5 s) no separa del defecto (5 s <= techo): la duración
+# no discrimina y la decisión que la cota custodiaba (terminación `blocked`
+# sin traza, PD-2) ya está assertada arriba.
+LIVENESS_UPPER_SECONDS = 60
 
 
 # ----------------------------------------------------------------- PD-1
@@ -199,11 +208,7 @@ class TestPd1SessionCorrelation(AdapterCase):
                 f"completed (PD-1/PD-5): {out['termination']!r}")
         self.assert_durable_delivery_ref(out)
         self.assert_final_text_in_delivery()
-        base = self.results_base()
-        decoy_hits = [
-            path for path in sorted(base.rglob("*"))
-            if path.is_file()
-            and DECOY_FINAL_TEXT.encode("utf-8") in path.read_bytes()]
+        decoy_hits = text_hits(self.results_base(), DECOY_FINAL_TEXT)
         self.assertEqual(
             decoy_hits, [],
             msg="la entrega durable lleva el texto de un assistant "
@@ -291,13 +296,14 @@ class TestPd2FailClosedStoreDiagnostics(AdapterCase):
             msg=f"el diagnóstico no NOMBRA la columna faltante del esquema "
                 f"(PD-2): {diagnosis!r}")
         self.assert_no_receipt_fabricated("PD-2 unknown-schema")
-        # Sin esperar de más: el fallo cerrado es inmediato, no una espera
-        # completa de la cota (el camino de espera acotada demora >= cota).
+        # Liveness (008-005 T-B): el fallo cerrado no cuelga. La decisión de
+        # PD-2 (un hecho ya conocido no se degrada a timeout) la asserta la
+        # terminación `blocked`, no el reloj.
         self.assertLess(
-            elapsed, TEST_WAIT_TIMEOUT_SECONDS,
-            msg=f"el fallo cerrado esperó de más ({elapsed:.2f}s >= cota "
-                f"{TEST_WAIT_TIMEOUT_SECONDS}s; PD-2: un hecho ya conocido "
-                f"no se degrada a timeout)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, PC-6): el fallo cerrado no retornó "
+                f"({elapsed:.2f}s >= guardia de liveness; PD-2: la decisión "
+                f"ya está assertada en la terminación)")
 
     def test_pd2_unreadable_store_fails_closed_without_trace(self) -> None:
         """PD-2: contra un store ILEGIBLE (bytes que no son una base
@@ -334,9 +340,10 @@ class TestPd2FailClosedStoreDiagnostics(AdapterCase):
                     f"capturada (PD-2: fallo cerrado, nunca traza)")
         self.assert_no_receipt_fabricated("PD-2 store no SQLite")
         self.assertLess(
-            elapsed, TEST_WAIT_TIMEOUT_SECONDS,
-            msg=f"el fallo cerrado esperó de más ({elapsed:.2f}s >= cota "
-                f"{TEST_WAIT_TIMEOUT_SECONDS}s; PD-2)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, PC-6): el fallo cerrado no retornó "
+                f"({elapsed:.2f}s >= guardia de liveness; PD-2: la decisión "
+                f"ya está assertada en la terminación `blocked`)")
 
 
 # ----------------------------------------------------------------- PD-5

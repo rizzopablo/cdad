@@ -64,6 +64,10 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_continuity  # noqa: E402
+# 008-004 PC-01/PC-03: the admission of a published packet has ONE owner
+# (`cdad_packet.verify_published_packet`); this border imports it instead of
+# re-implementing the integrity of a commission.
+import cdad_packet  # noqa: E402
 # 007-004 §5/ADR-036: the durable receipt of an errand is verified, and located,
 # by its producer (`cdad_result`); this interface imports both rules.
 import cdad_result  # noqa: E402
@@ -86,6 +90,13 @@ PACKET_CLI_NAME = "cdad_packet.py"
 # dir; the installer creates a template and never overwrites it.
 DELEGATION_CONFIG_NAME = "delegation.json"
 DELEGATION_CONFIG_VERSION = 1
+# 008-001 AJ4/PC-7: the wait bound of the execution configuration is the
+# ADAPTER's cota, not this interface's. The wrapper is only a safety net, so it
+# waits this declared margin beyond the cota before killing the adapter: a
+# destination that answers its own `timeout` envelope slightly after its cota
+# still gets its envelope relayed (session preserved) instead of being preempted
+# into the generic diagnosis, which loses it (PD-8/PD-11).
+ADAPTER_WAIT_GRACE_SECONDS = 5.0
 # 006-003 §2.3/D5: the default server-credential file, sibling of the
 # delegation config (`credential_env_file` redirects it).
 DELEGATION_ENV_FILE_NAME = "opencode-server.env"
@@ -254,9 +265,15 @@ def _parse_envelope(stdout: str) -> dict[str, Any] | None:
 
 def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
                  destination: str, exec_config: str | None,
-                 packet_bytes: bytes, timeout: float | None,
+                 packet_bytes: bytes, adapter_cota: float | None,
                  continuity_attempt: int | None = None) -> dict[str, Any]:
-    """Invoke the adapter, transporting the packet bytes byte-identical."""
+    """Invoke the adapter, transporting the packet bytes byte-identical.
+
+    PC-7: `adapter_cota` is the DESTINATION's own bound; the wrapper waits
+    `cota + ADAPTER_WAIT_GRACE_SECONDS` (`wait_limit`) so it never preempts the
+    envelope the adapter is about to emit at its cota. Without a declared cota
+    there is no bound at all (unchanged).
+    """
     argv = [sys.executable, str(adapter),
             "--project-root", str(project_root),
             "--packet-id", packet_id,
@@ -268,16 +285,22 @@ def _run_adapter(adapter: Path, project_root: Path, packet_id: str,
     if continuity_attempt is not None:
         argv += ["--continuity-attempt", str(continuity_attempt)]
 
+    wait_limit = (None if adapter_cota is None
+                  else adapter_cota + ADAPTER_WAIT_GRACE_SECONDS)
     env = dict(os.environ)
     env["CDAD_DELEGATE_DESTINATION"] = destination
     try:
         proc = subprocess.run(argv, input=packet_bytes, capture_output=True,
-                              cwd=str(project_root), timeout=timeout, env=env)
+                              cwd=str(project_root), timeout=wait_limit, env=env)
     except subprocess.TimeoutExpired:
+        diagnosis = (f"destination {destination!r} did not answer within "
+                     f"{wait_limit} seconds")
+        if adapter_cota is not None:
+            diagnosis += (f" (cota {adapter_cota} + margen "
+                          f"{ADAPTER_WAIT_GRACE_SECONDS})")
         return {"attempt": None, "termination": "timeout", "session": None,
                 "delivery": "none", "delivery_ref": None,
-                "diagnosis": f"destination {destination!r} did not answer within "
-                             f"{timeout} seconds"}
+                "diagnosis": diagnosis}
     except OSError as exc:
         return {"attempt": None, "termination": "transport-error", "session": None,
                 "delivery": "none", "delivery_ref": None,
@@ -514,6 +537,21 @@ def verify_transport_proof(project_root: Path, packet_id: str, attempt: int,
         raise DelegateError(f"the transport is refused: {exc}") from exc
 
 
+def verify_published_packet(project_root: Path, packet_id: str) -> None:
+    """008-004 PC-01/PC-03 (§Orden y efectos): THIS border's own precondition.
+
+    A directly invocable CLI verifies the commission it transports instead of
+    trusting the orchestrator's preflight: the published request is validated
+    and its `PACKET.md` must equal the canonical rendering byte for byte,
+    before the bytes are read and before the adapter runs. An altered packet is
+    never normalised into a match, so it never reaches a worker.
+    """
+    try:
+        cdad_packet.verify_published_packet(project_root, packet_id)
+    except cdad_packet.PolicyError as exc:
+        raise DelegateError(f"the transport is refused: {exc}") from exc
+
+
 def delegate(args: argparse.Namespace) -> dict[str, Any]:
     project_root = Path(args.project_root)
     if not project_root.is_dir():
@@ -528,6 +566,11 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             f"no adapter for destination {destination!r}: expected adapter "
             f"module {adapter.name} next to the delegation interface")
     packet_md, request = _packet_paths(project_root, args.packet)
+    # 008-004 PC-01/PC-03: the adapter is launched only for a packet that
+    # VERIFIES. The admission is this border's own (a direct invocation must not
+    # rely on the orchestrator's preflight) and it precedes the read of the bytes
+    # handed to the worker and the transport proof below.
+    verify_published_packet(project_root, args.packet)
     # §2.2: the proof is verified at THIS border, before the worker is launched.
     # Without the integer it is only mandatory when the execution HAS continuity
     # (enmienda 2026-10-24): a chainless execution proceeds and the omission is

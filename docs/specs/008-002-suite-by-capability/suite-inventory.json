@@ -1,0 +1,4787 @@
+{
+  "capabilities": [
+    "delivery-evidence",
+    "continuity",
+    "dispatch-recovery",
+    "orientation-planning",
+    "suspension",
+    "retirement",
+    "packets-authority-identity",
+    "generation-install-permissions",
+    "suite-isolation"
+  ],
+  "feature_id": "008-002-suite-by-capability",
+  "modules": [
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "VERIFY",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "helper",
+      "path": "tests/_rf2_open_pause.py",
+      "product_surfaces": [],
+      "rationale": "instrumentacion A-3 review-fix 2; feature no resuelta por docstring. Docstring: Instrumentación de reproducción para A-3 (review-fix 2 RED).",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "bootstrap",
+      "path": "tests/conftest.py",
+      "product_surfaces": [],
+      "rationale": "bootstrap de sesion: aislamiento HOME/XDG transversal. Docstring: Session bootstrap for the test suite (004-001 T3 test-writer session).",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "helper",
+      "path": "tests/pd10_permission_semantics.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/SKILL.md"
+      ],
+      "rationale": "checker semantico PD-10 (004-001 T7a). Docstring: PD-10 semantic permission-map checker (004-001 T7a, D7).",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "helper",
+      "path": "tests/product_staging.py",
+      "product_surfaces": [
+        "build/staging",
+        "build/staging/manifest.json"
+      ],
+      "rationale": "staging portable del producto (review-t1, PD-12). Docstring: Portabilidad de staging (review-t1, hallazgo lateral para T6 / PD-12).",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "helper",
+      "path": "tests/suite_signal_helpers.py",
+      "product_surfaces": [],
+      "rationale": "008-002 T4: helpers de forma extraidos del piloto 005-010 (assert_diag_actionable, text_hits, rewrite_config); consumidores: test_005_010_t1_durable_signal, test_005_010_reviewfix, test_005_010_b1_last_assistant.",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_002_t1_receive.py",
+      "product_surfaces": [
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T1 RED — receive atómico e idempotente (P1, P2, P3, base de P6).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t1_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T1 RED review-fix — hallazgos R1, R2, R3 y R5 de review-t1.md.",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_002_t2_materialize.py",
+      "product_surfaces": [
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T2 RED — materialización por política de artefactos (P4; P3/P6 parte).",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t2_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T2 RED review-fix — hallazgos R1–R5 de review-t2.md.",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t3_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T3 RED review-fix — hallazgos R1–R3 de review-t3.md.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t3_reviewfix2.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T3 RED review-fix ronda 2 — hallazgos F1/F2 de re-review T3.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t3_reviewfix3.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T3 RED review-fix ronda 3 — R-F1a/R-F1b residuales de re-review r2.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_002_t3_run_evidence.py",
+      "product_surfaces": [
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T3 RED — evidencia de suite Python unittest (P5).",
+      "static_test_nodeids": 13,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/003-002-artifact-tools/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_002_t4_integration.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_result.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-002 T4 RED — recorrido de integración desde el producto INSTALADO.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_003_t1_polling.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T1 RED — clasificación de polling legítimo (P2) y su no-alarma.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t1_repetition.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py",
+        "skills/cdad-cycle/scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T1 RED — núcleo de traza + repetición equivalente sin progreso.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_003_t1_reviewfix.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T1 review-fix RED — focales B1, B2, B3(b), O1.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t2_preflight.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_guard.py",
+        "skills/cdad-cycle/scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T2 RED — pre-flight de capacidad/permisos + acotado de rechazos.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_003_003_t2_preflight"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t2_reviewfix.py",
+      "product_surfaces": [
+        "skills/lib.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T2 review-fix RED — F1 (`allow` fabricado) + O-B.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t3_budget.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py",
+        "skills/cdad-cycle/assets/guard-event.schema.json"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T3 RED — presupuesto durable + eventos (P4).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_003_t3_escalation.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T3 RED — tabla cerrada evento→acción y paquete de escalado (P5).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t3_reviewfix.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/assets/guard-event.schema.json"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T3 review-fix RED — focales F1, F2, F3, O1, O2.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/003-003-progress-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_003_t4_fixtures.py",
+      "product_surfaces": [
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-003 T4 — fixtures de trazas + generalidad + simulación declarada.",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t1_checkpoint.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T1 RED — checkpoint inmutable + `begin` idempotente + cap (P1, P7).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t1_resume.py",
+      "product_surfaces": [
+        "build/impl-note.md",
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T1 RED — `resume`: reanudación frío, tamper y rol (P1, P2, P5).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t1_reviewfix.py",
+      "product_surfaces": [
+        "build/impl-note.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T1 review-fix RED — cierres B1, B2, O2 (P1, P5, P3).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t2_reconcile.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T2 RED — `reconcile` sobre la matriz §2 (P3, P8-fixtures, R-B2).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t2_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T2 review-fix RED — cierres A, B, C, E1, E2 del review-t2.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t2_writeahead.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T2 RED — write-ahead + `reconcile` + conflictos de clave (P3, O1, R-B1, R-B2).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_004_t3_trigger.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_guard.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T3 RED — `trigger` con unknowns + schema active-record-v1 (P6).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-004-context-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_004_t4_real_context.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-004 T4 RED (RU-1) — CLI con el contexto REAL de 001 y autoridad",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/003-006-runtime-adoption/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_006_t1_wiring.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/SKILL.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-006 T1 RED — cableado del descubrimiento en SKILL.md (P1 mitad SKILL, P10).",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/003-006-runtime-adoption/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_006_t2_activation.py",
+      "product_surfaces": [
+        "agents/cdad-architect.md",
+        "agents/skills/",
+        "install.sh",
+        "scripts/cdad-activate.py",
+        "scripts/path-guard.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: T2 RED — generador de activación por proyecto `scripts/cdad-activate.py`.",
+      "static_test_nodeids": 16,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-006-runtime-adoption/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_003_002_t1_receive",
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_003_006_t3_receive_wiring.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py",
+        "skills/cdad-cycle/SKILL.md",
+        "sources/roles/",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "docstring: receive+continuidad en el cuerpo del orquestador. Docstring: 003-006 T3 RED — `receive` + continuidad en el cuerpo del orquestador",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-006-runtime-adoption/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_006_t4_ru2_refused_write.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "docstring: begin/checkpoint rechazado no escribe. Docstring: 003-006 T4 RED (RU-2) — un `begin`/`checkpoint` RECHAZADO no escribe",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-007-living-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_007_t1_reference_classes.py",
+      "product_surfaces": [
+        "build/impl-note.md",
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-007 T1 RED — clases de referencia contract/living, proyección de",
+      "static_test_nodeids": 14,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/003-007-living-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_007_t2_checkpoint_vs_begin.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 003-007 T2 RED — `checkpoint` distinto de `begin` (P5, P6), el",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/003-007-living-continuity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_003_007_t4_atomic_unit_rule.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "docstring: regla de encargo como unidad despachable. Docstring: 003-007 T4 RED — regla de encargo como unidad despachable (D9/R-4),",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_001_acceptance_matrix.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "scripts/cdad-models.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: Acceptance criterion 1 of spec §4.1 (004-001 closure): the smoke matrix.",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_001_t6.py",
+      "product_surfaces": [
+        "agents/skills",
+        "install.sh",
+        "scripts/cdad-models.sh",
+        "scripts/path-guard",
+        "scripts/path-guard.sh",
+        "skills/cdad-cycle",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: T6 RED contract tests for 004-001 (Aterrizaje B: coherencia Claude Code).",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_001_t7_capacity.py",
+      "product_surfaces": [
+        "agents/cdad-architect.md",
+        "install.sh",
+        "scripts/path-guard.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-001 T7b — PD-11 + PD-12: capacity walk FROM THE INSTALLED PRODUCT.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_001_t7_pd10.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-001 T7a — PD-10 (D7): coherent replacement of mechanism assertions.",
+      "static_test_nodeids": 16,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t1_policy.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/foo.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T1 RED — Política y clasificación (PD-1, PD-2, PD-9) sobre la interfaz I1.",
+      "static_test_nodeids": 23,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t1_reviewfix.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T1 RED review-fix — hallazgos B1, B2, B3, O2, O3, P-VALID.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t2_bootstrap.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T2 RED — Bootstrap autorizado e identidad (PD-3, PD-4, PD-10).",
+      "static_test_nodeids": 17,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t2_reviewfix.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T2 RED review-fix — hallazgos F1–F6 de review-t2 más las dos",
+      "static_test_nodeids": 18,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t3_durable"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t34_reviewfix2.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T3/T4 REVIEW-FIX 2 RED — hallazgos de la sección",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t34_reviewfix2",
+        "test_004_002_t3_durable"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t34_reviewfix3.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T3/T4 REVIEW-FIX 3 RED — hallazgos R-1 y R-2 de",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t3_durable.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: snapshot/reconciliacion/recuperacion. Docstring: 004-002 T3 RED — Snapshot, reconciliación, exclusión y recuperación (PD-5, PD-11).",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t3_durable"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t3_reviewfix.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T3 review-fix RED — hallazgos F1–F6 de docs/specs/",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t4_dispatch.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: registro de intentos de despacho. Docstring: 004-002 T4 RED — Registro de intentos de despacho sin recepción (PD-6/I8).",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t3_durable",
+        "test_004_002_t5_runtime"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t56_reviewfix.py",
+      "product_surfaces": [
+        "scripts/x.py",
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "docstring: review-fix T5/T6. Docstring: 004-002 T5/T6 REVIEW-FIX RED — hallazgos B6, B7/I11 y OPT-4 (review-t56.md).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t1_policy",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t5_reviewfix.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/cdad-implementer.md",
+        "scripts/x.py",
+        "skills/x.py",
+        "sources/roles/implementer.md"
+      ],
+      "rationale": "docstring: review-fix de T5 (scopes runtime). Docstring: 004-002 T5 REVIEW-FIX RED — hallazgos B1–B5, R1/R2/R3/R6/R7/R9 de review-t5.",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t2_bootstrap",
+        "test_opencode_read_map_and_steps"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t5_runtime.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/cdad-",
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/",
+        "agents/claude-code/cdad-",
+        "agents/test_y.md",
+        "agents/y.md",
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/claude-code-path-guard.sh",
+        "scripts/test_h.py",
+        "scripts/x.py"
+      ],
+      "rationale": "docstring: scopes derivados y mecanismos runtime. Docstring: 004-002 T5 RED — Scopes derivados y mecanismos runtime (PD-7, PD-8).",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t6_landing.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "build/staging",
+        "build/staging/manifest.json",
+        "install.sh",
+        "scripts/path-guard.sh",
+        "scripts/x.py",
+        "skills/",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: aterrizaje utilizable. Docstring: 004-002 T6 — Aterrizaje utilizable (PD-10 y PD-12).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t3_durable",
+        "test_004_002_t6_landing"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t7_acceptance.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/test_h.py",
+        "scripts/x.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 004-002 T7 — Matriz integral de aceptación (test-writer, primer paquete v2).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t5_runtime",
+        "test_004_002_t7_limits_rule"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t7_l1_derived.py",
+      "product_surfaces": [],
+      "rationale": "docstring: regla de limites en derivados. Docstring: 004-002 T7 L-1 integración — la regla general de límites llega a los",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_002_t7_limits_rule.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/cdad-implementer.md",
+        "agents/cdad-reviewer.md"
+      ],
+      "rationale": "docstring: regla de limites en prompts. Docstring: 004-002 T7 L-1 RED — regla general de límites inlineada en TODO prompt de",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_opencode_read_map_and_steps"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t7_private_paths.py",
+      "product_surfaces": [
+        "agents/claude-code/"
+      ],
+      "rationale": "docstring: rutas privadas en politica. Docstring: 004-002 T7 P-1 RED — rutas privadas en la política del proyecto.",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t5_runtime"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_t7_w2.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/y.md",
+        "scripts/test_h.py",
+        "scripts/x.py"
+      ],
+      "rationale": "docstring: semantica grep/glob OpenCode. Docstring: 004-002 T7 W-2 RED — semántica real de grep/glob en OpenCode (derivados).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/004-002-project-execution-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_004_002_w1_delegation.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: delegacion vigente sin status/epic_id. Docstring: 004-002 W-1/W-1b/W-1c RED — Delegación vigente sin `status` ni `epic_id`",
+      "static_test_nodeids": 14,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t1_draft_contract.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 004-003 T1 (PD-1): the draft-plan contract kind is first",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t1_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED review-fix T1 for 004-003 — findings F1 and F2 of review-t1.md.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t2_plan_review.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 004-003 T2 (PD-2/PD-3/PD-4/PD-9): the reviewer gains the",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t2_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED review-fix T2 for 004-003 — blocking findings B1 and B2 of",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t3_plan_checks.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 004-003 T3 (acceptance criterion 3 + PD-2 separation):",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t4_validation_fields.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/stage-2-specification.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 004-003 T4 (PD-8 + PD-11 + review-t3 mandatory debt F1/F2):",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/004-003-planning-procedures/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_004_003_t5_reentry_equivalence.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/re-entry.md",
+        "skills/cdad-cycle/references/stage-3-tdd.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 004-003 T5 (G1–G3; PD-5/PD-6/PD-7/PD-10; owner decision D4).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-001-idle-and-v7-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_001_t1_role_approval.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-001 T1 RED — Modelo de autorización por rol (corrige I2 circular).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-001-idle-and-v7-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_001_t2_replace_packet.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: reemplazo de paquete preparado. Docstring: 005-001 T2 RED — Reemplazo de paquete preparado no despachado y",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-001-idle-and-v7-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_001_t3_idle.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: reposo legitimo y estado incoherente. Docstring: 005-001 T3 RED — Reposo legítimo y estado incoherente (PD-13, PD-14,",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-001-idle-and-v7-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_001_t4_decisive.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-001 T4 RED — Prueba decisiva PD-17: un único escenario secuencial",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-001-idle-and-v7-bootstrap/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_001_tcorr.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-001 T-CORR RED — Dos correcciones acotadas de T1/T2 (enmienda 2026-10-09).",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t1_neutral_record.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T1 RED — registro neutral, contrato de invocación, fallo cerrado,",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t2_milestones.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T2 RED — hitos, corte con el borde fijado, lecturas de orientación",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t3_application_privacy.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/references/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T3 RED — informe de aplicación (anotación referenciada), privacidad",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t4_acceptance.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T4 — ACEPTACIÓN: reproducción de las muestras 1 y 2 sobre",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t5_bounded_output.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T5b (REAPERTURA ACOTADA, unidad 2 de 2) — SALIDA ACOTADA A ESCALA",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t5_role_aggregate.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T5 (REAPERTURA ACOTADA — hallazgo **R1**, BLOCKING) — cobertura",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-002-session-context-meter/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "baja",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_002_t5_unknown_declared.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-002 T5 (REAPERTURA ACOTADA) — «desconocido NO es cero» y «ausencia",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_003_f2_idle_history.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 F2 RED — reposo con historia: `next-unit`, no `resume` de la",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_003_t1_compact_view.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 T1 RED — vista compacta del estado operativo + selección de entrada",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_003_t2_examples_execute.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/assets/orientation-examples.json"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 T2 RED — interfaz operativa + disposición de versión + evidencia",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_003_t3_set_summary.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/references/context-meter.md",
+        "skills/cdad-cycle/scripts/cdad_continuity.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 T3 RED — resumen del conjunto (multi-sesión) + regla del documento",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_003_t4_capabilities_inventory.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/capabilities.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 T4 RED — inventario de capacidades efectivas + fallback portable",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-003-orientation-reduction/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_003_t6_packet_contract.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-003 T6 RED — contrato aplicable del encargo (PD-10; INV-4, INV-5).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-004-claude-code-roles/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_004_t1_dispatch_tool_name.py",
+      "product_surfaces": [
+        "agents/claude-code/",
+        "agents/claude-code/cdad-orchestrator.md",
+        "scripts/cdad-generate.py",
+        "skills/cdad-cycle/references/opencode-delegation.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-004 T1 RED — la herramienta de despacho real de Claude Code (PD-1, AC-1).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-004-claude-code-roles/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_004_t2_installer_claims.py",
+      "product_surfaces": [
+        "agents/claude-code/",
+        "build/staging",
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "scripts/validate-subagents.sh",
+        "sources/agents/adapters/claude-code.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-004 T2 RED — enunciados del adaptador CC reconciliados (PD-2, PD-5, PD-9).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-004-claude-code-roles/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_004_t3_version_check_cc.py",
+      "product_surfaces": [
+        "agents/version.txt",
+        "skills/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED — 005-004-claude-code-roles, T3: pata Claude Code del chequeo de version.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-004-claude-code-roles/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_opencode_read_map_and_steps"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_004_t4_cc_guard_decisions.py",
+      "product_surfaces": [
+        "agents/claude-code/",
+        "scripts/cdad-generate.py",
+        "scripts/claude-code-path-guard.sh",
+        "scripts/x.py",
+        "skills/cdad-cycle/references/claude-code-delegation.md",
+        "sources/agents/adapters/claude-code.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-004 T4 RED — decisiones del guard CC y mapa de hooks declarado una vez.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-005-adoption-coherence/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_005_t1_replace_conserved.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: reemplazo valida lo conservado. Docstring: 005-005 T1 RED — el reemplazo valida también lo conservado",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-005-adoption-coherence/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_005_t2_docs_policy.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-005 T2 RED — una sola política de tests (PD-8..PD-11, INV-6).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-005-adoption-coherence/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_005_t3_provenance.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/cdad-",
+        "agents/test_y.md",
+        "agents/y.md",
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/test_h.py",
+        "scripts/x.py",
+        "skills/cdad-cycle/references/opencode-delegation.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-005 T3 RED — procedencia de la instalación (PD-12..PD-15, INV-7).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-005-adoption-coherence/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_005_t4_integration.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-005 T4 RED — integración desde una instalación aislada, sin rodeos",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t1_start_procedure.py",
+      "product_surfaces": [
+        "scripts/cdad_result.py",
+        "skills/cdad-cycle/",
+        "skills/cdad-cycle/assets/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T1 RED — procedimiento corto de arranque (PD-1, PD-3..PD-9, PD-13, PD-15; INV-1..INV-4).",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t2_intake.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "scripts/cdad-generate.py",
+        "skills/cdad-cycle/",
+        "skills/cdad-cycle/references/",
+        "skills/cdad-cycle/references/project-start.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T2 RED — intake del orquestador: arranque desde reposo + rutas",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t3_epic_features.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/project-start.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-epic/references/epic-planning.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T3 RED — responsable de sincronizar `epic_features` (PD-12; INV-3).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t4_readme.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/project-start.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T4 RED — arranque guiado en el README (PD-11; INV-6).",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t5_acceptance.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T5 RED — Aceptación PD-16 (R1/R3) + comprobación empírica",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-006-guided-project-start/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_006_t6_owner_reviewfix.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "agents/skills",
+        "install.sh",
+        "scripts/",
+        "scripts/cdad_",
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle",
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/references/",
+        "skills/cdad-cycle/references/continuity.md",
+        "skills/cdad-cycle/references/project-start.md",
+        "skills/cdad-cycle/scripts/",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-006 T6 RED — review-fix del dueño sobre la familia de arranque",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_reviewfix_blockings.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED de review-fix (etapa 4) — 005-007-progressive-planning: UN TEST POR",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_t1_progressive_detail_rule.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/packets/",
+        "skills/cdad-cycle/packets/substages/",
+        "skills/cdad-cycle/packets/substages/reviewer-plan-review.md",
+        "skills/cdad-cycle/references/",
+        "skills/cdad-cycle/references/stage-2-specification.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T1 RED — regla de detalle progresivo y su único hogar canónico.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_t2_progressive_plan_validator.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 005-007 T2 (PD-1/PD-2 + AC-1): the plan-tasks validator",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_007_t3_open_unit.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/references/project-start.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T3 RED — abrir la unidad siguiente con una operación del CLI",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_007_t4_architect_report_materialization.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T4 RED — Delta 2: el informe del architect se materializa por el",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_t5_delegation_dispatch.py",
+      "product_surfaces": [
+        "scripts/cdad_context_meter.py",
+        "scripts/cdad_delegate.py",
+        "skills/cdad-cycle/scripts/cdad_delegate.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T5 RED — el medidor reconoce la interfaz común de delegación como",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_t6_templates.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/assets/feature-plan-template.md",
+        "skills/cdad-cycle/assets/spec-template/spec.md",
+        "skills/cdad-cycle/references/stage-2-specification.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T6 RED — plantillas alineadas (PD-5/PD-6, con PD-10 y PD-12).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-007-progressive-planning/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_007_t7_unit_size_and_retries.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/re-entry.md",
+        "skills/cdad-cycle/references/stage-2-specification.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-007 T7 RED — tamaño de unidad por costo total y vínculo reintentos↔unidad.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-008-project-path-capabilities/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t1_policy",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_opencode_read_map_and_steps"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_008_t1_nested_tests.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "scripts/cdad_packet.py",
+        "scripts/claude-code-path-guard.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-008 T1 RED — Capacidades de ruta con RAÍZ DE TESTS ANIDADA (PD-1..PD-9).",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-008-project-path-capabilities/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t1_policy",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_005_008_t1_nested_tests"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_008_t2_language_commands.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-008 T2 RED — PD-10: comandos del proyecto en su lugar canónico.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-008-project-path-capabilities/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_005_008_t1_nested_tests"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_008_t3_acceptance.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/cdad-test-writer.md",
+        "install.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-008 T3 RED — Recorrido del PRODUCTO INSTALADO (aceptación, PD-11).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/005-009-cli-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_009_t1_interface.py",
+      "product_surfaces": [
+        "scripts/cdad_delegate.py",
+        "skills/cdad-cycle",
+        "skills/cdad-cycle/scripts",
+        "skills/cdad-cycle/scripts/cdad_delegate.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-009 T1 RED — Interfaz común de delegación (PD-1, PD-2, PD-3, PD-8).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/005-009-cli-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_009_t2_opencode_adapter.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py",
+        "sources/agents/adapters/opencode.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-009 T2 RED — Adaptador del destino OpenCode (PD-4, PD-5, PD-6, PD-7).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-009-cli-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_009_t3_spawn_reconciliation.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "agents/opencode/cdad-orchestrator.md",
+        "scripts/cdad-generate.py",
+        "skills/cdad-cycle/SKILL.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "docstring: reconciliacion de prohibicion de spawn en textos. Docstring: 005-009 T3 RED — reconciliación de la prohibición de spawn (PD-9; INV-1/4/8).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-009-cli-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_009_t4_acceptance.py",
+      "product_surfaces": [],
+      "rationale": "docstring: entrega != gate. Docstring: 005-009 T4 RED — Aceptación determinista: ENTREGA ≠ GATE e",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "suite_signal_helpers",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_010_b1_last_assistant.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-010 RED B1 — el texto final es SOLO el del ÚLTIMO assistant. | Candidato del piloto (spec §2 dec. 4): decision provisional mantener hasta pc-map y controles de variante.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "fusionar",
+      "helper_dependencies": [
+        "suite_signal_helpers",
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_010_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-010 RED review-fix — hallazgos R1/R2/R3/R4 del review formal | Candidato del piloto (spec §2 dec. 4): decision provisional mantener hasta pc-map y controles de variante. | 008-002 T4: R2 texto plano fusionado en PD-6 de t1 (controles C1/C2/C3); resto de casos se mantiene.",
+      "static_test_nodeids": 8,
+      "targets": [
+        "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row"
+      ]
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "suite_signal_helpers",
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_010_t1_durable_signal.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-010 T1 RED — Señal durable real (SQLite), correlación, clasificación y | Candidato del piloto (spec §2 dec. 4): decision provisional mantener hasta pc-map y controles de variante.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_010_t2_load_mode_invocation.py",
+      "product_surfaces": [
+        "agents/cdad-test-writer.md"
+      ],
+      "rationale": "docstring: modo de carga e invocacion. Docstring: 005-010 T2 RED — Modo de carga por la versión instalada + invocación",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_010_t3_references.py",
+      "product_surfaces": [
+        "scripts/cdad-models.sh",
+        "skills/cdad-cycle/references/cli-delegation.md",
+        "skills/cdad-cycle/references/opencode-delegation.md"
+      ],
+      "rationale": "docstring: referencias de delegacion en textos. Docstring: 005-010 T3 RED — Referencias de la delegación actualizadas (PD-10; INV-7).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/005-010-real-opencode-delegation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_010_t4_integration.py",
+      "product_surfaces": [
+        "agents/cdad-test-writer.md",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: integracion opt-in contra binario real. Docstring: 005-010 T4 RED — Prueba de integración OPCIONAL contra el binario REAL de",
+      "static_test_nodeids": 1,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-011-common-entry/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_011_t1_relative_root.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-011 T1 RED — raíz relativa consistente en `cdad_packet.py` (PD-2, PD-3).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-011-common-entry/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_011_t3_view_action.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/CLI",
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-011 T3 RED — versión y siguiente acción en la vista (PD-4, PD-5).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t1_register_transition_base.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T1 RED — superficie `register-transition` (forma mínima: `delivery`",
+      "static_test_nodeids": 21,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_012_t1_register_transition_base"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t2_gate_authority.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T2 RED — la clase `gate` del subcomando `register-transition`:",
+      "static_test_nodeids": 14,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_012_t1_register_transition_base"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t3_closure_dispatch_resolution.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T3 RED — la clase `closure` (comprobación ANTES de aplicar: entregas",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_012_t1_register_transition_base",
+        "test_005_012_t3_closure_dispatch_resolution"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t4_late_delivery.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T4 RED — la entrega TARDÍA: el modo declarado `receive --late` de",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_012_t1_register_transition_base"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t5_approval_vigency.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T5 RED — vigencia estructural de la aprobación: el campo",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-012-transition-registration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_012_t6_open_context_guard.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-012 T6 RED — `prepare --new-execution` rechaza el contexto de ejecución",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-013-unit-contract/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_005_013_t1_unit_projection.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-013 T1 RED — proyección de unidad: localizador estructural, fallback",
+      "static_test_nodeids": 14,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/005-013-unit-contract/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_013_t1_unit_projection"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_013_t2_change_classification.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-013 T2 RED — veredicto de consecuencias por tipo de cambio: línea base",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/005-014-closure-replay/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_012_t1_register_transition_base",
+        "test_005_012_t3_closure_dispatch_resolution"
+      ],
+      "kind": "test",
+      "path": "tests/test_005_014_closure_replay.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 005-014 T1 RED — la clase `closure` SIN feature activa: el replay idéntico",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t2_opencode_adapter",
+        "test_006_001_t1_selection",
+        "test_006_001_t1b_service_mode",
+        "test_006_001_t2_wait_recovery"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_reviewfix.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 review-fix RED — los tres bloqueantes de la review formal",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_t1_selection.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 T1 RED — Selección de modo, preflight del modo servidor,",
+      "static_test_nodeids": 20,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_t1b_service_mode.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 T1b RED — Modo `service` configurado (PD-13, PD-14) y las filas",
+      "static_test_nodeids": 16,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_t2_wait_recovery.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 T2 RED — Espera proporcional, clasificación tras la salida del",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_t3_concurrency.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 T3 RED — Concurrencia útil con fixture (PD-6 pierna (a); INV-2,",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_010_t4_integration"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_001_t3_integration.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-001 T3 — Recorrido REAL en modo servidor (PD-6 pierna (b); D-7, D-8)",
+      "static_test_nodeids": 1,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_reviewfix.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/",
+        "skills/cdad-cycle/references/sub-agent-",
+        "skills/cdad-epic/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 review-fix RED — hallazgo B-1: alias de modelo de un runtime y",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u1_delegation_section.py",
+      "product_surfaces": [
+        "build/staging/agents/",
+        "scripts/cdad-generate.py",
+        "sources/agents/adapters/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U1 RED — secciones `delegation` de los adaptadores y su composición",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u2_neutral_skill.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/",
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/references/context-meter.md",
+        "skills/cdad-epic/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U2 RED — §4 neutral de cdad-cycle y skill sin herramientas de runtime.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u3_runtime_references.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/",
+        "skills/cdad-cycle/references/claude-code-delegation.md",
+        "skills/cdad-cycle/references/opencode-delegation.md",
+        "skills/cdad-epic/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U3 RED — retiro de las dos referencias por runtime y `cli-delegation.md`",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u4_skill_without_models.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U4 RED — `SKILL.md` §2 sin modelos (PD-11; INV-2/INV-7).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u5_transport_equivalence.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U5 RED — equivalencia de transporte en `re-entry.md` (PD-5; INV-3/INV-4).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-002-delegation-by-layer/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_002_u6_context_discipline.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "build/staging/agents/",
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/references/handoff-prompts.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-002 U6 RED — disciplina de contexto de los orquestadores (PD-6; INV-4).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_006_001_t1_selection",
+        "test_006_003_u4_delegation_config",
+        "test_006_003_u6_server_credential",
+        "test_006_003_u7_prune_obsolete"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_003_rf2_review_fixes.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/assets/adr-template/ADR.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for the SECOND 006-003 review-fix round — B-1 and OPT-1 of",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_006_001_t1_selection",
+        "test_006_003_u4_delegation_config",
+        "test_006_003_u6_server_credential"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_003_rf_review_fixes.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for the 006-003 review-fix round — three of the four findings the",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_003_u1_generator_without_profiles.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/claude-code/",
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "scripts/cdad-models.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-003 U1: the generator has no profiles and no model map.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_003_u2_installer_without_profiles.py",
+      "product_surfaces": [
+        "build/",
+        "install.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-003 U2: the installer has no profiles.",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_003_u3_texts_without_profiles.py",
+      "product_surfaces": [
+        "agents/",
+        "scripts/cdad-models.sh",
+        "skills/cdad-cycle/SKILL.md",
+        "sources/agents/adapters/opencode.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-003 U3 RED — textos instalables sin perfiles, sin modelos y sin el",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_005_009_t2_opencode_adapter"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_003_u4_delegation_config.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/assets/opencode-exec-config.example.json"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-003 U4 — the delegation config is the single source of",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_003_u5p_no_family_requirement.py",
+      "product_surfaces": [
+        "agents/claude-code/",
+        "scripts/cdad_context_meter.py",
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/references/context-meter.md",
+        "skills/cdad-cycle/references/stage-4-review.md",
+        "skills/cdad-cycle/references/verdict-tuple.md",
+        "sources/agents/adapters/",
+        "sources/agents/adapters/claude-code.md",
+        "sources/roles",
+        "sources/roles/",
+        "sources/roles/orchestrator.md",
+        "sources/roles/reviewer.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-003 U5' RED — retiro del requisito de familia/modelo del reviewer (A-5).",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_003_u6_server_credential.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-003 U6 — the OpenCode server credential.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_003_u7_prune_obsolete.py",
+      "product_surfaces": [
+        "agents/skills/cdad-cycle/notes-local-ajenas.md",
+        "install.sh",
+        "skills/cdad-cycle/assets/adr-template/ADR.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-003 U7: the installer retires its own obsolete files.",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface",
+        "test_006_001_t1_selection",
+        "test_006_003_u6_server_credential",
+        "test_006_003_u7_prune_obsolete"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_003_u8_acceptance.py",
+      "product_surfaces": [
+        "build/staging",
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "scripts/validate-subagents.sh"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: U8 acceptance / E2E for 006-003 — the whole walk on a REDIRECTED root.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_b1_template_empty.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/assets/memory-bank-templates/systemPatterns.md"
+      ],
+      "rationale": "docstring: plantilla Memory Bank. Docstring: 006-004 B-1 RED — la plantilla del Memory Bank nace SIN decisiones.",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_u1_decisions_field.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py",
+        "skills/cdad-cycle/references/design-principles.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-004 U1 RED — el encargo: la fila declarada, su forma y el tope.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_u2_decisions_section.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/references/design-principles.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-004 U2 RED — la sección aditiva del render.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_u3_principle_single_source.py",
+      "product_surfaces": [
+        "agents/cdad-architect-odoo.md",
+        "agents/cdad-architect.md",
+        "agents/cdad-reviewer-odoo.md",
+        "agents/cdad-reviewer.md",
+        "agents/claude-code/cdad-architect-odoo.md",
+        "agents/claude-code/cdad-architect.md",
+        "agents/claude-code/cdad-reviewer-odoo.md",
+        "agents/claude-code/cdad-reviewer.md",
+        "agents/opencode/cdad-architect-odoo.md",
+        "agents/opencode/cdad-architect.md",
+        "agents/opencode/cdad-reviewer-odoo.md",
+        "agents/opencode/cdad-reviewer.md",
+        "scripts/cdad-generate.py",
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/packets/roles/architect.md",
+        "skills/cdad-cycle/packets/roles/reviewer.md",
+        "skills/cdad-cycle/references/design-principles.md",
+        "skills/cdad-cycle/references/stage-4-review.md",
+        "sources/roles/architect.md",
+        "sources/roles/reviewer.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-004 U3 RED — el principio: una casa, dos obligaciones, un límite.",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_u4_decisions_table.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/assets",
+        "skills/cdad-cycle/assets/memory-bank-templates/systemPatterns.md",
+        "skills/cdad-cycle/packets",
+        "skills/cdad-cycle/references",
+        "skills/cdad-cycle/references/design-principles.md",
+        "skills/cdad-cycle/references/re-entry.md",
+        "skills/cdad-cycle/references/stage-5-merge.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-004 U4 RED — la tabla de decisiones: la plantilla, su upkeep y la regla del CAS.",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-004-active-decisions-table/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_004_u7_seed_verification.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/references/design-principles.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-004 U7 RED — la verificación de la siembra: el bloque del validador y su control negativo.",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface",
+        "test_006_005_u6fix7_write_lever",
+        "test_006_005_u6fix8_version_by_observation"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_reviewfix.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/cdad-",
+        "agents/cdad-implementer.md",
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/tests/test_example.py",
+        "scripts/x.py",
+        "skills/cdad-cycle/scripts/cdad_dispatch.py",
+        "skills/demo/module.py",
+        "skills/demo/test_example.py",
+        "sources/roles/implementer.md",
+        "sources/ui/widget.spec.ts",
+        "sources/ui/widget.ts"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 review-fix RED — B-1, B-2 y B-3 de",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_006_005_reviewfix",
+        "test_006_005_u6fix8_version_by_observation"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_reviewfix2.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "agents/claude-code/cdad-orchestrator.md",
+        "skills/cdad-cycle/references/re-entry.md",
+        "skills/cdad-cycle/scripts/cdad_dispatch.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 review-fix 2 RED — B-3 y B-4 de",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_005_u1a_runtime_config.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/",
+        "skills/cdad-cycle/scripts/cdad_dispatch.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-005 U1a — execution config per runtime, explicit runtime",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u1b_dispatch_entry.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U1b RED — single entry (`cdad_dispatch.py`: dispatch/record/",
+      "static_test_nodeids": 17,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_005_u1c_packet_agent.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "docstring: agente viaja en el paquete. Docstring: 006-005 U1c RED — el agente viaja en el paquete (PD-7).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_003_t1_draft_contract",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u2_opencode_module.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-005 U2 — the OpenCode runtime module.",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u3_temporary_scope.py",
+      "product_surfaces": [
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "docstring: temporal del test-writer. Docstring: 006-005 U3 RED — el temporal del test-writer: autorizado y verificable (PD-15..PD-18).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u3b_derived_temporary_permission.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json",
+        "agents/cdad-",
+        "agents/tmp",
+        "agents/y.md",
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/test_helper.py",
+        "scripts/x.py"
+      ],
+      "rationale": "docstring: permiso temporal derivado. Docstring: 006-005 U3b RED — el temporal es escribible por el agente derivado (PD-24).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_005_u4_single_entry.py",
+      "product_surfaces": [
+        "build/staging/agents/",
+        "skills/cdad-cycle/references/cli-delegation.md",
+        "sources/.../claude-code.md",
+        "sources/.../opencode.md",
+        "sources/agents/adapters/opencode.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U4 RED — entrada única del orquestador, secciones `delegation` y",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_012_t1_register_transition_base",
+        "test_005_012_t3_closure_dispatch_resolution",
+        "test_005_012_t4_late_delivery"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u5_disposition_failed.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U5 RED — camino mecánico a `failed` con las condiciones aprobadas",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix1_capabilities_entry.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U6-1 RED — `capabilities` invoked THROUGH THE ENTRY must observe",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix4_native_selection.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/",
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U6-4 RED — the native store's MOMENT (epoch milliseconds) and the",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix5_write_ahead.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py",
+        "skills/cdad-cycle/scripts/cdad_dispatch.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U6-5 RED — registro write-ahead del intento externo (E4/PD-19).",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix6_model_parity.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/",
+        "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U6-6 RED — `model_reported` parity between the two dispatch paths.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "pd10_permission_semantics",
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_opencode_read_map_and_steps"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix7_write_lever.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/cdad-test-writer.md",
+        "agents/opencode/cdad-",
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "scripts/cdad_packet.py",
+        "scripts/x.py"
+      ],
+      "rationale": "docstring: palanca write vs mapa edit. Docstring: 006-005 U6-7 RED — la palanca `write` no anula el mapa `edit` (E2/PD-24).",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_004_002_t5_runtime",
+        "test_006_005_u6fix7_write_lever"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix7b_derived_strips_write.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "agents/cdad-test-writer.md",
+        "scripts/cdad_packet.py",
+        "scripts/x.py"
+      ],
+      "rationale": "docstring: derivados sin palanca write. Docstring: 006-005 U6-7b RED — los derivados no heredan la palanca `write` (E2/PD-24).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_009_t1_interface",
+        "test_006_001_t1_selection"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_005_u6fix8_version_by_observation.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-005 U6-8 RED — the runtime version is OBSERVED, never read from the",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/006-005-native-path-parity/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_005_u7_scribe_role_report.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/assets/artifact-policy.json",
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "docstring: materializacion informe scribe. Docstring: 006-005 U7 RED — fila del scribe en la tabla cerrada de materialización",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_006_u1_draft_object_form.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED tests for 006-006 U1 (PD-1, PD-2, PD-3, PD-4, PD-5, PD-15, PD-16(a)):",
+      "static_test_nodeids": 20,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_006_u2_review_procedure.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/packets/roles/reviewer.md",
+        "skills/cdad-cycle/packets/substages/reviewer-plan-review.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-006 U2 RED — la fuente canónica de «qué se revisa» deja de ser plan-céntrica.",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_006_u3_review_route_and_gate.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/SKILL.md",
+        "skills/cdad-cycle/references/handoff-prompts.md",
+        "skills/cdad-cycle/references/re-entry.md",
+        "skills/cdad-cycle/references/stage-2-specification.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-006 U3 RED — el recorrido principal, el gate 2→3 y la política de",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_006_u4_reviewer_role_agents.py",
+      "product_surfaces": [
+        "agents/cdad-reviewer-odoo.md",
+        "agents/cdad-reviewer.md",
+        "agents/claude-code/cdad-reviewer-odoo.md",
+        "agents/claude-code/cdad-reviewer.md",
+        "agents/opencode/cdad-reviewer-odoo.md",
+        "agents/opencode/cdad-reviewer.md",
+        "build/staging/agents/",
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "sources/roles/reviewer.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-006 U4 RED — el rol reviewer y los agentes generados declaran la",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_012_t1_register_transition_base",
+        "test_005_012_t3_closure_dispatch_resolution",
+        "test_005_012_t5_approval_vigency",
+        "test_006_005_u5_disposition_failed"
+      ],
+      "kind": "test",
+      "path": "tests/test_006_006_u5_exemption_record.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 006-006 U5 RED — la exención del owner, registrada e incluida en la",
+      "static_test_nodeids": 14,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/006-006-spec-plan-review/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "media",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_006_006_w1_replace_draft_packet.py",
+      "product_surfaces": [
+        "install.sh",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring: reemplazo de paquete de borrador. Docstring: RED 006-006 W-1 (E4/W-1) — el paquete de revisión de BORRADOR preparado y",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/007-001-unambiguous-entry/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_001_unambiguous_entry.py",
+      "product_surfaces": [
+        "scripts/cdad_continuity.py",
+        "scripts/cdad_packet.py",
+        "scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 007-001 RED — entrada inequívoca: situación operativa, siguiente operación",
+      "static_test_nodeids": 21,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/007-002-dispatch-recovery/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_007_002_dispatch_recovery.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_continuity.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-002 — recuperación del despacho dispuesto (PC-1..PC-16, INV-1..INV-8).",
+      "static_test_nodeids": 18,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_003_continuity_at_edges.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "skills/cdad-cycle/scripts/cdad_continuity.py",
+        "skills/cdad-cycle/scripts/cdad_delegate.py",
+        "skills/cdad-cycle/scripts/cdad_dispatch.py",
+        "skills/cdad-cycle/scripts/cdad_packet.py",
+        "skills/cdad-cycle/scripts/cdad_result.py",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-003 — continuidad verificable en los bordes del recorrido.",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_007_003_continuity_at_edges"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_003_legacy_reanchor.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-003 — reanclaje explícito de continuidad legada.",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/007-004-termination-not-success/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_006_001_t1_selection",
+        "test_006_005_u2_opencode_module",
+        "test_007_003_continuity_at_edges"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_004_termination_not_success.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "skills/cdad-cycle/references/cli-delegation.md",
+        "skills/cdad-cycle/references/re-entry.md",
+        "sources/roles/orchestrator.md"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-004 — delivery distinguishes staged, received and none.",
+      "static_test_nodeids": 18,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "retirement",
+          "contract": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_007_002_dispatch_recovery",
+        "test_007_007_suspend_resume_units"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_006_withdraw_and_republish.py",
+      "product_surfaces": [
+        "agents/.cdad-derived.json"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-006 — retiro (withdraw) de paquetes preparados y republicación",
+      "static_test_nodeids": 15,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suspension",
+          "contract": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_007_002_dispatch_recovery"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_007_suspend_resume_units.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-007 — suspensión y reanudación serial de unidades.",
+      "static_test_nodeids": 16,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/007-008-receipt-next-action/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_007_003_continuity_at_edges",
+        "test_007_007_suspend_resume_units"
+      ],
+      "kind": "test",
+      "path": "tests/test_007_008_receipt_next_action.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: RED 007-008 — acción canónica en el cierre de recibo.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_004_002_t2_bootstrap",
+        "test_005_005_t3_provenance"
+      ],
+      "kind": "test",
+      "path": "tests/test_008_001_home_xdg_isolation.py",
+      "product_surfaces": [
+        "agents/cdad-",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "prefijo de feature + docstring. Docstring: 008-001 RED — aislamiento HOME/XDG por test (PC-1..PC-5; PC-6 es gate).",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_008_001_pc7_wrapper_margin.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 008-001 AJ4 / PC-7 — el wrapper no preempta la cota del adaptador.",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_009_t2_opencode_adapter",
+        "test_006_001_reviewfix",
+        "test_006_001_t1_selection",
+        "test_006_001_t1b_service_mode"
+      ],
+      "kind": "test",
+      "path": "tests/test_008_001_pc8_adapter_budget.py",
+      "product_surfaces": [],
+      "rationale": "prefijo de feature + docstring. Docstring: 008-001 PC-8 RED — el adaptador OpenCode no despacha sin presupuesto útil",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-002-suite-by-capability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_008_002_suite_selection.py",
+      "product_surfaces": [
+        "scripts/cdad-suite.py"
+      ],
+      "rationale": "008-002 RED/T3: selector canonico (PC-1, PC-2, PC-3, PC-5, PC-7).",
+      "static_test_nodeids": 25,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/008-002-suite-by-capability/spec.md",
+          "scope": "module"
+        },
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/008-002-suite-by-capability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [
+        "test_005_010_t1_durable_signal",
+        "test_005_009_t1_interface"
+      ],
+      "kind": "test",
+      "path": "tests/test_008_002_variant_controls.py",
+      "product_surfaces": [],
+      "rationale": "008-002 PC-3 oraculo de variantes: controles C0-C3 sobre el destino PD-6 (fusion R2 texto plano).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_bash_policy_selection.py",
+      "product_surfaces": [
+        "scripts/cdad-bash-allowlist.sh",
+        "scripts/cdad-generate.py"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T4 reviewfix-RED (review-2 R2-B1 + review-1 B1 regression).",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_cdad_adapters_opencode.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad-generate.py"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T4: OpenCode adapter simplification (spec §2 contract).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_cdad_generate.py",
+      "product_surfaces": [
+        "scripts/cdad-generate.py",
+        "scripts/cdad-models.sh",
+        "sources/roles/architect.md"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Tests for 004-001 T3: the deterministic generator (spec §2 contract).",
+      "static_test_nodeids": 10,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_install_ownership.py",
+      "product_surfaces": [
+        "agents/opencode/",
+        "agents/opencode/cdad-zz-t5-extra.md",
+        "build/staging",
+        "build/staging/manifest.json",
+        "install.sh"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T5: installation with ownership (D4 manifest semantics).",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_install_review5_regressions.py",
+      "product_surfaces": [
+        "agents/opencode/",
+        "build/staging",
+        "build/staging/manifest.json",
+        "install.sh"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T5 reviewfix-RED (review-5, 4 BLOCKING + 1 recommendation).",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/opencode-read-map-and-steps-2026-09-29/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_opencode_read_map_and_steps.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad-generate.py",
+        "sources/agents/adapters/opencode.md"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for the light cycle `opencode-read-map-and-steps` (2026-09-29).",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/003-005-claude-code-packets/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_packet_prepare.py",
+      "product_surfaces": [
+        "agents/cdad-orchestrator.md",
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "scripts/path-guard.sh",
+        "skills/cdad-cycle/references/handoff-prompts.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Black-box RED tests for 003-005 (Claude Code packets: port + prepare), P1-P6.",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/003-001-role-packets/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_role_packet_consumers.py",
+      "product_surfaces": [
+        "install.sh",
+        "scripts/cdad_packet.py",
+        "skills/cdad-cycle/references/handoff-prompts.md",
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Black-box RED tests for 003-001 Task 3 (consumer and install parity).",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/003-001-role-packets/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_role_packet_render.py",
+      "product_surfaces": [
+        "install.sh"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Black-box RED tests for 003-001 Task 2: P1/P2/P3 and metric P5.",
+      "static_test_nodeids": 17,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/003-001-role-packets/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_role_packet_review_regressions.py",
+      "product_surfaces": [
+        "agents/skills",
+        "install.sh"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Black-box RED tests for the eight blocking 003-001 review findings.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/003-001-role-packets/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_role_packets.py",
+      "product_surfaces": [
+        "agents/skills",
+        "install.sh"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: Black-box contract tests for feature 003-001, Task 1 (P4/P5/P6).",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_static_block_ceiling.py",
+      "product_surfaces": [
+        "skills/cdad-cycle/scripts/cdad_packet.py"
+      ],
+      "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T3 PD-19: the static-block byte ceiling becomes policy.",
+      "static_test_nodeids": 2,
+      "targets": []
+    }
+  ],
+  "schema_version": 1,
+  "status": "draft T1 (test-writer audit); clasificacion por modulo; sin pc-map"
+}

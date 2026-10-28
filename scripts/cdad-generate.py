@@ -483,7 +483,7 @@ ROLE_META = {
         "stage": "You operate in stage 3 (anti-gaming TDD): audit, post-audit, red, properties, e2e.",
     },
     "implementer": {
-        "description": "CDAD implementer — stage 3 GREEN (+ REFACTOR/review-fix sub-modes). Minimal code that makes the approved test pass; never edits tests.",
+        "description": "CDAD implementer — stage 3 GREEN (+ REFACTOR/review-fix sub-modes). Simple implementation of the approved behaviour with reasonable robustness; never edits tests.",
         "stage": "You operate in stage 3 (TDD), GREEN sub-phase, with optional REFACTOR sub-mode.",
     },
     "reviewer": {
@@ -524,10 +524,14 @@ def test_writer_red_fragment() -> str:
     return (
         "## RED discipline\n"
         "\n"
-        "RED verifies the requirement, it does not maximize coverage: one test per\n"
-        "numbered postcondition, failing for the right reason (AssertionError, not\n"
-        "ImportError); exhaustive coverage and edge cases not demanded by a\n"
-        "postcondition belong to a later hardening stage. Detail: "
+        "RED verifies the requirement, it does not maximize coverage. Selection is\n"
+        "by the user's observable promise: R2, whose single editable definition is\n"
+        "the `cdad-shared:convention-rule` block of `sources/roles/test-writer.md`\n"
+        "(composed above in this agent) — never a quota of tests per postcondition,\n"
+        "symmetry, coverage or an equivalent internal variant. Do not multiply tests\n"
+        "for the same observable result, and do write the ones a distinct committed\n"
+        "behaviour needs. A test fails for the right reason (AssertionError, not\n"
+        "ImportError). Detail and the acceptance counterweight (R7): "
         "`skills/cdad-cycle/references/stage-3-tdd.md`.\n"
     )
 

@@ -1,0 +1,448 @@
+{
+  "schema_version": 1,
+  "feature": "008-002-suite-by-capability",
+  "task": "T4",
+  "pilot_modules": [
+    "tests/test_005_010_t1_durable_signal.py",
+    "tests/test_005_010_reviewfix.py",
+    "tests/test_005_010_b1_last_assistant.py"
+  ],
+  "pilot_nodeids_mapped": 17,
+  "fusion_candidates": [
+    {
+      "original": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved",
+      "target": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "evidence": "tests/test_005_010_reviewfix.py:549-575 vs tests/test_005_010_t1_durable_signal.py:419-492",
+      "controls": [
+        "C1",
+        "C2"
+      ]
+    }
+  ],
+  "not_candidates": [
+    "PD-5 subcaso no-idle vs PD-1 rc0: diferencia de aserciones (diagnóstico); además VERIFY 006-001 PD-7",
+    "PD-1 correlated vs PD-5 tramo succeeded: PD-1 no asserta recibo pending",
+    "R4 x3: variantes de config distintas",
+    "PD-2 x2, R3 sin texto vs B1: PC-4 de 008-002 exige conservarlos"
+  ],
+  "form_only_duplication_for_T4": [
+    "assert_diag_actionable idéntica: reviewfix:123, b1:74",
+    "barrido de texto en results: t1:203-212, b1:94-100",
+    "mutación+reescritura de exec-config: reviewfix:229-237, :277-291"
+  ],
+  "entries": [
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-1"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:18 (PD-1 cumplido, T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd1SessionCorrelation::test_pd1_durable_signal_correlated_by_session_id",
+      "variant_observable": "--session <id> en argv; fila única de ese id; envelope.session = id; entrega con texto del ÚLTIMO assistant, decoy intermedio ausente; completed",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd1SessionCorrelation::test_pd1_durable_signal_correlated_by_session_id",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-1"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:18",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd1SessionCorrelation::test_pd1_rc0_before_idle_is_not_completed",
+      "variant_observable": "rc=0 antes de idle (variante no-idle) → no completed, timeout, sin recibo",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd1SessionCorrelation::test_pd1_rc0_before_idle_is_not_completed",
+      "decision": "mantener",
+      "equivalence_justification": "mantener; el subcaso no-idle de la matriz PD-5 ejerce el mismo hecho pero añade diagnóstico no vacío y este no; ninguno sustituye al otro sin control"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+        "id": "PD-7"
+      },
+      "accreditation_source": "docs/specs/006-001-opencode-concurrency-reliability/spec.md:280-287",
+      "amendment": null,
+      "status": "VERIFY",
+      "original_nodeid": "(mismo nodeid)",
+      "variant_observable": "no-idle con config sin `mode` (fixture tests/test_005_009_t2_opencode_adapter.py:1097-1105) → timeout; 006-001 PD-7 dice standalone no idle → unknown tras settle_seconds (default 30s > cota 5s, spec.md:66); reconciliación no citada",
+      "target_nodeid": "(mismo nodeid)",
+      "decision": "mantener",
+      "equivalence_justification": "VERIFY: bloquea eliminar o debilitar los casos no-idle"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-2"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:19",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unknown_schema_fails_closed_naming_missing_column",
+      "variant_observable": "esquema sin idle_outcome → blocked, diagnóstico nombra la columna, sin recibo, sin esperar de más (<5s)",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unknown_schema_fails_closed_naming_missing_column",
+      "decision": "mantener",
+      "equivalence_justification": "spec 008-002 PC-4 exige conservar esquema desconocido y store ilegible como casos distintos"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-2"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:19",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unreadable_store_fails_closed_without_trace",
+      "variant_observable": "store no SQLite → blocked, diagnóstico, sin traza, sin recibo, sin esperar de más (<5s)",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unreadable_store_fails_closed_without_trace",
+      "decision": "mantener",
+      "equivalence_justification": "spec 008-002 PC-4 exige conservar esquema desconocido y store ilegible como casos distintos"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:22 (T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=failed]",
+      "variant_observable": "failed→blocked, diagnóstico, sin recibo",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=failed]",
+      "decision": "mantener",
+      "equivalence_justification": "subcaso único con estas aserciones; PD-1 correlated no asserta recibo pending, así que no sustituye el tramo succeeded"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:22 (T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=interrupted]",
+      "variant_observable": "interrupted→cancelled, sin recibo",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=interrupted]",
+      "decision": "mantener",
+      "equivalence_justification": "subcaso único con estas aserciones; PD-1 correlated no asserta recibo pending, así que no sustituye el tramo succeeded"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:22 (T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=no-idle]",
+      "variant_observable": "sin idle→timeout, diagnóstico, sin recibo",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=no-idle]",
+      "decision": "mantener",
+      "equivalence_justification": "subcaso único con estas aserciones; PD-1 correlated no asserta recibo pending, así que no sustituye el tramo succeeded"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:22 (T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=transport-error]",
+      "variant_observable": "rc≠0 sin fila→transport-error, sin recibo",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[subTest variant=transport-error]",
+      "decision": "mantener",
+      "equivalence_justification": "subcaso único con estas aserciones; PD-1 correlated no asserta recibo pending, así que no sustituye el tramo succeeded"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5/INV-5"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:22 (T1)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[tramo final succeeded]",
+      "variant_observable": "succeeded con texto→completed, recibo pending (INV-5), texto final entregado",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd5IdleOutcomeClassification::test_pd5_termination_from_idle_outcome_matrix[tramo final succeeded]",
+      "decision": "mantener",
+      "equivalence_justification": "subcaso único con estas aserciones; PD-1 correlated no asserta recibo pending, así que no sustituye el tramo succeeded"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-6"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:23 (T1)",
+      "amendment": "006-005 U1b A-1 (un registro por despacho; spec 006-005 :27 B-2)",
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "variant_observable": "I8 esquema cerrado; session y model_reported de la fila (ROW_MODEL texto plano ≠ FAKE_MODEL); provenance declarada; runtime de config",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "decision": "mantener",
+      "equivalence_justification": "destino propuesto también para R2 contracara (ver abajo)"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
+        "id": "PD-3c / D3"
+      },
+      "accreditation_source": "006-003 spec.md:76,:123",
+      "amendment": "A-1 de 006-003 U4/D3",
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "variant_observable": "sin delegation.json → model_configured null (reemplaza 'model_configured de la exec-config' de 005-010 PD-6)",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5/INV-4 (R1)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:135; docs/specs/005-010-real-opencode-delegation/closure.md:22",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_hanging_invocation_ends_timeout_without_rc_claim",
+      "variant_observable": "hangs → timeout (no transport-error), diagnóstico sin 'rc=<n>', sin entrega/recibo, espera acotada (<30s)",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_hanging_invocation_ends_timeout_without_rc_claim",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5 (R1 contracara)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:135",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_unstartable_binary_stays_transport_error",
+      "variant_observable": "binario inexistente → transport-error, sin recibo, sin session",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_unstartable_binary_stays_transport_error",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+        "id": "PD-8"
+      },
+      "accreditation_source": "docs/specs/006-001-opencode-concurrency-reliability/spec.md:289-292",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_unstartable_binary_stays_transport_error",
+      "variant_observable": "binario que no arranca → session null",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR1TimeoutVsTransportError::test_r1_unstartable_binary_stays_transport_error",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "INV-4 (R4)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:136",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_wait_object_fails_closed_before_dispatch",
+      "variant_observable": "sin objeto wait → blocked pre-despacho, binario no invocado, sin transporte/session/recibo",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_wait_object_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "variantes de config distintas (fallo distinto posible por variante); mantener. Nota post-audit: aserción 'timeout_seconds' in diagnosis sobre-especifica (review.md:60 sólo pide diagnóstico accionable) — candidata a revisión, no a eliminación"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+        "id": "PD-8 (+PD-11 cota≤reserva sólo cota 0)"
+      },
+      "accreditation_source": "docs/specs/006-001-opencode-concurrency-reliability/spec.md:289-292; :316-323",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_wait_object_fails_closed_before_dispatch",
+      "variant_observable": "pre-despacho → session null",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_wait_object_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "INV-4 (R4)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:136",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_timeout_seconds_fails_closed_before_dispatch",
+      "variant_observable": "wait sin timeout_seconds → blocked pre-despacho, binario no invocado, sin transporte/session/recibo",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_timeout_seconds_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "variantes de config distintas (fallo distinto posible por variante); mantener. Nota post-audit: aserción 'timeout_seconds' in diagnosis sobre-especifica (review.md:60 sólo pide diagnóstico accionable) — candidata a revisión, no a eliminación"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+        "id": "PD-8 (+PD-11 cota≤reserva sólo cota 0)"
+      },
+      "accreditation_source": "docs/specs/006-001-opencode-concurrency-reliability/spec.md:289-292; :316-323",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_timeout_seconds_fails_closed_before_dispatch",
+      "variant_observable": "pre-despacho → session null",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_exec_config_without_timeout_seconds_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "INV-4 (R4)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:136",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_nonpositive_wait_timeout_fails_closed_before_dispatch",
+      "variant_observable": "timeout_seconds=0 (además: no transport-error) → blocked pre-despacho, binario no invocado, sin transporte/session/recibo",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_nonpositive_wait_timeout_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "variantes de config distintas (fallo distinto posible por variante); mantener. Nota post-audit: aserción 'timeout_seconds' in diagnosis sobre-especifica (review.md:60 sólo pide diagnóstico accionable) — candidata a revisión, no a eliminación"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
+        "id": "PD-8 (+PD-11 cota≤reserva sólo cota 0)"
+      },
+      "accreditation_source": "docs/specs/006-001-opencode-concurrency-reliability/spec.md:289-292; :316-323",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_nonpositive_wait_timeout_fails_closed_before_dispatch",
+      "variant_observable": "pre-despacho → session null; cota ≤ WAIT_RESERVE → blocked sin despacho",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR4WaitConfigFailClosed::test_r4_nonpositive_wait_timeout_fails_closed_before_dispatch",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5 (R3)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:137; docs/specs/005-010-real-opencode-delegation/closure.md:22",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR3IdleOutcomeEdgeVariants::test_r3_succeeded_without_final_text_is_blocked_without_receipt",
+      "variant_observable": "succeeded sin ningún texto final → blocked, sin entrega/recibo, sin esperar de más (<5s)",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR3IdleOutcomeEdgeVariants::test_r3_succeeded_without_final_text_is_blocked_without_receipt",
+      "decision": "mantener",
+      "equivalence_justification": "PC-4 de 008-002 exige conservar 'ausencia total de texto final' como caso distinto de B1"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-5 (R3)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:137; docs/specs/005-010-real-opencode-delegation/closure.md:22",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR3IdleOutcomeEdgeVariants::test_r3_undeclared_idle_outcome_is_unknown_without_receipt",
+      "variant_observable": "idle_outcome no declarado → unknown, sin entrega/recibo",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR3IdleOutcomeEdgeVariants::test_r3_undeclared_idle_outcome_is_unknown_without_receipt",
+      "decision": "mantener",
+      "equivalence_justification": "PC-4 de 008-002 exige conservar 'ausencia total de texto final' como caso distinto de B1"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-6 (R2)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:138; docs/specs/005-010-real-opencode-delegation/closure.md:23",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_json_object_model_reported_as_provider_over_id",
+      "variant_observable": "modelo objeto JSON → 'providerID/id', esquema cerrado, provenance",
+      "target_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_json_object_model_reported_as_provider_over_id",
+      "decision": "mantener",
+      "equivalence_justification": "caso único de la variante en el piloto; sin sustituto demostrado"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-6 (R2 contracara)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review.md:138; docs/specs/005-010-real-opencode-delegation/closure.md:23",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved",
+      "variant_observable": "modelo de fila en texto plano → model_reported conservado tal cual; esquema I8 cerrado",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "decision": "eliminar",
+      "equivalence_justification": "misma variante (fixture variant='succeeded', fila ROW_MODEL texto plano: reviewfix:557-566 vs t1 PD-6 :422,:479-492) y mismo fallo detectable: reviewfix:570-575 assertEqual(model_reported, ROW_MODEL) ≡ t1:487-492 assertEqual(model_reported, row['model']); esquema cerrado reviewfix:567-569 ≡ t1:458-461. Controles C1/C2 de variant-controls.json: el destino detecta la desviación.",
+      "decision_note": "T2 lo propuso como 'eliminar-propuesto'; T4 retira el original tras C1/C2/C3 en verde post-refactor (commit 3bbfc8b).",
+      "controls": [
+        "C1",
+        "C2",
+        "C3"
+      ]
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-1/PD-5 (B1)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review-codex-2026-10-11.md:35; docs/specs/005-010-real-opencode-delegation/closure.md:57-76",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_b1_last_assistant.py::TestB1LastAssistantOnly::test_b1_intermediate_text_does_not_substitute_missing_final_text",
+      "variant_observable": "texto intermedio + último assistant sin parte textual + succeeded → blocked, sin entrega/recibo, intermedio y razonamiento ausentes, sin esperar de más (<5s)",
+      "target_nodeid": "tests/test_005_010_b1_last_assistant.py::TestB1LastAssistantOnly::test_b1_intermediate_text_does_not_substitute_missing_final_text",
+      "decision": "mantener",
+      "equivalence_justification": "PC-4 de 008-002 exige conservar 'último assistant sin texto aunque exista texto anterior'; multi-texto es variante distinta de PD-1 correlated (una sola parte)"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "PD-1/PD-5 (B1)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/review-codex-2026-10-11.md:35; docs/specs/005-010-real-opencode-delegation/closure.md:57-76",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_b1_last_assistant.py::TestB1LastAssistantOnly::test_b1_multi_text_last_assistant_delivery_is_that_message_concatenation_only",
+      "variant_observable": "último assistant con dos partes → completed, entrega = concatenación de ese mensaje, sin decoy, recibo pending",
+      "target_nodeid": "tests/test_005_010_b1_last_assistant.py::TestB1LastAssistantOnly::test_b1_multi_text_last_assistant_delivery_is_that_message_concatenation_only",
+      "decision": "mantener",
+      "equivalence_justification": "PC-4 de 008-002 exige conservar 'último assistant sin texto aunque exista texto anterior'; multi-texto es variante distinta de PD-1 correlated (una sola parte)"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-010-real-opencode-delegation/spec.md",
+        "id": "INV-3 (store solo lectura)"
+      },
+      "accreditation_source": "docs/specs/005-010-real-opencode-delegation/closure.md:18 (acreditado a T1)",
+      "amendment": null,
+      "status": "VERIFY",
+      "original_nodeid": "(ninguno)",
+      "variant_observable": "ninguna aserción de los tres módulos observa mtime/hash del store (sólo los lectores del fixture abren mode=ro, test_005_009_t2:920-939)",
+      "target_nodeid": "(ninguno en el piloto)",
+      "decision": "mantener",
+      "equivalence_justification": "acreditada por cierre, no observada por el piloto; no se mapea a un nodeid que no la verifica"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/008-002-suite-by-capability/spec.md",
+        "id": "§2 techo instrumental 5s"
+      },
+      "accreditation_source": "008-002 spec.md §2 (decisión 6)",
+      "amendment": null,
+      "status": "acreditada",
+      "original_nodeid": "tests/test_005_010_t1_durable_signal.py:296,:336; tests/test_005_010_reviewfix.py:424; tests/test_005_010_b1_last_assistant.py:180",
+      "variant_observable": "elapsed < TEST_WAIT_TIMEOUT_SECONDS (5s) en PD-2 x2, R3 sin texto, B1: 'no esperar de más'",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py:296,:336; tests/test_005_010_reviewfix.py:424; tests/test_005_010_b1_last_assistant.py:180",
+      "decision": "mantener",
+      "equivalence_justification": "cota instrumental; NO acredita el ≤2s de 006-001 PD-11 (:316-323). No removibles en ninguna fusión de T4"
+    }
+  ],
+  "form_only_duplication_applied": "tests/suite_signal_helpers.py (commit 3bbfc8b)"
+}

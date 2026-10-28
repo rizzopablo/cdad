@@ -32,7 +32,7 @@ substages `test-writer-{audit,post-audit,red,properties,e2e}`.
 <!-- cdad-section:contract -->
 | Role | Stages | Does | May read | May edit | Never touches | Artifact |
 |---|---|---|---|---|---|---|
-| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per postcondition, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
+| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per observable user promise (never per postcondition, symmetry or coverage), traced to the numbered postconditions it protects, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
 <!-- table not formatted: invalid structure -->
 
 Anti-bias invariants (this role): the test-writer never sees implementation code;
@@ -63,23 +63,43 @@ deny. Matcher limit: no braces in globs (the matcher escapes them — audit 3.3)
 
 <!-- cdad-section:convention -->
 <!-- cdad-shared:convention-rule -->
-Test convention (single editable definition; detail:
-`skills/cdad-cycle/references/stage-3-tdd.md`):
-1. Feature tests verify behavioral postconditions (the observable contract) —
+Test convention (single editable definition of selection rule R2; detail and
+acceptance counterweight R7: `skills/cdad-cycle/references/stage-3-tdd.md`):
+1. Select by the **observable promise** of the user: one test per promise — not
+   per postcondition, symmetry, coverage or an equivalent internal variant. One
+   test may protect several postconditions of its promise: that is
+   traceability, not missing coverage.
+2. Not a ceiling (AJ2): do not multiply tests for equivalent observable
+   results, and do write every test a distinct committed behaviour needs, plus
+   the ones the orchestrator's gate promotes with its recorded reason (the gate
+   owns that procedure — never restate it here).
+3. Every test traces to the numbered postconditions it protects and declares the
+   consequence: "without this test, the user ...". With no named consequence it
+   is not an ordinary requirement: register it in `deferred-hardening` with its
+   reason.
+4. Feature tests verify behavioral postconditions (the observable contract) —
    NOT implementation details (middleware call order, internal function names,
    mocks over plumbing).
-2. Every test maps to a numbered spec postcondition; a test without one is
-   superfluous. Feature acceptance = a postcondition verified by behavior tests,
-   not a coverage percentage.
-3. Property tests ARE a declared stage-3 substage (corrected wording): property
+5. Property tests ARE a declared stage-3 substage (corrected wording): property
    tests verify the spec invariants with random inputs — one invariant per
    property test, 100-1000 inputs, FIXED seed for reproducibility in CI. They
    are contract invariants, not an exhaustive-coverage device.
-4. Exhaustive coverage, load/perf and edge cases NOT demanded by a postcondition
-   do NOT belong to the feature cycle — later hardening stage/epic.
-5. Counterweight: with no exhaustive tests, the precision burden moves to the
+6. Exhaustive coverage, load/perf and edge cases NOT demanded by a postcondition
+   do NOT belong to the feature cycle — later hardening stage/epic; each
+   deferral decision is registered in `deferred-hardening` with its reason.
+7. Precision burden: with no exhaustive tests, the precision burden moves to the
    spec — numbered, testable postconditions before RED (ambiguous spec →
    ambiguous tests → incorrect implementation that still passes the suite; AP-13).
+8. Wall-clock upper bounds: a duration assertion is a bound only when it declares
+   the pair of hypotheses it separates (correct behaviour vs. a concrete defect);
+   without that pair it is liveness and is declared as liveness, never presented
+   as a bound. Its ceiling stays at >= 10x the value the correct behaviour
+   produces (margin against runner load) and is NEVER equal to the deadline it
+   watches: a bound equal to the deadline cannot discriminate and turns load
+   into a false red. When the defect also lands at or under the admissible
+   ceiling the duration assertion cannot discriminate: degrade it to liveness
+   and keep asserting the decision the bound guarded, so no promise is left
+   unasserted.
 <!-- /cdad-shared -->
 <!-- /cdad-section -->
 

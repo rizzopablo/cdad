@@ -4,6 +4,355 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-28 — 009-001: el instalador deja de costarle los modelos al usuario
+
+**Cerrada `009-001-installer-agent-overlay`** (epic-009-installer-updates, épica light de una feature). Un
+`model:` en el frontmatter del agente instalado dejaba el archivo en conflicto —no owned, sin actualizaciones,
+`--check` rojo— y el remedio operativo borraba el modelo. Ahora el overlay se reconoce, se reinserta sobre el
+staging nuevo y el agente sigue owned; la procedencia decide sólo cuando la base no es el staging actual.
+Gate: `1839 passed, 5 skipped`, superficie 397 nodeids, `dirty 0`, canario 0, commit `4a5735d`.
+
+**Decisión de diseño.** Una sola definición (`scripts/agent-overlay.py`, `USER_OWNED_KEYS` como **dato**)
+consumida por install, `--check`, la ruta legacy y el validador; gramática estrecha del frontmatter y
+fail-closed ante ambigüedad. INV-3 intacta: ningún texto instalable fija un modelo.
+
+**Lo que el review atrapó.** El primer GREEN tenía 7 tests verdes y 3 defectos reales (F1: cambiar de modelo
+congelaba el agente; F2: el validador duplicaba la lista de claves; F3: el veredicto de `--check` nombraba la
+ruta de staging). Los 5 tests que faltaban se escribieron antes del fix y fallaron por `AssertionError`.
+
+**Límites.** Gramática estrecha (sin YAML general); no valida modelos; personalizaciones fuera de las claves
+siguen siendo conflicto D4; CRLF y prune de obsoletos con overlay no evaluados. **Deuda nueva:** el selector
+de superficie ignora `documentation_files` (README) — bloqueó el primer gate.
+
+---
+
+## 2026-10-28 — Cierre del epic: epic-008-suite-coherence (6/6)
+
+**Epic cerrado el 2026-10-28 con 6/6 features en `done`**, cada una con su `closure.md`
+(`docs/epics/epic-008-suite-coherence/closure.md`). Atacó lo que el epic 007 dejó abierto: la suite crecía
+por historia y no por capacidad, parte dependía de HOME/XDG compartidos, tres decisiones de ciclo de vida
+estaban duplicadas y el paquete de rol era una exigencia del método sin mecanismo que la hiciera cumplir.
+**No agregó capacidad al producto: ordenó lo existente hasta que la suite volvió a ser un gate y el ciclo
+dejó de admitir trabajo sin contrato.**
+
+**Criterios.** Features cerradas: **6/6** (el plan decía 5; 008-006 se agregó por decisión del dueño).
+**Suite estable: cumplido con alcance declarado** — tres corridas consecutivas del gate real sobre
+`443a43d`, árbol limpio: **1827 passed, 5 skipped**, `verdict green`, `attributable true`, canario 0,
+`loadavg` 5.26–6.43 (`.cdad/local/008-005/epic-runs/`); la secuencia no ejerce el paso de superficie
+(cambio sólo-documentación) y la clase «esperó por encima de la cota» perdió su test (F1). **Suite
+coherente: cumplido en coherencia y trazabilidad, con la reducción sustituida** — el piloto midió **+3.317
+bytes / +81 LF** y se publica tal como salió porque **AJ6** reemplazó «test por cobertura» por «test por
+contrato». **Un solo decisor: cumplido con deudas declaradas** (`SUSP-IDENTITY` condicionada, `SUSP-GUARD`
+parcial, `SUSP-LOCK`/`SUSP-APPROVAL` no cierran). **Paquete obligatorio: cumplido** (admite, no
+intercepta). **Test por contrato: cumplido** (acredita marcadores, no integridad semántica). **CI verde:
+cumplido a nivel mecanismo, activación pendiente del dueño.** **Sin mecanismos duplicados nuevos:
+cumplido**, con dos excepciones declaradas.
+
+**Decisiones del epic.** (1) El verde exige atribución: commit, árbol limpio, un intento `finished`,
+resumen verificado y rc 0; sin eso, salida distinta de cero nombrando la causa (008-005). (2) La admisión
+vive en cada frontera invocable, no en el orquestador (008-004). (3) La identidad de la encomienda la da el
+marcador canónico —una vez, en cualquier posición— y el preámbulo es transparente y no autoriza (008-004).
+(4) La coherencia se mide en trazabilidad, no en bytes (008-002 + AJ6). (5) Una pérdida declarada vale más
+que una guarda que no discrimina (008-005, F1). (6) Una casa y sus copias: fuente única, regeneración y
+verificador que falla cerrado (008-004/008-006).
+
+**Deuda que se lleva.** F1 —la clase «acotada por encima de la cota» no es observable— (008-005);
+`SUSP-LOCK`/`SUSP-APPROVAL` abiertas y `SUSP-GUARD` parcial (008-003); `HOME-LEAK-DERIVED-AGENTS`, 6 líneas
+de delta en el HOME real (008-006); CI no activado y `make validate` fuera del gate (008-005); y el
+`deferred-hardening` de 002/003/004/005/006 con su motivo. **F011 dejó de bloquear**: era el drift de los
+agentes instalados y pasa **68/68** tras el deploy del 2026-10-28.
+
+**Incidentes declarados.** El preámbulo del runtime rompió el intake de «primera línea» hasta 008-004; tres
+transcripciones manuales erróneas de paquetes (regla: despachar los bytes del archivo); contratos enmendados
+después del `begin` que hicieron negar el `record` (regla: registrar antes de enmendar); y un split-brain de
+continuidad por dos `begin` del mismo intento, reparado a mano con respaldo.
+
+**Próximo paso: ninguno del plan.** Lo que sigue es decisión del dueño: (i) la enmienda de política que
+activa CI en el push, (ii) la prioridad de la deuda, (iii) la publicación, que sigue reservada. **El cierre
+no implica publicar.**
+
+---
+
+## 2026-10-28 — Feature: 008-004-role-packet-enforcement (epic 008)
+
+**Cerrada el 2026-10-28**; cuarta de las seis unidades de `epic-008-suite-coherence`. Una encomienda CDAD
+**no se admite ni se acredita sin un paquete verificado**, y el preámbulo que el runtime antepone a todo
+prompt de subagente deja de romper el intake. El hueco era concreto: una encomienda podía despacharse por la
+vía nativa —o por una CLI invocada directamente— y acreditarse después sin que nadie hubiera comparado el
+`PACKET.md` publicado con el render canónico de su request.
+
+**Contrato y evidencia:** `docs/specs/008-004-role-packet-enforcement/` — `spec.md` (8 PCs con D1/D2/D3),
+`closure.md`, `discovery.md` y cuatro rondas de review (`review.md`, `review-round2.md`, `review-round3.md`,
+`review-round4.md`).
+
+**Qué cambia en el uso real.**
+- **Las fronteras invocables admiten antes de producir efectos.** `begin`, `prepare --record-dispatch`,
+  `cdad_dispatch dispatch` y `record`, y `cdad_delegate` validan el request publicado y comparan el
+  `PACKET.md` completo contra su render antes de publicar continuidad, observar el modelo, preparar staging,
+  transmitir bytes o cambiar estado. Cada CLI verifica **su propia** precondición: el preflight del
+  orquestador es obligatorio pero no suficiente.
+- **El intake deja de depender de la primera línea.** El marcador se identifica **exactamente una vez en
+  cualquier posición**; el preámbulo es **transparente y no autorizante**; la **ruta A** compara los bytes
+  recibidos desde el marcador hasta el final contra el render **completo** —objetivo, instrucciones, contrato,
+  entradas, scopes, invariantes y evidencia—, sin normalizar; la **ruta C** admite la ausencia del cuerpo
+  inline sólo con un único bloque de identificación cuyos metadatos coincidan con el paquete validado, y su
+  lectura mínima de control-plane **no amplía el scope de producto**. Cero marcadores = consulta legacy sin
+  acreditación CDAD; más de uno, bloque sin cierre o identidad discordante = **rechazo, nunca fallback
+  silencioso**.
+- **`begin` rechaza la referencia que el propio paquete va a editar (PC-06).** Una referencia `contract`
+  cubierta por el `write_scope` se rechaza antes de persistir, diagnosticando referencia y selector, con
+  `_scope_contains`; `living` explícita conserva su semántica y no hay reclasificación automática.
+
+**Evidencia.** `tests/test_008_004_packet_enforcement.py`: **25 casos** que **discriminan contra el código
+previo**. Trazabilidad: `4e991c8` (discovery), `f10aeaa` (RED: 11 rojos + 6 guardas), `126d68b` (GREEN),
+`41b90d6` (3 bloqueantes de admisión), `a2dec5b` (pruebas durables), `0760d54` (PC-08), `f7f3510` y `d7cbb1f`
+(comparación íntegra de A y rechazos separados por ruta) y `a89cfb5` (review final). 664 regresiones focales
+verdes; `003-004` y `003-007` intactos.
+
+**Gate — no se declara verde.** Tres corridas del mismo mecanismo de cierre, con el host cargado por agentes
+ajenos a la sesión (`loadavg` 5.4–6.9 sobre 8 CPU): A sobre `126d68b` + pruebas durables (pre-PC-08) **1808
+passed, 5 skipped, rc 0** (51:02); B y C sobre `d7cbb1f` **1805 y 1804 passed con 3 y 4 fallos**, rc 1
+(1:02:59 y 1:43:09). Los siete fallos son **cotas de reloj de pared** (`assertLess(elapsed, …)`, 2,5–5 s, con
+excesos de 0,05 a 4,2 s) más un fallo de fixture de la misma familia que el propio test ordena reportar sin
+debilitar la aserción; las clases afectadas pasan en aislamiento (3/3 dos veces con load 6.5–6.6) y en un
+worktree del commit previo, y la duración pasó de 51 min a 1:43 **sin cambio de código**. **Consecuencia
+declarada:** el gate no queda verde por un defecto **preexistente** de estabilidad de la suite, no por el
+producto de la unidad; queda como deuda **BLOCKING** del criterio «Suite estable» del epic y **primer
+requisito de 008-005**. No se promedia ni se reintenta hasta el verde: la única corrida verde (A) es anterior a
+PC-08, así que **el commit final no tuvo corrida verde**.
+
+**Distribución instalada (PC-08).** `./install.sh --check` estaba en FAIL por drift (copia instalada en
+`b4fd046`); los 16 conflictos eran los agentes propios instalados con bytes previos, respaldados en
+`.cdad/local/deploy-backup-20261028/` y reinstalados. Verificado: **11 agentes por runtime** con el intake
+corregido (`at any position` en las 22 copias registradas), **sin `model:`**, `install.sh --check` **PASS
+(414 grupos)** y `make validate` **68/68** (el F011 histórico era el drift de los instalados).
+
+**Decisiones relevantes.**
+1. **Tolerar el preámbulo en lugar de exigirle al runtime que lo suprima (D1/D2).** A como ruta principal, C
+   como respaldo explícito y B fuera de alcance. La identidad la da el **marcador canónico**, no las palabras
+   del objetivo ni el nombre del rol. Trade-off: sólo el preámbulo se tolera; un agente que ignore sus
+   instrucciones sigue pudiendo trabajar sin paquete — la garantía es de **admisión**, no de intercepción.
+2. **Un solo criterio de integridad: el render canónico comparado por bytes.** Se reutilizan
+   `validate_request`/`render_packet`; no se agrega un protocolo de hashes ni se acepta validar sólo el
+   encabezado (la review reprodujo que un encabezado válido con objetivo alterado pasaba el intake textual).
+   Trade-off: validar el archivo en disco **no acredita** los bytes que recibió una sesión nativa.
+3. **Cada frontera invocable verifica su precondición.** La review reprodujo que `cdad_delegate` lanzaba un
+   worker con el paquete alterado tras un `begin` válido, porque la comprobación vivía sólo en `dispatch`.
+   Trade-off: doble comprobación en el camino normal, preferida a un borde sin cubrir.
+4. **Rechazo temprano de la referencia que se autoinvalida (D3/PC-06).** Esa referencia produce P1 en el
+   `record` por diseño; el `begin` la rechaza antes de persistir en vez de fabricar un registro condenado.
+   Trade-off: gobierna `begin` nuevos; no invalida registros durables ni adelanta el rechazo al replay.
+5. **Una casa y sus copias, no parches por incidente.** Se corrige `sources/roles/architect.md` (intake-core)
+   y se regeneran las **20 copias**; el deploy re-sincroniza 11 agentes por runtime. Trade-off: la regla vive
+   en 21 textos y hay que verificar que ninguno conserve la primera línea como condición necesaria.
+
+**Límites declarados.** La garantía es de **admisión en las fronteras administradas y en el intake del rol**.
+No es un sandbox: no intercepta herramientas nativas ni impide que un agente ignore sus instrucciones.
+Validar el paquete en disco **no** acredita por sí solo los bytes recibidos por una sesión nativa, y la ruta C
+quedó acreditada por lectura y por el verificador, **no por una ejecución nativa real**. Sin cambios de
+harness, sin registros ni recibos nuevos y sin código de salida nuevo.
+
+**`deferred-hardening`.** Fuzzing del parser, combinatoria exhaustiva de transportes, matriz de versiones de
+runtime e interceptación nativa: no bloqueantes, y ninguno permite diferir un PC comprometido.
+
+**Deuda técnica detectada.**
+1. **Cotas de reloj de pared en la suite (BLOCKING para el epic, primer requisito de 008-005):** siete fallos
+   de gate así, verdes en aislamiento. Un runner cargado no puede producir rojos falsos.
+2. **`008-002`: `pytest_summary.skips[].reason` vacío** en `attempt.json` aunque el motivo está en
+   `stdout.log` → 008-005.
+3. **Transcripción manual de paquetes:** el digest detectó **dos** transcripciones erróneas del orquestador.
+   Regla operativa: despachar los bytes del archivo, nunca re-tipearlos.
+4. **Memory Bank atrasado:** `008-003` y `008-006` cerraron sin entrada; este cierre las recupera como
+   backfill en `progress.md` y documenta `008-004` aquí.
+5. **Heredadas:** `SUSP-LOCK` y `SUSP-APPROVAL` abiertas (alcance declarado por 008-003),
+   `HOME-LEAK-DERIVED-AGENTS` (008-006).
+
+**Siguiente: `008-005-ci-gate`** (`queued`, la sexta y última). Arranca con una exigencia no negociable: el
+gate de CI **no puede** producir falsos rojos por cotas de reloj bajo carga, y arrastra el `skips[].reason`
+vacío de 008-002. El epic **no se cierra por suma de features**: «Suite estable» sigue **no cumplido**.
+
+---
+
+## 2026-10-27 — Feature: 008-002-suite-by-capability (epic 008)
+
+**Cerrada el 2026-10-27**; segunda de las seis unidades de `epic-008-suite-coherence`. La suite deja de
+estar organizada por la historia que la creó: pasa a tener **selector canónico por capacidad y contrato**,
+**inventario versionado** y **mapa acreditado obligación→test del piloto**, y el cierre de una unidad deja de
+resolverse con un script local. No se buscó adelgazar la suite: se buscó que **pueda reorganizarse sin que el
+gate deje de verla** y que **deje evidencia que no se pueda pisar**.
+
+**Contrato y evidencia:** `docs/specs/008-002-suite-by-capability/` — `spec.md` (PC-1..PC-8 + AJ1–AJ7),
+`closure.md`, `review-final.md`, `plan.md`, inventario, mapa y controles.
+
+**Qué se entregó.** `scripts/cdad-suite.py` (~930 líneas) con `validate`, `list`, `run`, `surface`,
+`measure` y `close`, alrededor del pytest existente. `validate` contrasta integridad estructural contra la
+colección real y contra la **baseline registrada** (`measurement-before.json`), no contra `HEAD`. `surface`
+compara contra `<ref>` incluyendo cambios no indexados, resuelve tests trasladados con el mapa **de la base**
+(`--no-renames`) y helpers por ruta y por stem; nunca devuelve selección vacía como éxito. Inventario de 210
+módulos; mapa de 29 obligaciones del piloto; controles de variante C0–C3 **ejecutables**. La consolidación
+del piloto extrajo tres duplicaciones de forma y fusionó R2 en PD-6 **sin retirar aserciones**.
+
+**El mecanismo de cierre.** `close` es el único camino del closer: intento exclusivo por invocación
+(`os.mkdir` sin reintento, colisión = rc 2), `attempt.json` en `running` **antes** de pytest y `finished` con
+`rc`, una interrupción deja `running` y nunca es éxito, resumen de pytest **verificable** o marcado
+`verified: false`, salidas del hijo y canario con alcance declarado.
+
+**Gate.** `close --all` sobre `adc4240` → **1774 passed, 5 skipped, 0 failed, rc 0**, canario **0**, 52:02.
+Los 5 skips son los opt-in reales de siempre, con su motivo en el log: ninguno sustituye un verde.
+
+**Review.** Ronda T3 (3 bloqueantes + 1 de integración) y ronda final (**2 bloqueantes + 1 MINOR**). Los dos
+bloqueantes se reprodujeron, no se leyeron: con `PYTEST_ADDOPTS='-qq'` el resumen declaraba **cero aprobados
+con `rc=0`**, y una colisión de nombre de intento **no fallaba** como exige AJ7. Cerrados en `56ae3f9`; el
+MINOR (línea «sin este test, el usuario…») en `adc4240`.
+
+**Directiva AJ6 (provisional).** `owner-rule-tests-contract.md`: un test por **promesa observable**, no por
+cobertura; variantes internas equivalentes son un test; lo diferible va a `deferred-hardening`; el reviewer
+no bloquea sin consecuencia de usuario; el implementer queda fuera de la regla. Efecto aquí: PC-4 pierde el
+objetivo de bytes y PC-5 deja de pedir «7 variantes». Se formaliza en las fuentes en **008-006**.
+
+**Límites.** El inventario clasifica con `confidence` y alcance de módulo en los mixtos; el mapa cubre el
+piloto, no la suite entera; `measure` es instrumento, no contrato; `surface` no está neutralizado frente a
+`PYTEST_ADDOPTS` (falla ruidoso); el canario cubre las rutas de 008-001, no el árbol del repo.
+
+**Deuda.** (1) Transporte de paquetes roto (el runtime antepone una línea; los roles rechazan el paquete):
+dos subfases cerradas **sin paquete**, declaradas → **008-004**. (2) `deferred-hardening` de la spec.
+(3) Dos hallazgos del scribe, no bloqueantes: **`suite-report.md` ausente** pese a §4 y **`skips[].reason`
+vacío** en `attempt.json` aunque el motivo está en `stdout.log` → **008-005**. (4) Heredadas: `SUSP-*`,
+DT-8/F011, DT-9, `scope_validation: unknown`, sin CI.
+
+**Qué está activo ahora.** **Epic 008, 2/6.** `008-003-lifecycle-decision-model` con **discovery hecho**: no
+hay tres implementaciones equivalentes; divergen las **decisiones** (identidad, propietario, autoridad, dos
+dominios de idempotencia, tabla `termination/delivery` en `cdad_dispatch`/`cdad_delegate`). Recomendación:
+núcleo de decisiones puras que **retire** las ramas migradas; `SUSP-IDENTITY` y `SUSP-GUARD` (parcial)
+pueden cerrar, `SUSP-LOCK` y `SUSP-APPROVAL` **no**.
+
+---
+
+## 2026-10-27 — Feature: 008-001-home-xdg-isolation (epic 008)
+
+**Cerrada el 2026-10-27**; primera de las cinco unidades de `epic-008-suite-coherence`
+(plan aprobado por el dueño el 2026-10-26). La dependencia de la suite respecto de la configuración
+personal del operador deja de ser una hipótesis con exposición verificada: **cada test corre con HOME,
+XDG y temporales propios**, sus subprocess los heredan, y el producto **resuelve el origen de agentes
+con el HOME vigente** en vez del capturado al importar.
+
+**Contrato:** `docs/specs/008-001-home-xdg-isolation/spec.md` — PC-1..PC-6 con los ajustes AJ1–AJ3,
+más **PC-7** (AJ4) y **PC-8** (AJ5), agregadas el 2026-10-27 a partir del gate. Resultado, cambios,
+evidencia, límites y deuda en `docs/specs/008-001-home-xdg-isolation/closure.md`.
+
+**Qué cambia en el uso real.**
+- **Aislamiento por test, no por familia.** Fixture autouse de alcance function compartida por toda la
+  suite: raíz temporal exclusiva, nueve variables gestionadas (`HOME`, los cinco `XDG_*`, `TMPDIR`,
+  `TMP`, `TEMP`), neutralización de los tres overrides heredados de AJ2, siembra de agentes canónicos y
+  restauración de entorno y `tempfile.tempdir` —también cuando el test falla—. Un fixture de sesión
+  aísla además `setUpClass` y los fixtures de módulo, y fija el `basetemp` de pytest (vía de escape que
+  la review encontró: código de clase corría antes del aislamiento).
+- **El producto resuelve el origen de agentes en el momento de uso.** `cdad_packet.py` deja de
+  capturar `Path.home()` al importar; la precedencia **override → activación → HOME** queda intacta. Sin
+  este cambio la fixture no alcanzaba: la captura ocurría en import, antes de cualquier test.
+- **La cota de despacho tiene dueño, y es el adaptador.** El gate expuso dos fallos **del producto**, no
+  de la suite, que sólo se veían cuando la suite se volvió ejecutable en condiciones reales:
+  (i) `cdad_delegate.py` esperaba al adaptador el mismo `timeout_seconds` que el adaptador administra y,
+  bajo carga, lo mataba justo antes de que emitiera su sobre → el usuario recibía un `timeout` genérico
+  con `session: null`, exactamente lo que PD-11/PD-8 prohíben; ahora espera `cota + margen`
+  (`ADAPTER_WAIT_GRACE_SECONDS = 5.0`) y el diagnóstico nombra el límite efectivo.
+  (ii) `cdad_delegate_opencode.py` calculaba la espera como `cota − preflight_consumido`: si el preflight
+  consumía la cota, despachaba con `0.0 s` y devolvía un timeout falso aunque el cliente respondiera;
+  ahora el deadline de preparación es **agregado** (no se renueva por operación), reserva presupuesto
+  positivo para el cliente y la observación durable, el mínimo útil de espera es proporcional
+  (`max(0.1, 0.2·budget)`) y **no se lanza el cliente** si la preparación agota el presupuesto —el
+  diagnóstico nombra el agotamiento preparatorio, sin fabricar sesión ni recibo.
+- **Cachés de corrida fuera del temporal del test.** `tests/product_staging.py` y los módulos adaptados
+  dejan de escribir cachés en el `TMPDIR` por test.
+
+**Evidencia.** RED del aislamiento `6a116bf` (6 casos por contrato); GREEN/infra `5016b73`, `63ffef7`,
+`82250ee`, `c32c22a`, `02d3f9e`, `9a7d268`; PC-7 `81e0903` (RED) → `c2004eb` (GREEN); PC-8 `49ce9ad`
+(RED) → `e9e27df` → `45d5d99` (mínimo proporcional) → `a519037` (oráculos estrictos y corte en `service`),
+más `23aa06f` y `e588b17` (cotas instrumentales y oráculo de `run` en 006-001/006-003). **19 casos
+nuevos** (8 aislamiento + 3 PC-7 + 6 PC-8 + 2 oráculo de `run`). La corrida completa anterior al gate
+(`attempt-full-1.log`, 19 fallos) sirvió de línea base: los fallos eran el HOME del operador sin agentes
+canónicos, corregido en `02d3f9e`.
+
+**Gate PC-6 — tres corridas completas consecutivas sobre `944b2ef`, árbol limpio (`dirty=0`).**
+Mismos commit, orden, selección y aserciones en las tres; comando registrado en cada log
+(`python3 -m pytest -q -p no:cacheprovider -rs tests`).
+
+| Run | Resultado | Canario (`delta`) | Log |
+|---|---|---|---|
+| 1 | **1741 passed, 5 skipped**, rc=0, 45:19 | 0 | `.cdad/local/008-001/run-1.log` |
+| 2 | **1741 passed, 5 skipped**, rc=0, 46:09 | 0 | `run-2.log` |
+| 3 | **1741 passed, 5 skipped**, rc=0, 57:15 | 0 | `run-3.log` |
+
+Los 5 skips conservan su motivo en el log (`-rs`): dos de `test_005_002_t4_acceptance.py`, uno de
+`test_005_009_t4_acceptance.py`, uno de `test_005_010_t4_integration.py` (PD-8) y uno de
+`test_006_001_t3_integration.py` (PD-6-b) — aceptaciones/integraciones **reales** que exigen variables y
+credenciales del operador, opt-in por diseño. Ningún skip sustituye un verde.
+
+**Decisiones relevantes.**
+1. **Regla por test, no por procedencia histórica.** Fixture autouse transversal en lugar de parches por
+   familia: la regla se aplica a cualquier test nuevo sin que nadie tenga que acordarse. Trade-off
+   asumido: la fixture **no cubre código ejecutado durante colección**, así que las capturas de import
+   se corrigen en el producto (resolución lazy) y no con recargas de módulos — el límite se declara en
+   vez de ocultarse.
+2. **Corregir en el producto, no en los tests.** La captura de `Path.home()` al importar es un defecto
+   del producto; parchear constantes desde tests habría dejado el defecto vivo en producción. Trade-off:
+   una unidad que se presentaba como infraestructura de tests toca **tres archivos de producto**, y se
+   acepta ese costo para que el aislamiento sea real y no un mock.
+3. **Overrides locales preservados (AJ1).** El aislamiento por defecto no impide ejercer fallbacks: un
+   test puede quitar o vaciar una variable gestionada, siempre con recursos sintéticos propios y sin
+   cambiar la precedencia del producto; las variantes se acreditan por **bytes de configuración
+   diferenciada** en cada nivel, no por la existencia de una función nueva.
+4. **Canario por entorno y escrituras observadas, no por promesa de lectura.** PC-4 compara inventario y
+   `mtime_ns` del HOME real antes y después, y prueba su sensibilidad con un control negativo en un HOME
+   externo sintético. Trade-off declarado: **no observa lecturas** ni escrituras transitorias revertidas
+   entre snapshots.
+5. **La cota es del adaptador (PC-7/PC-8).** Wrapper y preflight pasan a ser **redes de seguridad con
+   margen declarado**, y sin presupuesto útil no se despacha. Trade-off: el wrapper deja de cortar
+   rápido—bajo un host muy cargado el fallo tarda hasta `cota + 5 s` en aparecer— a cambio de no perder
+   la sesión ni el sobre que el adaptador sí produce.
+6. **Tres corridas como excepción autorizada** del objetivo específico frente a la regla común de una
+   corrida, autorizada explícitamente en el paquete del closer (spec §2, decisión 5).
+
+**Límites declarados.** El aislamiento por entorno **no es una sandbox**: rutas absolutas y entornos
+explícitos pueden escapar. El canario del gate cubre las rutas nombradas y las entradas de primer nivel
+del HOME, no todo el HOME, y excluye lo que el propio orquestador escribe en vivo (alcance y exclusiones
+declarados en `gate.sh`). Tres corridas verdes son evidencia **acotada** de estabilidad, no prueba de
+ausencia universal de flakiness. PC-7 y PC-8 corrigen los bordes de cota **demostrados**; no prometen que
+todo host cargado responda dentro de cualquier cota.
+
+**Deuda técnica detectada.**
+1. **Techo de «no esperar de más» (para 008-002):** con el fixture compartido en 5 s, las aserciones que
+   distinguen «hecho conocido» de «esperó la cota» toleran hasta 5 s. Conviene un techo propio de 2 s.
+2. **`DESPACHO-SIN-PAQUETE` (media, para 008-004):** en esta unidad sólo discovery y draft de architect
+   se despacharon con paquete; las subfases de test-writer, implementer y reviewer se despacharon sin él.
+   Es la deuda que el plan del epic ya asignaba a 008-004; **no se repara acá** y se declara.
+3. **El gate de evidencia debe preservar intentos:** `gate.sh` escribe nombres fijos (`run-N.log`), así
+   que los logs de los intentos fallidos fueron sobrescritos por el reinicio. Se conservan sus causas
+   (spec AJ4/AJ5 y los commits de corrección), no sus archivos. Defecto de la herramienta, no del
+   producto.
+4. **`make validate` F011:** **preexistente**, no relacionado con esta unidad; no se declara hallazgo
+   nuevo ni se arregla acá.
+5. Heredadas sin cambios: `SUSP-GUARD`/`SUSP-LOCK`/`SUSP-APPROVAL`/`SUSP-IDENTITY`, DT-8/F011, DT-9,
+   `scope_validation: unknown`, W-U6-*, ausencia de CI.
+
+**Despliegue.** Los tres archivos de producto (`cdad_packet.py`, `cdad_delegate.py`,
+`cdad_delegate_opencode.py`) están en la copia instalada **en `b4fd046`**, con respaldo previo y
+verificación de que los agentes de rol conservan su `model:`; comprobado además que los tres scripts
+instalados son byte-idénticos a esa revisión (`sha256`). Sin despliegue pendiente.
+
+**Qué está activo ahora.** **Epic 008 en curso, 1/5.** Siguiente feature: **008-002-suite-by-capability**
+— auditoría de la suite por capacidad/contrato, con inventario mantener/fusionar/eliminar y cobertura por
+postcondición medida; depende de 008-001 (`docs/epics/epic-008-suite-coherence/plan.md`). **Insumos con
+los que arranca:** corridas completas confiables (gate de 008-001: 1741 passed, 5 skipped, rc=0 ×3 sobre
+`944b2ef`, canario 0), el mapeo PC→test que cada `closure.md` conserva (el plan prohíbe perder cobertura
+por postcondición acreditada) y el gate por superficie (`.cdad/local/surface-gate.sh`, declarado como gate
+compartido del epic). **Lo que 008-001 deja y 008-002 debe consumir:** el techo de 2 s del punto 1, la
+preservación de intentos del gate (punto 3) y el hecho de que F011 es preexistente y ajeno (punto 4).
+**Fuera de 008-002:** el decisor unificado de identidad y transiciones es **008-003**; exigir paquete en
+cada subfase de rol es **008-004**; el gate de CI es **008-005**.
+
+---
+
 ## 2026-10-26 — Cierre del epic: epic-007-reliable-cycle-operation (8/8)
 
 **Epic cerrado el 2026-10-26 con 8/8 unidades en `done`**, cada una con su `closure.md`

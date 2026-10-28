@@ -78,8 +78,9 @@ Mapa test → postcondición:
 
   PD-11 (TestPd11RespondsWithinBudget, §2.5/D-3):
     test_pd11_three_variants_respond_within_cota_and_total_budget
-      (hangs, no-idle, transport-error — cota ≤ 2s cada una, presupuesto
-      total del focal ≤ 10s; el envelope nunca es el `did not answer
+      (hangs, no-idle, transport-error — cota ≤ 2s cada una y techo de HOST
+      del total 75 s (>= 10x ≈ 66 s de la conducta correcta, no «total
+      ≤ 10 s»); el envelope nunca es el `did not answer
       within` de la interfaz)
     test_pd11_cota_at_reserve_blocks_before_dispatch
       (timeout_seconds == WAIT_RESERVE_SECONDS → blocked SIN despacho)
@@ -130,7 +131,8 @@ import unittest
 from pathlib import Path
 
 from test_005_009_t1_interface import I8_RECORD_KEYS, dispatch_dir, dispatch_records
-from test_006_001_t1_selection import FakeInfoServer, Pd600T1Case
+from test_006_001_t1_selection import (
+    FakeInfoServer, Pd600T1Case, pc8_preparatory_exhaustion)
 
 # --------------------------------------------------------------- constantes
 
@@ -159,10 +161,38 @@ assert len(IDLE_ERROR_MESSAGE) > 220, "fixture: el mensaje debe superar 200 cara
 
 WAIT_RESERVE_SECONDS = 1.0  # spec §2.5 (constante FIJA del adaptador; no configurable)
 
-HANG_SLEEP_SECONDS = 6       # el cliente que cuelga ignora SIGTERM y duerme esto
-GRANDCHILD_SLEEP_SECONDS = 10  # el nieto duerme MÁS que el cliente (PD-8)
+# 008-005 PC-6 (T-A): separación del fixture agrandada para que el techo de
+# la cota de duración (>= 10x la conducta correcta, ≈ 2,2-4,2 s) siga por
+# DEBAJO del valor que produce el defecto (esperar a que el cliente salga
+# solo). El cliente que cuelga ignora SIGTERM y duerme esto; el nieto
+# duerme MÁS que el cliente (PD-8).
+HANG_SLEEP_SECONDS = 60
+GRANDCHILD_SLEEP_SECONDS = 90
 SLOW_SECONDS = 1.0           # «slow-then-idle»: el cliente tarda esto antes de idle
 LOCK_HOLD_SECONDS = 1.0      # ventana acotada del escritor que bloquea el store
+
+# 008-005 PC-6 (T-A): cotas superiores de duración de este focal. Regla: el
+# techo queda a >= 10x la conducta correcta (cota 2 s + gracia 0,2 s ≈
+# 2,2 s; cota 4 s ≈ 4,2 s) y nunca igual al plazo que vigila.
+# Pérdida declarada (PC-6, review F1): en los sitios cuya promesa es
+# «responde/termina en la cota» (PD-7 y PD-11 ×2 aquí; B3a/B3b en
+# test_006_001_reviewfix.py) el techo mide el HOST, no la cota: una espera
+# acotada pero por ENCIMA de la cota (2x) hoy no es observable (el envelope
+# del producto no expone duración) y queda registrada en deferred-hardening
+# del spec 008-005 en vez de presentarse como guarda «en la cota».
+# - PD-7 (sitios 10 y 11): techo 25 s >= 10x ≈ 22 s; el defecto "settle
+#   usado" (0,1 s, más corto) lo separa la terminación, y el no
+#   acotamiento queda por encima del techo.
+# - PD-8 (sitio 12): cota 4 s; techo 50 s >= 10x ≈ 42-46 s y < el sleep
+#   natural del cliente (HANG_SLEEP_SECONDS = 60 s).
+# - PD-11 (sitios 13-17): techo 25 s >= 10x ≈ 22 s y < el defecto
+#   (NO_IDLE_PD11_WAIT.settle_seconds = 30 s usado en vez de la cota /
+#   sleep natural 60 s / no acotamiento); presupuesto total de las tres
+#   variantes 75 s >= 10x ≈ 66 s y < 3 x defecto.
+PD7_UPPER_SECONDS = 25.0
+PD8_ACTIVE_TERMINATION_UPPER_SECONDS = 50.0
+PD11_UPPER_SECONDS = 25.0
+PD11_TOTAL_UPPER_SECONDS = 75.0
 
 FAST_WAIT_T2 = {
     "poll_initial_seconds": 0.05,
@@ -178,12 +208,14 @@ SETTLE_WAIT_T2 = {
     "terminate_grace_seconds": 0.3,
     "preflight_timeout_seconds": 1,
 }
-# PD-11 «no-idle»: settle_seconds por ENCIMA de la cota de 2s, para que sea
-# LA COTA (no el asentamiento) la que decida (D-3: la carrera real).
+# PD-11 «no-idle»: settle_seconds por ENCIMA de la cota de 2s (30 s, la
+# separación T-A de 008-005 PC-6), para que sea LA COTA (no el asentamiento)
+# la que decida (D-3: la carrera real); si el adaptador usara el
+# asentamiento, quedaría por encima del techo admisible (25 s).
 NO_IDLE_PD11_WAIT = {
     "poll_initial_seconds": 0.05,
     "poll_max_seconds": 0.2,
-    "settle_seconds": 10,
+    "settle_seconds": 30,
     "terminate_grace_seconds": 0.2,
     "preflight_timeout_seconds": 1,
 }
@@ -897,6 +929,15 @@ class TestPd7FailureAndAbsence(Pd600T2Case):
         elapsed = time.monotonic() - started
         out = self.envelope(proc, "PD-7 fila no idle servidor")
 
+        # PC-8: la cota (2s) es el sujeto y se conserva; si la preparación
+        # la agotó, la clasificación válida es el no despacho — acotado.
+        if pc8_preparatory_exhaustion(self, out, fake, "PD-7"):
+            self.assertLess(elapsed, PD7_UPPER_SECONDS,
+                            msg=f"PD-7 (008-005 T-A, sitio 10, PC-6): el "
+                                f"no despacho quedó desacotado "
+                                f"({elapsed:.2f}s >= {PD7_UPPER_SECONDS}s)")
+            return
+
         self.assertEqual(
             out["termination"], "timeout",
             msg=f"fila no idle en SERVIDOR: la terminación no es "
@@ -908,10 +949,20 @@ class TestPd7FailureAndAbsence(Pd600T2Case):
             msg=f"terminó demasiado rápido ({elapsed:.2f}s): parece haber "
                 f"usado settle_seconds=0.1s en vez de esperar la cota "
                 f"(PD-7: en servidor, settle_seconds se ignora)")
+        # 008-005 PC-6 (T-A, sitio 11, review F1): este techo mide el HOST
+        # (25 s >= 10x ≈ 2,2 s de la conducta correcta), NO la cota de 2 s.
+        # La discriminación «acotada por encima de la cota» (2x) no es
+        # observable hoy (el envelope no expone duración) y queda como
+        # pérdida declarada en deferred-hardening: no se presenta como
+        # guarda «en la cota».
         self.assertLess(
-            elapsed, 3.0,
-            msg=f"la espera en servidor quedó DESACOTADA ({elapsed:.2f}s "
-                f">= margen sobre la cota de 2s)")
+            elapsed, PD7_UPPER_SECONDS,
+            msg=f"PD-7 (008-005 T-A, sitio 11, PC-6): el host excedió el "
+                f"techo de liveness ({elapsed:.2f}s >= "
+                f"{PD7_UPPER_SECONDS}s; el techo mide el host, >= 10x la "
+                f"conducta correcta ≈ 2,2 s, no la cota de 2 s); la "
+                f"discriminación «acotada por encima de la cota» no es "
+                f"observable hoy: pérdida declarada en deferred-hardening")
         self.assert_no_receipt_fabricated("PD-7 fila no idle servidor")
 
 
@@ -936,9 +987,13 @@ class TestPd8CorrelationAndOrderedTermination(Pd600T2Case):
         cliente ya hubiera salido por su cuenta)."""
         self.assert_derived_agents_published()
         fake = self.own_fake_runtime("pd8-hangs", variant="hangs")
+        # Cota instrumental (PC-8): el sujeto es la terminación ordenada del
+        # grupo; 4s deja presupuesto útil y sigue muy por debajo del sleep
+        # natural del cliente (HANG_SLEEP_SECONDS) y del techo de 50 s de
+        # 008-005 (evidencia de corte ACTIVO, aserción final intacta).
         self.patch_config(
             fake, {"mode": "standalone",
-                   "wait": {**HANGS_WAIT, "timeout_seconds": 2}})
+                   "wait": {**HANGS_WAIT, "timeout_seconds": 4}})
 
         started = time.monotonic()
         proc = self.dispatch(fake)
@@ -974,11 +1029,13 @@ class TestPd8CorrelationAndOrderedTermination(Pd600T2Case):
         self.assert_pid_not_alive(grandchild_pid, "PD-8 nieto")
 
         self.assertLess(
-            elapsed, HANG_SLEEP_SECONDS - 1,
-            msg=f"la respuesta tardó {elapsed:.2f}s (≈ el sleep natural "
-                f"del cliente de {HANG_SLEEP_SECONDS}s): no hay evidencia "
-                f"de terminación ACTIVA por cota, solo de esperar a que "
-                f"el proceso saliera solo (PD-8/PD-11)")
+            elapsed, PD8_ACTIVE_TERMINATION_UPPER_SECONDS,
+            msg=f"PD-8 (008-005 T-A, sitio 12, PC-6): la respuesta tardó "
+                f"{elapsed:.2f}s >= "
+                f"{PD8_ACTIVE_TERMINATION_UPPER_SECONDS}s: no hay evidencia "
+                f"de terminación ACTIVA por cota, solo de esperar a que el "
+                f"proceso saliera solo ({HANG_SLEEP_SECONDS}s) "
+                f"(PD-8/PD-11)")
         self.assert_no_receipt_fabricated("PD-8 hangs")
 
 
@@ -1262,8 +1319,12 @@ class TestPd11RespondsWithinBudget(Pd600T2Case):
         de la cota: es LA COTA la que decide, D-3) y `transport-error`,
         cada una con su PROPIO proyecto/store (TestPd6 precedent: un
         registro previo no idle de la variante anterior no debe
-        PD-9-bloquear la siguiente), cota ≤ 2s cada una; el presupuesto
-        TOTAL del focal (las tres) es ≤ 10s."""
+        PD-9-bloquear la siguiente), cota ≤ 2s cada una; el techo de HOST
+        del total (las tres) es `PD11_TOTAL_UPPER_SECONDS` = 75 s
+        (>= 10x ≈ 66 s de la conducta correcta), no «total ≤ 10 s»: la
+        discriminación «acotada por encima de la cota» no es observable hoy
+        y queda como pérdida declarada en deferred-hardening (008-005
+        PC-6, review F1/F7)."""
         total_elapsed = 0.0
         cases = (
             ("hangs", "hangs", HANGS_WAIT, "timeout"),
@@ -1283,6 +1344,15 @@ class TestPd11RespondsWithinBudget(Pd600T2Case):
                 elapsed = time.monotonic() - started
                 total_elapsed += elapsed
                 out = self.envelope(proc, f"PD-11 {label}")
+                # PC-8: la cota (2s) es el sujeto y se conserva; si la
+                # preparación la agotó, el no despacho acotado es válido.
+                if pc8_preparatory_exhaustion(self, out, fake,
+                                              f"PD-11 {label}"):
+                    self.assertLess(elapsed, PD11_UPPER_SECONDS,
+                                    msg=f"[{label}] (008-005 T-A, sitio 13, "
+                                        f"PC-6) desacotado ({elapsed:.2f}s "
+                                        f">= {PD11_UPPER_SECONDS}s)")
+                    continue
 
                 diagnosis = (out.get("diagnosis") or "").lower()
                 self.assertNotIn(
@@ -1295,15 +1365,26 @@ class TestPd11RespondsWithinBudget(Pd600T2Case):
                     msg=f"[{label}] terminación inesperada: "
                         f"{out['termination']!r} != {expected!r}, "
                         f"diagnosis {out.get('diagnosis')!r}")
+                # 008-005 PC-6 (T-A, sitio 14, review F1): el techo mide el
+                # HOST (25 s >= 10x ≈ 2,2 s de la conducta correcta), no la
+                # cota de 2 s; la espera acotada por encima de la cota no
+                # es observable hoy (pérdida declarada en
+                # deferred-hardening).
                 self.assertLess(
-                    elapsed, 2.5,
-                    msg=f"[{label}] el adaptador tardó {elapsed:.2f}s, "
-                        f"por encima de la cota de 2s + margen (PD-11: "
-                        f"responde SIEMPRE dentro de la cota)")
+                    elapsed, PD11_UPPER_SECONDS,
+                    msg=f"[{label}] (008-005 T-A, sitio 14, PC-6) el host "
+                        f"excedió el techo de liveness: {elapsed:.2f}s >= "
+                        f"{PD11_UPPER_SECONDS}s (el techo mide el host, "
+                        f">= 10x la conducta correcta ≈ 2,2 s, no la cota "
+                        f"de 2 s; la discriminación «acotada por encima de "
+                        f"la cota» no es observable hoy: pérdida declarada "
+                        f"en deferred-hardening)")
         self.assertLess(
-            total_elapsed, 10.0,
-            msg=f"presupuesto total del focal PD-11 excedido: "
-                f"{total_elapsed:.2f}s >= 10s (una ejecución por "
+            total_elapsed, PD11_TOTAL_UPPER_SECONDS,
+            msg=f"PD-11 (008-005 T-A, sitio 15, PC-6): presupuesto total "
+                f"del focal excedido: {total_elapsed:.2f}s >= "
+                f"{PD11_TOTAL_UPPER_SECONDS}s (75 s >= 10x ≈ 66 s de la "
+                f"conducta correcta y < 3 x el defecto; una ejecución por "
                 f"variante)")
 
     def test_pd11_cota_at_reserve_blocks_before_dispatch(self) -> None:
@@ -1357,6 +1438,15 @@ class TestPd11RespondsWithinBudget(Pd600T2Case):
         elapsed = time.monotonic() - started
         out = self.envelope(proc, "PD-11 completed servidor con preflight")
 
+        # PC-8: la cota (2s) es el sujeto y se conserva; si la preparación
+        # la agotó, la clasificación válida es el no despacho — acotado.
+        if pc8_preparatory_exhaustion(self, out, fake, "PD-11"):
+            self.assertLess(elapsed, PD11_UPPER_SECONDS,
+                            msg=f"PD-11 (008-005 T-A, sitio 16, PC-6): el "
+                                f"no despacho quedó desacotado "
+                                f"({elapsed:.2f}s >= {PD11_UPPER_SECONDS}s)")
+            return
+
         diagnosis = (out.get("diagnosis") or "").lower()
         self.assertNotIn(
             "did not answer within", diagnosis,
@@ -1367,12 +1457,18 @@ class TestPd11RespondsWithinBudget(Pd600T2Case):
             msg=f"camino completed en modo servidor con preflight: "
                 f"{out['termination']!r}, diagnosis "
                 f"{out.get('diagnosis')!r}")
+        # 008-005 PC-6 (T-A, sitio 17, review F1): el techo mide el HOST
+        # (25 s >= 10x ≈ 2,2 s de la conducta correcta), no la cota de 2 s;
+        # la discriminación «acotada por encima de la cota» no es
+        # observable hoy: pérdida declarada en deferred-hardening.
         self.assertLess(
-            elapsed, 2.5,
-            msg=f"el despacho en modo servidor CON preflight tardó "
-                f"{elapsed:.2f}s, por encima de la cota de 2s + margen "
-                f"(PD-11/D-3: la latencia extra del preflight+registro "
-                f"no debe romper la cota)")
+            elapsed, PD11_UPPER_SECONDS,
+            msg=f"PD-11 (008-005 T-A, sitio 17, PC-6): el host excedió el "
+                f"techo de liveness: {elapsed:.2f}s >= "
+                f"{PD11_UPPER_SECONDS}s (el techo mide el host, >= 10x la "
+                f"conducta correcta ≈ 2,2 s, no la cota de 2 s; la "
+                f"discriminación «acotada por encima de la cota» no es "
+                f"observable hoy: pérdida declarada en deferred-hardening)")
 
 
 if __name__ == "__main__":

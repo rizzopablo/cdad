@@ -14,13 +14,33 @@ Feature tests verify **behavioral postconditions (the contract)**, not implement
 
 **Property tests are NOT the same question as exhaustive coverage** — when the spec marks explicit invariants (sub-phase 3.4), the property test verifies THAT specific invariant, it does not maximize cases. The contradiction to avoid: reading the sentence above as "there are no property tests in the feature cycle" collides head-on with sub-phase 3.4 below, which does have them with their own gate. What falls outside the cycle is generating property tests for the sake of coverage (with no spec invariant behind them), not the ones the spec explicitly asks for.
 
-**RED verifies the requirement, it does not maximize coverage.** A test-writer who, facing a postcondition, writes a battery of unrequested edge cases, or a property test with generators exceeding what the spec demands, causes two harms: tests extremely hard or impossible to satisfy that consume time and tokens in GREEN iterations without reaching a result, and a "done" criterion that is no longer the spec but the test-writer's imagination. Every RED test (and every property test) must be able to point to the exact numbered postcondition it verifies; if it cannot, it is superfluous — the same "Relevance" rule below, also applied upward: no postcondition triggers more tests than it itself asks for.
+**RED verifies the requirement, it does not maximize coverage.** Selection and its justification are rule R2 — single editable definition `sources/roles/test-writer.md` (`cdad-shared:convention-rule`): read it there for what to write, how to trace it and what to declare. This reference applies R2 to the stage and never restates its obligations; the application is what follows. What the stage prevents is concrete: facing a postcondition, a battery of unrequested edge cases or a property test with generators the spec never asked for produces tests extremely hard or impossible to satisfy, consuming time and tokens in GREEN iterations without reaching a result, and replaces the spec's "done" criterion with the test-writer's imagination. So every RED test (and every property test) must be able to point to the promise it serves and to the numbered postconditions it protects; if it cannot, it is superfluous — the same "Relevance" rule below.
 
-**Acceptance criterion of a feature**: its postcondition verified by behavior tests, not a coverage percentage.
+**"Not a ceiling" (AJ2) is owned by R2, not by this file.** Whether a distinct committed behaviour needs more tests, and what equivalence forbids, are read in the rule's home; a promotion with a recorded reason is read in the gate's home (R4, `sources/roles/orchestrator.md`). This reference neither restates nor narrows either.
 
-**Relevance of tests**: every test written must map to a postcondition of the spec. Tests are not written for completeness or for coverage; they are written because they verify a declared objective. If a test does not map to a postcondition, it is superfluous — record it in a test↔postcondition traceability audit (see "Relevance audit" below).
+**Acceptance criterion of a feature**: every promise the spec commits is verified by behavior before the feature is accepted — not a coverage percentage, and not a count of tests.
+
+**Relevance of tests**: every test written must serve a committed promise and trace to the numbered postconditions it protects. Tests are not written for completeness or for coverage; they are written because they verify a declared objective. If a test serves no promise, it is superfluous — record it in a test↔promise/postcondition traceability audit (see "Relevance audit" below).
 
 **Mandatory counterpart**: since there are no exhaustive tests, the burden of precision moves to the spec; it does not disappear. The functional objectives, specifications, and requirements must be **maximally clear** — numbered, testable postconditions — before opening RED (see Stage 2). An ambiguous spec produces ambiguous tests and an incorrect implementation that still passes the suite (AP-13, Garbage Cascade).
+
+### Counterweight: reducing redundancy does not reduce guarantees (R7)
+
+R7 — the single editable home of this counterweight; the consumers cite it and
+never restate it:
+
+- Every promise the spec commits is verified by behavior before the feature is
+  accepted. Reducing redundancy reduces the **number of tests**, never the
+  guarantees.
+- One test may verify several postconditions: that is many-to-one traceability,
+  not a missing verification.
+- `deferred-hardening` never allows postponing a committed promise, and never
+  relaxes security, integrity or data preservation. What it defers is hardening
+  (extra variants, load/perf, edge cases with no committed promise), with its
+  reason recorded.
+- The exceptional promotions — a test demanded with no user consequence — are
+  defined ONLY in the gate's home (R4, `sources/roles/orchestrator.md`). This
+  file does not define them again.
 
 ### Relevance audit (avoiding self-service)
 
@@ -73,13 +93,13 @@ Reference: "Position: LLMs Can't Jump" (Zahavy, https://tomzahavy.com/files/llms
 
 You do NOT write tests, you do NOT implement, you do NOT refactor. You coordinate:
 
-1. Identify which postcondition is next (the first pending one, or an orthogonal grouping if the spec allows it).
+1. Identify which promise is next (the next promise with pending postconditions, or an orthogonal grouping of promises if the spec allows it).
 2. Emit handoff to **test-writer** (RED).
 3. Validate the red test at re-entry.
 4. Emit handoff to **implementer** (GREEN).
 5. Validate the green suite at re-entry.
 6. Optionally: handoff to **refactorer** if there is evident friction.
-7. Loop until all postconditions are covered.
+7. Loop until every committed promise is verified.
 8. If the spec marks invariants: handoff to **test-writer in properties mode**.
 9. If the spec marks E2E criteria: handoff to **test-writer in E2E mode**.
 10. Stage closure when all gates pass.
@@ -98,16 +118,21 @@ You do NOT write tests, you do NOT implement, you do NOT refactor. You coordinat
 
 Load `references/handoff-prompts.md` section "Test-writer (Stage 3 — RED)".
 
-Before generating the packet, decide which postcondition to tackle:
+Before generating the packet, decide which promise to tackle (R2: the unit of
+selection is the promise it defines, applied here to the sub-phase):
 
-- The first pending postcondition of the spec.
-- Or a grouping of **orthogonal** postconditions (independent code paths that don't overlap). If they are coupled, one per cycle.
+- The next promise of the spec with pending postconditions.
+- Or a grouping of **orthogonal** promises (independent code paths that don't overlap). If they are coupled, one per cycle.
+
+Before approving RED, apply the gate rule R4 (`sources/roles/orchestrator.md`):
+ask and record "what breaks for the user without this test?" — with no answer
+the test does not enter as an ordinary requirement.
 
 Generate the packet with:
 - The complete approved spec.
 - Interface / signature of the module.
 - Testing conventions (`docs/systemPatterns.md`).
-- The specific postcondition to verify.
+- The promise to verify and the numbered postconditions it protects.
 - Explicit reminder: observable-contract test, not internal structure — no mocks over plumbing (see "Test convention" above).
 
 Deliver the packet, end the turn.
@@ -226,23 +251,24 @@ Handoff to test-writer in E2E mode.
 
 If mode B and E2E red: assembly problem. Handoff to implementer.
 
-## Loop between postconditions
+## Loop between promises
 
-Each time the GREEN (+ optional REFACTOR) of a postcondition closes, you decide:
+Each time the GREEN (+ optional REFACTOR) of a promise closes, you decide:
 
-- Are there pending postconditions? → handoff to test-writer (RED) with the next one.
+- Are there promises with pending postconditions? → handoff to test-writer (RED) with the next promise.
 - Are all green and the spec marks invariants? → handoff to properties.
 - Are properties green and the spec marks E2E? → handoff to E2E (mode B) or verify the E2E that was already in place (mode A).
-- All green? → stage closure.
+- Every committed promise verified? → stage closure (R7; the spec's `deferred-hardening` does not replace a pending promise).
 
 ## 🛑 Exit gate (Stage 3 → Stage 4)
 
 - [ ] Test Audit completed and approved (a `test-audit.md` exists with benefit of the doubt resolved, if applicable).
 - [ ] Every modified test has an explicit justification in spec.md.
-- [ ] Every postcondition of the spec has at least one test verifying it.
-- [ ] Every test written maps to a postcondition (no tests "for completeness").
+- [ ] Every committed promise of the spec is verified by behavior — a test may verify several postconditions (R7).
+- [ ] Every test written serves a committed promise and traces to its postconditions (no tests "for completeness").
 - [ ] No test depends on internal structure (no mocks over plumbing).
 - [ ] The test↔postcondition mapping audited by a session other than the one that wrote the tests.
+- [ ] The spec's `deferred-hardening` records every deferral decided, with its reason.
 - [ ] Suite green (verified empirically with the run output pasted by the user).
 - [ ] If the spec marks invariants → property tests green.
 - [ ] If the spec marks E2E criteria → E2E tests green.

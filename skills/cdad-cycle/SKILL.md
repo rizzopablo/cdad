@@ -69,7 +69,7 @@ the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 | architect | 1, 2 | technical mapping + Socratic brainstorm + spec draft | everything | nothing | does not approve spec (user) | `docs/specs/<id>/spec.md` (draft) |
 | test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits existing suite, registers test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) |
 | test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **Does NOT see `src/` or implementation code** | tests in `tests/` |
-| implementer | 3.2 | minimal code that makes the test pass | spec, tests, interface | implementation code | **NOT `tests/**`** | diff/commits |
+| implementer | 3.2 | simple implementation of the approved behaviour with reasonable robustness | spec, tests, interface | implementation code | **NOT `tests/**`** | diff/commits |
 | refactorer | 3.3 | cleans code keeping the suite green (runs as cdad-implementer REFACTOR sub-mode) | full suite | implementation code | **NOT `tests/**`**, suite always green | diff |
 | reviewer | 4 | report of findings against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` |
 | scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) |
@@ -109,16 +109,16 @@ feature's acceptance criterion.
   the spec explicitly marks (sub-phase 3.4) do belong to the cycle —
   what falls outside is generating property tests for coverage's sake, with no
   spec invariant behind them.
-- **RED verifies the requirement, it does not maximize coverage.** Each test (and
-  each property test) points to the numbered postcondition it verifies; if it
-  can't, it is superfluous. A test-writer that over-specifies beyond the spec produces
-  tests that are hard or impossible to satisfy — time and tokens wasted in
-  GREEN without a result. Detail in `references/stage-3-tdd.md`.
-- **A feature's acceptance criterion:** a postcondition verified by
-  behavioral tests, not a coverage percentage.
-- **Relevance:** each test maps to a postcondition of the spec. No
-  tests get written for completeness or coverage; if a test doesn't map to a
-  postcondition, it is superfluous.
+- **RED verifies the requirement, it does not maximize coverage.** Selection and
+  relevance are R2 (`sources/roles/test-writer.md`,
+  `cdad-shared:convention-rule`): a test (and each property test) that cannot
+  point to the promise it serves and to the postconditions it protects is
+  superfluous. A test-writer that over-specifies beyond the spec produces tests
+  that are hard or impossible to satisfy — time and tokens wasted in GREEN
+  without a result. Detail in `references/stage-3-tdd.md`.
+- **A feature's acceptance criterion** is R7
+  (`references/stage-3-tdd.md`): every promise the spec commits is verified by
+  behavior before acceptance — not a coverage percentage and not a count of tests.
 - **Mandatory counterpart:** with no exhaustive tests, the precision
   burden moves to the spec (it doesn't disappear). Numbered and
   testable postconditions, maximally clear, before RED opens. Ambiguous spec → tests

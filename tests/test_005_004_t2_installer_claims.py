@@ -165,6 +165,7 @@ from tests.test_install_ownership import (
 # Oráculo único de AUSENCIA del requisito de familia/modelo del reviewer (A-5),
 # compartido con las demás superficies (definición única en u2).
 from tests.test_006_002_u2_neutral_skill import all_offenders
+from tests.product_staging import run_scoped_mkdtemp
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -666,7 +667,7 @@ def test_pd5_adapter_references_the_exemption_source_instead_of_copying_it():
 def _sandbox_root() -> Path:
     """Copia temporal del repo (nunca el checkout real) para generar staging
     por perfil y ejecutar el instalador: el fixture no escribe en el repo."""
-    tmp = Path(tempfile.mkdtemp(prefix="cdad-t2-sandbox-"))
+    tmp = Path(run_scoped_mkdtemp("cdad-t2-sandbox-"))
     atexit.register(shutil.rmtree, tmp, ignore_errors=True)
     sandbox = tmp / "product"
     shutil.copytree(

@@ -92,6 +92,7 @@ from pathlib import Path
 # Oráculo único de AUSENCIA del requisito de familia/modelo del reviewer (A-5),
 # compartido con las demás superficies (definición única en u2).
 from tests.test_006_002_u2_neutral_skill import all_offenders
+from tests.product_staging import run_scoped_mkdtemp
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -180,7 +181,7 @@ def staging_root() -> Path:
     """
     global _STAGING_ROOT
     if _STAGING_ROOT is None:
-        tmp = tempfile.mkdtemp(prefix="cdad-006-002-u1-")
+        tmp = run_scoped_mkdtemp("cdad-006-002-u1-")
         atexit.register(shutil.rmtree, tmp, ignore_errors=True)
         copy = Path(tmp) / "product"
         shutil.copytree(

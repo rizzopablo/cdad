@@ -19,12 +19,18 @@
 #      `install.sh --check` (comparison logic is not duplicated).
 #   3. artifacts — enumerates and verifies the 5 artifacts per stage of the CDAD
 #      cycle in docs/specs/cdad-001-validate-subagents/artifacts/.
-#   4. models — ABSENCE invariant (006-003 PD-1e/INV-3): no installed agent
-#      declares `model:`. The profile model map and the per-profile model cells
-#      were RETIRED (006-003 PD-1c): the model of each role is the one configured
-#      in the runtime, and the reviewer≠implementer family invariant is a
-#      CONFIGURATION verification (guaranteed by configuration or declared by the
-#      review gate — never silent, INV-5), not a check this script performs.
+#   4. models — ABSENCE invariant on INSTALLABLE text (006-003 PD-1e/INV-3,
+#      re-scoped by 009-001 D4): no agent CDAD distributes (this repo's agents/
+#      and the staging tree the installer deploys) declares `model:`. The
+#      profile model map and the per-profile model cells were RETIRED
+#      (006-003 PD-1c): the model of each role is the one configured in the
+#      runtime, and the reviewer≠implementer family invariant is a
+#      CONFIGURATION verification (guaranteed by configuration or declared by
+#      the review gate — never silent, INV-5), not a check this script performs.
+#      An agent ALREADY INSTALLED may carry the user's overlay (`model:`):
+#      009-001 turns that copy into the user's configuration, so it is
+#      REPORTED here and never fails — the overlay semantics live only in
+#      scripts/agent-overlay.py, which this validator consumes.
 #
 # Exit: 0 if and only if ALL verifications pass; != 0 on any failure, printing
 # what failed. Read-only: idempotent by design.
@@ -72,6 +78,11 @@ ART_DIR="$SPEC_DIR/artifacts"
 RUNTIME_DIR="$INSTALL_ROOT/.config/opencode/agents"
 INSTALL_SH="$REPO_ROOT/install.sh"
 PACKET_CLI="$REPO_ROOT/skills/cdad-cycle/scripts/cdad_packet.py"
+# 009-001: the ONE owner of the user-owned overlay semantics (the frontmatter
+# keys the user configures, today `model:`). This validator consumes it to tell
+# INSTALLABLE text (where those keys are forbidden) from the INSTALLED copies
+# (where they are the user's configuration and merely get reported).
+AGENT_OVERLAY_PY="$REPO_ROOT/scripts/agent-overlay.py"
 if [ -n "$EXECUTION_CONTEXT" ]; then
   if ! command -v python3 >/dev/null 2>&1; then
     echo "ERROR: python3 is required to validate the execution context" >&2
@@ -174,29 +185,55 @@ if [ -f "$ART_DIR/review.md" ] && grep -q "^Reviewer model: " "$ART_DIR/review.m
 if [ -f "$ART_DIR/memory-bank.md" ] && grep -qE "^##? .*2026|^[0-9]{4}-[0-9]{2}-[0-9]{2}" "$ART_DIR/memory-bank.md"; then
   stage scribe "memory-bank.md" 0; else stage scribe "memory-bank.md" 1; fi
 
-# --- Stage 4: no installable text fixes a model (006-003 PD-1e/INV-3) ---------
-echo "[models] no installed agent fixes a model"
+# --- Stage 4: no INSTALLABLE text fixes a model (006-003 PD-1e/INV-3) ---------
+echo "[models] installable text carries no model: declaration"
+# 009-001 D4 (re-scope). The invariant is about what CDAD DISTRIBUTES, not about
+# what the user configures: `model:` is forbidden in installable text — the
+# canonical agents of this repo and the staging tree the installer deploys (the
+# generated outputs) — while an agent ALREADY INSTALLED may carry the user's
+# overlay, which is reported below and never fails.
+#
 # 006-003 (U1) RETIRED the per-profile model map and the per-runtime model
-# cells: the model of each role is the one configured in the runtime, and
-# CHOOSING a model is not an orchestration decision. The reviewer!=implementer
-# family invariant stops being a map comparison here: it is a CONFIGURATION
-# verification (guaranteed by configuration, or declared — never silent,
-# INV-5), owned by the review gate. What this stage verifies is the absence
-# invariant on the INSTALLED bytes: no agent, orchestrator included, declares
-# `model:`.
-MODEL_DECLARERS=0
-for a in "${AGENTS[@]}"; do
-  if [ -f "$RUNTIME_DIR/$a.md" ] && grep -q '^model:' "$RUNTIME_DIR/$a.md"; then
-    fail "$a.md declares model: (no installable text fixes a model — 006-003 PD-1e/INV-3)"
-    MODEL_DECLARERS=$((MODEL_DECLARERS + 1))
-  fi
+# cells: CHOOSING a model is not an orchestration decision, and the
+# reviewer!=implementer family invariant is a CONFIGURATION verification
+# (guaranteed by configuration, or declared — never silent, INV-5), owned by the
+# review gate. This stage verifies the distribution side only.
+INSTALLABLE_ROOTS=("$REPO_ROOT/agents" "$REPO_ROOT/build/staging/agents")
+INSTALLABLE_VIOLATIONS=0
+for installable in "${INSTALLABLE_ROOTS[@]}"; do
+  [ -d "$installable" ] || continue
+  while IFS= read -r -d '' f; do
+    # INV-2 (009-001): the key list and its recognition belong to the ONE owner,
+    # scripts/agent-overlay.py. This stage ASKS it which user-owned keys a file
+    # declares — no key name and no matching rule is restated here, so adding a
+    # key to the list extends this check without touching the validator.
+    if ! declared=$(python3 "$AGENT_OVERLAY_PY" extract "$f" 2>&1); then
+      fail "installable text is not a well-formed agent (${declared}): ${f#"$REPO_ROOT"/}"
+      INSTALLABLE_VIOLATIONS=$((INSTALLABLE_VIOLATIONS + 1))
+    elif [ -n "$declared" ]; then
+      fail "installable text declares a user-owned key (${declared//$'\n'/, }): ${f#"$REPO_ROOT"/} (009-001 D4: no installable surface fixes a user-owned value — 006-003 PD-1e/INV-3)"
+      INSTALLABLE_VIOLATIONS=$((INSTALLABLE_VIOLATIONS + 1))
+    fi
+  done < <(find "$installable" -type f -name '*.md' -print0)
 done
-if [ -f "$RUNTIME_DIR/cdad-orchestrator.md" ] && grep -q '^model:' "$RUNTIME_DIR/cdad-orchestrator.md"; then
-  fail "cdad-orchestrator.md declares model: (the user picks it at selection)"
-  MODEL_DECLARERS=$((MODEL_DECLARERS + 1))
+if [ "$INSTALLABLE_VIOLATIONS" -eq 0 ]; then
+  ok "models OK (no installable text declares a user-owned key; the reviewer family invariant is a configuration verification — 006-003 PD-1e/INV-3)"
 fi
-if [ "$MODEL_DECLARERS" -eq 0 ]; then
-  ok "models OK (no agent fixes a model; the reviewer family invariant is a configuration verification — 006-003 PD-1e/INV-3)"
+
+# Installed copies are the USER's configuration (009-001 PC-5/PC-6): an overlay
+# found there is disclosed — never a failure, and never confused with the
+# installable text above. The overlay semantics belong to the one owner,
+# scripts/agent-overlay.py; this stage only reports what it extracts.
+if [ ! -f "$AGENT_OVERLAY_PY" ]; then
+  fail "user-owned overlay helper missing: scripts/agent-overlay.py (009-001: the overlay semantics have exactly one owner)"
+else
+  for a in "${AGENTS[@]}" cdad-orchestrator; do
+    if [ -f "$RUNTIME_DIR/$a.md" ] && \
+       overlay=$(python3 "$AGENT_OVERLAY_PY" extract "$RUNTIME_DIR/$a.md" 2>/dev/null) && \
+       [ -n "$overlay" ]; then
+      ok "$a.md keeps the user's overlay ($overlay) — installed copy, user-owned configuration"
+    fi
+  done
 fi
 
 # --- Verdict -----------------------------------------------------------------

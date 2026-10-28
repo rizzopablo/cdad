@@ -242,8 +242,8 @@ Composed rows (sources/roles/*.md — composed by the generator; every row is th
 | Role | Stages | Does | May read | May edit | Never touches | Artifact |
 |---|---|---|---|---|---|---|
 | architect | 1 Discovery, 2 Spec | technical mapping + Socratic brainstorm + spec draft (+ plan.md for complex features) | everything | nothing  | the product; does NOT approve its own spec/plan (user approval) | spec draft + plan draft as FINAL TEXT (orchestrator/user materialize `docs/specs/<id>/{spec,plan}.md` — ADR-003) |
-| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per postcondition, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | minimal code that makes the approved test pass; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per observable user promise (never per postcondition, symmetry or coverage), traced to the numbered postconditions it protects, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
 | reviewer | 2 Spec, 4 Review | systematic adversarial review of the diff against the approved spec, and of an unapproved draft (spec or plan) | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003); `plan-review.md` for the draft review (orchestrator materializes) |
 | scribe | 5      | Memory Bank update drafts faithful to the evidence | spec, diff, review, Memory Bank | nothing (draft as FINAL TEXT) | commits and approval (user approves; orchestrator executes the git) | three Memory Bank drafts (orchestrator materializes — ADR-003) |
 | orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
@@ -331,11 +331,19 @@ is the supervision mechanism, not an allowlist.
 
 ## Test convention
 
+RED gate (R4 — the single editable home of this rule; the exceptional promotions
+are defined ONLY here):
+- Before approving RED, ask and RECORD the answer to: "what breaks for the user
+  without this test?". With no answer the test does not enter as an ordinary
+  requirement: it goes to `deferred-hardening` with its reason.
+- A promotion — a test demanded with no user consequence — is allowed only for
+  security, integrity or silent data loss, or an evident regression expensive to
+  discover late, and it requires the recorded reason.
 Test convention (pointer): single editable definition in
-sources/roles/test-writer.md (cdad-shared:convention-rule); detail:
-`skills/cdad-cycle/references/stage-3-tdd.md`. The orchestrator applies it
-when validating RED/gates: observable contract, not coverage; no mocks over
-plumbing; every test maps to a postcondition (drift checks AP-13/AP-14).
+sources/roles/test-writer.md (cdad-shared:convention-rule); detail and the
+acceptance counterweight in `skills/cdad-cycle/references/stage-3-tdd.md`. The
+orchestrator applies selection rule R2 and counterweight R7 when validating
+RED/gates; it never restates them (drift checks AP-13/AP-14).
 
 ## Capacity (ADR-011)
 

@@ -37,7 +37,7 @@ Only Python 3 stdlib is used; no workflow engine, blob store or cache.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import fnmatch
 import hashlib
 import json
@@ -58,6 +58,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cdad_packet  # noqa: E402
 import cdad_continuity  # noqa: E402
+import cdad_lifecycle  # noqa: E402
 
 
 class ResultError(ValueError):
@@ -172,6 +173,12 @@ def _sha256(data: bytes) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _today() -> date:
+    """The evaluation date this consumer hands to the pure core: the clock is
+    read HERE, never inside the decision (§4.1)."""
+    return datetime.now(timezone.utc).date()
 
 
 def _cwd_path(raw: str) -> Path:
@@ -454,27 +461,34 @@ def _load_durable_receipt(final_dir: Path) -> dict[str, Any] | None:
     return receipt
 
 
-def _require_identical_result(durable: dict[str, Any], source: dict[str, Any],
-                              parts: list[dict[str, Any]]) -> None:
-    """Raise a conflict diagnostic unless the incoming result is identical."""
-    if durable.get("source") != source:
-        raise ResultError(
-            "conflict: the incoming source differs from the durable receipt; "
-            "refusing to overwrite the existing finalization")
+def _receipt_decision(durable: dict[str, Any], source: dict[str, Any],
+                      parts: list[dict[str, Any]]) -> cdad_lifecycle.Decision:
+    """§4.4 receipt domain: the FACTS of the comparison are gathered here (the
+    durable source and parts against the incoming ones); whether they produce an
+    accredited repeat or a conflict — and the diagnostic of that conflict — is
+    the shared core's decision (`cdad_lifecycle.decide_receipt`)."""
     durable_parts = {part["name"]: part for part in durable.get("parts", [])}
     incoming = {part["name"]: part for part in parts}
-    if set(durable_parts) != set(incoming):
-        raise ResultError(
-            "conflict: the incoming part set differs from the durable receipt; "
-            "refusing to overwrite the existing finalization")
-    for name, part in incoming.items():
-        stored = durable_parts[name]
-        if (stored.get("sha256") != part["sha256"]
-                or stored.get("bytes") != part["bytes"]
-                or stored.get("artifact_kind") != part["artifact_kind"]):
-            raise ResultError(
-                f"conflict: incoming part {name!r} differs from the durable receipt "
-                f"(digest/bytes/kind); refusing to overwrite the existing finalization")
+    divergent = sorted(
+        name for name, part in incoming.items()
+        if name in durable_parts
+        and (durable_parts[name].get("sha256") != part["sha256"]
+             or durable_parts[name].get("bytes") != part["bytes"]
+             or durable_parts[name].get("artifact_kind") != part["artifact_kind"]))
+    return cdad_lifecycle.decide_receipt(
+        durable=True,
+        source_differs=durable.get("source") != source,
+        part_set_differs=set(durable_parts) != set(incoming),
+        divergent_parts=divergent)
+
+
+def _require_identical_result(durable: dict[str, Any], source: dict[str, Any],
+                              parts: list[dict[str, Any]]) -> None:
+    """Raise the core's conflict diagnostic unless the incoming result is the
+    accredited repeat of the durable one."""
+    decision = _receipt_decision(durable, source, parts)
+    if not decision.allowed:
+        raise ResultError(decision.message())
 
 
 def _publish(final_dir: Path, parts: list[dict[str, Any]], bundle_bytes: bytes,
@@ -528,15 +542,28 @@ def _late_vigency(state: dict[str, Any], execution_document: dict[str, Any],
     if not isinstance(execution, dict):
         raise ResultError("the execution context has no execution object")
     feature_id = execution.get("feature_id")
-    if request.get("execution_id") != execution.get("id"):
-        raise ResultError(
-            "the cited packet does not belong to its execution: the request "
-            f"execution_id {request.get('execution_id')!r} does not match "
-            f"{execution.get('id')!r}")
-    if request.get("feature_id") != feature_id:
-        raise ResultError(
-            "the cited packet does not belong to its execution: the request "
-            f"feature_id {request.get('feature_id')!r} does not match {feature_id!r}")
+    # §4.2/PC-01: the request and the execution context must declare the same
+    # identities; the shared core decides, this border reports.
+    request_execution = cdad_lifecycle.require_concordant(
+        (("execution_context.execution.id", execution.get("id")),
+         ("request.execution_id", request.get("execution_id"))),
+        subject="execution identity of the cited packet")
+    if not request_execution.allowed:
+        raise ResultError(request_execution.message())
+    request_feature = cdad_lifecycle.require_concordant(
+        (("execution_context.execution.feature_id", feature_id),
+         ("request.feature_id", request.get("feature_id"))),
+        subject="feature of the cited packet")
+    if not request_feature.allowed:
+        raise ResultError(request_feature.message())
+    # §4.3/PC-03: the late route relaxes the DESTINATION precondition, never the
+    # authority: the same criterion the normal route applies through
+    # `_validate_v2_state` decides here too.
+    authority = cdad_lifecycle.require_authority(
+        state.get("hitl_delegation"), today=_today(),
+        operation=f"the late reception of feature {feature_id!r}")
+    if not authority.allowed:
+        raise ResultError(authority.message())
     status = cdad_packet._feature_status(state, feature_id)
     if status not in cdad_packet.CLOSED_FEATURE_STATUSES:
         raise ResultError(
@@ -613,15 +640,19 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
     descriptor = _load_json(descriptor_path, "result descriptor")
     _validate_descriptor(descriptor)
     state = _load_json(project_root / STATE_RELPATH, "project state")
-    cdad_packet._suspended_unit_for(state, descriptor.get("feature_id"))
     source = _validate_source(descriptor)
     attempt = _continuity_attempt(args)
     _require_continuity_attempt(project_root, descriptor, attempt)
     final_dir = _final_dir(project_root, descriptor["execution_id"],
                            descriptor["packet_id"])
 
-    # A durable finalization is reconciled before requiring the active packet:
-    # an identical read-only retry converges even after the packet advanced.
+    # §4.4 order: identity and the necessary evidence first (the descriptor and
+    # the state above, the durable receipt below); then the REPLAY of this
+    # domain — a durable finalization whose source and parts are the SAME is
+    # accredited by its own evidence and converges even after the packet
+    # advanced, WITHOUT requiring an active unit, a dispatched packet or a
+    # current authority; only a genuinely NEW reception asks for the
+    # eligibility (authority and the suspension of its owner) further down.
     durable = _load_durable_receipt(final_dir)
     if durable is not None:
         parts = _read_parts(descriptor, project_root)
@@ -648,12 +679,25 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
         raise ResultError("packet differs from its canonical rendering (validate-packet)")
 
     execution = execution_document["execution"]
-    if descriptor["execution_id"] != execution["id"]:
-        raise ResultError("descriptor.execution_id does not match the execution context")
-    if descriptor["feature_id"] != execution["feature_id"]:
-        raise ResultError("descriptor.feature_id does not match the execution context")
-    if descriptor["packet_id"] != request["packet_id"]:
-        raise ResultError("descriptor.packet_id does not match the published packet")
+    # §4.2/PC-01: the descriptor, the execution context and the published request
+    # must declare the SAME identities, decided by the shared core.
+    for subject, pairs in (
+            ("execution identity",
+             (("descriptor.execution_id", descriptor["execution_id"]),
+              ("execution_context.execution.id", execution["id"]),
+              ("request.execution_id", request.get("execution_id")))),
+            ("feature",
+             (("descriptor.feature_id", descriptor["feature_id"]),
+              ("execution_context.execution.feature_id", execution["feature_id"]))),
+            ("packet identity",
+             (("descriptor.packet_id", descriptor["packet_id"]),
+              ("request.packet_id", request.get("packet_id"))))):
+        concordant = cdad_lifecycle.require_concordant(pairs, subject=subject)
+        if not concordant.allowed:
+            raise ResultError(concordant.message())
+    # §4.3/PC-02: the reception blocks the effect on the ACCREDITED owner; the
+    # supplied feature of the descriptor was already checked above.
+    cdad_packet._suspended_unit_for(state, execution["feature_id"])
     if not late:
         active = state.get("active_packet")
         if not isinstance(active, dict) or active.get("status") != "dispatched":

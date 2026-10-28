@@ -154,6 +154,14 @@ if [ ! -f "$ALLOWLIST_SH" ]; then
   die "Bash allowlist generator missing: $ALLOWLIST_SH"
 fi
 
+# 009-001: the user-owned overlay helper. The frontmatter keys the USER owns
+# (today `model:` — the list is DATA inside the helper) are the user's
+# configuration, not local drift: an install brings the rest of the agent from
+# staging and reinserts them. This is the ONE definition of that semantics —
+# install, --check (both paths) and scripts/validate-subagents.sh consume it,
+# and no bash filter redefines "overlay" (009-001 INV-2).
+AGENT_OVERLAY_PY="$SCRIPT_DIR/scripts/agent-overlay.py"
+
 # Roles whose bash block is derived (P5). The orchestrator is not task-spawned
 # and keeps the handwritten block from the repo.
 ALLOWLIST_ROLES="architect test-writer implementer reviewer scribe"
@@ -383,6 +391,24 @@ What gets installed (from build/staging — the single agent input, PD-18):
       (runtime/stack resolved by staging — R3-O2 — plus per-file
        sha256 + source provenance of everything deployed; conflicts listed
        separately until explicitly resolved)
+
+User-owned overlay (009-001) — your configuration survives every install:
+  The frontmatter keys the USER owns in an installed agent are data, declared
+  once in scripts/agent-overlay.py (USER_OWNED_KEYS: today only `model`). You
+  may set them in the installed copy, e.g. `model: your/model-id`; install,
+  `--check` and scripts/validate-subagents.sh all read that one definition.
+    - install / reinstall: the value is preserved verbatim and everything else
+      comes from the current staging bytes, so updates do arrive. The agent
+      stays owned: the next run reports SYNC and `--check` passes.
+    - `--check` names the installed agent and the overlay it keeps.
+    - `--uninstall` keeps an agent that carries your overlay byte for byte:
+      it is your configuration, not the installer's to delete.
+    - Anything else you change, and any ambiguous overlay (no frontmatter, a
+      duplicated key, an empty value, a key in the body), is a CONFLICT:
+      preserved untouched, reported, and never adopted as owned.
+  There is no flag: preserving your configuration is the behaviour, never an
+  option. The product keeps pinning no model anywhere installable — the
+  validator fails if agents/ or build/staging declares `model:`.
 
 PD-9 (004-001 T6): the public layout (<root>/agents and <root>/skills) is NOT
 installed anymore — only real runtime destinations. A root that still carries
@@ -679,6 +705,78 @@ record_owned() {  # abs_path source — register an owned file for the ownership
   OWNED+=("$rel"$'\t'"$sha"$'\t'"$source")
 }
 
+# ---------------------------------------------------------------------------
+# User-owned agent overlay (009-001) — consumed, never reimplemented
+# ---------------------------------------------------------------------------
+guard_agent_overlay() {
+  if [ ! -f "$AGENT_OVERLAY_PY" ]; then
+    die "User-owned overlay helper missing: $AGENT_OVERLAY_PY"
+  fi
+}
+
+# agent_overlay_extract <file> — one `key=value` line per user-owned key present
+# (nothing when the copy carries none). An ambiguous copy fails with its
+# diagnostic on the captured output, so the caller preserves it (D3) instead of
+# guessing.
+agent_overlay_extract() {
+  python3 "$AGENT_OVERLAY_PY" extract "$1"
+}
+
+# agent_overlay_base_sha <file> — sha256 of the copy WITHOUT its user-owned keys:
+# the base this install compares its recorded provenance against (§2).
+agent_overlay_base_sha() {
+  python3 "$AGENT_OVERLAY_PY" base-sha "$1"
+}
+
+# agent_overlay_merge <staged> <installed> <out> — writes the staged bytes with
+# the installed copy's user-owned values reinserted. The bytes go to a FILE: a
+# shell variable would drop trailing newlines and corrupt the agent.
+agent_overlay_merge() {
+  python3 "$AGENT_OVERLAY_PY" merge "$1" "$2" --out "$3"
+}
+
+# agent_overlay_compare <installed> <expected> — sets OVERLAY_VERDICT
+# (identical | overlay-only | divergent | error) and OVERLAY_DETAIL (the
+# preserved keys, or the reason). Returns 0 when the installed bytes differ from
+# the expectation at most by the user-owned overlay.
+OVERLAY_VERDICT=""
+OVERLAY_DETAIL=""
+agent_overlay_compare() {
+  local line status=0
+  line="$(python3 "$AGENT_OVERLAY_PY" compare "$1" "$2" 2>&1)" || status=$?
+  OVERLAY_VERDICT="${line%%:*}"
+  if [ "$OVERLAY_VERDICT" = "$line" ]; then
+    OVERLAY_DETAIL=""
+  else
+    OVERLAY_DETAIL="${line#*: }"
+  fi
+  [ "$status" -eq 0 ]
+}
+
+# print_ok_agent <path> — the OK line of an in-sync agent, disclosing the
+# preserved user overlay (PC-6) when the last compare found one.
+print_ok_agent() {
+  if [ "$OVERLAY_VERDICT" = identical ]; then
+    printf 'OK: %s\n' "$1"
+  else
+    printf 'OK: %s (user overlay preserved: %s)\n' "$1" "$OVERLAY_DETAIL"
+  fi
+}
+
+# agent_removal_preserves_overlay <recorded-source> <path> — prints the retained
+# user-owned overlay of an installed AGENT and returns 0 when the path carries
+# one: user configuration is never deleted by ownership alone (§2, PC-7).
+agent_removal_preserves_overlay() {
+  local source="$1" path="$2" keys
+  case "$source" in
+    agents/*) ;;
+    *) return 1 ;;
+  esac
+  keys="$(agent_overlay_extract "$path" 2>/dev/null)" || return 1
+  [ -n "$keys" ] || return 1
+  printf '%s' "$keys"
+}
+
 add_conflict() {  # rel reason — report and preserve (PD-7: never overwrite/delete)
   local rel="$1" reason="$2"
   CONFLICT_ABS["$(install_root_abs "$rel")"]=1
@@ -804,13 +902,113 @@ PY
 )
 }
 
+# deploy_staged_overlay <staging-rel> <dst> <installed-rel> <keys>
+# 009-001 D2: writes the STAGED bytes with the installed user-owned values
+# reinserted — never the old file — or reports SYNC when the copy already is
+# exactly that. The bytes that end up installed are recorded as owned, so the
+# digest describes what the user now has (PC-3) and a second run is a no-op.
+deploy_staged_overlay() {
+  local srel="$1" dst="$2" rel="$3" keys="$4"
+  local expected_file synced copy
+  if [ -n "$keys" ]; then
+    synced="staging + user overlay ($keys)"
+    copy="staged bytes + user overlay $keys"
+  else
+    # The user removed their overlay: staging IS the expected result.
+    synced="staging"
+    copy="staging regenerated"
+  fi
+  expected_file="$(mktemp)" || die "Cannot create the user-overlay merge temp file"
+  if ! agent_overlay_merge "$STAGING_DIR/$srel" "$dst" "$expected_file"; then
+    rm -f "$expected_file"
+    add_conflict "$rel" "the staged bytes cannot receive the user-owned overlay ($keys); PRESERVED for explicit resolution"
+    return 0
+  fi
+  if cmp -s "$expected_file" "$dst"; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+      log "DRY-RUN SYNC $rel already in sync with $synced"
+    else
+      log "SYNC $rel already in sync with $synced"
+    fi
+    record_owned "$dst" "$srel"
+  else
+    do_run "COPY ($copy) $srel -> $dst" overlay_write "$expected_file" "$dst"
+    record_owned "$dst" "$srel"
+  fi
+  rm -f "$expected_file"
+  return 0
+}
+
+# stage_user_overlay <staging-rel> <dst> <installed-sha> <recorded-sha>
+# 009-001: the user-owned keys of the INSTALLED copy are the user's
+# configuration, not local drift. Returns 0 when the copy can be brought to
+# (staging + overlay) — in sync, redeployed, or preserved as a conflict — and 1
+# when the difference is not an overlay at all, so the historical D4 path runs
+# untouched.
+# Order matters (§2). The comparison against the CURRENT staging decides sync
+# FIRST: when the bytes outside the overlay ARE the staged bytes, nothing foreign
+# is adopted — the result is staging plus the user's own values — so provenance
+# has no remaining difference to judge. That is what makes changing the model,
+# deleting it, and a copy an older installer left unowned an UPDATE instead of a
+# conflict (review 009-001 F1). Provenance is consulted only when the base is NOT
+# the current staging: there the difference left over is either the upstream
+# update the record accredits (the base we recorded, with or without the overlay
+# already applied) or a local edit, which stays preserved (PC-4).
+# The referent is the STAGED FILE this run would deploy (the same bytes `cp`
+# puts at a destination and `--check` compares against), not the digest the
+# staging manifest declares: the decision is about bytes, and the manifest's
+# value describes the tree as it was generated.
+stage_user_overlay() {
+  local srel="$1" dst="$2" installed_sha="$3" recorded="$4"
+  local rel keys base_sha staged_sha
+  # Agents are the only installable text with a user-owned overlay (§1). Every
+  # other destination keeps the historical D4 diagnostic untouched, so a local
+  # edit of a skill or a script is never reported as an overlay problem.
+  case "$srel" in
+    agents/*) ;;
+    *) return 1 ;;
+  esac
+  rel="${dst#"$INSTALL_ROOT"/}"
+  if ! keys="$(agent_overlay_extract "$dst" 2>&1)"; then
+    add_conflict "$rel" "user-owned overlay cannot be recognized ($keys); PRESERVED for explicit resolution"
+    return 0
+  fi
+  keys="${keys//$'\n'/, }"
+  base_sha="$(agent_overlay_base_sha "$dst")" || die "Cannot read the user-owned overlay of: $dst"
+  staged_sha="$(sha256_of "$STAGING_DIR/$srel")"
+  if [ "$base_sha" != "$staged_sha" ]; then
+    # Bytes outside the overlay differ from the current staging: an overlay never
+    # authorizes adopting foreign bytes, and never hides a D4 conflict (PC-4).
+    [ -n "$keys" ] || return 1
+    if [ -z "$recorded" ]; then
+      add_conflict "$rel" "an unowned copy carries a user-owned overlay ($keys); PRESERVED — an overlay does not authorize adopting foreign bytes"
+      return 0
+    fi
+    if [ "$base_sha" != "$recorded" ] && [ "$installed_sha" != "$recorded" ]; then
+      add_conflict "$rel" "modified outside the user-owned overlay ($keys: the bytes around it are not the ones recorded by the last install, $recorded); PRESERVED for explicit resolution"
+      return 0
+    fi
+  fi
+  deploy_staged_overlay "$srel" "$dst" "$rel" "$keys"
+}
+
+# overlay_write <merged-file> <dst> — replace the installed bytes IN PLACE so the
+# destination keeps its mode and ownership (the merged copy lives in a temp).
+overlay_write() {
+  cat "$1" > "$2"
+}
+
 # stage_one_destination <staging-rel> <staged-sha> <abs-destination>
 # PD-6/7 conflict semantics at ONE destination, then deploy or record:
 #   symlink/non-regular at destination      -> conflict, preserved, NOT owned
 #   owned file modified since last install  -> conflict, preserved, NOT owned
+#   bytes differing only by the USER's       -> redeploy (staged + overlay), owned
+#     overlay (009-001: base == staging)        (SYNC when it already is that)
 #   installed bytes == staged bytes         -> in sync (or adopted), owned
 #   registered + staging regenerated        -> redeploy the STAGED bytes
-#   unowned bytes differ from staging       -> conflict, preserved, NOT owned
+#   unowned bytes differ from staging        -> conflict, preserved, NOT owned
+#                                              (unless only the overlay differs:
+#                                               then the copy is repaired)
 #   missing                                 -> deploy the STAGED bytes
 stage_one_destination() {
   local srel="$1" staged_sha="$2" dst="$3"
@@ -824,6 +1022,11 @@ stage_one_destination() {
     installed_sha="$(sha256_of "$dst")"
     prev="${PREV_SHA[$rel]:-}"
     if [ -n "$prev" ] && [ "$prev" != "$installed_sha" ]; then
+      # The copy changed since the last install: the ONE sanctioned change is the
+      # user-owned overlay on the bytes we recorded.
+      if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
+        return 0
+      fi
       add_conflict "$rel" "modified locally since the last install (registered $prev, found $installed_sha)"
       return 0
     fi
@@ -838,7 +1041,20 @@ stage_one_destination() {
       return 0
     fi
     if [ -z "$prev" ]; then
+      # No record of this destination, yet the staged bytes are the only ones it
+      # may carry outside an overlay: an overlay copy left unowned by an older
+      # installer is repaired by the same comparison (review 009-001 F1c), while
+      # any other foreign byte stays a preserved conflict.
+      if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
+        return 0
+      fi
       add_conflict "$rel" "unowned content at an owned destination differs from staging"
+      return 0
+    fi
+    # Owned and unchanged since the last install while staging moved on: the
+    # copy can still carry the user's overlay (it was registered WITH it), so the
+    # expected bytes are the new staging plus that overlay.
+    if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
       return 0
     fi
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -1067,7 +1283,15 @@ PY
     die "Cannot write the ownership manifest: $OWNERSHIP_MANIFEST (stream reader exit $status)"
   fi
   log "OWNERSHIP manifest: $OWNERSHIP_MANIFEST"
-  log "OWNERSHIP summary: ${#OWNED[@]} owned file(s), ${#CONFLICTS[@]} conflict(s) (pending_removal carried in the manifest)"
+  # 009-001 PC-1: an update whose only difference is the user's overlay must not
+  # DECLARE a conflict — a "0 conflict(s)" line still reads as one, and the
+  # dry-run summary already reports the count only when there is something to
+  # report. So the preserved set is disclosed only when it is non-empty.
+  if [ "${#CONFLICTS[@]}" -gt 0 ]; then
+    log "OWNERSHIP summary: ${#OWNED[@]} owned file(s), ${#CONFLICTS[@]} conflict(s) (pending_removal carried in the manifest)"
+  else
+    log "OWNERSHIP summary: ${#OWNED[@]} owned file(s) (pending_removal carried in the manifest)"
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -1285,7 +1509,7 @@ with open(out_path, "w", encoding="utf-8") as out:
         out.write("%s\0%s\0%s\0%s\0" % (
             absolute, rel, field(record.get("sha256")), field(record.get("source"))))
 PY
-  local abs rel sha source state preserved=0 plan_path
+  local abs rel sha source state preserved=0 plan_path overlay_keys
   local -A pruned_abs=()
   while IFS= read -r -d '' abs \
      && IFS= read -r -d '' rel \
@@ -1302,6 +1526,15 @@ PY
     case "$state" in
       absent) continue ;;
       removable)
+        # 009-001 §2: an installed agent that carries the user's overlay holds
+        # user data — it is preserved and stays registered even though its bytes
+        # still match their recorded digest.
+        if overlay_keys="$(agent_removal_preserves_overlay "$source" "$abs")"; then
+          preserved=$((preserved + 1))
+          KEPT+=("$rel"$'\t'"$sha"$'\t'"$source")
+          add_conflict "$rel" "no longer deployed by this install but carries the user-owned overlay ($overlay_keys); PRESERVED and kept registered"
+          continue
+        fi
         do_run "REMOVE (own obsolete: no longer deployed, bytes match the recorded sha256) $abs" rm -f -- "$abs"
         pruned_abs["$abs"]=1
         PRUNED+=("$rel")
@@ -1419,7 +1652,7 @@ uninstall_cdad() {
 # No confirmation prompt: the manifest IS the explicit resolution of what is ours.
 uninstall_by_manifest() {
   local reg_path keep_file status=0 total=0 removed=0 preserved=0
-  local key rel sha source path state
+  local key rel sha source path state overlay_keys
   local -a keep_artifacts=() keep_pending=()
   reg_path="$(mktemp)" || die "Cannot create the uninstall registration temp file"
   # B-1: NUL-framed records (never a 4-column TSV read by bash `read`, which
@@ -1484,6 +1717,20 @@ PY
       removable) ;;   # own bytes, unchanged: retired below
       *) die "Unexpected removal state $state for $path" ;;
     esac
+    # 009-001 §2/PC-7: an installed agent that carries the user's overlay is user
+    # configuration — ownership is not authorization to delete it, even when its
+    # digest matches the manifest. It is preserved byte for byte and keeps its
+    # record (a reinstall or a later --uninstall keeps reporting it).
+    if overlay_keys="$(agent_removal_preserves_overlay "$source" "$path")"; then
+      preserved=$((preserved + 1))
+      if [ "$key" = "artifacts" ]; then
+        keep_artifacts+=("$rel"$'\t'"$sha"$'\t'"$source")
+      else
+        keep_pending+=("$rel"$'\t'"$sha"$'\t'"$source")
+      fi
+      log "PRESERVED: $rel — carries the user-owned overlay ($overlay_keys); --uninstall keeps user configuration (delete the file explicitly to drop it)"
+      continue
+    fi
     do_run "UNINSTALL $path" rm -f -- "$path"
     removed=$((removed + 1))
   done < "$reg_path"
@@ -1538,31 +1785,30 @@ PY
 # ---------------------------------------------------------------------------
 # Verification & summary
 # ---------------------------------------------------------------------------
-check_agent_file() {  # src dst role — allowlist-derived compare; 0 = identical
-  local src="$1" dst="$2" role="$3"
+check_agent_file() {  # src dst role — allowlist-derived, overlay-aware compare; 0 = in sync
+  local src="$1" dst="$2" role="$3" expected
   if [ ! -f "$dst" ]; then
     printf 'DRIFT: missing %s\n' "$dst"
     return 1
   fi
-  # Byte-compare, ignoring any historical `model:` line: a root installed before
-  # 006-003 D1 may still carry one, and no installable surface fixes a model any
-  # more (INV-3/PD-1e), so there is nothing to expect on that line. The rest of
-  # the content must match; for the generated roles the bash block is derived
-  # from THIS machine's stack (P5 cdad-010), so the expectation is DERIVED and
-  # never compared against repo bytes.
+  # The expectation is the repo file with THIS machine's derived bash block (P5
+  # cdad-010) for the generated roles. The comparison then applies the ONE
+  # definition of the user-owned overlay (scripts/agent-overlay.py) — no second
+  # bash filter decides what an overlay is (009-001 INV-2).
+  expected="$(mktemp)" || die "Cannot create the agent check temp file"
   if role_is_generated "$role"; then
-    if ! cmp -s <(apply_bash_block "$src" "$role" | grep -v '^model:') <(grep -v '^model:' "$dst"); then
-      printf 'DRIFT: differs %s\n' "$dst"
-      return 1
-    fi
+    apply_bash_block "$src" "$role" > "$expected"
   else
-    if ! cmp -s <(grep -v '^model:' "$src") <(grep -v '^model:' "$dst"); then
-      printf 'DRIFT: differs %s\n' "$dst"
-      return 1
-    fi
+    cat "$src" > "$expected"
   fi
-  printf 'OK: %s\n' "$dst"
-  return 0
+  if agent_overlay_compare "$dst" "$expected"; then
+    print_ok_agent "$dst"
+    rm -f "$expected"
+    return 0
+  fi
+  rm -f "$expected"
+  printf 'DRIFT: differs %s (%s)\n' "$dst" "$OVERLAY_DETAIL"
+  return 1
 }
 
 check_skill_tree() {  # src_dir dst_dir — cmps every source file vs dst; 0 = identical
@@ -1614,9 +1860,9 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (allowli
       drifted_paths+=("$OPENCODE_AGENTS_DIR/$base")
       drifted=1
     fi
-    if cmp -s "$f" "$PUBLIC_AGENTS_DIR/$base"; then
+    if agent_overlay_compare "$PUBLIC_AGENTS_DIR/$base" "$f"; then
       total=$((total + 1))
-      printf 'OK: %s\n' "$PUBLIC_AGENTS_DIR/$base"
+      print_ok_agent "$PUBLIC_AGENTS_DIR/$base"
     else
       printf 'DRIFT: missing or differs %s\n' "$PUBLIC_AGENTS_DIR/$base"
       drifted_paths+=("$PUBLIC_AGENTS_DIR/$base")
@@ -1689,7 +1935,7 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (allowli
 # Owned entries OUTSIDE the install root (CDAD_SKILL_EXTRA_DIRS targets) are
 # recorded with their absolute path as the key and addressed as-is.
 check_installed_staging() {
-  local rel source installed staged owned_sha staged_sha installed_sha
+  local rel source installed staged owned_sha
   local drift=0 total=0
   local -a problems=()
   declare -A STAGED_LISTED=()
@@ -1731,17 +1977,18 @@ PY
           problems+=("missing $rel")
           drift=1
         else
-          staged_sha="$(sha256_of "$staged")"
-          # Review-5 B1: hash the INSTALLED bytes — the manifest sha256 is
-          # historical; only the bytes actually under this root can drift
-          # after the install (or after a staging regeneration).
-          installed_sha="$(sha256_of "$installed")"
-          if [ "$installed_sha" != "$staged_sha" ]; then
-            printf 'DRIFT: differs %s (installed copy differs from the current staged bytes)\n' "$installed"
+          # The installed copy is compared against the STAGED bytes through the
+          # ONE overlay definition: a user-owned key is a disclosure, not drift
+          # (009-001 PC-3/PC-6), and anything else still is drift. The diagnostic
+          # names the INSTALLED path — never the staging file the user cannot act
+          # on (D5).
+          if agent_overlay_compare "$installed" "$staged"; then
+            print_ok_agent "$installed"
+          else
+            printf 'DRIFT: differs %s (installed copy vs the current staged bytes: %s)\n' \
+              "$installed" "$OVERLAY_DETAIL"
             problems+=("drift $rel")
             drift=1
-          else
-            printf 'OK: %s\n' "$installed"
           fi
         fi
         ;;
@@ -1807,6 +2054,7 @@ PY
   # Staged artifacts with no owned destination: upstream regenerated something
   # this install root never received (reinstall propagates it — PD-5).
   local srel covered dst drel
+  local -a missing_destinations=()
   for srel in "${!STAGED_LISTED[@]}"; do
     covered=0
     while IFS= read -r dst; do
@@ -1818,8 +2066,21 @@ PY
       fi
     done < <(staged_destinations "$srel")
     if [ "$covered" -eq 0 ]; then
-      printf 'MISSING (staged but not installed): %s\n' "$STAGING_DIR/$srel"
-      problems+=("missing staged $srel")
+      # D5 (009-001): the diagnostic names the INSTALLED destination — the path
+      # the user can act on — never the staging file, which is not theirs to fix.
+      # Review F3: the SUMMARY entry has to name it too, or the last line of a
+      # failed --check still sends the user to build/staging.
+      missing_destinations=()
+      while IFS= read -r dst; do
+        [ -n "$dst" ] || continue
+        printf 'MISSING (staged but not installed): %s\n' "$dst"
+        missing_destinations+=("${dst#"$INSTALL_ROOT"/}")
+      done < <(staged_destinations "$srel")
+      if [ "${#missing_destinations[@]}" -gt 0 ]; then
+        problems+=("missing ${missing_destinations[*]}")
+      else
+        problems+=("missing $srel (no installed destination resolves from staging)")
+      fi
       drift=1
     fi
   done
@@ -1865,7 +2126,11 @@ PY
     log "Check: PASS ($total artifact groups in sync with staging/skills)"
     return 0
   fi
-  log "Check: FAIL — ${problems[*]}"
+  # The verdict is the last line of the run and is emitted WITHOUT the log
+  # timestamp so it can be grepped verbatim. Its entries name the INSTALLED
+  # destinations (D5/PC-6): a summary that lists staging paths leaves the user
+  # with nothing they can repair.
+  printf 'Check: FAIL — %s\n' "${problems[*]}"
   return 1
 }
 
@@ -1946,6 +2211,7 @@ main() {
     if [ -f "$OWNERSHIP_MANIFEST" ]; then
       # Owned install (004-001 T5): semantic check against staging (PD-5).
       guard_python3
+      guard_agent_overlay
       guard_staging
       if check_installed_staging; then
         return 0
@@ -1953,6 +2219,10 @@ main() {
       return 1
     fi
     # Legacy check for roots installed before the ownership manifest existed.
+    # Its comparisons also fold in the user-owned overlay (009-001), so it needs
+    # the helper and, like every other path, the interpreter.
+    guard_python3
+    guard_agent_overlay
     if check_installed; then
       return 0
     fi
@@ -1962,8 +2232,10 @@ main() {
   if [ "$UNINSTALL" -eq 1 ]; then
     if [ -f "$OWNERSHIP_MANIFEST" ]; then
       # PD-8: manifest-scoped uninstall (no prompt; the manifest is the
-      # explicit record of what this installer owns). Idempotent.
+      # explicit record of what this installer owns). Idempotent. 009-001: an
+      # installed agent with a user-owned overlay is preserved, never deleted.
       guard_python3
+      guard_agent_overlay
       uninstall_by_manifest
       return 0
     fi
@@ -1986,6 +2258,7 @@ main() {
   fi
 
   guard_python3
+  guard_agent_overlay
   guard_sources
   guard_staging
   # Review-5 B2: the per-file ownership semantics (stage_owned_file) compare

@@ -16,6 +16,8 @@ closing Stage 2; the plan is approved together with the spec.
 - **Feature ID:** `<NNN-feature-id>` — a stable id plus the declared plan version.
 - **Resultado observable:** <the user-visible result the feature delivers, one or two lines>.
 - **Postcondiciones cubiertas:** <PD-x, PD-y, ...>.
+- **Promesas cubiertas:** <the spec's observable promises this plan delivers, by name; their postconditions live in the spec — this plan references them, never re-declares them>.
+- **Diferimientos:** <the spec's `deferred-hardening` items this plan works around, by reference; `None` if there are none>.
 - **Alcance incluido / excluido:** <what the plan includes, and what it explicitly excludes>.
 - **Consume / Produce:** <the contracts this feature consumes and produces, each with its producer or consumer>.
 - **Contexto global:** <the project-wide constraints copied verbatim from the spec header; every task includes them implicitly>.
@@ -71,6 +73,12 @@ silently ignored.
 A code task declares `focal_tests`; a code-less task declares
 `observable_checks` instead. Every task declares its `objective`, `depends_on`,
 `regressions`, `integration_gate` and `owner`.
+
+The tasks reference the spec's promises and its `deferred-hardening`; they never
+re-declare either. How many tests a task needs is selected by the observable
+promise it delivers — rule R2, single editable definition in
+`sources/roles/test-writer.md` — not by a quota per postcondition, per task or
+per file.
 
 ## Self-review before closing Stage 2
 

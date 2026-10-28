@@ -1521,7 +1521,9 @@ class TestU65TimeoutWithoutRow(U65WriteAheadCase):
 
         Declared GUARD: GREEN today; it must stay GREEN after the completion."""
         self.set_variant("sleep-no-store")
-        self.write_runtimes(wait_timeout=2)
+        # 008-001 PC-8: 5s deja presupuesto útil; el sujeto es la procedencia
+        # del timeout, no el valor de la cota (el cliente duerme 60s).
+        self.write_runtimes(wait_timeout=5)
         proc = self.run_dispatch()
         out = self.envelope(proc, "oráculo 5b (timeout sin fila)")
         self.assertEqual(

@@ -134,7 +134,7 @@ from test_005_009_t1_interface import I8_RECORD_KEYS, dispatch_records
 from test_005_009_t2_opencode_adapter import durable_session_rows
 from test_006_001_t1_selection import (
     EXPECTED_ROLE_AGENT,
-    FAST_WAIT,
+    INSTRUMENTAL_WAIT,
     MATCHING_CLIENT_SEMVER,
     Pd600T1Case,
     FakeInfoServer,
@@ -372,7 +372,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         self.scenario_running(fake)
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER)
         self.assert_derived_agents_published()
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-13 corre y compatible")
@@ -431,7 +431,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         self.assert_derived_agents_published()
         self.patch_config(
             fake, {"mode": "service", "service": {"require": False},
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch_service(fake)
@@ -504,7 +504,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER)
         self.patch_config(
             fake, {"mode": "service", "service": {"require": True},
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-13 stopped + require true")
@@ -536,7 +536,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         fake = self.fake_runtime_service("pd13-unexpected-output")
         self.set_service_scenario(
             fake, stdout="fixtura linea no reconocible\nsegunda linea\n")
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-13 salida inesperada")
@@ -566,7 +566,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         fake = self.fake_runtime_service("pd13-rc-nonzero")
         self.set_service_scenario(fake, stdout=fake["service_url"] + "\n",
                                   rc=2)
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-13 rc != 0")
@@ -593,7 +593,7 @@ class TestPd13ServiceModeDispatch(T1bServiceCase):
         self.scenario_running(fake)
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER)
         self.assert_derived_agents_published()
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-13 sin gestión del servicio")
@@ -630,7 +630,7 @@ class TestPd14ServiceVersionGate(T1bServiceCase):
         fake = self.fake_runtime_service("pd14-version-mismatch")
         self.scenario_running(fake)
         self.write_service_registry(fake, version=SERVICE_MISMATCHED_VERSION)
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-14 versión distinta")
@@ -675,7 +675,7 @@ class TestPd14ServiceVersionGate(T1bServiceCase):
         self.scenario_running(fake)
         # SIN write_service_registry: el directorio de estado descartable
         # queda sin registro (nunca el HOME real).
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-14 registro ausente")
@@ -705,7 +705,7 @@ class TestPd14ServiceVersionGate(T1bServiceCase):
         fake = self.fake_runtime_service("pd14-key-absent")
         self.scenario_running(fake)
         self.write_service_registry(fake, omit_version=True)
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-14 clave ausente")
@@ -733,7 +733,7 @@ class TestPd14ServiceVersionGate(T1bServiceCase):
         fake = self.fake_runtime_service("pd14-registry-unparseable")
         self.scenario_running(fake)
         self.write_service_registry(fake, raw=True)
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-14 registro no parseable")
@@ -779,7 +779,7 @@ class TestPd3ServiceProvenance(T1bServiceCase):
         self.scenario_running(fake)
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER)
         self.assert_derived_agents_published()
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch_service(fake)
@@ -842,7 +842,7 @@ class TestPd3ServiceProvenance(T1bServiceCase):
         enmienda."""
         fake = self.fake_runtime_service("pd3-standalone-not-checked")
         self.assert_derived_agents_published()
-        self.patch_config(fake, {"mode": "standalone", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "standalone", "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch_service(fake)
@@ -901,7 +901,7 @@ class TestPd4SameErrandInServiceMode(T1bServiceCase):
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER)
         self.assert_derived_agents_published()
         config = self.patch_config(
-            fake, {"mode": "service", "wait": FAST_WAIT})
+            fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         xdg_home = Path(self._tmp) / "xdg-config-u4"
@@ -1020,7 +1020,7 @@ class TestPd5ServiceSecrets(T1bServiceCase):
         self.write_service_registry(fake, version=MATCHING_CLIENT_SEMVER,
                                     with_password=True)
         self.assert_derived_agents_published()
-        self.patch_config(fake, {"mode": "service", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "service", "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch_service(fake)
@@ -1104,7 +1104,7 @@ class TestPd1ServiceRows(T1bServiceCase):
         self.assert_derived_agents_published()
         self.patch_config(
             fake, {"mode": "service", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-1 service ignora server")
@@ -1141,7 +1141,7 @@ class TestPd1ServiceRows(T1bServiceCase):
         fake = self.fake_runtime_service("pd1-invalid-require")
         self.patch_config(
             fake, {"mode": "standalone", "service": {"require": "yes"},
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch_service(fake)
         out = self.envelope(proc, "PD-1 service.require inválido")

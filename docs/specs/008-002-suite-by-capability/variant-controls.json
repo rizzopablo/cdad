@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "limit": "desviación inyectada en el artefacto observado (registro I8 durable en el proyecto sintético), no en el producto; equivalente para un oráculo que sólo lee artefactos durables; no demuestra cómo se produciría la desviación en el producto",
+  "controls": [
+    {
+      "id": "C0",
+      "kind": "baseline",
+      "target_nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_baseline_pd6_destination_passes_without_deviation",
+      "expected": "destino PD-6 pasa sin desviación",
+      "evidence": "passed"
+    },
+    {
+      "id": "C1",
+      "obligation": "005-010 PD-6 (R2 contracara, review.md:138)",
+      "variant": "fila con modelo en texto plano → model_reported conservado",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "deviation": "model_reported=null",
+      "control_nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_plain_text_model_null_detected_by_pd6_destination",
+      "command": "python3 -m pytest -q tests/test_008_002_variant_controls.py",
+      "expected": "destino: 1 failure (AssertionError), 0 errors, mensaje con 'model_reported' y 'fila durable (PD-6)'",
+      "evidence": {
+        "target": "1 failure 0 errors: AssertionError: None != 'fixture-durable-row-model' : el registro I8 del worker no toma `model_reported` de la fila durable (PD-6)",
+        "original_one_shot": "1 failure 0 errors: `model_reported` alteró el modelo de TEXTO PLANO de la fila (R2 ...): None != 'fixture-durable-row-model'"
+      }
+    },
+    {
+      "id": "C2",
+      "obligation": "005-010 PD-6 (R2 contracara, review.md:138)",
+      "variant": "fila con modelo en texto plano → model_reported conservado",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "deviation": "model_reported='fixture-provider/'+valor (normalización aplicada a texto plano)",
+      "control_nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_plain_text_model_prefixed_detected_by_pd6_destination",
+      "command": "python3 -m pytest -q tests/test_008_002_variant_controls.py",
+      "expected": "destino: 1 failure (AssertionError), 0 errors, mensaje con 'model_reported' y 'fila durable (PD-6)'",
+      "evidence": {
+        "target": "1 failure 0 errors: el registro I8 del worker no toma `model_reported` de la fila durable (PD-6): 'fixture-provider/fixture-durable-row-model' != 'fixture-durable-row-model'",
+        "original_one_shot": "1 failure 0 errors: `model_reported` alteró el modelo de TEXTO PLANO ...: 'fixture-provider/fixture-durable-row-model' != 'fixture-durable-row-model'"
+      }
+    },
+    {
+      "id": "C3",
+      "obligation": "005-010 PD-6 (R2 contracara, review.md:138)",
+      "variant": "esquema I8 cerrado en la fila texto plano",
+      "original_nodeid": "tests/test_005_010_reviewfix.py::TestR2ModelReportedFromDurableRow::test_r2_plain_text_row_model_is_preserved",
+      "target_nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd6WorkerI8FromDurableRow::test_pd6_worker_i8_session_and_model_from_durable_row",
+      "deviation": "clave extra 'extra_key' en el registro I8",
+      "control_nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_closed_i8_schema_extra_key_detected_by_pd6_destination",
+      "command": "python3 -m pytest -q tests/test_008_002_variant_controls.py",
+      "expected": "destino: 1 failure (AssertionError), 0 errors, mensaje con 'extra_key' y 'esquema se conserva'",
+      "evidence": "1 failure 0 errors: AssertionError: Items in the first set but not the second: 'extra_key' : la forma del registro I8 no es la cerrada aprobada (PD-6: el esquema se conserva)"
+    }
+  ]
+}

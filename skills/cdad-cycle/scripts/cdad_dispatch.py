@@ -500,6 +500,20 @@ def _known_packet(root: Path, packet: str, verb: str) -> tuple[Path, Path]:
     return packet_md, request_path
 
 
+def _require_verifiable_packet(root: Path, packet: str) -> None:
+    """008-004 PC-01/PC-03 (§Orden y efectos): the frontier admits only a
+    packet that verifies — its request validated and its published text equal
+    to the canonical rendering — BEFORE the transport tool is invoked.
+
+    The criterion is the shared one (`cdad_packet.verify_published_packet`),
+    never a second implementation of the integrity of a packet.
+    """
+    try:
+        cdad_packet.verify_published_packet(root, packet)
+    except cdad_packet.PolicyError as exc:
+        raise DispatchError(f"the dispatch is refused: {exc}") from exc
+
+
 # ------------------------------------------------------- external path (U1b)
 
 
@@ -528,6 +542,10 @@ def dispatch(runtime: str, project_root: str | None, packet: str | None, *,
     root = _project_root(project_root)
     _, request_path = _known_packet(root, packet, "dispatching")
     request = _load_json(request_path, "packet request")
+    # 008-004 PC-01/PC-03: a commission whose packet does not verify is refused
+    # here, before the continuity proof and before the transport; no observation,
+    # delivery, staging or state change is published.
+    _require_verifiable_packet(root, packet)
     _reject_suspended_request(root, request)
     if attempt is not None:
         verify_continuity_begin(root, packet, attempt, request)
@@ -1053,6 +1071,11 @@ def record(runtime: str, project_root: str | None, packet: str | None,
     root = _project_root(project_root)
     _known_packet(root, packet, "recording its attempt")
     request = _load_json(_packet_dir(root, packet) / REQUEST_NAME, "packet request")
+    # 008-004 PC-01/PC-03 (§Orden y efectos): the admission precedes every new
+    # effect of `record` — the observation of the runtime, the temporary staging
+    # of the observation and the durable registration. A packet that does not
+    # verify therefore writes NOTHING on this path, exactly as on `dispatch`.
+    _require_verifiable_packet(root, packet)
     _reject_suspended_request(root, request)
     if not isinstance(request, dict):
         raise DispatchError(

@@ -102,6 +102,20 @@ What this adapter does, and why (contract decisions D5/D6):
    observation that termination writes today (session per PD-8,
    `model_reported` from the store, and all PD-3 pairs). Terminations BEFORE
    the write-ahead register as before.
+9. 008-001 AJ5/PC-8 (PC-8a/PC-8b + review hallazgo 1): the cota of the
+   execution configuration is TOTAL. The preparation (the mode preflight -- at
+   most two invocations -- plus the write-ahead record) runs against ONE
+   AGGREGATE deadline that keeps the client the wait it REQUIRES
+   (`_required_client_wait` = `max(MIN_CLIENT_WAIT_SECONDS,
+   MIN_CLIENT_WAIT_SHARE * budget)`, proportional so a fixed floor cannot merely
+   move the false `timeout`); the configured `wait.preflight_timeout_seconds`
+   bounds EACH operation and is never renewed per operation, and an operation
+   cut by that deadline is a budget fact, not a "server not reachable". When the
+   preparation crosses the deadline -- or the client's remainder is below what
+   it requires -- the client is NEVER launched: the envelope answers on
+   `session: null` with the PREPARATORY EXHAUSTION named (stage, cota, consumed,
+   remainder and the required minimum), never a `bounded wait (0.0 seconds)`
+   that would report a healthy client as if it had not answered (PD-7/PD-8).
 
 Honest limits: a separate process/session is not a sandbox (INV-8); the durable
 signal surface implemented here is the session store the execution
@@ -284,6 +298,37 @@ CLIENT_MIN_BUDGET_SHARE = 0.75
 # consumes the whole reserve and the floor adds nothing, while a small grace
 # still defends a HEALTHY client from a slow preflight.
 COMPLETION_MARGIN_SECONDS = 0.8
+# 008-001 AJ5/PC-8 (PC-8a/PC-8b) + review hallazgo 1: the preparation phase --
+# the mode preflight (at most two invocations) plus the write-ahead record --
+# may NEVER consume the whole internal budget. It runs against ONE AGGREGATE
+# deadline (`_preparation_deadline`) that preserves the wait the client
+# REQUIRES; the configured `wait.preflight_timeout_seconds` still bounds EACH
+# preparation operation, but it is never renewed per operation: only what is
+# left of the cota bounds the next one. When the preparation crosses that
+# deadline, or the remainder after the write-ahead is below what the client
+# requires, the adapter does NOT launch the client: a client launched with no
+# useful time is killed at a near-zero bound and reported as a FALSE `timeout`
+# (PD-7/PD-8), the exact result PC-8 forbids.
+#
+# The required useful wait is PROPORTIONAL, never a fixed floor alone (review
+# hallazgo 1): a fixed 0.1 s floor only moved the false `timeout` from `0.0` to
+# ~`0.12 s` -- a 0.80 s budget with a ~0.30 s preflight and a ~0.38 s
+# write-ahead leaves 0.12 s and still launched a HEALTHY client into a bound
+# where only a false `timeout` is possible. The requirement is therefore
+#   required = max(MIN_CLIENT_WAIT_SECONDS, MIN_CLIENT_WAIT_SHARE * budget)
+# (`_required_client_wait`): a larger cota must not be spent almost entirely on
+# preparation. `MIN_CLIENT_WAIT_SECONDS` stays a small ABSOLUTE floor (below it
+# the client cannot even start and reach its first durable read of the poll
+# schedule `poll_initial_seconds`), and `MIN_CLIENT_WAIT_SHARE` makes the
+# requirement grow with the budget (0.16 s of the 0.80 s budget, 1.76 s of the
+# 8.80 s one: B1 keeps dispatching with its 4 s preflight).
+# The write-ahead step is NOT pre-reserved out of the preflight's window: its
+# cost (~0.28 s median, larger under load) is charged where it is known -- the
+# dispatch-time guard measures the REAL remainder after it -- so a healthy
+# preflight keeps the headroom the cota leaves (pre-reserving it shrank the
+# preflight window on short cotas and refused legitimate dispatches).
+MIN_CLIENT_WAIT_SECONDS = 0.1
+MIN_CLIENT_WAIT_SHARE = 0.2
 
 
 class AdapterError(RuntimeError):
@@ -1068,6 +1113,64 @@ def _wait_budget(timeout: float | None, grace: float) -> float | None:
     return max(0.0, timeout - WAIT_RESERVE_SECONDS - grace)
 
 
+def _required_client_wait(budget: float) -> float:
+    """008-001 PC-8 (review hallazgo 1): the wait the client REQUIRES.
+
+    `required = max(MIN_CLIENT_WAIT_SECONDS, MIN_CLIENT_WAIT_SHARE * budget)`.
+    Proportional by design: a fixed floor alone only moves the false `timeout`
+    (a 0.80 s budget with ~0.30 s of preflight plus ~0.38 s of write-ahead
+    leaves 0.12 s, and a healthy client launched into 0.12 s can only be
+    reported as a `timeout`). The share makes the requirement grow with the cota
+    so a larger budget is never spent almost entirely on preparation.
+    """
+    return max(MIN_CLIENT_WAIT_SECONDS, MIN_CLIENT_WAIT_SHARE * budget)
+
+
+def _preparation_deadline(wait_deadline: float, required: float) -> float:
+    """008-001 AJ5/PC-8: the AGGREGATE deadline of the preparation phase.
+
+    The preparation (the mode preflight plus the write-ahead record) may consume
+    the internal budget only down to the wait the client REQUIRES
+    (`_required_client_wait`): the client's own invocation bound and the durable
+    observation come AFTER this deadline (PC-8b, without extending the total
+    cota). The write-ahead step is charged to the dispatch-time guard, which
+    measures the real remainder, not pre-reserved here: on a short cota
+    pre-reserving it shrinks the preflight below what a healthy preflight needs.
+    """
+    return wait_deadline - required
+
+
+def _preparation_op_timeout(configured: float,
+                            deadline: float) -> tuple[float, bool]:
+    """PC-8: the bound of ONE preparation operation, and whether it is the
+    aggregate deadline that bounds it.
+
+    Returns `(timeout, bounded_by_deadline)`. The operation gets the smaller of
+    its configured bound and what is LEFT of the aggregate preparation budget
+    (never the configured bound renewed for every operation, which is how two
+    slow invocations consumed the whole cota). `(0.0, True)` means the deadline
+    is already reached: the caller must NOT run the operation at all.
+    """
+    remaining = deadline - time.monotonic()
+    if remaining <= 0.0:
+        return 0.0, True
+    return min(configured, remaining), remaining <= configured
+
+
+def _preparation_deadline_decision(client_version: str | None = None,
+                                   server_version: str | None = None
+                                   ) -> dict[str, Any]:
+    """PC-8a: the preparation crossed its aggregate deadline.
+
+    A pre-dispatch decision: the client is never launched, so no session is
+    created, no bytes are transported and no receipt is fabricated. The caller
+    renders the diagnosis (it owns the cota and what was consumed).
+    """
+    return {"ok": False, "termination": "blocked", "diagnosis": None,
+            "client_version": client_version, "server_version": server_version,
+            "preparation_deadline": True}
+
+
 # --------------------------------------------- 006-001 T1: mode selection
 
 
@@ -1373,12 +1476,16 @@ def _unauthorized_diagnosis(credential: dict[str, Any]) -> str:
     return " — ".join(parts) + "."
 
 
-def _invoke_version(binary: str, timeout: float) -> tuple[str | None, str | None]:
+def _invoke_version(binary: str,
+                    timeout: float) -> tuple[str | None, str | None, bool]:
     """`binary --version` (D-2: only in server mode), bounded.
 
-    Returns (raw_output, diagnosis); a non-`None` diagnosis means the client
-    version could not be observed (binary could not be started, or did not
-    answer within the bound) -- a transport fact (PD-2 row 1).
+    Returns `(raw_output, diagnosis, cut_by_bound)`; a non-`None` diagnosis
+    means the client version could not be observed (binary could not be started,
+    or did not answer within the bound) -- a transport fact (PD-2 row 1).
+    `cut_by_bound` is the material distinction PC-8 needs: the invocation was
+    killed BY ITS BOUND (the preparation budget ran out) rather than failing on
+    its own (the binary is missing, or refused to run).
     """
     try:
         proc = subprocess.run(
@@ -1387,12 +1494,12 @@ def _invoke_version(binary: str, timeout: float) -> tuple[str | None, str | None
     except subprocess.TimeoutExpired:
         return None, (
             f"destination binary {binary!r} did not answer `--version` "
-            f"within the preflight bound ({timeout} seconds)")
+            f"within the preflight bound ({timeout} seconds)"), True
     except OSError as exc:
-        return None, f"destination binary {binary!r} could not be started: {exc}"
+        return None, f"destination binary {binary!r} could not be started: {exc}", False
     output = (proc.stdout or b"").decode("utf-8", errors="replace")
     output += "\n" + (proc.stderr or b"").decode("utf-8", errors="replace")
-    return output, None
+    return output, None, False
 
 
 def _preflight_get_info(server_url: str, password: str | None,
@@ -1401,8 +1508,13 @@ def _preflight_get_info(server_url: str, password: str | None,
 
     Never honors a host HTTP(S) proxy: a proxy would both break the loopback
     server and leak the Basic credential to a third party. Returns a `kind`
-    discriminant: `transport-error`/`unauthorized`/`not-found`/`no-json`/
-    `no-version`/`ok` (with `version_raw` when `ok`).
+    discriminant: `transport-error`/`timeout`/`unauthorized`/`not-found`/
+    `no-json`/`no-version`/`ok` (with `version_raw` when `ok`).
+
+    `timeout` is the material distinction PC-8 adds: the read was cut BY ITS
+    BOUND (the preparation budget ran out) instead of failing to reach the
+    server (refused, DNS, TLS). The caller never degrades a budget exhaustion
+    into a "not reachable" diagnosis.
 
     The HTTP stack (`urllib.request`/`urllib.error` and `base64`, with the
     `http.client`/`ssl`/`email`/`tempfile` subtree they pull in) is imported
@@ -1433,7 +1545,14 @@ def _preflight_get_info(server_url: str, password: str | None,
             body = exc.read()
         except OSError:
             body = b""
-    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+    except urllib.error.URLError as exc:
+        # PC-8: a read cut by the bound is NOT "the server is not reachable".
+        if isinstance(getattr(exc, "reason", None), TimeoutError):
+            return {"kind": "timeout", "detail": str(exc)}
+        return {"kind": "transport-error", "detail": str(exc)}
+    except TimeoutError as exc:
+        return {"kind": "timeout", "detail": str(exc)}
+    except OSError as exc:
         return {"kind": "transport-error", "detail": str(exc)}
     if status in (401, 403):
         return {"kind": "unauthorized"}
@@ -1452,13 +1571,24 @@ def _preflight_get_info(server_url: str, password: str | None,
 
 
 def _preflight_server(binary: str, server_raw: str, timeout: float,
-                      binary_version_configured: str | None) -> dict[str, Any]:
+                      binary_version_configured: str | None, *,
+                      deadline: float = float("inf")) -> dict[str, Any]:
     """Spec §2.3: client version, then `GET /api/info`, within `timeout`.
 
     Returns {"ok", "termination", "diagnosis", "note", "client_version",
-    "server_version", "credential_value"}. `client_version` is always the
-    OBSERVED `--version` fact (I8 provenance) and the ONLY control is the
-    comparison between the two OBSERVED versions (client against server).
+    "server_version", "credential_value"} plus `preparation_deadline: True`
+    when the AGGREGATE preparation deadline (`deadline`, PC-8) cut an
+    operation: then the request consumes no more of the cota and the caller
+    declares the preparatory exhaustion instead of a false transport failure.
+
+    008-001 AJ5/PC-8: `timeout` is the configured bound of ONE operation; the
+    aggregate deadline bounds the whole preparation, so the two invocations
+    never get the configured bound renewed (which is how the preparation used
+    to consume the entire budget and leave the client `0.0` seconds).
+
+    `client_version` is always the OBSERVED `--version` fact (I8 provenance) and
+    the ONLY control is the comparison between the two OBSERVED versions (client
+    against server).
 
     U6-8 (owner decision, `execution.md` §hallazgo U6-8): `binary_version` is
     OPTIONAL and informative. A difference with the OBSERVED version is
@@ -1468,8 +1598,14 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
     relayed to the caller so it can be injected into the CLIENT process
     environment (never into the preflight document that is emitted).
     """
-    version_output, version_diag = _invoke_version(binary, timeout)
+    version_timeout, version_bounded = _preparation_op_timeout(timeout, deadline)
+    if version_timeout <= 0.0:
+        return _preparation_deadline_decision()
+    version_output, version_diag, version_cut = _invoke_version(
+        binary, version_timeout)
     if version_diag is not None:
+        if version_cut and version_bounded:
+            return _preparation_deadline_decision()
         return {"ok": False, "termination": "transport-error",
                 "diagnosis": version_diag, "client_version": None,
                 "server_version": None}
@@ -1477,8 +1613,17 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
     configured_client_version = _parse_semver(binary_version_configured)
 
     credential = _preflight_credential()
-    info = _preflight_get_info(server_raw, credential["value"], timeout)
+    info_timeout, info_bounded = _preparation_op_timeout(timeout, deadline)
+    if info_timeout <= 0.0:
+        return _preparation_deadline_decision(observed_client_version)
+    info = _preflight_get_info(server_raw, credential["value"], info_timeout)
     kind = info["kind"]
+    if kind == "timeout":
+        if info_bounded:
+            return _preparation_deadline_decision(observed_client_version)
+        # Cut by the CONFIGURED preflight bound while the preparation budget
+        # still had room: the pre-existing transport classification, unchanged.
+        kind = "transport-error"
     if kind == "transport-error":
         return {"ok": False, "termination": "transport-error",
                 "diagnosis": (
@@ -1545,14 +1690,16 @@ def _preflight_server(binary: str, server_raw: str, timeout: float,
 
 
 def _invoke_service_status(binary: str, timeout: float
-                           ) -> tuple[str | None, int, str | None]:
+                           ) -> tuple[str | None, int, str | None, bool]:
     """`binary service status` (spec §2.3b point 1), bounded and read-only.
 
     The ONLY invocation of `service` CDAD ever makes (INV-2): the subcommand
     prints the service URL or `stopped` and starts nothing (observed fact).
-    Returns `(stdout, rc, diagnosis)`; a `None` stdout means the subcommand
-    could not be observed (timeout, or the binary could not be started) -- a
-    fail-closed `unexpected` answer, never a standalone.
+    Returns `(stdout, rc, diagnosis, cut_by_bound)`; a `None` stdout means the
+    subcommand could not be observed (timeout, or the binary could not be
+    started) -- a fail-closed `unexpected` answer, never a standalone.
+    `cut_by_bound` (PC-8) separates "the preparation budget ran out" from "the
+    subcommand failed on its own".
     """
     try:
         proc = subprocess.run(
@@ -1561,11 +1708,11 @@ def _invoke_service_status(binary: str, timeout: float
     except subprocess.TimeoutExpired:
         return None, -1, (
             f"`service status` did not answer within the preflight bound "
-            f"({timeout} seconds)")
+            f"({timeout} seconds)"), True
     except OSError as exc:
-        return None, -1, f"destination binary {binary!r} could not be started: {exc}"
+        return None, -1, f"destination binary {binary!r} could not be started: {exc}", False
     output = (proc.stdout or b"").decode("utf-8", errors="replace")
-    return output, proc.returncode, None
+    return output, proc.returncode, None, False
 
 
 def _interpret_service_status(output: str | None, rc: int) -> str:
@@ -1638,7 +1785,8 @@ def _read_service_version(registry_path: Path) -> str | None:
 
 
 def _preflight_service(binary: str, timeout: float, require: bool,
-                       binary_version_configured: str | None) -> dict[str, Any]:
+                       binary_version_configured: str | None, *,
+                       deadline: float = float("inf")) -> dict[str, Any]:
     """Spec §2.3b: `service status` once, then -- only if it RUNS -- the D-11
     version gate and the client `--version`.
 
@@ -1647,10 +1795,22 @@ def _preflight_service(binary: str, timeout: float, require: bool,
     it is the pre-dispatch termination with its actionable diagnosis. The dict
     carries the provenance values (`mode_effective`, `dispatch_flags`,
     `service_status`, `fallback`, `client_version`, `server_version`).
+
+    008-001 AJ5/PC-8: as in the server mode, `timeout` bounds ONE operation and
+    the AGGREGATE preparation `deadline` bounds the whole preparation; an
+    operation cut by that deadline answers `preparation_deadline: True` (the
+    caller declares the preparatory exhaustion) instead of a fail-closed
+    `unexpected` that hides the budget fact.
     """
-    output, rc, status_diag = _invoke_service_status(binary, timeout)
+    status_timeout, status_bounded = _preparation_op_timeout(timeout, deadline)
+    if status_timeout <= 0.0:
+        return _preparation_deadline_decision()
+    output, rc, status_diag, status_cut = _invoke_service_status(
+        binary, status_timeout)
     status = _interpret_service_status(output, rc)
     if status == SERVICE_STATUS_UNEXPECTED:
+        if status_cut and status_bounded:
+            return _preparation_deadline_decision()
         detail = status_diag or "salida no reconocible de `service status`"
         return {
             "termination": "blocked",
@@ -1695,8 +1855,14 @@ def _preflight_service(binary: str, timeout: float, require: bool,
         }
     # The service RUNS: observe the client version (D-2: `--version` only when
     # it runs) BEFORE the D-11 version gate.
-    version_output, version_diag = _invoke_version(binary, timeout)
+    version_timeout, version_bounded = _preparation_op_timeout(timeout, deadline)
+    if version_timeout <= 0.0:
+        return _preparation_deadline_decision()
+    version_output, version_diag, version_cut = _invoke_version(
+        binary, version_timeout)
     if version_diag is not None:
+        if version_cut and version_bounded:
+            return _preparation_deadline_decision()
         return {
             "termination": "blocked",
             "diagnosis": version_diag,
@@ -2075,7 +2241,7 @@ def _observed_binary_version(binary: str | None) -> tuple[str, str | None]:
         return VERSION_UNKNOWN, (
             "the execution configuration declares no destination binary "
             "(`binary`): the version cannot be observed")
-    output, diagnosis = _invoke_version(
+    output, diagnosis, _cut = _invoke_version(
         binary, DEFAULT_WAIT_VALUES["preflight_timeout_seconds"])
     if diagnosis is not None:
         return VERSION_UNKNOWN, diagnosis
@@ -2599,6 +2765,51 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
             "blocked", diagnosis, client_version=client_version,
             server_version=server_version)
 
+    def preparation_exhausted(stage: str, *, write_ahead_written: bool = False,
+                              client_version: str | None = None,
+                              server_version: str | None = None
+                              ) -> dict[str, Any]:
+        """008-001 AJ5/PC-8a: the preparation consumed what the client requires.
+
+        The runtime client is NOT launched: no session exists, no bytes are
+        transported and no receipt is fabricated. The diagnosis names the
+        PREPARATORY EXHAUSTION -- the stage, the cota, the budget the
+        preparation consumed, what is left and the REQUIRED wait with its
+        composition (review hallazgo 1: proportional, never a fixed floor
+        alone) -- and never a `bounded wait (0.0 seconds)`, which is the FALSE
+        `timeout` PC-8 forbids (a healthy client killed at a near-zero bound is
+        reported as if it had not answered). `write_ahead_written` states WHICH
+        fact triggered it: the aggregate preparation deadline (the preflight) or
+        the remainder left after the write-ahead record.
+        """
+        remaining = max(0.0, wait_deadline - time.monotonic())
+        consumed = (budget or 0.0) - remaining
+        if write_ahead_written:
+            budget_clause = (
+                f"and the {remaining:.2f}s left for the client are below the "
+                f"required minimum useful wait ({required:.2f}s)")
+        else:
+            budget_clause = (
+                f"leaving only the {remaining:.2f}s kept for the client's "
+                f"required minimum useful wait ({required:.2f}s)")
+        diagnosis = (
+            f"preparatory exhaustion (agotamiento preparatorio): the "
+            f"preparation ({stage}) consumed {consumed:.2f}s of the "
+            f"{budget:.2f}s internal budget of the {timeout} seconds cota "
+            f"(`wait.timeout_seconds`), {budget_clause} -- required = "
+            f"max(MIN_CLIENT_WAIT_SECONDS={MIN_CLIENT_WAIT_SECONDS}s, "
+            f"MIN_CLIENT_WAIT_SHARE={MIN_CLIENT_WAIT_SHARE} of the "
+            f"{budget:.2f}s internal budget). The preparation deadline was "
+            "reached BEFORE the runtime client was launched, so it was NOT "
+            "launched: no session exists, no bytes were transported and no "
+            "receipt is fabricated (PD-7/PD-8: a client launched without a "
+            "useful budget is killed at a near-zero bound and reported as a "
+            "FALSE timeout). Reconcile the cota (`wait.timeout_seconds`) or "
+            "the cost of the preflight before repeating the delegation.")
+        return pre_dispatch_termination(
+            "blocked", diagnosis, client_version=client_version,
+            server_version=server_version)
+
     # 006-003 D3/§2.2: the model comes ONLY from the delegation config, by
     # destination and role (no fallback to the exec-config, which is now
     # ignored). A config that cannot be parsed fails closed before anything
@@ -2673,6 +2884,13 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                 TERMINATE_GRACE_FRACTION * (timeout - WAIT_RESERVE_SECONDS))
     budget = _wait_budget(timeout, grace)
     wait_deadline = time.monotonic() + (budget or 0.0)
+    # 008-001 AJ5/PC-8: ONE aggregate deadline for the whole preparation
+    # (preflight + write-ahead). It never extends the total cota: it only
+    # refuses to spend the wait the client REQUIRES for its own invocation and
+    # the durable observation (PC-8b). The requirement is proportional to the
+    # budget (review hallazgo 1), not a fixed floor.
+    required = _required_client_wait(budget or 0.0)
+    preparation_deadline = _preparation_deadline(wait_deadline, required)
 
     # 006-001 §2.7 (PD-9/D-6): a LIVE prior attempt of the SAME packet blocks
     # BEFORE anything is invoked -- no re-dispatch, no standalone next to a
@@ -2717,16 +2935,20 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     # `None` in standalone/service: nothing is injected there.
     client_credential: str | None = None
     if mode_effective == "server":
-        remaining = max(0.0, wait_deadline - time.monotonic())
-        # §2.3: bounded by the REMAINING budget, never by the configured
-        # value alone (an exhausted budget must not fall back to the
-        # largest timeout).
-        preflight_timeout = min(preflight_timeout_configured, remaining)
-        preflight = _preflight_server(binary, server_raw, preflight_timeout,
-                                      binary_version)
+        # §2.3: bounded by the AGGREGATE preparation deadline and by the
+        # configured `preflight_timeout_seconds` of EACH operation -- never by
+        # the configured value alone (an exhausted budget must not fall back to
+        # the largest timeout) and never renewed per operation (PC-8).
+        preflight = _preflight_server(binary, server_raw,
+                                      preflight_timeout_configured,
+                                      binary_version, deadline=preparation_deadline)
         client_version = preflight["client_version"]
         server_version = preflight["server_version"]
         if not preflight["ok"]:
+            if preflight.get("preparation_deadline"):
+                return preparation_exhausted(
+                    "server preflight", client_version=client_version,
+                    server_version=server_version)
             return pre_dispatch_termination(
                 preflight["termination"], preflight["diagnosis"],
                 client_version=client_version, server_version=server_version)
@@ -2740,10 +2962,17 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     elif mode_effective == "service":
         # 006-001 §2.3b (PD-13/PD-14): `service status` once, then the D-11
         # version gate; any declared `server` is ignored and never checked.
-        remaining = max(0.0, wait_deadline - time.monotonic())
-        preflight_timeout = min(preflight_timeout_configured, remaining)
-        service = _preflight_service(binary, preflight_timeout, service_require,
-                                     binary_version)
+        # PC-8: both invocations share the SAME aggregate preparation deadline.
+        service = _preflight_service(binary, preflight_timeout_configured,
+                                     service_require, binary_version,
+                                     deadline=preparation_deadline)
+        # A preparation that crossed its deadline carries no mode: it is the
+        # pre-dispatch decision itself (nothing was observed as dispatchable).
+        if service.get("preparation_deadline"):
+            return preparation_exhausted(
+                "service preflight",
+                client_version=service.get("client_version"),
+                server_version=service.get("server_version"))
         mode_effective = service["mode_effective"]
         dispatch_flags = service["dispatch_flags"]
         service_status = service["service_status"]
@@ -2801,19 +3030,23 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
                 "(D-U65-1 fail-closed): "
                 f"{str(exc)[:300]}"))
 
-    # §2.5 (D-3, PD-11): the client dispatch gets whatever the preflight left
-    # of the budget, but NEVER less than its declared share: a slow preflight
-    # must not kill a healthy client at a near-zero bound and report a FALSE
-    # `timeout`. The floor is CAPPED (review B1) so the adapter ALWAYS answers
-    # with its own envelope inside the interface's bound: the consumed time is
-    # already reflected in `remaining`, so the admissible ceiling is `remaining`
-    # plus whatever reserve slack the effective grace and the completion margin
-    # leave free (clamped at zero -- a large grace consumes the whole reserve).
-    # Without the cap a proportional floor could push the answer past the cota
-    # and let the INTERFACE kill the adapter, emitting its own envelope with
-    # `session: null` (the very result PD-11/PD-8 forbid).
-    client_floor = (budget or 0.0) * CLIENT_MIN_BUDGET_SHARE
+    # §2.5 (D-3, PD-11) + 008-001 AJ5/PC-8a: the client dispatch gets what the
+    # preparation left of the budget -- but NEVER less than it REQUIRES
+    # (`required`, proportional to the budget: review hallazgo 1). Below that,
+    # the client is NOT launched: a healthy client launched into a near-zero
+    # bound is reported as a FALSE `timeout` (PD-7/PD-8), which is the defect
+    # PC-8 closes. Otherwise the dispatch keeps its declared share (the floor,
+    # CAPPED by review B1) so a slow preparation never kills a healthy client at
+    # a near-zero bound. The consumed time is already reflected in `remaining`,
+    # so the admissible ceiling is `remaining` plus whatever reserve slack the
+    # effective grace and the completion margin leave free (clamped at zero -- a
+    # large grace consumes the whole reserve).
     remaining = max(0.0, wait_deadline - time.monotonic())
+    if remaining < required:
+        return preparation_exhausted(
+            "preflight and write-ahead preparation", write_ahead_written=True,
+            client_version=client_version, server_version=server_version)
+    client_floor = (budget or 0.0) * CLIENT_MIN_BUDGET_SHARE
     floor_ceiling = remaining + max(
         0.0, WAIT_RESERVE_SECONDS - grace - COMPLETION_MARGIN_SECONDS)
     remaining_for_invoke = max(remaining, min(client_floor, floor_ceiling))

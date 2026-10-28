@@ -92,6 +92,7 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_packet  # noqa: E402
+import cdad_lifecycle  # noqa: E402
 
 CHECKPOINT_CONTRACT = "continuity-checkpoint-v1"
 RECORD_CONTRACT = "active-record-v1"
@@ -283,19 +284,6 @@ def _materialization_dir(root: Path, execution_id: str, packet_id: str) -> Path:
 # ------------------------------------------------------------------ body
 
 
-def _execution_identity(document: dict[str, Any]) -> Any:
-    """RU-1: the REAL 001 context publishes its identity nested as
-    `execution.id`; the flat `execution_id` of the synthetic fixtures is kept
-    for compatibility. Anything else (both absent) falls through to fail
-    closed in `_safe_segment`, naming `execution_id`."""
-    execution = document.get("execution")
-    if isinstance(execution, dict):
-        nested = execution.get("id")
-        if isinstance(nested, str) and nested.strip():
-            return nested
-    return document.get("execution_id")
-
-
 def _state_delegation(root: Path) -> dict[str, Any]:
     """D4: when the context carries no `hitl_delegation`, the authority is read
     from `docs/.cdad-state.json` — structured fields ONLY (prose is never
@@ -315,53 +303,73 @@ def _state_delegation(root: Path) -> dict[str, Any]:
 
 def _state_authority(root: Path) -> dict[str, Any]:
     """Normalize the state delegation into the authority vocabulary
-    (`authority_ref` = `source`; `state` in active|expired|unknown), reading
-    only structured fields (D4/review-t4-ru1): `revoked_at` present or
-    `status` != `active` → expired; an ISO `expires_on` in the past → expired;
-    a delegation with a `source` and no date expires by events (active); no
-    delegation → unknown."""
+    (`authority_ref` = `source`; `state` in active|expired|unknown).
+
+    The CLASSIFICATION is not made here (008-003 §4.3/PC-06): the shared core
+    `cdad_lifecycle.classify_authority` decides vigencia from the declared
+    facts, and the normalized record keeps those facts (`status`, `revoked_at`,
+    `source`, `expires_on`) so a later evaluation reaches the same verdict
+    without deciding again here. `state` is the PRESENTATION of that verdict,
+    not a second criterion."""
     delegation = _state_delegation(root)
     if not delegation:
         return {}
-    source = delegation.get("source")
-    revoked_at = delegation.get("revoked_at")
-    status = delegation.get("status")
+    authority = cdad_lifecycle.classify_authority(delegation, today=date.today())
+    if authority.kind == cdad_lifecycle.ABSENT:
+        return {}
+    normalized: dict[str, Any] = {
+        "authority_ref": authority.source,
+        "state": _AUTHORITY_PRESENTATION[authority.kind],
+    }
+    for declared in ("status", "revoked_at", "source"):
+        if declared in delegation:
+            normalized[declared] = delegation[declared]
     expires_on = delegation.get("expires_on")
-    reason: str | None = None
-    if revoked_at is not None:
-        state = "expired"
-        reason = f"revoked_at={revoked_at!r}"
-    elif isinstance(status, str) and status and status != "active":
-        state = "expired"
-        reason = f"status={status!r}"
-    elif isinstance(expires_on, str) and expires_on.strip():
-        try:
-            expiry = date.fromisoformat(expires_on.strip())
-        except ValueError:
-            state = "unknown"
-            reason = f"expires_on={expires_on!r} is not an ISO date"
-        else:
-            state = "expired" if expiry < date.today() else "active"
-            if state == "expired":
-                reason = f"expires_on={expires_on!r} is in the past"
-    elif isinstance(source, str) and source.strip():
-        # Expires by events; 001 validates vigencia in `prepare` (D4).
-        state = "active"
-    else:
-        state = "unknown"
-    normalized: dict[str, Any] = {"authority_ref": source, "state": state}
     if isinstance(expires_on, str):
         normalized["expires_on"] = expires_on
-    if reason is not None:
-        normalized["reason"] = reason
+    if authority.reason is not None:
+        normalized["reason"] = authority.reason
     return normalized
+
+
+#: The public vocabulary of `authority.state` (§4.3: presentation only).
+_AUTHORITY_PRESENTATION = {
+    cdad_lifecycle.ACTIVE: "active",
+    cdad_lifecycle.EXPIRED: "expired",
+    cdad_lifecycle.REVOKED: "expired",
+    cdad_lifecycle.UNKNOWN: "unknown",
+}
+
+
+def _located_execution_id(root: Path, path: Path) -> str | None:
+    """The identity implied by the canonical location of a context
+    (`.cdad/executions/<id>/execution.json`), or None when the document lives
+    anywhere else (a copy, a fixture, the real 001 context)."""
+    try:
+        relative = path.resolve().relative_to(root.resolve())
+    except (OSError, ValueError):
+        return None
+    parts = relative.parts
+    if len(parts) == 4 and parts[0] == CONTINUITY_TREE[0] and \
+            parts[1] == CONTINUITY_TREE[1] and parts[3] == "execution.json":
+        return parts[2]
+    return None
 
 
 def _load_execution_context(root: Path, path: Path) -> dict[str, Any]:
     document = _read_json(path, "execution context")
     if not isinstance(document, dict):
         raise ContinuityError("execution context must be a JSON object")
-    execution_id = _execution_identity(document)
+    execution = document.get("execution")
+    nested = execution.get("id") if isinstance(execution, dict) else None
+    # PC-01/§4.2: the supplied identity never accredits itself — the nested and
+    # flat declarations and the canonical location must agree before any write.
+    identity = cdad_lifecycle.resolve_execution_identity(
+        declared=nested, flat=document.get("execution_id"),
+        located=_located_execution_id(root, path))
+    if not identity.allowed:
+        raise ContinuityError(identity.message())
+    execution_id = identity.facts["execution_id"]
     _safe_segment(execution_id, "execution_id")
     document["execution_id"] = execution_id
     if not isinstance(document.get("hitl_delegation"), dict):
@@ -396,25 +404,25 @@ def _authority_view(exec_context: dict[str, Any]) -> dict[str, Any]:
 
 
 def _authority_state(exec_context: dict[str, Any]) -> str:
-    """D4: validity is read from the structured state, never from prose.
+    """D4/§4.3: validity is read from the structured facts, never from prose.
 
-    A state-sourced delegation declares its vigencia explicitly (`active` =
-    expires by events); it is returned as-is and its prose `expires` is never
-    parsed. Otherwise a missing/unparseable `expires_on` stays `unknown` (never
-    fabricated as current); an `expires_on` in the past is `expired`.
-    """
+    The verdict is the shared one (`cdad_lifecycle.classify_authority`); this
+    function only maps it to the PUBLIC vocabulary of the read envelopes —
+    `current` for a dated delegation that is still vigente, `active` when the
+    delegation already declares that presentation (state-sourced, expires by
+    events), `expired` and `unknown` otherwise. Presentation only: the
+    criterion is not decided here."""
     delegation = _delegation(exec_context)
-    explicit = delegation.get("state")
-    if isinstance(explicit, str) and explicit:
-        return explicit
-    expires_on = delegation.get("expires_on")
-    if not isinstance(expires_on, str) or not expires_on.strip():
+    authority = cdad_lifecycle.classify_authority(
+        delegation, today=date.today())
+    if authority.kind == cdad_lifecycle.ACTIVE:
+        # A delegation that expires by events already declares the presentation
+        # `active`; a dated one is `current`. The verdict is the same.
+        declared = delegation.get("state")
+        return declared if declared in ("active", "current") else "current"
+    if authority.kind == cdad_lifecycle.ABSENT:
         return "unknown"
-    try:
-        expiry = date.fromisoformat(expires_on.strip())
-    except ValueError:
-        return "unknown"
-    return "expired" if expiry < date.today() else "current"
+    return _AUTHORITY_PRESENTATION[authority.kind]
 
 
 def _resolve_reference_declaration(raw: Any) -> dict[str, Any]:
@@ -567,49 +575,39 @@ def _require_content_fields(update: dict[str, Any]) -> None:
 
 
 def _require_current_authority(exec_context: dict[str, Any]) -> None:
-    """D4/D6 + plan T2: an expired HITL delegation may reconstruct context but
-    never writes a checkpoint (no dispatch/materialize authorization)."""
-    if _authority_state(exec_context) != "expired":
-        return
-    delegation = _delegation(exec_context)
-    detail = delegation.get("reason") or (
-        f"expires_on={delegation.get('expires_on')!r}")
-    raise ContinuityError(
-        f"HITL delegation is expired ({detail}): refusing to write a "
-        "checkpoint — expired authority reconstructs context but never "
-        "authorizes effects (D4)")
+    """D4/D6 + plan T2 + §4.3/PC-03: ONE criterion of authority — an expired,
+    revoked or UNKNOWN HITL delegation may reconstruct context but never writes
+    a checkpoint (no dispatch/materialize authorization). The verdict is the
+    shared one; this border only refuses."""
+    decision = cdad_lifecycle.require_authority(
+        _delegation(exec_context), today=date.today(),
+        operation="a continuity write")
+    if not decision.allowed:
+        raise ContinuityError(
+            f"{decision.message()} — refusing to write a checkpoint "
+            "(D4/§4.3)")
 
 
 def _require_reanchor_authority(root: Path,
                                exec_context: dict[str, Any]) -> None:
+    """§4.3/PC-06: the vigencia is decided by the shared core; this border adds
+    the PHYSICAL check the core cannot make — the declared authority reference
+    is a readable file inside the project."""
     delegation = _delegation(exec_context)
     if not delegation:
         return  # Direct owner approval is valid without a delegation record.
-    status = delegation.get("state", delegation.get("status"))
-    if status is not None and status not in ("active", "current"):
-        raise ContinuityError("registered delegation vigencia is not verifiable")
-    if delegation.get("revoked_at") is not None or status in {
-            "expired", "revoked", "user-revoked", "revoked-by-user"}:
-        raise ContinuityError("HITL delegation is expired or revoked")
-    reference = delegation.get("authority_ref")
+    decision = cdad_lifecycle.require_authority(
+        delegation, today=date.today(), operation="a reanchor")
+    if not decision.allowed:
+        raise ContinuityError(
+            f"registered delegation is not vigente: {decision.message()}")
+    reference = delegation.get("authority_ref") or delegation.get("source")
     if not isinstance(reference, str) or not reference.strip():
         raise ContinuityError("registered delegation has no verifiable authority_ref")
     rel = _normalize_reference(reference)
     authority_path = (root / rel).resolve()
     if root not in authority_path.parents or not authority_path.is_file():
         raise ContinuityError("registered delegation authority_ref is not a readable project file")
-    if "expires_on" in delegation:
-        expires_on = delegation.get("expires_on")
-        if not isinstance(expires_on, str):
-            raise ContinuityError("delegation expires_on is invalid")
-        try:
-            expiry = date.fromisoformat(expires_on)
-        except ValueError as exc:
-            raise ContinuityError("delegation expires_on is invalid") from exc
-        if expiry < date.today():
-            raise ContinuityError("HITL delegation is expired")
-    elif status not in ("active", "current"):
-        raise ContinuityError("registered delegation vigencia is not verifiable")
 
 
 def _canonical_body(exec_context: dict[str, Any], update: dict[str, Any],
@@ -966,9 +964,55 @@ def _same_key(head: dict[str, Any], body: dict[str, Any]) -> bool:
             and head.get("attempt") == body.get("attempt"))
 
 
+def _published_link(chain: dict[str, Any] | None,
+                    body: dict[str, Any]) -> tuple[int, str, dict[str, Any]] | None:
+    """§4.4/PC-04: the link of the demonstrable chain whose content — everything
+    but the single top-level `prev` — IS this body, or None.
+
+    Content equality already implies identity agreement (the key lives inside
+    the body), so a hit means the write is ALREADY published: a replay, never a
+    new effect."""
+    if chain is None:
+        return None
+    for index, (sha, published) in enumerate(chain["links"]):
+        if _content_without_prev(published) == body:
+            return index, sha, published
+    return None
+
+
+def _replay_envelope(exec_context: dict[str, Any], head: dict[str, Any],
+                     chain: dict[str, Any],
+                     link: tuple[int, str, dict[str, Any]],
+                     limit: int) -> dict[str, Any]:
+    """The envelope of a replay: the identity of the PUBLISHED link it
+    recognized (never a new write), with `no_op` set."""
+    index, sha, published = link
+    head_seq = head.get("seq")
+    seq = head_seq - index if isinstance(head_seq, int) else None
+    prev = published.get(PREV_FIELD)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "checkpoint": CHECKPOINT_CONTRACT,
+        "execution_id": exec_context["execution_id"],
+        "packet_id": published.get("packet_id"),
+        "attempt": published.get("attempt"),
+        "record": published.get("record"),
+        "seq": seq,
+        "body_sha256": sha,
+        "prev_checkpoint_sha256": (
+            prev.get("checkpoint_sha256") if isinstance(prev, dict) else None),
+        "references": published.get("references", []),
+        "bytes": len(_canonical_bytes(published)),
+        "max_bytes": (head.get("max_bytes") if index == 0
+                      and isinstance(head.get("max_bytes"), int) else limit),
+        "no_op": True,
+    }
+
+
 def plan_write(root: Path, execution_context_path: Path, update: dict[str, Any],
                *, command: str = "checkpoint",
-               max_bytes: int | None = None) -> dict[str, Any]:
+               max_bytes: int | None = None,
+               state: dict[str, Any] | None = None) -> dict[str, Any]:
     """Compute — never publish — the atomic writes of ONE continuity write.
 
     007-006 (review-002) needs the checkpoint of a retirement to travel in the
@@ -978,20 +1022,35 @@ def plan_write(root: Path, execution_context_path: Path, update: dict[str, Any],
     no-op), and `envelope` is the document the CLI prints.
 
     Returns `{"writes": [(path, bytes), …], "envelope": {…}}`: the canonical
-    body first and the head that chains it second."""
+    body first and the head that chains it second.
+
+    It is a PROGRAMMATIC border, not a presentation of the CLI: the §4.4 order
+    is applied here too (§5 PC-01/PC-02/PC-06), because a caller that plans a
+    write never passes through `main()`.
+
+    `state` is the project state the operation is being decided against: the
+    caller may pass the state it is about to publish, so a resume that removes
+    the unit from the suspension registry is judged on the state it creates,
+    not on the one it replaces (the same fact the CLI reads from disk)."""
     exec_context = _load_execution_context(root, execution_context_path)
     return _plan_write(root, exec_context, update, command=command,
-                       max_bytes=max_bytes)
+                       max_bytes=max_bytes,
+                       context_path=execution_context_path, state=state)
 
 
 def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any],
                 *, command: str,
-                max_bytes: int | None) -> dict[str, Any]:
+                max_bytes: int | None,
+                context_path: Path | None = None,
+                state: dict[str, Any] | None = None) -> dict[str, Any]:
     """`plan_write` over an already loaded execution context (the CLI reads it
     once, exactly as before)."""
+    # §4.4 (1): identity, owner and the necessary evidence — always, before any
+    # decision. The suspension is NOT checked here: it belongs to step (3).
+    unit = _accredited_unit(root, context_path, exec_context, state=state)
+    _require_unit_identity(unit)
     _require_key_fields(update)
     _require_content_fields(update)
-    _require_current_authority(exec_context)
     record = "begin" if command == "begin" else "checkpoint"
     declared_changes = _declared_changes(update)
 
@@ -1016,35 +1075,50 @@ def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any]
     body = _canonical_body(exec_context, update, references, record,
                            changes=changes, evidence=evidence)
 
-    if head is not None and head.get("record") != "reanchor" and _same_key(head, body):
-        # Same idempotency key. §2.3.1: the repetition comparison is the whole
-        # content of the head body minus its single top-level `prev`; `prev`
-        # itself is derived from the validated head, so it never reaches this
-        # comparison and is never a no-op bypass.
-        if _content_without_prev(head_body) == body:
-            no_op = dict(head)
-            no_op["no_op"] = True
-            return {"writes": [], "envelope": no_op}
-        resumed_unit = (
-            head_body.get("record") == "checkpoint"
-            and isinstance(head_body.get("decisions"), list)
-            and any(isinstance(item, dict)
-                    and isinstance(item.get("decision"), str)
-                    and item["decision"].startswith("Resumed suspended unit ")
-                    for item in head_body.get("decisions", []))
-        )
-        if command != "checkpoint" and not (command == "begin" and resumed_unit):
-            raise ContinuityError(
-                "split-brain: a "
-                f"{command} with the same idempotency key (execution_id="
-                f"{execution_id!r}, packet_id={body.get('packet_id')!r}, "
-                f"attempt={body.get('attempt')!r}) diverges from the head (head "
-                f"body {head.get('body_sha256')}, attempted body "
-                f"{_sha256(_canonical_bytes(body))}); refusing to overwrite the "
-                "head — escalate (O1/D7)")
-        # P5 (003-007): a divergent `checkpoint` with the head's key is NOT a
-        # split-brain — it appends a new link (seq+1, prev = body of the head),
-        # preserving the previous link as evidence. Fall through to write.
+    # §4.4/PC-04: the REPLAY is recognized by the evidence that already exists —
+    # the same content (minus the single top-level `prev`) published anywhere in
+    # the demonstrable chain. It is decided BEFORE any eligibility of a new
+    # effect: an identical `checkpoint` repeated after the active state advanced
+    # converges without adding a link, and the same write is never published
+    # twice. The order (replay → conflict → new effect) and the three outcomes
+    # are the shared core's (`decide_continuity_write`); this border only
+    # GATHERS the facts: the published link, the head's key and content.
+    replay = _published_link(chain, body)
+    same_key = (replay is None and head is not None and _same_key(head, body))
+    decision = cdad_lifecycle.decide_continuity_write(
+        command=command, published=replay is not None,
+        head_key_matches=same_key,
+        head_record=head.get("record") if head is not None else None,
+        head_decisions=head_body.get("decisions"),
+        key={"execution_id": execution_id, "packet_id": body.get("packet_id"),
+             "attempt": body.get("attempt")},
+        head_sha256=head.get("body_sha256") if head is not None else None,
+        attempted_sha256=_sha256(_canonical_bytes(body)))
+    if decision.facts.get("outcome") == cdad_lifecycle.REPLAY:
+        return {"writes": [],
+                "envelope": _replay_envelope(exec_context, head, chain, replay,
+                                             limit)}
+    if not decision.allowed:
+        raise ContinuityError(decision.message())
+
+    # 008-004 PC-01/PC-06 (§Referencias y nuevo begin): the facts left a NEW
+    # effect of a CDAD commission, so its packet must verify and no `contract`
+    # reference may fall inside the packet's own write_scope. Both rules govern
+    # new effects only: the replay recognized above already converged and never
+    # reaches this point. Nothing has been written yet.
+    if command == "begin":
+        admission = _admit_packet(root, body.get("packet_id"), state)
+        if admission is not None:
+            _refuse_covered_contract_references(
+                root, body.get("packet_id"), admission[0], admission[1],
+                references)
+
+    # §4.4 (3): the facts left a NEW effect, so its eligibility is required —
+    # authority first, then the suspension of the ACCREDITED owner (§4.3): a
+    # replay recognized above never reaches this point and therefore never asks
+    # for an authority or a unit that the repetition does not need.
+    _require_current_authority(exec_context)
+    _require_owner_operable(unit)
 
     # §2.3.1: only AFTER deciding to publish is the link derived from the
     # validated head, the complete body serialized, the byte limit applied and
@@ -1077,15 +1151,17 @@ def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any]
     }
 
 
-def _run_write(command: str, args: argparse.Namespace) -> int:
+def _run_write(command: str, args: argparse.Namespace, *,
+               state: dict[str, Any] | None = None) -> int:
     root = Path(args.project_root)
-    exec_context = _load_execution_context(
-        root, _resolve(root, args.execution_context))
+    context_path = _resolve(root, args.execution_context)
+    exec_context = _load_execution_context(root, context_path)
     update = _read_json(_resolve(root, args.update), "update")
     if not isinstance(update, dict):
         raise ContinuityError("update must be a JSON object")
     plan = _plan_write(root, exec_context, update, command=command,
-                       max_bytes=args.max_bytes)
+                       max_bytes=args.max_bytes, context_path=context_path,
+                       state=state)
     for path, data in plan["writes"]:
         _write_synced(path, data)
     _emit(plan["envelope"])
@@ -1126,6 +1202,105 @@ def _active_packet(root: Path, packet_id: str) -> None:
             f"el paquete activo no corresponde al request: el estado declara "
             f"{active_id!r} y la comprobación de continuidad exige "
             f"{packet_id!r} (§2.1)")
+
+
+def _published_commission_trace(directory: Path) -> bool:
+    """008-004 PC-01 (review fix): the control-plane trace of a packet that
+    `prepare` published.
+
+    A legacy continuity write leaves no entry under the packets tree at all;
+    a directory that `prepare` created (its request, its canonical text, or any
+    other file of the transaction) is evidence that the id names a CDAD
+    commission — a legacy operation never writes there.
+    """
+    try:
+        return directory.is_dir() and any(directory.iterdir())
+    except OSError:
+        return True
+
+
+def _admit_packet(root: Path, packet_id: Any,
+                  state: dict[str, Any] | None = None
+                  ) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """008-004 PC-01/PC-03 (§Orden y efectos): the packet a NEW begin cites must
+    verify before the write is planned, when it is a published CDAD commission.
+
+    An id with NO trace under the packets tree is not a CDAD commission — there
+    is nothing to admit and the legacy continuity path (003-004/003-007) is
+    untouched. A commission whose `REQUEST.json` is missing is NOT legacy: its
+    published trace proves the id was meant to be a CDAD packet, so an
+    INCOMPLETE commission is refused before persisting instead of being admitted
+    through the legacy route. A published one whose `PACKET.md` is absent,
+    marker-less, unclosed or altered is refused the same way, with the shared
+    verifier's diagnostic, having written nothing.
+    """
+    if not isinstance(packet_id, str) or not packet_id:
+        return None
+    directory = root.joinpath(*PACKETS_TREE, packet_id)
+    request_path = directory / REQUEST_NAME
+    if not request_path.is_file():
+        if not _published_commission_trace(directory):
+            return None
+        raise ContinuityError(
+            f"the begin is refused: packet {packet_id!r} was published under "
+            f"{directory} but its {REQUEST_NAME} is missing — an incomplete CDAD "
+            f"commission has no validated request to compare the packet against, "
+            f"so it authorizes nothing and is never resumed as legacy continuity "
+            f"(008-004 PC-01)")
+    try:
+        return cdad_packet.verify_published_packet(root, packet_id, state=state)
+    except cdad_packet.PolicyError as exc:
+        raise ContinuityError(f"the begin is refused: {exc}") from exc
+
+
+def _refuse_covered_contract_references(
+        root: Path, packet_id: str, request: dict[str, Any],
+        execution_document: dict[str, Any],
+        references: list[dict[str, Any]]) -> None:
+    """008-004 PC-06 (§Referencias y nuevo begin): a NEW begin whose `contract`
+    reference is covered by the packet's write_scope is refused before
+    persisting, naming the reference and the incompatible selector.
+
+    Only `contract` references are compared: a `living` one keeps its meaning
+    (its divergence never becomes a P1 by itself). The coverage is decided by
+    `cdad_packet._scope_contains`, the existing owner of the classes, roots and
+    policy — never by comparing path strings.
+    """
+    contract = request.get("contract")
+    contract_path = contract.get("path") if isinstance(contract, dict) else None
+    contract_dir = (Path(contract_path).parent.as_posix()
+                    if isinstance(contract_path, str) and contract_path else ".")
+    policy = execution_document.get("path_policy")
+    policy = policy if isinstance(policy, dict) else {}
+    scopes = request.get("write_scope")
+    scopes = scopes if isinstance(scopes, list) else []
+    for reference in references:
+        if not isinstance(reference, dict):
+            continue
+        if reference.get("class") != "contract":
+            continue
+        rel = reference.get("path")
+        if not isinstance(rel, str) or not rel:
+            continue
+        for selector in scopes:
+            if not isinstance(selector, dict):
+                continue
+            try:
+                covered = cdad_packet._scope_contains(
+                    selector, rel, contract_dir, policy, root)
+            except cdad_packet.PolicyError as exc:
+                raise ContinuityError(
+                    f"reference {rel!r} cannot be compared with the write_scope "
+                    f"of packet {packet_id!r}: {exc}") from exc
+            if covered:
+                raise ContinuityError(
+                    f"reference {rel!r} (class contract) is covered by the "
+                    f"write_scope selector "
+                    f"{json.dumps(selector, sort_keys=True)} of packet "
+                    f"{packet_id!r}: a contract reference must not be writable by "
+                    f"the packet that cites it, and it is not reclassified "
+                    f"automatically — refusing the begin before persisting "
+                    f"(008-004 PC-06)")
 
 
 def verify_begin(project_root: Path, execution_context_path: Path,
@@ -1515,32 +1690,39 @@ def close_durable_receipt(project_root: Path, receipt_path: Path, attempt: Any,
             f"cadena no demostrable: {detail} — el cierre no se acredita sobre "
             f"historia que no alcanza la cabeza (§2.3.1)")
 
+    # §4.4 (1): identity, accredited owner and the necessary evidence — always,
+    # before the close decides anything else (a contradiction is rejected even
+    # when the receipt would be a replay).
+    unit = _accredited_unit(root, context_path, exec_context)
+    _require_unit_identity(unit)
     existing = _chain_closes(chain, execution_id, packet_id, attempt)
-    if len(existing) > 1:
-        raise ContinuityError(
-            "violación de unicidad del cierre: hay "
-            f"{len(existing)} cierres para (execution_id={execution_id!r}, "
-            f"packet_id={packet_id!r}, attempt={attempt!r}): "
-            f"{[sha[:12] for sha, _ in existing]} — a lo sumo UNO por paquete e "
-            f"intento (§2.3.2)")
-    if existing:
-        close_sha, close_body = existing[0]
+    # §4.4: the order replay → conflict → new effect, and the rule that says
+    # which one these facts produce, belong to the shared core
+    # (`decide_continuity_close`). This border GATHERS the facts of its domain:
+    # the closes the demonstrable chain proves, each with its normalized receipt
+    # path and digest.
+    facts: list[dict[str, Any]] = []
+    for close_sha, close_body in existing:
         marker = close_body[RECEIPT_CHECKPOINT_FIELD]
-        existing_path = _canonical_path(
+        close_path = _canonical_path(
             root, _resolve(root, str(marker.get("path"))))
-        if existing_path == receipt_normalized_path \
-                and marker.get("sha256") == receipt_digest:
-            envelope = _close_envelope(
-                close_body, close_sha,
-                max_bytes if max_bytes is not None else DEFAULT_MAX_BYTES)
-            envelope["no_op"] = True
-            return envelope
-        raise ContinuityError(
-            f"el cierre ya existe con otro contenido: cierre existente "
-            f"{close_sha} (ruta {existing_path!r}, digest {marker.get('sha256')!r}) "
-            f"frente a la recepción declarada (ruta {receipt_normalized_path!r}, "
-            f"digest {receipt_digest!r}) — no se sustituye ni se agrega un "
-            f"segundo cierre (§2.3.2)")
+        facts.append({"sha256": close_sha, "path": close_path,
+                      "digest": marker.get("sha256")})
+    identical = (len(facts) == 1
+                 and facts[0]["path"] == receipt_normalized_path
+                 and facts[0]["digest"] == receipt_digest)
+    decision = cdad_lifecycle.decide_continuity_close(
+        closes=facts, identical=identical,
+        receipt_path=receipt_normalized_path, receipt_digest=receipt_digest)
+    if decision.facts.get("outcome") == cdad_lifecycle.REPLAY:
+        close_sha, close_body = existing[0]
+        envelope = _close_envelope(
+            close_body, close_sha,
+            max_bytes if max_bytes is not None else DEFAULT_MAX_BYTES)
+        envelope["no_op"] = True
+        return envelope
+    if not decision.allowed:
+        raise ContinuityError(decision.message())
 
     key = (execution_id, packet_id, attempt)
     if (head.get("execution_id"), head.get("packet_id"),
@@ -1571,7 +1753,11 @@ def close_durable_receipt(project_root: Path, receipt_path: Path, attempt: Any,
             f"no hay `begin` íntegro (record=\"begin\") para "
             f"(packet_id={packet_id!r}, attempt={attempt!r}) alcanzable desde la "
             f"cabeza: sin esa prueba el cierre no se agrega (continuidad)")
+    # §4.4 (3): the facts left a NEW close, so its eligibility is required —
+    # the current authority AND the suspension of the ACCREDITED owner (§4.3).
+    # A close recognized as a replay above never reaches this point.
     _require_current_authority(exec_context)
+    _require_owner_operable(unit)
     _reference_reports(root, chain["links"][0][1].get("references"),
                        chain["links"][0][1])
 
@@ -2303,18 +2489,22 @@ def _disposition_state(root: Path) -> tuple[Any, list[str]]:
 
 
 def _execution_feature(exec_context: dict[str, Any], state: Any) -> str | None:
-    """The feature of the examined request: the execution context's binding
-    (v2) or, for a flat legacy context, the state's active feature."""
+    """§4.2: the feature of the examined request, resolved by the shared core.
+
+    The supplied binding competes with the evidence the project recorded instead
+    of overriding it, and the active feature never substitutes the owner of a
+    historical or suspended execution. A flat legacy context — no `execution`
+    object at all — keeps its declared fallback to `state.active_feature`,
+    explicitly and only there."""
     execution = exec_context.get("execution")
     if isinstance(execution, dict):
-        feature = execution.get("feature_id")
-        if isinstance(feature, str) and feature:
-            return feature
-    if isinstance(state, dict):
-        feature = state.get("active_feature")
-        if isinstance(feature, str) and feature:
-            return feature
-    return None
+        decision = cdad_lifecycle.resolve_owner(
+            supplied=execution.get("feature_id"),
+            execution_id=exec_context.get("execution_id"),
+            declared=_accredited_owner_sources(exec_context, state))
+        return decision.facts.get("owner") if decision.allowed else None
+    active = state.get("active_feature") if isinstance(state, dict) else None
+    return active if isinstance(active, str) and active else None
 
 
 def _disposition_signal(root: Path, exec_context: dict[str, Any],
@@ -2820,8 +3010,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _managed_context_without_state(root: Path, context_path: Path,
-                                   context: dict[str, Any]) -> bool:
-    """Classify managed contexts from their location or matching execution record."""
+                                   context: dict[str, Any],
+                                   identity) -> bool:
+    """Classify managed contexts from their location or matching execution record.
+
+    The identity is never read with a local precedence (008-003 §4.2): it is the
+    one the shared core already resolved for this context."""
     executions_root = (root / ".cdad" / "executions").resolve()
     try:
         context_path.resolve().relative_to(executions_root)
@@ -2829,10 +3023,9 @@ def _managed_context_without_state(root: Path, context_path: Path,
     except ValueError:
         pass
 
-    execution_id = _execution_identity(context)
-    if not isinstance(execution_id, str) or not execution_id:
+    if not identity.allowed:
         return False
-    _safe_segment(execution_id, "execution_id")
+    execution_id = identity.facts["execution_id"]
     record_path = executions_root / execution_id / "execution.json"
     if not record_path.exists():
         return False
@@ -2840,10 +3033,140 @@ def _managed_context_without_state(root: Path, context_path: Path,
         raise ContinuityError(
             f"managed execution record is not a file: {record_path}")
     record = _read_json(record_path, "managed execution record")
-    if not isinstance(record, dict) or _execution_identity(record) != execution_id:
+    record_identity = cdad_lifecycle.resolve_execution_identity(
+        declared=(record.get("execution") or {}).get("id")
+        if isinstance(record, dict) and isinstance(record.get("execution"), dict)
+        else None,
+        flat=record.get("execution_id") if isinstance(record, dict) else None)
+    if not record_identity.allowed \
+            or record_identity.facts["execution_id"] != execution_id:
         raise ContinuityError(
             f"managed execution record identity is incoherent: {record_path}")
     return True
+
+
+def _accredited_owner_sources(context: dict[str, Any],
+                              state: Any) -> list[tuple[Any, Any]]:
+    """The `(execution_id, feature_id)` pairs the ACCREDITED sources declare.
+
+    The supplied context declares one (it is what the caller wants examined);
+    the state binding and the suspension registry declare the ones the project
+    recorded. §4.2: the supplied identity is not authority over the owner, so it
+    competes with the recorded ones instead of overriding them."""
+    pairs: list[tuple[Any, Any]] = []
+    execution = context.get("execution")
+    if isinstance(execution, dict):
+        pairs.append((execution.get("id") or context.get("execution_id"),
+                      execution.get("feature_id")))
+    if not isinstance(state, dict):
+        return pairs
+    binding = state.get("execution")
+    if isinstance(binding, dict):
+        pairs.append((binding.get("id"), binding.get("feature_id")))
+    registry = state.get("suspended_units")
+    if isinstance(registry, dict):
+        for record in registry.values():
+            unit_state = record.get("unit_state") if isinstance(record, dict) else None
+            if not isinstance(unit_state, dict):
+                continue
+            bound = unit_state.get("execution")
+            bound_id = bound.get("id") if isinstance(bound, dict) else None
+            if isinstance(bound, dict):
+                pairs.append((bound_id, bound.get("feature_id")))
+            if isinstance(unit_state.get("active_feature"), str):
+                pairs.append((bound_id, unit_state["active_feature"]))
+    return pairs
+
+
+def _accredited_unit(root: Path, context_path: Path | None,
+                     context: dict[str, Any],
+                     *, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    """§4.2 + PC-01: the facts and the decision of the unit this context names.
+
+    Gathers what this border owns — the supplied context, its canonical location
+    and the project state (`state` when the caller is deciding a not-yet
+    published state, the one on disk otherwise) — and asks the shared core for
+    the concordant identity and the owner ACCREDITED by that evidence (never the
+    supplied identity). The suspension is NOT decided here (§4.4 step 3):
+    `_require_owner_operable` asks for it only once the operation is known to be
+    a new effect."""
+    identity = cdad_lifecycle.resolve_execution_identity(
+        declared=(context.get("execution") or {}).get("id")
+        if isinstance(context.get("execution"), dict) else None,
+        flat=context.get("execution_id"),
+        located=_located_execution_id(root, context_path)
+        if context_path is not None else None)
+    if state is not None:
+        state_facts: Any = state
+    else:
+        state_path = root / STATE_REL_PATH
+        state_facts = None
+        if state_path.exists():
+            state_facts = cdad_packet._load_json(state_path, "project state")
+        elif context_path is not None and _managed_context_without_state(
+                root, context_path, context, identity):
+            raise ContinuityError(
+                "project state is missing for managed execution "
+                f"{identity.facts.get('execution_id')!r}; refusing continuity "
+                f"write")
+    execution = context.get("execution")
+    supplied_feature = (execution.get("feature_id")
+                        if isinstance(execution, dict) else None)
+    owner = cdad_lifecycle.resolve_owner(
+        supplied=supplied_feature,
+        execution_id=identity.facts.get("execution_id"),
+        declared=_accredited_owner_sources(context, state_facts))
+    return {
+        "decision": cdad_lifecycle.combine(identity, owner),
+        "owner": owner,
+        "supplied_feature": supplied_feature,
+        "suspended": (state_facts.get("suspended_units")
+                      if isinstance(state_facts, dict) else None),
+    }
+
+
+def _owner_decision(unit: dict[str, Any]) -> cdad_lifecycle.Decision:
+    """§4.3/PC-02: the suspension decision of EVERY owner the evidence
+    accredits for this execution — never of the supplied identity alone."""
+    owner = unit["owner"]
+    accredited_owner = owner.facts.get("accredited_owner")
+    candidates = owner.facts.get("accredited_candidates") or ()
+    return cdad_lifecycle.combine(
+        *(cdad_lifecycle.require_owner_operable(owner=candidate,
+                                                suspended=unit["suspended"])
+          for candidate in tuple(candidates) + (accredited_owner,
+                                                unit["supplied_feature"])))
+
+
+def _require_unit_identity(unit: dict[str, Any]) -> None:
+    """§4.4 (1)/PC-01: identity and the evidence of the unit — always, before
+    the operation decides anything else (including a replay). An operation that
+    is illegitimate for more than one reason names them all: a diagnostic that
+    hides a cause is not diagnostic."""
+    decision = unit["decision"]
+    if decision.allowed:
+        return
+    raise ContinuityError(
+        cdad_lifecycle.combine(decision, _owner_decision(unit)).message())
+
+
+def _require_owner_operable(unit: dict[str, Any]) -> None:
+    """§4.3/§4.4 (3)/PC-02: the suspension of the ACCREDITED owner blocks NEW
+    effects. Naming another unit never turns a suspension into an escape route,
+    and a unit that is not suspended keeps operating while another one is."""
+    decision = _owner_decision(unit)
+    if not decision.allowed:
+        raise ContinuityError(decision.message())
+
+
+def _require_unit_operable(root: Path, context_path: Path,
+                           context: dict[str, Any]) -> None:
+    """§4.2/§4.3 + PC-01/PC-02: the ONE eligibility of a continuity effect that
+    is certainly NEW (identity, accredited owner and its suspension), for the
+    borders whose operation never converges with a published one."""
+    unit = _accredited_unit(root, context_path, context)
+    _require_unit_identity(unit)
+    _require_owner_operable(unit)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -2853,17 +3176,21 @@ def main(argv: list[str] | None = None) -> int:
             root = Path(args.project_root).resolve()
             context_path = _resolve(root, args.execution_context)
             context = cdad_packet._load_json(context_path, "execution context")
-            state_path = root / "docs" / ".cdad-state.json"
-            if state_path.exists():
-                state = cdad_packet._load_json(state_path, "project state")
-                execution = context.get("execution")
-                feature_id = execution.get("feature_id") if isinstance(execution, dict) else None
-                cdad_packet._suspended_unit_for(state, feature_id)
-            elif _managed_context_without_state(root, context_path, context):
-                execution_id = _execution_identity(context)
-                raise ContinuityError(
-                    "project state is missing for managed execution "
-                    f"{execution_id!r}; refusing continuity write")
+            if not isinstance(context, dict):
+                raise ContinuityError("execution context must be a JSON object")
+            # §4.4: only the IDENTITY evidence is checked at the CLI border; the
+            # suspension and the authority are asked by the operation itself,
+            # AFTER it recognizes an accredited replay (§4.4 step 2). `reanchor`
+            # never converges with a published effect, and an incomplete
+            # `begin`/`checkpoint` (no `--update`) has no content to recognize as
+            # a replay, so both keep the full guard here.
+            if args.command == "reanchor" or (
+                    args.command in ("begin", "checkpoint")
+                    and not args.update):
+                _require_unit_operable(root, context_path, context)
+            else:
+                _require_unit_identity(
+                    _accredited_unit(root, context_path, context))
         if args.command in ("begin", "checkpoint"):
             if not args.update:
                 raise ContinuityError(f"{args.command} requires --update JSON")

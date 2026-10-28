@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "feature_id": "008-002-suite-by-capability",
+  "epic_debt": "epic-008-suite-coherence",
+  "target_ceiling_s": 2,
+  "effective_threshold_s": 5,
+  "status": "pending",
+  "status_note": "NO resuelto: no existe medicion propia del techo de 2 s. Cambiar status a 'resolved' exige evidencia propia en 'evidence'.",
+  "measurement_scope": "Las cuatro aserciones de 'no esperar de mas' que hoy dependen de TEST_WAIT_TIMEOUT_SECONDS=5 (tests/test_005_009_t2_opencode_adapter.py:417-421) solo observan que la respuesta llega antes de la cota instrumental heredada del fixture, no un techo propio de 2 s. La medicion cubre esas cuatro aserciones en el subconjunto de 005-009/005-010; no cubre latencias del producto fuera de ellas.",
+  "reason_5s_not_2s": "Una asercion 'elapsed < 5s' se satisface con cualquier latencia entre 0 y 5 s, incluidas 2.5 s o 4.9 s: el umbral no distingue 'sin esperar de mas' de 'espero casi la cota'. Ademas, 008-001 PC-8 documento que con cota de 2 s la preparacion del adaptador (~0,65-0,8 s medidos) agota su presupuesto y el adaptador no despacha, por lo que 2 s no es alcanzable hoy sin cambiar la preparacion del producto. Sostener 5 s como cota instrumental no acredita el objetivo de 2 s ni lo sustituye.",
+  "resolution_criterion": "Se declara resuelto cuando (a) el producto expone una cota propia de 2 s para el camino 'hecho ya conocido' y (b) existe evidencia versionada y reproducible de que las cuatro aserciones miden latencia real (no la cota del fixture) con un limite propio de 2 s sobre el camino de respuesta temprana, incluyendo el presupuesto de preparacion del adaptador. Hasta entonces la deuda permanece abierta para el epic y ninguna tolerancia ampliada se presenta como cumplimiento.",
+  "evidence": [],
+  "effective_threshold_evidence": [
+    "tests/test_005_009_t2_opencode_adapter.py:417-421 (TEST_WAIT_TIMEOUT_SECONDS = 5; cota instrumental heredada)",
+    "docs/specs/008-002-suite-by-capability/spec.md:21-24 (los cuatro casos que dependen de la cota)",
+    "docs/specs/008-002-suite-by-capability/spec.md:36 (decision 6: 2 s re-declarado como deuda, no satisfecho por la tolerancia de 5 s)",
+    "docs/specs/008-002-suite-by-capability/spec.md:222-233 (PC-7)"
+  ],
+  "cases": [
+    {
+      "nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unknown_schema_fails_closed_naming_missing_column",
+      "obligation": "005-010 PD-2 (esquema desconocido falla cerrado)",
+      "variant": "store SQLite valido con esquema desconocido (sin columna idle_outcome) -> blocked con diagnostico, sin esperar de mas",
+      "effective_threshold_s": 5,
+      "threshold_ref": "tests/test_005_010_t1_durable_signal.py:297 (assertLess elapsed < TEST_WAIT_TIMEOUT_SECONDS)"
+    },
+    {
+      "nodeid": "tests/test_005_010_t1_durable_signal.py::TestPd2FailClosedStoreDiagnostics::test_pd2_unreadable_store_fails_closed_without_trace",
+      "obligation": "005-010 PD-2 (store ilegible falla cerrado)",
+      "variant": "store ilegible -> blocked con diagnostico accionable, sin esperar de mas",
+      "effective_threshold_s": 5,
+      "threshold_ref": "tests/test_005_010_t1_durable_signal.py:337 (assertLess elapsed < TEST_WAIT_TIMEOUT_SECONDS)"
+    },
+    {
+      "nodeid": "tests/test_005_010_reviewfix.py::TestR3IdleOutcomeEdgeVariants::test_r3_succeeded_without_final_text_is_blocked_without_receipt",
+      "obligation": "005-010 PD-5 (succeeded sin texto final -> blocked)",
+      "variant": "fila idle 'succeeded' sin texto final -> blocked, sin recibo, sin esperar de mas",
+      "effective_threshold_s": 5,
+      "threshold_ref": "tests/test_005_010_reviewfix.py:425 (assertLess elapsed < TEST_WAIT_TIMEOUT_SECONDS)"
+    },
+    {
+      "nodeid": "tests/test_005_010_b1_last_assistant.py::TestB1LastAssistantOnly::test_b1_intermediate_text_does_not_substitute_missing_final_text",
+      "obligation": "005-010 PD-5 / B1 (succeeded sin texto en el ULTIMO assistant -> blocked)",
+      "variant": "texto intermedio de un assistant anterior no sustituye el final ausente; blocked sin esperar de mas",
+      "effective_threshold_s": 5,
+      "threshold_ref": "tests/test_005_010_b1_last_assistant.py:181 (assertLess elapsed < TEST_WAIT_TIMEOUT_SECONDS)"
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-10-27",
+      "event": "disposicion-de-deuda-temporal escrita en GREEN 008-002",
+      "state": "pending",
+      "note": "declara la deuda separada de la cota instrumental; no modifica tiempos del producto"
+    }
+  ]
+}

@@ -271,11 +271,19 @@ is the supervision mechanism, not an allowlist.
 <!-- /cdad-section -->
 
 <!-- cdad-section:convention -->
+RED gate (R4 — the single editable home of this rule; the exceptional promotions
+are defined ONLY here):
+- Before approving RED, ask and RECORD the answer to: "what breaks for the user
+  without this test?". With no answer the test does not enter as an ordinary
+  requirement: it goes to `deferred-hardening` with its reason.
+- A promotion — a test demanded with no user consequence — is allowed only for
+  security, integrity or silent data loss, or an evident regression expensive to
+  discover late, and it requires the recorded reason.
 Test convention (pointer): single editable definition in
-sources/roles/test-writer.md (cdad-shared:convention-rule); detail:
-`skills/cdad-cycle/references/stage-3-tdd.md`. The orchestrator applies it
-when validating RED/gates: observable contract, not coverage; no mocks over
-plumbing; every test maps to a postcondition (drift checks AP-13/AP-14).
+sources/roles/test-writer.md (cdad-shared:convention-rule); detail and the
+acceptance counterweight in `skills/cdad-cycle/references/stage-3-tdd.md`. The
+orchestrator applies selection rule R2 and counterweight R7 when validating
+RED/gates; it never restates them (drift checks AP-13/AP-14).
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->

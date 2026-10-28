@@ -80,7 +80,7 @@ from pathlib import Path
 # methods, so importing them imports no foreign tests).
 from test_005_009_t1_interface import dispatch_records
 from test_006_001_t1_selection import (
-    FAST_WAIT,
+    INSTRUMENTAL_WAIT,
     MATCHING_CLIENT_SEMVER,
     OPENCODE_PASSWORD_ENV,
     OPENCODE_SERVER_PASSWORD_ENV,
@@ -164,7 +164,10 @@ class ServerCredentialCase(Pd600T1Case):
 
     def config_server(self, fake: dict, server: FakeInfoServer) -> dict:
         return self.patch_config(
-            fake, {"mode": "server", "server": server.url, "wait": FAST_WAIT})
+            # Cota instrumental (PC-8): el sujeto es la credencial; ninguna
+            # aserción de este módulo mide tiempo.
+            fake, {"mode": "server", "server": server.url,
+                   "wait": INSTRUMENTAL_WAIT})
 
     # -- dispatch --------------------------------------------------------
 

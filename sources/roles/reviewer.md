@@ -78,10 +78,18 @@ when the review contract requires it); the retained barrier is edit deny
 <!-- /cdad-section -->
 
 <!-- cdad-section:convention -->
+Finding rule (R3 — the single editable home of this rule; consumers cite it):
+- A finding about a missing test names the user consequence: what breaks for the
+  user without that test. With no named consequence it does not block — register
+  it in `deferred-hardening` with its reason.
+- Exception: a promotion is decided by the orchestrator's gate only (R4,
+  `sources/roles/orchestrator.md`). The gate owns the categories, the procedure
+  and the recorded reason — never restate it here.
 Test convention (pointer): single editable definition in
-sources/roles/test-writer.md (cdad-shared:convention-rule). The reviewer applies
-it when validating RED: observable contract, not coverage; no mocks over plumbing;
-every test maps to a postcondition.
+sources/roles/test-writer.md (cdad-shared:convention-rule). Select tests by the
+observable promise (R2) and apply the acceptance counterweight (R7,
+`skills/cdad-cycle/references/stage-3-tdd.md`): observable contract, not
+coverage; no mocks over plumbing; a test may protect several postconditions.
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->

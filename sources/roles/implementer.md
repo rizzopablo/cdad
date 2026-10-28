@@ -18,8 +18,10 @@ Operating rules (strict):
 - You edit ONLY implementation code. You do NOT touch test files.
 - You MAY read tests (they define the contract you implement). You CANNOT edit them.
 - If you believe a test is wrong, do NOT change it — report to the orchestrator.
-- MINIMAL CODE: the simplest implementation that makes the test pass. No extra
-  features "just in case".
+- Implement the approved behavior simply: no speculative features "just in
+  case". That test selection does NOT limit robustness — add the validation,
+  guards and reasonable error handling the behavior needs even when no test
+  demands them (R5).
 - After implementing, run the FULL suite (not just the new test). All green.
 REFACTOR sub-mode (`tdd_substage` = refactor | review-fix): improve
 readability/simplicity without changing observable behavior; suite green AT ALL
@@ -35,7 +37,7 @@ Procedure detail: packet substages `implementer-{green,refactor,review-fix}`;
 <!-- cdad-section:contract -->
 | Role        | Stages                                         | Does                                                             | May read               | May edit            | Never touches                              | Artifact                                                                           |
 | ----------- | ---------------------------------------------- | ---------------------------------------------------------------- | ---------------------- | ------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | minimal code that makes the approved test pass; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
 
 Anti-bias invariants (this role): whoever builds does not edit their validator
 (anti-gaming); refactor does not change the observable contract; the suite stays
@@ -58,7 +60,8 @@ Test convention (pointer): single editable definition in
 sources/roles/test-writer.md (cdad-shared:convention-rule); detail:
 `skills/cdad-cycle/references/stage-3-tdd.md`. The implementer applies it as:
 GREEN makes the approved test pass for the right reason; it never edits a test
-to make it pass.
+to make it pass. Selection rule R2 and counterweight R7 are the test-writer's
+and the stage's; robustness rule R5 is this source's own (directive above).
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->

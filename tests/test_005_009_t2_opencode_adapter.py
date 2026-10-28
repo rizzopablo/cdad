@@ -414,7 +414,11 @@ VARIANT_TERMINATION = {
 }
 NON_COMPLETED_VARIANTS = ("no-idle", "failed", "interrupted",
                           "unknown-schema", "not-sqlite", "transport-error")
-TEST_WAIT_TIMEOUT_SECONDS = 2  # espera acotada del fixture (red/green rápido)
+# Cota del fixture: 5s (antes 2s). 008-001 PC-8: el adaptador no despacha sin
+# presupuesto útil y con 2s la preparación (~0.65-0.8s medidos) agota su parte;
+# la cota es INSTRUMENTAL en los tests que la heredan (los que miden tiempo
+# escalan con esta constante).
+TEST_WAIT_TIMEOUT_SECONDS = 5  # espera acotada del fixture
 FAKE_RUNTIME = "opencode"
 FAKE_MODEL = "fixture-opencode-model"
 FAKE_BINARY_VERSION = "opencode-fake 1.0.0"

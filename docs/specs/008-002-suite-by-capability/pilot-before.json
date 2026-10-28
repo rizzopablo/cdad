@@ -1,0 +1,32 @@
+{
+ "files": [
+  {
+   "path": "tests/test_005_010_t1_durable_signal.py",
+   "bytes": 26660,
+   "lf_lines": 534,
+   "sha256": "03c759be31c39da1ef99195f72b4fd32b69ec6c5fef9d074fdf23868c7a1591f"
+  },
+  {
+   "path": "tests/test_005_010_reviewfix.py",
+   "bytes": 29848,
+   "lf_lines": 575,
+   "sha256": "da4c8fc5c735d5e4ad4dd262bad06916a38a94d2c329078150cca287de14cae9"
+  },
+  {
+   "path": "tests/test_005_010_b1_last_assistant.py",
+   "bytes": 12462,
+   "lf_lines": 253,
+   "sha256": "2d8bbb9f32e6abbca3f58d5ff87c1ec9190a968ed39a3ae1cd70a402ee7e0ad3"
+  },
+  {
+   "path": "tests/test_008_002_variant_controls.py",
+   "bytes": 4029,
+   "lf_lines": 94,
+   "sha256": "0acff4c7847d766493e42cc5a72e1567d18c0829bde2e5afa3f106bb94b2b743"
+  }
+ ],
+ "totals": {
+  "bytes": 72999,
+  "lf_lines": 1456
+ }
+}

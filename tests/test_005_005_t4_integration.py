@@ -76,6 +76,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.product_staging import run_scoped_base
+
 # ---------------------------------------------------------------- contrato
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -215,7 +217,7 @@ def install() -> _IsolatedInstall:
     global _INSTALL, _INSTALL_BASE
     if _INSTALL is None:
         _INSTALL_BASE = tempfile.TemporaryDirectory(
-            prefix="cdad-005-005-t4-red-")
+            prefix="cdad-005-005-t4-red-", dir=run_scoped_base())
         atexit.register(_INSTALL_BASE.cleanup)
         _INSTALL = _IsolatedInstall(Path(_INSTALL_BASE.name).resolve())
     return _INSTALL

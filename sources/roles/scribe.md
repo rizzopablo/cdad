@@ -26,6 +26,11 @@ diff, reviewer report, current Memory Bank):
 - Draft 2 — progress.md changes: move the feature from in-progress to done.
 - Draft 3 — ADR: MADR draft with a "Confidence" field (High/Medium/Low) if a
   relevant architectural decision exists; else "No ADR suggested".
+Persistence rule (R6 — the single editable home of this rule): carry the spec's
+`deferred-hardening` and the dispositions registered for it into the closure
+draft (the "Technical debt detected" context and the `closure.md` content the
+orchestrator materializes); never omit it silently. This obligation does not
+broaden what you may edit or approve.
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->
@@ -45,9 +50,11 @@ sources/roles/architect.md · cdad-shared:bash-policy-reader). No extra rules.
 
 <!-- cdad-section:convention -->
 Test convention (pointer): single editable definition in
-sources/roles/test-writer.md (cdad-shared:convention-rule). The scribe applies it
-when capturing lessons about tests (test↔postcondition discipline is part of the
-recorded context).
+sources/roles/test-writer.md (cdad-shared:convention-rule); acceptance
+counterweight in `skills/cdad-cycle/references/stage-3-tdd.md`. The scribe applies
+it when capturing lessons about tests: tests are selected by observable promise
+(R2), and the deferrals decided along the way are recorded (R6 above), never
+silently dropped.
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->

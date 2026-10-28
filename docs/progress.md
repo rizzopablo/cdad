@@ -4,10 +4,143 @@ Estado de features del proyecto.
 
 ## In progress
 
-_(ninguna — el epic 007 cerró el 2026-10-26 y no hay feature en cola; el proyecto queda en reposo.)_
+- **Despliegue:** la instalación soportada se **re-sincronizó** durante el cierre de 008-004 (respaldo en
+  `.cdad/local/deploy-backup-20261028/`): **11 agentes por runtime** con el intake corregido, sin `model:`,
+  `./install.sh --check` **PASS (414 grupos)** y `make validate` **68/68** (el F011 histórico era el drift de
+  los instalados). La publicación sigue reservada al dueño.
 
 ## Done
 
+- **009-001-installer-agent-overlay** (cerrada **2026-10-28**) — overlay de claves de usuario en agentes
+  instalados: `scripts/agent-overlay.py` como única definición (`USER_OWNED_KEYS` como dato), wiring en
+  `install.sh` (install, `--check`, ruta legacy, `--uninstall`), validador re-scopeado a texto instalable y
+  12 tests. Cambiar o borrar el `model` del usuario ya no congela el agente ni rompe `--check`. Gate
+  `1839 passed / 5 skipped`, superficie 397 nodeids, `dirty 0`, `4a5735d`.
+
+- **epic-008-suite-coherence** (cerrado **2026-10-28**, **6/6**) — epic cerrado con seis features, cada una
+  con su `closure.md` (el plan declaraba cinco; `008-006` se agregó por decisión del dueño). **Entregó:**
+  aislamiento de HOME/XDG por test y cota de despacho con dueño (001); selector canónico por capacidad,
+  inventario de 210 módulos, mapa de 29 obligaciones y `close` con evidencia que no se pisa (002); núcleo
+  único de decisiones con 15 ramas retiradas (003); paquete obligatorio verificado en 5 fronteras e intake
+  por marcador canónico (004); gate de CI de 5 pasos con verde **atribuible** (005); doctrina de tests por
+  contrato en 7 hogares con verificador (006). **Criterios:** **suite estable** con tres corridas
+  consecutivas del gate real sobre `443a43d` (1827 passed, 5 skipped, `green`, `attributable`, canario 0,
+  `loadavg` 5.26–6.43; límite: el paso de superficie no aplicó por cambio sólo-documentación); **suite
+  coherente** en trazabilidad, con la reducción literal sustituida por AJ6 (el piloto midió **+3.317 bytes /
+  +81 LF**, publicado tal cual); un solo decisor con `SUSP-*` declaradas; paquete obligatorio (admite, no
+  intercepta); test por contrato; **CI verde a nivel mecanismo, activación pendiente del dueño**; sin
+  mecanismos duplicados nuevos, con dos excepciones declaradas. **Deuda:** F1 (cotas de reloj), `SUSP-LOCK`/
+  `SUSP-APPROVAL`, `HOME-LEAK-DERIVED-AGENTS`, activación de CI, `make validate` fuera del gate. Detalle en
+  `docs/epics/epic-008-suite-coherence/closure.md`. **No implica publicar.**
+
+- **008-004-role-packet-enforcement** (2026-10-28, epic 008 — **4/6**) — cierra el hueco por el que una
+  encomienda CDAD podía **despacharse y acreditarse sin un paquete verificable**. Las **fronteras
+  invocables** (`begin`, `prepare --record-dispatch`, `cdad_dispatch dispatch` y `record`, `cdad_delegate`)
+  validan el paquete publicado y lo comparan **byte a byte** con el render canónico de su request **antes**
+  de observar, preparar staging, transmitir o cambiar estado. El **intake de los roles** identifica el
+  marcador **exactamente una vez en cualquier posición** (el preámbulo del runtime es transparente y **no
+  autoriza**), la **ruta A** compara el paquete recibido **completo** contra el render **completo** —no el
+  encabezado, sin normalizar— y la **ruta C** exige bloque de identificación vinculado y una lectura de
+  control-plane que **no amplía el scope de producto**; cero marcadores = legacy sin acreditación, y toda
+  anomalía **rechaza sin fallback silencioso**. `begin` **rechaza** una referencia `contract` cubierta por el
+  `write_scope` del propio paquete (PC-06), defecto que hizo fallar **cuatro `record` por P1** (contados por
+  008-003) y, en esta unidad, un rechazo adicional por `state incoherent` al corregir la spec después del
+  `begin`. **Contrato:** `spec.md`, 8 PCs con D1 (A principal, C respaldo explícito, B fuera), D2 (el marcador
+  canónico como señal) y D3 (rechazo temprano de referencias en scope). **Evidencia:**
+  `tests/test_008_004_packet_enforcement.py`, **25 casos** que **discriminan contra el código previo**;
+  commits `4e991c8`, `f10aeaa` (RED: 11 rojos + 6 guardas), `126d68b` (GREEN), `41b90d6` (3 bloqueantes de
+  admisión), `a2dec5b` (pruebas durables), `0760d54` (PC-08: intake + 20 copias), `f7f3510`/`d7cbb1f`
+  (comparación íntegra de A y rechazos separados de C) y `a89cfb5` (review final); 664 regresiones focales
+  verdes y `003-004`/`003-007` intactos. **Review de 4 rondas:** 3 bloqueantes de admisión + 2 del intake + 2
+  de la comparación A/C; la 4.ª cierra sin bloqueantes nuevos y declara 2 excepciones (la ruta C no se
+  ejecutó de forma nativa real; no inspeccionó una instalación nueva — el deploy posterior la cubrió).
+  **Gate: NO verde, y se declara** — corrida A sobre `126d68b` + pruebas durables (pre-PC-08) **1808 passed,
+  5 skipped, rc 0** (51:02); B y C sobre el commit final `d7cbb1f` **1805 y 1804 passed con 3 y 4 fallos**,
+  rc 1, **todos cotas de reloj de pared** con el host cargado por agentes ajenos (load 5.4–6.9/8) y verdes en
+  aislamiento → deuda **BLOCKING** del criterio del epic y **primer requisito de 008-005**. **Deuda:**
+  `deferred-hardening` (fuzzing del parser, combinatoria de transportes, matriz de runtimes, interceptación
+  nativa); transcripción manual de paquetes (el digest detectó dos transcripciones erróneas del orquestador →
+  despachar los bytes del archivo, nunca re-tipearlos); `skips[].reason` vacío heredado de 008-002.
+  **Siguiente:** `008-005-ci-gate`.
+
+- **008-003-lifecycle-decision-model** (2026-10-28, epic 008 — **3/6**) — *backfill: la unidad se cerró sin
+  entrada en el Memory Bank*. Identidad, propietario, autoridad, replay y conflicto se deciden en un **núcleo
+  compartido** (`skills/cdad-cycle/scripts/cdad_lifecycle.py`: sin I/O, sin reloj, sin importar consumidores)
+  y **15 ramas decisorias locales** desaparecen de los tres consumidores, incluidos los bordes programáticos.
+  Review con 3 bloqueantes estructurales cerrados en `8b4f99b`. **Gate:** `close --all` → **1783 passed, 5
+  skipped, rc 0**, canario 0, 58:44. **Declara:** `SUSP-IDENTITY` cerrada condicionada a esa evidencia,
+  `SUSP-GUARD` parcial, `SUSP-LOCK` y `SUSP-APPROVAL` **no cierran**. Hallazgo de producto: el `begin` que
+  acepta una referencia dentro del propio `write_scope` → 008-004.
+
+- **008-006-contract-not-coverage** (2026-10-27, epic 008 — **6/6**) — *backfill: la unidad se cerró sin
+  entrada en el Memory Bank*. La regla «test por contrato de usuario final, no por cobertura» deja de ser
+  instrucción verbal: **siete hogares** editables (las fuentes de los seis roles y `stage-3-tdd.md`), las
+  plantillas y los agentes generados de los dos runtimes, con un **verificador ejecutable**
+  (`scripts/cdad-doctrine-check.py`, falla cerrado: quitar un hogar, un agente o reintroducir la cuota vieja
+  da rc 1). **Gate:** **1774 passed, 5 skipped, rc 0**, 46:18. **Deuda declarada:** `HOME-LEAK-DERIVED-AGENTS`
+  (el canario observó 6 líneas de delta en el HOME real durante la suite; mecanismo no identificado) y el
+  `deferred-hardening` de su spec.
+
+- **008-002-suite-by-capability** (2026-10-27, epic 008 — **2/6**) — la suite deja de agruparse por la
+  historia que la creó y pasa a tener **selector canónico por capacidad y contrato**
+  (`scripts/cdad-suite.py`: `validate`, `list`, `run`, `surface`, `measure`, `close`), **inventario
+  versionado de 210 módulos** y **mapa acreditado obligación→test del piloto** (29 entradas, 17 nodeids).
+  El cierre de una unidad deja de ser un script local: **`close` reserva un intento exclusivo y conserva su
+  evidencia sin sobrescribirla** (`os.mkdir` sin reintento; `attempt.json` atómico `running` →
+  `finished`/`interrupted`; `stdout`/`stderr` del hijo; canario con alcance; resumen de pytest
+  **verificable** que neutraliza `PYTEST_ADDOPTS`/`addopts` y marca `verified: false` con diagnóstico si no
+  puede parsear). **Contrato:** `spec.md` PC-1..PC-8 + AJ1–AJ7 (AJ6 = directiva del owner sobre tests por
+  contrato; AJ7 = interfaz de `close`, que un test-writer reclamó con razón). **Gate:** `close --all` sobre
+  `adc4240` → **1774 passed, 5 skipped, 0 failed, rc 0**, `verified: true`, **canario 0**, 52:02. Primer
+  cierre del proyecto corrido por el mecanismo de cierre. **Review:** 2 bloqueantes + 1 MINOR en la ronda
+  final, ambos reproducidos adversarialmente (resumen en ceros con `PYTEST_ADDOPTS='-qq'`; colisión de
+  intento que no fallaba) y cerrados en `56ae3f9`/`adc4240`. **Medición (AJ6):** el piloto **creció +3.317
+  bytes / +81 LF**; se publica así y no condicionó el cierre. **Deuda que deja:** transporte de paquetes
+  roto (→ 008-004); `deferred-hardening` de la spec; `surface` no neutralizado frente a `PYTEST_ADDOPTS`
+  (falla ruidoso); y dos hallazgos del scribe no bloqueantes — `suite-report.md` ausente pese a §4 y
+  `skips[].reason` vacío en `attempt.json` — con destino 008-005. Detalle en `closure.md`.
+
+- **008-001-home-xdg-isolation** (2026-10-27, epic 008 — **1/5**) — primera unidad de
+  `epic-008-suite-coherence`: **cada test corre con HOME, XDG y temporales propios** (raíz exclusiva por
+  test, nueve variables gestionadas, herencia por subprocess, restauración de entorno y
+  `tempfile.tempdir` incluso con fallo) y el producto **resuelve el origen de agentes con el HOME
+  vigente**, no con el capturado al importar: la suite deja de depender de la configuración personal del
+  operador. **Contrato:** `docs/specs/008-001-home-xdg-isolation/spec.md` — PC-1..PC-6 con AJ1–AJ3, más
+  **PC-7** (AJ4) y **PC-8** (AJ5), agregadas el 2026-10-27 a partir del gate; resultado, evidencia,
+  límites y deuda en `closure.md` de la misma carpeta. **Producto (3 archivos):** `cdad_packet.py`
+  (`Path.home()` deja de capturarse al importar; precedencia override → activación → HOME intacta),
+  `cdad_delegate.py` (`ADAPTER_WAIT_GRACE_SECONDS = 5.0`: el wrapper espera al adaptador `cota + margen`
+  y su diagnóstico nombra el límite efectivo; sin cota declarada, sin límite) y
+  `cdad_delegate_opencode.py` (deadline **agregado** de preparación que no se renueva por operación,
+  reserva del write-ahead, mínimo útil de espera `max(0.1, 0.2·budget)`, no despacho con agotamiento
+  preparatorio y corrección de un `KeyError` latente en el corte de `mode: service`). **Tests:** fixture
+  autouse por test y fixture de sesión en `tests/conftest.py` (aisla también `setUpClass` y fixtures de
+  módulo; fija el `basetemp` de pytest), `tests/product_staging.py` (cachés de corrida fuera del `TMPDIR`
+  por test) y adaptaciones en los módulos que nombra `closure.md` §«Cambios», sin cambios de aserciones
+  salvo las cotas declaradas; **19 casos nuevos** (8 de aislamiento, 3 de PC-7, 6 de PC-8, 2 de oráculo de
+  `run`); el fixture compartido `TEST_WAIT_TIMEOUT_SECONDS` sube de 2 a 5 s y las cotas instrumentales a
+  5–10 s **sólo** donde la cota no era el sujeto (los cuatro tests donde la cota **es** el sujeto
+  conservan sus aserciones y ganan la rama honesta de agotamiento preparatorio). **Evidencia:** RED
+  `6a116bf`; GREEN/infra `5016b73`, `63ffef7`, `82250ee`, `c32c22a`, `02d3f9e`, `9a7d268`; PC-7 `81e0903`
+  → `c2004eb`; PC-8 `49ce9ad` → `e9e27df` → `45d5d99` → `a519037`, más `23aa06f` y `e588b17` (cotas
+  instrumentales y oráculo de `run` en 006-001/006-003). **Review de etapa 4** (sesiones distintas de las
+  que escribieron): ronda estática con 2 bloqueantes **de evidencia** del gate y 1 vía de escape real
+  (`setUpClass`/fixtures de módulo corrían antes del aislamiento) — cerrados en `gate.sh` y `9a7d268`,
+  re-review sin bloqueantes; ronda PC-8 sin bloqueantes con 2 IMPORTANT cerrados; ronda de cotas sin
+  bloqueantes con 1 IMPORTANT + 1 MINOR cerrados en `e588b17`. **Gate PC-6: tres corridas completas
+  consecutivas sobre `944b2ef`, árbol limpio (`dirty=0`)** — **1741 passed, 5 skipped, rc=0** en las tres
+  (45:19, 46:09, 57:15) y **canario con delta 0** en las tres (`.cdad/local/008-001/run-{1,2,3}.log`);
+  los 5 skips son aceptaciones/integraciones **reales** opt-in, con su motivo en el log (`-rs`):
+  ninguno sustituye un verde. **Historial del gate:** los intentos previos se **reiniciaron, nunca se
+  promediaron** (run 1 con B1 de `test_006_001_reviewfix.py` → causa de PC-7; run 2 con 5 fallos de cotas
+  de 2 s → causa de PC-8 y del barrido `23aa06f`/`944b2ef`); `gate.sh` escribe nombres fijos, así que sus
+  logs fueron sobrescritos — defecto de la herramienta de evidencia, declarado y pasado a 008-002.
+  **Límites declarados:** el aislamiento por entorno **no es una sandbox**; PC-4 acredita ausencia de
+  **escrituras observadas** (no de lecturas); el canario cubre las rutas nombradas, no todo el HOME; tres
+  corridas verdes son evidencia **acotada** de estabilidad. **Desplegado `b4fd046`** en la copia
+  instalada. **Deuda:** techo propio de 2 s para «no esperar de más» (008-002), `DESPACHO-SIN-PAQUETE`
+  (008-004), el gate debe preservar cada intento con nombre propio, `make validate` F011 **preexistente**.
+  **Siguiente:** `008-002-suite-by-capability`.
 - **epic-007-reliable-cycle-operation** (2026-10-23 → **cerrado 2026-10-26**) — epic **cerrado con 8/8** features, cada una con su `closure.md`: la **operación serial del ciclo deja de depender de diagnóstico externo y de prosa**. Entregado: entrada que declara situación, siguiente operación con su script y aprobación verificable (007-001); disposición y sucesor sin reconstrucción manual (007-002); continuidad exigida en los bordes con reparación explícita (007-003); `delivery` (`none | staged | received`) con tabla cerrada, donde ni `rc` ni `termination` acreditan recepción (007-004); recepción **real** entre proyectos con la versión adoptada (007-005); retiro con motivo y republicación de derivados (007-006); suspender y reanudar sin perder identidad ni repetir efectos (007-007); y la acción del cierre de recibo, que deja de prescribir re-despachar (007-008). **Criterios:** features cerradas individualmente **cumplido**; **recorrido feliz desde reposo** **observado con alcance declarado** (007-008: entrada en reposo → `open-unit` → `prepare` → `begin` → `verify-begin` → despacho → `record` verificado → `receive` → `checkpoint-receipt`, con los despachos de RED/GREEN/review **nativos y sin paquete**, desviación declarada en su cierre); **recorrido de fallo** **no observado como uso real** (mecanismo y contrato en 007-002/003/004, verificados en entorno controlado, sin ocurrir naturalmente en un consumidor); **señales** cumplido por contrato y ejercido (007-004 define la tabla; 007-005 consumió `staged` por su valor y rechazó un transporte por identidad sin acreditarlo), sin inventario completo de consumidores documentados; **precondición de la recepción** **cumplido** (`538ec57` desplegado con autorización del dueño, respaldo previo y `COHERENT` en el consumidor); **recepción real** **cumplido con desviación aceptada** (007-005: dos transportes, el primero rechazado por identidad sin registro ni efectos; declarado, aceptado y revocable); **sin mecanismos duplicados** **cumplido** (el manifiesto de evidencia es evidencia, no mecanismo). **Suite de cierre: 1721 passed, 5 skipped, 1 failed** (`test_006_001_t2_wait_recovery.py::TestPd7…`, aislado verde → `SUITE-CONTAMINATION`): **no se declara verde**. **Retrospectiva:** funcionó el **gate por superficie** (descubrió 29 tests de continuidad que los gates focales ocultaban, incluida una regresión real), las **rondas de review adversarial** (cerraron escapes reales en 007-004 y 007-006 antes del cierre), la **recepción real** como unidad de evidencia y la **suspensión**, que permitió cambiar de unidad sin excepciones de arranque; no funcionó que la **suite crezca por historia y no por capacidad** (≈134k líneas de tests contra ≈21k de producto, con contaminación por HOME/XDG no aislados), que los **despachos de rol se hicieran en varios casos sin paquete** (continuidad de esas subfases no registrada) y que una postcondición (**PC-03 de 007-005**) se escribiera sin ser observable, obligando a una **sustitución contractual**. **Deuda que pasa al epic siguiente:** `SUITE-CONTAMINATION` (auditoría por capacidad + aislamiento de entorno); `SUSP-GUARD`, `SUSP-LOCK`, `SUSP-APPROVAL`, `SUSP-IDENTITY`; **despachos sin paquete** (el ciclo debe exigir paquete por subfase de rol — hoy no lo verifica); y las heredadas DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, ausencia de CI. Detalle, criterios y límites en [closure.md](epics/epic-007-reliable-cycle-operation/closure.md).
 - **007-008-receipt-next-action** (2026-10-26, epic 007) — octava y última unidad del plan del epic, y la que cierra el defecto que 007-005 observó en uso real (`REC-NEXT-ACTION-STALE`): **el cierre de recibo deja de heredar la acción previa al despacho**. Todo cierre **nuevo** escribe la acción canónica `recibo recibido mecánicamente; no repetir despacho/recepción; revisar el resultado sin presumir aprobación`, con independencia de la acción anterior, incluida su ausencia o `null`. **Contrato:** `spec.md` (PC-01..PC-06 + AJ1–AJ4); PC-01 parametriza cuatro variantes de acción previa (re-despacho, otro texto válido, `null` y **clave ausente**); PC-02 compara la **decisión mecánica completa** de AJ4, declarada de forma independiente en el test. **Producto (único cambio):** el valor de `next_action` en `_closing_body` (`af03944`, **+3/−1**, sin tocar consumidores); se conservan `goal`, `authority`, decisiones previas, incertidumbres, referencias, `budget`, `changes`, `evidence`, `receipt_checkpoint` y `prev` con sus reglas de construcción, y no cambian identidad, reconocimiento del replay, `semantic_status` ni la forma de `status`. **Sin migración de historia:** los cierres antiguos conservan bytes y digests y **siguen mostrando la acción obsoleta** — límite declarado. **Evidencia:** RED `fbadfdc` (17 casos, **15 en rojo** por la acción heredada; los dos restantes protegen la no migración y los contextos no recibidos), GREEN `af03944` (**115 focales verdes**: 007-008 + 007-003/004/007), oráculos endurecidos en `45e1749` (snapshots, `no_op`, identidad del replay) y `20a1762` (PC-02 completa), AJ4 contractual en `458138d`. **Review: 2 rondas** — ronda 1 **sin bloqueantes** con 2 mejoras opcionales; ronda 2 con ambas **cerradas** y sin hallazgos pendientes. **Suite completa: 1721 passed, 5 skipped, 1 failed** (`test_006_001_t2_wait_recovery.py::TestPd7…`, **pasa aislado** → `SUITE-CONTAMINATION`, no regresión): **la suite no se declara verde**. **Desplegado `20a1762`** en HOME con respaldo previo. **Recorrido feliz desde reposo (evidencia para el epic):** `next-unit`/`at-rest` → `open-unit` → `prepare` → `begin` (seq 1) → `verify-begin` → despacho → `record` verificado → `receive` → `checkpoint-receipt`; segunda vuelta hasta cabeza **seq 4**. **Desviación declarada:** RED, GREEN y review se despacharon con el subagente nativo **sin paquete renderizado**, así que esas subfases **no tienen registro de continuidad** (evidencia = commits y tests). **Deuda:** el literal canónico es contrato (cambiarlo requiere unidad propia); cierres históricos con acción obsoleta; `SUITE-CONTAMINATION` y heredadas (`SUSP-*`, DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, sin CI). **Siguiente:** ninguna unidad — **el epic 007 cierra 8/8**.
 - **007-005-serial-reception** (2026-10-26, epic 007) — séptima y última unidad del plan del epic: **recepción serial real**, la primera vez que un paquete atraviesa **entre proyectos** el recorrido completo con la versión adoptada `538ec57`, sin editar estado a mano y sin repetir efectos. La unidad **no añade comportamiento al producto**: su resultado es **evidencia reproducible y una declaración explícita de límites**. **Contrato:** `spec.md` (PC-01..PC-08 + AJ1–AJ4), aprobada bajo HITL delegada, con **PC-03 enmendada** (`amendment-pc03.md`). **Recorrido observado:** entrada (`continuity-reconcile`/`execution-active`, autoridad `active`, versión `COHERENT`) → `prepare` (architect/draft, scope vacío, contrato por fallback con diagnóstico) → `begin` **N=1, seq 16** con digest del antecedente y pregunta diferencial → `verify-begin` válido → despacho **real** verificado (`parent`/`moment`/`project`) con `delivery=staged`, `model_reported` del almacén y `model_configured` nulo con procedencia explícita (CDAD no elige modelo) → `receive --continuity-attempt 1` → recibo **VALID** con `semantic_status=pending` → `checkpoint-receipt` **seq 17** enlazado por `prev` al 16 con el digest del recibo → transición de entrega registrada → `status` final `execution-active → resume`; `reconcile` **`received`**, **`repeat_effect=false`**. **Enmienda PC-03 (sustitución, no dispensa):** «`verify-begin` inmediatamente antes del despacho» **no es observable** en despacho entre proyectos (verificación y transporte en sesiones distintas; el producto no captura el intervalo de reloj); se sustituye por **identidad y adyacencia lógica** (seq/`body_sha256` del `begin` = predecesor inmediato del cierre, sin checkpoint intermedio; cadena 16 → 17, `body_sha256 dedb50df…`). Conserva identidad y adyacencia y **elimina la garantía temporal**: **el requisito original de inmediatez no se cumple y se declara no observado**; no se repitió el recorrido para fabricar la captura. Autorizada por la autoridad delegada el 2026-10-26. **Desviación aceptada:** el tramo se despachó **dos veces** — el primero desde la raíz de CDAD fue **rechazado por identidad** (`blocked`/`none`/`null`, **sin registrar el intento**), comportamiento contratado (INV-2: la sesión debe ser raíz del proyecto autorizado), y su sesión ejecutó el mismo encargo read-only; el segundo produjo la recepción válida. **Sin duplicación de efectos**, con **dos ejecuciones del mismo encargo**: sólo la recepción aceptada acredita entrega, el informe rechazado no se usa como evidencia, el rechazo se declara **fallo observado** y la aceptación es **revocable** por el dueño. **Review: 4 rondas** (`ses_e8678bf0affe0TJlgin9ZgvOYZ`, `ses_e867568fdfferpr70l8glyAbLB`, `ses_e8672ba4affe9zzS8rvBl9xxL1`, `ses_e8670d43effeCuzEW50G5RIivm`): **NO APTO → NO APTO → 1 bloqueante → APTO**. **Evidencia:** `evidence/manifest.json` con **31 entradas** (rutas por alias, digest, cobertura por PC, límite por entrada) y verificación privada en el consumidor **31/31 entradas, 8/8 postcondiciones, 7 documentos sin filtraciones, PASS**; la **resolución alias→ruta** y las **identidades de sesión** quedan privadas. **Suite completa (gate de cierre): 1705 passed, 5 skipped, 0 failed.** **Producto:** ninguno — el envoltorio privado `deleg.sh` se **retiró del recorrido de aceptación** (prepara y lanza, no integra `begin`/`verify-begin`/consumo de `delivery`, no acredita recepción) y queda declarado lanzador parcial. **Deuda:** **`REC-NEXT-ACTION-STALE` (nueva, observada)** — el cuerpo del checkpoint de recepción conserva el `next_action` previo aunque ya referencia el recibo; `resume` y `reconcile` protegen contra repetir el efecto, pero un lector del cuerpo puede re-despachar (no se repara acá, requiere decisión y alcance propios); límites del expediente: fallos de runtime/timeout/cuota, reparación y retiro **no observados**; informe **no aprobado** (`semantic_status=pending`); `reconcile` declara «historia anterior conservada, no demostrable»; heredadas `SUITE-CONTAMINATION`, `SUSP-GUARD`/`SUSP-LOCK`/`SUSP-APPROVAL`/`SUSP-IDENTITY`, DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, sin CI. **Siguiente:** el **cierre del epic** (no queda feature en cola) — el epic queda **7/7 y ABIERTO**: el **recorrido feliz desde reposo** no está observado y el de fallo no es uso real.
@@ -1022,7 +1155,8 @@ _(ninguna)_
   cabeza; **SUSP-APPROVAL (baja)** no se re-verifica la aprobación si el historial se borra a mano;
   **SUSP-IDENTITY (media)** la identidad de la unidad la suministra el llamador y puede eludir la
   guarda manipulando los insumos (B1 de la ronda 1); **SUITE-CONTAMINATION (media)** tests que pasan
-  en aislamiento y fallan en corridas grandes por HOME/XDG no aislados → auditoría por capacidad.
+  en aislamiento y fallan en corridas grandes por HOME/XDG no aislados → **el aislamiento se cerró en
+  008-001** (tres corridas completas verdes); la **auditoría por capacidad** es 008-002.
 **REC-NEXT-ACTION-STALE (media)** — **resuelta en 007-008**: todo cierre **nuevo** de recibo escribe
   la acción canónica y no hereda la orden de re-despacho; los cierres históricos conservan la acción
   vieja por decisión explícita (no se migra historia).
@@ -1031,7 +1165,9 @@ _(ninguna)_
   no quedó registrada; la evidencia fueron commits y tests. El ciclo **no lo verifica hoy**: exigirlo es
   trabajo del epic siguiente. Heredadas sin cambios: DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, CI ausente.
 
-Última actualización: 2026-10-26
+Última actualización: 2026-10-27 (008-002)
+
+- 2026-10-27 — **008-001-home-xdg-isolation cerrada (epic 008, 1/5)**: cada test corre con HOME, XDG y temporales propios, sus subprocess los heredan, y el producto resuelve el origen de agentes con el HOME vigente. **Gate PC-6: tres corridas completas consecutivas verdes sobre `944b2ef`** (árbol limpio, `dirty=0`): **1741 passed, 5 skipped, rc=0** y **canario delta 0** en las tres (`.cdad/local/008-001/run-{1,2,3}.log`); los 5 skips son aceptaciones reales opt-in con motivo en el log. El gate expuso y dejó corregidos **dos defectos reales de la cota de despacho**, no de la suite: **PC-7** (el wrapper mataba al adaptador justo en la cota que el adaptador administra; ahora espera `cota + 5.0 s` y nombra el límite efectivo) y **PC-8** (el adaptador despachaba con `0.0 s` de espera si el preflight consumía el presupuesto; ahora el deadline de preparación es agregado, reserva presupuesto para el cliente y no despacha con agotamiento preparatorio). **Producto:** `cdad_packet.py`, `cdad_delegate.py`, `cdad_delegate_opencode.py`; **tests:** fixture autouse + fixture de sesión en `tests/conftest.py`, `tests/product_staging.py` y **19 casos nuevos**. **Desplegado `b4fd046`** (los tres scripts byte-idénticos por `sha256`; los agentes conservan su `model:`). **Límites:** el aislamiento no es una sandbox y PC-4 no observa lecturas. **Deuda:** techo de 2 s (008-002), `DESPACHO-SIN-PAQUETE` (008-004), el gate debe preservar intentos, F011 preexistente. **Siguiente:** `008-002-suite-by-capability`.
 
 - 2026-10-26 — **epic-007-reliable-cycle-operation CERRADO (8/8)**: la operación serial del ciclo deja de depender de diagnóstico externo y de prosa (entrada con situación y próxima operación, recuperación de intentos, continuidad en los bordes, `delivery` declarado, recepción real entre proyectos, retiro y republicación, suspender/reanudar, y acción del cierre de recibo). **Criterios:** 8/8 features cerradas; **recorrido feliz desde reposo observado con alcance declarado** (007-008, con los despachos de RED/GREEN/review nativos sin paquete); **recorrido de fallo no observado como uso real** (mecanismo y contrato verificados en entorno controlado); señales cumplidas por contrato y ejercidas; precondición de la recepción cumplida (`538ec57` con autorización y `COHERENT`); recepción real con **desviación aceptada** (dos transportes, el primero rechazado por identidad sin efectos); sin mecanismos duplicados. **Suite: 1721 passed, 5 skipped, 1 failed** (`TestPd7…`, aislado verde → `SUITE-CONTAMINATION`): **no se declara verde**. **Deuda al epic siguiente:** auditoría de la suite por capacidad y aislamiento HOME/XDG, `SUSP-*`, despachos sin paquete, DT-8/F011, DT-9, `scope_validation: unknown`, W-U6-*, sin CI. Detalle en `docs/epics/epic-007-reliable-cycle-operation/closure.md`.
 

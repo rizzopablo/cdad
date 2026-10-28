@@ -317,6 +317,90 @@ tabla en sí la mantiene el orquestador.
   verifica hoy**, así que esto es una **exigencia del método**, no una garantía del producto, y queda
   como deuda prioritaria del epic siguiente.
 
+### Suite por capacidad y cierre con evidencia preservada (epic 008, 2026-10-27)
+
+- **Un gate que no ve cambios exclusivamente de tests no sirve para reorganizar la suite.** El gate por
+  superficie anterior sólo miraba cambios comprometidos de producto y referencias en `tests/test_*.py`: un
+  cambio que tocara únicamente tests podía producir **selección vacía**, es decir, una reorganización
+  **invisible**. El selector canónico (`scripts/cdad-suite.py surface`) compara contra `<ref>` incluyendo
+  cambios no indexados, resuelve un test trasladado consultando el mapa **de la base** (`--no-renames`), y
+  **nunca devuelve selección vacía como éxito**: una dependencia sin clasificar es diagnóstico no cero y sólo
+  `--all` explícito selecciona todo. Un gate cuya respuesta ante «no encontré nada» es «pasó» no puede
+  acreditar que nada cambió.
+- **El cierre reserva un intento exclusivo y la evidencia no se sobrescribe.** Nombrar la evidencia por
+  número de corrida es el defecto que se pagó en 008-001 (los intentos fallidos quedaron pisados). La regla
+  es por **invocación**: directorio nuevo con nombre único por creación exclusiva (`os.mkdir` sin reintento)
+  y **colisión es error** (rc 2), nunca reutilización ni adopción del ajeno. El estado se escribe **antes** de
+  arrancar el hijo (`running`) y se reescribe al terminar (`finished`) con `rc`, comando, selección, commit,
+  `dirty`, tiempos, salidas y snapshots: una interrupción deja `running` y **no se lee como éxito**. La
+  garantía es de creación exclusiva y no reuso, no de inmutabilidad externa.
+- **Un límite de tiempo se declara y se neutraliza el entorno del hijo, o el resumen se marca no
+  verificable.** Un resumen derivado de la salida de un proceso ajeno no es un dato si el entorno puede
+  cambiarla: con `PYTEST_ADDOPTS='-qq'` el cierre declaraba **cero aprobados con `rc=0`** (reproducido por el
+  reviewer en 008-002). La regla es doble: neutralizar las variables que alteran la salida y, si aun así no
+  se puede parsear, escribir `verified: false` **con diagnóstico** en vez de ceros. Un cero fabricado es peor
+  que un «no verificado» honesto.
+- **Organizar la suite no es migrar carpetas.** Índice lógico y versionado (inventario por capacidad y
+  contrato + mapa obligación→test): permite módulos mixtos y selección exacta sin romper imports, a costa de
+  ser una **declaración auditada** que hay que mantener. `validate` la contrasta contra la colección real y
+  contra la **baseline registrada** de la unidad, no contra `HEAD`: comparar contra el árbol actual
+  convertiría toda consolidación legítima en pérdida.
+- **Límites declarados (008-002).** `confidence` explícita y alcance de módulo en los mixtos; el mapa cubre el
+  piloto, no la suite entera; `measure` es instrumento; `surface` falla ruidoso bajo `PYTEST_ADDOPTS`; el
+  canario cubre las rutas de 008-001, no el árbol del repo. Normativo en
+  `docs/specs/008-002-suite-by-capability/{spec.md,closure.md}`; este archivo **no** re-enuncia PC-1..PC-8.
+
+### Admisión de la encomienda — identidad por marcador canónico, integridad por bytes (epic 008, 2026-10-28)
+
+- **La identidad de una encomienda CDAD la da el marcador, no el texto.** El marcador canónico se identifica
+  **exactamente una vez, en cualquier posición**; lo que lo precede es preámbulo **transparente y no
+  autorizante**. Cero marcadores es una **ausencia explícita** —consulta legacy, que no acredita despacho
+  CDAD— y no una ruta de recuperación; más de un marcador, bloque sin cierre o identidad discordante se
+  **rechazan, sin fallback silencioso a legacy**. La razón es operativa: el runtime antepone una línea a todo
+  prompt de subagente y no está bajo el control del ciclo, así que clasificar por palabras del objetivo o por
+  nombre de rol sería una heurística sobre texto libre. Corolario: «legacy» describe la falta de encomienda,
+  nunca un paquete dañado.
+- **La integridad se mide por bytes contra el render canónico, no por metadatos.** La cadena es `request
+  validado → render_packet → igualdad del paquete recibido completo`, desde el marcador hasta el final, sin
+  normalizar ni reconstruir. Validar sólo el encabezado deja sin proteger objetivo, instrucciones, contrato,
+  entradas, scopes, invariantes y evidencia; la review lo reprodujo: encabezado válido con objetivo alterado
+  pasaba el intake textual. No se añade un segundo criterio de hashes: ADR-036 ya fija que el verificador es
+  del productor y lo importan los consumidores.
+- **Cada frontera invocable verifica su propia precondición antes de sus efectos.** `begin`,
+  `prepare --record-dispatch`, `dispatch`, `record` y `delegate` admiten **antes** de publicar continuidad,
+  observar el modelo, preparar staging, transmitir o cambiar estado. El preflight del orquestador es
+  obligatorio y **no suficiente**: la primera ronda de review encontró `cdad_delegate` lanzando un worker con
+  el paquete alterado tras un `begin` válido, porque la comprobación vivía sólo en `dispatch`. El replay
+  conserva su precedencia: reconocer una repetición ya acreditada **no** autoriza un despacho nuevo.
+- **Coherencia entre referencias y `write_scope` en `begin`.** Una referencia `contract` cubierta por el
+  `write_scope` del propio paquete se rechaza **antes de persistir** —diagnosticando referencia y selector—
+  reutilizando `_scope_contains`; `living` explícita conserva su semántica (ADR-018) y no hay reclasificación
+  automática. Motivo medido: esa referencia se **autoinvalida** por P1 en el `record`; durante el epic 008
+  murieron así cuatro registros (contados por 008-003) y hubo además un rechazo por `state incoherent` al
+  corregir una spec después del `begin`. La regla gobierna `begin` nuevos y no invalida registros previos.
+- **La regla vive en la fuente y en las copias, y eso se verifica.** El intake es compartido por cinco roles y
+  dos runtimes: corregir sólo `sources/` deja a los agentes generados e **instalados** con el contrato
+  anterior, y esa divergencia es el modo de falla (PC-08: 20 copias generadas y 11 agentes por runtime).
+  Comprobar la distribución instalada es parte del contrato, no higiene de despliegue.
+- **Límite que no se puede prometer lejos.** Esto es **admisión**, no un sandbox: no intercepta herramientas
+  nativas, no impide que un agente ignore sus instrucciones y no acredita los bytes que recibió una sesión
+  nativa por validar el paquete en disco. Normativo en `docs/specs/008-004-role-packet-enforcement/`
+  (`spec.md` PC-01..PC-08 con D1/D2/D3, `closure.md`); este archivo **no** re-enuncia las PCs.
+
+### Cotas de reloj de pared — miden el host, no el producto (epic 008, 2026-10-28)
+
+- **Un `assertLess(elapsed, …)` es una aserción sobre el entorno.** En el gate de 008-004, los siete fallos
+  de las corridas B y C fueron cotas de espera de 2,5–5 s incumplidas por 0,05 a 4,2 s, con el host a
+  `loadavg` 5.4–6.9 sobre 8 CPU por agentes de **otras sesiones**; las clases afectadas pasan en aislamiento
+  (3/3 dos veces con load 6.5–6.6) y en un worktree del commit previo, y la duración de la suite pasó de 51
+  min a 1:43 **sin cambio de código**.
+- **Consecuencia de método:** una cota de reloj no puede ser el criterio de verde de un gate que corre en un
+  runner compartido, y tres corridas verdes consecutivas no se alcanzan reintentando ni promediando —008-001
+  ya había fijado que los intentos se **reinician, nunca se promedian**—. El cierre lo declara en vez de
+  presentarlo como verde, aunque el producto de la unidad esté verde.
+- **Estado:** deuda **BLOCKING** del criterio «Suite estable» del epic-008 y **primer requisito de 008-005**.
+  Este archivo registra la medición y su lectura; **no** decide el remedio.
+
 ## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
 
 ### Palanca `write: ask` (2026-09-12; enmienda de ubicación 2026-09-13)
@@ -722,8 +806,42 @@ catch-all deny o pares de comandos durante la simplificación.
   determinante distinto y **no** bloquea (§2.7).
 - **Referencia operativa:** `skills/cdad-cycle/references/cli-delegation.md` y
   `skills/cdad-cycle/assets/opencode-exec-config.example.json`; **ADR-031**; contrato normativo en
-  `docs/specs/006-001-opencode-concurrency-reliability/spec.md` (PD-1..PD-14, INV-1..INV-10). Aviso de cota:
-  los fixtures de tiempos usan cotas de **2 s** y son frágiles bajo carga del host (**DT-9**).
+  `docs/specs/006-001-opencode-concurrency-reliability/spec.md` (PD-1..PD-14, INV-1..INV-10).
+  **Aviso de cota (actualizado por 008-001):** los fixtures de tiempos nacieron con cotas de **2 s** y son
+  frágiles bajo carga del host (**DT-9**); desde 008-001 el fixture compartido usa 5 s y las cotas
+  instrumentales 5–10 s **sólo** donde la cota no es el sujeto, mientras los tests en los que la cota **es**
+  el sujeto conservan sus aserciones. La regla de producto que salió de ahí está en «La cota del despacho
+  pertenece al adaptador», abajo.
+
+### La cota del despacho pertenece al adaptador (epic 008, 2026-10-27)
+
+- **Un solo dueño del tiempo: el adaptador.** El adaptador administra la operación completa —preflight,
+  cliente y observación durable—, así que **la cota es suya**. El wrapper (`cdad_delegate.py`) y el
+  preflight del adaptador son **redes de seguridad con margen declarado**, no la cota: el wrapper espera
+  `cota + ADAPTER_WAIT_GRACE_SECONDS` (5.0 s) y su diagnóstico **nombra el límite efectivo**; sin cota
+  declarada no impone límite (comportamiento previo). Esperar el **mismo** `timeout_seconds` que el
+  adaptador administra lo mata justo antes de que emita su sobre y convierte un resultado en un `timeout`
+  genérico con `session: null` — es lo que PD-11/PD-8 prohíben y lo que el gate de 008-001 midió
+  (PC-7). Corolario: **una red de seguridad se declara con margen, no se disfraza de cota**.
+- **Sin presupuesto útil no se despacha.** El deadline de preparación del adaptador es **agregado** (no se
+  renueva por operación) y debe **reservar** presupuesto positivo para el cliente y la observación durable
+  **antes** de ejecutarlo; el mínimo útil de espera es proporcional al presupuesto
+  (`max(0.1, 0.2·budget)`). Si la preparación agota el presupuesto, **no se lanza el cliente**, no se
+  fabrica sesión ni recibo, y el diagnóstico identifica el **agotamiento preparatorio** en lugar de emitir
+  un `bounded wait (0.0 seconds)` sobre un cliente que nunca corrió (PC-8). Un tiempo de espera calculado
+  por resta puede llegar a cero: **el cero no es una espera**.
+- **Por qué es durable y no un parche de la suite.** Ninguno de los dos defectos era de los tests: ambos
+  aparecían sólo cuando la suite se volvió ejecutable en condiciones reales (HOME aislado, host cargado).
+  Poner verde la suite no habría cambiado el producto. La regla general es que **un límite de tiempo
+  declarado por una interfaz pertenece al componente que lo administra**; los demás lo esperan con margen
+  y fallan **nombrando** el límite, nunca reemplazándolo por el suyo.
+- **Límite declarado.** PC-7 y PC-8 corrigen los bordes de cota **demostrados**; no prometen que todo host
+  cargado responda dentro de cualquier cota. Queda abierto el techo de «no esperar de más»: con el fixture
+  en 5 s, distinguir «hecho conocido» de «esperó la cota» tolera hasta 5 s (deuda a 008-002).
+- **Referencia:** `docs/specs/008-001-home-xdg-isolation/spec.md` AJ4/PC-7 y AJ5/PC-8, con el detalle en
+  el `closure.md` de la misma carpeta; las constantes y los deadlines viven en
+  `skills/cdad-cycle/scripts/cdad_delegate.py` y `skills/cdad-cycle/scripts/cdad_delegate_opencode.py`.
+  Este archivo **no** re-enuncia el contrato.
 
 ### Delegación por capa — el mecanismo lo declara el agente del runtime, la skill es neutral y el adaptador sólo cruza runtimes (epic 006, 2026-10-18)
 
@@ -1145,4 +1263,13 @@ verificación se apoya en el verificador canónico del productor (**ADR-036**), 
 
 ---
 
-Última actualización: 2026-10-22 (006-004)
+Última actualización: 2026-10-28 (008-004)
+
+## Overlay de claves de usuario en artefactos desplegados (009-001)
+
+Cuando un artefacto se despliega pero contiene valores que pertenecen al usuario (el `model` de cada agente),
+el despliegue no puede tratar cualquier diferencia como conflicto: se declara la **lista de claves como
+dato**, se reinserta sobre la versión nueva y se compara **contra el staging vigente antes** de invocar la
+procedencia. La procedencia decide sólo cuando la base no es la versión actual (edición local real o upstream
+movido). Ante gramática ambigua: se preserva y se informa — nunca se adivina ni se descarta en silencio.
+Una sola definición del overlay, consumida por install, `--check`, la ruta legacy y el validador.

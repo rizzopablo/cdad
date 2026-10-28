@@ -99,7 +99,8 @@ import unittest
 from pathlib import Path
 
 from test_005_009_t2_opencode_adapter import FAKE_MODEL, FAKE_RUNTIME
-from test_006_001_t1_selection import closed_port_url
+from test_006_001_t1_selection import (
+    closed_port_url, pc8_preparatory_exhaustion)
 from test_006_001_t1b_service_mode import T1bServiceCase
 from test_006_001_t2_wait_recovery import Pd600T2Case
 
@@ -125,6 +126,29 @@ RF_HANG_SLEEP_SECONDS = 40        # el cliente colgado duerme más que todo
 B1_COTA_SECONDS = 10.0            # B1: banda de cota media (~10 s)
 B1_PREFLIGHT_DELAY_SECONDS = 4.0  # > 25 % del budget interno (≈ 2,2 s)
 B3B_SERVICE_DELAY_SECONDS = 1.2   # retardo del `service status` (B3b)
+
+# 008-005 PC-6 (T-A/T-B). Regla: el techo de una cota de duración queda a
+# >= 10x el valor de la conducta correcta, nunca igual al plazo que vigila.
+# - Sitio 6 (B1, T-B): correcto ≈ cota 10 s; el 10x (≈ 100 s) queda por
+#   encima del defecto natural (RF_HANG_SLEEP_SECONDS = 40 s) → la
+#   duración no discrimina; la decisión (origen del envelope, PD-11) ya
+#   está assertada y el techo se declara liveness.
+# - Sitios 7 y 8 (B3a, T-A): cota 2 s; correcto ≈ 2,2 s (cota + gracia);
+#   techo 25 s >= 10x ≈ 22 s y < el no acotamiento (timeout del harness,
+#   300 s). El defecto "settle usado" (más corto) lo separan la terminación
+#   y la cota inferior.
+# - Sitio 9 (B3b, T-A): correcto ≈ 1,7 s (preflight de 1,2 s + vuelta);
+#   techo 25 s >= 10x ≈ 17 s y < el no acotamiento; el plazo vigilado es
+#   la cota de 10 s (25 != 10).
+# Pérdida declarada (PC-6, review F1): en los sitios 7-9 — como en PD-7 y
+# PD-11 de test_006_001_t2_wait_recovery.py — el techo mide el HOST, no la
+# cota: una espera acotada pero por ENCIMA de la cota (2x) hoy no es
+# observable (el envelope del producto no expone duración) y queda
+# registrada en deferred-hardening del spec 008-005 en vez de presentarse
+# como guarda «en la cota».
+LIVENESS_UPPER_SECONDS = 60
+B3A_UPPER_SECONDS = 25.0
+B3B_UPPER_SECONDS = 25.0
 
 RF_FAST_WAIT = {
     "poll_initial_seconds": 0.05,
@@ -553,10 +577,11 @@ class TestB1AdapterEnvelopeWithinCota(ReviewFixCase):
                 f"({chosen!r}) — un envelope de la INTERFAZ la pierde "
                 f"(session null): {out.get('session')!r}")
         self.assertLess(
-            elapsed, B1_COTA_SECONDS + 2.0,
-            msg=f"B1: el despacho tardó {elapsed:.2f}s — guardia de "
-                f"sanidad (el discriminador del contrato es el ORIGEN del "
-                f"envelope, no el reloj)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, sitio 6, PC-6): el despacho no "
+                f"retornó ({elapsed:.2f}s >= guardia de liveness) — el "
+                f"discriminador del contrato es el ORIGEN del envelope, "
+                f"ya assertado arriba, no el reloj")
         self.assert_no_receipt_fabricated("B1")
 
 
@@ -713,6 +738,15 @@ class TestB3ServiceWaitAndPreflight(ReviewFixCase):
         elapsed = time.monotonic() - started
         out = self.envelope(proc, "B3a fila no idle en modo servicio")
 
+        # PC-8: la cota (2s) es el sujeto y se conserva; si la preparación
+        # la agotó, la clasificación válida es el no despacho — acotado.
+        if pc8_preparatory_exhaustion(self, out, fake, "B3a"):
+            self.assertLess(elapsed, B3A_UPPER_SECONDS,
+                            msg=f"B3a (008-005 T-A, sitio 7, PC-6): el no "
+                                f"despacho quedó desacotado "
+                                f"({elapsed:.2f}s >= {B3A_UPPER_SECONDS}s)")
+            return
+
         self.assertEqual(
             out["termination"], "timeout",
             msg=f"B3a: fila no idle en MODO SERVICIO: la terminación debe "
@@ -724,10 +758,18 @@ class TestB3ServiceWaitAndPreflight(ReviewFixCase):
             msg=f"B3a: terminó demasiado rápido ({elapsed:.2f}s): parece "
                 f"haber usado settle_seconds en modo servicio (PD-7: la "
                 f"espera durable sigue hasta la cota, settle ignorado)")
+        # 008-005 PC-6 (T-A, sitio 8, review F1): el techo mide el HOST
+        # (25 s >= 10x ≈ 2,2 s de la conducta correcta), NO la cota de 2 s;
+        # la espera acotada por encima de la cota no es observable hoy:
+        # pérdida declarada en deferred-hardening.
         self.assertLess(
-            elapsed, 3.5,
-            msg=f"B3a: la espera en modo servicio quedó DESACOTADA "
-                f"({elapsed:.2f}s >= margen sobre la cota de 2s)")
+            elapsed, B3A_UPPER_SECONDS,
+            msg=f"B3a (008-005 T-A, sitio 8, PC-6): el host excedió el "
+                f"techo de liveness ({elapsed:.2f}s >= "
+                f"{B3A_UPPER_SECONDS}s; el techo mide el host, >= 10x la "
+                f"conducta correcta ≈ 2,2 s, no la cota de 2 s); la "
+                f"discriminación «acotada por encima de la cota» no es "
+                f"observable hoy: pérdida declarada en deferred-hardening")
         chosen = self.chosen_session(fake, "B3a")
         self.assertEqual(
             out.get("session"), chosen,
@@ -788,12 +830,18 @@ class TestB3ServiceWaitAndPreflight(ReviewFixCase):
                 f"no ocurrió ({elapsed:.2f}s < "
                 f"{B3B_SERVICE_DELAY_SECONDS}s; fallo de fixture, detener "
                 f"y reportar)")
+        # 008-005 PC-6 (T-A, sitio 9, review F1): el techo mide el HOST
+        # (25 s >= 10x ≈ 1,7 s de la conducta correcta), no la cota de
+        # 10 s vigilada; la espera acotada por encima de la cota no es
+        # observable hoy: pérdida declarada en deferred-hardening.
         self.assertLess(
-            elapsed, 11.0,
-            msg=f"B3b: el despacho con preflight de servicio retardado "
-                f"tardó {elapsed:.2f}s, por encima de la cota de 10s + "
-                f"margen (PD-11: el adaptador responde SIEMPRE dentro de "
-                f"la cota)")
+            elapsed, B3B_UPPER_SECONDS,
+            msg=f"B3b (008-005 T-A, sitio 9, PC-6): el host excedió el "
+                f"techo de liveness: {elapsed:.2f}s >= "
+                f"{B3B_UPPER_SECONDS}s (el techo mide el host, >= 10x la "
+                f"conducta correcta ≈ 1,7 s, no la cota de 10 s; la "
+                f"discriminación «acotada por encima de la cota» no es "
+                f"observable hoy: pérdida declarada en deferred-hardening)")
         diagnosis = (out.get("diagnosis") or "").lower()
         self.assertNotIn(
             "did not answer within", diagnosis,

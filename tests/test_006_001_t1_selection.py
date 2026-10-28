@@ -194,6 +194,74 @@ FAST_WAIT = {
 
 NEVER_INVOKED_TOKENS = ("serve", "service", "reload")  # INV-2
 
+# 008-001 PC-8 (decisión del architect 2026-10-27): la reserva del
+# adaptador NO cambia. Tests de CLASIFICACIÓN usan una cota instrumental
+# holgada (la cota no es su sujeto); tests cuyo sujeto ES la cota la
+# conservan y aceptan, además, la clasificación que PC-8 introduce cuando
+# la preparación agota el presupuesto: no despacho con diagnóstico de
+# agotamiento preparatorio (sin `run`, sin sesión, sin recibo).
+INSTRUMENTAL_COTA_SECONDS = 10
+INSTRUMENTAL_WAIT = {**FAST_WAIT, "timeout_seconds": INSTRUMENTAL_COTA_SECONDS}
+PC8_EXHAUSTION_MARKERS = ("preparatory exhaustion", "agotamiento preparatorio")
+
+
+def dispatch_calls(calls: list[dict]) -> list[dict]:
+    """Invocaciones de DESPACHO (`run`), con o sin paquete registrado: un
+    `run` cuyo paquete el fake no halló (`packet=None`) igual es despacho."""
+    return [c for c in calls if "run" in (c.get("argv") or [])]
+
+
+def pc8_preparatory_exhaustion(case, out: dict, fake: dict, label: str) -> bool:
+    """True si el adaptador no despachó por agotamiento preparatorio (PC-8),
+    tras verificar el oráculo estricto de ese camino; False si despachó."""
+    diagnosis = (out.get("diagnosis") or "").lower()
+    if not any(m in diagnosis for m in PC8_EXHAUSTION_MARKERS):
+        return False
+    case.assertTrue(
+        "not launched" in diagnosis or "not dispatched" in diagnosis,
+        msg=f"{label} (PC-8): agotamiento sin declarar el no despacho: "
+            f"{diagnosis!r}")
+    case.assertEqual(
+        dispatch_calls(case.binary_calls(fake)), [],
+        msg=f"{label} (PC-8): agotamiento preparatorio con `run`")
+    case.assertIsNone(out.get("session"),
+                      msg=f"{label} (PC-8): agotamiento con sesión: {out!r}")
+    case.assertFalse(out.get("delivery_ref"),
+                     msg=f"{label} (PC-8): agotamiento con entrega: {out!r}")
+    case.assert_no_receipt_fabricated(f"{label} (PC-8)")
+    return True
+
+
+
+class TestPc8ExhaustionOracle(unittest.TestCase):
+    """El oráculo de no despacho (PC-8) rechaza un `run` sin paquete."""
+
+    class _Stub(unittest.TestCase):
+        def __init__(self, calls):
+            super().__init__()
+            self._calls = calls
+
+        def runTest(self):  # noqa: N802
+            pass
+
+        def binary_calls(self, fake):
+            return self._calls
+
+        def assert_no_receipt_fabricated(self, label):
+            pass
+
+    OUT = {"session": None, "delivery_ref": None,
+           "diagnosis": "preparatory exhaustion: client was NOT launched"}
+
+    def test_run_without_packet_is_not_accepted_as_no_dispatch(self) -> None:
+        stub = self._Stub([{"argv": ["run", "--agent", "x"], "packet": None}])
+        with self.assertRaises(AssertionError):
+            pc8_preparatory_exhaustion(stub, self.OUT, {}, "oráculo")
+
+    def test_no_run_is_accepted_as_no_dispatch(self) -> None:
+        stub = self._Stub([{"argv": ["--version"], "packet": None}])
+        self.assertTrue(pc8_preparatory_exhaustion(stub, self.OUT, {}, "oráculo"))
+
 
 # --------------------------------------------------------- servidor /api/info
 
@@ -441,7 +509,7 @@ class TestPd1ModeSelectionMatrix(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd1-server-valid")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-1 mode=server url válida")
@@ -477,7 +545,7 @@ class TestPd1ModeSelectionMatrix(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd1-standalone-ignores-server")
         self.patch_config(
             fake, {"mode": "standalone", "server": unused_url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-1 mode=standalone con server ignorado")
@@ -515,7 +583,7 @@ class TestPd1ModeSelectionMatrix(Pd600T1Case):
         normalmente a `completed` (falla en la terminación, no en la
         ausencia de invocación)."""
         fake = self.fake_runtime_wrapped("pd1-server-no-url")
-        self.patch_config(fake, {"mode": "server", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "server", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-1 mode=server sin url")
@@ -537,7 +605,7 @@ class TestPd1ModeSelectionMatrix(Pd600T1Case):
         config, despacha standalone a `completed`."""
         fake = self.fake_runtime_wrapped("pd1-invalid-mode")
         self.patch_config(
-            fake, {"mode": "bogus-mode-value", "wait": FAST_WAIT})
+            fake, {"mode": "bogus-mode-value", "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-1 mode inválido")
@@ -613,7 +681,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         # `mode` SIN declarar (compatibilidad, D-1): con `server` válido el
         # modo efectivo es servidor y el preflight rige igual.
         self.patch_config(
-            fake, {"server": info_server.url, "wait": FAST_WAIT})
+            fake, {"server": info_server.url, "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-2 preflight éxito")
@@ -667,7 +735,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-connection-refused")
         self.patch_config(
             fake, {"mode": "server", "server": unreachable_url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-2 conexión rechazada")
@@ -693,7 +761,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-unauthorized")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)  # sin ninguna contraseña en el entorno
         out = self.envelope(proc, "PD-2 401 sin credencial")
@@ -727,7 +795,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-version-mismatch")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-2 version mismatch")
@@ -757,7 +825,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-missing-version-field")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-2 sin version")
@@ -787,7 +855,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-unparseable-version")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake)
         out = self.envelope(proc, "PD-2 version no parseable")
@@ -821,7 +889,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-password-order-valid")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake, env_overrides={
             OPENCODE_PASSWORD_ENV: SENTINEL_PASSWORD,
@@ -851,7 +919,7 @@ class TestPd2ServerPreflight(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd2-password-order-invalid")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
 
         proc = self.dispatch(fake, env_overrides={
             OPENCODE_PASSWORD_ENV: WRONG_PASSWORD,
@@ -895,7 +963,7 @@ class TestPd3ProvenanceEveryTermination(Pd600T1Case):
         marcador `mode_requested=` en un camino `blocked`."""
         fake = self.fake_runtime_wrapped("pd3-blocked-standalone",
                                         variant="failed")
-        self.patch_config(fake, {"mode": "standalone", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "standalone", "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch(fake)
@@ -924,7 +992,7 @@ class TestPd3ProvenanceEveryTermination(Pd600T1Case):
         ningún registro nuevo lleva el marcador `mode_requested=`."""
         fake = self.fake_runtime_wrapped("pd3-completed-standalone",
                                         variant="succeeded")
-        self.patch_config(fake, {"mode": "standalone", "wait": FAST_WAIT})
+        self.patch_config(fake, {"mode": "standalone", "wait": INSTRUMENTAL_WAIT})
         self.assert_derived_agents_published()
         records_before = dispatch_records(self.root, self.execution_id)
 
@@ -1010,7 +1078,7 @@ class TestPd4SameErrandInServerMode(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd4-server-errand")
         config = self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         xdg_home = Path(self._tmp) / "xdg-config-u4"
@@ -1123,7 +1191,7 @@ class TestPd5NoSecretsInOutputs(Pd600T1Case):
         fake = self.fake_runtime_wrapped("pd5-no-secrets")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
         records_before = dispatch_records(self.root, self.execution_id)
 
         proc = self.dispatch(
@@ -1196,7 +1264,7 @@ class TestPd5NoSecretsInOutputs(Pd600T1Case):
             "pd5-stderr-redaction", variant="transport-error")
         self.patch_config(
             fake, {"mode": "server", "server": info_server.url,
-                   "wait": FAST_WAIT})
+                   "wait": INSTRUMENTAL_WAIT})
         # Inyectado SOLO en la invocación de `run` (nunca en --version, el
         # envoltorio lo gatea por el argv): simula un cliente real que
         # imprime la URL configurada en su propio error de conexión.

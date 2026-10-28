@@ -115,6 +115,7 @@ from pathlib import Path
 # Reuso declarado (una sola definición de las rutas de los orquestadores
 # generados): patrón u6→u1 de 006-002.
 from tests.test_006_002_u1_delegation_section import CC_ORCH_REL, OC_ORCH_REL
+from tests.product_staging import run_scoped_mkdtemp
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -857,7 +858,7 @@ def _recomputed_root() -> Path:
     en el repo): el generado que evalúan los oráculos es RECOMPUTADO."""
     global _STAGING_COPY
     if _STAGING_COPY is None:
-        tmp = tempfile.mkdtemp(prefix="cdad-006-005-u4-")
+        tmp = run_scoped_mkdtemp("cdad-006-005-u4-")
         atexit.register(shutil.rmtree, tmp, ignore_errors=True)
         copy = Path(tmp) / "product"
         shutil.copytree(

@@ -21,6 +21,13 @@ import time
 from typing import Any
 
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_lifecycle  # noqa: E402
+
+
 class PolicyError(ValueError):
     """A user-supplied execution or state document violates the contract."""
 
@@ -137,7 +144,10 @@ TXN_DIRNAME = Path(".cdad") / ".txn"
 # I9: project-local OpenCode agents derived from the installed sources + the
 # project policy. Published under .opencode/agents/ with a hash manifest.
 DERIVED_AGENTS_ENV = "CDAD_OPENCODE_AGENTS_DIR"
-DEFAULT_DERIVED_SOURCE = Path.home() / ".config" / "opencode" / "agents"
+# The global origin (`<HOME>/.config/opencode/agents`) is NOT captured here:
+# capturing it at import froze the HOME of the importing process. It is resolved
+# at use time by `_default_derived_source()` so it follows the HOME in effect
+# when the operation runs (008-001 §4 «Resolución de agentes»).
 DERIVED_RELPATH = Path(".opencode") / "agents"
 DERIVED_MANIFEST_NAME = ".cdad-derived.json"
 DERIVED_STAGE_DIRNAME = "derived"
@@ -699,8 +709,14 @@ def _validate_suspended_registry(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def _suspended_unit_for(state: dict[str, Any], feature_id: str | None) -> None:
-    if feature_id and feature_id in _validate_suspended_registry(state):
-        raise PolicyError(f"unit {feature_id!r} is suspended; resume with resume-unit --feature {feature_id}")
+    """§4.3: the suspension of the OWNER blocks a new effect; the shared core
+    decides it over the validated registry (`_validate_suspended_registry` is
+    the physical schema check, not the decision)."""
+    suspended = _validate_suspended_registry(state)
+    decision = cdad_lifecycle.require_owner_operable(
+        owner=feature_id, suspended=suspended)
+    if not decision.allowed:
+        raise PolicyError(decision.message())
 
 
 def _resume_digest_checks(project_root: Path, state: dict[str, Any]) -> dict[str, str]:
@@ -1129,7 +1145,12 @@ def _continuity_unit_checkpoint(project_root: Path, state: dict[str, Any],
                 cdad_continuity._run_write(
                     "checkpoint", argparse.Namespace(
                         project_root=str(project_root), execution_context=str(context),
-                        update=str(update_path), max_bytes=None, json=True))
+                        update=str(update_path), max_bytes=None, json=True),
+                    # The state this operation is about to publish: a resume
+                    # removes the unit from the suspension registry, so the
+                    # shared eligibility (008-003 §4.3/§4.4) must judge the unit
+                    # the operation CREATES, not the one it replaces.
+                    state=state)
         except (OSError, ValueError, cdad_continuity.ContinuityError) as exc:
             raise PolicyError(f"unit {feature_id!r} continuity checkpoint failed: {exc}") from exc
         return head, previous_head, prior_action
@@ -1837,6 +1858,127 @@ def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
     return "\n".join(lines) + "\n"
 
 
+# --------------------------- 008-004 packet admission (PC-01/PC-03/PC-06)
+
+# §Identificación: the canonical marker identifies the CDAD commission (never
+# the words of the objective nor the role name), at any position after an
+# optional preamble; the block it opens closes with its end marker.
+PACKET_BEGIN_MARKER = "---cdad-packet-json"
+PACKET_END_MARKER = "---end-cdad-packet-json"
+PACKET_MD_NAME = "PACKET.md"
+PACKETS_TREE = Path(".cdad") / "packets"
+
+
+def _canonical_block(packet_id: str, packet_bytes: bytes) -> bytes:
+    """§Contrato de admisión: the ONE canonical block of a packet, or a rejection.
+
+    Zero markers is not a CDAD commission; more than one, an unclosed block or
+    a block whose end precedes its beginning is a rejection — never a heuristic
+    selection and never a silent fallback to legacy. The preamble BEFORE the
+    marker does not participate: the block is compared from the marker to the
+    end of the packet (008-004 PC-03).
+    """
+    try:
+        text = packet_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise PolicyError(
+            f"packet {packet_id!r} is not valid UTF-8: {exc} (008-004 PC-03)"
+        ) from exc
+    lines = text.splitlines(keepends=True)
+    begins = [index for index, line in enumerate(lines)
+              if line.rstrip("\r\n") == PACKET_BEGIN_MARKER]
+    ends = [index for index, line in enumerate(lines)
+            if line.rstrip("\r\n") == PACKET_END_MARKER]
+    if not begins:
+        raise PolicyError(
+            f"packet {packet_id!r} is not a CDAD commission: its {PACKET_MD_NAME} "
+            f"carries no {PACKET_BEGIN_MARKER} line, so it neither identifies nor "
+            f"authorizes the commission (008-004 PC-01/PC-03)")
+    if len(begins) > 1:
+        raise PolicyError(
+            f"packet {packet_id!r} declares {len(begins)} {PACKET_BEGIN_MARKER} "
+            f"markers in its {PACKET_MD_NAME}: a commission is identified by "
+            f"exactly ONE canonical block, and no heuristic selection is applied "
+            f"(008-004 PC-03)")
+    if not ends:
+        raise PolicyError(
+            f"packet {packet_id!r} has an unclosed canonical block: its "
+            f"{PACKET_MD_NAME} never terminates the {PACKET_BEGIN_MARKER} marker "
+            f"with {PACKET_END_MARKER}, and an incomplete block authorizes "
+            f"nothing (008-004 PC-01/PC-03)")
+    if len(ends) > 1:
+        raise PolicyError(
+            f"packet {packet_id!r} declares {len(ends)} {PACKET_END_MARKER} "
+            f"markers in its {PACKET_MD_NAME}: the canonical block is delimited "
+            f"exactly once (008-004 PC-03)")
+    if ends[0] <= begins[0]:
+        raise PolicyError(
+            f"packet {packet_id!r} closes its canonical block before opening it: "
+            f"{PACKET_END_MARKER} precedes {PACKET_BEGIN_MARKER} in its "
+            f"{PACKET_MD_NAME} (008-004 PC-03)")
+    return "".join(lines[begins[0]:]).encode("utf-8")
+
+
+def verify_published_packet(project_root: Path, packet_id: Any, *,
+                            state: dict[str, Any] | None = None
+                            ) -> tuple[dict[str, Any], dict[str, Any]]:
+    """008-004 PC-01/PC-03: admit a published packet only when it VERIFIES.
+
+    The ONE criterion of the admission contract: the published request is
+    validated with the existing rules AND the packet on disk is compared, byte
+    for byte, with `render_packet` of that validated request — from the
+    canonical marker to its end. Validating only the JSON header does not
+    suffice, and an altered text is never normalised into a match.
+
+    Returns `(request, execution_document)` of the verified packet. A rejection
+    names the packet and the cause and has written nothing.
+    """
+    if (not isinstance(packet_id, str) or FLAT_NAME.fullmatch(packet_id) is None
+            or ".." in packet_id):
+        raise PolicyError(
+            f"the packet id must be a flat name ([A-Za-z0-9._-], no path), got "
+            f"{packet_id!r}")
+    out_dir = project_root / PACKETS_TREE
+    packet_dir = out_dir / packet_id
+    try:
+        packet_dir.resolve().relative_to(out_dir.resolve())
+    except (OSError, ValueError) as exc:
+        raise PolicyError(
+            f"packet {packet_id!r} escapes the packets directory") from exc
+    request_path = packet_dir / "REQUEST.json"
+    packet_path = packet_dir / PACKET_MD_NAME
+    if not request_path.is_file():
+        raise PolicyError(
+            f"unknown packet {packet_id!r}: no request published under "
+            f"{packet_dir} — a CDAD commission needs the packet published by "
+            f"`prepare` (008-004 PC-01)")
+    if not packet_path.is_file():
+        raise PolicyError(
+            f"packet {packet_id!r} has no published {PACKET_MD_NAME} under "
+            f"{packet_dir}: without its canonical text the commission cannot be "
+            f"verified, so it authorizes nothing (008-004 PC-01)")
+    request = _load_json(request_path, "packet request")
+    execution_document = _load_execution_context(
+        project_root, request.get("execution_id"))
+    if state is None:
+        state = _load_json(project_root / "docs" / ".cdad-state.json",
+                           "project state")
+    validate_request(request, execution_document, state, project_root)
+    submitted = _canonical_block(
+        packet_id, _read_bytes(packet_path, "packet"))
+    rendered = render_packet(request, execution_document,
+                             project_root).encode("utf-8")
+    if submitted != rendered:
+        raise PolicyError(
+            f"packet {packet_id!r} differs from the canonical rendering of its "
+            f"validated request: the objective, the instructions, the contract, "
+            f"the inputs, the scopes, the invariants or the evidence it carries "
+            f"are not the ones the request declares — a valid JSON header is not "
+            f"enough, an altered packet is never normalised into a match, and no "
+            f"delivery is accredited from it (008-004 PC-03)")
+    return request, execution_document
+
+
 def validate_metric(metric: dict[str, Any], state: dict[str, Any]) -> None:
     required = {"schema_version", "execution_id", "packet_id", "epic_id", "feature_id", "role", "substage",
                 "runtime", "model", "started_at", "ended_at", "input_tokens", "output_tokens", "context_limit",
@@ -2530,20 +2672,14 @@ def _active_feature_entry(state: dict[str, Any], feature_id: str) -> dict[str, A
     return matching[0]
 
 
-def _scope_names_epic(scope: Any, epic_id: str) -> bool:
-    """An unambiguous reference to the epic: the exact identifier, or the exact
-    identifier as a standalone token of a scope list/string. Never a substring
-    or prefix of a different identifier (F2)."""
-    if isinstance(scope, list):
-        return epic_id in scope
-    if isinstance(scope, str):
-        if scope == epic_id:
-            return True
-        # W-1c: ':' and parentheses are token separators too (the real scope is
-        # "<epic-id>: ..."), so the identifier is matched as an exact token.
-        tokens = re.split(r"[,\s;/|:()]+", scope.strip())
-        return epic_id in [token for token in tokens if token]
-    return False
+def _delegated_source(delegation: dict[str, Any]) -> str:
+    """The declared authority reference (008-003: the rule of WHICH field names
+    it lives in the shared core, never here)."""
+    source = cdad_lifecycle.declared_source(delegation)
+    if source is None:
+        raise PolicyError(
+            "hitl_delegation source missing: no authority reference to verify")
+    return source
 
 
 def _validate_v2_vigency(state: dict[str, Any], project_root: Path, feature_id: str,
@@ -2586,32 +2722,26 @@ def _validate_v2_vigency(state: dict[str, Any], project_root: Path, feature_id: 
         raise PolicyError(
             "hitl_delegation record missing: an active epic requires a delegation record"
         )
-    if delegation.get("revoked_at") is not None or delegation.get("status") == "revoked":
-        raise PolicyError("hitl_delegation is revoked: revoked_at is set, no authority remains")
-    # W-1 (I2, cut C §4): a vigente record need not carry `status` (it is a
-    # field exclusive to another epic). Its absence does not invalidate; when
-    # present, the only accepted value is "active".
-    status = delegation.get("status")
-    if status is not None and status != "active":
-        raise PolicyError("hitl_delegation is not active")
-    # W-1b: `epic_id` is optional; when present it must match, and its absence
-    # leaves the decision to `scope` below.
-    delegation_epic = delegation.get("epic_id")
-    if delegation_epic is not None and delegation_epic != epic_id:
-        raise PolicyError(
-            f"hitl_delegation epic mismatch: {delegation_epic!r} != {epic_id!r}"
-        )
-    scope = delegation.get("scope")
-    if not _scope_names_epic(scope, epic_id):
-        raise PolicyError(
-            f"hitl_delegation scope {scope!r} does not name the active epic {epic_id!r} exactly"
-        )
-    source = delegation.get("source")
-    if not isinstance(source, str) or not source:
-        raise PolicyError("hitl_delegation source missing: no authority reference to verify")
+    # §4.3/PC-03/PC-06: ONE criterion of authority — the same the continuity and
+    # the reception consumers apply. `prepare` now rejects an EXPIRED date and an
+    # INVALID (unknown) one, exactly as `begin`/`receive` do; a state-sourced
+    # `expires_on` event list keeps expiring by events.
+    authority_decision = cdad_lifecycle.require_authority(
+        delegation, today=date.today(),
+        operation=f"the managed preparation of the epic {epic_id!r}")
+    if not authority_decision.allowed:
+        raise PolicyError(authority_decision.message())
+    # W-1b/W-1c: the epic and the scope must name each other, and the source is
+    # declared here (its EXISTENCE is the physical check below).
+    binding = cdad_lifecycle.require_epic_binding(delegation, epic_id=epic_id)
+    if not binding.allowed:
+        raise PolicyError(binding.message())
+    source = _delegated_source(delegation)
     authority = _project_path(project_root, source, "hitl_delegation.source")
     if not authority.is_file():
-        raise PolicyError(f"authority reference not found: {source}")
+        raise PolicyError(
+            f"authority reference not found: hitl_delegation.source {source!r} "
+            f"does not exist in the project")
     return source
 
 
@@ -3899,6 +4029,11 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
             raise PolicyError(
                 f"packet {packet_id!r} belongs to execution "
                 f"{request.get('execution_id')!r}, not the active one {execution_id!r}")
+        # 008-004 PC-01/PC-03 (§Orden y efectos): the registration admits ONLY a
+        # packet that verifies — request validated and the published text equal
+        # to its canonical rendering. The check precedes every new effect of the
+        # commission (record, state binding, observation) and writes nothing.
+        verify_published_packet(project_root, packet_id, state=state)
         observation = _load_observation_document(observation_path)
         # §2.2 (enmienda): does THIS execution have continuity? The declaration
         # below is the durable, non-silent record of the scope decision.
@@ -4068,12 +4203,23 @@ def _registered_agents_dir(project_root: Path) -> Path | None:
     return Path(adopted_root).expanduser().joinpath(*OPENCODE_AGENTS_SUBDIR)
 
 
+def _default_derived_source() -> Path:
+    """The global OpenCode agents directory of the HOME in effect NOW.
+
+    Resolved on every call, never at import: the global origin must follow the
+    HOME current when the operation runs, without re-importing this module
+    (008-001 §4 «Resolución de agentes»). The layout is the installed one,
+    `OPENCODE_AGENTS_SUBDIR`; it is never `XDG_CONFIG_HOME` (008-001 §4).
+    """
+    return Path.home().joinpath(*OPENCODE_AGENTS_SUBDIR)
+
+
 def _derived_source_dir(project_root: Path) -> Path:
     """Resolve the origin of the installed OpenCode agents (PD-12/INV-7).
 
     Order: (1) the explicit `CDAD_OPENCODE_AGENTS_DIR`; (2) the installation
     registered in the project activation registry (`.cdad/activation.json`);
-    (3) the runtime global default.
+    (3) the runtime global default (the HOME in effect at call time).
     """
     raw = os.environ.get(DERIVED_AGENTS_ENV)
     if raw:
@@ -4081,7 +4227,7 @@ def _derived_source_dir(project_root: Path) -> Path:
     registered = _registered_agents_dir(project_root)
     if registered is not None:
         return registered
-    return DEFAULT_DERIVED_SOURCE
+    return _default_derived_source()
 
 
 def _installation_root(source_dir: Path) -> Path:
@@ -7139,7 +7285,7 @@ def republish_agents(args: argparse.Namespace, project_root: Path) -> str:
                 "republish-agents refused: there is no installed OpenCode agents source to "
                 "derive from "
                 f"({DERIVED_AGENTS_ENV}, the activation registry {ACTIVATION_REGISTRY_REL.as_posix()} "
-                f"or the default {DEFAULT_DERIVED_SOURCE}); the operation never claims a "
+                f"or the default {_default_derived_source()}); the operation never claims a "
                 "republication it did not publish (007-006 §Republicar)")
         derived_dir, payloads, manifest_bytes, retired = derived_spec
         manifest_path = derived_dir / DERIVED_MANIFEST_NAME
@@ -7312,22 +7458,25 @@ def _feature_status(state: dict[str, Any], feature_id: str) -> str | None:
 
 
 def _resolve_closure_feature(state: dict[str, Any], requested: str | None,
-                             active: str | None) -> str | None:
+                             active: str | None
+                             ) -> tuple[str | None, str | None]:
     """PD-22: the feature a `closure` operates on, from three sources in order —
     `--feature` (`requested`), `state.active_feature` (`active`) and the feature
     bound by the active execution (`state.execution.feature_id`, the single
     value the closure effect does not clear).
 
-    PD-24: a `requested` that names a feature outside `epic_features`, or that
-    diverges from the feature resolved by the state, fails closed — a closure
-    never deviates silently to another feature."""
+    PD-24/§4.4: a `requested` that names a feature outside `epic_features`
+    fails closed here; one that DIVERGES from the feature resolved by the state
+    is returned WITH its diagnostic, because a closure already registered for
+    the requested feature is a legitimate replay (PC-04) and only a new closure
+    must satisfy that eligibility. Returns `(feature_id, divergence)`."""
     binding = state.get("execution")
     bound = binding.get("feature_id") if isinstance(binding, dict) else None
     if not isinstance(bound, str) or not bound:
         bound = None
     resolved = active or bound
     if not isinstance(requested, str) or not requested:
-        return resolved
+        return resolved, None
     features = state.get("epic_features")
     known = isinstance(features, list) and any(
         isinstance(item, dict) and item.get("id") == requested
@@ -7338,12 +7487,57 @@ def _resolve_closure_feature(state: dict[str, Any], requested: str | None,
             f"epic_features, so the closure cannot resolve the feature it would close; "
             f"name an existing feature (PD-24)")
     if resolved is not None and requested != resolved:
-        raise PolicyError(
+        # §4.4/PC-04: the divergence is NOT decided here — the replay of an
+        # ALREADY REGISTERED closure is recognized first and only a new closure
+        # has to satisfy this eligibility. The caller raises this message when
+        # the requested closure is not the registered one.
+        return requested, (
             f"state incoherent: --feature {requested!r} does not match the feature "
             f"{resolved!r} resolved from the state (state.active_feature or the feature "
             f"bound by the active execution); name the same feature or omit --feature "
             f"(PD-24)")
-    return requested
+    return requested, None
+
+
+def _feature_execution_id(project_root: Path, state: dict[str, Any],
+                          feature_id: str | None) -> str | None:
+    """The execution a CLOSED/suspended feature belongs to (§4.4/§4.2).
+
+    A replay of an already registered closure must be recognized with the
+    identity it was registered with; the ACTIVE execution of another unit is not
+    that identity. Sources in order: the state binding (when it binds this
+    feature), the suspension registry, and the published execution contexts —
+    exactly one candidate, otherwise the feature's execution is not identifiable
+    and the caller keeps the active one (and the closure is not a replay)."""
+    if not isinstance(feature_id, str) or not feature_id:
+        return None
+    binding = state.get("execution")
+    if isinstance(binding, dict) and binding.get("feature_id") == feature_id:
+        bound = binding.get("id")
+        if isinstance(bound, str) and bound:
+            return bound
+    registry = state.get("suspended_units")
+    if isinstance(registry, dict):
+        record = registry.get(feature_id)
+        unit_state = record.get("unit_state") if isinstance(record, dict) else None
+        execution = unit_state.get("execution") if isinstance(unit_state, dict) else None
+        bound = execution.get("id") if isinstance(execution, dict) else None
+        if isinstance(bound, str) and bound:
+            return bound
+    candidates: list[str] = []
+    base = project_root / EXECUTIONS_DIR
+    if base.is_dir():
+        for path in sorted(base.glob("*/execution.json")):
+            try:
+                document = _load_json(path, "execution context")
+            except PolicyError:
+                continue
+            execution = document.get("execution") if isinstance(document, dict) else None
+            if isinstance(execution, dict) and execution.get("feature_id") == feature_id:
+                identifier = execution.get("id")
+                if isinstance(identifier, str) and identifier:
+                    candidates.append(identifier)
+    return candidates[0] if len(candidates) == 1 else None
 
 
 def _missing_required_deliveries(project_root: Path, state: dict[str, Any],
@@ -7387,10 +7581,11 @@ def _gate_authority(state: dict[str, Any], project_root: Path,
 
     With a registered `hitl_delegation` its vigency is verified through the
     existing control `_validate_v2_vigency` — consumed, never re-declared
-    (INV-4) — plus the declared date expiry that control does not read (D4:
-    an ISO `expires_on` in the past is not vigente); revoked or expired fails
-    closed with `approval pending`. Without a delegation record there is no
-    authority to verify: the CLI does not invent one and cannot verify
+    (INV-4) — which now applies the SINGLE criterion of authority of 008-003
+    §4.3 through the shared core (revocation, an incompatible status, an
+    expired date and an UNKNOWN/invalid one); a delegation that is not vigente
+    fails closed with `approval pending`. Without a delegation record there is
+    no authority to verify: the CLI does not invent one and cannot verify
     identities (debt D-6), so it does NOT block the owner, who is the original
     authority. Returns the verified delegation source, or None when there was
     no delegation to verify (no record, or no active epic)."""
@@ -7398,31 +7593,18 @@ def _gate_authority(state: dict[str, Any], project_root: Path,
     if not isinstance(delegation, dict):
         return None
     epic_id = execution.get("epic_id")
+    # PD-6 + §4.3/PC-03: the vigencia is the shared criterion (revocation, an
+    # incompatible status, an expired date and an UNKNOWN/invalid one fail
+    # closed); the consumer only wraps the refusal in its own class name.
     try:
         source = _validate_v2_vigency(
             state, project_root, execution["feature_id"], epic_id)
     except PolicyError as exc:
         raise PolicyError(
             f"approval pending: the registered hitl_delegation is not vigente for the active "
-            f"epic {epic_id!r} ({exc}); a revoked or expired delegation fails closed, renew "
-            f"the delegation in state.hitl_delegation before registering the gate (PD-6)"
+            f"epic {epic_id!r} ({exc}); a revoked, expired or unknown delegation fails closed, "
+            f"renew the delegation in state.hitl_delegation before registering the gate (PD-6)"
         ) from exc
-    expires_on = delegation.get("expires_on")
-    if isinstance(expires_on, str) and expires_on.strip():
-        try:
-            expiry = date.fromisoformat(expires_on.strip())
-        except ValueError as exc:
-            raise PolicyError(
-                f"approval pending: the hitl_delegation declares expires_on {expires_on!r}, "
-                f"which is not an ISO date, so its vigency cannot be verified; register a "
-                f"dated or an event-based delegation (PD-6)"
-            ) from exc
-        if expiry < date.today():
-            raise PolicyError(
-                f"approval pending: the hitl_delegation expired on {expires_on} (expires_on "
-                f"is in the past); an expired delegation fails closed, renew it before "
-                f"registering the gate (PD-6)"
-            )
     return source
 
 
@@ -7542,12 +7724,13 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             # feature comes from `--feature` (whose declared default is
             # `active_feature`). No other class resolves its feature differently.
             feature_id = args.feature if args.feature else feature_id
+        closure_divergence: str | None = None
         if transition == "closure":
             # PD-22/PD-24: the closure resolves its feature from three sources,
             # in order — `--feature`, `state.active_feature` and the feature
             # bound by the active execution (`state.execution.feature_id`, which
             # the closure effect does NOT clear).
-            feature_id = _resolve_closure_feature(
+            feature_id, closure_divergence = _resolve_closure_feature(
                 state, args.feature, closure_active_feature)
         if not isinstance(feature_id, str) or not feature_id:
             if transition == "closure":
@@ -7705,8 +7888,13 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                     artifacts[path_text] = digest
                 # PD-10: the identity payload of THIS closure; the digests it
                 # carries are the RESOLVED ones (the same the entry writes).
+                # §4.4/PC-04: the identity of a closure of a CLOSED feature is
+                # the one it was registered with — the execution of THAT feature,
+                # not the active execution of another unit.
                 closure_key = _transition_key(_transition_identity_payload(
-                    execution_id=execution_id, feature_id=feature_id,
+                    execution_id=(
+                        _feature_execution_id(project_root, state, feature_id)
+                        or execution_id), feature_id=feature_id,
                     transition=transition, stage=stage, substage=args.substage,
                     packet_id=None, receipt_sha256=None, resolution=None,
                     replaced_by=None,
@@ -7718,9 +7906,17 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                     closure=(None if closure_path is None else
                              {"path": closure_path, "sha256": closure_sha256})))
                 if _registered_transition(state, closure_key) is not None:
-                    # PD-23: an identical repetition of an applied closure is a
-                    # successful no-op; the state is not written.
-                    return _transition_noop_message(transition, stage, closure_key)
+                    # PD-23/§4.4: an identical repetition of an applied closure
+                    # is a successful no-op; the state is not written.
+                    replay = cdad_lifecycle.decide_transition(registered=True)
+                    if replay.facts.get("outcome") == cdad_lifecycle.REPLAY:
+                        return _transition_noop_message(transition, stage,
+                                                        closure_key)
+                # §4.4/PC-04: only a closure that is NOT the registered one has to
+                # satisfy the eligibility of a new effect; a requested feature
+                # diverging from the state's is rejected HERE, after the replay.
+                if closure_divergence is not None:
+                    raise PolicyError(closure_divergence)
                 if closure_status in CLOSED_FEATURE_STATUSES:
                     # PD-25: the resolved feature is already closed and this is
                     # a DIFFERENT closure — reject closed, naming the feature and
@@ -7740,6 +7936,10 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                     f"{feature_id!r} (state.active_feature is null) and this closure is not "
                     f"registered; to repeat an already applied closure, name its feature "
                     f"with --feature <feature-id> (PD-27)")
+            # §4.4/PC-04: a closure that would APPLY is a new effect, so the
+            # requested feature must be the one the state resolves.
+            if closure_divergence is not None:
+                raise PolicyError(closure_divergence)
             # PD-8: the closure checks its two mechanical requirements BEFORE
             # anything else (and before reading the closure document it will
             # cite, PD-9): a rejection here leaves the state byte for byte
@@ -7896,14 +8096,24 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             # competes is NEVER a no-op — it is an attempt to substitute the
             # vigente approval, and answering it with success would lose the
             # requested change in silence (D-15).
+            #
+            # §4.4/PC-06: which of the two the facts produce is decided by the
+            # shared core (`decide_transition`); this border only gathers the
+            # registered key and the competing approval.
             vigente = (_vigente_spec_approval(
                 state, feature_id, contract_path, contract_sha256)
                 if (transition == "gate" and stage == SPEC_GATE_STAGE
                     and contract_path is not None) else None)
-            if (vigente is None
-                    or vigente.get("transition_key")
-                    == registered.get("transition_key")):
+            decision = cdad_lifecycle.decide_transition(
+                registered=True,
+                superseded_by_vigente=(
+                    vigente is not None
+                    and vigente.get("transition_key")
+                    != registered.get("transition_key")))
+            if decision.facts.get("outcome") == cdad_lifecycle.REPLAY:
                 return _transition_noop_message(transition, stage, key)
+            if decision.facts.get("outcome") != cdad_lifecycle.CONFLICT_OUTCOME:
+                raise PolicyError(decision.message())
             if isinstance(args.supersedes, str) and args.supersedes:
                 # (b) with `--supersedes`: the EXPLICIT rejection of the
                 # collision — it names the colliding key (and that it is NOT

@@ -242,7 +242,7 @@ def test_007_004_opencode_noncompleted_never_claims_delivery(scenario: str, expe
             assert marker in source, "PC-05 fixture: runtime double marker"
             fake["binary"].write_text(source.replace(
                 marker, "if 'run' in _argv:\n    time.sleep(60)\n" + marker, 1), encoding="utf-8")
-            case.patch_config(fake, {"wait": dict(FAST_WAIT, timeout_seconds=3)})
+            case.patch_config(fake, {"wait": dict(FAST_WAIT, timeout_seconds=5)})
         proc = case.dispatch(ctx, fake)
         out = (proc.stdout or b"").decode()
         assert proc.returncode == 0 and out.strip(), (

@@ -21,6 +21,7 @@ Los tests nunca leen la implementación: usan la raíz igual que antes
 from __future__ import annotations
 
 import atexit
+import os
 import shutil
 import subprocess
 import tempfile
@@ -31,9 +32,30 @@ STAGING_MANIFEST = Path("build") / "staging" / "manifest.json"
 
 _product_root: Path | None = None
 
+# 008-001: las cachés de alcance de corrida (globales de módulo) no pueden vivir
+# bajo el TMPDIR por test, que se retira al terminar cada test. La fixture de
+# sesión `_cdad_session_tmp_root` publica aquí su raíz estable.
+_RUN_SCOPED_BASE: Path | None = None
+
+
+def _fallback_base() -> str:
+    for candidate in ("/tmp", "/var/tmp", "/usr/tmp"):
+        if os.path.isdir(candidate) and os.access(candidate, os.W_OK | os.X_OK):
+            return candidate
+    return os.getcwd()
+
+
+def run_scoped_base() -> str:
+    """Base estable para cachés de corrida: fuera del TMPDIR por test."""
+    return str(_RUN_SCOPED_BASE) if _RUN_SCOPED_BASE is not None else _fallback_base()
+
+
+def run_scoped_mkdtemp(prefix: str) -> str:
+    return tempfile.mkdtemp(prefix=prefix, dir=run_scoped_base())
+
 
 def _generate_staging_copy() -> Path:
-    tmp = tempfile.mkdtemp(prefix="cdad-staging-fixture-")
+    tmp = run_scoped_mkdtemp("cdad-staging-fixture-")
     atexit.register(shutil.rmtree, tmp, ignore_errors=True)
     copy = Path(tmp) / "product"
     shutil.copytree(

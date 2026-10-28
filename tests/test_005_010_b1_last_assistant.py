@@ -63,26 +63,20 @@ from test_005_009_t2_opencode_adapter import (
     B1_INTERMEDIATE_TEXT,
     B1_REASONING_TEXT,
     DECOY_FINAL_TEXT,
-    TEST_WAIT_TIMEOUT_SECONDS,
     AdapterCase,
     durable_last_assistant_text,
     durable_messages,
     durable_session_rows,
 )
+from suite_signal_helpers import assert_diag_actionable, text_hits
 
-
-def assert_diag_actionable(case: unittest.TestCase, out: dict,
-                           label: str) -> str:
-    """Salida legítima ante bloqueo: diagnóstico accionable no vacío
-    (vocabulario de la spec §2)."""
-    diagnosis = out.get("diagnosis")
-    case.assertIsInstance(
-        diagnosis, str, msg=f"{label}: el diagnóstico no es texto")
-    case.assertTrue(
-        diagnosis.strip(),
-        msg=f"{label}: diagnóstico vacío (la salida legítima ante bloqueo "
-            f"exige un diagnóstico accionable)")
-    return diagnosis
+# 008-005 PC-6, sitio 1 (T-B): liveness, no cota de reloj. Par de hipótesis
+# del sitio original: correcto = el hecho ya conocido retorna de inmediato
+# (< 1 s); defecto = esperar el plazo de `wait.timeout_seconds` (5 s). El
+# techo admisible de la regla (>= 10x la conducta correcta ~ 5 s) no separa
+# del defecto (5 s <= techo): la duración no discrimina y la decisión que la
+# cota custodiaba (terminación `blocked`, PD-5) ya está assertada arriba.
+LIVENESS_UPPER_SECONDS = 60
 
 
 class TestB1LastAssistantOnly(AdapterCase):
@@ -94,10 +88,7 @@ class TestB1LastAssistantOnly(AdapterCase):
     def _text_hits_in_results(self, text: str) -> list:
         """Archivos de la entrega durable (árbol canónico results) que
         contienen `text` (bytes UTF-8)."""
-        base = self.results_base()
-        return [
-            path for path in sorted(base.rglob("*"))
-            if path.is_file() and text.encode("utf-8") in path.read_bytes()]
+        return text_hits(self.results_base(), text)
 
     def test_b1_intermediate_text_does_not_substitute_missing_final_text(self) -> None:
         """B1 (PD-1 + PD-5): assistant seq=2 con TEXTO INTERMEDIO ('Voy a
@@ -176,12 +167,15 @@ class TestB1LastAssistantOnly(AdapterCase):
             msg="la entrega durable lleva el texto de una parte de "
                 "razonamiento (no es parte `type: text`, PD-1)")
 
-        # Sin esperar de más: el hecho ya conocido no se degrada a timeout.
+        # Liveness (008-005 T-B): la rama no cuelga. La decisión de PD-5
+        # (el hecho ya conocido no se degrada a timeout) la asserta la
+        # terminación `blocked`, no el reloj.
         self.assertLess(
-            elapsed, TEST_WAIT_TIMEOUT_SECONDS,
-            msg=f"la rama 'succeeded sin texto en el ÚLTIMO assistant' "
-                f"esperó de más ({elapsed:.2f}s >= cota; PD-5: el hecho "
-                f"ya conocido no se degrada a timeout)")
+            elapsed, LIVENESS_UPPER_SECONDS,
+            msg=f"liveness (008-005 T-B, PC-6): la rama 'succeeded sin "
+                f"texto en el ÚLTIMO assistant' no retornó "
+                f"({elapsed:.2f}s >= guardia de liveness; PD-5: la "
+                f"decisión ya está assertada en la terminación)")
 
     def test_b1_multi_text_last_assistant_delivery_is_that_message_concatenation_only(self) -> None:
         """B1 REGRESIÓN (PD-1): con el ÚLTIMO assistant llevando VARIAS

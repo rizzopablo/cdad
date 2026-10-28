@@ -338,7 +338,11 @@ If you can't confidently answer "every modified test is in the spec", **don't pr
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Task: write ONE test that verifies a NEW postcondition (not touched by the audit) of the spec. The test must FAIL when run, because there is no implementation yet. It must fail for the right reason (assertion failure, not ImportError or syntax error).
+Task: write the test that verifies a NEW observable promise of the spec (rule R2,
+`sources/roles/test-writer.md`; a promise may carry several numbered
+postconditions). The test must FAIL when run, because there is no implementation
+yet. It must fail for the right reason (assertion failure, not ImportError or
+syntax error).
 
 IMPORTANT: This happens AFTER the POST-AUDIT. If you haven't completed the POST-AUDIT yet (update audited tests + verify untouched), do it first in that session or another one.
 
@@ -350,8 +354,9 @@ Context:
 Strict rules:
 - Permissions: edit ONLY in tests/. You do NOT look at src/, lib/, or implementation code.
 - If implementation code exists (feature-extension case), you do NOT read it. You work only from the spec.
-- Test name: descriptive, references the postcondition. E.g.: test_postcondition_<N>_<description>.
-- ONE test per session, unless postconditions are orthogonal (independent paths), in which case you may group.
+- Test name: descriptive, names the promise and the postcondition(s) it protects. E.g.: test_postcondition_<N>_<description>.
+- ONE test per session, unless the promises are orthogonal (independent paths), in which case you may group.
+- Do not add a second test for an equivalent observable result; do declare "without this test, the user..." for each test.
 - After the test, run the suite and verify it fails for the right reason.
 
 Expected output: test file + commit with message "test: add failing test for postcondition <N>". When you finish:
@@ -368,7 +373,7 @@ Commit: <hash>"
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `implementer` with the following task:
 
-Task: make the freshly written test pass with minimal code. NO extra features.
+Task: make the freshly written test pass with a simple implementation of the approved behavior. NO speculative features.
 
 Context:
 1. Approved spec (paste)
@@ -378,7 +383,7 @@ Context:
 
 Strict rules:
 - Permissions: edit ONLY in implementation code. You do NOT touch tests/. If you think the test is wrong, do NOT change it; report to the orchestrator.
-- MINIMAL code. The simplest implementation that makes the test pass.
+- Implement the approved behavior simply, with the robustness it needs (R5 — `sources/roles/implementer.md`): add the validation, guards and reasonable error handling the behavior needs even when no test demands them.
 - You do NOT add unrequested features "just in case".
 - After implementing, run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy"); the complete suite is the closure gate.
 
