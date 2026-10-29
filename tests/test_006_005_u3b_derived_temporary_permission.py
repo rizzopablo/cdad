@@ -336,17 +336,35 @@ class TestPd24EmptyTemporaryRootsIsByteIdentical(DerivedProjectCase):
         # Se descuentan EXACTAMENTE las líneas de la raíz temporal declarada
         # (`"scratch": allow` / `"scratch/**": allow`); todo lo demás debe
         # coincidir byte a byte con el derivado de la lista vacía.
-        temporary_line = re.compile(
-            rf'^\s*"{re.escape(TEMPORARY_ROOT)}(/\*\*)?"\s*:\s*(allow|deny)\s*$')
-        stripped = b"\n".join(
-            line for line in declared_bytes.split(b"\n")
-            if not temporary_line.match(line.decode("utf-8"))
-        )
+        # Remove only complete V2 edit entries for the declared root. Keep
+        # every other byte (including frontmatter/body and line endings).
+        lines = declared_bytes.splitlines(keepends=True)
+        stripped_lines: list[bytes] = []
+        i = 0
+        while i < len(lines):
+            if re.match(rb"^  - action: ", lines[i]):
+                end = i + 1
+                while end < len(lines) and not re.match(rb"^  - action: ", lines[end]):
+                    end += 1
+                entry = b"".join(lines[i:end])
+                action = re.search(rb"^  - action: (.+)$", entry, re.M)
+                resource = re.search(rb"^    resource: ['\"]?([^'\"\r\n]+)", entry, re.M)
+                if not (action and action.group(1).strip() == b"edit" and resource and
+                        resource.group(1) in (b"scratch", b"scratch/**")):
+                    stripped_lines.extend(lines[i:end])
+                i = end
+            else:
+                stripped_lines.append(lines[i])
+                i += 1
+        stripped = b"".join(stripped_lines)
         self.assertEqual(
             tw.encode("utf-8"), stripped,
             msg="PD-24: declarar una raíz temporal sólo puede agregar las "
                 "líneas de esa raíz; el resto del derivado debe ser "
                 "byte-idéntico al de `temporary_roots: []`")
+        self.assertNotEqual(
+            tw.encode("utf-8"), stripped.replace(b"mode: subagent", b"mode: changed", 1),
+            msg="PD-24 control negativo: una diferencia fuera de la entrada temporal debe detectarse")
         declared_rules = edit_rules(declared)
         without_temporary = [
             rule for rule in declared_rules

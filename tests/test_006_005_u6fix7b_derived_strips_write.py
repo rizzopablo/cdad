@@ -131,6 +131,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from tests.agent_frontmatter import permissions as v2_permissions
 
 from test_004_002_t2_bootstrap import (  # noqa: E402
     POLICY_FILE,
@@ -188,23 +189,34 @@ def reinsert_write_lever(agent_text: str) -> str:
         index for index in range(1, len(lines)) if lines[index].strip() == "---"
     )
     frontmatter = lines[:end]
-    if not any(line.rstrip("\n") == "permission:" for line in frontmatter):
+    if not v2_permissions(agent_text):
         return agent_text
-    if any(re.fullmatch(r"  write:.*\n?", line) for line in frontmatter):
-        return agent_text
-    edit_index = next(
-        index for index, line in enumerate(frontmatter)
-        if re.fullmatch(r"  edit:.*\n?", line)
-    )
-    if re.fullmatch(r"  edit:\s+\S.*\n?", lines[edit_index]):
-        insert_at = edit_index + 1
-    else:
-        insert_at = edit_index + 1
-        while insert_at < end and lines[insert_at].startswith("    "):
-            insert_at += 1
-    return "".join(
-        lines[:insert_at] + ["  write: ask\n"] + lines[insert_at:]
-    )
+    # Remove the currently generated `write` entry, if present. This fixture
+    # models the installed pre-fix copy with that legacy lever reinserted
+    # AFTER the edit map, where it can override matching barriers.
+    raw = next(i for i, line in enumerate(frontmatter) if line.startswith("permissions:"))
+    filtered = frontmatter[:raw + 1]
+    index = raw + 1
+    while index < len(frontmatter):
+        line = frontmatter[index]
+        if line.startswith("  - action: write"):
+            index += 1
+            while index < len(frontmatter) and frontmatter[index].startswith("    "):
+                index += 1
+            continue
+        filtered.append(line)
+        index += 1
+    frontmatter = filtered
+    lines = frontmatter + lines[end:]
+    # Append before the closing frontmatter delimiter. Comments and other
+    # indented metadata may occur between permission entries, so do not infer
+    # the end of the list from indentation.
+    insert_at = len(frontmatter)
+    return "".join(lines[:insert_at] + [
+        "  - action: write\n",
+        "    resource: '*'\n",
+        "    effect: ask\n",
+    ] + lines[insert_at:])
 
 
 def materialize_layout(root: Path, layout: str) -> None:
@@ -282,15 +294,22 @@ class InstalledLeverProject(unittest.TestCase):
             msg=f"E2/PD-24 (U6-7b) (precondición): los derivados publicados "
                 f"en {DERIVED_DIR}/ deben espejar la copia instalada; faltan "
                 f"{sorted(set(self.installed_texts) - set(self.derived))}")
-        # Precondición del fixture: la copia instalada SÍ trae la palanca.
+        # Precondición del fixture: la copia instalada lleva una regla write
+        # posterior al mapa, capaz de anular barreras allow/deny.
         for agent in ROLE_AGENTS:
             with self.subTest(agent=agent, fixture="installed-write-ask"):
                 self.assertIn(
-                    "  write: ask",
-                    self.installed_texts[agent],
+                    {"action": "write", "resource": "*", "effect": "ask"},
+                    v2_permissions(self.installed_texts[agent]),
                     msg=f"E2/PD-24 (U6-7b) (precondición del fixture): "
-                        f"{agent} de la copia instalada no lleva la palanca "
-                        f"`write: ask`; el caso no probaría nada.")
+                        f"{agent} de la copia instalada no lleva la regla "
+                        f"`write: ask` posterior al mapa.")
+                self.assertEqual(
+                    write_verdict(self.installed_texts[agent], "tests/x.py"),
+                    "ask",
+                    msg=f"E2/PD-24 (U6-7b) (precondición del fixture): "
+                        f"la palanca no anula las barreras de {agent}; "
+                        "el caso no probaría nada.")
 
     def assert_write_matches_edit(self, agent: str,
                                   probes: tuple[str, ...]) -> None:

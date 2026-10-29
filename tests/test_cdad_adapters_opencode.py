@@ -28,6 +28,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from agent_frontmatter import permissions
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
 
@@ -91,40 +93,10 @@ def run_generator(
     )
 
 
-def bash_block(agent_text: str) -> str:
-    """Extract the nested `permission.bash` block of a generated agent."""
-    fm_end = agent_text.index("\n---", agent_text.index("---") + 3)
-    frontmatter = agent_text[:fm_end]
-    start = frontmatter.index("  bash:")
-    lines = frontmatter[start:].splitlines()[1:]
-    block = []
-    for line in lines:
-        if line.startswith("    "):
-            block.append(line)
-        else:
-            break
-    return "\n".join(block)
-
-
-def frontmatter(agent_text: str) -> str:
-    """The YAML frontmatter (between the first two `---` delimiters)."""
-    parts = agent_text.split("---", 2)
-    if len(parts) != 3:
-        raise AssertionError("generated agent has no delimited frontmatter")
-    return parts[1]
-
-
-def allow_rules(agent_text: str) -> dict[str, str]:
-    """Map rule pattern -> verb. A bare `*` (catch-all) keeps its key;
-    trailing wildcards are stripped for the other patterns."""
-    rules: dict[str, str] = {}
-    for line in bash_block(agent_text).splitlines():
-        m = re.match(r'^    "(.*)": (allow|deny)$', line)
-        if m:
-            pattern = m.group(1)
-            cmd = pattern[:-1].strip() if pattern.endswith("*") and len(pattern) > 1 else pattern
-            rules[cmd] = m.group(2)
-    return rules
+def permission_rules(agent_text: str, action: str) -> list[tuple[str, str]]:
+    """Return V2 (resource, effect) rules for an action in serialized order."""
+    return [(entry["resource"], entry["effect"])
+            for entry in permissions(agent_text) if entry["action"] == action]
 
 
 class TestOpencodeAdapterSimplification(unittest.TestCase):
@@ -160,10 +132,10 @@ class TestOpencodeAdapterSimplification(unittest.TestCase):
                     generated = (out / "agents" / "opencode" / f"{name}.md").read_text(
                         encoding="utf-8"
                     )
-                    rules = allow_rules(generated)
+                    rules = permission_rules(generated, "shell")
                     self.assertEqual(
                         rules,
-                        {"*": "allow"},
+                        [("*", "allow")],
                         "PD-1/permissive: %s must carry EXACTLY the catch-all "
                         "allow (owner decision 2026-09-29); got %r" % (name, rules),
                     )
@@ -229,35 +201,31 @@ class TestOpencodeAdapterSimplification(unittest.TestCase):
             )
             for name in ("cdad-architect", "cdad-reviewer", "cdad-scribe"):
                 with self.subTest(agent=name):
-                    fm = frontmatter(
-                        (out / "agents" / "opencode" / f"{name}.md").read_text(
-                            encoding="utf-8"
-                        )
-                    )
-                    self.assertIn("edit: deny", fm)
+                    generated = (out / "agents" / "opencode" / f"{name}.md").read_text(encoding="utf-8")
+                    self.assertIn(("*", "deny"), permission_rules(generated, "edit"))
             tw = (out / "agents" / "opencode" / "cdad-test-writer.md").read_text(
                 encoding="utf-8"
             )
-            self.assertIn('"tests/**": allow', tw)
-            self.assertIn('"src/**": deny', tw)
-            self.assertIn('"lib/**": deny', tw)
+            self.assertIn(("tests/**", "allow"), permission_rules(tw, "edit"))
+            self.assertIn(("src/**", "deny"), permission_rules(tw, "read"))
+            self.assertIn(("lib/**", "deny"), permission_rules(tw, "read"))
             for name in ("cdad-implementer", "cdad-implementer-odoo"):
                 with self.subTest(agent=name):
                     text = (out / "agents" / "opencode" / f"{name}.md").read_text(
                         encoding="utf-8"
                     )
-                    self.assertIn('"*": allow', text)
-                    self.assertIn('"tests/**": deny', text)
+                    self.assertIn(("*", "allow"), permission_rules(text, "edit"))
+                    self.assertIn(("tests/**", "deny"), permission_rules(text, "edit"))
                     self.assertNotIn(
-                        '"**/models/**": deny',
-                        text,
+                        ("**/models/**", "deny"),
+                        permission_rules(text, "read"),
                         "%s must NOT deny models/** — that is the implementer's "
                         "own scope (bugfix 2026-09-29)" % name,
                     )
             two = (
                 out / "agents" / "opencode" / "cdad-test-writer-odoo.md"
             ).read_text(encoding="utf-8")
-            self.assertIn('"**/models/**": deny', two)
+            self.assertIn(("**/models/**", "deny"), permission_rules(two, "read"))
 
     def test_postcondition_16_r3_intake_correction_is_single_sourced_and_propagated(
         self,

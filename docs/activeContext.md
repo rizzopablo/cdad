@@ -4,6 +4,24 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-29 — Cierre de epic-009-installer-updates (2/2)
+
+Overlay del instalador (009-001) y emisión V2 estática/derivada (009-002) cerrados. Gate final sobre `1772563`: **1844 passed / 5 skipped / 0 failed**, limpio y atribuible; runtime OpenCode 2.2.0 y upgrade conservando modelos verificados en arena. `make validate` 68/68 y `--check` PASS (414 grupos). Detalle y deuda: `docs/epics/epic-009-installer-updates/closure.md`. Sin push ni instalación del HOME real para 009-002. Siguiente trabajo solicitado: documentación pública y planificación de ejecución eficiente, sin mezclarlo con este fix.
+
+---
+
+## 2026-10-28 — 009-002: el generador emite frontmatter V2 de OpenCode
+
+**009-002 cerrada.** Gate GREEN sobre `1772563`: **1844 passed, 5 skipped, 0 failed**, árbol limpio, atribuible, canario 0. `scripts/cdad-generate.py::oc_frontmatter` emite la forma V2 (`permissions:` lista de `{action, resource, effect}`) y el instalador despliega el staging sin transformar bytes. La política no cambió: mismas reglas, globs, efectos y orden (PC-2); sólo el reviewer lleva `request.body.temperature: 0.1` (PC-3). El orquestador conserva `mode: all`; Claude Code no cambia (PC-5). Los agentes derivados también emiten V2 y retiran la palanca antigua `write`.
+
+**Evidencia.** Review final sin bloqueantes tras anclar las mutaciones PD-10 a V2 (B1/B1-r). En arena externa: OpenCode 2.2.0 real resuelve `model` y variante en los 11; el upgrade desde V1 conserva el `model:` del usuario; `make validate` 68/68 y `./install.sh --check` rc 0 (414 grupos). Rango `ba8d19b`..`a4fe558`.
+
+**Deuda.** O1: inventario histórico incompleto (008_002–008_005, 009_001); se registran el helper nuevo y las tres pruebas 009_002 con sus consumidores. O3: un derivado desde fuente V1 conserva `temperature`/`edit` hasta reinstalar. Las variantes separadas quedan fuera del overlay de 009-001. No se generaliza la premisa inicial de que todo V1 ignora modelos: el reviewer observó un V1 de proyecto que sí lo resolvía.
+
+**Cierre:** `docs/specs/009-002-opencode-v2-frontmatter/closure.md`. La primera corrida completa falló por dos oráculos V1 restantes; se corrigieron con controles negativos y revisión independiente antes del verde. Sin ADR: sólo cambió la representación. Publicación e instalación del HOME real pendientes de instrucción del dueño; documentación y eficiencia se planifican después de esta entrega.
+
+---
+
 ## 2026-10-28 — 009-001: el instalador deja de costarle los modelos al usuario
 
 **Cerrada `009-001-installer-agent-overlay`** (epic-009-installer-updates, épica light de una feature). Un

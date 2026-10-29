@@ -59,11 +59,9 @@ frontmatter() {
     awk 'BEGIN{c=0} /^---/{c++; next} c==1 {print}' "$1"
 }
 bash_section() {
-    # bash_section <file> — prints ONLY the frontmatter 'bash:' section
-    # (where the permission config lives). The section starts at the 'bash:' line.
-    # Isolating it avoids false positives from legitimate mentions in the
-    # body's prose ("python", "sed/awk", "code of").
-    frontmatter "$1" | awk '/^[[:space:]]*bash:[[:space:]]*$/ {on=1; next} on && /^[[:space:]]{2}[A-Za-z_-]+:/ {exit} on'
+    # bash_section <file> — emit V2 shell permissions via the shared oracle.
+    PYTHONPATH="$ROOT/tests${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
+        'import sys; from agent_frontmatter import permissions; print("\n".join("{} {}".format(p["effect"], p["resource"]) for p in permissions(open(sys.argv[1], encoding="utf-8").read()) if p["action"] == "shell"))' "$1"
 }
 
 assert_string_not_has() {
@@ -160,7 +158,7 @@ unset odoo_agent af
 for role in "${VARIANT_AGENTS[@]}"; do
     af="agents/cdad-$role-odoo.md"
     BASH_RULES="$(bash_section "$ROOT/$af" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*bash:')"
-    if [[ "$BASH_RULES" == $'    "*": allow' ]]; then
+    if [[ "$BASH_RULES" == 'allow *' ]]; then
         pass "P1 ($role): the bash block is EXACTLY the permissive catch-all allow"
     else
         fail "P1 ($role): unexpected bash rules (owner decision 2026-09-29 wants exactly the catch-all allow) — got: $BASH_RULES"

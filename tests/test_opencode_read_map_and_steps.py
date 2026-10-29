@@ -38,6 +38,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from agent_frontmatter import permissions
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
 ADAPTER_DECL = REPO_ROOT / "sources" / "agents" / "adapters" / "opencode.md"
@@ -50,6 +52,30 @@ STACK = "odoo"  # an odoo run emits BOTH the base and the -odoo variants
 # (bloques de permisos/read-map) no depende de un perfil.
 
 ROLES = ("architect", "test-writer", "implementer", "reviewer", "scribe")
+
+
+def frontmatter(agent_text: str) -> str:
+    """Return serialized frontmatter through the closing delimiter/newline."""
+    parts = agent_text.split("---", 2)
+    if len(parts) != 3:
+        raise AssertionError("generated agent has no delimited frontmatter")
+    return "---" + parts[1] + "---\n"
+
+
+RULE_RE = re.compile(r'^\s*"([^"\n]*)"\s*:\s*(allow|deny|ask)\s*$')
+
+
+def test_shared_frontmatter_helpers_preserve_importer_contract():
+    """PC-1/PC-2 compatibility: shared consumers need the delimiters and regex.
+
+    Without this compatibility contract, t5 slices the body at the wrong byte
+    boundary and t7 cannot import its shared rule matcher.
+    """
+    text = "---\nname: sample\n---\nbody\n"
+    parsed = frontmatter(text)
+    assert parsed == "---\nname: sample\n---\n"
+    assert "RULE_RE" in globals(), "t7 importer requires shared RULE_RE"
+    assert isinstance(RULE_RE, re.Pattern)
 
 # --- P1 probe set (spec P1, verbatim paths) --------------------------------
 ALLOW_PROBES = (
@@ -86,35 +112,10 @@ def run_generator(cwd: Path, out_dir: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def frontmatter(agent_text: str) -> str:
-    """Return the YAML frontmatter (between the first two `---` lines)."""
-    start = agent_text.index("---")
-    fm_end = agent_text.index("\n---", start + 3)
-    return agent_text[:fm_end]
-
-
-def nested_block(fm: str, key: str) -> list[str]:
-    """Lines of the `  <key>:` block inside the frontmatter (deeper indent)."""
-    lines = fm.splitlines()
-    idx = next(i for i, l in enumerate(lines) if l == f"  {key}:")
-    block = []
-    for line in lines[idx + 1:]:
-        if line.startswith("    "):
-            block.append(line)
-        else:
-            break
-    return block
-
-
-RULE_RE = re.compile(r'"([^"]*)"\s*:\s*(allow|deny)')
-
-
 def read_map(agent_text: str) -> list[tuple[str, str]]:
-    """The `permission.read` map in FILE ORDER (findLast needs the order)."""
-    fm = frontmatter(agent_text)
-    return [(m.group(1), m.group(2))
-            for line in nested_block(fm, "read")
-            if (m := RULE_RE.search(line))]
+    """The V2 read rules as (resource, effect), preserving serialized order."""
+    return [(rule["resource"], rule["effect"])
+            for rule in permissions(agent_text) if rule["action"] == "read"]
 
 
 def glob_to_regex(pattern: str) -> str:
@@ -397,7 +398,8 @@ class TestP4InstallPreservesSteps(unittest.TestCase):
                 "P4 harness precondition: the installer did not deploy "
                 f"{installed.relative_to(root)}",
             )
-            fm = frontmatter(installed.read_text(encoding="utf-8"))
+            text = installed.read_text(encoding="utf-8")
+            fm = frontmatter(text)
             self.assertTrue(
                 any(STEPS_LINE_RE.match(l) for l in fm.splitlines()),
                 "P4 contract: the installed cdad-test-writer must still "

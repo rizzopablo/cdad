@@ -11,6 +11,10 @@ Estado de features del proyecto.
 
 ## Done
 
+- **epic-009-installer-updates** (cerrado **2026-10-29 UTC**, **2/2**) — overlay de modelos y emisión V2 estática/derivada, con upgrade real verificado. Gate `1772563`: 1844 passed / 5 skipped, cero fallos; deuda consolidada en `docs/epics/epic-009-installer-updates/closure.md`. 009-002 aún no publicada ni instalada en HOME real.
+
+- **009-002-opencode-v2-frontmatter** (cerrada **2026-10-29 UTC / 2026-10-28 UTC−03**) — generador y derivados en V2, permisos y orden conservados, Claude Code intacto; modelo/variante reconocidos en los 11 por OpenCode 2.2.0 real, upgrade preserva modelos. Review independiente sin bloqueantes. Gate sobre `1772563`: **1844 passed / 5 skipped / 0 failed**, limpio y atribuible; arena: `make validate` 68/68, `--check` PASS (414 grupos). Deuda y límites O1/O3 y overlay de variantes en `closure.md`. Sin push de este fix todavía.
+
 - **009-001-installer-agent-overlay** (cerrada **2026-10-28**) — overlay de claves de usuario en agentes
   instalados: `scripts/agent-overlay.py` como única definición (`USER_OWNED_KEYS` como dato), wiring en
   `install.sh` (install, `--check`, ruta legacy, `--uninstall`), validador re-scopeado a texto instalable y

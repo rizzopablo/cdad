@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import json
+import fnmatch
 from pathlib import Path
 import subprocess
 import sys
@@ -14,6 +15,7 @@ import unittest
 from tests.test_role_packet_render import PacketFixture
 from tests.test_role_packets import INSTALLER, PACKET_CLI, REPO_ROOT
 from tests.product_staging import product_root
+from tests.agent_frontmatter import permissions as v2_permissions
 
 
 ROLE_AGENTS = ("architect", "test-writer", "implementer", "reviewer", "scribe")
@@ -213,23 +215,56 @@ class TestInstalledConsumerEntrypoint(InstalledFixture):
         # path barriers (execution.md U6-7, probes P1/E1b). The lever is
         # retired, so the replacement asserts its absence: the installed
         # `edit` map is what governs writes.
-        for role, metadata in installed.items():
+        effective = {role: v2_permissions(
+            (self.installed_agents / f"cdad-{role}.md").read_text(encoding="utf-8")
+        ) for role in ROLE_AGENTS}
+
+        def assert_no_write_permission(rules: list[dict[str, str]]) -> None:
+            self.assertFalse(
+                any(rule["action"] == "write" for rule in rules),
+                "006-005 U6-7: V2 permissions must not contain a `write` action; "
+                "it overrides the role's path map and the retired cdad-010 P1 "
+                "classification lever must remain absent.",
+            )
+
+        for role, rules in effective.items():
             with self.subTest(role=role, invariant="write-lever-retired"):
-                self.assertNotRegex(
-                    metadata,
-                    r"(?m)^  write:",
-                    msg="006-005 U6-7: a `write` permission entry is evaluated "
-                        "for the write tool together with `edit` (findLast, "
-                        "OpenCode v2.0.27) and overrides the role's path map; "
-                        "the cdad-010 P1 lever is retired (its watch rule was "
-                        "fulfilled).",
-                )
+                assert_no_write_permission(rules)
+
+        # Negative control: the same oracle must reject a reintroduced V2 write rule.
+        with self.assertRaises(AssertionError):
+            assert_no_write_permission([
+                *effective["test-writer"],
+                {"action": "write", "resource": "*", "effect": "ask"},
+            ])
+
+        def verdict(role: str, probe: str) -> str:
+            result = "deny"
+            for rule in effective[role]:
+                if rule["action"] != "edit":
+                    continue
+                pattern = rule["resource"]
+                if fnmatch.fnmatchcase(probe, pattern):
+                    result = rule["effect"]
+            return result
+
         for role in ("architect", "reviewer", "scribe"):
             with self.subTest(role=role, invariant="read-only"):
-                self.assertRegex(installed[role], r"(?m)^\s{2}edit:\s*deny\s*$")
-        self.assertRegex(installed["test-writer"], r'(?m)^\s{4}"src/\*\*":\s*deny\s*$')
-        self.assertRegex(installed["test-writer"], r'(?m)^\s{4}"tests/\*\*":\s*allow\s*$')
-        self.assertRegex(installed["implementer"], r'(?m)^\s{4}"tests/\*\*":\s*deny\s*$')
+                self.assertEqual(verdict(role, "docs/notes.md"), "deny")
+        self.assertEqual(verdict("test-writer", "tests/test_contract.py"), "allow")
+        self.assertEqual(verdict("test-writer", "src/private.py"), "deny")
+        self.assertEqual(verdict("implementer", "tests/test_contract.py"), "deny")
+        # Negative control: changing an effective rule must change the oracle.
+        original = effective["test-writer"]
+        try:
+            effective["test-writer"] = [
+                {**rule, "effect": "deny"} if rule["action"] == "edit"
+                and fnmatch.fnmatchcase("tests/test_contract.py", rule["resource"])
+                else rule for rule in original
+            ]
+            self.assertEqual(verdict("test-writer", "tests/test_contract.py"), "deny")
+        finally:
+            effective["test-writer"] = original
 
 
 class TestPythonDependencyIsPublic(unittest.TestCase):

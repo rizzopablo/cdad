@@ -44,10 +44,13 @@ usage: cdad-bash-allowlist.sh <role> [--stack odoo|auto]
 role:  architect | test-writer | implementer | reviewer | scribe
        (an "-odoo" suffix is accepted and implies --stack odoo)
 
-Prints the OpenCode YAML rule lines of the bash: section derived by
-scripts/cdad-generate.py from the canonical sources (PD-4: both consumers —
-generation and installation — compose the same policy; this adapter adds
-no rules of its own).
+Prints the shell policy derived by scripts/cdad-generate.py from the
+canonical sources, as `<resource>: <effect>` rule lines (PD-4: a single
+composition — this adapter adds no rules of its own). Since 009-002 the
+generated frontmatter is V2 (`permissions:` list of {action, resource,
+effect}); the `shell` entries are read there and printed in rule-line form.
+The installer no longer substitutes the block (PC-7): the policy is baked
+at generation time.
 EOF
 }
 
@@ -153,16 +156,36 @@ esac
 agent_file="$STAGE_DIR/agents/opencode/$agent_name"
 [ -f "$agent_file" ] || die "no generated agent for role '$ROLE' (stack $STAGE_STACK)"
 
-# The nested `permission.bash` block of the generated agent, without the
-# 2-space `bash:` key (install.sh's apply_bash_block re-prints that key
-# itself). Lines keep the generator's 4-space indentation — the substitution
-# contract with install.sh is unchanged.
+# The `shell` entries of the generated agent's V2 `permissions:` list
+# (009-002 PC-2), printed back as `<resource>: <effect>` rule lines — the
+# declared rule language of the role sources, never a second policy.
 awk '
   /^---[[:space:]]*$/ { fm++; next }
-  fm == 1 && /^[[:space:]]{2}bash:[[:space:]]*$/ { on = 1; next }
-  fm == 1 && on {
-    if ($0 ~ /^[[:space:]]{2}[A-Za-z_-]+:/) { exit }
-    print
+  fm != 1 { next }
+  /^[[:space:]]*#/ { next }
+  /^[[:space:]]*- action:[[:space:]]*/ {
+    act = $0
+    sub(/^[[:space:]]*- action:[[:space:]]*/, "", act)
+    sub(/[[:space:]]+$/, "", act)
+    res = ""; eff = ""
+    next
+  }
+  /^[[:space:]]+resource:[[:space:]]*/ {
+    res = $0
+    sub(/^[[:space:]]+resource:[[:space:]]*/, "", res)
+    sub(/[[:space:]]+$/, "", res)
+    next
+  }
+  /^[[:space:]]+effect:[[:space:]]*/ {
+    eff = $0
+    sub(/^[[:space:]]+effect:[[:space:]]*/, "", eff)
+    sub(/[[:space:]]+$/, "", eff)
+    if (act == "shell" && res != "") {
+      gsub(/"/, "", res)
+      printf "    \"%s\": %s\n", res, eff
+    }
+    act = ""; res = ""; eff = ""
+    next
   }
 ' "$agent_file"
 

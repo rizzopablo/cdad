@@ -49,53 +49,30 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+TESTS_DIR = REPO_ROOT / "tests"
+if str(TESTS_DIR) not in sys.path:
+    sys.path.insert(0, str(TESTS_DIR))
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from agent_frontmatter import permissions as v2_permissions  # noqa: E402
+
 # --- reused evaluation machinery (NO second evaluator) ----------------------
-from tests.test_opencode_read_map_and_steps import (  # noqa: E402
+from test_opencode_read_map_and_steps import (  # noqa: E402
     evaluate,     # findLast semantics: last matching rule wins, none=allow
     frontmatter,  # YAML frontmatter extractor
-    nested_block, # a `  <key>:` block's deeper-indented lines
 )
-
-RULE_RE = __import__("tests.test_opencode_read_map_and_steps",
-                     fromlist=["RULE_RE"]).RULE_RE
 
 # --- parser composition (frontmatter maps -> rule lists) ---------------------
 def perm_map(agent_text: str, key: str) -> list[tuple[str, str]]:
     """Rule list [(pattern, verb)] of the `<key>` frontmatter permission, in
     file order (findLast needs the order). Composed from the REUSED parsers.
 
-    Supported serialized shapes of the DECLARED outputs:
-    1. block map  — `  read:` / `  edit:` with `"pat": verb` lines;
-    2. inline deny — `  edit: deny` (read-only roles, cdad-010 P2/A6);
-    modeled as a catch-all deny so `evaluate` stays the single verdict
-    function used everywhere;
-    3. absent — empty map (findLast default: allow)."""
-    fm = frontmatter(agent_text)
-    import re
-    inline = re.search(rf"^  {re.escape(key)}:[ \t]+(deny|allow)[ \t]*$",
-                       fm, re.M)
-    if inline:
-        return [("*", inline.group(1))]
-    block: list[str] = []
-    try:
-        block = nested_block(fm, key)
-    except StopIteration:
-        # clave ausente: mapa vacío (docstring: "absent — empty map";
-        # findLast default: allow). Los derivados W-2 no emiten
-        # bloques `grep:`/`glob:` — la ausencia es un mapa vacío, no un
-        # error de parseo.
-        return []
-    exact = next((l for l in block if l.strip() in ("deny", "allow")), None)
-    if exact is not None and not any(RULE_RE.search(l) for l in block):
-        # bare `  edit:
-        #   deny` block form (read-only roles): the tool is denied outright.
-        return [("*", exact.strip())]
-    return [(m.group(1), m.group(2))
-            for line in block
-            if (m := RULE_RE.search(line))]
+    V2 `permissions` es una lista ordenada de entradas action/resource/effect."""
+    action = "shell" if key == "bash" else key
+    return [(entry["resource"], entry["effect"])
+            for entry in v2_permissions(agent_text)
+            if entry.get("action") == action]
 
 
 def verdict(agent_text: str, tool: str, probe: str) -> str:

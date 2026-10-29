@@ -9,9 +9,14 @@
 
 <!-- cdad-section:frontmatter -->
 Agent layout: `~/.config/opencode/agents/cdad-<role>[-odoo].md`.
-Frontmatter shape (generated):
+Frontmatter shape (generated, OpenCode V2 — 009-002):
 - `description:` — one-line role summary (from the role source).
-- `mode: subagent` (orchestrator: `mode: all` + `permission: allow`).
+- `mode: subagent` (orchestrator: `mode: all`).
+- `permissions:` — a LIST of `{action, resource, effect}` entries (V2). The V1
+  `permission:` map made the runtime ignore the user's `model:`; the emitted
+  rules keep the same globs, effects and order (PC-2). The orchestrator's
+  permissive policy is the single catch-all entry
+  `{action: "*", resource: "*", effect: allow}` (PC-4).
 - `model:` — NOT emitted any more (006-003 PD-1e/INV-3): the generator has no
   model map, and the installer transforms no agent bytes. No
   OpenCode agent fixes a model; the model of each role is the one configured in
@@ -22,32 +27,32 @@ Frontmatter shape (generated):
   a runaway guard, not a work budget — it forces a text-only report after
   ~1.5x the highest legitimate session observed (203), far below the runaway
   loops (996, 2167). The generator READS this value; it is never hardcoded.
-- `temperature: 0.1` (reviewer only).
-- Optional top-level `edit: deny` mirror for read-only roles — INERT at runtime;
-  it stays only as a marker of the role's read-only state (cdad-010 P2/A6).
-- `permission:` block — see the `permissions` section.
+- `request: body: temperature: 0.1` (reviewer only). The request body is the
+  reserved carrier; no top-level `temperature:` is emitted (PC-3).
+- `permission:` block — RETIRED (V1): see the `permissions` section.
 - `write` key — NOT emitted (006-005 U6-7). OpenCode v2.0.27 evaluates `write`
   for the write tool together with `edit` and the last matching rule wins, so a
-  trailing entry would override the role's path map. The cdad-010 P1
+  trailing entry would override the role's path policy. The cdad-010 P1
   classification lever is retired (its own watch rule was fulfilled).
 <!-- /cdad-section -->
 
 <!-- cdad-section:permissions -->
-Bash block: YAML under `permission:` — PERMISSIVE operational policy (owner
-decision 2026-09-29, reversing 002-009): the composed block is the single
-catch-all `"*": allow` derived from the role class's host source (reader:
-architect.md; writer: test-writer.md — PD-1). No operation-level filtering is
-generated; honest limit (PD-15): declared, NOT a sandbox — bash can read or
-write anything; the systematic guards are the path maps below and the role
-contracts.
+Bash block: entries with `action: shell` inside the V2 `permissions:` list —
+PERMISSIVE operational policy (owner decision 2026-09-29, reversing 002-009):
+the composed policy is the single catch-all `{resource: "*", effect: allow}`
+derived from the role class's host source (reader: architect.md; writer:
+test-writer.md — PD-1). No operation-level filtering is generated; honest limit
+(PD-15): declared, NOT a sandbox — bash can read or write anything; the
+systematic guards are the path maps below and the role contracts.
 Composition rules:
-- Path globs for `read`/`edit`/`grep` keys come from the role source; the matcher
+- Path globs for the `read`/`edit`/`grep` actions come from the role source; the matcher
   escapes `{ }` — never emit braces. These maps are the retained barriers:
   read-only roles deny edit; the test-writer edits tests only and keeps the
   implementation invisible to read/grep; the implementer edits everything
   except tests (odoo included — models/views are its scope).
-Mechanism limit (declared, not sold as sandbox): path matching on
-Read/Edit/Write/Grep only; bash is permissive by owner decision 2026-09-29.
+Mechanism limit (declared, not sold as sandbox): path matching on the
+`read`/`edit`/`grep` actions only; shell is permissive by owner decision
+2026-09-29.
 <!-- /cdad-section -->
 
 <!-- cdad-section:tool-loading -->

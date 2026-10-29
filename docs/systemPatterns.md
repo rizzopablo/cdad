@@ -1273,3 +1273,7 @@ dato**, se reinserta sobre la versión nueva y se compara **contra el staging vi
 procedencia. La procedencia decide sólo cuando la base no es la versión actual (edición local real o upstream
 movido). Ante gramática ambigua: se preserva y se informa — nunca se adivina ni se descarta en silencio.
 Una sola definición del overlay, consumida por install, `--check`, la ruta legacy y el validador.
+
+## Frontmatter OpenCode: una sola representación, decidida en el generador
+
+La forma del frontmatter (hoy V2: `permissions:` como lista de `{action, resource, effect}`; `request.body` para `temperature`) la decide `scripts/cdad-generate.py` al generar. El instalador despliega el staging tal cual y `--check` compara el artefacto emitido más el overlay de claves de usuario (009-001): sin derivación en check ni conversor posterior. Cambiar la forma no cambia la política: los tests de equivalencia fijan reglas, globs, efectos y orden. El productor de agentes derivados debe emitir la misma forma; sus oráculos conservan también las reglas no propias y el cuerpo completo.

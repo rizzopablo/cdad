@@ -83,8 +83,9 @@ frontmatter() {
 }
 
 bash_section() {
-  # bash_section <file> — prints ONLY the frontmatter 'bash:' section
-  frontmatter "$1" | awk '/^[[:space:]]*bash:[[:space:]]*$/ {on=1; next} on && /^[[:space:]]{2}[A-Za-z_-]+:/ {exit} on'
+  # bash_section <file> — emit V2 shell permissions via the shared oracle.
+  PYTHONPATH="$ROOT/tests${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
+    'import sys; from agent_frontmatter import permissions; print("\n".join("{} {}".format(p["effect"], p["resource"]) for p in permissions(open(sys.argv[1], encoding="utf-8").read()) if p["action"] == "shell"))' "$1"
 }
 
 assert_string_not_has() {
@@ -182,7 +183,7 @@ for f in agents/cdad-architect.md agents/cdad-test-writer.md agents/cdad-impleme
          agents/cdad-implementer-odoo.md agents/cdad-reviewer-odoo.md \
          agents/cdad-scribe-odoo.md; do
   b="$(bash_section "$ROOT/$f" 2>/dev/null | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*bash:' || true)"
-  if [[ "$b" == $'    "*": allow' ]]; then
+  if [[ "$b" == 'allow *' ]]; then
     pass "F009: $f: the bash block is EXACTLY the permissive catch-all allow"
   else
     fail "F009: $f: unexpected bash rules (owner decision 2026-09-29 wants exactly the catch-all allow) — got: $b"

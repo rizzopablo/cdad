@@ -36,6 +36,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from tests.agent_frontmatter import permissions as v2_permissions
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = REPO_ROOT / "scripts" / "cdad-generate.py"
@@ -106,17 +107,11 @@ def bash_block(agent_text: str) -> str:
 
     Same black-box extraction as tests/test_cdad_adapters_opencode.py.
     """
-    fm_end = agent_text.index("\n---", agent_text.index("---") + 3)
-    frontmatter = agent_text[:fm_end]
-    start = frontmatter.index("  bash:")
-    lines = frontmatter[start:].splitlines()[1:]
-    block = []
-    for line in lines:
-        if line.startswith("    "):
-            block.append(line)
-        else:
-            break
-    return "\n".join(block)
+    return "\n".join(
+        f'    "{entry["resource"]}": {entry["effect"]}'
+        for entry in v2_permissions(agent_text)
+        if entry.get("action") == "shell"
+    )
 
 
 class TestBashPolicySelectionReviewfix(unittest.TestCase):

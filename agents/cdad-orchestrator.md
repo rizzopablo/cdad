@@ -1,7 +1,10 @@
 ---
 description: CDAD orchestrator — detects the stage, validates gates, prepares/delegates role packets, materializes read-only artifacts and updates the state file. Primary agent to start/resume/advance CDAD features or epics.
 mode: all
-permission: allow
+permissions:
+  - action: "*"
+    resource: "*"
+    effect: allow
 ---
 
 # CDAD Orchestrator Agent

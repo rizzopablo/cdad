@@ -76,6 +76,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from tests.agent_frontmatter import permissions as v2_permissions
 
 from test_004_002_t2_bootstrap import (
     POLICY_FILE,
@@ -193,8 +194,12 @@ def without_maps(agent_text: str) -> str:
     """Agente sin la REGIÓN de permisos del frontmatter: lo que PD-8/I9
     exige byte a byte igual al origen.
 
-    La región de permisos comprende (i) las secciones de mapas
-    read/grep/glob/edit Y `write` (block o inline) y (ii) la CABECERA
+    La región propia de la derivación comprende únicamente
+    read/grep/glob/edit; shell, `*` y el resto del documento permanecen
+    bajo comparación byte a byte.
+
+    La región comprende (i) las secciones de mapas
+    read/grep/glob/edit (block o inline) y (ii) la CABECERA
     `permission:`, en ambas formas que declara el producto: escalar
     (`permission: allow`) o la línea `permission:` que abre un mapa. La
     cabecera se normaliza (enmenda el oráculo; F-R1 del review-012,
@@ -205,35 +210,58 @@ def without_maps(agent_text: str) -> str:
     a byte debe tratar la cabecera como parte de la región de permisos y NO
     como una divergencia.
 
-    U6-7b (006-005) — A-1, reemplazo declarado: la región incluye TAMBIÉN
-    la clave `write`. En OpenCode v2.0.27 la herramienta de escritura
-    evalúa `edit` y `write` juntas y gana la última regla que coincide
-    (`execution.md` U6-7); una copia instalada anterior al fix lleva
-    `write: ask` dentro del bloque y conservarla reinserta la palanca que
-    anula el mapa derivado. Este oráculo trataba `write` como "resto
-    conservado byte a byte"; U6-7b exige que la derivación la reemplace o
-    retire, así que `write` pasa a la región reemplazada. El resto
-    (frontmatter y cuerpo) sigue comparándose byte a byte; nada más se
-    relaja."""
+    No se elimina el bloque `permissions:` entero: solo se filtran entradas
+    cuya acción sea propiedad de la derivación. Se conserva el cuerpo exacto."""
+    import yaml
+
     fm = frontmatter(agent_text)
     body = agent_text[len(fm):]
-    keep: list[str] = []
-    skipping = False
-    for line in fm.splitlines():
-        # Cabecera de la región de permisos, escalar o map-opening (F-R1).
-        if re.match(r"^permission:(\s|$)", line):
-            continue
-        if re.match(r"^  (read|grep|glob|edit|write):(\s+.*)?$", line):
-            # block form (sin valor) arrastra a sus hijos; inline no tiene hijos
-            skipping = not re.match(
-                r"^  (read|grep|glob|edit|write):\s+\S", line)
-            continue
-        if skipping:
-            if line.startswith("    "):
-                continue
-            skipping = False
-        keep.append(line)
-    return "\n".join(keep) + body
+    data = yaml.safe_load(fm[4:-4]) or {}
+    owned = {"read", "grep", "glob", "edit"}
+    if isinstance(data.get("permissions"), list):
+        retained = [
+            (entry.get("action"), entry.get("resource"), entry.get("effect"))
+            for entry in data["permissions"]
+            if entry.get("action") not in owned
+        ]
+        data.pop("permissions")
+    else:
+        legacy = data.pop("permission", None)
+        retained = []
+        if isinstance(legacy, dict):
+            for action, rules in legacy.items():
+                if action in owned:
+                    continue
+                canonical_action = "shell" if action == "bash" else action
+                if isinstance(rules, dict):
+                    retained.extend((canonical_action, resource, effect)
+                                    for resource, effect in rules.items())
+                else:
+                    retained.append((canonical_action, "*", rules))
+        elif legacy is not None:
+            retained.append(("*", "*", legacy))
+    return repr(data) + "\n" + repr(retained) + "\n" + body
+
+
+def test_without_maps_retains_non_owned_permissions_and_full_body():
+    """PC-2/invariant 1: only owned maps vary; shell/* and body remain exact."""
+    from test_004_002_t5_runtime import without_maps
+
+    original = (
+        "---\npermissions:\n"
+        "  - action: edit\n    resource: tests/**\n    effect: allow\n"
+        '  - action: shell\n    resource: "*"\n    effect: allow\n'
+        '  - action: "*"\n    resource: "*"\n    effect: allow\n'
+        "---\nbody full\n"
+    )
+    owned_only_changed = original.replace("tests/**", "other/**")
+    shell_changed = original.replace(
+        'action: shell\n    resource: "*"\n    effect: allow',
+        'action: shell\n    resource: "*"\n    effect: deny',
+    )
+    assert without_maps(original) == without_maps(owned_only_changed)
+    assert without_maps(original) != without_maps(shell_changed)
+    assert without_maps(original).endswith("body full\n")
 
 
 def policy_path_probes(layout: str) -> tuple[str, ...]:

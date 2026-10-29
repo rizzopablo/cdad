@@ -13,6 +13,30 @@
   "feature_id": "008-002-suite-by-capability",
   "modules": [
     {
+      "assignments": [{"capability": "generation-install-permissions", "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md", "scope": "module"}],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "helper",
+      "path": "tests/agent_frontmatter.py",
+      "product_surfaces": [],
+      "rationale": "Lector compartido de permisos V1/V2; consumidores declarados al migrar 009-002.",
+      "static_test_nodeids": 0,
+      "targets": []
+    },
+    {
+      "assignments": [{"capability": "generation-install-permissions", "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md", "scope": "module"}],
+      "confidence": "alta",
+      "decision": "mantener",
+      "helper_dependencies": [],
+      "kind": "test",
+      "path": "tests/test_009_002_opencode_v2_frontmatter.py",
+      "product_surfaces": ["agents/*.md", "scripts/cdad-generate.py", "sources/agents/adapters/opencode.md"],
+      "rationale": "Forma V2, equivalencia y orden de permisos; esquema Claude Code conservado.",
+      "static_test_nodeids": 3,
+      "targets": []
+    },
+    {
       "assignments": [
         {
           "capability": "dispatch-recovery",
@@ -58,7 +82,7 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": [],
+      "helper_dependencies": ["agent_frontmatter", "test_opencode_read_map_and_steps"],
       "kind": "helper",
       "path": "tests/pd10_permission_semantics.py",
       "product_surfaces": [
@@ -1157,7 +1181,8 @@
       "helper_dependencies": [
         "pd10_permission_semantics",
         "test_004_002_t2_bootstrap",
-        "test_opencode_read_map_and_steps"
+        "test_opencode_read_map_and_steps",
+        "agent_frontmatter"
       ],
       "kind": "test",
       "path": "tests/test_004_002_t5_runtime.py",
@@ -1289,7 +1314,8 @@
         "pd10_permission_semantics",
         "test_004_002_t2_bootstrap",
         "test_004_002_t5_runtime",
-        "test_opencode_read_map_and_steps"
+        "test_opencode_read_map_and_steps",
+        "agent_frontmatter"
       ],
       "kind": "test",
       "path": "tests/test_004_002_t7_private_paths.py",
@@ -3988,7 +4014,8 @@
         "pd10_permission_semantics",
         "test_004_002_t2_bootstrap",
         "test_004_002_t5_runtime",
-        "test_opencode_read_map_and_steps"
+        "test_opencode_read_map_and_steps",
+        "agent_frontmatter"
       ],
       "kind": "test",
       "path": "tests/test_006_005_u6fix7_write_lever.py",
@@ -4018,7 +4045,8 @@
       "helper_dependencies": [
         "test_004_002_t2_bootstrap",
         "test_004_002_t5_runtime",
-        "test_006_005_u6fix7_write_lever"
+        "test_006_005_u6fix7_write_lever",
+        "agent_frontmatter"
       ],
       "kind": "test",
       "path": "tests/test_006_005_u6fix7b_derived_strips_write.py",
@@ -4528,7 +4556,7 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": [],
+      "helper_dependencies": ["agent_frontmatter"],
       "kind": "test",
       "path": "tests/test_bash_policy_selection.py",
       "product_surfaces": [
@@ -4549,12 +4577,14 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": [],
+      "helper_dependencies": ["agent_frontmatter"],
       "kind": "test",
       "path": "tests/test_cdad_adapters_opencode.py",
       "product_surfaces": [
         "install.sh",
-        "scripts/cdad-generate.py"
+        "scripts/cdad-generate.py",
+        "tests/validate-consistency.sh",
+        "tests/validate-odoo-specialization.sh"
       ],
       "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T4: OpenCode adapter simplification (spec §2 contract).",
       "static_test_nodeids": 3,
@@ -4639,7 +4669,7 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": [],
+      "helper_dependencies": ["agent_frontmatter"],
       "kind": "test",
       "path": "tests/test_opencode_read_map_and_steps.py",
       "product_surfaces": [

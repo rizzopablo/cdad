@@ -101,6 +101,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from tests.agent_frontmatter import permissions as v2_permissions
 
 from test_004_002_t2_bootstrap import (  # noqa: E402
     POLICY_FILE,
@@ -177,6 +178,10 @@ def write_rule_list(agent_text: str) -> list[tuple[str, str]]:
       3. clave de bloque — líneas `"patrón": verbo` más indentadas;
       4. bloque escalar — `edit:` + `    deny`.
     """
+    entries = v2_permissions(agent_text)
+    if entries:
+        return [(entry["resource"], entry["effect"])
+                for entry in entries if entry.get("action") in {"edit", "write"}]
     fm = frontmatter(agent_text)
     lines = fm.splitlines()
 

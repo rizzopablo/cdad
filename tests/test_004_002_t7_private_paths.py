@@ -140,6 +140,7 @@ from test_opencode_read_map_and_steps import (  # noqa: E402
     frontmatter,
     glob_to_regex,
 )
+from agent_frontmatter import permissions as v2_permissions  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -670,17 +671,14 @@ R3_ENTRY = "tests/x/"
 R3_PROBE = "tests/x/a.py"
 
 
-def _permission_of(derived_text: str) -> dict:
-    """Valor de `permission` del frontmatter del derivado, parseado como
-    YAML (yaml.safe_load con PyYAML; chequeo estructural estricto sin
-    PyYAML). Lanza AssertionError con diagnóstico si el frontmatter no es
-    YAML válido o si `permission` no es un mapa."""
+def _v2_permission_verdict(derived_text: str, tool: str, probe: str) -> str:
+    """Evalúa la última regla V2 aplicable a una ruta, sin aceptar V1."""
     fm = frontmatter(derived_text)
     if not fm.startswith("---\n"):
         raise AssertionError(
             f"P-1(g)/R1: frontmatter sin delimitador '---' inicial: "
             f"{fm[:80]!r}")
-    body = fm[len("---\n"):]
+    body = fm[len("---\n"):-len("---\n")]
     if _yaml is not None:
         try:
             data = _yaml.safe_load(body)
@@ -692,84 +690,29 @@ def _permission_of(derived_text: str) -> dict:
             raise AssertionError(
                 f"P-1(g)/R1: el frontmatter no parsea a un mapa YAML: "
                 f"{type(data).__name__}")
-        if "permission" not in data:
-            raise AssertionError(
-                "P-1(g)/R1: el frontmatter no declara 'permission'")
-        perm = data["permission"]
-        if not isinstance(perm, dict):
-            raise AssertionError(
-                f"P-1(g)/R1: 'permission' no es un mapa bajo el frontmatter "
-                f"YAML válido: {type(perm).__name__}")
-        return perm
-    # Sin PyYAML: chequeo estructural estricto de la forma inválida hoy.
-    lines = body.splitlines()
-    idx = next((i for i, l in enumerate(lines)
-                if re.match(r"^permission:(:.*)?$", l)), None)
-    if idx is None:
-        raise AssertionError("P-1(g)/R1: el frontmatter no declara "
-                             "'permission'")
-    inline = re.match(r"^permission:[ \t]+(\S+)[ \t]*$", lines[idx])
-    if inline:
-        for l in lines[idx + 1:]:
-            if l and not l.startswith(" "):
-                break
-            if l.startswith(" "):
-                raise AssertionError(
-                    f"P-1(g)/R1: `permission: {inline.group(1)}` escalar "
-                    f"seguido de hijos indentados (YAML inválido): {l!r}")
-        return {"read": inline.group(1), "edit": inline.group(1)}
-    perm: dict = {}
-    for tool in ("read", "edit"):
-        try:
-            t_idx = next(i for i, l in enumerate(lines)
-                         if l == f"  {tool}:")
-        except StopIteration:
-            if re.search(rf"^  {tool}:[ \t]+(allow|deny)[ \t]*$",
-                         body, re.M):
-                perm[tool] = re.search(
-                    rf"^  {tool}:[ \t]+(allow|deny)[ \t]*$", body, re.M
-                ).group(1)
-            continue
-        rules: list[tuple[str, str]] = []
-        for l in lines[t_idx + 1:]:
-            if l and not l.startswith("    "):
-                break
-            if (m := RULE_RE.search(l)):
-                rules.append((m.group(1), m.group(2)))
-        perm[tool] = rules
-    return perm
-
-
-def _perm_verdict(perm: dict, tool: str, probe: str) -> str:
-    """Veredicto findLast de `tool` para `probe` sobre el mapa `permission`
-    YA PARSEADO como YAML (el oráculo de R1; misma semántica findLast del
-    evaluador pd10, aplicada a la estructura parseada)."""
-    rules = perm.get(tool)
-    if rules is None:
+        assert "permission" not in data, "P-1(g)/R1: legacy V1 permission key remains"
+        assert isinstance(data.get("permissions"), list), (
+            "P-1(g)/R1: permissions must be a V2 list")
+    entries = v2_permissions(derived_text)
+    matching = [entry for entry in entries
+                if entry.get("action") in (tool, "*")
+                and re.fullmatch(glob_to_regex(entry.get("resource", "")), probe)]
+    if not matching:
         return "allow"
-    if isinstance(rules, str):
-        return rules
-    out = "allow"
-    items = rules.items() if isinstance(rules, dict) else rules
-    for pattern, verb in items:
-        if re.fullmatch(glob_to_regex(pattern), probe):
-            out = verb
-    return out
+    return matching[-1]["effect"]
 
 
 class TestP1Rf2DerivedFrontmatterValidYaml(_P1Base):
     """(g) R1 (review-012, dispuesto): con private_paths declarado, el
-    frontmatter de CADA derivado publicado —incluido cdad-orchestrator.md,
-    cuyo origen declara `permission: allow` escalar— es YAML válido, y bajo
-    `permission` hay un mapa con read/edit que niegan la ruta privada
+        frontmatter de CADA derivado publicado es YAML válido V2, y las
+        permissions efectivas niegan la ruta privada
     (PD-7/PD-8: barrera efectiva declarada y consumible por el runtime)."""
     LAYOUT = "conventional"
 
     def test_p1_rf2_yaml_valid_and_permission_map_denies_private(self) -> None:
         """(g) R1: cada derivado publicado con private_paths parsea con
-        yaml.safe_load; `permission` es un mapa con read/edit cuyo veredicto
-        findLast para la ruta privada es deny. Hoy el orquestador publica
-        `permission: allow` + hijos indentados (YAML inválido)."""
+        yaml.safe_load y las reglas V2 read/edit cuyo veredicto efectivo
+        findLast para la ruta privada es deny."""
         self.apply_private(self.root, [SECRET])
         proc = self.prepare()
         self.assertEqual(
@@ -784,13 +727,12 @@ class TestP1Rf2DerivedFrontmatterValidYaml(_P1Base):
                 "`permission: allow` escalar) no fue publicado")
         for name in sorted(pub):
             with self.subTest(derived=name):
-                perm = _permission_of(pub[name])  # AssertionError con R1
                 for tool in ("read", "edit"):
-                    got = _perm_verdict(perm, tool, SECRET)
+                    got = _v2_permission_verdict(pub[name], tool, SECRET)
                     self.assertEqual(
                         got, "deny",
-                        msg=f"P-1(g)/R1: {name} — bajo 'permission' "
-                            f"YAML-válido, {tool}({SECRET!r}) resuelve "
+                        msg=f"P-1(g)/R1: {name} — bajo permisos V2 "
+                            f"YAML-válidos, {tool}({SECRET!r}) resuelve "
                             f"{got!r}; el mapa permission debe negar la "
                             f"ruta privada en read y edit para TODOS los "
                             f"roles")

@@ -133,7 +133,10 @@ class TestMutationsCLI(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory(prefix="pd10-mut-")
         self.addCleanup(self._tmp.cleanup)
 
-    def run_mutation(self, rel: str, *, drop: set[str] = frozenset(),
+    def run_mutation(self, rel: str, *,
+                     drop_entries: set[tuple[str, str, str]] = frozenset(),
+                     replace_entry: tuple[str, str, str, str] | None = None,
+                     add_entry: tuple[str, str, str] | None = None,
                      replace: tuple[str, str] | None = None,
                      add_anchor: tuple[str, str] | None = None,
                      set_name: str, trace: str
@@ -153,12 +156,67 @@ class TestMutationsCLI(unittest.TestCase):
         text = target.read_text(encoding="utf-8")
         original = text
         lines_out = []
-        # rewrite line-by-line: drop, replace (first occurrence only), insert
-        # after anchor (first occurrence only)
-        replaced_done = anchor_done = False
-        for line in original.splitlines(keepends=True):
-            if line.strip() in drop:
+        # Rewrite V2 permission entries as semantic units. Other mutation
+        # families (CC matchers) retain their exact-line operation below.
+        source_lines = original.splitlines(keepends=True)
+        output_lines = []
+        removed_entries: set[tuple[str, str, str]] = set()
+        replaced_entry_done = False
+        inserted_entry = False
+        i = 0
+        while i < len(source_lines):
+            line = source_lines[i]
+            if line.rstrip() == "  - action:" or line.startswith("  - action: "):
+                end = i + 1
+                while end < len(source_lines) and source_lines[end].startswith("    "):
+                    end += 1
+                block = source_lines[i:end]
+                values = {}
+                for item in block:
+                    for key in ("action", "resource", "effect"):
+                        prefix = f"  - {key}: " if key == "action" else f"    {key}: "
+                        if item.startswith(prefix):
+                            values[key] = item[len(prefix):].strip().strip("'\"\n")
+                identity = (values.get("action", ""), values.get("resource", ""),
+                            values.get("effect", ""))
+                if identity in drop_entries:
+                    removed_entries.add(identity)
+                elif (replace_entry and identity == replace_entry[:3]
+                      and not replaced_entry_done):
+                    block = [item.replace(
+                        f"    effect: {replace_entry[2]}",
+                        f"    effect: {replace_entry[3]}", 1)
+                             if item.startswith("    effect: ") else item
+                             for item in block]
+                    output_lines.extend(block)
+                    replaced_entry_done = True
+                else:
+                    output_lines.extend(block)
+                i = end
                 continue
+            # Insert once at the end of the ordered permission list, before
+            # the next top-level key or closing frontmatter delimiter.
+            if (add_entry and not inserted_entry and output_lines
+                    and line.startswith("---")):
+                output_lines.extend([
+                    f"  - action: {add_entry[0]}\n",
+                    f"    resource: {add_entry[1]}\n",
+                    f"    effect: {add_entry[2]}\n",
+                ])
+                inserted_entry = True
+            output_lines.append(line)
+            i += 1
+        if add_entry and not inserted_entry:
+            output_lines.extend([
+                f"  - action: {add_entry[0]}\n",
+                f"    resource: {add_entry[1]}\n",
+                f"    effect: {add_entry[2]}\n",
+            ])
+            inserted_entry = True
+        lines_out = []
+        replaced_done = anchor_done = False
+        # Preserve the legacy exact-line mutation path for CC hook matchers.
+        for line in output_lines:
             if (replace and not replaced_done
                     and line.rstrip() == replace[0].rstrip()):
                 # exact-line match (indentation included): the first occurrence
@@ -173,17 +231,17 @@ class TestMutationsCLI(unittest.TestCase):
                     and line.rstrip() == add_anchor[0].rstrip()):
                 lines_out.append(add_anchor[1].rstrip() + "\n")
                 anchor_done = True
-        if drop:
-            present = {l.strip() for l in original.splitlines()}
-            missing = [d for d in drop if d not in present]
+        if drop_entries:
+            missing = drop_entries - removed_entries
             self.assertFalse(
                 missing,
-                f"harness precondition: mutation drop targets missing from "
-                f"{rel}: {missing} (note: a target may legitimately appear "
-                "twice — read AND grep maps — both are dropped)")
+                f"harness precondition: V2 permission entries missing from "
+                f"{rel}: {missing}")
         self.assertFalse(
             (replace and not replaced_done) or
-            (add_anchor and not anchor_done),
+            (add_anchor and not anchor_done) or
+            (replace_entry and not replaced_entry_done) or
+            (add_entry and not inserted_entry),
             f"harness precondition: mutation anchor not found in {rel}")
         target.write_text("".join(lines_out), encoding="utf-8")
         r = subprocess.run(
@@ -215,7 +273,8 @@ class TestMutationsCLI(unittest.TestCase):
         la ejecución REAL del reemplazo F009-tw-read-src-deny (el checker CLI)
         falla sobre la copia. Trace: PD-10 reemplaza F009-tw-read-src-deny."""
         r = self.run_mutation(
-            "cdad-test-writer.md", drop={'"src/**": deny'},
+            "cdad-test-writer.md",
+            drop_entries={("read", "src/**", "deny")},
             set_name="consistency", trace="F009-tw-read-src-deny")
         self.assertCheckerFails(r, "F009-tw-read-src-deny", "consistency")
 
@@ -225,7 +284,7 @@ class TestMutationsCLI(unittest.TestCase):
         falla al ejecutarse sobre la copia."""
         r = self.run_mutation(
             "cdad-architect.md",
-            replace=("  edit: deny", "  edit: allow"),
+            replace_entry=("edit", "*", "deny", "allow"),
             set_name="consistency", trace="F009-readers-edit-deny")
         self.assertCheckerFails(r, "F009-readers-edit-deny", "consistency")
 
@@ -234,11 +293,10 @@ class TestMutationsCLI(unittest.TestCase):
         F009-imp-edit-tests-deny falla (tests/test_a.py editable)."""
         r = self.run_mutation(
             "cdad-implementer.md",
-            drop={'"tests/**": deny', '"**/tests/**": deny',
-                  '"**/*_test.go": deny', '"**/*.test.js": deny',
-                  '"**/*.test.ts": deny', '"**/*.test.mjs": deny',
-                  '"**/*.test.cjs": deny', '"**/*.spec.ts": deny',
-                  '"**/*.spec.js": deny', '"**/test_*.py": deny'},
+            drop_entries={("edit", p, "deny") for p in (
+                "tests/**", "**/tests/**", "**/*_test.go", "**/*.test.js",
+                "**/*.test.ts", "**/*.test.mjs", "**/*.test.cjs",
+                "**/*.spec.ts", "**/*.spec.js", "**/test_*.py")},
             set_name="consistency", trace="F009-imp-edit-tests-deny")
         self.assertCheckerFails(r, "F009-imp-edit-tests-deny", "consistency")
 
@@ -248,7 +306,7 @@ class TestMutationsCLI(unittest.TestCase):
         (src/lib.py no editable)."""
         r = self.run_mutation(
             "cdad-implementer.md",
-            replace=('    "*": allow', '    "*": deny'),
+            replace_entry=("edit", "*", "allow", "deny"),
             set_name="consistency", trace="F009-imp-edit-catchall-allow")
         self.assertCheckerFails(r, "F009-imp-edit-catchall-allow",
                                 "consistency")
@@ -258,15 +316,15 @@ class TestMutationsCLI(unittest.TestCase):
         F009-tw-odoo-read-models-deny y P1-tw-*-scope fallan."""
         r = self.run_mutation(
             "cdad-test-writer-odoo.md",
-            drop={'"**/models/**": deny', '"**/views/**": deny',
-                  '"**/controllers/**": deny', '"**/wizards/**": deny'},
+            drop_entries={("read", f"**/{p}/**", "deny") for p in
+                          ("models", "views", "controllers", "wizards")},
             set_name="consistency", trace="F009-tw-odoo-read-models-deny")
         self.assertCheckerFails(r, "F009-tw-odoo-read-models-deny",
                                 "consistency")
         r2 = self.run_mutation(
             "cdad-test-writer-odoo.md",
-            drop={'"**/models/**": deny', '"**/views/**": deny',
-                  '"**/controllers/**": deny', '"**/wizards/**": deny'},
+            drop_entries={("read", f"**/{p}/**", "deny") for p in
+                          ("models", "views", "controllers", "wizards")},
             set_name="odoo", trace="P1-tw-models-scope")
         self.assertCheckerFails(r2, "P1-tw-models-scope", "odoo")
 
@@ -278,7 +336,8 @@ class TestMutationsCLI(unittest.TestCase):
         el reemplazo muere). El docstring ya no racionaliza la fuga."""
         r = self.run_mutation(
             "cdad-test-writer.md",
-            drop={'"tests/**": allow', '"**/tests/**": allow'},
+            drop_entries={("edit", p, "allow") for p in
+                          ("tests/**", "**/tests/**")},
             set_name="consistency", trace="F009-tw-edit-tests-allow")
         self.assertCheckerFails(r, "F009-tw-edit-tests-allow", "consistency")
 
@@ -287,8 +346,7 @@ class TestMutationsCLI(unittest.TestCase):
         F009-imp-no-models-deny (bugfix 80f9b90) falla (own scope bloqueado)."""
         r = self.run_mutation(
             "cdad-implementer-odoo.md",
-            add_anchor=('    "*": allow',
-                        '    "**/models/**": deny'),
+            add_entry=("edit", "**/models/**", "deny"),
             set_name="consistency", trace="F009-imp-no-models-deny")
         self.assertCheckerFails(r, "F009-imp-no-models-deny", "consistency")
 
@@ -297,7 +355,7 @@ class TestMutationsCLI(unittest.TestCase):
         P1-tw-manifest-allow falla al ejecutarse (--set odoo)."""
         r = self.run_mutation(
             "cdad-test-writer-odoo.md",
-            add_anchor=('  read:', '    "**/__manifest__.py": deny'),
+            add_entry=("read", "**/__manifest__.py", "deny"),
             set_name="odoo", trace="P1-tw-manifest-allow")
         self.assertCheckerFails(r, "P1-tw-manifest-allow", "odoo")
 

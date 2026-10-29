@@ -141,18 +141,20 @@ log() {
 }
 
 # ---------------------------------------------------------------------------
-# Bash allowlists — derivation via the single policy source (004-001 T4)
+# Bash allowlists — RETIRED in 009-002 (PC-7), documentation anchor
 # ---------------------------------------------------------------------------
-# The bash POLICY lives only in the canonical role sources (sources/roles/)
-# and is derived by scripts/cdad-generate.py (PD-1/PD-4). The adapter emitters
-# (`scripts/cdad-bash-allowlist.sh`) compose that SAME policy and install.sh
-# injects the derived block into the INSTALLED copies of the OpenCode agents
-# only (same pattern as the model: line). The installed copy is derived
-# output; the canonical sources are the truth for the policy.
-ALLOWLIST_SH="$SCRIPT_DIR/scripts/cdad-bash-allowlist.sh"
-if [ ! -f "$ALLOWLIST_SH" ]; then
-  die "Bash allowlist generator missing: $ALLOWLIST_SH"
-fi
+# The OpenCode frontmatter is V2 (`permissions:` list of {action, resource,
+# effect}), so the `  bash:` sub-map the derivation used to substitute no
+# longer exists in any emitted form; and since 004-001 T5 the policy is
+# derived at GENERATION time (scripts/cdad-generate.py, PD-1) and the installer
+# deploys the staged bytes as-is. Keeping a second, check-time derivation would
+# be the duplicated mechanism the epic forbids (criterio 4) and would compare
+# against a shape nobody emits (PC-7). `--check` compares the repo artifacts as
+# they are, with the ONE overlay semantics (scripts/agent-overlay.py, 009-001).
+# Evidence: tests/test_009_002_opencode_v2_frontmatter.py (PC-1..PC-7).
+# scripts/cdad-bash-allowlist.sh stays as the standalone emitter of the
+# derived policy (rule lines), consumed by its own test; it no longer feeds the
+# installer.
 
 # 009-001: the user-owned overlay helper. The frontmatter keys the USER owns
 # (today `model:` — the list is DATA inside the helper) are the user's
@@ -162,50 +164,9 @@ fi
 # and no bash filter redefines "overlay" (009-001 INV-2).
 AGENT_OVERLAY_PY="$SCRIPT_DIR/scripts/agent-overlay.py"
 
-# Roles whose bash block is derived (P5). The orchestrator is not task-spawned
-# and keeps the handwritten block from the repo.
-ALLOWLIST_ROLES="architect test-writer implementer reviewer scribe"
-
-role_is_generated() {
-  case " $ALLOWLIST_ROLES " in
-    *" $1 "*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-# cdad_bash_allowlist <role> — prints the derived bash block for the role on
-# this machine (the generator detects the stack; fail fast). Invoked via
-# `bash` (same criterion as validate-subagents.sh with install.sh): only the
-# file's existence matters; the +x bit is enforced by the separate A7 check.
-cdad_bash_allowlist() {
-  bash "$ALLOWLIST_SH" "$1"
-}
-
-# apply_bash_block <src> <role> — prints the file content with the bash section
-# rules replaced by the derived allowlist. Pure function of (file, this
-# machine's stack): that purity is what lets --check compare against the
-# DERIVED expectation and not against repo bytes.
-apply_bash_block() {
-  local src="$1" role="$2" block
-  block="$(cdad_bash_allowlist "$role")"
-  awk -v block="$block" '
-    /^---[[:space:]]*$/ { fm++; print; next }
-    fm == 1 && /^[[:space:]]{2}bash:[[:space:]]*$/ {
-      print
-      printf "%s\n", block
-      skip = 1
-      next
-    }
-    fm == 1 && skip && /^[[:space:]]{2}[A-Za-z_-]+:/ { skip = 0 }
-    skip { next }
-    { print }
-  ' "$src"
-}
-
 # rewrite_bash_section — RETIRED in 004-001 T5: the bash policy is derived at
 # GENERATION time (scripts/cdad-generate.py, PD-1) and the installer deploys
-# the staged bytes as-is. Kept only as a documentation anchor; the derivation
-# used by the legacy --check path lives in apply_bash_block above.
+# the staged bytes as-is.
 
 # do_run desc cmd [args...] — log the action, then execute (or skip in dry-run)
 do_run() {
@@ -335,8 +296,8 @@ Options:
                sources (renamed/removed upstream), staged artifacts not yet
                installed, and the installed skill trees vs the repo.
                --status is an alias. Without an ownership manifest it falls
-               back to the legacy repo comparison (allowlist-aware against the
-               derived expectation).
+               back to the legacy repo comparison (repo artifacts as emitted,
+               compared with the user-owned overlay semantics).
   --basic      DEPRECATED, no effect (006-003 D1): accepted only so the
                existing recipes keep working; it resolves no profile and
                writes no marker. The installer has no profiles: the model is
@@ -1785,22 +1746,19 @@ PY
 # ---------------------------------------------------------------------------
 # Verification & summary
 # ---------------------------------------------------------------------------
-check_agent_file() {  # src dst role — allowlist-derived, overlay-aware compare; 0 = in sync
-  local src="$1" dst="$2" role="$3" expected
+check_agent_file() {  # src dst — overlay-aware compare; 0 = in sync
+  local src="$1" dst="$2" expected
   if [ ! -f "$dst" ]; then
     printf 'DRIFT: missing %s\n' "$dst"
     return 1
   fi
-  # The expectation is the repo file with THIS machine's derived bash block (P5
-  # cdad-010) for the generated roles. The comparison then applies the ONE
-  # definition of the user-owned overlay (scripts/agent-overlay.py) — no second
-  # bash filter decides what an overlay is (009-001 INV-2).
+  # 009-002 PC-7: the expectation is the repo artifact AS EMITTED (V2
+  # frontmatter; the bash policy is baked at generation time, 004-001 T5).
+  # The comparison then applies the ONE definition of the user-owned overlay
+  # (scripts/agent-overlay.py) — no second bash filter decides what an overlay
+  # is (009-001 INV-2).
   expected="$(mktemp)" || die "Cannot create the agent check temp file"
-  if role_is_generated "$role"; then
-    apply_bash_block "$src" "$role" > "$expected"
-  else
-    cat "$src" > "$expected"
-  fi
+  cat "$src" > "$expected"
   if agent_overlay_compare "$dst" "$expected"; then
     print_ok_agent "$dst"
     rm -f "$expected"
@@ -1840,12 +1798,12 @@ check_skill_tree() {  # src_dir dst_dir — cmps every source file vs dst; 0 = i
   return "$drift"
 }
 
-check_installed() {  # exit 0 if all installed artifacts match the repo (allowlist-derived agents), 1 on drift
+check_installed() {  # exit 0 if all installed artifacts match the repo, 1 on drift
   # LEGACY path: roots installed BEFORE the ownership manifest existed. Those
   # roots carried the public layout (<root>/agents|skills), so it is still
   # checked/installed-referenced here for THEM; PD-9 installs (manifest-owned)
   # never reach this function (main dispatches to check_installed_staging).
-  local f base s role
+  local f base s
   local total=0 expected_total=0 drifted=0
   local extra_total=0 extra_expected=0
   local -a drifted_paths=()
@@ -1854,9 +1812,7 @@ check_installed() {  # exit 0 if all installed artifacts match the repo (allowli
     [ -e "$f" ] || continue
     total=$((total + 1))
     base=$(basename "$f")
-    role=${base#cdad-}
-    role=${role%.md}
-    if ! check_agent_file "$f" "$OPENCODE_AGENTS_DIR/$base" "$role"; then
+    if ! check_agent_file "$f" "$OPENCODE_AGENTS_DIR/$base"; then
       drifted_paths+=("$OPENCODE_AGENTS_DIR/$base")
       drifted=1
     fi

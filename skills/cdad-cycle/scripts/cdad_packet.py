@@ -168,11 +168,6 @@ DERIVED_MAP_KEYS = ("read", "grep", "glob", "edit")
 # `edit` allows. The effective write verdict of a derived agent must be
 # EXACTLY the verdict of its derived `edit` map.
 DERIVED_RETIRED_MAP_KEYS = ("write",)
-# The `permission` map keys the derivation owns: the replaced ones (read,
-# grep, glob, edit) and the retired one (write). A key is recognized with its
-# scalar form (`  edit: deny`) and with its block form (`  edit:` + children).
-PERMISSION_MAP_KEY_RE = re.compile(
-    r"^  (%s):" % "|".join(DERIVED_MAP_KEYS + DERIVED_RETIRED_MAP_KEYS))
 FAIL_AT_ENV = "CDAD_TEST_FAIL_AT"
 FAIL_AT_RC = 97
 PAUSE_AT_ENV = "CDAD_TEST_PAUSE_AT"
@@ -4479,21 +4474,214 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
     return {}
 
 
+# 009-002 PC-1/PC-2: the derived agents declare their policy in the SAME V2
+# shape the generator emits — a `permissions:` LIST of `{action, resource,
+# effect}` entries — never a hybrid of the origin's V2 list plus newly
+# appended V1 maps. The legacy `permission:` map is still READ: an installation
+# that predates the V2 release is the very input of an upgrade, so its rules
+# are converted in place (V1 `bash` is the V2 `shell` action; `write` is still
+# retired, U6-7b).
+V2_PERMISSIONS_KEY = "permissions:"
+_V2_ENTRY_RE = re.compile(r"^  - action:[ \t]*(?P<action>\S+)[ \t]*$")
+_V2_FIELD_RE = re.compile(
+    r"^    (?P<field>resource|effect):[ \t]*(?P<value>.+?)[ \t]*$")
+_V1_PERMISSION_KEY_RE = re.compile(
+    r"^  (?P<action>[A-Za-z_][\w-]*):(?:[ \t]+(?P<scalar>\S+))?[ \t]*$")
+_V1_RULE_RE = re.compile(
+    r'^    (?:"(?P<quoted>[^"]*)"|(?P<bare>[^\s:"]+)):[ \t]*'
+    r"(?P<effect>allow|deny|ask)[ \t]*$")
+_YAML_PLAIN_SCALAR_RE = re.compile(r"^[A-Za-z0-9_/.][^\s#]*$")
+
+
+def _yaml_scalar(value: str) -> str:
+    """Emit `value` as a YAML scalar that parses back to the same text.
+
+    A derived resource may be a catch-all (`*`), which is an alias indicator
+    in YAML and must be quoted; the rest stay plain (the shape the generated
+    agents use). 009-002 PC-4: no emitted key breaks the parse.
+    """
+    plain = (_YAML_PLAIN_SCALAR_RE.match(value) is not None
+             and not any(token in value for token in (" #", ": ", '"', "\\")))
+    if plain:
+        return value
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _unquote_scalar(value: str) -> str:
+    """The text value of a serialized YAML scalar (simple quoting only)."""
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        inner = value[1:-1]
+        return inner.replace(value[0] * 2, value[0])
+    return value
+
+
+def _frontmatter_blocks(lines: list[str]) -> list[tuple[str | None, list[str]]]:
+    """Split frontmatter lines into (top-level key, its block) segments.
+
+    A block is the key line plus every following line indented under it, so
+    the permission region is consumed whole whichever shape it has (V1 map,
+    scalar header or V2 list). Lines outside a block keep `None` as key.
+    """
+    blocks: list[tuple[str | None, list[str]]] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        match = re.match(r"^(?P<key>[A-Za-z_][\w-]*):", line)
+        block = [line]
+        index += 1
+        while index < len(lines) and lines[index].startswith(" "):
+            block.append(lines[index])
+            index += 1
+        blocks.append((match.group("key") if match else None, block))
+    return blocks
+
+
+def _permission_entry(entry: dict[str, str]) -> tuple[str, str, str]:
+    """One V2 permission entry as an (action, resource, effect) rule."""
+    action = entry.get("action")
+    resource = entry.get("resource")
+    effect = entry.get("effect")
+    if not action or resource is None or effect is None:
+        raise PolicyError(
+            "installed derived source has an incomplete permission entry "
+            f"{entry!r}; cannot derive the project-local agents (PD-8/I9)")
+    return action, resource, effect
+
+
+def _parse_v2_permissions(block: list[str]) -> list[tuple[str, str, str]]:
+    """Rules of a V2 `permissions:` list block, in serialized order."""
+    rules: list[tuple[str, str, str]] = []
+    entry: dict[str, str] | None = None
+    for line in block[1:]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        action_match = _V2_ENTRY_RE.match(line)
+        if action_match is not None:
+            if entry is not None:
+                rules.append(_permission_entry(entry))
+            entry = {"action": _unquote_scalar(action_match.group("action"))}
+            continue
+        field_match = _V2_FIELD_RE.match(line)
+        if field_match is None or entry is None:
+            raise PolicyError(
+                "installed derived source has an unparseable permission line "
+                f"{line!r}; cannot derive the project-local agents (PD-8/I9)")
+        entry[field_match.group("field")] = _unquote_scalar(
+            field_match.group("value"))
+    if entry is not None:
+        rules.append(_permission_entry(entry))
+    return rules
+
+
+def _parse_v1_permissions(block: list[str]) -> list[tuple[str, str, str]]:
+    """Rules of a legacy V1 `permission:` map block, in serialized order."""
+    rules: list[tuple[str, str, str]] = []
+    header = re.match(r"^permission:[ \t]+(?P<value>\S+)[ \t]*$", block[0])
+    if header is not None:
+        # `permission: allow`: every tool allowed. Kept as an explicit
+        # catch-all so the declaration survives; the derived rules follow it
+        # and win by findLast.
+        rules.append(("*", "*", _unquote_scalar(header.group("value"))))
+    action: str | None = None
+    for line in block[1:]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        key_match = _V1_PERMISSION_KEY_RE.match(line)
+        if key_match is not None:
+            action = key_match.group("action")
+            scalar = key_match.group("scalar")
+            if scalar is not None:
+                rules.append((action, "*", _unquote_scalar(scalar)))
+            continue
+        rule_match = _V1_RULE_RE.match(line)
+        if rule_match is None or action is None:
+            raise PolicyError(
+                "installed derived source has an unparseable permission line "
+                f"{line!r}; cannot derive the project-local agents (PD-8/I9)")
+        resource = rule_match.group("quoted")
+        if resource is None:
+            resource = rule_match.group("bare")
+        rules.append((action, resource, rule_match.group("effect")))
+    return rules
+
+
+def _v2_action(action: str) -> str:
+    """The V2 name of a permission action (V1 `bash` is V2 `shell`)."""
+    return "shell" if action == "bash" else action
+
+
+def _derived_permission_rules(
+    origin_rules: list[tuple[str, str, str]],
+    maps: dict[str, list[tuple[str, str]]],
+) -> list[tuple[str, str, str]]:
+    """V2 rules of the derived agent for the accepted policy.
+
+    The derivation OWNS read/grep/glob/edit (they are replaced by `maps`) and
+    RETIRES `write` (U6-7b); every other declared rule (shell, ...) is
+    preserved in file order, so the change is of form and never of policy.
+    The derived groups are emitted where the first owned rule was, in
+    `DERIVED_MAP_KEYS` order (deterministic). With no maps the installed copy
+    keeps its own rules, apart from the retired `write` ones (PD-8/I9).
+    """
+    if not maps:
+        return [(_v2_action(action), resource, effect)
+                for action, resource, effect in origin_rules
+                if _v2_action(action) not in DERIVED_RETIRED_MAP_KEYS]
+    owned = set(DERIVED_MAP_KEYS) | set(DERIVED_RETIRED_MAP_KEYS)
+    derived = [(action, resource, effect)
+               for action in DERIVED_MAP_KEYS
+               for resource, effect in maps.get(action, [])]
+    rules: list[tuple[str, str, str]] = []
+    inserted = False
+    for action, resource, effect in origin_rules:
+        action = _v2_action(action)
+        if action in owned:
+            if not inserted:
+                rules.extend(derived)
+                inserted = True
+            continue
+        rules.append((action, resource, effect))
+    if not inserted:
+        rules.extend(derived)
+    return rules
+
+
+def _v2_permission_lines(rules: list[tuple[str, str, str]]) -> list[str]:
+    """Serialize rules as the V2 `permissions:` list (`[]` when empty)."""
+    if not rules:
+        return [f"{V2_PERMISSIONS_KEY} []"]
+    lines = [V2_PERMISSIONS_KEY]
+    for action, resource, effect in rules:
+        lines += [
+            f"  - action: {_yaml_scalar(action)}",
+            f"    resource: {_yaml_scalar(resource)}",
+            f"    effect: {_yaml_scalar(effect)}",
+        ]
+    return lines
+
+
 def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]) -> bytes:
-    """Return origin with its read/grep/glob/edit maps replaced and its
-    `write` key retired; the rest byte for byte. With no maps the origin is
-    copied verbatim apart from the retired `write` key (PD-8/I9).
+    """Return origin with its permissions rewritten in V2 shape.
+
+    009-002 (PC-1/PC-2): the result declares `permissions:` as a LIST of
+    `{action, resource, effect}` entries — the origin's read/grep/glob/edit
+    rules are replaced by the accepted policy (`maps`), while every other
+    declared rule keeps its effect and its file order. The rest of the
+    frontmatter (the user's `model:`, `description:`, `request:`...) and the
+    body are preserved byte for byte (PD-8/I9).
 
     R3 (PD-8): every installed source is validated — a source without YAML
-    frontmatter fails loudly as a PolicyError (rc 2 with a diagnostic) instead
-    of an uncaught ValueError traceback, for every derived role.
+    frontmatter, or with an unparseable permission region, fails loudly as a
+    PolicyError (rc 2 with a diagnostic) instead of emitting a narrowed
+    derivative for every derived role.
 
-    U6-7b (006-005, E2/PD-24): the `write` key of the installed copy belongs
-    to the region the derivation replaces and is NOT emitted. The write tool
-    of OpenCode v2.0.27 evaluates `edit` and `write` together (findLast), so
-    a `write: ask` inherited from an installation prior to the U6-7 fix would
-    override the derived `edit` map. The effective write verdict of a derived
-    agent must be EXACTLY the verdict of its derived `edit` map.
+    U6-7b (006-005, E2/PD-24): the write rules of the installed copy belong to
+    the region the derivation replaces and are NOT emitted, in either shape
+    (the V1 `write:` key or a V2 `action: write` entry). The write tool of
+    OpenCode v2.0.27 evaluates `edit` and `write` together (findLast), so a
+    `write: ask` inherited from an installation prior to the U6-7 fix would
+    override the derived `edit` rules. The effective write verdict of a
+    derived agent must be EXACTLY the verdict of its derived `edit` rules.
     """
     text = origin.decode("utf-8")
     start = text.find("---")
@@ -4505,66 +4693,28 @@ def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]
     frontmatter = text[:fm_end]
     rest = text[fm_end:]
     kept: list[str] = []
-    first_map: int | None = None
-    scalar_permission_at: int | None = None
-    lines = frontmatter.split("\n")
-    index = 0
-    while index < len(lines):
-        key_match = PERMISSION_MAP_KEY_RE.match(lines[index])
-        if key_match is None:
-            # R1 (PD-8): an origin whose `permission` is a SCALAR (the
-            # orchestrator's `permission: allow`) cannot receive indented map
-            # children — that is invalid YAML. Replace the scalar with the map
-            # key so the generated block nests as valid YAML; semantically
-            # everything not in the map stays allowed (equivalent to `allow`).
-            if maps and re.match(r"^permission:[ \t]+\S", lines[index]):
-                scalar_permission_at = len(kept)
-                kept.append("permission:")
-                index += 1
-                continue
-            kept.append(lines[index])
-            index += 1
+    origin_rules: list[tuple[str, str, str]] = []
+    permission_at: int | None = None
+    for key, block in _frontmatter_blocks(frontmatter.split("\n")):
+        if key not in ("permission", "permissions"):
+            kept.extend(block)
             continue
-        key = key_match.group(1)
-        # The key and its children (the map block, scalar form included).
-        entry: list[str] = [lines[index]]
-        index += 1
-        while index < len(lines) and lines[index].startswith("    "):
-            entry.append(lines[index])
-            index += 1
-        if key in DERIVED_MAP_KEYS:
-            if not maps:
-                # Nothing to replace: the origin keeps its own map.
-                kept.extend(entry)
-                continue
-            # The replaced keys give the insertion point of the derived block.
-            if first_map is None:
-                first_map = len(kept)
-            continue
-        # The retired key (`write`): removed with its children, never emitted.
-    if not maps:
-        # No map to replace: the origin is copied verbatim apart from the
-        # retired `write` key (U6-7b) — the read-only roles keep the map
-        # their installed copy declares.
-        return ("\n".join(kept) + rest).encode("utf-8")
-    if first_map is not None:
-        insert_at = first_map
-    elif scalar_permission_at is not None:
-        insert_at = scalar_permission_at + 1
-    else:
-        insert_at = len(kept)
-        for position, line in enumerate(kept):
-            if line == "permission:":
-                insert_at = position + 1
-                break
-    block: list[str] = []
-    for key in DERIVED_MAP_KEYS:
-        rules = maps.get(key)
-        if not rules:
-            continue
-        block.append(f"  {key}:")
-        block.extend(f'    "{pattern}": {verb}' for pattern, verb in rules)
-    return ("\n".join(kept[:insert_at] + block + kept[insert_at:]) + rest).encode("utf-8")
+        if permission_at is not None:
+            raise PolicyError(
+                "installed derived source declares both `permission` and "
+                "`permissions`; cannot derive the project-local agents "
+                "(PD-8/I9)")
+        permission_at = len(kept)
+        origin_rules = (_parse_v2_permissions(block) if key == "permissions"
+                        else _parse_v1_permissions(block))
+    rules = _derived_permission_rules(origin_rules, maps)
+    if permission_at is None:
+        if not maps:
+            # Nothing owned by the derivation: the origin is copied verbatim.
+            return ("\n".join(kept) + rest).encode("utf-8")
+        permission_at = len(kept)
+    lines = kept[:permission_at] + _v2_permission_lines(rules) + kept[permission_at:]
+    return ("\n".join(lines) + rest).encode("utf-8")
 
 
 def _reject_hand_modified_derived(derived_dir: Path, policy_sha: str) -> None:
