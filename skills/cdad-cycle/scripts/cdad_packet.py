@@ -276,16 +276,33 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
         raise PolicyError(f"cannot read {label} {path}: {exc}") from exc
 
 
+def _canonical_project_root(project_root: Path) -> Path:
+    """010-000 PC-01/PC-02: the ONE root the operations use and compare against.
+
+    The same project expressed relatively, absolutely or through a symlink is
+    the same root. Resolving it at the border makes every membership test
+    compare a resolved candidate with a resolved root instead of comparing an
+    absolute resolution with the mere expression of the root. Only the root is
+    canonicalized: the portable declarations (references, evidence, packet
+    fields) keep the project-relative text they declare."""
+    try:
+        return Path(project_root).resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise PolicyError(
+            f"cannot resolve project root {project_root!s}: {exc}") from exc
+
+
 def _project_path(project_root: Path, raw: Any, label: str) -> Path:
     if not isinstance(raw, str) or not raw or "\\" in raw:
         raise PolicyError(f"{label} must be a non-empty project-relative path")
     relative = Path(raw)
     if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
         raise PolicyError(f"{label} is unsafe: {raw!r}")
-    candidate = project_root.joinpath(*relative.parts)
+    root = _canonical_project_root(project_root)
+    candidate = root.joinpath(*relative.parts)
     try:
         resolved = candidate.resolve(strict=False)
-        resolved.relative_to(project_root)
+        resolved.relative_to(root)
     except ValueError as exc:
         raise PolicyError(f"{label} escapes project root: {raw!r}") from exc
     except (OSError, RuntimeError) as exc:
@@ -413,17 +430,18 @@ def classify_path_observable(raw_path: str, path_policy: dict[str, Any], project
     colocated-test / implementation / documentation); anything else is
     unclassified.
     """
-    candidate = _project_path(project_root, raw_path, "path")
-    policy_path = _project_path(project_root, POLICY_RELPATH.as_posix(), "policy path")
+    canonical_root = _canonical_project_root(project_root)
+    candidate = _project_path(canonical_root, raw_path, "path")
+    policy_path = _project_path(canonical_root, POLICY_RELPATH.as_posix(), "policy path")
     if candidate == policy_path:
         return "policy"
-    relative = candidate.relative_to(project_root).as_posix()
+    relative = candidate.relative_to(canonical_root).as_posix()
     if _is_private_path(relative, path_policy):
         return "private"
     for root in temporary_roots:
-        if _path_is_within(candidate, _project_path(project_root, root, "temporary_roots")):
+        if _path_is_within(candidate, _project_path(canonical_root, root, "temporary_roots")):
             return "temporary"
-    token = classify_path(raw_path, path_policy, project_root)
+    token = classify_path(raw_path, path_policy, canonical_root)
     return CLASS_BY_TOKEN.get(token, "unclassified")
 
 
@@ -1933,6 +1951,7 @@ def verify_published_packet(project_root: Path, packet_id: Any, *,
         raise PolicyError(
             f"the packet id must be a flat name ([A-Za-z0-9._-], no path), got "
             f"{packet_id!r}")
+    project_root = _canonical_project_root(project_root)
     out_dir = project_root / PACKETS_TREE
     packet_dir = out_dir / packet_id
     try:

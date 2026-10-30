@@ -4,6 +4,52 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-29 — Feature: 010-000-continuity-relative-root (epic 010)
+
+**Cierre local aprobado por Pablo:** «cierra 000 y continúa con los siguientes».
+Con `.`, con una raíz relativa o por symlink al mismo proyecto, la continuidad y
+los paquetes rechazaban trabajo válido: el candidato resuelto se comparaba con
+la raíz sin resolver. La corrección canonicaliza la raíz en los bordes; conserva
+referencias, cuerpo durable, digests e identidad relativos (PC-04). Producto:
+`3842e18`; tests corregidos: `6e71e78`. No se adopta un ADR nuevo.
+
+**Decisiones.** D1: canonicalizar la raíz en los bordes, no sólo el argumento del
+CLI; conservar las entradas programáticas. D2: mantener containment y separar
+su deuda; `update.references` conserva el control léxico (PC-07). D3: validar el
+consumidor instalado aislado sin modificar la instalación global.
+
+**Evidencia.** Review independiente sin bloqueantes (6 opcionales, 2
+abstenciones). Suite completa **por composición, no una corrida única verde**:
+la original conserva rc=1 (8 failed, 1624 passed, 5 skipped, 217 errors); sus
+225 casos se recuperaron en 23 lotes rc=0 sobre fuente equivalente, sin cambiar
+producto ni tests: **1849 passed / 5 skipped**. Staging, instalación aislada,
+`--check` (393 grupos) y `make validate`: rc=0. A3 aislado usa el patrón público;
+sanitización privada sobre el checkout real: 68 PASS / 0 FAIL. El drift de la
+instalación global sigue visible, sin reparación. Fuentes:
+`docs/specs/010-000-continuity-relative-root/{closure-evidence,full-suite-recovery,isolated-validation,review}.md`.
+
+**Deuda conservada.** Los cinco `deferred-hardening`: containment resuelto de
+`update.references`, TOCTOU de symlinks/concurrencia, fallos de disco, nuevas
+plataformas/rendimiento/fuzzing y refactor general de consumidores de rutas.
+Los seis opcionales del review se difieren conforme al cierre aprobado: O1
+verify-begin relativo; O2 checkpoint API con symlink; O3 bytes del cuerpo con
+symlink; O4 test_D siempre aislado y scripts comparados por bytes; O5 ValueError
+de helpers privados; O6 lista preexistente de ADR Proposed desactualizada.
+Las sondas no convierten deuda en garantías. Se conservan la desviación 17/18,
+el reviewer23 invalidado y la extracción de interfaz detenida por cuota.
+
+**Límite del scribe25.** El original acredita cmp de render vs PACKET.md, pero
+sólo cotejo por campos del prompt recibido; no se atribuye igualdad por bytes
+de esa entrega (I-4). Su diff-stat fue incorrecto y no se incorpora como hecho.
+El resultado original queda preservado, sin corregirlo.
+
+**Siguiente:** `010-004-packet-dispatch-ergonomics`, antes de 010-001, 010-002 y
+010-003, desde `observations-packet-dispatch.md`. Sin instalación global. El
+pedido posterior «y push a 000» autoriza publicación sólo tras comprobar el
+historial saliente; no autoriza publicar trabajo ajeno acumulado.
+
+---
+
 ## 2026-10-29 — Cierre de epic-009-installer-updates (2/2)
 
 Overlay del instalador (009-001) y emisión V2 estática/derivada (009-002) cerrados. Gate final sobre `1772563`: **1844 passed / 5 skipped / 0 failed**, limpio y atribuible; runtime OpenCode 2.2.0 y upgrade conservando modelos verificados en arena. `make validate` 68/68 y `--check` PASS (414 grupos). Detalle y deuda: `docs/epics/epic-009-installer-updates/closure.md`. Sin push ni instalación del HOME real para 009-002. Siguiente trabajo solicitado: documentación pública y planificación de ejecución eficiente, sin mezclarlo con este fix.

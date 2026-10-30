@@ -1032,6 +1032,10 @@ def plan_write(root: Path, execution_context_path: Path, update: dict[str, Any],
     caller may pass the state it is about to publish, so a resume that removes
     the unit from the suspension registry is judged on the state it creates,
     not on the one it replaces (the same fact the CLI reads from disk)."""
+    # 010-000 PC-02: the same project declared relatively, absolutely or through
+    # a symlink is one root — the plan is computed against its resolution, so
+    # every planned destination and every membership check agrees.
+    root = cdad_packet._canonical_project_root(root)
     exec_context = _load_execution_context(root, execution_context_path)
     return _plan_write(root, exec_context, update, command=command,
                        max_bytes=max_bytes,
@@ -1153,7 +1157,9 @@ def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any]
 
 def _run_write(command: str, args: argparse.Namespace, *,
                state: dict[str, Any] | None = None) -> int:
-    root = Path(args.project_root)
+    # 010-000 PC-01/PC-02: the handler works over the resolution of the root it
+    # was given, exactly as the CLI border already decides its guards over it.
+    root = cdad_packet._canonical_project_root(Path(args.project_root))
     context_path = _resolve(root, args.execution_context)
     exec_context = _load_execution_context(root, context_path)
     update = _read_json(_resolve(root, args.update), "update")

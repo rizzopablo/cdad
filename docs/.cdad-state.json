@@ -1,10 +1,60 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": null,
-  "epic_stage": null,
-  "epic_features": [],
+  "active_epic": "epic-010-documentary-specialization",
+  "epic_stage": "features-loop",
+  "epic_features": [
+    {
+      "id": "010-000-continuity-relative-root",
+      "status": "done",
+      "depends_on": [],
+      "opened_at": "2026-10-29T17:42:07.979339+00:00",
+      "closed_at": "2026-10-29T21:47:53.403277+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/010-000-continuity-relative-root/closure.md",
+        "sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
+      }
+    },
+    {
+      "id": "010-004-packet-dispatch-ergonomics",
+      "status": "in-progress",
+      "depends_on": [
+        "010-000-continuity-relative-root"
+      ],
+      "opened_at": "2026-10-29T21:48:10.987952+00:00"
+    },
+    {
+      "id": "010-001-documentary-contracts",
+      "status": "queued",
+      "depends_on": [
+        "010-004-packet-dispatch-ergonomics"
+      ]
+    },
+    {
+      "id": "010-002-documentary-role-integration",
+      "status": "queued",
+      "depends_on": [
+        "010-001-documentary-contracts"
+      ]
+    },
+    {
+      "id": "010-003-documentary-pilot",
+      "status": "queued",
+      "depends_on": [
+        "010-001-documentary-contracts",
+        "010-002-documentary-role-integration"
+      ]
+    }
+  ],
   "epic_history": [
+    {
+      "epic": "epic-010-documentary-specialization",
+      "stage": "epic-plan",
+      "completed_at": "2026-10-29T17:34:50Z",
+      "approved_by": "Pablo",
+      "source": "docs/epics/epic-010-documentary-specialization/plan.md",
+      "note": "Aprobación explícita del plan por el usuario; aprobaciones estratégicas posteriores reservadas a Pablo."
+    },
     {
       "stage": "epic-plan",
       "completed_at": "2026-09-02T00:00:00Z",
@@ -21719,11 +21769,1303 @@
       "approved_by": "Orquestador bajo mandato expreso completar hasta el final; GREEN 1844 passed/5 skipped, dirty0, reviews sin bloqueantes",
       "closure_path": "docs/specs/009-002-opencode-v2-frontmatter/closure.md",
       "closure_sha256": "cb2626946e16ed9e7431cf146e06273704bb1ad19a27f272288e3de38ab2d9e4"
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-29T17:41:48.319582+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "40e34fe586450d51fad8d455d5fa2915c28800ca00cbc32d177529d3edbed824",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-001",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-discovery-001",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-discovery-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Pablo solicita priorizar un ciclo correctivo de rutas relativas de continuidad para distribuirlo. Discovery documental no despachado se retira y volverá a prepararse tras el fix.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "discovery-blocked",
+      "substage": null,
+      "at": "2026-10-29T17:53:04.799576+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "158213f7fb448fe81140ded4ffc8b6e3d8127e79a1f48d77941a8a4484fdd5ea",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "discovery-blocked",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-architect-discovery-001",
+        "receipt_sha256": "b4f2c4e34085408b79d655720896a9d8eabd67ccd82932e3bc7c898ec7f9240f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-architect-discovery-001/receipt.json",
+      "receipt_sha256": "b4f2c4e34085408b79d655720896a9d8eabd67ccd82932e3bc7c898ec7f9240f",
+      "artifacts": {},
+      "note": "Resultado recibido: worker bloqueado antes del Discovery por cwd contenedor. No acredita cierre de Discovery. Sesión movida al checkout correcto antes de nuevo encargo."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-29T17:58:37.278786+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "80f429f58cbd92fb87808594cec9b0ad813065e9d76286e1d6392950962fac9a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-architect-discovery-002",
+        "receipt_sha256": "219f78b0679d69a62f42d11bbbd61017ae4b7601dd81a443aa69d131acef2a6a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/discovery.md",
+            "c8c32e1ebebd85373c9ad175431ef69da0793ad049008b96ca42ad7675128200"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-architect-discovery-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-architect-discovery-002/receipt.json",
+      "receipt_sha256": "219f78b0679d69a62f42d11bbbd61017ae4b7601dd81a443aa69d131acef2a6a",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/discovery.md": "c8c32e1ebebd85373c9ad175431ef69da0793ad049008b96ca42ad7675128200"
+      },
+      "note": "Discovery técnico recibido y materializado; causa reproducida y vía distribuible identificada. No es aprobación de spec."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "specification-draft",
+      "substage": null,
+      "at": "2026-10-29T18:04:03.868929+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "a33492715d0c42b06d47a300d5d7cf8bbe8d289c2038a448cd05ef9891125d41",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "specification-draft",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-architect-draft-001",
+        "receipt_sha256": "d8875f660645a5f0ca96d5699170381da0f3d3e2624b6a9b7821ea022e771541",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/spec.md",
+            "5d37884529e5364cb95157bee7e80500fe41e8062903fc507580d26199c735d7"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-architect-draft-001/receipt.json",
+      "receipt_sha256": "d8875f660645a5f0ca96d5699170381da0f3d3e2624b6a9b7821ea022e771541",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/spec.md": "5d37884529e5364cb95157bee7e80500fe41e8062903fc507580d26199c735d7"
+      },
+      "note": "Spec borrador recibido, no aprobado. Corresponde revisión independiente antes de RED."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "spec-review-transport-blocked",
+      "substage": null,
+      "at": "2026-10-29T18:06:26.643384+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9c0204b6d30311e1f054582122bf470420dc05c6e539fe92be19f3406c560c8e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "spec-review-transport-blocked",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-001",
+        "receipt_sha256": "f9ecd0eba6292c34f57b73168812ce0a36224d5b5f4d384616f2c5791f4f04a9",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "f9ecd0eba6292c34f57b73168812ce0a36224d5b5f4d384616f2c5791f4f04a9",
+      "artifacts": {},
+      "note": "Reviewer no revisó: dos pares de backticks ausentes en el prompt. No es gate de spec ni aprobación. Nuevo intento debe transportar todos los bytes canónicos."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "spec-review-required-fix",
+      "substage": null,
+      "at": "2026-10-29T18:11:25.899939+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "eca8aa2a10272956df601427d686e9ad2f3b15a5ab8aca8bbf56ea60e23832f8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "spec-review-required-fix",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-002",
+        "receipt_sha256": "420210464377c301572111b6a2828a979a9fd2e35aaf254a4f105f398fd90a43",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/plan-review.md",
+            "8856c7a36c50d5b6f20337ce39fc019c8f218856b680b3e01c7e71339668c9d0"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-plan-review-002/receipt.json",
+      "receipt_sha256": "420210464377c301572111b6a2828a979a9fd2e35aaf254a4f105f398fd90a43",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/plan-review.md": "8856c7a36c50d5b6f20337ce39fc019c8f218856b680b3e01c7e71339668c9d0"
+      },
+      "note": "B1 requiere delimitar containment de PC07. O1 checkpoint, O2 flag obsoleto, O3 raíz symlink y O4 evidencia efímera se devuelven al architect. Review reconoce no comparar inline por bytes: el próximo reviewer debe acreditar comparación íntegra antes del trabajo; no se toma este resultado como gate aprobado."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "specification-draft-corrected",
+      "substage": null,
+      "at": "2026-10-29T18:16:26.638526+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "247469abb60d428d8b6909538d04d18e9c846f540546752ca81a0e8a0211f829",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "specification-draft-corrected",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-architect-draft-002",
+        "receipt_sha256": "498e32a1178138a5d04ec673c2609923bde2846d412dcdbc4ea53280e9587404",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/spec.md",
+            "97b1c65258a87f13b850acd54d3773bcffad80b027e73fb73ccb6526ccc7ea82"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-architect-draft-002/receipt.json",
+      "receipt_sha256": "498e32a1178138a5d04ec673c2609923bde2846d412dcdbc4ea53280e9587404",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/spec.md": "97b1c65258a87f13b850acd54d3773bcffad80b027e73fb73ccb6526ccc7ea82"
+      },
+      "note": "Borrador corregido por architect, no autoaprobado. Solicitar revisión independiente del digest nuevo y comparación íntegra byte a byte del packet antes del trabajo."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "spec-review-no-blockers",
+      "substage": null,
+      "at": "2026-10-29T18:20:57.439184+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9fa9607cf11a4577b8a327c21d23bcc9cbe1245463f272dcc59b74aceb505443",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "spec-review-no-blockers",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-003",
+        "receipt_sha256": "be23780d77aee63ad7c04e6723279fbc13e09d50b876a25f7bd6b7b36990bcc8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/plan-review.md",
+            "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "be23780d77aee63ad7c04e6723279fbc13e09d50b876a25f7bd6b7b36990bcc8",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/plan-review.md": "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
+      },
+      "note": "Spec sha 97b1c652 revisada sin bloqueantes. Comparación byte a byte mediante transcripción declarada: no acredita captura cruda del canal, límite de observabilidad conservado. Revisión recibida no equivale a aprobación de spec; aprobación estratégica reservada al usuario por contrato del orquestador."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "specification",
+      "substage": "audit",
+      "at": "2026-10-29T18:42:58.752304+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "dd95e90e4809824f89d0d8658909fe7a4645d95afa4c94822530f16da7a0b32c",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "audit",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/plan-review.md",
+            "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
+          ]
+        ],
+        "approved_by": "Pablo",
+        "contract": {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2"
+        },
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/plan-review.md": "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
+      },
+      "note": "Usuario aprueba explícitamente la spec revisada mediante «aprobada». Único cambio posterior al digest revisado: marca de aprobación; PCs intactas.",
+      "approved_by": "Pablo",
+      "contract_path": "docs/specs/010-000-continuity-relative-root/spec.md",
+      "contract_sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2"
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "audit-intake-rejected",
+      "substage": null,
+      "at": "2026-10-29T18:43:58.904519+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e8e39a59ced05e3628cf569cfc293ffb131e3eee230dd641fd386df6e52d5aad",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "audit-intake-rejected",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-audit-001",
+        "receipt_sha256": "312e45c4d9e1a009515eb4631a6cab1c69fd6603ccc18bbda33c4100556ecd5d",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "312e45c4d9e1a009515eb4631a6cab1c69fd6603ccc18bbda33c4100556ecd5d",
+      "artifacts": {},
+      "note": "No audit: el worker interpretó cierre del JSON antes del cuerpo como paquete parcial sin ejecutar comparación canónica. El render incluye ambos. Rehacer intake con verificación completa y raíz explícita; no autoriza avance a RED."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "audit-context-rejected",
+      "substage": null,
+      "at": "2026-10-29T18:45:29.577057+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "31c8ece07555f3cbb9cf01afd7c6e6638f4402b20915cc3eab65c591d5769a82",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "audit-context-rejected",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-audit-002",
+        "receipt_sha256": "7c2f92df75ebe52b79cd7550f9d707335304b926efeda0ef20054d2db15b2aa9",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/audit-intake-strategy.md",
+            "e88e3e6ed428b0ae08873b64425b27000a72bfe7c7f411de7215c424892541f8"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-audit-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-audit-002/receipt.json",
+      "receipt_sha256": "7c2f92df75ebe52b79cd7550f9d707335304b926efeda0ef20054d2db15b2aa9",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/audit-intake-strategy.md": "e88e3e6ed428b0ae08873b64425b27000a72bfe7c7f411de7215c424892541f8"
+      },
+      "note": "Segundo intake bloqueado: contexto v2 no fue utilizado. Cambio de estrategia documentado: comandos y rutas absolutos completos, sin inferir estado/legacy; no acreditar AUDIT."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "audit-incomplete",
+      "substage": null,
+      "at": "2026-10-29T18:46:55.982545+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0afc63a523b5ed1d59c3b721b5f1fe7d4ec5f7dc918a2e83b450838f89bd1e35",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "audit-incomplete",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-audit-003",
+        "receipt_sha256": "95e1b4ee634db7169699dd7d661667aae17ea983c4bbbdb6396b0eaf05e62187",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-audit-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-audit-003/receipt.json",
+      "receipt_sha256": "95e1b4ee634db7169699dd7d661667aae17ea983c4bbbdb6396b0eaf05e62187",
+      "artifacts": {},
+      "note": "Intake superado, informe de audit recibido sin gate aprobado: faltan tests concretos, referencias y selección de regresión reutilizable. Completar sobre suites nominadas, no duplicar por ausencia de búsqueda específica."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "test-audit",
+      "substage": null,
+      "at": "2026-10-29T18:49:04.950773+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "2bd638c82bcbc46b0d4c99fb526c626b7f26b1df72d94538e27559041e74c3f6",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "test-audit",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-audit-004",
+        "receipt_sha256": "fba16a32a294f80af3053f6820124a4948484305f6c74308f286eb4896eedebc",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/test-audit.md",
+            "6f897a711d731b5d5aa26b12084f7181bdf40ad29a4341a97c3761332b198297"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-audit-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-audit-004/receipt.json",
+      "receipt_sha256": "fba16a32a294f80af3053f6820124a4948484305f6c74308f286eb4896eedebc",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/test-audit.md": "6f897a711d731b5d5aa26b12084f7181bdf40ad29a4341a97c3761332b198297"
+      },
+      "note": "Mapping recibido de sesión distinta a la que escribirá RED. Se selecciona por promesa no por PC ni cuota; originales intactos. Evidencia de lectura, no suite ejecutada."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "audit",
+      "substage": "red",
+      "at": "2026-10-29T18:49:05.308469+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "3896977cc92930b59e20e886d86a91cab056101b765f3e37017fa97b15197bd4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "gate",
+        "stage": "audit",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/test-audit.md",
+            "6f897a711d731b5d5aa26b12084f7181bdf40ad29a4341a97c3761332b198297"
+          ]
+        ],
+        "approved_by": "cdad-orchestrator",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/test-audit.md": "6f897a711d731b5d5aa26b12084f7181bdf40ad29a4341a97c3761332b198297"
+      },
+      "note": "Gate técnico de selección dentro del mandato operativo delegado explícitamente; no aprobación de spec. Conservar originales y reutilizar controles existentes, agregar solo brechas por promesa de usuario; baseline focalizado pendiente a ejecutar antes de nueva regresión. No cuotas por PC.",
+      "approved_by": "cdad-orchestrator",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "red-returned-for-correction",
+      "substage": null,
+      "at": "2026-10-29T18:52:41.584201+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "c31f3852474a91673312cca9d671c899bfe31c2e8c3e0ea557332629410de195",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "red-returned-for-correction",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-red-001",
+        "receipt_sha256": "184c21555277db8750648060574544b583b9c21b1def00dd28683ee5ec83e053",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/red-gate-findings.md",
+            "ecabe129a224c5d145929d295f548b51c3967adc676e7cc75128f3cb365d8cb6"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-red-001/receipt.json",
+      "receipt_sha256": "184c21555277db8750648060574544b583b9c21b1def00dd28683ee5ec83e053",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/red-gate-findings.md": "ecabe129a224c5d145929d295f548b51c3967adc676e7cc75128f3cb365d8cb6"
+      },
+      "note": "Resultado recibido no acredita gate RED: aserciones vacuas y promesas sin verificación. No habilitar GREEN. El architect proveerá interfaz mínima sin código al test-writer."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "interface-extraction-blocked",
+      "substage": null,
+      "at": "2026-10-29T18:55:36.546240+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "21eac58028bbb2fb9b76c30a9a999c68556502f81e59707adddccccc88cbac2d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "interface-extraction-blocked",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-architect-discovery-003",
+        "receipt_sha256": "2fb4329256210c14675a024d5e77dd2b84fb0a8ea615ecd05ed1b498545d09b5",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-architect-discovery-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-architect-discovery-003/receipt.json",
+      "receipt_sha256": "2fb4329256210c14675a024d5e77dd2b84fb0a8ea615ecd05ed1b498545d09b5",
+      "artifacts": {},
+      "note": "Runtime devolvió límite de uso: no hubo trabajo del rol ni lectura de archivos. No acredita interfaz. Se registra bloqueo ambiental, no rechazo del encargo."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "red-corrected",
+      "substage": null,
+      "at": "2026-10-29T19:05:42.387251+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d85dbdd7a4c13034094a50d89d18808b61d672bea93717cdd96da9075824e311",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "red-corrected",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-red-002",
+        "receipt_sha256": "54cf8692cc51a68147057b71f89ae29df2beeba1ef813b684b7af85823be091b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_000_continuity_relative_root.py",
+            "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-red-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-red-002/receipt.json",
+      "receipt_sha256": "54cf8692cc51a68147057b71f89ae29df2beeba1ef813b684b7af85823be091b",
+      "artifacts": {
+        "tests/test_010_000_continuity_relative_root.py": "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+      },
+      "note": "RED corregido: 5 fallos AssertionError de comportamiento, aserciones vacuas eliminadas, APIs por introspeccion publica, PC-06/07/08 endurecidos. Commit solo de tests. No aprobacion de GREEN."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "red",
+      "substage": "green",
+      "at": "2026-10-29T19:05:53.016830+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "1ab625d547227f14b87d157a0b9e38fdfe4b9ae854cc31164459d8d474ebbc1d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "gate",
+        "stage": "red",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "tests/test_010_000_continuity_relative_root.py",
+            "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+          ]
+        ],
+        "approved_by": "cdad-orchestrator",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "tests/test_010_000_continuity_relative_root.py": "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+      },
+      "note": "Gate RED tecnico dentro del mandato delegado: cinco fallos AssertionError de comportamiento, ninguno por import/infra; aserciones vacuas eliminadas y APIs cubiertas por introspeccion publica. No se aprueba la implementacion ni se relaja el contrato.",
+      "approved_by": "cdad-orchestrator",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "green-not-declarable",
+      "substage": null,
+      "at": "2026-10-29T19:20:24.183838+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "4fe1b91fa6ed05e8a96ea90ae6eda49d2c3f5840a920d45e35ad05a72900f83d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "green-not-declarable",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-implementer-green-001",
+        "receipt_sha256": "de23959c956230c8852028efd5f642c41b629c117013d75d2d177812e80d14c3",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_000_continuity_relative_root.py",
+            "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-implementer-green-001/receipt.json",
+      "receipt_sha256": "de23959c956230c8852028efd5f642c41b629c117013d75d2d177812e80d14c3",
+      "artifacts": {
+        "tests/test_010_000_continuity_relative_root.py": "c979deda8fcd87350bc18fff004d284e0cff00973d0985b292780f106e44156a"
+      },
+      "note": "Implementer no declara GREEN: 4 oraculos defectuosos verificados por el orquestador contra spec y tests existentes. Commit 3842e18 conservado, sin tocar tests. Se devuelve el archivo al test-writer; no se aprueba GREEN ni review."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "red-corrected-2",
+      "substage": null,
+      "at": "2026-10-29T19:24:43.118921+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9075a82af4e5a7b0111fb68a8356c8fb098254bda196539c7070dc8e6c673821",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "red-corrected-2",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-test-writer-red-003",
+        "receipt_sha256": "84c16be0339932b1210c3b117e49ccaf0e8a1be3ebdaada6526d2382fdd4728a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_000_continuity_relative_root.py",
+            "6f5f84ef1fe1dd118951cb1e5b32c6259fa25201fae09dcc090b2d2945249ad9"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-test-writer-red-003/receipt.json",
+      "receipt_sha256": "84c16be0339932b1210c3b117e49ccaf0e8a1be3ebdaada6526d2382fdd4728a",
+      "artifacts": {
+        "tests/test_010_000_continuity_relative_root.py": "6f5f84ef1fe1dd118951cb1e5b32c6259fa25201fae09dcc090b2d2945249ad9"
+      },
+      "note": "RED corregido verificado por el orquestador: 4 fallos pre-fix en worktree y 5 verdes en HEAD. Commit 6e71e78 solo toca el test. Registro bajo intento 18 por enmienda del plan posterior al dispatch del 17."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "green",
+      "substage": null,
+      "at": "2026-10-29T19:24:46.732266+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "8e6a29cafb2672862c24a62da199399d9ebd8f2d690686fb37e34361c639a890",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "gate",
+        "stage": "green",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [
+          [
+            "tests/test_010_000_continuity_relative_root.py",
+            "6f5f84ef1fe1dd118951cb1e5b32c6259fa25201fae09dcc090b2d2945249ad9"
+          ]
+        ],
+        "approved_by": "cdad-orchestrator",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "tests/test_010_000_continuity_relative_root.py": "6f5f84ef1fe1dd118951cb1e5b32c6259fa25201fae09dcc090b2d2945249ad9"
+      },
+      "note": "GREEN tecnico: 5/5 focalizadas verdes verificadas por el orquestador en HEAD 3842e18+6e71e78 (18.44s); regresion de modulos tocados 97 verdes reportada por implementer; RED pre-fix 4 fallos AssertionError en worktree. Implementer no edito tests. La suite completa queda para el cierre. No se aprueba el review.",
+      "approved_by": "cdad-orchestrator",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "review-incomplete",
+      "substage": null,
+      "at": "2026-10-29T20:27:06.667527+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "1a87bdb2b5af85eb03bf7dbd5a17189fe66b1a6892399ca6c80d2e10fe2ce0c7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "review-incomplete",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-001",
+        "receipt_sha256": "3c8c0772fa4ae8c59716f336507049e3a92ac11040d105c5b77c6705854ed9bb",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-review-001/receipt.json",
+      "receipt_sha256": "3c8c0772fa4ae8c59716f336507049e3a92ac11040d105c5b77c6705854ed9bb",
+      "artifacts": {},
+      "note": "Reviewer devolvio sin veredicto: dejo la suite completa en segundo plano. Resultado incompleto, no acredita review. Se reencargara leyendo el log de la suite cuando termine."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-29T20:46:49.864517+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "bb938a56df721868dcde3634b62aa89bf7f26b95e027ed5915c6b774169ef176",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-002",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-002",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "El paquete preparado exigia la suite completa antes de emitir veredicto; la suite sigue corriendo y se paraleliza el review del diff. Se retira sin despacho y se prepara un encargo que se abstiene de la suite.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "review-intake-rejected",
+      "substage": null,
+      "at": "2026-10-29T20:48:55.030558+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "8fab2474280ae061db12eeb892667aa157a2d207f9014d79f59db2af330415b5",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "review-intake-rejected",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-003",
+        "receipt_sha256": "eb28763a462628dc9f491249cc67a7d2a999bd5a8a0844b7cc5666f1c1a4b893",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-review-003/receipt.json",
+      "receipt_sha256": "eb28763a462628dc9f491249cc67a7d2a999bd5a8a0844b7cc5666f1c1a4b893",
+      "artifacts": {},
+      "note": "Rechazo valido por divergencia del snapshot en mi transcripcion y por rango de diff mal elegido. No hay review. Reemitir con render exacto y base 34dcd9b..HEAD."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "review-no-blockers",
+      "substage": null,
+      "at": "2026-10-29T20:59:33.146917+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "296929a2548537afd4042ac76495d5fa78d2dff985786a1a53c434689403c7a3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "review-no-blockers",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-004",
+        "receipt_sha256": "54a542d2b4178bd9fd7d80f12ff9f33888e31d9b500d5bfd9d9b3d783e430adf",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/review.md",
+            "7845614e2b5a262fdcdd8ac59d245001a368662ff9ffba2896b1250abcab245b"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-review-004/receipt.json",
+      "receipt_sha256": "54a542d2b4178bd9fd7d80f12ff9f33888e31d9b500d5bfd9d9b3d783e430adf",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/review.md": "7845614e2b5a262fdcdd8ac59d245001a368662ff9ffba2896b1250abcab245b"
+      },
+      "note": "Review sin bloqueantes; seis opcionales y abstenciones expresas sobre suite completa en curso y procedencia de modelos. Recibir no aprueba prioridades ni Memory Bank. No cerrar feature hasta suite y cierre con evidencia."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "memory-draft-pending",
+      "substage": null,
+      "at": "2026-10-29T21:04:57.467637+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "5cd8b0ed536bba729dfe482c2ec9b38f1e09a55aacc25281f8bd0e0f5c976b4f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "memory-draft-pending",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-scribe-memory-001",
+        "receipt_sha256": "c703881c243e714351c0a367ae97a5e7e1d443131702ca0c79d3e6a08304b7a1",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/memory-bank-draft.md",
+            "d8936ee8ef381ef95b0be7f77b042a857b7190223ddee8bd73dc08b85830b56d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-scribe-memory-001/receipt.json",
+      "receipt_sha256": "c703881c243e714351c0a367ae97a5e7e1d443131702ca0c79d3e6a08304b7a1",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/memory-bank-draft.md": "d8936ee8ef381ef95b0be7f77b042a857b7190223ddee8bd73dc08b85830b56d"
+      },
+      "note": "Tres borradores recibidos, sin editar Memory Bank ni aprobar cierre. Conservan deuda, opcionales y desviacion 17/18. Suite completa y validate pendientes; no materializar Done condicionado ni ADR sin decision del usuario."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "isolated-validation-out-of-scope",
+      "substage": null,
+      "at": "2026-10-29T21:09:45.419136+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "7b496d8b248959aba6195040eafd24dba9b88cf4736e79168c8a024725db23e8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "isolated-validation-out-of-scope",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-005",
+        "receipt_sha256": "6a0ac0ad7f8afdfcb4ba2eb7ef12b61c73a53b1172eb4e374dc54abf300076f1",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-review-005/receipt.json",
+      "receipt_sha256": "6a0ac0ad7f8afdfcb4ba2eb7ef12b61c73a53b1172eb4e374dc54abf300076f1",
+      "artifacts": {},
+      "note": "Recepcion mecanica, resultado no admitido como gate: reviewer copio archivo private_paths y declaro cotejo visual en vez de comparacion de bytes del prompt. No publicar esa copia ni usar su PASS como aprobacion. Orquestador verificara los gates con copia limpia sin fichero privado, conservando evidencia del incidente."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "isolated-validation-clean",
+      "substage": null,
+      "at": "2026-10-29T21:13:43.868816+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "4a73f08290e3e78d07d684aef58a121cfb4d3853b1e90a2b25516ca1d603483e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "isolated-validation-clean",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-reviewer-review-006",
+        "receipt_sha256": "8abfc9fdb1280d527f632370a90eaf05e213b898dbbdda0658afe06016f05243",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/closure-evidence.md",
+            "5fe715121edefd3efb1364eb4d09b20ffb055b356d574ff2d1466d358fde4e89"
+          ],
+          [
+            "docs/specs/010-000-continuity-relative-root/isolated-validation.md",
+            "65eb6ec73badacaa11c1942c73b4a8ba735c04e4eee5f1381e169a2043e28c0c"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-reviewer-review-006",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-reviewer-review-006/receipt.json",
+      "receipt_sha256": "8abfc9fdb1280d527f632370a90eaf05e213b898dbbdda0658afe06016f05243",
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/isolated-validation.md": "65eb6ec73badacaa11c1942c73b4a8ba735c04e4eee5f1381e169a2043e28c0c",
+        "docs/specs/010-000-continuity-relative-root/closure-evidence.md": "5fe715121edefd3efb1364eb4d09b20ffb055b356d574ff2d1466d358fde4e89"
+      },
+      "note": "Copia publica limpia: staging, install, check y validate rc=0; limites de A3 y HOME global conservados. Sanitizacion privada verificada por el supervisor en checkout real: 68 PASS 0 FAIL, sin copiar oraculo privado. Suite completa sigue pendiente, no cerrar feature."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "closure-suite-evidence",
+      "substage": null,
+      "at": "2026-10-29T21:32:11.439349+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "41d7f38b5036efcc0bde4e43996cbc8b5789eb115597f934480be6c6315c6702",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "advance",
+        "stage": "closure-suite-evidence",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-000-continuity-relative-root/closure-evidence.md",
+            "fd38cfe978e34085769b3ee9be007adae46e210c7a96845e08679a3ca4f66e90"
+          ],
+          [
+            "docs/specs/010-000-continuity-relative-root/full-suite-recovery.md",
+            "b344c947e3bb891211aa5a15ef942f13046286ee61b87dbfea7f223f118ce1cc"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-000-continuity-relative-root/full-suite-recovery.md": "b344c947e3bb891211aa5a15ef942f13046286ee61b87dbfea7f223f118ce1cc",
+        "docs/specs/010-000-continuity-relative-root/closure-evidence.md": "fd38cfe978e34085769b3ee9be007adae46e210c7a96845e08679a3ca4f66e90"
+      },
+      "note": "Evidencia de suite completa recuperada: 1624 verdes previas + 225 verdes en 23 lotes rc=0, mismo codigo/tests, inventario exacto; 5 skips conservados. No es corrida unica verde; mantener original rc1. Sin aprobacion de review, Memory Bank ni cierre estrategico."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "scribe-memory-received",
+      "substage": null,
+      "at": "2026-10-29T21:47:04.966082+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "ace28922b6295e69d1edafd25f4973f68b1813803461a2312a9f13a1cfb6d675",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "delivery",
+        "stage": "scribe-memory-received",
+        "substage": null,
+        "packet_id": "010-000-continuity-relative-root-scribe-memory-002",
+        "receipt_sha256": "13f6dc806a7af083ea5aef46e0bbeab277ce003df8de12cec9e0978e1ed6c61c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-000-continuity-relative-root-scribe-memory-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-scribe-memory-002/receipt.json",
+      "receipt_sha256": "13f6dc806a7af083ea5aef46e0bbeab277ce003df8de12cec9e0978e1ed6c61c",
+      "artifacts": {},
+      "note": "Original íntegro recibido; intake sólo acredita render vs PACKET.md y cotejo por campos, no cmp del prompt (I-4). Aprobación de cierre y Memory Bank por Pablo: cierra 000 y continúa con los siguientes."
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "memory-approved",
+      "substage": null,
+      "at": "2026-10-29T21:47:45.178358+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "872fde31a324f58755cfa7e79f003089c87bc28b9820848775bd54d7a9ef3439",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "gate",
+        "stage": "memory-approved",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "merge",
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "6665c6cc16744fafa5e360051ab15904a9629480dc3ce441719d8d8c8e0eac85"
+          ],
+          [
+            "docs/progress.md",
+            "d2c10c123ab303eb9f722fd287fcfaae07267bf0aa27e92de5e1bffa7457de24"
+          ],
+          [
+            "docs/specs/010-000-continuity-relative-root/closure.md",
+            "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
+          ]
+        ],
+        "approved_by": "Pablo",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/activeContext.md": "6665c6cc16744fafa5e360051ab15904a9629480dc3ce441719d8d8c8e0eac85",
+        "docs/progress.md": "d2c10c123ab303eb9f722fd287fcfaae07267bf0aa27e92de5e1bffa7457de24",
+        "docs/specs/010-000-continuity-relative-root/closure.md": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
+      },
+      "note": "Usuario aprobó cierre local y Memory Bank sin ADR nuevo y con deuda conservada; scribe contrastado contra fuentes; limitación intake I-4 y diff-stat incorrecto declarados.",
+      "approved_by": "Pablo"
+    },
+    {
+      "feature": "010-000-continuity-relative-root",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-29T21:47:53.403277+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "a8ebb1458ef0c7e534b205567f93b8a93a49e11883de659f984c8ffbdb4d7ea0",
+      "transition_key_payload": {
+        "execution_id": "exec-010-000-continuity-relative-root-001",
+        "feature_id": "010-000-continuity-relative-root",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/010-000-continuity-relative-root/closure.md",
+          "sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Cierre local aprobado; deuda conservada; publicación separada pendiente por historial saliente ajeno al alcance000.",
+      "approved_by": "Pablo",
+      "closure_path": "docs/specs/010-000-continuity-relative-root/closure.md",
+      "closure_sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
     }
   ],
   "approver": "Pablo",
-  "hitl_delegation": null,
-  "last_updated": "2026-10-29T03:41:21Z",
+  "hitl_delegation": {
+    "status": "active",
+    "epic_id": "epic-010-documentary-specialization",
+    "requested_by": "Pablo",
+    "requested_at": "2026-10-29",
+    "scope": "epic-010-documentary-specialization: continuar proactivamente la orquestación operativa hasta completar 010-000, las tres features documentales, integración y cierre, con encargos por rol, gates y materialización. La solicitud explícita de HITL se registra en execution.md; no habilita autoaprobaciones contrarias al contrato superior ni publicación.",
+    "source": "docs/epics/epic-010-documentary-specialization/execution.md",
+    "expires": "cierre, cancelación o revocación de esta épica"
+  },
+  "last_updated": "2026-10-29T21:47:53.403277+00:00",
   "delegation_history": [
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
@@ -21859,8 +23201,8 @@
     }
   ],
   "suspended_units": {},
-  "active_feature": null,
-  "current_stage": "idle",
+  "active_feature": "010-004-packet-dispatch-ergonomics",
+  "current_stage": "discovery",
   "tdd_substage": null,
   "postconditions_status": {
     "1": "green",
@@ -21880,13 +23222,21 @@
     "criterion": "Contrato PC1-PC7, permisos efectivos, orden, privacidad, controles negativos y evidencia de runtime",
     "disposition": "Actualizacion de campos derivados de cierre por el orquestador, basada en review-final/review-gatefix-final y gate atribuible 1772563. O1/O3 y variantes fuera del overlay declarados en closure.md. No es nueva aprobacion ni evidencia de modelo inventada."
   },
-  "active_packet": null,
+  "active_packet": {
+    "id": "010-004-packet-dispatch-ergonomics-architect-discovery-001",
+    "role": "architect",
+    "substage": "discovery",
+    "status": "prepared",
+    "packet_version": 1,
+    "contract_kind": "approved-unit-contract",
+    "contract_sha256": "af0708d59354efdd06f8771e1deebc52dac5d8bd7c2dd7f532fb25091a60578b"
+  },
   "execution": {
-    "id": "exec-009-002-opencode-v2-frontmatter-001",
-    "epic_id": "epic-009-installer-updates",
-    "feature_id": "009-002-opencode-v2-frontmatter",
-    "scope": "epic-009-installer-updates",
-    "authority_ref": "docs/epics/epic-009-installer-updates/plan.md",
+    "id": "exec-010-004-packet-dispatch-ergonomics-001",
+    "epic_id": "epic-010-documentary-specialization",
+    "feature_id": "010-004-packet-dispatch-ergonomics",
+    "scope": "epic-010-documentary-specialization",
+    "authority_ref": "docs/epics/epic-010-documentary-specialization/execution.md",
     "model_policy": "ordinary",
     "policy_sha256": "f508ab1eec67ce4575d0757bc8f9dde35113fff795b7d373bb456b1783ff2711"
   }

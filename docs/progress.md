@@ -11,6 +11,17 @@ Estado de features del proyecto.
 
 ## Done
 
+- **010-000-continuity-relative-root** (2026-10-29, epic 010 — **1/5**) — cierre
+  local aprobado por Pablo. Raíces equivalentes aceptadas sin alterar evidencia
+  portable ni debilitar controles. PC-01..PC-08; cinco deferred-hardening
+  conservados. Review sin bloqueantes; seis opcionales diferidos. **1849 passed /
+  5 skipped por composición**, incluidos 225 casos recuperados en 23 lotes rc=0;
+  la corrida original conserva rc=1, no hubo corrida única verde. Instalación,
+  `--check` y `make validate` aislados rc=0; global sigue en drift. Sanitización
+  privada: 68 PASS / 0 FAIL. Deuda, desviaciones y límites en
+  `docs/specs/010-000-continuity-relative-root/closure.md`. Sin ADR nuevo ni
+  instalación global; publicación sujeta a revisión del historial saliente.
+
 - **epic-009-installer-updates** (cerrado **2026-10-29 UTC**, **2/2**) — overlay de modelos y emisión V2 estática/derivada, con upgrade real verificado. Gate `1772563`: 1844 passed / 5 skipped, cero fallos; deuda consolidada en `docs/epics/epic-009-installer-updates/closure.md`. 009-002 aún no publicada ni instalada en HOME real.
 
 - **009-002-opencode-v2-frontmatter** (cerrada **2026-10-29 UTC / 2026-10-28 UTC−03**) — generador y derivados en V2, permisos y orden conservados, Claude Code intacto; modelo/variante reconocidos en los 11 por OpenCode 2.2.0 real, upgrade preserva modelos. Review independiente sin bloqueantes. Gate sobre `1772563`: **1844 passed / 5 skipped / 0 failed**, limpio y atribuible; arena: `make validate` 68/68, `--check` PASS (414 grupos). Deuda y límites O1/O3 y overlay de variantes en `closure.md`. Sin push de este fix todavía.
