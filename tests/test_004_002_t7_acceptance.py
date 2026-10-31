@@ -429,8 +429,9 @@ class TestT7LayoutsConsumersMatrix(LandingInstall):
 
     def _cell_legacy(self, layout: str) -> None:
         """Consumidor legacy SIN contexto (sin política): su documento v1
-        lleva el path_policy del layout; el intake conserva su camino
-        implícito (PD-12/I4-refinado, D2)."""
+        lleva el path_policy del layout; la selección v1 implícita ya NO
+        conserva el intake (sustitución N-3 de PD-12/I4-refinado, D2, por
+        PC-04/010-004 §4.1/§7 + INV-11)."""
         with self.subTest(cell="legacy", layout=layout):
             root = self._new_consumer(prefix="cdad-t7-mtx-legacy-")
             cdad = root / ".cdad"
@@ -456,21 +457,42 @@ class TestT7LayoutsConsumersMatrix(LandingInstall):
                     "política")
 
             proc = self._prepare(root, f"T7 matriz {layout} legacy intake")
-            self.assertEqual(
+            # PC-04/INV-11: la selección v1 implícita sin policy (PD-12 de
+            # 004-002:115) se SUSTITUYE (owner-decision-v2-new-assignments,
+            # 010-004 §7 N-3): rechazo antes de publicar, sin paquete ni
+            # efectos persistentes.
+            self.assertNotEqual(
                 proc.returncode, 0,
-                msg=f"criterio 2 ({layout}/legacy): el intake se rompió: "
-                    f"{proc.stdout} {proc.stderr}")
-            self.assertTrue(
-                proc.stdout.startswith(PACKET_BEGIN),
-                msg=f"criterio 2 ({layout}/legacy): sin paquete canónico")
+                msg=f"criterio 2 ({layout}/legacy): la selección v1 "
+                    "implícita sin policy debe rechazarse antes de publicar "
+                    "(PC-04, 010-004 §4.1/§7); prepare respondió exit 0 con "
+                    f"stdout={proc.stdout!r} stderr={proc.stderr!r}")
+            self.assertEqual(
+                proc.stdout, "",
+                msg=f"criterio 2 ({layout}/legacy): el rechazo PC-04 no debe "
+                    "publicar paquete (stdout vacío exigido)")
+            self.assertEqual(
+                published_packets(root), {},
+                msg=f"criterio 2 ({layout}/legacy): el rechazo PC-04 publicó "
+                    "un paquete (INV-11)")
             self.assertEqual(
                 v1_path.read_bytes(), v1_bytes,
                 msg=f"criterio 2 ({layout}/legacy): el documento v1 fue "
-                    f"modificado (PD-10)")
+                    "modificado (PD-10)")
             self.assertEqual(
                 v2_execution_docs(root), {},
-                msg=f"criterio 2 ({layout}/legacy): el camino legacy fabricó "
-                    f"un contexto v2")
+                msg=f"criterio 2 ({layout}/legacy): el rechazo PC-04 "
+                    "fabricó un contexto v2 (§4.1: no se copia, convierte "
+                    "ni reubica el contexto para hacerla pasar)")
+            post_state = read_state(root)
+            self.assertIsNone(
+                post_state["execution"],
+                msg=f"criterio 2 ({layout}/legacy): el rechazo PC-04 dejó "
+                    "binding v2 en state (INV-11)")
+            self.assertIsNone(
+                post_state["active_packet"],
+                msg=f"criterio 2 ({layout}/legacy): el rechazo PC-04 dejó "
+                    "paquete activo en state (INV-11)")
 
     def _cell_standalone(self, layout: str) -> None:
         """Consumidor standalone CON spec aprobada (active_epic null): el

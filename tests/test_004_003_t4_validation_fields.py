@@ -361,7 +361,11 @@ class PlanValidationCase(unittest.TestCase):
     def project(self) -> PrepareProject:
         temp = tempfile.TemporaryDirectory(prefix="cdad-004-003-t4-")
         self.addCleanup(temp.cleanup)
-        return PrepareProject(Path(temp.name).resolve(), "reviewer", "plan-review")
+        project = PrepareProject(Path(temp.name).resolve(), "reviewer", "plan-review")
+        # 010-004 T2 POST-AUDIT (PC-04/§4.1): contexto canónico materializado
+        # en la construcción (ver ObjectFormCase.project para la convención).
+        _ = project.execution_path
+        return project
 
     @staticmethod
     def draft_flags() -> tuple[str, ...]:

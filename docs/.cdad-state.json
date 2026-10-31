@@ -17,11 +17,16 @@
     },
     {
       "id": "010-004-packet-dispatch-ergonomics",
-      "status": "in-progress",
+      "status": "done",
       "depends_on": [
         "010-000-continuity-relative-root"
       ],
-      "opened_at": "2026-10-29T21:48:10.987952+00:00"
+      "opened_at": "2026-10-29T21:48:10.987952+00:00",
+      "closed_at": "2026-10-31T05:42:45.776697+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/010-004-packet-dispatch-ergonomics/closure.md",
+        "sha256": "820b1a31bc1a5923c1ee7fdb7ee5b8c98ba466a9193bbf35bf4fb8637b42ee5c"
+      }
     },
     {
       "id": "010-001-documentary-contracts",
@@ -23053,6 +23058,3238 @@
       "approved_by": "Pablo",
       "closure_path": "docs/specs/010-000-continuity-relative-root/closure.md",
       "closure_sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "discovery-received",
+      "substage": null,
+      "at": "2026-10-30T03:30:26.198805+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "42c365ae291943b428125b1ed004659cd872ddba626e9019cc7139262b7f28c0",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "discovery-received",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-discovery-001",
+        "receipt_sha256": "ac645759d219d14bbbffd1e3e47c928179c95ce9739f5149901b58fd912b943e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/discovery.md",
+            "ff63d8dd29f96479d6d36880ce6bb64c94c92863153eaebd230493267a9ba801"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-discovery-001/receipt.json",
+      "receipt_sha256": "ac645759d219d14bbbffd1e3e47c928179c95ce9739f5149901b58fd912b943e",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/discovery.md": "ff63d8dd29f96479d6d36880ce6bb64c94c92863153eaebd230493267a9ba801"
+      },
+      "note": "Discovery recuperado íntegro mediante session.messages; materializado sin aprobación estratégica. Entrega nativa no observable no equivale corrupción; ningún test ejecutado por supervisor."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "discovery-to-specification",
+      "substage": null,
+      "at": "2026-10-30T03:30:26.556708+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "d041da387b4823fbd134771f21042bef0b85d8d48c024dbd134ea77e6420868f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "discovery-to-specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Preparar borrador architect con recomendaciones pendientes de aprobación estratégica; citar tensión plan vs observations, sin resolverla silenciosamente."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "architect-draft-received",
+      "substage": null,
+      "at": "2026-10-30T03:37:52.398453+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "523e9172b1d78bd8a0991f2bbc29bc36fa24850aa271ab3a0f8a6aef82e7debf",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "architect-draft-received",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-001",
+        "receipt_sha256": "c8f6fc471067ab1921c985353f74752466b2948a6900f7e291f82c2603d5a207",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+            "3a52522f285e42756d7240f84b5b76338837c7642169970ae8893e708961a038"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-001/receipt.json",
+      "receipt_sha256": "c8f6fc471067ab1921c985353f74752466b2948a6900f7e291f82c2603d5a207",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/spec.md": "3a52522f285e42756d7240f84b5b76338837c7642169970ae8893e708961a038"
+      },
+      "note": "FINAL TEXT íntegro recuperado de session.messages msg_18adea39e001MD6j51gI6x7r1r; borrador no aprobado. Revisión independiente pendiente; ninguna aprobación estratégica."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "reviewer-packet-rejected",
+      "substage": null,
+      "at": "2026-10-30T03:44:15.404171+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d78864127bedd3823e34c20ad51662b60e587835f015a78140e9884d551e329f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "reviewer-packet-rejected",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-001",
+        "receipt_sha256": "747caeeae715a7bff2082699b66fa22c5921191c72715cbd972b332086f41c4d",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/incident-reviewer-packet-001.md",
+            "5039e8d77684ca50f5111504bbfc50b7546075e38157cc18046ed56b7ca8f476"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "747caeeae715a7bff2082699b66fa22c5921191c72715cbd972b332086f41c4d",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/incident-reviewer-packet-001.md": "5039e8d77684ca50f5111504bbfc50b7546075e38157cc18046ed56b7ca8f476"
+      },
+      "note": "Reception only: known altered inline packet rejected before review; no substantive verdict, no approval. Disposition unavailable with durable receipt (PD-21); delivery closes transport only."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-review",
+      "substage": null,
+      "at": "2026-10-30T03:52:17.696279+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d55d5ffa990310cf6fda5b16837361c2d5651af18d5735b71b3803a9dba1b0e6",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-review",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-002",
+        "receipt_sha256": "33540f6420fc60c06480da33b4bcb21602ac5eb6d756575df0dad2f25d570975",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md",
+            "2c38d9dcc28e084986e7bc5258f58f3732258400bb7b609d10bd2cda27babbd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-002/receipt.json",
+      "receipt_sha256": "33540f6420fc60c06480da33b4bcb21602ac5eb6d756575df0dad2f25d570975",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md": "2c38d9dcc28e084986e7bc5258f58f3732258400bb7b609d10bd2cda27babbd5"
+      },
+      "note": "Review sustantivo: 2 BLOCKING y 5 OPTIONAL; devolución al architect para corregir borrador; sin aprobación ni implementación. Registro nativo no acredita parent/moment: falta de observabilidad, no divergencia demostrada; incidente I-5 conservado."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "architect-draft-corrected-received",
+      "substage": null,
+      "at": "2026-10-30T04:00:14.897476+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b7dfd560d2e79209f206b5fac14abb496e3de2b4380406bb3ca8401da60b3741",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "architect-draft-corrected-received",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-002",
+        "receipt_sha256": "57680ef110d40fc5e54a0558a5119f46d1678ce03df14bd22816693797951e8b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+            "8d2b948e2fd596ce1298c036423e5c8b91d905396bba26e8dc6a8df6571a4517"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-002/receipt.json",
+      "receipt_sha256": "57680ef110d40fc5e54a0558a5119f46d1678ce03df14bd22816693797951e8b",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/spec.md": "8d2b948e2fd596ce1298c036423e5c8b91d905396bba26e8dc6a8df6571a4517"
+      },
+      "note": "Corrected draft received verbatim from architect final message msg_18af1ef9a001s94DLKYZnRsRst; original retained in receipt and previous draft in git. No approval; independent review required."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-review",
+      "substage": null,
+      "at": "2026-10-30T04:08:06.020882+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "3c177358ad2271f4fa24077830d70ac3cd0d463642412b9a647103508a9c1353",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-review",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-003",
+        "receipt_sha256": "d23433dcf9f0d01ef8bd984abbadaa6cacf5281ad5e2ca1a95ef8b534b21c011",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/orchestration-review-v2-decision-pending.md",
+            "21ceeca6b7daa4a40161535064f6064ce30da202bab0929b764ea43735825384"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md",
+            "7a1f0e90f8c12605153fdce587937e2199424f36a3c3c23ebb5fd83efc0f1e13"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "d23433dcf9f0d01ef8bd984abbadaa6cacf5281ad5e2ca1a95ef8b534b21c011",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md": "7a1f0e90f8c12605153fdce587937e2199424f36a3c3c23ebb5fd83efc0f1e13",
+        "docs/specs/010-004-packet-dispatch-ergonomics/orchestration-review-v2-decision-pending.md": "21ceeca6b7daa4a40161535064f6064ce30da202bab0929b764ea43735825384"
+      },
+      "note": "Reviewer v2 received; B-1/B-2 closed, N-1 blocking awaits owner choice C v2-only versus C v1 canonical comparison. Specification remains unapproved; no new dispatch."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "owner-v2-new-assignments",
+      "substage": null,
+      "at": "2026-10-30T04:36:54.723707+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "4a18adca1e628bfa5b92b5839d51eca2f06a8bf444fa8e21e80232155ad9b83e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "owner-v2-new-assignments",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-v2-new-assignments.md",
+            "354e8f6c066f71ce590989ebc140492d682ace7f4d491bb39cc2604936f31da4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-v2-new-assignments.md": "354e8f6c066f71ce590989ebc140492d682ace7f4d491bb39cc2604936f31da4"
+      },
+      "note": "Decisión explícita Pablo: V1 solo para retomar proyecto viejo; todo nuevo v2. N1: C v2-only y toda preparación nueva v2; legado conservado sin migración automática. Encargar revisión architect; spec no aprobada, sin gate ni autoridad nueva."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-30T04:44:54.921784+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "1db870cc02acb42d787217e6bbd74575e95c560c3f7403b6924ed420b3074eb1",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-003",
+        "receipt_sha256": "be1ae6f2cefa8f401e0a9d9f27964e89756618015e1c7fdd4a19cd251b154cc5",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/architect-v3-proposal.md",
+            "9f78a403f26d327a3106c582070a30b1d7242d5b88695c9e9aa550183ec29e01"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+            "051ab1de12ce14d762195253b976d237082eb527ad1671aea224f230fa04d62d"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-003/receipt.json",
+      "receipt_sha256": "be1ae6f2cefa8f401e0a9d9f27964e89756618015e1c7fdd4a19cd251b154cc5",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/architect-v3-proposal.md": "9f78a403f26d327a3106c582070a30b1d7242d5b88695c9e9aa550183ec29e01",
+        "docs/specs/010-004-packet-dispatch-ergonomics/spec.md": "051ab1de12ce14d762195253b976d237082eb527ad1671aea224f230fa04d62d"
+      },
+      "note": "Architect draft-003 literal textual patch materialized on verified base 8d2b948e2fd596ce1298c036423e5c8b91d905396bba26e8dc6a8df6571a4517; original conserved, no approval."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-review",
+      "substage": null,
+      "at": "2026-10-30T04:55:55.414350+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "f50c44a499a835cd50f14607ff2dca4ce20eb1d01500ec6ff3eec2a227ef2578",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-review",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-004",
+        "receipt_sha256": "53aca3154d4cca46ecaba288ab7e446e98d3eadd3845e09516ee849e54d5f474",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md",
+            "e7e1e5b0af42cda43c63e98ecb6249c55b20418de710039bf563e2f27133ab9a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-004/receipt.json",
+      "receipt_sha256": "53aca3154d4cca46ecaba288ab7e446e98d3eadd3845e09516ee849e54d5f474",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md": "e7e1e5b0af42cda43c63e98ecb6249c55b20418de710039bf563e2f27133ab9a"
+      },
+      "note": "Reviewer v3 received; N-1 closed and earlier closures preserved. N-2/N-3 blocking, O-C formatting: scoped text-only architect correction authorized by supervisor; no spec approval. Pytest PD12 timed out, no full-suite claim."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification-draft",
+      "substage": null,
+      "at": "2026-10-30T05:01:28.034453+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "dc305b68ae56357d45367b9e4e2f5de8b4f5546482da59a1ce44d664bf6c6993",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "specification-draft",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-004",
+        "receipt_sha256": "6cd3c369a1d167472ad0f933a6f9248b5ee115ae6e6fd0e383e54c65d1274c08",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+            "054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-004/receipt.json",
+      "receipt_sha256": "6cd3c369a1d167472ad0f933a6f9248b5ee115ae6e6fd0e383e54c65d1274c08",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/spec.md": "054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008"
+      },
+      "note": "Architect FINAL TEXT <session> received attempt 9; authorized literal seven-hunk N-2/N-3/O-C patch materialized after base CAS. Mechanical unified-diff reconstruction confirmed author result digest; patch tool added one EOF LF at offset 48282, removed solely to restore byte fidelity. Original text/patch and reconstructed literal preserved in .cdad/inbox. No spec approval; focused independent review pending."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification-awaiting-owner",
+      "substage": null,
+      "at": "2026-10-30T05:09:19.749380+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "4dca587be0c290a5adf4ba206c2f289be909a120d05222604b8eddd12c64ccd9",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "specification-awaiting-owner",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-005",
+        "receipt_sha256": "973f72d08cd49773bdb78eb0286523bf6992cb871a38a11a840cf5343dfe7984",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/approval-pending.md",
+            "3fc1d6aedd1b02a079d720fa503174d1d53971196d1d14cb6d04ec4d1dbaa5dc"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md",
+            "23b57533e94889e2e237a9b5890f6c7c1ff662597fb8072ce96836e2d9fe7ecc"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-005/receipt.json",
+      "receipt_sha256": "973f72d08cd49773bdb78eb0286523bf6992cb871a38a11a840cf5343dfe7984",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan-review.md": "23b57533e94889e2e237a9b5890f6c7c1ff662597fb8072ce96836e2d9fe7ecc",
+        "docs/specs/010-004-packet-dispatch-ergonomics/approval-pending.md": "3fc1d6aedd1b02a079d720fa503174d1d53971196d1d14cb6d04ec4d1dbaa5dc"
+      },
+      "note": "FINAL TEXT reviewer <session> received with continuity attempt 10; 0 BLOCKING, 3 OPTIONAL N-4/N-5/N-6; N-2/N-3/O-C closed and prior closures retained per report. Prior review archived. Await owner approval and explicit section 2.1 decision; v2-new decision remains settled. Optional disposition only proposed in approval-pending.md, not resolved. Spec digest 054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008 unchanged. No new packets or tests; no approval effect."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-30T14:15:51.526965+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "f6de864d774db0512fb6e0cd8a2b6e60bed4e20f40f4b0759dd422ed3fac29d3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/owner-approval-2026-10-30.md",
+            "e801dd96053c8bb4322755e3b4974ab4f889b8af2897fa796e29e363bb38a381"
+          ]
+        ],
+        "approved_by": "Pablo",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/owner-approval-2026-10-30.md": "e801dd96053c8bb4322755e3b4974ab4f889b8af2897fa796e29e363bb38a381"
+      },
+      "note": "Pablo: «aprobado, adelante», sobre spec reviewed SHA256 054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008. Solo metadatos de aprobación añadidos; pin derivado del archivo actual. N4/N5/N6 OPTIONAL abiertos/postergados. Registra aprobación estratégica de spec, NO avance a TDD: Gate 2→3 pendiente plan.md multicomponente revisado/aprobado; detalle en owner-approval-2026-10-30.md.",
+      "approved_by": "Pablo",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-draft-materialized",
+      "substage": null,
+      "at": "2026-10-30T14:25:37.263205+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "2997fe2f57c01857325c84af2225ac0028b14577c80726c5e2e6e497148e784b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-draft-materialized",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-005",
+        "receipt_sha256": "7e2f9909e0a229c7f3a29e66e391f6ef050a452aca21c26261e8efc0aab60b03",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+            "9deee470f708a26d3e9418fcf0df5710693a510e7557d8e289494bcc349edd23"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-005/receipt.json",
+      "receipt_sha256": "7e2f9909e0a229c7f3a29e66e391f6ef050a452aca21c26261e8efc0aab60b03",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan.md": "9deee470f708a26d3e9418fcf0df5710693a510e7557d8e289494bcc349edd23"
+      },
+      "note": "Architect plan FINAL TEXT materialized literally including original evidence; draft only, no approval; native session correlation not independently accredited; supervisor authorized patch transcription from session.messages."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "implementation-plan-review",
+      "substage": null,
+      "at": "2026-10-30T14:38:17.921763+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "631d785327cfd62dd130031e167911b57e45c4b8ade2697602e5f73b0f72d6be",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "implementation-plan-review",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-006",
+        "receipt_sha256": "5e157c94ce3cee04867aa7d94aa0340ee9225845899b8836e2c636def6e0cdfd",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/implementation-plan-review.md",
+            "3eb8bfeff68125695d52bff6816ecdafa39f24d86b54afe38642093cd2a61c0a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-006",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-006/receipt.json",
+      "receipt_sha256": "5e157c94ce3cee04867aa7d94aa0340ee9225845899b8836e2c636def6e0cdfd",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/implementation-plan-review.md": "3eb8bfeff68125695d52bff6816ecdafa39f24d86b54afe38642093cd2a61c0a"
+      },
+      "note": "Independent PLAN review received: P-1 BLOCKING; P-2/P-3/P-4 OPTIONAL. No approval. SPEC review preserved separately; supervisor requests plan-only correction with separate POST-AUDIT, RED, GREEN dispatches."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-v2-draft-received",
+      "substage": null,
+      "at": "2026-10-30T14:48:03.837034+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "cfc71792f0c64bdcbb9085fd3b26268aa46b043079a9601cfe741fe483e5da84",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-v2-draft-received",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-006",
+        "receipt_sha256": "da063c58e7f41511a39f1f88fe1d3c8f512d925c74d0af2cfa115ec694465eed",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/architect-plan-v2-original.md",
+            "970063cd77d6427021665601a4e29b8b36108611a0a68e2fbc7ab8e7efff0b9b"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+            "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-architect-draft-006",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-architect-draft-006/receipt.json",
+      "receipt_sha256": "da063c58e7f41511a39f1f88fe1d3c8f512d925c74d0af2cfa115ec694465eed",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/architect-plan-v2-original.md": "970063cd77d6427021665601a4e29b8b36108611a0a68e2fbc7ab8e7efff0b9b",
+        "docs/specs/010-004-packet-dispatch-ergonomics/plan.md": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+      },
+      "note": "ADR-003: FINAL TEXT session.messages msg_18d436268001DndB1NM4FQf8Uv preserved; literal diff applied with base CAS and proposed hash verified. Plan v2 unapproved; spec approval unchanged; independent focused plan re-review pending."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-review-v2-materialized",
+      "substage": null,
+      "at": "2026-10-30T15:05:23.002029+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "1438a8025688740f87d88d0260406918d74a6b1fb941e35da03151384f79bbe5",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "plan-review-v2-materialized",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-007",
+        "receipt_sha256": "a6c8f466d77cd5e450f06adfb596a37bb0737d3b5f69b3925326e4e6c44a501a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/approval-pending-plan-v2.md",
+            "d70b14ed56e427a8911e0376a5c1b0a08da440cf1588607876f09199d4086e4f"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/implementation-plan-review-v2.md",
+            "46744d065fdac0bfad1ba0851b1eaae21aac2d65c0511c3b4b573a19379893c2"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-plan-review-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-plan-review-007/receipt.json",
+      "receipt_sha256": "a6c8f466d77cd5e450f06adfb596a37bb0737d3b5f69b3925326e4e6c44a501a",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/implementation-plan-review-v2.md": "46744d065fdac0bfad1ba0851b1eaae21aac2d65c0511c3b4b573a19379893c2",
+        "docs/specs/010-004-packet-dispatch-ergonomics/approval-pending-plan-v2.md": "d70b14ed56e427a8911e0376a5c1b0a08da440cf1588607876f09199d4086e4f"
+      },
+      "note": "plan v2 revisado: 0 BLOCKING, 1 OPTIONAL V2-1. Estado plan-pending-owner-approval: aprobar el plan v2 implica aprobar la parada conocida de T2 en su primer despacho POST-AUDIT salvo decision simultanea del owner sobre la via POST-AUDIT. Sin T1, sin packet de test-writer, sin tocar la plantilla."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "plan-pending-owner-approval",
+      "substage": null,
+      "at": "2026-10-30T15:05:59.465527+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "advance",
+      "transition_key": "3e0ff1d65a1600bd45d987a1f6d793044451e8274c04df0e64db171a2a2c8472",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "plan-pending-owner-approval",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Posicion operativa: plan v2 (2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685) revisado y materializado, sin aprobacion. Aprobar ese digest implica aprobar la parada conocida de T2 en su primer despacho POST-AUDIT, salvo decision simultanea del owner sobre la via POST-AUDIT (V2-1). Sin T1, sin packet de test-writer, sin editar plantilla ni plan."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification",
+      "substage": "audit",
+      "at": "2026-10-30T15:17:08.310312+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "cb1eb1a4940656a8b21bd082401448ca1d09db446f7749774d5eb3e695188f59",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "audit",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-plan-v2-1.md",
+            "8f1810ba6cdd212f97b5236bd27b0a234c8ba0e0c4f6846b240df0a455a79c2d"
+          ]
+        ],
+        "approved_by": "Pablo",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+          "sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+        },
+        "closure": null
+      },
+      "supersedes": "f6de864d774db0512fb6e0cd8a2b6e60bed4e20f40f4b0759dd422ed3fac29d3",
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-plan-v2-1.md": "8f1810ba6cdd212f97b5236bd27b0a234c8ba0e0c4f6846b240df0a455a79c2d"
+      },
+      "note": "Pablo aprueba plan v2 pin 2ae8ada3 y elige opcion (a) V2-1 (owner-decision-plan-v2-1.md): corregir plantilla post-audit y su generacion en T2/T4 para POST-AUDIT mono-subfase; sin editar plan.md ni spec.md, sin relajar gates ni combinar subfases. Supersede el gate spec-only anterior conservando el mismo pin de spec: el nuevo gate mantiene la aprobacion de la spec y completa el pin del plan. Gate 2->3 cumplido; AUDIT abierto, POST-AUDIT/RED no preparados.",
+      "approved_by": "Pablo",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
+      "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+      "plan_sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "audit-materialized",
+      "substage": "audit",
+      "at": "2026-10-30T15:32:18.308149+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "ac6ae3b5578780c973df2ce72dffeaac2e0aec66050256835e4a550f60d72a34",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "audit-materialized",
+        "substage": "audit",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-audit-001",
+        "receipt_sha256": "5acf26667e67553827e815c8cd950260797287044b0725563427ddb0a1dc13d8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md",
+            "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "5acf26667e67553827e815c8cd950260797287044b0725563427ddb0a1dc13d8",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941"
+      },
+      "note": "AUDIT T1 recibido y materializado (recibo semantico pending: recibir no aprueba). Incluye DOS AMBIGUEDADES escaladas, pendientes de decision owner junto a la aprobacion del AUDIT: A1 = la frontera de preambulo de la spec 4.4 para validate-packet no tiene test identificable (decidir RED nuevo en T3 vs deuda); A2 = al sustituir el lado EXEC de test_p2_default_execution_context_and_out_dir_under_project_cdad, decidir si se conserva el lado OUT en el mismo test reescrito."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "audit",
+      "substage": "post-audit",
+      "at": "2026-10-30T16:07:46.436728+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "4ee87f985cf6bba694fd13c9d21f4e70f89c237c77b35a40fcb50a1214c66241",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "audit",
+        "substage": "post-audit",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md",
+            "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; AUDIT T1 aprobado en docs/specs/010-004-packet-dispatch-ergonomics/audit-approval-2026-10-30.md)",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941"
+      },
+      "note": "Gate AUDIT T1 de 010-004: aprobado con fundamento y resoluciones A1 (cobertura de preambulo PC-08a en el RED de T3, regresion faltante) y A2 (lado OUT conservado en el test reescrito con contexto canonico). El paso habilitante V2-1 (plantilla POST-AUDIT mono-subfase, implementer) precede al dispatch POST-AUDIT; por eso el puntero operativo avanza a post-audit sin despachar todavia.",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; AUDIT T1 aprobado en docs/specs/010-004-packet-dispatch-ergonomics/audit-approval-2026-10-30.md)"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "v2-1-enabling-step",
+      "substage": "green",
+      "at": "2026-10-30T16:11:51.680000+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "ba66da13d4c7289e99cc8fc40caa22eabe611707887a3fe0b0721fc7b81f16c4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "v2-1-enabling-step",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Tras aprobar el AUDIT T1, el dispatch inmediato es el paso habilitante V2-1 (implementer, plantilla POST-AUDIT mono-subfase) antes del POST-AUDIT que la consume. Sin RED de producto asociado: la verificacion es la composicion mecanica del bloque estatico y el determinismo de make staging/make agents; la desviacion se declara en el handoff. Despues siguen POST-AUDIT, RED y GREEN en tres dispatches separados."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "v2-1-enabling-step-materialized",
+      "substage": "green",
+      "at": "2026-10-30T16:36:38.206417+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "d6d4855e644a81958e6b5701e05db1a9dea1b27042608ee27611085b9c7e11f6",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "v2-1-enabling-step-materialized",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-001",
+        "receipt_sha256": "de4517d1d96f0798d79efa9c687c1c430a1d8adf1d3fd48a795ca20e6b0b38ae",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/v2-1-implementation-report.md",
+            "6bcfe39b5ef7f953add2103ce080b66d953a3ac3157f7eef4b2146412a9c2e74"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-001/receipt.json",
+      "receipt_sha256": "de4517d1d96f0798d79efa9c687c1c430a1d8adf1d3fd48a795ca20e6b0b38ae",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/v2-1-implementation-report.md": "6bcfe39b5ef7f953add2103ce080b66d953a3ac3157f7eef4b2146412a9c2e74"
+      },
+      "note": "V2-1 habilitante (implementer, attempt16, commit affd5fea) recibido y materializado; recibo semantic_status pending (recibir no aprueba). Commit toca SOLO los 2 archivos permitidos, sin tests/spec/plan. Verificacion propia aprobada en fuentes (plantilla mono-subfase, bloque 1768B <= 12000, staging/agents deterministas, sin instruccion vieja en derivados). DEFECTO registrado: la copia INSTALADA del skill (asset root del renderer que usa esta sesion) conserva la instruccion vieja, por lo que el paquete POST-AUDIT emitido no seria mono-subfase; la decision owner V2-1 incluye la publicacion y el packet del implementer la excluyo. Documento: docs/specs/010-004-packet-dispatch-ergonomics/v2-1-verification.md."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "post-audit-materialized",
+      "substage": "post-audit",
+      "at": "2026-10-30T17:05:13.952672+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "42c8c90ee7ae647b4f1a2ae01cb88879d47bd757a9dd30387e4c80650f99be76",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "post-audit-materialized",
+        "substage": "post-audit",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-001",
+        "receipt_sha256": "fb2af0cb61f032bd7247ea7be667d8293545f2bab72d742eea0f08fac7b7c552",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-t2.md",
+            "595475c9ce1f591bbab1aca4cbf542d1b165c66f21315e98cec80f570f1f6fba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-001/receipt.json",
+      "receipt_sha256": "fb2af0cb61f032bd7247ea7be667d8293545f2bab72d742eea0f08fac7b7c552",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-t2.md": "595475c9ce1f591bbab1aca4cbf542d1b165c66f21315e98cec80f570f1f6fba"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T17:09:25.588681+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "dd95bb4e3cbe12bf5897971e048dd5ad1e3a47c4f3a8a709448af90643298395",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-001",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Paquete RED-001 preparado y nunca despachado: su declaracion estaba defectuosa (input de spec duplicado con el contrato, invariante 'do not read implementation code' duplicado del default del rol, y ausencia de las decisiones vigentes que gobiernan T2, en particular A1 que ubica PC-08a en el RED de T3). Se retira para publicar un sucesor con la declaracion corregida antes de cualquier despacho.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "red-verified",
+      "substage": "red",
+      "at": "2026-10-30T17:33:27.996405+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "c842c5dd96728bc4f523ba780ff95d2ecd4ccb30b9daf4ca69b406bb67a5bf1a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "red-verified",
+        "substage": "red",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-002",
+        "receipt_sha256": "f54c410b182ae9cca4fa5cb469e7d6c86d9f1e729b8a7a7b3b22e6271d400c33",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/red-t2.md",
+            "a651cff15c8bb57dfb090c19a4a09e39c5844ff6c3ed381acb057e9ce8b7da77"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-red-002/receipt.json",
+      "receipt_sha256": "f54c410b182ae9cca4fa5cb469e7d6c86d9f1e729b8a7a7b3b22e6271d400c33",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/red-t2.md": "a651cff15c8bb57dfb090c19a4a09e39c5844ff6c3ed381acb057e9ce8b7da77"
+      },
+      "note": "RED T2 (attempt18) recibido y materializado en red-t2.md; recibo semantic_status pending (recibir no aprueba). Gate RED verificado por el orquestador (commit 10e6694e solo tests; 5 AssertionError de comportamiento ausente; PC-07c verde; POST-AUDIT/intactos byte-identicos)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "green-delivered-pending-fixture-scale",
+      "substage": "green",
+      "at": "2026-10-30T18:00:53.748884+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "5d5977220944f40e91f46dc139430da0ffd7b0418db9398a1c6f6fa18d64391e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "green-delivered-pending-fixture-scale",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-002",
+        "receipt_sha256": "6fc35cc978faa21c87b617194ef8d46dbe3f8bdcc4ce3976f1e610ec59169d19",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t2.md",
+            "4a94bce58676d35f1615b3000b20381265dab254daddf6312ac92115aaf1b6af"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-002/receipt.json",
+      "receipt_sha256": "6fc35cc978faa21c87b617194ef8d46dbe3f8bdcc4ce3976f1e610ec59169d19",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t2.md": "4a94bce58676d35f1615b3000b20381265dab254daddf6312ac92115aaf1b6af"
+      },
+      "note": "GREEN T2 (attempt19, commit a273042e) recibido y materializado en green-t2.md; recibo semantic_status pending (recibir no aprueba). NO declara T2 cerrado: el hallazgo de fixtures (52 fallos con causa unica PC-04) queda cuantificado aparte y exige una unidad de migracion de fixtures antes del gate GREEN. Operacional: current_stage tdd, tdd_substage red intactos."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T18:48:24.657629+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "withdraw",
+      "transition_key": "5e595b0adb6ae50b2645022a0f915fc22a489b001c3f0ea74d32e17101d0576a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-002",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-002",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "El packet POST-AUDIT de migracion de fixtures no se despacha en esta secuencia: la decision de precedencia diagnostica (decision-diagnostic-precedence.md, commit 5cf07de6) convierte la correccion C3 en la siguiente unidad dispatchable; el paquete y sus archivos se conservan y se re-prepararan tras el GREEN correctivo.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "review-fix-materialized",
+      "substage": "review-fix",
+      "at": "2026-10-30T19:12:55.412519+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "f70fccc5d6f06d93466b74e5ebb420f5aa4483d0257d8b3b42ab25e6377ff003",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "review-fix-materialized",
+        "substage": "review-fix",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-001",
+        "receipt_sha256": "88762f09fcc002a4d33325bf6d265f79a0aec777b291b449bd864c654f55152b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/review-fix-precedence.md",
+            "43842f67fed0ee5ed08367a732662b1d3a7ae7d3883a5dff3fabb912bc285794"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-review-fix-001/receipt.json",
+      "receipt_sha256": "88762f09fcc002a4d33325bf6d265f79a0aec777b291b449bd864c654f55152b",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/review-fix-precedence.md": "43842f67fed0ee5ed08367a732662b1d3a7ae7d3883a5dff3fabb912bc285794"
+      },
+      "note": "REVIEW-FIX T2 (implementer, attempt20, commit 3eda073a) recibido y materializado en review-fix-precedence.md; recibo semantic_status pending (recibir no aprueba). Verificacion propia del orquestador pendiente antes de proponer cualquier unidad siguiente."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T19:22:39.198341+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "2f47936141ca346dbb945d48849840802dfa66159311d18fc68bf019a9465b7d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-003",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-003",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Paquete preparado y nunca despachado: su objetivo invertia el invariante de no-debilitamiento ('la promesa que ningun test verifica' en lugar de 'la promesa que cada test verifica') y no aclaraba que la lista del fixture-impact-inventory reemplaza a la del AUDIT T1 (submedido, §4 del inventario). Se retira para publicar el sucesor con la declaracion corregida, sin cambio de alcance, de producto ni de gate. El sub-modo replace no admite corregir --objective (solo inputs/scopes/invariants/output/evidence), por lo que la correccion exige retirar y re-preparar.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "post-audit-fixture-migration-materialized",
+      "substage": "post-audit",
+      "at": "2026-10-30T20:09:22.255868+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "1d8d41cc84a09a1c8c120da623405e53e87c5fdb281cd36c7c4d05e1d2aecdfd",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "post-audit-fixture-migration-materialized",
+        "substage": "post-audit",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-004",
+        "receipt_sha256": "f6e05912303b10e5cf54f98d22609cd4ba4ddd653bae3bfe0954ec92158a45bd",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-fixture-migration.md",
+            "f1204adc7ca83e2a115f93b7623f8ad0847e263cd5d5047fdfa3676c64660aeb"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-004/receipt.json",
+      "receipt_sha256": "f6e05912303b10e5cf54f98d22609cd4ba4ddd653bae3bfe0954ec92158a45bd",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-fixture-migration.md": "f1204adc7ca83e2a115f93b7623f8ad0847e263cd5d5047fdfa3676c64660aeb"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t2-green-pc04",
+      "substage": null,
+      "at": "2026-10-30T21:00:01.872967+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "3c5189dc51d2c50c5e83a168d1f311a7694385d54138c95d51bfafeade1c561d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t2-green-pc04",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+        "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "4",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md",
+            "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-005/receipt.json",
+      "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md": "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "PC-04 green en el cierre de T2: 105 archivos consumidores -> 1043 passed, 2 skipped, 0 fallos (t2-closure.md §4); archivo 19 passed; universo 14 -> 99 passed; 14 protegidos -> 14 passed; commit 60fa29a1 solo tests/test_packet_prepare.py, 3 tests."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t2-green-pc05",
+      "substage": null,
+      "at": "2026-10-30T21:00:02.345572+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "86be58e4be8996a9ec95ec13026e2b19378fe514b97aa2bf3c520789b6fc46fc",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t2-green-pc05",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+        "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "5",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md",
+            "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-005/receipt.json",
+      "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md": "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "PC-05 green en el cierre de T2: 105 archivos consumidores -> 1043 passed, 2 skipped, 0 fallos (t2-closure.md §4); archivo 19 passed; universo 14 -> 99 passed; 14 protegidos -> 14 passed; commit 60fa29a1 solo tests/test_packet_prepare.py, 3 tests."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t2-green-pc06",
+      "substage": null,
+      "at": "2026-10-30T21:00:02.941552+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "389716aa79c0468af6b38a60b179dc79544225264a8a7446f07892aaaa1fcdec",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t2-green-pc06",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+        "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "6",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md",
+            "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-005/receipt.json",
+      "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md": "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "PC-06 green en el cierre de T2: 105 archivos consumidores -> 1043 passed, 2 skipped, 0 fallos (t2-closure.md §4); archivo 19 passed; universo 14 -> 99 passed; 14 protegidos -> 14 passed; commit 60fa29a1 solo tests/test_packet_prepare.py, 3 tests."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t2-green-pc07",
+      "substage": null,
+      "at": "2026-10-30T21:00:03.945072+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "246759bc5345d75f0eea5ba1ba02cb097ff4d1f2fb398f88af44cc742e0175de",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t2-green-pc07",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+        "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "7",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md",
+            "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-post-audit-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-post-audit-005/receipt.json",
+      "receipt_sha256": "354ab7652e3e8ad2998584fb1c1af5dcfd62520c14a6dd1118be6d86d426ae60",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md": "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "PC-07 green en el cierre de T2: 105 archivos consumidores -> 1043 passed, 2 skipped, 0 fallos (t2-closure.md §4); archivo 19 passed; universo 14 -> 99 passed; 14 protegidos -> 14 passed; commit 60fa29a1 solo tests/test_packet_prepare.py, 3 tests."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t2-green-closed",
+      "substage": "green",
+      "at": "2026-10-30T21:00:11.166144+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "d10f74e1cf7f17e21e585fd93e3d28c6a92f0c45f505c65872275309e554eee9",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "t2-green-closed",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md",
+            "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+          "sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/post-audit-residual-oracles.md": "4b9c73fb8a3a5bdc17a26c29d805b8d04fc941678b157346274d3f2ead45a258",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "Gate GREEN T2 cerrado con evidencia propia: commit 60fa29a1 solo tests/test_packet_prepare.py (3 tests); archivo 19 passed; universo 14 archivos 99 passed; 14 protegidos 14 passed; pins spec fc6b2ccc/plan 2ae8ada3 intactos; fixture compartida sin tocar; universo de cierre de 105 consumidores de prepare: 1043 passed, 2 skipped, 0 fallos (1775.91s, t2-closure.md §4). Declarado: PC-04..PC-07 green. NO declarado: PC-08a (RED de T3 por A1) ni T3..T6; suite completa del repo queda para T6.",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
+      "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+      "plan_sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-red-prepared",
+      "substage": "red",
+      "at": "2026-10-30T21:03:03.742665+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "867751c3eaf3879f0bd8eea7cb9241e81ffa2860ac6b9d4768f3fb7667f6840f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "t3-red-prepared",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md",
+            "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t2-closure.md": "398007dbe74e16c9e9c2d8fa2c313107edd8aff6b4ea91d0a513e564efb45dba"
+      },
+      "note": "T3 RED preparado y validado, sin despachar: packet 010-004-packet-dispatch-ergonomics-test-writer-red-003; validate-request/validate-packet rc=0 y render byte-identico; incluye A1 (frontera de preambulo 4.4) y PC-01/PC-02/PC-09. Puntero de subfase a red; no se despacha en este turno."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-red-verified",
+      "substage": "red",
+      "at": "2026-10-30T21:21:16.038987+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "3d779626e425fec64a0c4e276217758017c11f1ca9674815f7dd5fdefabdda19",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-red-verified",
+        "substage": "red",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-003",
+        "receipt_sha256": "7afa29fc8de467aed58da809682cc69d39de5ae20f73450f2f99507b28aecacc",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/red-t3.md",
+            "8ef62d554d378eaf8c3b23a7b899505446ab1974fd63d275b6080683545196c4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-red-003/receipt.json",
+      "receipt_sha256": "7afa29fc8de467aed58da809682cc69d39de5ae20f73450f2f99507b28aecacc",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/red-t3.md": "8ef62d554d378eaf8c3b23a7b899505446ab1974fd63d275b6080683545196c4"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-verified",
+      "substage": "green",
+      "at": "2026-10-30T21:45:58.582393+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "c8c7b074495f83a05828fcef3678409311d26f0c35a836aed05c960deb74b1a3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-green-verified",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+        "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-003/receipt.json",
+      "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+      },
+      "note": "GREEN T3 (attempt24, commit 931dddea) recibido por el transporte nativo, registrado con record y materializado en green-t3.md; recibo semantico pending (no aprueba)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-pc01",
+      "substage": "green",
+      "at": "2026-10-30T21:46:13.254760+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "da9595a68a6ed37afdc5110362be25de1016503c5c10223dbac4aa6b39423387",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-green-pc01",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+        "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "1",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-003/receipt.json",
+      "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4",
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+      },
+      "note": "PC-01 green: render --route C emite la identificacion de 4.2 (determinista, concordante, sin efectos) sobre el paquete de la unidad; t3-closure.md 2(c) y control positivo; 7/7 tests t3; render por defecto byte-identico (90d519df)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-pc02",
+      "substage": "green",
+      "at": "2026-10-30T21:46:13.638115+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "b082673bf8390f9331ab3c6234a8ac3dfebba0daafdc997d836dc9d32fd84e98",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-green-pc02",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+        "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "2",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-003/receipt.json",
+      "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4",
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+      },
+      "note": "PC-02 green: rechazos fail-closed (v1 rc=2 con causa y siguiente accion, request no publicado, contexto no canonico, paquete divergente) sin identificacion utilizable ni efectos; 7/7 tests t3 y smoke v1; t3-closure.md 2(d')."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-pc08a",
+      "substage": "green",
+      "at": "2026-10-30T21:46:14.017174+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "ef1f97d7bfb485686f1dc3662dcf3dd00aa10ebf2ab99eb65162f4dbfe4ca6c9",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-green-pc08a",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+        "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "8",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-003/receipt.json",
+      "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4",
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+      },
+      "note": "PC-08a green (regresion mecanica existente, SOLO 8a): validadores conservan aceptacion del canonico, rechazo de cuerpo alterado/cabecera intacta y frontera de preambulo (4.4); PC-08b NO declarada, queda para T4; 6 reutilizados + 31 del GREEN; t3-closure.md 2(b),3."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-pc09",
+      "substage": "green",
+      "at": "2026-10-30T21:46:14.387700+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "aaf701516ef9efbbdd837d10ada5ab8190f8000c5eb3caa84b59604793dd7d0b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t3-green-pc09",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+        "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "9",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-003/receipt.json",
+      "receipt_sha256": "c0a83da6e080892eb3172e282d23eb1112baaf8eac093a2e02b6aca074cac33f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4",
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+      },
+      "note": "PC-09 green (parte T3): diagnosticos distinguibles, con siguiente accion y referencia esperada segura, sin divulgar cuerpo ni cambiar semantica de salida; smoke v1 y --route A; t3-closure.md 2(d)(d')."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t3-green-closed",
+      "substage": "green",
+      "at": "2026-10-30T21:46:23.114144+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "gate",
+      "transition_key": "6905ef3656962a9881d7a72df828b64861d2131a4ed767ea483a9dd390ec6bfb",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "t3-green-closed",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md",
+            "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/red-t3.md",
+            "8ef62d554d378eaf8c3b23a7b899505446ab1974fd63d275b6080683545196c4"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+          "sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4",
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t3.md": "31544b55e88e729296982fd573c65a0da066576b56979d8cbdc9b85788225fee",
+        "docs/specs/010-004-packet-dispatch-ergonomics/red-t3.md": "8ef62d554d378eaf8c3b23a7b899505446ab1974fd63d275b6080683545196c4"
+      },
+      "note": "Gate GREEN T3 cerrado con evidencia propia: commit 931dddea solo skills/cdad-cycle/scripts/cdad_packet.py (141+/0-, wrapper y tests intactos); 7/7 tests t3_red; 6/6 reutilizados; render por defecto byte-identico sobre el packet de la unidad (90d519df) y uno historico (c323e4a6, en copia aislada por el binding de active_packet); smoke fail-closed --route A rc=2 y contexto v1 rc=2 (stdout vacio en ambos); pins spec fc6b2ccc/plan 2ae8ada3 intactos; corrida proporcional de cierre 7 archivos render/validate + t3_red + t2_red = 65 passed en 238.40s, rc=0 (t3-closure.md §2-3). Declarado: PC-01, PC-02, PC-08a (clave 8 con alcance explicito 8a) y PC-09 green. NO declarado: PC-08b (T4), T4-T6; suite completa del repo: gate transversal T4 y cierre T6.",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
+      "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+      "plan_sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-prepared",
+      "substage": "green",
+      "at": "2026-10-30T21:49:20.554957+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "advance",
+      "transition_key": "9bfe545006cec58ebc9f05c016d68120b6a9534f1f7ed35234be19815b7e244d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "t4-green-prepared",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md",
+            "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/t3-closure.md": "c9b3facf3c0b7c3cb795d31c5e232d6327ca0b8b3993ae49de747c91870ac5e4"
+      },
+      "note": "T4 encuadrado y paquete preparado, SIN despachar: 010-004-packet-dispatch-ergonomics-implementer-green-004 (validate-request/validate-packet/validate-state rc=0; render por defecto byte-identico 9c4e10ca). Encuadre decidido por el orquestador: T4 es unidad de instruccion/documentacion con verificacion mecanica (alinear sources/roles+adapters y las referencias de handoff/preparacion/reentrada; regenerar build/staging y agents via make staging/make agents), NO comportamiento nuevo, por lo que no lleva RED previo: la parte mecanica la cubren los generadores y sus tests existentes mas la suite completa que el plan pide en este gate transversal, y la parte semantica es revision independiente posterior (PC-08b no acredita conducta). Ausencia de RED justificada segun plan.md ('RED pertinente', 'regresiones explicitas o ausencia justificada'). Punto abierto declarado: si el owner o la revision independiente exigen un check mecanico de las frases contractuales (text assertions), se abre una unidad RED separada antes del GREEN; el packet no lo incluye para no inventar alcance. Write scope acotado: sources, skills/cdad-cycle/references, agents, build/staging; prohibido tests/, docs/, skills/cdad-cycle/scripts y install.sh; derivados solo por make; sin instalacion global."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T21:55:45.368979+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "ed145913fdff809576725e5e44b4c73e14b5d53f31d10a578a318218515619c7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-004",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-004",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Requiere RED previo por la guarda de camino de despacho: decision-t4-mechanical-guard.md (M1 tests solo T3; M2/M4 superficies y orquestadores sin --route C). Se retira antes de despachar para preparar el RED minimo de T4.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T21:57:29.065850+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "5b0340aeb2baa9770115249d49e4e6ebc232a54d86c19d45a1d7bd3ca542b41a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-004",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-004",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Retiro del paquete que el propio orquestador acaba de publicar sin despachar: declaraba expected_output generico, omitia los invariantes del alcance y duplicaba el input del contrato. Se republica completo antes de validar; no hubo despacho ni efecto.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-red-prepared",
+      "substage": "red",
+      "at": "2026-10-30T21:58:28.913223+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "dcebb663154f80f3310209daf91ae3bd2e3cf1a4d4de8ad60e85d735b5240dfa",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "t4-red-prepared",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "T4 RED preparado y validado, sin despachar: packet 010-004-packet-dispatch-ergonomics-test-writer-red-005 (validate-state/validate-request/validate-packet rc=0; render == PACKET.md aa486326; ruta C 79fac7a1). Antes se retiro el green-004 nunca despachado (ed145913) por decision-t4-mechanical-guard.md (guarda mecanica del camino de despacho, R4 medida; M1/M2/M4) y se retiro el red-004 recien publicado por declaracion incompleta (5b0340ae). Sin begin ni spawn; nada despachado."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T22:04:03.894399+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "bad2e8185e3f89161f3821dec77258c29116a1782b9e82655a88bb48ff8a6016",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-005",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-005",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Paquete invalido PC-04: el REQUEST.json publicado no declara execution_context (ni la cabecera canonica del PACKET.md), por lo que no es un encargo nuevo valido; rechazado por el gate del orquestador supervisor antes de despachar, sin efectos. Registrado como I-6 en observations-packet-dispatch.md; se sustituye por un nuevo RED preparado con el CLI del repo y localizador explicito.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T22:05:26.869127+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "dbbda8c4bf178e05e70dd3baf09a0867d666df87df32660fa4c37aa43cc7f727",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-006",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-006",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Defecto de preparacion propio: el contrato se declaro dos veces en inputs (prepare inyecta el principal y se re-paso spec.md por --input), la misma clase que retiro -red-004. Nunca despachado; se sustituye por -red-007 preparado solo con los tres inputs adicionales.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-red-verified",
+      "substage": "red",
+      "at": "2026-10-30T22:13:58.805298+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "delivery",
+      "transition_key": "19c81b5178e9a6494c94d6ac29a4decef60e3033215a85caf91d6791e9079e91",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-red-verified",
+        "substage": "red",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-007",
+        "receipt_sha256": "db80c97f1945a373c7ac49730cba01bfa3053a129ba0eeab9cd0e13881d4114f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/red-t4.md",
+            "690f8cda09732b174656965acab8fa340a21d96e20596bceb35547f9434a9232"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-red-007/receipt.json",
+      "receipt_sha256": "db80c97f1945a373c7ac49730cba01bfa3053a129ba0eeab9cd0e13881d4114f",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/red-t4.md": "690f8cda09732b174656965acab8fa340a21d96e20596bceb35547f9434a9232"
+      },
+      "note": "RED T4 (attempt25, commit 4a42778d) recibido por el transporte nativo, registrado con record y materializado en red-t4.md; recibo semantico pending (no aprueba). Gate RED verificado con evidencia propia; decision separada."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-prepared",
+      "substage": "green",
+      "at": "2026-10-30T22:17:55.447775+00:00",
+      "by": "cdad-orchestrator",
+      "transition": "advance",
+      "transition_key": "9b994d62f8b99d40a63699812f5a177902badd5f9b91b8aea558ed78a62c8ab8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "t4-green-prepared",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "GREEN T4 preparado y validado, sin despachar: packet 010-004-packet-dispatch-ergonomics-implementer-green-005 (validate-state/validate-request/validate-packet rc=0; render == PACKET.md 2b4a32be; ruta C 0d21d1e8; PC-04 execution_context canonico en request y cabecera). Gate RED T4 verificado con evidencia propia (2 failed AssertionError del token --route C tras controles positivos; commit 4a42778d solo agrega el test)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T22:22:43.045658+00:00",
+      "by": "orchestrator",
+      "transition": "withdraw",
+      "transition_key": "5fda92b055ed077d4a0b21182c03c7aa8fda265baacb4341c075e436cad7fd1a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-005",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-005",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "asignación preparada que no se despacha en efecto: el despacho llevó un request_sha256 corrupto en los metadatos (defecto del orquestador, no del paquete); el rol se detuvo en intake sin efectos",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-30T22:25:16.031006+00:00",
+      "by": "orchestrator",
+      "transition": "withdraw",
+      "transition_key": "af44235a510b410142479226a8051dc2e02c1a1f8d1763788a7c17f2a213240e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-006",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-006",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "asignación preparada que no se despacha: el encargo duplicaba el invariante de rol 'Do not edit tests' porque prepare lo inyecta y la preparación volvió a pasarlo (defecto de preparación, no del rol); sin despacho, sin recibo ni efectos",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-verified",
+      "substage": "green",
+      "at": "2026-10-31T00:34:25.358412+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0e6d0c0008f5e616609a006f534294f304de584c8db3a5ac75e56e886e0447c8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-verified",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "GREEN T4 (attempt27, session <session>, commit 8958c366) recibido por el transporte nativo, registrado con record y materializado en green-t4.md; recibo semantico pending (no aprueba)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc03",
+      "substage": "green",
+      "at": "2026-10-31T00:40:45.600184+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0c1c04b430e50c3e2d5f12b2c631b97ed1b21adaff947b308158cd11861f78e8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc03",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "3",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-03 green: instruccion de despacho ruta C en las cuatro superficies (orchestrator.md:63-73, adapters 79-88/93-102, handoff-prompts.md:17-27) y guarda 2/2 verde; evidencia t4-closure.md §3."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc07b",
+      "substage": "green",
+      "at": "2026-10-31T00:40:46.057643+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9d461ee05e72072f2cfde1f7c9a85ac2f1e363d39780b456ae5b677753d7acc3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc07b",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "7",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-07b green (lectura documental): handoff-prompts.md:34-39 + project-execution.md:110-119,122-127 + orchestrator.md:103-108,30; revision semantica independiente reservada a T6. Evidencia t4-closure.md §3."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc08b",
+      "substage": "green",
+      "at": "2026-10-31T00:40:46.503191+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "ccd88a56281d52818482be5e249ff8736236605337f0ed3a0e2f8ecc3f74dd3a",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc08b",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "8",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-08b green (lectura documental): intake compartido architect.md:19-30,48-55 (comparacion hasta el fin del paquete, instrucciones y cuerpo) replicado 10/10 por arbol; revision semantica en T6. Evidencia t4-closure.md §3."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc10",
+      "substage": "green",
+      "at": "2026-10-31T00:40:46.907160+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "55d3ece3411fe1306845338f1fc54b4b2aaff8d5002f10fbaa7c580b4dcaa679",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc10",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "10",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-10 green (lectura documental): re-entry.md:24-54,121-128 + orchestrator.md:52-60 + cli-delegation.md:252,405-407 (integridad/observabilidad/fidelidad separadas; recibo no aprueba)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc11",
+      "substage": "green",
+      "at": "2026-10-31T00:40:47.372874+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "58e7d6a593bfeda90497861d75863530f7b71b9ec95ecdea948046c2ecefbda2",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc11",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "11",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-11 green (lectura documental): re-entry.md:57,159,169-175 + handoff-prompts.md:25-27 + orchestrator.md:158 (I-4/I-5 conservados; inline divergente no se rescata con C)."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-pc12",
+      "substage": "green",
+      "at": "2026-10-31T00:40:47.893961+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9c83403ff017013e1b0b79dfc212d1edf991ac2e6e5d46a78fffe9bd3eedffbe",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t4-green-pc12",
+        "substage": "green",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+        "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "12",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-green-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-green-007/receipt.json",
+      "receipt_sha256": "bc43797741a87fdc295261c3ca2badb30fcd5158b5a6a941c6a8cdb65eae878c",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+      },
+      "note": "PC-12 green documental: cuatro superficies + adaptadores concordantes; derivados solo por make con determinismo c394a0c7 (dos corridas); 4/4 orquestadores con --route C y 10/10 agentes por arbol. Consumidor aislado = T5, no acreditado aqui."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t4-green-closed",
+      "substage": "green",
+      "at": "2026-10-31T00:40:59.428270+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "2f383146434ba34a4b44e91543af585de2e6a290da1e8c3e3471757643cd7fb7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "t4-green-closed",
+        "substage": "green",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md",
+            "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/red-t4.md",
+            "690f8cda09732b174656965acab8fa340a21d96e20596bceb35547f9434a9232"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/t4-closure.md",
+            "c0d18a2a2f9e43bbaffb84814f75088a52bf633c8796c9acea16046dcaeb7e6d"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+          "sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/green-t4.md": "e3eb10ef7ceab36bbb28f88a382f0aac63918fc3a56ba9dcd182e5e953b6ccd5",
+        "docs/specs/010-004-packet-dispatch-ergonomics/red-t4.md": "690f8cda09732b174656965acab8fa340a21d96e20596bceb35547f9434a9232",
+        "docs/specs/010-004-packet-dispatch-ergonomics/t4-closure.md": "c0d18a2a2f9e43bbaffb84814f75088a52bf633c8796c9acea16046dcaeb7e6d"
+      },
+      "note": "Gate GREEN T4 cerrado con evidencia propia (t4-closure.md): commit 8958c366 solo 6 archivos del write scope (4 superficies + 2 derivados); tests T4 2/2 y regresiones 15/15; regeneracion determinista (hash agregado c394a0c7 identico en dos corridas); suite completa 1864 passed, 5 skipped, rc=0 en .cdad/evidence/t4-full-suite/attempt-20261030T233338118253Z-1859495-e7d718fd; episodio conservado: la primera corrida rc=1 (1 failed, 1863 passed) fallo por redaccion propia del rol en HALLAZGO A2, corregida y re-corrida, intento fallido no borrado; make validate PASS 182/FAIL 1 F011 preexistente y ambiental (drift de instalacion global, verificado igual en 0d015234 con staging), no se toca; pins fc6b2ccc/2ae8ada3/b9375189/f508ab1e intactos. PC-03, PC-07b, PC-08b, PC-10, PC-11, PC-12 green (7b/8b por lectura documental; revision semantica independiente en T6; consumidor aislado en T5).",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
+      "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+      "plan_sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t5-properties-prepared",
+      "substage": "properties",
+      "at": "2026-10-31T00:43:14.855386+00:00",
+      "by": null,
+      "transition": "advance",
+      "transition_key": "a9b0c0a4f0fe7c0cb1f3481a0d7a303f7a265768853f12e84ff996dd3fa664de",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "advance",
+        "stage": "t5-properties-prepared",
+        "substage": "properties",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "T5 PROPERTIES preparado y validado, sin despachar: packet 010-004-packet-dispatch-ergonomics-test-writer-properties-001 (validate-state/validate-request/validate-packet rc=0; render == PACKET.md sha256 1f03c6c1; request.execution_context y cabecera canonica verificados con python3; ruta C 22e2d43c). Seleccion declarada: INV-04 e INV-05; E2E con consumidor aislado queda como dispatch separado posterior."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t5-properties-received",
+      "substage": "properties",
+      "at": "2026-10-31T01:10:29.329474+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "250142448d60eae1d117dfdfa6bbda0b28da6a283486c1612f4b8e5b7a3db4be",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t5-properties-received",
+        "substage": "properties",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-properties-001",
+        "receipt_sha256": "f6157595ab9100267c9aabf9205af89903b2797a66aee488263b601391eeea6b",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/properties-t5.md",
+            "90024430bc9d322f9b8352ba2402444b8793f98a5ad68700b1bd6eb7aca39875"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-properties-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-properties-001/receipt.json",
+      "receipt_sha256": "f6157595ab9100267c9aabf9205af89903b2797a66aee488263b601391eeea6b",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/properties-t5.md": "90024430bc9d322f9b8352ba2402444b8793f98a5ad68700b1bd6eb7aca39875"
+      },
+      "note": "PROPERTIES T5 (attempt28, commit 2df0f6b5) recibido por el transporte nativo, registrado con record y materializado en properties-t5.md; recibo semantico pending (no aprueba). Gate PROPERTIES verificado con evidencia propia del orquestador (2 propiedades verdes, 15 tests T2/T3/T4 verdes, alcance del commit solo tests/test_010_004_t5_properties.py); decision del gate separada."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t5-e2e-received",
+      "substage": "e2e",
+      "at": "2026-10-31T01:40:28.112808+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "39534a330ead0ae57b1f218aafe0729f191ddb7e99be6d35adb6dae0c7d350f4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t5-e2e-received",
+        "substage": "e2e",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-e2e-001",
+        "receipt_sha256": "246d58bf391f0bc34911dcfe3025968e21a25c6cd734e8c458948527700fb842",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": {
+          "n": "12",
+          "outcome": "green"
+        },
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/e2e-t5.md",
+            "bffdebb46f66c83c47c633c0102368a439844f260eb0b8537a5202d3d9dfae4f"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-e2e-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-e2e-001/receipt.json",
+      "receipt_sha256": "246d58bf391f0bc34911dcfe3025968e21a25c6cd734e8c458948527700fb842",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/e2e-t5.md": "bffdebb46f66c83c47c633c0102368a439844f260eb0b8537a5202d3d9dfae4f"
+      },
+      "note": "T5 E2E (attempt29, commit c4ae3312) recibido por el transporte nativo desde el consumidor instalado aislado; recibo semantico pending (no aprueba). PC-12 re-acreditada en la superficie INSTALADA (antes: lectura documental en T4): prepare -> validate-request/validate-packet con localizador resuelto -> render byte-identico -> render --route C canonico/determinista; tres rechazos fail-closed con control positivo antes/despues. Evidencia propia del orquestador: suite focal 2/2 verde (23.40s), ruff del archivo nuevo limpio, commit con una sola ruta (tests/test_010_004_t5_e2e.py). Lo que T5 NO acredita: recepcion nativa del mensaje ni obediencia de modelo (limite declarado 010-004 spec 4.7); la revision semantica es de T6."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t5-e2e-closed",
+      "substage": "e2e",
+      "at": "2026-10-31T01:40:37.977900+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "bd1ddc6e84ba9c92ac9c651a46ebed15d952c1081b156e4963ad9fe036308f45",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "t5-e2e-closed",
+        "substage": "e2e",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/e2e-t5.md",
+            "bffdebb46f66c83c47c633c0102368a439844f260eb0b8537a5202d3d9dfae4f"
+          ],
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/properties-t5.md",
+            "90024430bc9d322f9b8352ba2402444b8793f98a5ad68700b1bd6eb7aca39875"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
+        },
+        "plan": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+          "sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/e2e-t5.md": "bffdebb46f66c83c47c633c0102368a439844f260eb0b8537a5202d3d9dfae4f",
+        "docs/specs/010-004-packet-dispatch-ergonomics/properties-t5.md": "90024430bc9d322f9b8352ba2402444b8793f98a5ad68700b1bd6eb7aca39875"
+      },
+      "note": "Gate T5 (PROPERTIES + E2E) cerrado con evidencia propia del orquestador. PROPERTIES: commit 2df0f6b5 solo tests/test_010_004_t5_properties.py, 2 propiedades verdes (semilla 20261030). E2E: commit c4ae3312 solo tests/test_010_004_t5_e2e.py (git show --name-status: una ruta A; git diff -- ':!tests' vacio), 2 E2E verdes (23.40s), propiedades verdes (72.63s), T2/T3/T4 15/15 verdes (15.41s), ruff del archivo nuevo limpio. CLI ejercitado = instalado bajo la raiz aislada (.cdad/tmp/.../install-root/.config/opencode/skills/cdad-cycle/scripts/cdad_packet.py), NO el wrapper del checkout: el test asserta resolve() bajo la raiz, != scripts/cdad_packet.py del repo, archivo real no symlink y sha del manifiesto; medido: modulo del producto 44a950a5... == el sha que el informe declara, wrapper 330B df6463fb...; el CLI global instalado (171fcd14...) NO se uso (drift D-1) ni se toco. Instalacion global intacta: ~/.config/opencode/agents y skills sin cambios desde 17:57-17:59 (antes de la ventana 22:15-22:35), ~/.agents sin cambios desde 07-09/10-28; el test asserta la instantanea (.config/opencode, .agents, .claude) antes/despues. postconditions_status PC-12 green en la superficie instalada; invariantes INV-04/INV-05 acreditadas en properties-t5.md. LO QUE T5 NO ACREDITA: recepcion nativa del mensaje ni obediencia de modelo (limite declarado, spec 010-004 4.7); la auditoria de relevancia test<->PC y toda revision semantica corresponde obligatoriamente a T6 (plan.md T6). Observacion para T6: la instantanea global incluye ~/.claude, que el runtime Claude escribe de forma concurrente (backup observado 22:27:32), lo que puede volver flaky el control si coincide una escritura durante la corrida; en mis corridas no ocurrio.",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md)",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
+      "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
+      "plan_sha256": "2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-review-received",
+      "substage": "review",
+      "at": "2026-10-31T01:52:57.276450+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "a672623544ce3c388807472a4fd279e5900fbc21dd9538d312db0e718b7adade",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-review-received",
+        "substage": "review",
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-review-001",
+        "receipt_sha256": "3c9a73d7bfeae608af431c1c6e1a43437afa8e169d2520d99df40862c3e1a8e7",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/review.md",
+            "479e92ebc6d2dc5c744fd8c46d107c7aec9f282c5221a4be8705b1e245014282"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-review-001/receipt.json",
+      "receipt_sha256": "3c9a73d7bfeae608af431c1c6e1a43437afa8e169d2520d99df40862c3e1a8e7",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/review.md": "479e92ebc6d2dc5c744fd8c46d107c7aec9f282c5221a4be8705b1e245014282"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-red-received",
+      "substage": "red",
+      "at": "2026-10-31T02:14:49.639889+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "7af2b12e8696ca94628facc19ff1e041b25affc4abba1f1a9ee5bec60462aa4b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-red-received",
+        "substage": "red",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-008",
+        "receipt_sha256": "65492f051e6d849ee52d9fc513647934d3dfd1a70e754eaee907c139c831751f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-008",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-red-008/receipt.json",
+      "receipt_sha256": "65492f051e6d849ee52d9fc513647934d3dfd1a70e754eaee907c139c831751f",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-review-fix-received",
+      "substage": "review-fix",
+      "at": "2026-10-31T02:46:41.280493+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "f10d17ff31e13fa241cf86a663f14205710656c32f62de96c13383a595a47c28",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-review-fix-received",
+        "substage": "review-fix",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-002",
+        "receipt_sha256": "5c5293e8a4fe3e448ea9693ee18e6b9ce98c847a63c695fbc6b900123e0931ca",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/review-fix-t6.md",
+            "0b0997f946b058320f50ec7f2755ea57cd005a81f9406a8fdbe56678d7e81c21"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-review-fix-002/receipt.json",
+      "receipt_sha256": "5c5293e8a4fe3e448ea9693ee18e6b9ce98c847a63c695fbc6b900123e0931ca",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/review-fix-t6.md": "0b0997f946b058320f50ec7f2755ea57cd005a81f9406a8fdbe56678d7e81c21"
+      },
+      "note": "REVIEW-FIX T6 recibido por el transporte nativo (attempt32, sesion <session>, commit del rol 4118b7944969c09e276966dd1b1c48154bc4098c con 24 rutas: 20 agentes derivados + sources/roles/architect.md + project-execution.md + re-entry.md + skills/cdad-cycle/scripts/cdad_packet.py). FINAL TEXT integro desde session.messages, staged byte-exacto (2811 B, sha256 0b0997f9...), recibo semantico pending (no aprueba). Materializado review-fix-t6.md. La verificacion de evidencia propia del orquestador y el gate de cierre de B1 quedan como pasos separados."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-b1-guard-received",
+      "substage": "red",
+      "at": "2026-10-31T03:05:48.117060+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "09cf9761464995fbd688a7d70f396ec80bf798ce5a104fda7930b269ea379779",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-b1-guard-received",
+        "substage": "red",
+        "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-009",
+        "receipt_sha256": "984a123f0e9bd286561873f37b6116df6a3d50d4d98c41901a986dbf851898af",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/b1-guard.md",
+            "2125298e9857321658a6db15a0622864eed463f9d54418297f8ab9eeac7b30e7"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-red-009",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-test-writer-red-009/receipt.json",
+      "receipt_sha256": "984a123f0e9bd286561873f37b6116df6a3d50d4d98c41901a986dbf851898af",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/b1-guard.md": "2125298e9857321658a6db15a0622864eed463f9d54418297f8ab9eeac7b30e7"
+      },
+      "note": "GUARDA B1 recibida por el transporte nativo (attempt33, sesion <session>, commit del rol 4a652890a0f8b1fbf51cb67e93d2595c457c753e: solo tests/test_010_004_t6_b1_guard.py, 197 inserciones). FINAL TEXT integro desde session.messages (5154 B, sha256 2125298e...), staged byte-exacto en .cdad/inbox, recibo semantico pending (no aprueba). Materializado b1-guard.md. Verificacion propia del orquestador: test verde al nacer; tokens estables; control negativo real en los dos orquestadores; fix 4118b794 intacto con 20 derivados. La reverificacion independiente de B1-B4 queda como packet separado."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-review-verification-received",
+      "substage": "review",
+      "at": "2026-10-31T03:15:29.429448+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "f57d49dd8e45d8f2fd5d2cd8b64cd85e41c68bed916c30d1c6a7a307dfc7507f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-review-verification-received",
+        "substage": "review",
+        "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-review-002",
+        "receipt_sha256": "83f35496e6e790f32512a94b16d65d529e0b484d925efc29f03942023a786f82",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-004-packet-dispatch-ergonomics/review-verification.md",
+            "35fce8a37d7787edb2786d83273ed53feb7908d5c8929a9e581428ef7058f191"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-reviewer-review-002/receipt.json",
+      "receipt_sha256": "83f35496e6e790f32512a94b16d65d529e0b484d925efc29f03942023a786f82",
+      "artifacts": {
+        "docs/specs/010-004-packet-dispatch-ergonomics/review-verification.md": "35fce8a37d7787edb2786d83273ed53feb7908d5c8929a9e581428ef7058f191"
+      },
+      "note": "REVERIFICACION T6 recibida por el transporte nativo (attempt34, sesion <session>, agente cdad-reviewer, modelo reportado claude-code/claude-opus-5-5). FINAL TEXT integro desde session.messages (10430 B, sha256 35fce8a3...), staged byte-exacto en .cdad/inbox, recibo semantico pending (no aprueba y no cierra nada). Resultado: B1-B4 CERRADOS, sin bloqueantes nuevos, veredicto 'el cierre puede declararse cuando se cumplan 7 condiciones'. La materializacion por cdad_result.py materialize fue RECHAZADA por la tabla cerrada §7 (artifact_kind 'reviewer-role-report' no permitido para reviewer/review; el recibo durable no admite re-registro porque el kind divergente se rechaza), asi que el artefacto se materializo bajo ADR-003 como copia byte-identica del part del recibo (sha256 35fce8a3..., verificado) y el desvio queda declarado."
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-review-fix-003-received",
+      "substage": "review-fix",
+      "at": "2026-10-31T03:26:24.824007+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "2d92fd2a040053b2630855004a46cddc5ded69c61bb796798ca60b19dc5ec74b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-review-fix-003-received",
+        "substage": "review-fix",
+        "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-003",
+        "receipt_sha256": "714d1125ce3e558a2eeb452abd586f45e6dc3521768a2446b44751c65d0847ae",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-implementer-review-fix-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-implementer-review-fix-003/receipt.json",
+      "receipt_sha256": "714d1125ce3e558a2eeb452abd586f45e6dc3521768a2446b44751c65d0847ae",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "t6-scribe-memory-received",
+      "substage": "memory",
+      "at": "2026-10-31T05:08:03.927024+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "7d9ab90703113ddf16bc9dd485a78a202b13a8051e03ed879861d2dfdb1812b7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "delivery",
+        "stage": "t6-scribe-memory-received",
+        "substage": "memory",
+        "packet_id": "010-004-packet-dispatch-ergonomics-scribe-memory-001",
+        "receipt_sha256": "b839fbebbdd49a44cc37f8b8a12d1075f270cd417850a5dab04e5d60d8c96cb9",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-004-packet-dispatch-ergonomics-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-004-packet-dispatch-ergonomics-001/010-004-packet-dispatch-ergonomics-scribe-memory-001/receipt.json",
+      "receipt_sha256": "b839fbebbdd49a44cc37f8b8a12d1075f270cd417850a5dab04e5d60d8c96cb9",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "memory-approved",
+      "substage": null,
+      "at": "2026-10-31T05:37:00.944235+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "268a073f499c159974ce7d33b6a38f56dc0416e94b406c0b77012cd14c11c19f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "memory-approved",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "merge",
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "d5969d0224129a809b100210a473374acfaa664bc842a42d718e55b96e7b50e8"
+          ],
+          [
+            "docs/progress.md",
+            "3cbb84a67240ce7590eb4184f53abaa387068431a63a303bf383d83577245007"
+          ],
+          [
+            "docs/projectbrief.md",
+            "888c196a9c484dbb1d5c95f96be9c1112c5fb8fefc4a916ca8839d45ea7b3989"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "ada456bebd5e623e94474f79e528d83188569cc987ec1470205fdcb2a3608f7f"
+          ]
+        ],
+        "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/projectbrief.md": "888c196a9c484dbb1d5c95f96be9c1112c5fb8fefc4a916ca8839d45ea7b3989",
+        "docs/activeContext.md": "d5969d0224129a809b100210a473374acfaa664bc842a42d718e55b96e7b50e8",
+        "docs/systemPatterns.md": "ada456bebd5e623e94474f79e528d83188569cc987ec1470205fdcb2a3608f7f",
+        "docs/progress.md": "3cbb84a67240ce7590eb4184f53abaa387068431a63a303bf383d83577245007"
+      },
+      "note": "Aprobación explícita del dueño de (1) aplicar el Memory Bank de 010-004 desde los borradores y (2) publicar la instalación global, transmitida por la sesión orquestadora con este texto literal: «El DUEÑO aprobó explícitamente dos cosas (regístralas con la cita de su respuesta): (1) aplicar el Memory Bank de 010-004 desde los borradores; (2) publicar la instalación global.» Procedencia declarada: esta sesión no recibió el mensaje crudo del dueño; la cita es la del relay del orquestador, no se inventa una transcripción. Aplicados byte-idénticos los tres borradores del scribe (projectbrief, activeContext, systemPatterns) más la fila de progress del orquestador; sin ADR nuevo. Publicación medida aparte en el mismo cierre.",
+      "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "010-004-closed",
+      "substage": null,
+      "at": "2026-10-31T05:42:45.776697+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "62efdcb489cf8eaea4a29cf7551917153dafadbc38345b52c2651bec8b0eacda",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "closure",
+        "stage": "010-004-closed",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "1d14b3c5217f2b94eff44bd96d3cf16fc08e7c40b7a7711acb660ef7ee34c459"
+          ],
+          [
+            "docs/progress.md",
+            "3fbd63f7e0fa4c20ff87affff7eb66b361dbe8d8d558183f462bf746d4090b89"
+          ],
+          [
+            "docs/projectbrief.md",
+            "3939c8e31c16478d0369d7f380a8d6272d6c820a6b415b3ea6b080442fde2977"
+          ]
+        ],
+        "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/closure.md",
+          "sha256": "820b1a31bc1a5923c1ee7fdb7ee5b8c98ba466a9193bbf35bf4fb8637b42ee5c"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/progress.md": "3fbd63f7e0fa4c20ff87affff7eb66b361dbe8d8d558183f462bf746d4090b89",
+        "docs/activeContext.md": "1d14b3c5217f2b94eff44bd96d3cf16fc08e7c40b7a7711acb660ef7ee34c459",
+        "docs/projectbrief.md": "3939c8e31c16478d0369d7f380a8d6272d6c820a6b415b3ea6b080442fde2977"
+      },
+      "note": "Cierre de 010-004 aprobado por el dueño (misma autorización que aprobó el Memory Bank y la publicación; cita y procedencia en la entrada memory-approved). Publicación ejecutada con install.sh del repo: ANTES --check rc=1 (FAIL; DRIFT en 22/22 agentes instalados, 5 referencias del skill, cdad_packet.py, cdad_continuity.py y __pycache__) -> DESPUES rc=0 (PASS, 414 grupos), sostenido tras ejecutar el CLI instalado. Resueltos con el mecanismo del propio instalador 12 destinos incoherentes del manifiesto previo (9 agentes con overlay model= del usuario via agent-overlay.py merge + 3 __pycache__ retirados); respaldo .cdad/local/deploy-backup-20261031/. D-1 RESUELTO: cdad_packet.py sha256 d62278a15f930674bf4eb8fce8e45eb6d79502297c488d1da8d383c3062167df identico en repo, ~/.config/opencode, ~/.agents y ~/.claude; --route C verificado con el CLI instalado sobre el paquete publicado del scribe (rc=0, 8 campos); token de intake en los 10 agentes de rol por runtime; make validate rc=0 (183+68 PASS, 0 FAIL) con F011 en PASS. Sin push: la publicacion del repositorio es otra decision. Manifiesto resultante: 390 artefactos, 0 conflictos, 0 pending_removal (runtime claude-code, stack odoo).",
+      "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+      "closure_path": "docs/specs/010-004-packet-dispatch-ergonomics/closure.md",
+      "closure_sha256": "820b1a31bc1a5923c1ee7fdb7ee5b8c98ba466a9193bbf35bf4fb8637b42ee5c"
+    },
+    {
+      "feature": "010-004-packet-dispatch-ergonomics",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-31T05:53:43.685900+00:00",
+      "by": "orchestrator",
+      "transition": "gate",
+      "transition_key": "a0fc13cb057d29ca5650b489184d140b410cbf5779833be15626fd855806980c",
+      "transition_key_payload": {
+        "execution_id": "exec-010-004-packet-dispatch-ergonomics-001",
+        "feature_id": "010-004-packet-dispatch-ergonomics",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": "Pablo",
+        "contract": {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
+        },
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Re-pin de saneamiento (2026-10-31): la publicacion del delta exigio reemplazar rutas absolutas del HOME local por <repo>/~ y los ids de sesion crudos por <session> en los artefactos del feature. spec.md cambia en UNA linea cosmetica de evidencia (variable R); no cambia ninguna promesa, postcondicion, invariante, decision ni alcance. Este registro fija el pin vigente (contract_path + contract_sha256) de los bytes saneados para que los roles de construccion sigan habilitados; NO es una aprobacion nueva: la aprobacion estrategica del owner sobre el contenido revisado (054d4657...) sigue siendo la del 2026-10-30 y los pines anteriores no se editan. Declarado en closure.md SS11. Sin paquetes, sin tests nuevos, sin efecto de aprobacion.",
+      "approved_by": "Pablo",
+      "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+      "contract_sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
     }
   ],
   "approver": "Pablo",
@@ -23061,11 +26298,18 @@
     "epic_id": "epic-010-documentary-specialization",
     "requested_by": "Pablo",
     "requested_at": "2026-10-29",
-    "scope": "epic-010-documentary-specialization: continuar proactivamente la orquestación operativa hasta completar 010-000, las tres features documentales, integración y cierre, con encargos por rol, gates y materialización. La solicitud explícita de HITL se registra en execution.md; no habilita autoaprobaciones contrarias al contrato superior ni publicación.",
+    "renewed_at": "2026-10-30",
+    "renewed_by": "Pablo",
     "source": "docs/epics/epic-010-documentary-specialization/execution.md",
-    "expires": "cierre, cancelación o revocación de esta épica"
+    "epic_mandate": "docs/epics/epic-010-documentary-specialization/execution.md",
+    "mandate_ref": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md",
+    "mandate_quote": "Te delego hitl, eres el dueño del proceso, toma decisiones con criterio amplio pensando en el uso real del sistema por el usuario final. Continúa orquestando proactivamente hasta completar las correcciones pendientes y el epic completo.",
+    "mandate_scope": "Aprueba en nombre de Pablo los gates operativos de 010-004 y del resto del epic-010 dentro del alcance y la descomposicion ya aprobados en plan.md; no cambia contratos aprobados (spec fc6b2ccc…, plan 2ae8ada3…), no relaja evidencias ni gates, no autoriza push/publicacion/deploy ni instalacion global, no se hereda a otras epicas. Revocable por el dueno en cualquier momento (registrar revoked_at).",
+    "scope": "epic-010-documentary-specialization: continuar proactivamente la orquestación operativa hasta completar 010-000, las tres features documentales, integración y cierre, con encargos por rol, gates y materialización. La solicitud explícita de HITL se registra en execution.md; no habilita autoaprobaciones contrarias al contrato superior ni publicación.",
+    "expires": "cierre, cancelación o revocación de esta épica",
+    "note": "Mandato de orquestacion del 2026-10-29 (execution.md) ampliado por instruccion literal del dueno del 2026-10-30: aprobacion de gates operativos en su nombre dentro del alcance aprobado. Revocable en cualquier momento (revoked_at)."
   },
-  "last_updated": "2026-10-29T21:47:53.403277+00:00",
+  "last_updated": "2026-10-31T05:53:43.685982+00:00",
   "delegation_history": [
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
@@ -23198,22 +26442,87 @@
       "status": "active",
       "closed_at": "2026-10-28T12:29:28.247172+00:00",
       "closure_note": "epic-008 cerrado 6/6; delegación consumida"
+    },
+    {
+      "delegated_to": "Orquestador CDAD (agente cdad-orchestrator, sesion subagente del supervisor del epic-010)",
+      "requested_by": "Pablo",
+      "requested_at": "2026-10-30",
+      "status": "active",
+      "epic_id": "epic-010-documentary-specialization",
+      "scope": "epic-010-documentary-specialization: aprobacion en nombre del dueno de los gates operativos de 010-004-packet-dispatch-ergonomics y de las features restantes del epic (010-001, 010-002, 010-003), integracion y cierre, dentro del alcance y la descomposicion ya aprobados; resolucion de ambiguedades funcionales auditadas con fundamento registrado.",
+      "expires": "cierre, cancelacion o revocacion del epic-010",
+      "publication": "sin push, sin publicacion, sin deploy y sin actualizacion de la instalacion global",
+      "source": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md",
+      "quote": "Te delego hitl, eres el dueño del proceso, toma decisiones con criterio amplio pensando en el uso real del sistema por el usuario final. Continúa orquestando proactivamente hasta completar las correcciones pendientes y el epic completo.",
+      "note": "Ampliacion explicita del mandato HITL del 2026-10-29 (execution.md). Excluye cambios reales de alcance, contratos ya aprobados, relajacion de severidades/evidencia/gates, y no se hereda a otras epicas. Primera aplicacion: aprobacion del AUDIT T1 de 010-004 (audit-approval-2026-10-30.md)."
     }
   ],
   "suspended_units": {},
-  "active_feature": "010-004-packet-dispatch-ergonomics",
-  "current_stage": "discovery",
-  "tdd_substage": null,
+  "active_feature": null,
+  "current_stage": "idle",
+  "tdd_substage": "memory",
   "postconditions_status": {
-    "1": "green",
-    "2": "green",
-    "7": "green",
-    "3": "green",
     "4": "green",
     "5": "green",
-    "6": "green"
+    "6": "green",
+    "7": "green",
+    "1": "green",
+    "2": "green",
+    "8": "green",
+    "9": "green",
+    "3": "green",
+    "10": "green",
+    "11": "green",
+    "12": "green"
   },
-  "audit_status": null,
+  "audit_status": {
+    "feature": "010-004-packet-dispatch-ergonomics",
+    "status": "approved",
+    "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-audit-001",
+    "receipt_sha256": "5acf26667e67553827e815c8cd950260797287044b0725563427ddb0a1dc13d8",
+    "received_at": "2026-10-30T15:31:06.041442Z",
+    "artifact": "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md",
+    "artifact_sha256": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941",
+    "approval_effect": false,
+    "ambiguities": [
+      {
+        "id": "A1",
+        "summary": "La frontera de preambulo de la spec 4.4 para validate-packet no tiene test identificable; el plan T3 asignaba 4 garantias PC-08a a reutilizar y solo 3 tienen cobertura.",
+        "owner_decision": "anadir un RED de PC-08a para preambulo en T3, o registrarlo en deferred-hardening",
+        "recommendation": "anadir cobertura de preambulo en T3 como regresion faltante, no deuda silenciosa",
+        "resolution": "anadir cobertura de la frontera de preambulo de spec 4.4 para validate-packet (PC-08a) como RED de la tanda T3, en su dispatch RED separado; no se difiere a deferred-hardening",
+        "decided_at": "2026-10-30"
+      },
+      {
+        "id": "A2",
+        "summary": "PC-04 sustituye el lado EXEC de test_p2_default_execution_context_and_out_dir_under_project_cdad; el lado OUT (default .cdad/packets) no esta gobernado por 4.1.",
+        "owner_decision": "conservar el lado OUT en el test reescrito, o crear un test aparte",
+        "recommendation": "conservar el lado OUT en el test reescrito con contexto canonico explicito",
+        "resolution": "conservar el lado OUT (default .cdad/packets) en el test reescrito test_p2_default_execution_context_and_out_dir_under_project_cdad, con contexto v2 canonico explicito y una sola promesa (P2); no se crea test aparte",
+        "decided_at": "2026-10-30"
+      }
+    ],
+    "note": "AUDIT T1 aprobado bajo el mandato HITL del 2026-10-30 con fundamento y R4 registrados; A1 y A2 resueltas con trazabilidad a la recomendacion tecnica. Habilitado POST-AUDIT, precedido por el paso habilitante V2-1 (plantilla POST-AUDIT mono-subfase); RED sigue en dispatch separado.",
+    "approved_by": "Orquestador CDAD en nombre del dueno (mandato HITL owner-mandate-hitl-2026-10-30.md)",
+    "approved_at": "2026-10-30",
+    "approval_ref": "docs/specs/010-004-packet-dispatch-ergonomics/audit-approval-2026-10-30.md",
+    "approval_sha256": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941",
+    "approval_transition_key": "4ee87f985cf6bba694fd13c9d21f4e70f89c237c77b35a40fcb50a1214c66241",
+    "resolutions": {
+      "A1": {
+        "decision": "anadir cobertura de la frontera de preambulo de spec 4.4 para validate-packet (PC-08a) como RED de la tanda T3, en su dispatch RED separado; no se difiere a deferred-hardening",
+        "basis": "recomendacion tecnica del AUDIT 5-A1; plan.md:31 asigna 4 garantias PC-08a a T3 y solo 3 tienen cobertura; la spec exige conservar la diferencia de preambulo",
+        "decided_at": "2026-10-30",
+        "decided_under": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md"
+      },
+      "A2": {
+        "decision": "conservar el lado OUT (default .cdad/packets) en el test reescrito test_p2_default_execution_context_and_out_dir_under_project_cdad, con contexto v2 canonico explicito y una sola promesa (P2); no se crea test aparte",
+        "basis": "recomendacion tecnica del AUDIT 5-A2; PC-04 sustituye solo el lado EXEC y el default de salida no esta gobernado por spec 4.1",
+        "decided_at": "2026-10-30",
+        "decided_under": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md"
+      }
+    }
+  },
   "review_status": {
     "verdict": "sin bloqueantes; B1/B1-r/O2 y control write V2 cerrados",
     "reviewer": "cdad-reviewer (sesiones nativas separadas de implementer; modelo no acreditado por el transporte)",
@@ -23222,15 +26531,7 @@
     "criterion": "Contrato PC1-PC7, permisos efectivos, orden, privacidad, controles negativos y evidencia de runtime",
     "disposition": "Actualizacion de campos derivados de cierre por el orquestador, basada en review-final/review-gatefix-final y gate atribuible 1772563. O1/O3 y variantes fuera del overlay declarados en closure.md. No es nueva aprobacion ni evidencia de modelo inventada."
   },
-  "active_packet": {
-    "id": "010-004-packet-dispatch-ergonomics-architect-discovery-001",
-    "role": "architect",
-    "substage": "discovery",
-    "status": "prepared",
-    "packet_version": 1,
-    "contract_kind": "approved-unit-contract",
-    "contract_sha256": "af0708d59354efdd06f8771e1deebc52dac5d8bd7c2dd7f532fb25091a60578b"
-  },
+  "active_packet": null,
   "execution": {
     "id": "exec-010-004-packet-dispatch-ergonomics-001",
     "epic_id": "epic-010-documentary-specialization",

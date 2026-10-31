@@ -60,6 +60,18 @@ envelope with the mandatory procedure of
 historical rule are owned by `<skill-dir>/references/cli-delegation.md`. One
 dispatch, one attempt, one route: never reconstruct the protocol by hand.
 
+**Dispatch vehicle (route C — explicit file backup).** When the packet travels
+without its inline body, emit the identification of the published request with
+`<skill-dir>/scripts/cdad_packet.py render --route C` (`--request
+.cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
+that stdout ALONE: the identification is moved exactly as emitted, never
+recomposed, retranscribed or accompanied by the packet body. The complete render
+(route A) keeps its force and is transferred unaltered when the transport
+requires it; C authorizes no mix with an inline body — A+C is rejected even when
+the inline coincides — and a divergent inline is never rescued by switching to
+C. Do not invent routes, markers or fallbacks, and do not remove the declared
+ones: a rejection is reported, never repaired by changing the route.
+
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
 `<skill-dir>/scripts/cdad_packet.py prepare --project-root <root> --role

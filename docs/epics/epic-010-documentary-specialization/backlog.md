@@ -1,0 +1,9 @@
+# Backlog de la épica — epic-010-documentary-specialization
+
+Cola de trabajo de la épica fuera de la descomposición aprobada de `plan.md` (que es contrato y no se edita aquí). Documento vivo, no contrato: una línea por ítem, con su origen y su condición de cierre.
+
+| Origen | Fecha | Ítem | Condición de cierre |
+|---|---|---|---|
+| R2 (review T6 de `010-004`, `review.md`) | 2026-10-30 | **Clase I-6 abierta:** la fila 3 de la matriz no distingue un request histórico de uno nuevo sin localizador; un paquete nuevo publicado por la copia instalada pasa con `--execution-context` y `--route C` puede emitir identificación con `execution_context` aunque el request no lo declare. Publicar la instalación reduce la vía, no la elimina. | Un gate del orquestador, con su propio contrato, que exija el localizador en paquetes nuevos; retirar el caso no cierra la clase. |
+| R-A (`review-verification.md`, attempt34) | 2026-10-31 | **Endurecimiento diferido:** `--replace-packet` y `--resume-packet` no pasan por `_reject_active_v1_packet`, así que con un paquete v1 activo rechazan con el diagnóstico de contexto de ejecución inexistente en vez de nombrar el bloqueo y escalar al owner. El comentario de `prepare()` ya dice la verdad; el comportamiento no cambia. | Una unidad propia con su test, que llame al helper en esas dos entradas (y verifique que no abre ninguna vía terminal); abrirlo sin test es lo contrario de la disciplina. |
+| I-8 (`observations-packet-dispatch.md:260`) | 2026-10-30 | **El test-writer no puede leer sus propios `instruction_sources`:** `skills` es `implementation_root` en la policy y el `read_scope` del rol no la incluye, así que el guard de lectura deniega los archivos que el propio paquete declara; el rol se detiene y reporta (correcto), pero la instrucción sigue inaccesible. | Una unidad propia que resuelva el diseño de scopes (tres salidas registradas en las observaciones) sin ampliar permisos de rol ni relajar el guard. |

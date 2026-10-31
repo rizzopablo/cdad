@@ -152,6 +152,42 @@ of that receipt.
 `--late` processing. Existing receipts remain readable/validatable; they are
 not accepted as a new receive while suspended. See the 007-007 contract.
 
+## Integrity, observability and fidelity (what each evidence accredits)
+
+A re-entry weighs three distinct questions and never merges them: was the packet
+published intact (**integrity**), was this exact prompt delivered and received
+(**observability**), and does the result match the contract and its sources
+(**fidelity**). Each piece of evidence answers one of them and no other:
+
+| Evidence | Accredits | Does NOT accredit |
+|---|---|---|
+| Validated request and file equal to the render | Published integrity | The message the runtime received |
+| Bytes sent to an external stdin | Delivery to that boundary | Final reception or persistence |
+| Literal reconstructed by the model | Comparison of that literal | An independent export of the message |
+| Contrast of the result with contract and sources | Fidelity, examined with its limits | Integrity of the transport |
+| Receipt of the result | Reception under its own contract | Semantic approval or integrity of the prompt |
+
+- **A file, stdin, a reconstructed literal or the text a receipt shows never
+  prove the prompt that was effectively received.** Staging, receiving and
+  validating a receipt approve nothing either: `semantic_status` stays
+  `pending`, and the `delivery` procedure above (007-004 §6.2) still decides
+  the route by arrival state. Without independent access to the received
+  message, declare that limitation; delivery is never certified from the role's
+  own account.
+- **I-4 — missing observability.** Insufficient evidence of delivery does not
+  prove corruption, and by itself it does not force repeating the work: record
+  the limitation and contrast the result with the contract and its sources,
+  keeping the applicable review and approval. It never licenses ignoring a
+  known divergence, invalid authority or unfaithful content.
+- **I-5 — proven divergence.** A confirmed divergence is rejected: an inline
+  packet altered under an intact header, a body that lost characters on the
+  way, an authority that does not hold. Switching route does not rescue it (a
+  divergent inline is never rescued by moving to C), and a correct transport
+  never justifies accepting an unfaithful result. Recovery is a NEW v2
+  assignment with its own gates — the existing `receive` /
+  `validate-receipt` / `materialize` / `register-transition` route — never a
+  retrospective acceptance of the rejected one.
+
 ---
 
 ## Equivalence of a registered run (canonical rule)

@@ -183,7 +183,14 @@ class ObjectFormCase(unittest.TestCase):
     def project(self, role: str = "reviewer", substage: str = "plan-review") -> PrepareProject:
         temp = tempfile.TemporaryDirectory(prefix="cdad-006-006-u1-")
         self.addCleanup(temp.cleanup)
-        return PrepareProject(Path(temp.name).resolve(), role, substage)
+        project = PrepareProject(Path(temp.name).resolve(), role, substage)
+        # 010-004 T2 POST-AUDIT (PC-04/§4.1): el contexto canónico de la
+        # preparación nueva (mismo documento, .cdad/executions/<id>/) se
+        # materializa en la construcción para que los oráculos de árbol
+        # existentes reflejen la convención migrada sin atribuírsela a
+        # prepare.
+        _ = project.execution_path
+        return project
 
     @staticmethod
     def write_document(project: PrepareProject, relpath: str, data: bytes) -> None:

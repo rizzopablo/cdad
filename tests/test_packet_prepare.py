@@ -150,7 +150,22 @@ class PrepareProject:
 
     @property
     def execution_path(self) -> Path:
-        return self.root / "EXECUTION.json"
+        # 010-004 T2 POST-AUDIT correctivo (PC-04/§4.1): la preparación nueva
+        # recibe el MISMO documento v2 de la fixture (mismo execution_id,
+        # EXECUTION_ID) en su ubicación canónica
+        # .cdad/executions/<execution_id>/execution.json, materializado al
+        # primer acceso. prepare rechaza el contexto en ubicación no
+        # canónica; la copia ROOT/EXECUTION.json de StateFixture sigue en
+        # pie para la vía histórica explícita de render/validate-*/validate-state
+        # (§4.1, fila 3 de la matriz) y no se canonicaliza.
+        canonical = (
+            self.root / ".cdad" / "executions" / EXECUTION_ID / "execution.json"
+        )
+        if not canonical.is_file():
+            canonical.parent.mkdir(parents=True, exist_ok=True)
+            canonical.write_text(
+                json.dumps(self.fixture.execution), encoding="utf-8")
+        return canonical
 
     def args(self, *extra: str, objective: str = "Prepare objective", out_dir: Path | None = None) -> list[str]:
         return [
@@ -206,8 +221,19 @@ class TestPrepareEffects(PrepareTestCase):
     def test_p1_prepare_writes_three_files_and_stdout_equals_packet_and_render(self) -> None:
         """P1: exactly REQUEST.json, PACKET.md and the state; stdout == PACKET.md == render; validate-packet passes."""
         project = self.project()
+        # 010-004 POST-AUDIT -005 (PC-04/§4.1 + scope-correction §2): la
+        # fixture materializa el contexto canónico al primer acceso de
+        # execution_path, que ocurre dentro de args(); se evalúan los
+        # argumentos ANTES del snapshot `before` para que `added` mida solo
+        # lo que escribe prepare. La promesa del test (prepare escribe los
+        # tres archivos y stdout == PACKET == render) y la igualdad de
+        # conjunto exacto `assertEqual(added, sorted(...))` no cambian.
+        args = project.args()
         before = tree_snapshot(project.root)
-        result = self.prepare_ok(project)
+        result = run_prepare(PACKET_CLI, *args)
+        self.assertEqual(
+            result.returncode, 0,
+            "prepare failed: " + result.stderr.decode(errors="replace"))
         after = tree_snapshot(project.root)
 
         packet_dir = project.out_dir / project.packet_id()
@@ -217,9 +243,14 @@ class TestPrepareEffects(PrepareTestCase):
         state_rel = str(project.state_path.relative_to(project.root))
         added = sorted(set(after) - set(before))
         # Enmienda de oráculo (review-t3.md, Disposición + I5c del plan):
-        # `.cdad` (creado por prepare sobre un proyecto sin `.cdad` previo)
-        # y `.cdad/.lock` (rendezvous del flock, legítimo y PERMANENTE cuando
-        # la operación publica algo) no son escrituras extra del paquete.
+        # `.cdad/.lock` (rendezvous del flock, legítimo y PERMANENTE cuando
+        # la operación publica algo) no es escritura extra del paquete.
+        # 010-004 POST-AUDIT -005 (PC-04/§4.1, scope-correction §2): `.cdad`
+        # deja de ser una creación de `prepare` — con la convención canónica
+        # la fixture materializa el contexto antes del snapshot — y se
+        # retira del literal esperado. La rama condicional `.cdad/.lock` y
+        # la comparación por IGUALDAD EXACTA de conjunto se conservan
+        # (prohibido subconjunto, exclusiones o mover la promesa).
         lock_added = (project.root / ".cdad" / ".lock").is_file()
         # Enmienda de oráculo T6 PRE-GREEN (I9 del plan, PD-8): la publicación
         # de prepare incluye los derivados de agentes OpenCode del proyecto
@@ -242,7 +273,7 @@ class TestPrepareEffects(PrepareTestCase):
         self.assertEqual(
             added,
             sorted(
-                [packet_dir_rel, request_rel, packet_rel, ".cdad",
+                [packet_dir_rel, request_rel, packet_rel,
                  ".opencode", ".opencode/agents"]
                 + [f".opencode/agents/{name}" for name in derived_names]
                 + ([".cdad/.lock"] if lock_added else [])))
@@ -365,6 +396,17 @@ class TestPrepareDefaults(PrepareTestCase):
                         "schema_version": 1,
                         "packet_id": f"{FEATURE_ID}-{role}-{substage}-001",
                         "execution_id": EXECUTION_ID,
+                        # 010-004 POST-AUDIT -005 (PC-04, spec :406; §7
+                        # :449-460, lista no exhaustiva): la preparación
+                        # nueva declara en el REQUEST su localizador
+                        # canónico. La clave entra al dict esperado con su
+                        # VALOR CANÓNICO EXACTO, no solo presencia: el
+                        # conjunto de claves sigue CERRADO y la igualdad
+                        # exacta del documento se conserva (endurecer, no
+                        # relajar).
+                        "execution_context": (
+                            f".cdad/executions/{EXECUTION_ID}/execution.json"
+                        ),
                         "feature_id": FEATURE_ID,
                         "role": role,
                         "substage": substage,
@@ -400,28 +442,107 @@ class TestPrepareDefaults(PrepareTestCase):
         self.assertEqual(self.request_of(project, 4)["packet_id"], project.packet_id(4))
 
     def test_p2_default_execution_context_and_out_dir_under_project_cdad(self) -> None:
-        """P2 (§1): without flags, EXEC = ROOT/.cdad/execution.json and OUT = ROOT/.cdad/packets."""
+        """P2 (010-004 §4.1/PC-04 + decisión owner A2; sustituye el lado EXEC
+        de la expectativa 003-005). Sin flags, una copia v2 del contexto en
+        la ubicación NO canónica ROOT/.cdad/execution.json no es localizador
+        admisible para preparación nueva (§4.1: una copia en otra ubicación
+        no es localizador admitido) y debe rechazarse antes de publicar
+        (INV-11), sin copiar/convertir/reubicar el contexto para hacerla
+        pasar. Con el contexto v2 explícito en su ubicación canónica
+        (.cdad/executions/<execution_id>/execution.json), el default de
+        salida ROOT/.cdad/packets sigue declarado y la preparación nueva
+        exitosa publica allí con request y cabecera coherentes."""
         self.require_prepare()
         project = self.project()
         cdad_dir = project.root / ".cdad"
         cdad_dir.mkdir()
-        shutil.copyfile(project.execution_path, cdad_dir / "execution.json")
+        stale_copy = cdad_dir / "execution.json"
+        stale_copy.write_bytes(project.execution_path.read_bytes())
         project.execution_path.unlink()
+
+        # Lado EXEC (sustituido por PC-04): sin flags, la copia v2 en la
+        # ubicación no canónica no autoriza la preparación nueva.
         result = run_prepare(
             PACKET_CLI,
             "--project-root",
             str(project.root),
             "--role",
-            "test-writer",
+            project.role,
             "--substage",
-            "red",
+            project.substage,
             "--objective",
             "defaults",
         )
-        self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
+        self.assertNotEqual(
+            result.returncode, 0,
+            msg="PC-04 (010-004 §4.1/§7): la copia v2 en .cdad/execution.json "
+                "(ubicación no canónica) NO es localizador admisible para "
+                "preparación nueva sin flags y debe rechazarse antes de "
+                "publicar; prepare respondió exit 0 con "
+                f"stdout={result.stdout!r}")
+        packets_dir = cdad_dir / "packets"
+        published = (
+            list(packets_dir.glob("*/REQUEST.json")) if packets_dir.is_dir() else []
+        )
+        self.assertEqual(
+            published, [],
+            msg="el rechazo PC-04 publicó un paquete (INV-11)")
+        self.assertTrue(
+            stale_copy.is_file(),
+            msg="el rechazo PC-04 reubicó o absorbió la copia no canónica "
+                "(§4.1: no se copia, convierte ni reubica el contexto para "
+                "hacerla pasar)")
+        executions_dir = cdad_dir / "executions"
+        relocated = (
+            list(executions_dir.glob("*/execution.json"))
+            if executions_dir.is_dir()
+            else []
+        )
+        self.assertEqual(
+            relocated, [],
+            msg="el rechazo PC-04 fabricó un contexto canónico desde la "
+                "copia no canónica (INV-11: sin efectos persistentes)")
+        state = json.loads(project.state_path.read_text(encoding="utf-8"))
+        self.assertIsNone(
+            state["execution"],
+            msg="el rechazo PC-04 dejó binding v2 en state (INV-11)")
+        self.assertIsNone(
+            state["active_packet"],
+            msg="el rechazo PC-04 dejó paquete activo en state (INV-11)")
+
+        # Lado OUT (conservado, decisión owner A2): contexto v2 explícito en
+        # su ubicación canónica, sin --out-dir: el default de salida
+        # ROOT/.cdad/packets sigue declarado y la preparación exitosa publica
+        # allí con request y cabecera coherentes.
+        canonical = cdad_dir / "executions" / EXECUTION_ID / "execution.json"
+        canonical.parent.mkdir(parents=True, exist_ok=True)
+        canonical.write_bytes(stale_copy.read_bytes())
+        result = run_prepare(
+            PACKET_CLI,
+            "--project-root",
+            str(project.root),
+            "--execution-context",
+            str(canonical),
+            "--role",
+            project.role,
+            "--substage",
+            project.substage,
+            "--objective",
+            "defaults",
+        )
+        self.assertEqual(
+            result.returncode, 0,
+            "P2 (decisión A2): la preparación nueva con contexto v2 canónico "
+            "explícito debe publicar en el default ROOT/.cdad/packets: "
+            + result.stderr.decode(errors="replace"))
         packet_dir = cdad_dir / "packets" / project.packet_id()
         self.assertTrue((packet_dir / "REQUEST.json").is_file())
         self.assertEqual((packet_dir / "PACKET.md").read_bytes(), result.stdout)
+        request = json.loads(
+            (packet_dir / "REQUEST.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            request["packet_id"], project.packet_id(),
+            msg="request y cabecera incoherentes con la publicación P2")
 
 
 class TestPrepareExplicitFlags(PrepareTestCase):
@@ -619,10 +740,17 @@ class TestPrepareFailureHasNoEffects(PrepareTestCase):
         self.assertTrue(text.endswith("}"))
         project.state_path.write_text(text[:-1] + ', "extra": "\\udc80"}', encoding="utf-8")
         json.loads(project.state_path.read_text(encoding="utf-8"))  # fixture sanity: valid JSON
+        # 010-004 POST-AUDIT -005 (PC-04/§4.1, scope-correction §3): args()
+        # materializa el contexto canónico de la fixture; se evalúa ANTES
+        # del snapshot `before` para que la igualdad de árbol mida solo lo
+        # que cambia prepare (antes, la fixture "cambiaba" el árbol entre
+        # ambos snapshots). Ni una aserción cambia: la promesa (falla con
+        # exit 2 limpio, sin efectos persistentes) se conserva intacta.
+        args = project.args()
         before = tree_snapshot(project.root)
         state_before = project.state_path.read_bytes()
 
-        result = run_prepare(PACKET_CLI, *project.args())
+        result = run_prepare(PACKET_CLI, *args)
 
         self.assert_clean_exit_2(result, "unserializable state")
         self.assertEqual(list(project.out_dir.iterdir()), [], "out-dir gained entries")

@@ -93,6 +93,7 @@ runnable from the project root (`<skill-dir>` is the directory of the loaded
 # 1. open the new execution and prepare the first packet. Add --new-execution
 #    when prior context exists (a v1 context or an active v2); omit it on a
 #    truly empty project.
+#    A published v1 packet still active: no terminal CLI route; escalate to the owner (project-execution.md §3).
 python3 <skill-dir>/scripts/cdad_packet.py prepare --project-root "$PWD" \
     --role architect --substage discovery --objective "<first commission>" \
     --new-execution

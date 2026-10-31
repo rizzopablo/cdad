@@ -604,10 +604,15 @@ class TestPd12LegacyIntake(LandingInstall):
     permanecer en verde durante y después del corte C)."""
 
     def test_pd12_legacy_without_policy_keeps_legacy_intake(self) -> None:
-        """PD-12/I4-refinado: un proyecto legacy SIN política y SIN contexto
-        v2, con su documento de ejecución v1 en .cdad/execution.json, conserva
-        el camino implícito anterior: prepare (implícito) publica el paquete
-        legacy, no fabrica un contexto v2 y no modifica el v1 (D2)."""
+        """PC-04 (010-004 §4.1/§7/INV-11, sustitución N-3 del owner). Un
+        proyecto legacy SIN política y SIN contexto v2, con su documento de
+        ejecución v1 en .cdad/execution.json, ya NO conserva el camino
+        implícito anterior (PD-12 de 004-002:112-115): la selección v1
+        implícita se RECHAZA antes de publicar (rc != 0, stdout vacío), sin
+        publicar paquete y sin efectos persistentes (INV-11). El v1 queda
+        byte-idéntico, no se fabrica contexto v2 y el state conserva su
+        intake histórico (§4.1) sin binding v2 ni paquete activo: su mera
+        presencia no habilita preparación nueva v1."""
         temp = tempfile.mkdtemp(prefix="cdad-t6-legacy-")
         self.addCleanup(shutil.rmtree, temp, ignore_errors=True)
         root = Path(temp) / "legacy"
@@ -621,25 +626,40 @@ class TestPd12LegacyIntake(LandingInstall):
             encoding="utf-8")
         v1_bytes = v1_path.read_bytes()
         # state sin binding v2 ni paquete activo (el intake legacy manda).
+        state_path = root / "docs" / ".cdad-state.json"
         write_consumer_state(root, consumer_state())
 
         proc = self.run_installed(
             root, "prepare", "--project-root", str(root),
             "--role", "test-writer", "--substage", "red",
             "--objective", "intake legacy conservado")
-        self.assertEqual(
+        # PC-04/INV-11: rechazo antes de publicar, sin paquete ni efectos.
+        self.assertNotEqual(
             proc.returncode, 0,
-            msg=f"el intake legacy se rompió desde la instalación: "
-                f"{proc.stdout} {proc.stderr}")
-        self.assertTrue(
-            proc.stdout.startswith(PACKET_BEGIN),
-            msg="el intake legacy no imprimió el paquete canónico")
+            msg="PC-04 (010-004 §4.1/§7): la selección v1 implícita sin "
+                "policy debe rechazarse antes de publicar; prepare respondió "
+                f"exit 0 con stdout={proc.stdout!r} stderr={proc.stderr!r}")
+        self.assertEqual(
+            proc.stdout, "",
+            msg="el rechazo PC-04 no debe publicar paquete: stdout vacío "
+                f"exigido, recibido {proc.stdout!r}")
+        self.assertEqual(
+            published_packets(root), {},
+            msg="el rechazo PC-04 publicó un paquete (INV-11)")
         self.assertEqual(
             v1_path.read_bytes(), v1_bytes,
             msg="el documento v1 del proyecto legacy fue modificado")
         self.assertEqual(
             v2_execution_docs(root), {},
-            msg="el camino legacy fabricó un contexto v2")
+            msg="el rechazo PC-04 fabricó un contexto v2 (§4.1: no se copia, "
+                "convierte ni reubica el contexto para hacerla pasar)")
+        post_state = json.loads(state_path.read_text(encoding="utf-8"))
+        self.assertIsNone(
+            post_state["execution"],
+            msg="el rechazo PC-04 dejó binding v2 en state (INV-11)")
+        self.assertIsNone(
+            post_state["active_packet"],
+            msg="el rechazo PC-04 dejó paquete activo en state (INV-11)")
 
 
 class TestPd10ExplicitV1Context(unittest.TestCase):

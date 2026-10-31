@@ -115,6 +115,10 @@ python3 <skill>/scripts/cdad_packet.py prepare \
   binds it in `state.execution`, and publishes `.cdad/packets/<id>/`.
 - If any prior context exists (a v1 `.cdad/execution.json` or an active v2),
   add `--new-execution`; without it the call fails with a diagnostic.
+- A published v1 packet that is still active (`prepared`, or `dispatched`
+  without a durable receipt) has no terminal CLI route: `--new-execution` does
+  not bypass it. `prepare` names that packet, declares the absence of a route
+  and escalates to the owner, with no effect on the tree or the state.
 - v1 contexts are never adopted forward: an explicit `--execution-context` to a
   v1 document fails with a diagnostic and rewrites nothing.
 

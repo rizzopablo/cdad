@@ -80,7 +80,11 @@ class PlanReviewCase(unittest.TestCase):
     def project(self, role: str = "reviewer", substage: str = "plan-review") -> PrepareProject:
         temp = tempfile.TemporaryDirectory(prefix="cdad-004-003-t2-")
         self.addCleanup(temp.cleanup)
-        return PrepareProject(Path(temp.name).resolve(), role, substage)
+        project = PrepareProject(Path(temp.name).resolve(), role, substage)
+        # 010-004 T2 POST-AUDIT (PC-04/§4.1): contexto canónico materializado
+        # en la construcción (ver ObjectFormCase.project para la convención).
+        _ = project.execution_path
+        return project
 
     def write_draft_plan(self, project: PrepareProject) -> None:
         draft = project.root / DRAFT_PLAN_RELPATH
@@ -297,6 +301,9 @@ class TestPd4InstalledProductRendersPlanReview(InstalledProductCase):
             temp = tempfile.TemporaryDirectory(prefix=f"cdad-004-003-t2-{label}-")
             self.addCleanup(temp.cleanup)
             project = PrepareProject(Path(temp.name).resolve(), "reviewer", "plan-review")
+            # 010-004 T2 POST-AUDIT (PC-04/§4.1): contexto canónico
+            # materializado en la construcción (convención de la fixture).
+            _ = project.execution_path
             self.write_draft_plan(project)
             # The consumer carries no CDAD product sources to read.
             for foreign in ("skills", "scripts", "sources", "agents", "build", ".claude"):

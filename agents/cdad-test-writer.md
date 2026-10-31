@@ -138,9 +138,11 @@ nothing, and more than one occurrence is never resolved by choosing.
   must match the validated REQUEST.json and PACKET.md; validate both in full
   against the canonical render before working, and never look for another
   packet if that one fails. No inline body is required on this route, and a
-  partial inline body never stands in for the identification. Those
-  control-plane reads (the packet's own files) never widen the role's product
-  scope nor authorize other product reads.
+  partial inline body never stands in for the identification. Route C requires
+  a v2 execution context: a v1 context is reported with its explicit
+  diagnostic, never switched silently to route A. Those control-plane reads
+  (the packet's own files) never widen the role's product scope nor authorize
+  other product reads.
 - **Legacy path (fallback, SECOND).** Zero markers: a legacy consultation that
   loads the `cdad-cycle` skill with the skill tool to understand the CDAD cycle
   and your role within it, plus the loads declared for this role in
@@ -153,8 +155,10 @@ not equal the complete canonical render of its validated request, or the
 canonical metadata is absent or invalid. Route C: an absent inline body is
 admissible, but a partial one is not, and the identification block plus the
 validated REQUEST.json and PACKET.md must satisfy their full comparison against
-the canonical render. Never guess instructions and never fall back silently to
-legacy.
+the canonical render. Route A and route C are exclusive: a dispatch carrying a
+route C identification together with an inline packet is a route mixture and
+is rejected as an invalid packet even when the inline matches its render.
+Never guess instructions and never fall back silently to legacy.
 Role params:
 - legacy-loads: `cdad-cycle` + `cdad-spec-and-test`.
 Operating rules (strict, anti-gaming):

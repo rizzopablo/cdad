@@ -2,7 +2,7 @@
 
 ## Prepared packet contract
 
-When `.cdad/execution.json` exists for the active feature, produce the packet
+Every new preparation runs on a v2 execution: produce the packet
 with `skills/cdad-cycle/scripts/cdad_packet.py prepare --role <role> --substage
 <substage> --objective "<atomic task>"`. It derives contract, inputs, scopes,
 invariants and evidence from the role, writes `.cdad/packets/<packet_id>/`
@@ -12,23 +12,31 @@ as either the Task prompt or the copyable new-chat body. A role receiving that
 valid packet follows its static instructions and declared inputs directly; it
 does not reload this skill. `render` re-emits the same bytes from the written files.
 
+Two dispatch vehicles exist, and the packet is never re-typed by hand:
+
+- **Route C — explicit file backup** (preferred for new native dispatches). Emit
+  the identification with `skills/cdad-cycle/scripts/cdad_packet.py render
+  --route C` on the published request (`--request
+  .cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
+  that stdout ALONE: the identification travels without an inline body, and it is
+  never recomposed, retranscribed or accompanied by the packet body.
+- **Route A — the complete render.** Where the transport requires the full
+  packet, transfer the complete render unaltered; it keeps its force. C
+  authorizes no mix with an inline body — A+C is rejected even when the inline
+  coincides — and a divergent inline is never rescued by switching to C. Invent
+  no route, marker or fallback and remove none: a rejection is reported.
+
 When the packet must carry the decisions that govern the role, repeat the
 optional flag `--current-decision '<row JSON>'` — once per row, in the declared
 order — in the same `prepare` invocation; the package then carries the rows it
 declares. The flag is optional: without it the package is byte-identical.
 
-The execution context is written once per feature (keep `.cdad/` out of git):
-
-```json
-{"schema_version": 1,
- "execution": {"id": "exec-<feature_id>-001", "epic_id": "<epic_id or none>",
-   "feature_id": "<feature_id>", "runtime": "claude-code", "scope": "local",
-   "model_policy": "ordinary", "authority_ref": "docs/.cdad-state.json",
-   "model": {"configured": null, "reported": null}},
- "path_policy": {"implementation_roots": ["src"], "test_roots": ["tests"],
-   "colocated_test_roots": [], "documentation_roots": ["docs"],
-   "colocated_test_suffixes": [], "colocated_test_prefixes": ["test_"]}}
-```
+The execution context is the canonical v2 document the first `prepare` writes
+at `.cdad/executions/<execution_id>/execution.json`, declared by the request as
+`execution_context` (keep `.cdad/` out of git). A v1 `.cdad/execution.json` is
+historical: it is not a universal preparation entry and it is never adopted
+forward. The bootstrap that creates the v2 context, and that boundary with the
+legacy document, are owned by `project-execution.md` §3 and are not restated here.
 
 Architect packets need `docs/epics/<epic_id>/plan.md`; a feature without an
 epic plan delegates the architect through the legacy template.
@@ -222,7 +230,7 @@ Expected output: the spec draft as complete FINAL TEXT (the orchestrator or the 
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Task: update the existing test suite according to the approved Test Audit Report. Then, write new tests in RED. This is a combined session of two sub-phases: POST-AUDIT + RED.
+Task: update the existing test suite according to the approved Test Audit Report, and stop there. This is ONE subphase: POST-AUDIT only. Writing new tests is RED, a separate dispatch with its own packet and session.
 
 Context:
 1. Approved Test Audit Report (paste the content of docs/specs/<feat>/test-audit.md)
@@ -232,7 +240,7 @@ Context:
 
 Strict rules:
 - Permissions: edit ONLY in tests/. You do NOT look at implementation code.
-- This session has THREE clearly separated parts (important so they don't get mixed):
+- This session has TWO clearly separated parts (important so they don't get mixed):
 
 #### PART 1: Update audited tests
 
@@ -254,30 +262,17 @@ For EACH test listed in the "Tests untouched" section of test-audit.md:
   - Passes? Perfect. Continue.
   - Fails? HALT. This means the spec/code change broke a test that should NOT have been affected. Report it as "Regression detected" and STOP.
 
-#### PART 3: Write new tests (RED)
+#### STOP here — this subphase is over
 
-For EACH new postcondition of the spec (not touched by the previous ones):
-- Write ONE test that verifies that postcondition.
-- The test must FAIL when run (because the code is not implemented).
-- Fail for the right reason: AssertionError, not ImportError.
-- Descriptive name: test_postcondition_<N>_<description>.
-- Commit it: `git commit -m "test: add failing test for postcondition <N>"`
-
-#### Expected execution flow
-
-1. Update tests → commit (they may be red, that is correct)
-2. Verify untouched → all must pass
-3. Write new tests → commit (they must be red)
-4. Final run of the ENTIRE suite:
-   - Updated tests: RED expected (new behavior, unimplemented code)
-   - Untouched tests: GREEN expected (unchanged behavior)
-   - New tests: RED expected (new postconditions, no implementation)
+- You do NOT write new tests: new tests are RED, dispatched separately, with its own packet and its own session.
+- You do NOT run the full suite (the closer runs it once, at closure).
+- You do NOT implement anything, and you do not read implementation code.
 
 Expected output:
 
-After finishing everything (3 parts), respond:
+After finishing both parts, respond:
 
-"DONE. Suite updated post-audit + new tests in RED.
+"DONE. Existing suite updated post-audit.
 
 **PART 1 — Audited tests updated:**
 - <test-name-1>: [deleted | updated for <change>]
@@ -286,29 +281,21 @@ After finishing everything (3 parts), respond:
 **PART 2 — Unchanged tests verified:**
 - All passing (list with <N> tests)
 
-**PART 3 — New tests in RED:**
-- <test-name-new-1>
-- <test-name-new-2>
+Output of the two runs, kept separate:
 
-Output of the final suite run:
+<updated tests run — red expected: the new behavior is not implemented yet>
 
-<paste pytest/jest/etc output showing:
-  - Red tests from new postconditions
-  - Red tests from updated ones
-  - Green tests from untouched ones
->
+<untouched tests run — green expected: unchanged behavior>
 
 Commits:
-<list hashes of:
-  - Updated tests
-  - New RED tests
->"
+<list hash of the updated tests>"
 ```
 
 **Notes for the orchestrator**:
 - Updated tests may be **red** post-session (that is correct, expected).
 - Untouched tests must be **green** (regression gate).
-- New tests must be **red** (standard RED).
+- POST-AUDIT does **not** write new tests: RED is a separate dispatch.
+- The sequence is THREE separate dispatches: POST-AUDIT (existing audited tests only) → RED (new tests, its own packet and session) → GREEN (implementer).
 - NEVER say "migrated tests must pass". It is incorrect.
 
 ---
@@ -331,7 +318,7 @@ Before touching a test file, run through:
 
 If you can't confidently answer "every modified test is in the spec", **don't proceed**. Asking is cheaper than fixing afterwards.
 
-**If you already completed the POST-AUDIT**: use the previous section (Test-writer POST-AUDIT), which combines updating audited tests + writing new tests in a single session. The section below is for cases where POST-AUDIT does not apply (a feature with no prior affected tests).
+**The POST-AUDIT comes first, in its own dispatch**: the previous section (Test-writer POST-AUDIT) updates ONLY the audited existing tests and stops there. New tests are written HERE, in this separate session with its own packet. A feature with no prior affected tests has no POST-AUDIT dispatch, and RED is dispatched directly.
 
 ---
 
@@ -344,7 +331,7 @@ postconditions). The test must FAIL when run, because there is no implementation
 yet. It must fail for the right reason (assertion failure, not ImportError or
 syntax error).
 
-IMPORTANT: This happens AFTER the POST-AUDIT. If you haven't completed the POST-AUDIT yet (update audited tests + verify untouched), do it first in that session or another one.
+IMPORTANT: This dispatch comes AFTER the POST-AUDIT. If the audited existing tests have not been updated yet (update audited tests + verify untouched), stop and report it: the POST-AUDIT is a separate dispatch with its own packet and session, never part of this one.
 
 Context:
 1. Approved spec (paste the full content of docs/specs/<feat>/spec.md)

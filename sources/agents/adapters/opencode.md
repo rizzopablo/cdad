@@ -76,6 +76,17 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   `<skill-dir>/scripts/cdad_packet.py render` emits (`prepare`'s stdout or
   `render`'s re-emission) — the packet is passed byte-identical, never padded
   with extra instructions.
+- **Dispatch vehicle (route C — explicit file backup).** A dispatch that carries
+  no inline body emits the identification with
+  `<skill-dir>/scripts/cdad_packet.py render --route C` on the published request
+  (`--request .cdad/packets/<packet_id>/REQUEST.json`, inside the project root),
+  and passes that stdout ALONE, unchanged: the identification is never
+  recomposed, retranscribed or accompanied by the packet body. The complete
+  render (route A) stays valid for the transport that requires it; C authorizes
+  no mix with an inline body (A+C is rejected even when the inline coincides)
+  and a divergent inline is never rescued by switching to C. Invent no route,
+  marker or fallback and delete none: a rejection is reported, never repaired by
+  changing the route.
 - **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native

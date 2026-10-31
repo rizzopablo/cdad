@@ -58,6 +58,18 @@ envelope with the mandatory procedure of
 historical rule are owned by `<skill-dir>/references/cli-delegation.md`. One
 dispatch, one attempt, one route: never reconstruct the protocol by hand.
 
+**Dispatch vehicle (route C — explicit file backup).** When the packet travels
+without its inline body, emit the identification of the published request with
+`<skill-dir>/scripts/cdad_packet.py render --route C` (`--request
+.cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
+that stdout ALONE: the identification is moved exactly as emitted, never
+recomposed, retranscribed or accompanied by the packet body. The complete render
+(route A) keeps its force and is transferred unaltered when the transport
+requires it; C authorizes no mix with an inline body — A+C is rejected even when
+the inline coincides — and a divergent inline is never rescued by switching to
+C. Do not invent routes, markers or fallbacks, and do not remove the declared
+ones: a rejection is reported, never repaired by changing the route.
+
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
 `<skill-dir>/scripts/cdad_packet.py prepare --project-root <root> --role
@@ -273,6 +285,17 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   `<skill-dir>/scripts/cdad_packet.py render` emits (`prepare`'s stdout or
   `render`'s re-emission) — the packet is passed byte-identical, never padded
   with extra instructions.
+- **Dispatch vehicle (route C — explicit file backup).** A dispatch that carries
+  no inline body emits the identification with
+  `<skill-dir>/scripts/cdad_packet.py render --route C` on the published request
+  (`--request .cdad/packets/<packet_id>/REQUEST.json`, inside the project root),
+  and passes that stdout ALONE, unchanged: the identification is never
+  recomposed, retranscribed or accompanied by the packet body. The complete
+  render (route A) stays valid for the transport that requires it; C authorizes
+  no mix with an inline body (A+C is rejected even when the inline coincides)
+  and a divergent inline is never rescued by switching to C. Invent no route,
+  marker or fallback and delete none: a rejection is reported, never repaired by
+  changing the route.
 - **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native

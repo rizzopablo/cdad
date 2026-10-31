@@ -627,6 +627,62 @@ def _validate_active_packet(packet: Any) -> None:
         raise PolicyError("active_packet.contract_sha256 must be 64 lowercase hex characters")
 
 
+def _reject_active_v1_packet(project_root: Path, state: dict[str, Any]) -> None:
+    """§4.1 row 3 (PC-07b): a v1 packet that is still active has no CLI exit.
+
+    A published packet whose request declares no canonical locator belongs to a
+    historical v1 generation. While its status is non-terminal (`prepared`, or
+    `dispatched` without a durable receipt) nothing resolves it: no migration,
+    withdraw, replay or legacy fallback opens a route, and `--new-execution`
+    does not bypass the block. The single observable result is this diagnostic
+    — the blocking packet named, the absence of a terminal route declared and
+    the escalation to the owner — with no effect on the tree or the state.
+    """
+    active = state.get("active_packet")
+    if not isinstance(active, dict):
+        return
+    if active.get("status") not in ACTIVE_PACKET_STATUSES:
+        return
+    packet_id = active.get("id")
+    if not _safe_packet_component(packet_id):
+        return
+    request_path = project_root / PACKETS_TREE / packet_id / "REQUEST.json"
+    if not request_path.is_file():
+        # Not a published packet: the half-written binding keeps its own reading.
+        return
+    try:
+        request = _load_json(request_path, "published request")
+    except PolicyError as exc:
+        raise PolicyError(
+            f"active packet {packet_id!r} is {active.get('status')!r} but its "
+            f"published request is unreadable ({exc}); there is no terminal CLI "
+            "route to resolve it: escalate to the owner") from exc
+    if REQUEST_LOCATOR_FIELD in request:
+        # A v2 generation has terminal routes (resume/receipt/transition); its
+        # own block keeps the existing reading.
+        return
+    execution_id = request.get("execution_id")
+    if (isinstance(execution_id, str) and ".." not in execution_id
+            and FLAT_NAME.fullmatch(execution_id) is not None):
+        context_path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+        if context_path.is_file() and _load_json(
+                context_path, "execution context").get("schema_version") == V2_SCHEMA_VERSION:
+            # A generation published before the locator field existed keeps its
+            # v2 routes: the packet is historical in form, not a v1 generation.
+            return
+    if active.get("status") == "dispatched" and _has_durable_receipt(project_root, state):
+        # A verified durable receipt already resolved that dispatch.
+        return
+    raise PolicyError(
+        f"active v1 packet {packet_id!r} is {active.get('status')!r}: no terminal "
+        "CLI route resolves it (no migration, withdraw, replay or legacy fallback "
+        "opens one), so this preparation is refused and nothing is written. "
+        "`--new-execution` does not bypass this block: escalate to the owner, the "
+        "only authority that can decide the disposition of that v1 packet "
+        "(010-004 §4.1 row 3/PC-07b)"
+    )
+
+
 def _validate_idle_coherence(state: dict[str, Any]) -> bool:
     """PD-13/PD-14/PD-15 (005-001 T3): resting-state coherence invariant.
 
@@ -1579,6 +1635,92 @@ def _parse_current_decisions(raw_values: list[str]) -> list[dict[str, Any]]:
     return rows
 
 
+# ---------------------------------------------------------------- 010-004 T2
+# PC-04/PC-05/PC-06/PC-07 (§4.1): the execution context the request DECLARES.
+# The locator is a project-relative string whose domain is EXACTLY
+# `.cdad/executions/<execution_id>/execution.json`, so the packet names the
+# context it was prepared from and the role resolves it instead of inferring
+# it. A copy in another location is never admitted as its source, and no
+# rejection probes a second location or mutates the tree (INV-11).
+REQUEST_LOCATOR_FIELD = "execution_context"
+REQUEST_LOCATOR_CANONICAL_FORM = ".cdad/executions/<execution_id>/execution.json"
+
+
+def _canonical_execution_locator(execution_id: str) -> str:
+    """The ONE admitted locator of a v2 context (010-004 §4.1)."""
+    return (EXECUTIONS_DIR / execution_id / "execution.json").as_posix()
+
+
+def _request_locator_path(project_root: Path, raw: Any, execution_id: str) -> Path:
+    """Resolve the DECLARED locator, rejecting everything outside its domain.
+
+    Absolute, empty, escaping, alternative-component and non-canonical forms
+    are one cause with one next action: declare the canonical location. The
+    resolution is project-relative (the canonical root), while the CLI file
+    arguments keep their historical cwd-relative reading (§4.1).
+    """
+    domain_cause = (
+        f"request.{REQUEST_LOCATOR_FIELD} is outside the admitted domain: {raw!r} "
+        f"must be exactly the project-relative canonical location "
+        f"{REQUEST_LOCATOR_CANONICAL_FORM!r}")
+    if not isinstance(raw, str) or not raw or "\\" in raw:
+        raise PolicyError(domain_cause)
+    declared = Path(raw)
+    if declared.is_absolute() or any(part in {"", ".", ".."} for part in declared.parts):
+        raise PolicyError(domain_cause)
+    parts = declared.parts
+    if (len(parts) != 4 or parts[0] != EXECUTIONS_DIR.parts[0]
+            or parts[1] != EXECUTIONS_DIR.parts[1] or parts[3] != "execution.json"):
+        raise PolicyError(domain_cause)
+    component = parts[2]
+    if FLAT_NAME.fullmatch(component) is None or ".." in component:
+        raise PolicyError(domain_cause)
+    if component != execution_id:
+        raise PolicyError(
+            f"request.{REQUEST_LOCATOR_FIELD} names execution {component!r} while "
+            f"request.execution_id is {execution_id!r}: the locator must point at the "
+            f"request's own execution "
+            f"({_canonical_execution_locator(execution_id)!r})")
+    return _project_path(project_root, raw, f"request.{REQUEST_LOCATOR_FIELD}")
+
+
+def _validate_declared_execution_context(document: dict[str, Any],
+                                         execution_document: dict[str, Any],
+                                         project_root: Path) -> None:
+    """The SHARED checks of the declared locator (010-004 §4.1, PC-06).
+
+    `validate_request` receives the execution DOCUMENT, never the route the
+    consumer loaded it from, so this checks the domain of the locator, its
+    agreement with the request identity and the schema/identity of the document
+    supplied. Comparing the loader's file with the locator belongs to the
+    surfaces that know that route (the three CLI and new preparation).
+    """
+    execution_id = document.get("execution_id")
+    if not isinstance(execution_id, str) or not execution_id:
+        raise PolicyError("request.execution_id must be a non-empty string")
+    raw = document[REQUEST_LOCATOR_FIELD]
+    if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
+        raise PolicyError(
+            f"request.{REQUEST_LOCATOR_FIELD} ({raw!r}) must resolve to a v2 execution "
+            f"context: the supplied document carries schema_version "
+            f"{execution_document.get('schema_version')!r}, and only the canonical v2 "
+            f"context is admitted here ({REQUEST_LOCATOR_CANONICAL_FORM}) — a v1 "
+            "context is recognized, never converted, and never adopted forward")
+    _request_locator_path(project_root, raw, execution_id)
+    execution = execution_document.get("execution")
+    if not isinstance(execution, dict):
+        raise PolicyError(
+            f"request.{REQUEST_LOCATOR_FIELD} ({raw!r}) supplies a context without an "
+            "execution identity")
+    if (execution.get("id") != execution_id
+            or execution.get("feature_id") != document.get("feature_id")):
+        raise PolicyError(
+            f"request.{REQUEST_LOCATOR_FIELD} ({raw!r}) disagrees with the request "
+            f"identity: the context names execution {execution.get('id')!r} of feature "
+            f"{execution.get('feature_id')!r} while request.execution_id is "
+            f"{execution_id!r} of feature {document.get('feature_id')!r}")
+
+
 def validate_request(document: dict[str, Any], execution_document: dict[str, Any],
                      state: dict[str, Any], project_root: Path,
                      contract_bytes_override: bytes | None = None) -> dict[str, Any]:
@@ -1592,6 +1734,11 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     kind/path pair and the active-packet binding — is unchanged; when no override
     is given the bytes are read from `contract.path`, as before.
     """
+    # 010-004 §4.1 (PC-06): the declared locator is judged FIRST, against the
+    # document supplied, so its cause is distinguishable from a binding or a
+    # schema rejection of the surrounding document (010-004 §4.5).
+    if REQUEST_LOCATOR_FIELD in document:
+        _validate_declared_execution_context(document, execution_document, project_root)
     validate_state(execution_document, state, project_root)
     required = {"schema_version", "packet_id", "execution_id", "feature_id", "role", "substage",
                 "objective", "contract", "inputs", "read_scope", "write_scope", "invariants",
@@ -1606,7 +1753,12 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     # 006-004 U1 (R-1): a THIRD declared optional property (`current_decisions`,
     # the decision rows that govern the role of the packet) is added the same
     # way; the closure is not relaxed either.
-    optional = {"plan_task", "agent", "current_decisions"}
+    # 010-004 §4.1: a FOURTH declared optional property is added the same way
+    # (`execution_context`, the project-relative locator of the v2 context the
+    # packet was prepared from). It is optional so historical requests keep
+    # being admitted; every NEW publication declares it. The closure is not
+    # relaxed: any other unknown key still fails the set equality below.
+    optional = {"plan_task", "agent", "current_decisions", REQUEST_LOCATOR_FIELD}
     if (not required <= set(document) <= (required | optional)
             or document.get("schema_version") != 1):
         raise PolicyError("request fields do not match schema")
@@ -1823,6 +1975,11 @@ def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
             f"UTF-8 bytes (CDAD_STATIC_BLOCK_LIMIT={raw_limit if raw_limit is not None else 'unset, default 12000'})"
         )
     metadata = {key: request[key] for key in ("packet_id", "execution_id", "feature_id", "role", "substage", "contract", "read_scope", "write_scope")}
+    # 010-004 PC-04 (§4.1): a publication that declares the locator carries it in
+    # the canonical header too, so request and header agree. A historical
+    # request WITHOUT the field gains no metadata here (PC-07c/INV-08).
+    if REQUEST_LOCATOR_FIELD in request:
+        metadata[REQUEST_LOCATOR_FIELD] = request[REQUEST_LOCATOR_FIELD]
     metadata.update({
         "packet_version": 1,
         "execution": execution_document["execution"],
@@ -2812,9 +2969,15 @@ def _bootstrap_v2_execution(args: argparse.Namespace, project_root: Path,
     return document, execution, True
 
 
-def _find_prior_context(project_root: Path, state: dict[str, Any]) -> tuple[dict[str, Any], str] | None:
+def _find_prior_context(project_root: Path, state: dict[str, Any]
+                        ) -> tuple[dict[str, Any], str, Path] | None:
     """Locate an existing execution context: the state binding, the flat v1 path or
-    any published v2 context. Returns (document, 'v1'|'v2') or None."""
+    any published v2 context. Returns (document, 'v1'|'v2', path) or None.
+
+    The PATH travels with the document (010-004 §4.1): a new preparation must
+    prove the context it selected lives at its canonical location, and that
+    proof cannot be reconstructed from the document alone.
+    """
     candidates: list[Path] = []
     binding = state.get("execution")
     if isinstance(binding, dict) and isinstance(binding.get("id"), str) and binding["id"]:
@@ -2830,7 +2993,7 @@ def _find_prior_context(project_root: Path, state: dict[str, Any]) -> tuple[dict
             continue
         document = _load_json(path, "execution context")
         kind = "v2" if document.get("schema_version") == V2_SCHEMA_VERSION else "v1"
-        return document, kind
+        return document, kind, path
     return None
 
 
@@ -2890,19 +3053,95 @@ def _open_unused_context(project_root: Path, state: dict[str, Any]) -> str | Non
     return execution_id
 
 
+def _require_canonical_selected_context(project_root: Path, path: Path,
+                                        execution_id: str) -> None:
+    """A new preparation selects the context at its CANONICAL location (PC-04).
+
+    `.cdad/executions/<execution_id>/execution.json` is the only admitted
+    location: a byte-identical copy elsewhere is not a locator, and the context
+    is never copied, converted or relocated to make it pass (§4.1/INV-08).
+    """
+    canonical = _project_path(
+        project_root, _canonical_execution_locator(execution_id),
+        "execution context locator")
+    try:
+        selected = Path(path).resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise PolicyError(f"cannot resolve the selected execution context {path}: {exc}") from exc
+    if selected != canonical:
+        raise PolicyError(
+            "a new preparation requires the execution context at its canonical "
+            f"location ({_canonical_execution_locator(execution_id)}), but the selected "
+            f"context is {path} — a copy in another location is not an admitted "
+            "locator and is never copied, converted or relocated to make it pass. Pass "
+            "the canonical context, or start the new v2 execution with "
+            "`prepare --new-execution` (010-004 §4.1/PC-04)")
+
+
+def _require_preparation_configuration(project_root: Path) -> None:
+    """Name the configuration defect of a new preparation BEFORE a v1 rejection.
+
+    Owner decision of 2026-10-30 (`decision-diagnostic-precedence.md`, restoring
+    010-004 §4.5/:352 and PC-09): when a new preparation meets BOTH a
+    configuration defect and a v1 context, the actionable configuration cause is
+    the one the user sees. The context version/location rejection still runs
+    afterwards, unchanged, with no persistent effect — nothing is converted,
+    published or adopted, and no legacy fallback is opened.
+
+    Only what the CLI can verify WITHOUT selecting a v2 context is diagnosed
+    here: a project policy the owner has materialised, that is a regular file and
+    that its own validator accepts. Authority, approval and pins are validated
+    against the SELECTED execution (`_validate_v2_state`); on this path there is
+    no such context, so they are neither guessed nor fabricated.
+    """
+    location = POLICY_RELPATH.as_posix()
+    path = _policy_location(project_root)
+    if not path.exists():
+        raise PolicyError(
+            f"the project policy is missing: {location} does not exist and a new "
+            "preparation requires one. Propose it with `prepare --propose-policy` and "
+            "ask the owner to materialise the proposal at the policy path")
+    if not path.is_file():
+        raise PolicyError(
+            f"policy location is invalid: {location} exists but is not a regular file, "
+            "so no project policy can be read and a new preparation requires one. "
+            "Replace it with the policy the owner materialises from "
+            "`prepare --propose-policy`")
+    raw = _read_bytes(path, "project policy")
+    try:
+        _load_policy_from_bytes(raw, project_root)
+    except PolicyError as exc:
+        raise PolicyError(
+            f"the project policy at {location} is invalid: {exc}; a new preparation "
+            "requires a valid policy (propose it with `prepare --propose-policy` and ask "
+            "the owner to materialise the fix)") from exc
+
+
 def _select_execution(args: argparse.Namespace, project_root: Path,
                       state: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], bool]:
-    """Choose the execution for this prepare: explicit context (I4), reused v2,
-    implicit bootstrap, or the preserved legacy v1 path. Returns
-    (document, execution, write_context)."""
+    """Choose the execution for this prepare: explicit canonical v2 context,
+    reused canonical v2, or the v2 bootstrap. Returns
+    (document, execution, write_context).
+
+    010-004 §4.1/PC-04: a new preparation — ordinary, successor or recovery —
+    uses execution v2 at its canonical location ONLY. A v1 selection (explicit
+    or implicit, policy present or absent) and a v2 context outside its
+    canonical location are rejected before publishing, with no persistent
+    effect: nothing is copied, converted, relocated or rewritten."""
     if args.execution_context:
-        document = _load_json(_cwd_path(args.execution_context), "execution context")
+        context_path = _cwd_path(args.execution_context)
+        document = _load_json(context_path, "execution context")
         if document.get("schema_version") == V2_SCHEMA_VERSION:
-            return document, _validate_v2_execution_document(document, project_root), False
+            execution = _validate_v2_execution_document(document, project_root)
+            _require_canonical_selected_context(project_root, context_path, execution["id"])
+            return document, execution, False
         # PD-10/I4 (retired in the T6 GREEN): a v1 context is never adopted
         # forward — it is not converted, rewritten or validated. The new work
         # context is v2, so an explicit v1 fails with a diagnostic that points
         # to --new-execution / bootstrap. Checked before any publication.
+        # §4.5/PC-09: an actionable configuration defect is named first; this
+        # rejection still follows when the configuration is usable.
+        _require_preparation_configuration(project_root)
         raise PolicyError(
             "an explicit v1 execution context is not adopted forward (PD-10/D2): "
             f"{args.execution_context} carries schema_version 1; v1 contexts are never "
@@ -2928,18 +3167,28 @@ def _select_execution(args: argparse.Namespace, project_root: Path,
     prior = None if args.new_execution else _find_prior_context(project_root, state)
     if args.new_execution or prior is None:
         return _bootstrap_v2_execution(args, project_root, state)
-    document, kind = prior
+    document, kind, path = prior
     if kind == "v2":
         # Vigency and the authority binding are validated once, in
         # _validate_v2_state, for reuse, validate-state and resume alike (B1).
-        return document, _validate_v2_execution_document(document, project_root), False
-    # A v1 context is only a candidate for forward adoption, never for implicit reuse (I3).
-    if _policy_present(project_root):
-        raise PolicyError(
-            "an existing v1 execution context is present at .cdad/execution.json: "
-            "prepare requires --new-execution to start a v2 execution (PD-10)"
-        )
-    return document, _validate_execution_document(document, project_root), False
+        execution = _validate_v2_execution_document(document, project_root)
+        _require_canonical_selected_context(project_root, path, execution["id"])
+        return document, execution, False
+    # 010-004 §4.1/PC-04 (N-3): the IMPLICIT v1 selection is closed for new
+    # preparation — with policy it already demanded --new-execution; without it,
+    # it used to publish a v1 packet. Neither is a new commission: the v1 file
+    # stays byte-identical and the new work starts on a v2 execution.
+    # §4.5/PC-09: the configuration cause is named first when it is defective;
+    # this rejection still follows, unchanged, when it is not.
+    _require_preparation_configuration(project_root)
+    raise PolicyError(
+        "an existing v1 execution context is present at "
+        f"{FLAT_EXECUTION_RELPATH.as_posix()}: a new preparation uses execution v2 "
+        "only, so the v1 context is not adopted, converted or rewritten. Start the "
+        "new v2 execution with `prepare --new-execution` (bootstrap); historical v1 "
+        "packets keep being recognized and validated through their explicit route "
+        "(PD-10/PD-12, 010-004 §4.1)"
+    )
 
 
 def _load_execution_context(project_root: Path, execution_id: Any) -> dict[str, Any]:
@@ -3550,6 +3799,13 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # without being a declared correction (007-002 §2.4/INV-5).
         if "agent" in request:
             new_request["agent"] = request["agent"]
+        # 010-004 §4.1/PC-04: a successor is a NEW publication, so it declares the
+        # canonical locator of its own v2 execution even when the predecessor (an
+        # older generation) did not. `_load_execution_context` resolved this
+        # document from that exact canonical location, so the declaration is the
+        # truth of the selected context, not a guess; the predecessor's bytes are
+        # never rewritten.
+        new_request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(execution["id"])
         # PD-1 (005-005): the complete resulting assignment — conserved and
         # corrected fields alike — passes the same validations as an ordinary
         # prepare, with a diagnostic naming the field, the reason and the
@@ -6199,6 +6455,13 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         state_path = project_root / "docs" / ".cdad-state.json"
         state = _load_json(state_path, "project state")
 
+        # §4.1 row 3 (PC-07b): on the new/ordinary preparation paths, and with
+        # `--new-execution` too, a published v1 active packet blocks before any
+        # selection or write: its diagnostic names the packet and escalates to
+        # the owner. `_replace_packet` and `_resume_packet` do not pass through
+        # this helper; they keep their own rejection.
+        _reject_active_v1_packet(project_root, state)
+
         execution_document, execution, write_context = _select_execution(args, project_root, state)
         if execution_document.get("schema_version") == V2_SCHEMA_VERSION:
             active = state.get("active_packet")
@@ -6421,6 +6684,11 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
             "expected_output": args.expected_output or DEFAULT_EXPECTED_OUTPUT,
             "evidence_required": args.evidence or DEFAULT_EVIDENCE,
         }
+        # 010-004 §4.1/PC-04: a NEW publication declares the canonical locator of
+        # the v2 context it was prepared from, in the request and (through it) in
+        # the canonical header. `_select_execution` guarantees that context is v2
+        # and lives at that exact location, so the declaration is never a guess.
+        request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(execution["id"])
         # PD-10/INV-4: the declared plan task is an ADDITIVE optional field; when
         # absent the request and the packet are byte-identical to today's render.
         if args.plan_task:
@@ -9485,8 +9753,20 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("render", "validate-request", "validate-packet"):
         command = commands.add_parser(name)
         command.add_argument("--project-root")
-        command.add_argument("--execution-context", required=True)
+        # 010-004 §4.1 (PC-05): OPTIONAL. A request that declares the canonical
+        # locator resolves it; a historical request without the field keeps
+        # requiring the explicit argument (row 3) and its absence is rejected
+        # with a diagnostic (row 4). A given argument must agree with a
+        # declared locator.
+        command.add_argument("--execution-context")
         command.add_argument("--request", required=True)
+        if name == "render":
+            # 010-004 §4.2: the ADDITIVE route C surface. Without --route C the
+            # default full-packet render is byte-identical.
+            command.add_argument(
+                "--route", choices=("C",),
+                help="emit the route C explicit file backup identification of "
+                     "the published packet instead of the full packet")
         if name == "validate-packet":
             command.add_argument("--packet", required=True)
     prep = commands.add_parser("prepare", help="write request, packet and state binding; print the packet")
@@ -9794,6 +10074,186 @@ def _reject_mode_mix(args: argparse.Namespace) -> None:
             f"unexpected: {', '.join(sorted(foreign))}")
 
 
+def _resolve_request_execution_context(project_root: Path, request: dict[str, Any],
+                                       explicit: str | None) -> dict[str, Any]:
+    """Resolve the context of a render/validate surface (010-004 §4.1 matrix).
+
+    | request locator | --execution-context | result                          |
+    | declared        | absent              | resolve the locator only        |
+    | declared        | present             | require the SAME canonical file |
+    | absent          | present             | historical explicit load        |
+    | absent          | absent              | reject: context not provided    |
+
+    The locator is read against the canonical project root; the file arguments
+    keep their historical cwd-relative reading. No branch probes a second
+    location, and none writes anything.
+    """
+    if REQUEST_LOCATOR_FIELD not in request:
+        if explicit is None:
+            raise PolicyError(
+                "execution context not provided: the request declares no "
+                f"request.{REQUEST_LOCATOR_FIELD} (a historical request) and "
+                "--execution-context was not given. Pass the canonical v2 context "
+                "explicitly (--execution-context .cdad/executions/<execution_id>/"
+                "execution.json), or use a packet whose request declares its locator"
+            )
+        return _load_json(_cwd_path(explicit), "execution context")
+    declared = request[REQUEST_LOCATOR_FIELD]
+    execution_id = request.get("execution_id")
+    if not isinstance(execution_id, str) or not execution_id:
+        raise PolicyError("request.execution_id must be a non-empty string")
+    expected = _request_locator_path(project_root, declared, execution_id)
+    if explicit is not None:
+        try:
+            argument = Path(_cwd_path(explicit)).resolve(strict=False)
+        except (OSError, RuntimeError) as exc:
+            raise PolicyError(
+                f"cannot resolve --execution-context {explicit!r}: {exc}") from exc
+        if argument != expected:
+            raise PolicyError(
+                f"execution context mismatch: --execution-context {explicit!r} resolves "
+                f"to {argument}, but the request declares the canonical locator "
+                f"{declared!r} ({expected}). Pass the declared canonical context; the "
+                "argument is never used to override the locator"
+            )
+    if not expected.is_file():
+        raise PolicyError(
+            f"execution context not found: the request declares {declared!r}, which "
+            "does not exist under the project root. Resolve the published canonical "
+            f"context ({REQUEST_LOCATOR_CANONICAL_FORM}) or return to the authority "
+            "that should have published it"
+        )
+    return _load_json(expected, "execution context")
+
+
+# ---------------------------------------------------------------- 010-004 T3
+# §4.2: route C identifies a PUBLISHED v2 packet without retranscribing it. The
+# identification is a metadata view — never instructions, objective, inputs,
+# scopes or body — and it is built only AFTER the binding (points 1-6) is
+# verified, so a rejection never leaves a usable identification nor an effect.
+ROUTE_C_DECLARATION = "Route C — explicit file backup"
+
+
+def _route_c_published_request(project_root: Path, submitted: Path,
+                               request: dict[str, Any]) -> str:
+    """§4.2 points 1-2: the request argument IS the published request file.
+
+    A byte-identical copy elsewhere does not designate the published request, so
+    the comparison is between the RESOLVED submitted path and the ONE canonical
+    location derived from the request's own packet id. Nothing is written and no
+    alternative location is probed.
+    """
+    packet_id = request.get("packet_id")
+    if not _safe_packet_component(packet_id):
+        raise PolicyError(
+            "route C requires the request published by `prepare` at "
+            ".cdad/packets/<packet_id>/REQUEST.json: the submitted request "
+            "declares no safe packet_id, so it cannot name the published request "
+            "the identification must designate")
+    expected_rel = (PACKETS_TREE / packet_id / "REQUEST.json").as_posix()
+    expected = _project_path(project_root, expected_rel, "published request")
+    try:
+        candidate = Path(submitted).resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise PolicyError(
+            "cannot resolve the submitted --request for route C: "
+            f"{exc.__class__.__name__}") from exc
+    if candidate != expected:
+        raise PolicyError(
+            "route C requires the request published by the packet, not a copy of "
+            f"it: pass --request {expected_rel!r} (the expected project-relative "
+            "reference). A byte-identical copy in another location does not "
+            "designate the published request")
+    return expected_rel
+
+
+def _route_c_execution_context(project_root: Path, request: dict[str, Any],
+                               explicit: str | None) -> dict[str, Any]:
+    """§4.2 points 3-4 over the §4.1 matrix: the selected context is the
+    canonical v2 file — also for a historical request that declares no locator.
+
+    A v1 context is rejected with an explicit route-C-needs-v2 cause: it is
+    recognized for historical use, never converted, relocated or replaced by a
+    search for another context.
+    """
+    execution_id = request.get("execution_id")
+    if (not isinstance(execution_id, str) or not execution_id
+            or FLAT_NAME.fullmatch(execution_id) is None or ".." in execution_id):
+        raise PolicyError(
+            "route C requires a request whose execution_id is a flat name "
+            "([A-Za-z0-9._-], no '..')")
+    canonical_rel = _canonical_execution_locator(execution_id)
+    execution_document = _resolve_request_execution_context(
+        project_root, request, explicit)
+    schema_version = execution_document.get("schema_version")
+    if schema_version != V2_SCHEMA_VERSION:
+        raise PolicyError(
+            "route C requires a v2 execution context: the selected document at "
+            f"{canonical_rel!r} carries schema_version {schema_version!r}. A v1 "
+            "context is recognized for historical use and is never converted or "
+            "relocated; prepare a new v2 execution (`prepare --new-execution`) "
+            "before emitting a route C identification")
+    if REQUEST_LOCATOR_FIELD not in request and explicit is not None:
+        # §4.1 row 3 + §4.2 point 3: the historical explicit load is admitted,
+        # but C still requires that file to BE the canonical context.
+        try:
+            argument = Path(_cwd_path(explicit)).resolve(strict=False)
+        except (OSError, RuntimeError) as exc:
+            raise PolicyError(
+                "cannot resolve --execution-context for route C: "
+                f"{exc.__class__.__name__}") from exc
+        expected = _project_path(project_root, canonical_rel, "execution context")
+        if argument != expected:
+            raise PolicyError(
+                "execution context is outside the canonical file: route C "
+                f"requires {canonical_rel!r} (project-relative). Pass "
+                f"--execution-context {canonical_rel}; a byte-identical copy is "
+                "not admitted as the source of the identification")
+    return execution_document
+
+
+def route_c_identification(project_root: Path, request_argument: str,
+                           explicit_context: str | None) -> bytes:
+    """§4.2: emit the route C identification of a verified published packet.
+
+    The order is the contract's (points 1-7): published request location,
+    canonical v2 context, validation of the request, verification of the
+    complete published packet, and only then the identification. Every rejection
+    is raised before anything is printed or written, so it publishes no file,
+    records no attempt, receives no result and changes no state (§4.5).
+    """
+    project_root = _canonical_project_root(project_root)
+    request = _load_json(Path(request_argument), "packet request")
+    request_rel = _route_c_published_request(
+        project_root, Path(request_argument), request)
+    execution_document = _route_c_execution_context(
+        project_root, request, explicit_context)
+    state = _load_json(project_root / "docs" / ".cdad-state.json",
+                       "project state")
+    validate_request(request, execution_document, state, project_root)
+    packet_id = request["packet_id"]
+    verified_request, verified_execution = verify_published_packet(
+        project_root, packet_id, state=state)
+    execution_id = request["execution_id"]
+    if (verified_request != request
+            or verified_execution.get("execution", {}).get("id") != execution_id):
+        raise PolicyError(
+            f"route C cannot identify packet {packet_id!r}: the published request "
+            "or the context it resolves to is not the one selected — a divergent "
+            "binding is never represented as the published commission")
+    identification = {
+        "project_root": str(project_root),
+        "packet_id": packet_id,
+        "execution_id": execution_id,
+        "execution_context": _canonical_execution_locator(execution_id),
+        "request": request_rel,
+        "packet": (PACKETS_TREE / packet_id / PACKET_MD_NAME).as_posix(),
+        "contract": request["contract"],
+    }
+    payload = json.dumps(identification, ensure_ascii=False, sort_keys=True)
+    return f"{ROUTE_C_DECLARATION}\n\n```json\n{payload}\n```\n".encode("utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     try:
         args = build_parser().parse_args(argv)
@@ -9897,13 +10357,20 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
             return 0
-        execution_path = Path(args.execution_context)
-        if not execution_path.is_absolute():
-            execution_path = Path.cwd() / execution_path
-        execution_document = _load_json(execution_path, "execution context")
-        state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
         if args.command in {"render", "validate-request", "validate-packet"}:
+            if args.command == "render" and args.route == "C":
+                # 010-004 §4.2: route C emits the identification of a PUBLISHED
+                # v2 packet; it never reuses the default full render surface.
+                sys.stdout.buffer.write(route_c_identification(
+                    project_root, args.request, args.execution_context))
+                return 0
             request = _load_json(Path(args.request), "packet request")
+            # 010-004 §4.1 (PC-05/PC-06): the three surfaces share ONE resolution
+            # of the context, so the matrix holds for all of them and a declared
+            # locator is never silently overridden by the argument.
+            execution_document = _resolve_request_execution_context(
+                project_root, request, args.execution_context)
+            state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
             validate_request(request, execution_document, state, project_root)
             rendered = render_packet(request, execution_document, project_root)
             if args.command == "render":
