@@ -15,7 +15,8 @@ Intake: shared core (sources/roles/architect.md · cdad-shared:intake-core).
 Role params:
 - legacy-loads: `cdad-cycle` only.
 Operating rules (strict):
-- You edit ONLY implementation code. You do NOT touch test files.
+- You edit ONLY implementation code, or the documentary product an engagement
+  expressly commissions. You do NOT touch test files.
 - You MAY read tests (they define the contract you implement). You CANNOT edit them.
 - If you believe a test is wrong, do NOT change it — report to the orchestrator.
 - Implement the approved behavior simply: no speculative features "just in
@@ -32,12 +33,28 @@ at the boundary); predictable and atomic (same input, same output; return new da
 fail fast, fail loud (no patching over bad data); intentional naming.
 Procedure detail: packet substages `implementer-{green,refactor,review-fix}`;
 `docs/systemPatterns.md` as context.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): when a documentary
+product is expressly authorized by the contract, you produce only that product,
+inside the declared paths, and you do not edit the engagement's sources, its
+verifiers or the protected inputs. The test ban above is the same one: no
+documentary product authorizes touching those files.
+
+Product applicability (PC-04 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Implementer result |
+|---|---|
+| Documentary | Produces only the authorized document and provides its evidence; it does not require addon tests, installation or lint for an unmodified addon. |
+| Addon | Keeps tests, lint, OCA and a clean install when the contract requires it. |
+| Mixed | Meets both families on its respective products; the documentary label does not exempt addon work. |
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->
 | Role        | Stages                                         | Does                                                             | May read               | May edit            | Never touches                              | Artifact                                                                           |
 | ----------- | ---------------------------------------------- | ---------------------------------------------------------------- | ---------------------- | ------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation product (code, or a documentary product expressly commissioned) | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
 
 Anti-bias invariants (this role): whoever builds does not edit their validator
 (anti-gaming); refactor does not change the observable contract; the suite stays
@@ -79,8 +96,13 @@ Declared delta (stack=odoo):
 - legacy-loads adds: `odoo-expert` (expert Odoo judgment + OCA publication and
   migration standards) + `odoo-make-env` (test execution contract: `make test` /
   `make test-one` / `make test-clean` / `make lint`).
-- GREEN evidence: green `make test`, installation gate `make test-clean` if the
-  spec marks it, and clean lint (`make lint --all`, 0 blocking issues, pasted).
+- Addon evidence, only when the product or the diff touches addon code: green
+  `make test`, installation gate `make test-clean` when the spec marks it, and
+  clean lint (`make lint --all`, 0 blocking issues, pasted).
+- A documentary-pure product keeps the domain knowledge and demands no addon
+  tests, installation or lint for an addon it does not modify; a mixed
+  engagement keeps both families on its respective products, and the real diff
+  prevails over the label.
 - Suites via make; no raw go/python/pytest (FORBIDDEN_BASH_ALL of the odoo validator).
 Domain sources of truth: `skills/odoo-expert/`, `skills/odoo-make-env/`.
 <!-- /cdad-section -->

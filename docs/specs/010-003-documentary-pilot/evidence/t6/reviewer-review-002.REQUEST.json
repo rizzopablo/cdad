@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "packet_id": "010-003-documentary-pilot-reviewer-review-002",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "role": "reviewer",
+  "substage": "review",
+  "agent": "cdad-reviewer",
+  "objective": "Revision del producto corregido de 010-003-documentary-pilot (T6, reviewer/review), en sesion distinta de la del ensayo T5 y del productor. Revisas el relevamiento `docs/specs/010-003-documentary-pilot/product/relevamiento.md` contra el contrato aprobado, el inventario `inventory-010-003-v1`, las dos fuentes autorizadas, el candidato negativo, la clave de contraste fijada y `challenge-contrast.md`. Es una revision independiente: el producto ya te es revelado, y aqui si puedes inspeccionar el diff real del commit del producto.\n\nQUE DEBES HACER, con ubicacion exacta (ruta:linea) y evidencia:\n1. Confirmar que el diff real corresponde al producto documental autorizado: identifica el commit del producto y comprueba que su diff toca SOLO `docs/specs/010-003-documentary-pilot/product/relevamiento.md` y ningun otro archivo. El commit del producto debe descender del commit de preparacion `cd2d57b32e43e138cd831a3a40b5dd8fa075a67a`; el registro de preparacion se versiono en `4c822805`. Verifica ambas cosas y dilo.\n2. Contrastar TODAS las afirmaciones factuales del relevamiento contra las fuentes inventariadas: para cada afirmacion, si esta respaldada por el fragmento citado, si la cita resuelve a una fuente y ancla registradas, y si el fragmento citado sostiene realmente lo afirmado.\n3. Revisar la correccion de los tres defectos conocidos usando candidato, clave y contraste posterior: (a) la afirmacion sin respaldo, (b) la contradiccion omitida entre `s1-f02` y `s2-f03`, (c) la referencia que existia y no sostenia lo afirmado. Para cada uno: esta corregido, como, y queda alguna traza del defecto.\n4. Verificar la conservacion de ambas posiciones incompatibles sobre la aprobacion de casos limite, con sus localizadores, y que el producto no invente consenso ni elija una posicion sin decision acreditada. Verificar que los pendientes esten localizados y clasificados con informacion o decision faltante y responsable conocido o designacion pendiente (P-01 y los que encuentres).\n5. Ejecutar el control estructural declarado: `python3 -B -m pytest -q --tb=no tests/test_010_003_documentary_pilot.py`, reportar la salida y el rc, y declarar expresamente sus limites: acredita resolubilidad estructural de citas, inventario y anclas; NO acredita fidelidad semantica ni que el documento sea correcto.\n6. Emitir hallazgos con veredicto, confianza, fundamento y ubicacion exacta; alcance examinado; abstenciones. Si no hay hallazgos bloqueantes, decirlo; si los hay, nombrarlos con su condicion de cierre. No edites nada: eres read-only.\n\nINVARIANTE DE CONFIDENCIALIDAD (O-15): `product-review.md` se fundamenta contra las fuentes, el inventario, el candidato y la clave, pero NO transcribe el contenido de la clave. Puedes citar la ubicacion de un defecto en el candidato y el fragmento de la fuente que lo demuestra; no copies ni parafrasees la clave linea por linea, porque este informe se entrega despues como insumo del encargo de correccion (T7) y no debe transportarla.\n\nALCANCE DE LECTURA: el producto, el contrato, el inventario, las dos fuentes, el candidato, la clave, `challenge-contrast.md` y el registro de preparacion. Puedes ejecutar git para inspeccionar el diff del producto. Queda FUERA de tu alcance `tests/fixtures/010_003_documentary_pilot/structural/`: no lo leas; las muestras estructurales se ejercitan ejecutando el control, no leyendolas. Tampoco leas implementacion ni otros documentos de la feature. `skills/cdad-cycle/references` es lectura normativa de metodo: el selector mecanico es mas amplio que esta autorizacion y no habilita otras referencias.\n\nFORMATO: FINAL TEXT con (1) verificacion del diff y de la ascendencia, (2) tabla de afirmaciones contrastadas, (3) dictamen de los tres defectos, (4) conservacion de posiciones y pendientes, (5) control estructural ejecutado con salida y limites, (6) hallazgos con veredicto/confianza/ubicacion, (7) alcance y abstenciones, (8) recomendacion.",
+  "contract": {
+    "kind": "approved-feature-spec",
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+    "commit": null
+  },
+  "inputs": [
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "approved contract"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "contrato aprobado v5 (PC-10..PC-13, promesa D)"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/inventory.md",
+      "purpose": "inventario inventory-010-003-v1 con digests, anclas y convencion"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s1.md",
+      "purpose": "fuente autorizada s1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s2.md",
+      "purpose": "fuente autorizada s2"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/challenge/negative.md",
+      "purpose": "candidato negativo que el producto corrige"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/oracle/contrast-key.md",
+      "purpose": "clave de contraste fijada (protegida: no transcribir)"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+      "purpose": "producto corregido bajo revision"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/challenge-contrast.md",
+      "purpose": "contraste posterior del ensayo T5"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/preparation-record.md",
+      "purpose": "registro de preparacion: commit cd2d57b3, hashes e inspeccion"
+    },
+    {
+      "path": "skills/cdad-cycle/references/stage-4-review.md",
+      "purpose": "referencia normativa de la revision"
+    }
+  ],
+  "read_scope": [
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/spec.md"
+    },
+    {
+      "class": "contract",
+      "root": "docs/specs/010-003-documentary-pilot/product"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/challenge-contrast.md"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/preparation-record.md"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/sources"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/challenge"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/oracle"
+    },
+    {
+      "class": "implementation",
+      "root": "skills/cdad-cycle/references"
+    }
+  ],
+  "write_scope": [],
+  "invariants": [
+    "El commit del producto debe descender del commit de preparacion cd2d57b32e43e138cd831a3a40b5dd8fa075a67a y el registro de preparacion se versiono en 4c822805; ambas citas se verifican.",
+    "product-review.md no transcribe el contenido de la clave (O-15): cita ubicaciones en el candidato y fragmentos de las fuentes, nunca la clave linea por linea, porque viaja como insumo a T7.",
+    "El control estructural se ejecuta con python3 -B -m pytest -q --tb=no tests/test_010_003_documentary_pilot.py y su limite declarado es que acredita resolubilidad estructural, no fidelidad semantica."
+  ],
+  "expected_output": "Role report with the required evidence",
+  "evidence_required": [
+    "modified files",
+    "exact commands",
+    "command output",
+    "commit"
+  ],
+  "execution_context": ".cdad/executions/exec-010-003-documentary-pilot-001/execution.json",
+  "plan_task": "T6"
+}

@@ -69,6 +69,16 @@ the inline coincides — and a divergent inline is never rescued by switching to
 C. Do not invent routes, markers or fallbacks, and do not remove the declared
 ones: a rejection is reported, never repaired by changing the route.
 
+**Recipient derivation.** The agent comes from the canonical producer, never
+from a second resolver: a `stack` that is absent, `null` or empty derives the
+generic `cdad-<role>`; any non-empty stack derives `cdad-<role>-<stack>`, a
+suffix by domain. «Any other value» never means the generic agent. Dispatch
+with the `agent` of the validated request. A required variant that is not
+published stops the dispatch — a procedural duty of the orchestrator — and is
+never substituted silently by the generic agent; the external adapter owns the
+mechanical rejection before launching the role work, and no new mechanical
+guard is promised for this native path.
+
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
 `<skill-dir>/scripts/cdad_packet.py prepare --project-root <root> --role
@@ -238,6 +248,23 @@ Procedure detail lives in its own sources (do not clone here):
 anti-patterns); suspending, re-taking and retiring a unit, and republishing its
 derived agents, are defined by `references/project-execution.md` and
 `references/orientation.md`.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): for a documentary
+product you prepare the four declarations of the engagement, delimit the
+scopes, and verify the evidence and the pending classification inside the gates
+you already run — adding no new gate, role or permission.
+
+Product applicability (PC-05 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Orchestrator result |
+|---|---|
+| Documentary | Prepares the documentary declarations and, at re-entry, confirms the diff and its verifications; it does not do role work inline. |
+| Addon | Requires the evidence of the delegated addon contract according to the real diff; it does not do role work inline. |
+| Mixed | Requires both families; when the real diff contradicts the engagement it records the deviation, stops and corrects or re-routes, and it grants no retroactive permission. |
+
+The real diff prevails over the label; the label never rewrites what the diff changed.
 
 ### 2. Contract of each role
 
@@ -254,7 +281,7 @@ Composed rows (sources/roles/*.md — composed by the generator; every row is th
 |---|---|---|---|---|---|---|
 | architect | 1 Discovery, 2 Spec | technical mapping + Socratic brainstorm + spec draft (+ plan.md for complex features) | everything | nothing  | the product; does NOT approve its own spec/plan (user approval) | spec draft + plan draft as FINAL TEXT (orchestrator/user materialize `docs/specs/<id>/{spec,plan}.md` — ADR-003) |
 | test-writer | 3: audit, post-audit, red, properties, e2e | audits the existing suite (test↔postcondition mapping); writes tests derived from the contract — one test per observable user promise (never per postcondition, symmetry or coverage), traced to the numbered postconditions it protects, RED fails for the right reason (AssertionError, not ImportError) | `tests/`, spec, systemPatterns; odoo: `**/tests/**` and `__manifest__.py` | `tests/**` + colocated test files | implementation code (`src/`, `lib/`; odoo: `**/models|views|controllers|wizards/**` and any `.py` outside `tests/`) | tests (written and committed by this role); `test-audit.md` (AUDIT report as FINAL TEXT, materialized by the orchestrator) |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation product (code, or a documentary product expressly commissioned) | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
 | reviewer | 2 Spec, 4 Review | systematic adversarial review of the diff against the approved spec, and of an unapproved draft (spec or plan) | everything (read-only) | nothing  | code and tests edits; approval; does not soften real issues | `review.md` as FINAL TEXT (orchestrator materializes — ADR-003); `plan-review.md` for the draft review (orchestrator materializes) |
 | scribe | 5      | Memory Bank update drafts faithful to the evidence | spec, diff, review, Memory Bank | nothing (draft as FINAL TEXT) | commits and approval (user approves; orchestrator executes the git) | three Memory Bank drafts (orchestrator materializes — ADR-003) |
 | orchestrator | all 5 (gates + delegation) | detects stage, validates gates, prepares packets, delegates roles, materializes read-only artifacts, resolves deviations and replans within the mandate; escalates only decisions that exceed it | everything | `docs/**`, `docs/.cdad-state.json`, materialized artifacts (ADR-003), git of docs/state | role work inline (tests, implementation, spec approval, full-diff review); the user's strategic decisions | state binding, handoffs, materialized artifacts; commits `docs/**` + state |
@@ -274,12 +301,19 @@ Model choice. The model of each role is the one configured in the runtime; this 
 
 Delegation in OpenCode — the native mechanism, not the CLI adapter:
 
-- **Mechanism (native).** First, resolve the stack suffix
-  (`docs/.cdad-state.json.stack`), then dispatch with the `task` tool and
-  `subagent_type: cdad-<role>` (role→subagent mapping: `cdad-architect`,
-  `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`;
-  use `cdad-<role>-<stack>` when the variant exists, else the generic
-  `cdad-<role>`).
+- **Mechanism (native).** First resolve the stack, then derive the recipient from the
+  `stack` (`docs/.cdad-state.json.stack`) with the canonical derivation — absent, `null`
+  or empty → `cdad-<role>`; any non-empty stack → the suffix `cdad-<role>-<stack>`
+  («any other value» never means the generic agent) — then dispatch with the `task` tool
+  (`subagent_type` = `cdad-<role>`, role→subagent mapping) using the `agent` of the validated
+  request (`cdad-architect`, `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`). A
+  required variant that is not published is a procedural duty, not a mechanical
+  guard: the orchestrator checks that the derived agent is published and, when
+  it is not, stops that part of the engagement and reports the block to the
+  user — or to the owner, as the case requires — never substituting the generic
+  agent silently. The mechanical rejection before launching the role work
+  belongs to the external adapter alone; no new mechanical guard is promised
+  for this native path or attributed to the module.
 - **Byte-identical packet.** Dispatch the exact bytes that the installed
   `<skill-dir>/scripts/cdad_packet.py render` emits (`prepare`'s stdout or
   `render`'s re-emission) — the packet is passed byte-identical, never padded
@@ -377,12 +411,16 @@ RED/gates; it never restates them (drift checks AP-13/AP-14).
 
 Declared delta (stack=odoo) — the orchestrator does NOT load odoo skills
 itself (verified from both current bodies: legacy-loads = `cdad-cycle` only):
-- The orchestrator resolves the stack suffix from `docs/.cdad-state.json.stack`
-  and delegates to `cdad-<role>-<stack>` when the variant exists (more domain
-  context, same role contract); if the stack is absent or the variant does
-  not exist, the generic `cdad-<role>`.
-- Gate validation for stack=odoo consumes the delegated role's odoo contract
-  (make test/test-clean/lint evidence, OCA checks) — declared in the role
+- The orchestrator resolves the recipient from `docs/.cdad-state.json.stack`
+  with the canonical derivation: absent, `null` or empty → `cdad-<role>`;
+  any non-empty stack → `cdad-<role>-<stack>` (more domain context, same role
+  contract). A required variant that is not published stops the dispatch as a
+  procedural duty; it is never silently replaced by the generic agent, and no
+  new mechanical guard is claimed here.
+- Gate validation for the stack consumes the delegated role's contract
+  according to the real diff: addon evidence (`make test`/`test-clean`/lint,
+  OCA checks) when the diff modifies an addon, and no addon battery for a
+  documentary-pure diff of an unmodified addon — declared in the role
   sources, never duplicated here.
 Domain sources of truth: `skills/odoo-*/`, reached via the delegated role's
 packet — not loaded by the orchestrator.

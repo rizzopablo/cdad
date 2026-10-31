@@ -109,6 +109,63 @@ The packet **is the last output** of the orchestrator in that turn. Then you wai
 
 ---
 
+## Documentary engagement — operating procedure
+
+An engagement whose product is a document (notes, process maps, user stories,
+a module's readme) travels through the same canonical flow. The normative
+criterion — the four categories, the locators, the pending classification and
+the four declarations — lives in `documentary-contracts.md`; this section only
+fixes the operating procedure and never restates that norm.
+
+### The seven declarations, through the existing fields
+
+Before preparing the packet, the orchestrator spells out each declaration of
+the documentary engagement in the field that already carries it. The transport
+is unchanged for a documentary engagement: no documentary selector, no
+parallel selector, no documentary stack and no new field are introduced.
+
+| Declaration of the documentary engagement | Existing field |
+|---|---|
+| Aim and promises | `objective` plus the approved `contract` |
+| Expected product | `expected_output` |
+| Authorized sources | `inputs` and `read_scope` |
+| Editable product | `write_scope` |
+| Protected verifiers and inputs | `invariants`, the contract and the scopes |
+| Checks and limits | `evidence_required` |
+| Evidence and pending items | `evidence_required` plus the contract's closure record |
+
+### How the orchestrator prepares and accepts it
+
+1. Fix the domain, the role and the substage; `stack` keeps meaning domain and
+   gains no documentary value.
+2. State the aim, the expected product and the recoverable sources.
+3. Delimit the editable product as a scope of its own, separated from the
+   contract, the sources and the oracles. An exact path is admitted only when
+   the existing path policy admits it.
+4. Name the verifiers and the protected inputs through the existing fields.
+5. Settle Odoo applicability with each role's own basis and with the addon
+   boundary held by the domain skills; a documentary label never exempts addon
+   work, and the real diff prevails over the label.
+6. Record the required evidence, the limits and the pending items.
+7. Prepare and validate by the canonical route, and publish the coherent
+   recipient; a replacement rederives the agent from the role and the current
+   stack, it never copies the predecessor's.
+8. Dispatch without rebuilding the packet, altering the intake route or
+   swapping the recipient.
+9. At re-entry, contrast the real diff and the evidence, keeping structural
+   control, semantic review and acceptance as separate facts.
+
+The six roles and their boundaries are preserved: no documentary variant, no
+documentary agent and no documentary selector is created, and separation of
+responsibilities is kept as the roles contract states it. The editable product
+needs an explicit editable scope (`write_scope`); when that scope overlaps the
+sources, the verifiers or protected oracles, or when it is unclear which part a
+file plays, that part is stopped and the engagement is corrected before
+continuing. A declared documentary engagement that would edit addon work is
+stopped at that part and returned to the orchestrator.
+
+---
+
 ## Templates per role
 
 ### Test-writer (Stage 3 — AUDIT)
@@ -369,7 +426,7 @@ Context:
 4. docs/systemPatterns.md
 
 Strict rules:
-- Permissions: edit ONLY in implementation code. You do NOT touch tests/. If you think the test is wrong, do NOT change it; report to the orchestrator.
+- Permissions: edit ONLY the implementation product: code, or the documentary deliverable the engagement expressly commissions. You do NOT touch tests/. If you think the test is wrong, do NOT change it; report to the orchestrator.
 - Implement the approved behavior simply, with the robustness it needs (R5 — `sources/roles/implementer.md`): add the validation, guards and reasonable error handling the behavior needs even when no test demands them.
 - You do NOT add unrequested features "just in case".
 - After implementing, run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy"); the complete suite is the closure gate.

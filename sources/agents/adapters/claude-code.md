@@ -80,12 +80,19 @@ comes from the PreToolUse hook, not from the invocation mechanism.
 <!-- cdad-section:delegation -->
 Delegation in Claude Code — the native mechanism, not the CLI adapter:
 
-- **Mechanism (native).** First, resolve the stack suffix
-  (`docs/.cdad-state.json.stack`), then dispatch with the `Agent` tool and
-  `subagent_type: cdad-<role>` (role→subagent mapping: `cdad-architect`,
-  `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`;
-  use `cdad-<role>-<stack>` when the variant exists, else the generic
-  `cdad-<role>`).
+- **Mechanism (native).** First resolve the stack, then derive the recipient from the
+  `stack` (`docs/.cdad-state.json.stack`) with the canonical derivation — absent, `null`
+  or empty → `cdad-<role>`; any non-empty stack → the suffix `cdad-<role>-<stack>`
+  («any other value» never means the generic agent) — then dispatch with the `Agent` tool
+  (`subagent_type` = `cdad-<role>`, role→subagent mapping) using the `agent` of the validated
+  request (`cdad-architect`, `cdad-test-writer`, `cdad-implementer`, `cdad-reviewer`, `cdad-scribe`). A
+  required variant that is not published is a procedural duty, not a mechanical
+  guard: the orchestrator checks that the derived agent is published and, when
+  it is not, stops that part of the engagement and reports the block to the
+  user — or to the owner, as the case requires — never substituting the generic
+  agent silently. The mechanical rejection before launching the role work
+  belongs to the external adapter alone; no new mechanical guard is promised
+  for this native path or attributed to the module.
 - **Byte-identical packet.** Dispatch the exact bytes that the installed
   `<skill-dir>/scripts/cdad_packet.py render` emits (`prepare`'s stdout or
   `render`'s re-emission) — the packet is passed byte-identical, never padded

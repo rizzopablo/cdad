@@ -1,0 +1,12 @@
+{
+  "session_id": "<session>",
+  "agent": "cdad-reviewer",
+  "model": {
+    "id": "claude-opus-5-5",
+    "providerID": "claude-code",
+    "variant": "low"
+  },
+  "time_created_ms": 1793477001503,
+  "directory": "<repo>",
+  "source": "session_v2 of the runtime store, read-only"
+}

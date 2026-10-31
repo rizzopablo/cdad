@@ -69,7 +69,7 @@ the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
 | architect | 1, 2 | technical mapping + Socratic brainstorm + spec draft | everything | nothing | does not approve spec (user) | `docs/specs/<id>/spec.md` (draft) |
 | test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits existing suite, registers test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) |
 | test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **Does NOT see `src/` or implementation code** | tests in `tests/` |
-| implementer | 3.2 | simple implementation of the approved behaviour with reasonable robustness | spec, tests, interface | implementation code | **NOT `tests/**`** | diff/commits |
+| implementer | 3.2 | simple implementation of the approved behaviour with reasonable robustness | spec, tests, interface | implementation product (code, or a documentary deliverable the engagement expressly commissions) | **NOT `tests/**`** | diff/commits |
 | refactorer | 3.3 | cleans code keeping the suite green (runs as cdad-implementer REFACTOR sub-mode) | full suite | implementation code | **NOT `tests/**`**, suite always green | diff |
 | reviewer | 4 | report of findings against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` |
 | scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) |
@@ -129,12 +129,12 @@ Detail and relevance audit in `references/stage-3-tdd.md`.
 
 ### 3.1 — Activation by stack: specialized variants
 
-The `stack` field of `docs/.cdad-state.json` selects role variants by
-domain. With `stack: odoo`, the orchestrator delegates each role to its
-specialized `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo` variant
-(permission profiles, models and Odoo skills per role). Mechanism detail,
-triggers and mapping table in `references/sub-agent-strategies.md`
-(not duplicated here). Absence of `stack`, or another value, → generic agents.
+The `stack` field of `docs/.cdad-state.json` selects role variants by domain. With `stack: odoo`, the orchestrator delegates each role to its specialized `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo` variant
+(permission profiles, models and Odoo skills per role). Mechanism detail, triggers and mapping table in `references/sub-agent-strategies.md` (not duplicated here). The derivation is the one the canonical producer applies
+and consumers do not re-implement: a `stack` that is absent, `null` or empty derives the generic `cdad-<role>`; any non-empty stack derives `cdad-<role>-<stack>`, a suffix by domain. «Any other value» never means the
+generic agent. The dispatch uses the `agent` of the validated request, and a required variant that is not published stops the dispatch: it is a procedural duty of the orchestrator (verify publication and stop) and it is
+never substituted silently. The mechanical rejection before launching the role work belongs to the external adapter; no new mechanical guard is claimed for the
+native path.
 
 ### 4. Delegation decision rule (single, explicit)
 
@@ -469,6 +469,7 @@ The references are **deepening material**, not a condition for understanding the
 | `receiving-feedback.md` | When transmitting or receiving feedback from review, user or external PR (Stage 4 fix loop) |
 | `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
 | `design-principles.md` | When a role owes a design duty and you need the canonical wording of the principle behind it (the architect's criterion, the reviewer's judgement and its limit) — the single canonical owner; the roles point at it, they do not restate it |
+| `documentary-contracts.md` | When an engagement has a documentary product (discovery notes, process maps, user stories) and you need the canonical criteria: the four categories, the locator per source type, the pending classification, the four declarations of the engagement, the role boundaries, the two closure records and the acceptance authority — the single canonical owner; the roles point at it, they do not restate it |
 
 Load one at a time. Don't keep the whole tree in context.
 

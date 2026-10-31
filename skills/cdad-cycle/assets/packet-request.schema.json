@@ -4,6 +4,9 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "packet_id", "execution_id", "feature_id", "role", "substage", "objective", "contract", "inputs", "read_scope", "write_scope", "invariants", "expected_output", "evidence_required"],
+  "dependentRequired": {
+    "execution_context": ["agent"]
+  },
   "properties": {
     "schema_version": {"const": 1},
     "packet_id": {"type": "string", "minLength": 1},
@@ -20,6 +23,16 @@
     "expected_output": {"type": "string", "minLength": 1},
     "evidence_required": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "plan_task": {"type": "string", "minLength": 1},
+    "agent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Agent that receives the packet (010-002 D3): the generic `cdad-<role>` when the stack is absent, null or empty, or `cdad-<role>-<stack>` for any non-empty stack. Optional: historical requests published before this field stay admitted. It is excluded from the render. The schema only describes its FORM; role/stack coherence and dispatch timing are checks of the CLI."
+    },
+    "execution_context": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project-relative canonical location of the v2 execution context the packet was prepared from: `.cdad/executions/<execution_id>/execution.json` (010-004 §4.1). Optional for historical requests; a new publication declares it, and then `agent` is mandatory."
+    },
     "current_decisions": {
       "type": "array",
       "description": "Decision rows that govern the role of the packet (006-004 U1). Optional: absent or empty means the packet declares no row.",

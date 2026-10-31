@@ -14,6 +14,17 @@ description: >
 defines HOW (Makefile versioned in the repo). The CDAD-Odoo agents invoke
 only the 4 targets — never environment-specific commands.
 
+**Applicability:** the contract governs runs of the **addon suite**. An
+engagement that modifies no addon — a documentary-pure product included — owes
+none of these runs and spends no run budget; a module's `readme/`,
+`static/description/`, `README.rst` or `doc/` is a documentary product unless
+the contract declares it part of the addon's functional deliverable. Addon
+work is what lives in `models/`, `views/`, `controllers/`, `wizards/` (or
+`wizard/`), `security/`, `data/`, `static/src/`, `__manifest__.py` or
+equivalent executable resources. The addon boundary is owned by the
+`odoo-expert` skill; this section states when the contract applies, without
+repeating that boundary.
+
 ## The contract (mandatory, exact names)
 
 | Target | Semantics | Used by |

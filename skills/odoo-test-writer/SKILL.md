@@ -14,6 +14,28 @@ description: >
 > (`make test` / `make test-one` / `make test-clean`) lives in the
 > `odoo-make-env` skill; here is the test content, not the runner.
 
+## Applicability: addon tests vs. documentary verifiers
+
+This framework governs **addon tests**, which verify an addon product even when
+the test-writer writes exclusively under the project's `tests/`. Addon tests
+keep `TransactionCase`, the mandatory `@tagged`, self-contained fixtures and
+the Odoo runner.
+
+Addon work is what lives in `models/`, `views/`, `controllers/`, `wizards/`
+(or `wizard/`), `security/`, `data/`, `static/src/`, `__manifest__.py` or
+equivalent executable resources. A module's `readme/`,
+`static/description/`, `README.rst` and `doc/` are a documentary product
+unless the contract declares them part of the addon's functional deliverable.
+
+A **documentary verifier** — a structural check of a document, or of a
+module's `readme/`, `static/description/`, `README.rst` or `doc/` when the
+contract does not make it part of the addon's functional deliverable — is not
+an addon test: it does not require `TransactionCase`, `@tagged` or the addon
+runner just because of the project domain. It keeps its isolation from the
+produced document and derives its oracle from the contract. The full addon
+boundary is owned by the `odoo-expert` skill; this section states the
+test-writer's applicability only.
+
 ## Test class: TransactionCase (the modern single class)
 
 Use **`TransactionCase`** as the base class. It is the class recommended by

@@ -72,6 +72,16 @@ the inline coincides — and a divergent inline is never rescued by switching to
 C. Do not invent routes, markers or fallbacks, and do not remove the declared
 ones: a rejection is reported, never repaired by changing the route.
 
+**Recipient derivation.** The agent comes from the canonical producer, never
+from a second resolver: a `stack` that is absent, `null` or empty derives the
+generic `cdad-<role>`; any non-empty stack derives `cdad-<role>-<stack>`, a
+suffix by domain. «Any other value» never means the generic agent. Dispatch
+with the `agent` of the validated request. A required variant that is not
+published stops the dispatch — a procedural duty of the orchestrator — and is
+never substituted silently by the generic agent; the external adapter owns the
+mechanical rejection before launching the role work, and no new mechanical
+guard is promised for this native path.
+
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
 `<skill-dir>/scripts/cdad_packet.py prepare --project-root <root> --role
@@ -241,6 +251,23 @@ Procedure detail lives in its own sources (do not clone here):
 anti-patterns); suspending, re-taking and retiring a unit, and republishing its
 derived agents, are defined by `references/project-execution.md` and
 `references/orientation.md`.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): for a documentary
+product you prepare the four declarations of the engagement, delimit the
+scopes, and verify the evidence and the pending classification inside the gates
+you already run — adding no new gate, role or permission.
+
+Product applicability (PC-05 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Orchestrator result |
+|---|---|
+| Documentary | Prepares the documentary declarations and, at re-entry, confirms the diff and its verifications; it does not do role work inline. |
+| Addon | Requires the evidence of the delegated addon contract according to the real diff; it does not do role work inline. |
+| Mixed | Requires both families; when the real diff contradicts the engagement it records the deviation, stops and corrects or re-routes, and it grants no retroactive permission. |
+
+The real diff prevails over the label; the label never rewrites what the diff changed.
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->
@@ -307,12 +334,16 @@ RED/gates; it never restates them (drift checks AP-13/AP-14).
 <!-- cdad-section:odoo -->
 Declared delta (stack=odoo) — the orchestrator does NOT load odoo skills
 itself (verified from both current bodies: legacy-loads = `cdad-cycle` only):
-- The orchestrator resolves the stack suffix from `docs/.cdad-state.json.stack`
-  and delegates to `cdad-<role>-<stack>` when the variant exists (more domain
-  context, same role contract); if the stack is absent or the variant does
-  not exist, the generic `cdad-<role>`.
-- Gate validation for stack=odoo consumes the delegated role's odoo contract
-  (make test/test-clean/lint evidence, OCA checks) — declared in the role
+- The orchestrator resolves the recipient from `docs/.cdad-state.json.stack`
+  with the canonical derivation: absent, `null` or empty → `cdad-<role>`;
+  any non-empty stack → `cdad-<role>-<stack>` (more domain context, same role
+  contract). A required variant that is not published stops the dispatch as a
+  procedural duty; it is never silently replaced by the generic agent, and no
+  new mechanical guard is claimed here.
+- Gate validation for the stack consumes the delegated role's contract
+  according to the real diff: addon evidence (`make test`/`test-clean`/lint,
+  OCA checks) when the diff modifies an addon, and no addon battery for a
+  documentary-pure diff of an unmodified addon — declared in the role
   sources, never duplicated here.
 Domain sources of truth: `skills/odoo-*/`, reached via the delegated role's
 packet — not loaded by the orchestrator.

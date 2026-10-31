@@ -55,6 +55,26 @@ custom_module/
     └── test_my_model.py
 ```
 
+## Addon work vs. module documentation (applicability)
+
+Inside an Odoo module, **addon work** covers `models/`, `views/`,
+`controllers/`, `wizards/` (or `wizard/`), `security/`, `data/`,
+`static/src/`, `__manifest__.py`, and functionally equivalent executable
+resources: imports, hooks, Python execution files, reports and `report/`.
+
+The module's documentation — `readme/`, `static/description/`, `README.rst`,
+`doc/` — is a **documentary product**, unless the contract declares it part of
+the addon's functional deliverable. Its location inside the module, by itself,
+does not demand an addon battery (`TransactionCase`, `@tagged`, a runner, lint
+or a clean install); the same holds for a structural documentary verifier in an
+Odoo project.
+
+This boundary delimits obligations only: it does not change the path
+classification of the policy, the permissions or the admitted scopes, and it
+never exempts addon work that the real diff contains. A documentary-pure
+engagement keeps the roles' ordinary contracts and owes no addon evidence for an
+addon it does not modify.
+
 ## Golden Rules
 
 - **New API only** (Odoo 8+) — no `cr, uid, ids, context` signatures

@@ -1,0 +1,29 @@
+{
+  "bundle_sha256": "cebfade75f26050fc289b400d886ea9899cb8b154fcfa2a3255c18f27c6a2e26",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "identity_validation": "passed",
+  "packet_id": "010-003-documentary-pilot-reviewer-review-002",
+  "packet_validation": "passed",
+  "parts": [
+    {
+      "artifact_kind": "review",
+      "bytes": 9624,
+      "name": "010-003-product-review",
+      "sha256": "a037609bbcb324d9467573a9dfa6c4177e9eca216b662f3b1e2ad90ea2336ad0",
+      "stored_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-review-002/parts/010-003-product-review.utf8"
+    }
+  ],
+  "received_at": "2026-10-31T20:00:22.697185Z",
+  "role": "reviewer",
+  "run_evidence_status": "not-provided",
+  "schema_version": 1,
+  "scope_validation": "unknown",
+  "semantic_status": "pending",
+  "source": {
+    "kind": "staged-file",
+    "sdk_message_ref": "<session>"
+  },
+  "state_transition_requested": "received",
+  "substage": "review"
+}

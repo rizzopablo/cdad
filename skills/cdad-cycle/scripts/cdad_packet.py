@@ -1721,6 +1721,42 @@ def _validate_declared_execution_context(document: dict[str, Any],
             f"{execution_id!r} of feature {document.get('feature_id')!r}")
 
 
+def _generic_agent(role: str) -> str:
+    """The generic destination of a role: `cdad-<role>` (010-002 §2 D3)."""
+    return f"cdad-{role}"
+
+
+def _validate_declared_agent(document: dict[str, Any]) -> None:
+    """STATIC agent↔role contrast of the SHARED request validation (PC-07b/INV-04).
+
+    010-002 §2 (PC-07b, INV-04): a declared `agent` belongs to the declared role
+    when it is EXACTLY the generic name `cdad-<role>` or that complete prefix
+    with a NON-EMPTY suffix (`cdad-<role>-<suffix>`). A partial prefix of the
+    role name never suffices, and an agent of another role never validates.
+
+    The current `stack` is deliberately NOT consulted here: reading a published
+    request (`validate-request`, `render`, `validate-packet`, `receive`) is never
+    invalidated by a later change of domain (PC-08). The contextual contrast
+    against the stack in force belongs to NEW publications and NEW dispatch
+    intents (`_require_current_agent`), never to this shared validation.
+    """
+    if "agent" not in document:
+        # An admitted historical request without `agent` stays admitted: the
+        # presence of `agent` is required only when `execution_context` exists.
+        return
+    agent, role = document["agent"], document["role"]
+    family = _generic_agent(role)
+    if agent == family or (agent.startswith(family + "-")
+                           and len(agent) > len(family) + 1):
+        return
+    raise PolicyError(
+        f"request.agent {agent!r} does not belong to the declared role {role!r}: "
+        f"expected the generic agent {family!r} or that complete prefix with a "
+        f"non-empty suffix ({family}-<suffix>); this static contrast does not "
+        f"evaluate the stack — a same-role agent with another suffix is admitted "
+        f"when a published request is read")
+
+
 def validate_request(document: dict[str, Any], execution_document: dict[str, Any],
                      state: dict[str, Any], project_root: Path,
                      contract_bytes_override: bytes | None = None) -> dict[str, Any]:
@@ -1762,6 +1798,15 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     if (not required <= set(document) <= (required | optional)
             or document.get("schema_version") != 1):
         raise PolicyError("request fields do not match schema")
+    # 010-002 §2 D3/PC-08 (O2): the PRESENCE rule of the declared destination. A
+    # request that names its execution context must declare the `agent` that
+    # receives it; only a historical request without BOTH fields is admitted.
+    if REQUEST_LOCATOR_FIELD in document and "agent" not in document:
+        raise PolicyError(
+            f"request.{REQUEST_LOCATOR_FIELD} is declared without request.agent: "
+            f"a request that names its execution context must declare the agent "
+            f"that receives it (010-002 §2 D3/PC-08); only a historical request "
+            f"without both fields is admitted")
     if "plan_task" in document and (
             not isinstance(document["plan_task"], str) or not document["plan_task"]):
         raise PolicyError("request.plan_task must be a non-empty string")
@@ -1777,6 +1822,9 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     role, substage = document["role"], document["substage"]
     if role not in ROLE_SUBSTAGES or substage not in ROLE_SUBSTAGES[role]:
         raise PolicyError("request role/substage pair is invalid")
+    # 010-002 §2 (PC-07b/INV-04): the STATIC agent↔role contrast, shared by
+    # every reader of a request. It never consults the stack.
+    _validate_declared_agent(document)
     # 006-004 U1 (R-1..R-7): the declared rows are re-validated wherever the
     # request is validated (`prepare`, `validate-request`, `render`,
     # `validate-packet`, `receive`): the shape, the file, the admission rules
@@ -3793,12 +3841,14 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # not silently drop the decisions that govern the role.
         if "current_decisions" in request:
             new_request["current_decisions"] = request["current_decisions"]
-        # 006-005 U1c: the same for the declared `agent` — an ADDITIVE property
-        # of the request that the render ignores. It is part of the assignment
-        # the successor replaces, so it travels with it instead of disappearing
-        # without being a declared correction (007-002 §2.4/INV-5).
-        if "agent" in request:
-            new_request["agent"] = request["agent"]
+        # 010-002 §2 D3/PC-06 (P-4/B1): a successor is a NEW publication, so it
+        # REDERIVES its `agent` from the role and the stack in force through the
+        # ONE canonical derivation. It NEVER copies the predecessor's agent: a
+        # historical predecessor that declares none still publishes the derived
+        # agent, and a stack that changed during the predecessor's life publishes
+        # the agent of the CURRENT stack. The predecessor's bytes are never
+        # rewritten (INV-3/PC-06).
+        new_request["agent"] = _packet_agent(role, state)
         # 010-004 §4.1/PC-04: a successor is a NEW publication, so it declares the
         # canonical locator of its own v2 execution even when the predecessor (an
         # older generation) did not. `_load_execution_context` resolved this
@@ -3824,6 +3874,11 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # INV-1/PD-11: the new contract passes the SAME role-aware approval check
         # as an ordinary prepare. A drifted, unauthorized contract raises
         # `approval pending` here, before any publication.
+        # 010-002 §2 (PC-07a/PC-07c): the successor is a NEW publication, so it
+        # passes the SAME contextual contrast as the ordinary preparation. Its
+        # agent was rederived above from this very state, so the guarantee holds
+        # BY CONSTRUCTION; the shared check keeps it in ONE place.
+        _require_current_agent(new_request, state, "prepare --replace-packet")
         validate_request(new_request, execution_document, new_state, project_root)
         packet = render_packet(new_request, execution_document, project_root).encode("utf-8")
         # PD-24 (C2): trace field by field what the successor conserved and what
@@ -4304,15 +4359,23 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
         # to its canonical rendering. The check precedes every new effect of the
         # commission (record, state binding, observation) and writes nothing.
         verify_published_packet(project_root, packet_id, state=state)
+        # 010-002 §2 (PC-07c/PC-08): a NEW dispatch intent that DECLARES an agent
+        # contrasts against the role and the stack in force BEFORE any effect.
+        # The identical repetition of a recorded attempt (P-2) and the valid
+        # write-ahead finalization of an intent already started (N2) are NOT new
+        # intents, and an admitted historical request without `agent` declares
+        # nothing to contrast and is never given one here (P-3).
+        dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
+                         / DISPATCHES_DIRNAME / f"{attempt_id}.json")
+        stored_payload = (_read_bytes(dispatch_path, "dispatch record")
+                          if dispatch_path.is_file() else None)
+        if stored_payload is None:
+            _require_current_agent(request, state, "record-dispatch")
         observation = _load_observation_document(observation_path)
         # §2.2 (enmienda): does THIS execution have continuity? The declaration
         # below is the durable, non-silent record of the scope decision.
         continuity = cdad_continuity.continuity_presence(
             project_root, execution_id, execution_document)
-        dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
-                         / DISPATCHES_DIRNAME / f"{attempt_id}.json")
-        stored_payload = (_read_bytes(dispatch_path, "dispatch record")
-                          if dispatch_path.is_file() else None)
 
         base_record = {
             "execution_id": execution_id,
@@ -6418,11 +6481,45 @@ def _packet_agent(role: str, state: dict[str, Any]) -> str:
     without it `cdad-<role>`. It is the field the module translates into its
     invocation and against which the correlation compares (§2.3), so it stays
     an ADDITIVE declared property of the request: it never enters the render.
+
+    This is the ONE canonical derivation of the destination (010-002 §2 D3):
+    the ordinary publication, the replacement, the contextual contrast and the
+    registration of a new dispatch intent all reuse it instead of resolving the
+    agent on their own.
     """
     stack = state.get("stack")
     if isinstance(stack, str) and stack:
-        return f"cdad-{role}-{stack}"
-    return f"cdad-{role}"
+        return f"{_generic_agent(role)}-{stack}"
+    return _generic_agent(role)
+
+
+def _require_current_agent(request: dict[str, Any], state: dict[str, Any],
+                           operation: str) -> None:
+    """CONTEXTUAL contrast of the DECLARED agent against the role+stack in force.
+
+    010-002 §2 (PC-07c/PC-08): a NEW publication (ordinary or by replacement) and
+    a NEW dispatch intent that DECLARES an `agent` must carry the destination the
+    canonical derivation yields from the request's role and the CURRENT stack;
+    the mismatch fails closed naming role, stack and expected agent.
+
+    It is deliberately NOT applied to reading a published packet, to the
+    identical repetition of a recorded attempt, to the valid write-ahead
+    finalization of an intent already started (P-2/N2), nor does it invent an
+    agent for an admitted historical request that declares none (P-3).
+    """
+    agent = request.get("agent")
+    if agent is None:
+        return
+    role = request.get("role")
+    stack = state.get("stack")
+    expected = _packet_agent(role, state)
+    if agent == expected:
+        return
+    raise PolicyError(
+        f"{operation}: request.agent {agent!r} is not the destination of the "
+        f"current stack: role {role!r}, stack {stack!r}, expected agent "
+        f"{expected!r} (a new publication or a new dispatch intent must carry "
+        f"the agent derived from the role and the stack in force, PC-07c)")
 
 
 def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
@@ -6706,6 +6803,12 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
             "id": packet_id, "role": role, "substage": substage, "status": "prepared",
             "packet_version": 1, "contract_kind": contract_kind, "contract_sha256": digest,
         }
+        # 010-002 §2 (PC-07a/PC-07c): an ordinary publication is a NEW request, so
+        # it passes the SAME contextual contrast shared with the replacement and
+        # the registration of a new dispatch intent. The agent was derived above
+        # from this very state, so the guarantee holds BY CONSTRUCTION here; the
+        # shared check keeps that guarantee in ONE place instead of restating it.
+        _require_current_agent(request, state, "prepare")
         validate_request(request, execution_document, new_state, project_root,
                          contract_bytes_override=projection_bytes)
         packet = render_packet(request, execution_document, project_root).encode("utf-8")

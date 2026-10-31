@@ -484,6 +484,149 @@ tabla en sí la mantiene el orquestador.
   Normativo en `docs/specs/010-004-packet-dispatch-ergonomics/spec.md` (PC-01..PC-12);
   este archivo no re-enuncia las postcondiciones.
 
+### Contratos documentales — una casa, punteros y dos registros (epic 010, 2026-10-31)
+
+- **La norma documental vive en un solo archivo, y los consumidores la citan.**
+  `skills/cdad-cycle/references/documentary-contracts.md` es la casa única (ocho
+  secciones: categorías, localizador por tipo de fuente, clasificación de pendientes,
+  las cuatro declaraciones del encargo, fronteras por rol, dos registros, contraste y
+  aceptación, alcance de la norma). Las seis fuentes de rol, los cinco bloques de
+  `skills/cdad-cycle/packets/roles/` y los agentes derivados de ambos runtimes
+  declaran su obligación en sus propias palabras y nombran el archivo. Se elige esta
+  forma —y no un skill o agente nuevo— porque la distribución de referencias y las
+  obligaciones por puntero ya existen; decisión y trade-offs en `010-001` D4, PC-13/PC-16.
+- **La unicidad se mide, no se declara.** La medida es por frases normativas derivadas
+  de la referencia, con espacios normalizados, sobre `skills/`, `sources/` y `agents/`,
+  siguiendo el precedente de `tests/test_006_004_u3_principle_single_source.py`. La
+  redacción de las obligaciones breves de rol no cuenta como duplicación; el
+  solapamiento de 6-gramas entre fuentes de rol y referencia quedó registrado como O4,
+  diferido, sin afectar la medida contractual.
+- **Dos superficies, no una, y el generador no cubre la tabla del skill.** Los bloques
+  estáticos de paquete viajan en el render del encargo; la tabla §2 de `SKILL.md` y las
+  dos referencias de despacho (`handoff-prompts.md`, `sub-agent-strategies.md`) **no**
+  se componen desde `sources/`. Corregir un contrato de rol exige tocar las dos
+  superficies: en esta unidad, dejar sólo las fuentes y los agentes produjo el
+  bloqueante B2 (dos contratos publicados que se contradecían). Los agentes se
+  regeneran con `make agents`; nunca se editan a mano.
+- **El techo de los bloques estáticos no se eleva para acomodar un cambio.** Con la
+  obligación documental incorporada, el máximo medido es **3709 bytes**
+  (`reviewer/plan-review`) sobre el techo declarado de **12000**; la medición completa
+  por par rol/subfase la emite el test del techo.
+- **La norma aplica condicionalmente y no amplía autoridad.** Gobierna cuando el
+  encargo declara producto documental; el trabajo de código conserva las reglas de su
+  rol. No crea roles, etapas, campos del request/estado ni permisos por defecto, no
+  reemplaza el Memory Bank y no convierte al scribe en productor documental general.
+- **Frontera de escritura: producto autorizado, fuentes, verificadores.** El encargo
+  declara fuente autorizadas, producto editable por rutas, verificadores e insumos de
+  aceptación protegidos, evidencia y límites. Compartir la clasificación `docs` no vuelve
+  editable un archivo; una superposición o una ambigüedad sobre qué papel juega un
+  archivo detiene esa parte. **Quien produce no modifica su oráculo**: un cambio
+  legítimo vuelve al rol competente y, si altera el contrato, a aprobación. El mismo
+  principio ya gobernaba el código.
+- **Dos registros de cierre que no se sustituyen.** Estructural (qué se ejecutó,
+  resultado, alcance, límites) y semántico independiente (qué se contrastó, hallazgos,
+  abstenciones). Consecuencia observada en esta unidad: los 11 tests estaban verdes y
+  la norma omitía dos reglas de la propia decisión (B1); un verde estructural no
+  acredita cobertura semántica. Un recibo de transporte o la aceptación estructural de
+  un paquete tampoco; una obligación textual o un paquete no son un sandbox. La
+  aceptación funcional es del usuario/dueño que aprueba.
+- **Lo que esta convención NO promete.** No hay parser ni linter universal de
+  documentos, ni detección automática de contradicciones, ni protección mecánica por
+  hash de cada insumo, ni captura genérica de fuentes externas o formatos binarios: los
+  cinco elementos quedaron como `deferred-hardening` de la spec §7, sin aplazar ninguna
+  promesa comprometida. La norma está en el repositorio y **no vigente en la
+  instalación** hasta que el dueño decida publicar; mientras tanto la obligación llega
+  por el paquete. Normativo en `docs/specs/010-001-documentary-contracts/spec.md`
+  (PC-01..PC-16); este archivo no re-enuncia las postcondiciones.
+
+### Especialización documental por contrato y destinatario coherente (epic 010, 2026-10-31)
+
+- **El perfil documental es una especialización por contrato, no una identidad.** Un
+  encargo cuyo producto es un documento se declara con los campos que el encargo ya lleva:
+  objetivo y promesas en el contrato/`objective`, producto en `expected_output`, fuentes
+  en `inputs`/`read_scope`, producto editable en `write_scope`, separación y verificadores
+  en `invariants` y alcances, comprobaciones y límites en `evidence_required`. No se creó
+  rol, agente, etapa, subfase, campo del estado ni selector; `stack` sigue significando
+  dominio. Por eso la generación, la instalación y la resolución del perfil se acreditan
+  con los agentes **existentes** y un encargo bien declarado. Base: `010-002` D1, PC-01–02.
+- **La frontera de addon delimita obligaciones, no permisos.** Es trabajo de addon
+  `models/`, `views/`, `controllers/`, `wizards/`, `security/`, `data/`, `static/src/`,
+  `__manifest__.py` y el código o recurso funcional equivalente; la documentación del
+  módulo (`readme/`, `static/description/`, `README.rst`, `doc/`) es producto documental
+  salvo que el contrato la declare entregable funcional, y su ubicación dentro del módulo
+  no exige batería de addon. Un test de addon verifica producto de addon aunque el
+  test-writer escriba solo bajo `tests/`; un verificador estructural documental no se
+  vuelve test de addon por el dominio del proyecto. Esta frontera **no** cambia la
+  clasificación de rutas de la política, los permisos ni los alcances admitidos. Casa única:
+  `skills/odoo-expert/SKILL.md` (`## Addon work vs. module documentation`); el resto de las
+  skills Odoo la citan. Base: `010-002` D2, PC-04–05.
+- **La aplicabilidad se ata al producto o al diff, según el rol.** Architect: producto
+  propuesto en el contrato y sus alcances —nunca su propio `write_scope`, que está vacío—;
+  conserva conocimiento funcional, configuración primero, mapeo proceso→módulo y `VERIFY`,
+  y solo debe inventario core/OCA acreditado y entorno de pruebas cuando propone modificar
+  un addon. Test-writer: producto y promesas que verifica, nunca el hecho de escribir
+  tests. Implementer: producto aprobado y `write_scope`. Reviewer y orquestador: contrato
+  **y diff real**, que prevalece sobre la etiqueta; un addon oculto bajo etiqueta
+  documental se informa y **bloquea** su aceptación como documental puro, sin permiso
+  retroactivo. Scribe: evidencia del cierre, sin producir ni verificar addon. Base:
+  `010-002` D2, PC-05.
+- **Un verificador documental no es un test de addon.** No exige `TransactionCase` ni
+  `@tagged`; corre por el runner declarado del proyecto y, cuando ese runner no lo cubre,
+  el encargo **declara el límite de evidencia** sin emitir comandos crudos fuera del
+  contrato `make` ni ampliar permisos. Esta precisión nació al cerrar B2 del review de T8 y
+  quedó registrada como P-5 (no estaba en la spec original); no crea permisos nuevos.
+  Base: `010-002` PC-04, P-5.
+- **El destinatario se comprueba en dos niveles, en momentos distintos.** Estático
+  agente↔rol en la validación compartida: `cdad-<role>` exacto o prefijo completo
+  `cdad-<role>-` con sufijo no vacío, sin consultar el stack y sin acreditar que la variante
+  esté publicada; un agente de otro rol no valida ni produce render válido, y el
+  diagnóstico nombra rol, agente recibido y familia esperada. Contextual rol/stack/agente
+  solo en dos límites: publicación de un request **nuevo** (ordinaria o
+  `prepare --replace-packet`) y registro de un **intento nuevo** de despacho con `agent`
+  declarado. Se descarta validar solo al despachar —dejaría renderizar agentes de otro
+  rol— y comparar el stack en toda lectura —invalidaría continuidad histórica legítima—.
+  Base: `010-002` D3, PC-06–08, INV-04.
+- **Publicación nueva deriva el agente; el reemplazo rederiva, nunca copia.** La derivación
+  canónica es una sola: `stack` ausente, `null` o vacío → `cdad-<role>`; cualquier cadena
+  no vacía → `cdad-<role>-<stack>`. `prepare --replace-packet` publica un sucesor con el
+  agente derivado del rol y del stack **vigente**, incluso cuando el predecesor histórico no
+  tenía agente o cuando el stack cambió durante su vida, sin reescribir bytes históricos ni
+  sus registros. Es **garantía por construcción**: se verifica el valor publicado, y no se
+  atribuye a las vías públicas una rama de rechazo de agente inyectado que su interfaz no
+  permite alcanzar. Base: `010-002` PC-06, EV-03.
+- **La distinción temporal protege continuidad y no abre reutilización.** La recepción de
+  un paquete ya despachado, la repetición idempotente de un registro idéntico y la
+  finalización válida del write-ahead del mismo intento **no** se reevalúan contra el stack
+  vigente; un intento nuevo con agente declarado **sí**. Un histórico admitido sin
+  `execution_context` ni `agent` puede registrar un intento nuevo sin contraste contextual
+  del destinatario y **sin** derivar ni sustituir agente en silencio. La regla de presencia
+  es explícita: `execution_context` exige `agent`, toda publicación nueva publica ambos y
+  `agent` sigue excluido del render. Base: `010-002` PC-08, INV-04.
+- **Lo mecánico y lo procedimental se atribuyen donde existen.** En la vía nativa, una
+  variante requerida y no publicada es **deber procedimental**: el orquestador comprueba la
+  publicación del agente derivado y, si falta, detiene esa parte y reporta el bloqueo, sin
+  sustituirla en silencio. El rechazo mecánico antes de lanzar pertenece **solo** al
+  adaptador externo y no se promete guarda nueva para la vía nativa. Este criterio se
+  rompió una vez en los adaptadores y en los orquestadores generados (B1) y el detector
+  existente no lo vio porque una negación vecina lo anulaba. Base: `010-002` D4, PC-09.
+- **El esquema del request describe forma.** `packet-request.schema.json` declara `agent` y
+  `execution_context` (cadenas no vacías, con la ubicación canónica del contexto),
+  conserva el conjunto cerrado y agrega `dependentRequired` (`execution_context` →
+  `agent`). No sustituye las comprobaciones del CLI sobre coherencia de rol, rutas
+  canónicas, archivos, estado, autoridad, hashes, identidades ni el momento de
+  publicación/despacho. Base: `010-002` D5, PC-10.
+- **Lo que esta convención NO promete.** Nada de conducta de modelos: los controles son
+  estructurales y la fidelidad semántica de un documento real corresponde al piloto
+  `010-003`. Nada de sellado criptográfico del `agent` histórico ni de snapshot nuevo del
+  stack. Nada de paridad total entre el esquema y el validador contextual. Nada publicado:
+  los 22 agentes derivados no alcanzan la instalación global hasta que el dueño lo decida,
+  y hasta entonces la obligación llega por el paquete y la toolchain del repositorio.
+  Deudas registradas: I-10 (la identidad del paquete no está pineada a sus fuentes de
+  instrucción), I-11 e I-12 (localizadores frágiles de `005-006` y `006-002`) y el límite
+  del canario frente a otro gestor de agentes. Normativo en
+  `docs/specs/010-002-documentary-role-integration/spec.md` (PC-01..PC-13); este archivo no
+  re-enuncia las postcondiciones.
+
 ## Palanca `write: ask` y permisos de bash (cdad-010, ADR-009)
 
 ### Palanca `write: ask` (2026-09-12; enmienda de ubicación 2026-09-13)

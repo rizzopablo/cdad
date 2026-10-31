@@ -4,6 +4,573 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-10-31 — Epic: epic-010-documentary-specialization (cerrado, 5/5)
+
+**Cierre del epic declarado; NO publicado y sin push.** Las cinco unidades cerradas
+individualmente (010-000, 010-004, 010-001, 010-002, 010-003) y la integración E3
+acreditada en `docs/epics/epic-010-documentary-specialization/integration.md`. La
+aceptación funcional del piloto fue **ejercida por mandato HITL** (mandato del
+2026-10-30, §1 y §3), **no aprobada directamente por el dueño**. La instalación real
+está **por detrás de la publicación de 010-004** (`install.sh --check` rc=1) y eso es
+deuda declarada, no vigencia.
+
+**Qué se entregó.** (a) Contratos documentales compartidos: una casa normativa única
+en `skills/cdad-cycle/references/documentary-contracts.md`, con obligación por puntero
+en seis fuentes de rol, cinco bloques estáticos de `packets/roles/` y los 22 agentes
+derivados de ambos runtimes. (b) Integración de roles **sin agente nuevo**: un encargo
+documental se declara con los campos que el encargo ya lleva, `stack` conserva su
+significado de dominio y la aplicabilidad Odoo se ata al producto o al diff real según
+el rol. (c) Ergonomía de despacho: contexto de ejecución v2 declarado, `render --route C`
+como vehículo que no retranscribe el cuerpo e intake exclusivo con diagnóstico. (d) Fix
+de raíces relativas/absolutas validado por la vía instalable. (e) Piloto con evidencia
+**independiente**: detección de afirmación sin respaldo, contradicción omitida y
+referencia incorrecta (3/3 coincidencias, cero omisiones), corrección en T7 y
+re-verificación del diff completo.
+
+**Medición de cierre.** Suite completa sobre el cierre de 010-003 (`c229a671`):
+**1926 passed, 5 skipped, rc=0**, canario delta 0; después de ese commit sólo cambiaron
+documentos y estado. Integración E3: **26 nodos decisivos verdes** (`26 passed in
+140.91s`, rc=0) y **cero tests nuevos, cero tests modificados** — se inventarió primero
+la cobertura existente y no faltaba cobertura testable.
+
+**Decisiones relevantes.** Especialización por contrato, no por identidad (sin rol,
+agente, etapa, subfase, campo del estado ni selector nuevos). Una casa normativa con
+consumidores que citan, nunca copian. Reparto de evidencia en dos registros que no se
+sustituyen: control estructural y revisión semántica independiente; un verde
+estructural **no** acredita fidelidad, y un recibo no aprueba. «Quien produce no
+modifica su oráculo». Detalle y trade-offs en `docs/epics/.../closure.md` y en
+`systemPatterns.md` (§010-004, §010-001, §010-002).
+
+**Qué NO se hizo (límites que no se convierten en garantías).** No hubo
+publicación/instalación global ni push. No se usaron corpus reales de clientes ni
+formatos binarios: el piloto corre sobre Markdown **sintético y sembrado**, con el
+contrato anunciando tres defectos y sus clases, así que se acredita detección sobre un
+desafío declarado, **no a ciegas**. No hay verificación semántica automática ni puntaje
+que decida verdad. La independencia del ensayo es **contractual y de alcance, no
+aislamiento técnico**. Un verde de control —incluidos los tests del epic— no acredita
+conducta de modelos.
+
+**Deuda que se lleva (backlog del epic, no se borra).** I-6/R2 (gate del orquestador
+que exija el localizador en paquetes nuevos), R-A (`--replace-packet`/`--resume-packet`
+sin el diagnóstico de bloqueo v1), I-8, I-9, I-10, I-11, I-12, I-13, I-14, I-15, el
+límite del canario frente a otro gestor de agentes y la **deriva de la instalación
+global** (52 archivos; publicar es decisión del dueño). Además: el tamaño de la suite
+(~1 h; reducirlos exige una unidad con mapa test→promesa) y formalizar la directiva
+«cobertura existente primero» en las fuentes del skill. Los `deferred-hardening` de las
+cinco specs se conservan con sus disposiciones en cada `closure.md` y en el cierre del
+epic (R6); ninguno aplaza una promesa comprometida.
+
+**Next feature in queue.** Ninguna: la descomposición del epic queda completa y el epic
+cierra. Lo pendiente son **decisiones del dueño** —publicar la instalación— y las
+unidades de la serie I, cada una con su propio contrato y su test.
+
+## 2026-10-31 — Feature: 010-003-documentary-pilot (epic 010, orden 4 del plan)
+
+**Cierre declarado y aceptación funcional registrada por mandato; NO aprobado directamente
+por el dueño y NO publicado.** `closure.md` reúne los tres registros exigidos por PC-14
+(`structural-evidence.md`, `semantic-evidence.md`, `functional-acceptance.md`) y declara el
+mapa PC-01..PC-15; la aceptación la ejerce el orquestador **en nombre del dueño** bajo el
+mandato HITL del 2026-10-30 (§1 y §3), y se registra como tal: **no** es aprobación directa
+del dueño. Este cierre no publica, no hace push y no actualiza la instalación global.
+Contrato: `docs/specs/010-003-documentary-pilot/spec.md` v5,
+`f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5`; plan v6,
+`49ce6f813aeb4e0bea0ff4f44d541a48deef29dc42f2af5aa6e05e5bf3352b04`.
+
+**Qué se cerró.** Un piloto recorrió el ciclo completo con un entregable documental
+trazable sobre un corpus **sintético**: el producto `product/relevamiento.md`
+(`007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f`, commit `6596e804`)
+corrige el candidato negativo contra el inventario `inventory-010-003-v1` (14 citas, 10
+anclas, **10/10 artefactos fijados sin deriva**). Sobre ese desafío **declarado y sembrado**,
+un ensayo en sesión separada (`<session>`), **sin clave y sin producto**,
+identificó y fundamentó las tres clases comprometidas —**F-1/F-2/F-3 del ensayo (T5)**:
+afirmación presentada como hecho sin respaldo, contradicción omitida y referencia existente
+que no sostiene— y el contraste posterior dio **3/3 coincidencias y cero omisiones**, más tres
+extras que la clave no enumeraba. La revisión **T6** encontró un bloqueante nuevo, **el
+bloqueante F-1 de T6 (divergencia del inicio del plazo)** —la divergencia de las fuentes sobre
+el inicio del plazo no estaba declarada—; **T7** lo corrigió —atribuyendo cada inicio a su
+fuente, declarando el vacío del corpus y agregando P-02 con todos los campos de PC-12— y
+**re-verificó todo el diff** (`product-review-002.md`), sin bloqueantes abiertos. Suite de
+cierre, intento 2: **1926 passed, 5 skipped, rc=0**, 3878.91 s, **canario delta 0**; el intento
+1 se interrumpió sin veredicto y se conserva como incidente, no como evidencia.
+
+**Decisiones relevantes.**
+
+- **Desafío protegido y separado del producto (D-1).** Motivo: un ensayo que recibe la clave o
+  el producto no acredita nada. La clave se fijó antes (`cd2d57b3`), el registro se versionó
+  antes (`4c822805`) y el primer informe se cerró **antes** del contraste (`d2307c42`, que
+  contiene ambos con el informe íntegro). Trade-off aceptado: el ensayo es **de un solo tiro**
+  —no se re-despacha— y por eso una cláusula de forma incumplida se declara en vez de
+  corregirse.
+- **La divergencia se documenta, no se resuelve (D-2).** Las dos posiciones incompatibles
+  sobre quién aprueba los casos límite se conservan y se declara que el corpus no decide.
+  Trade-off: el producto no es «un proceso operativo inequívoco», y eso es exactamente lo que
+  el contrato promete.
+- **Reparto de la evidencia (D-4) sin confundir registros.** El control estructural acredita
+  resolubilidad de citas, inventario y anclas; la **fidelidad semántica** la sostienen la
+  revisión de T6 y la re-verificación de T7. Un verde de control **no** se presenta como prueba
+  de corrección documental.
+- **Objeto declarado de T5 con precedencia sobre la frase genérica del rol (BN-1, resuelto en
+  `plan-review-2-resolutions-2026-10-31.md`) y criterio único de lecturas (O-10, resuelto en
+  `plan-review-3-resolutions-2026-10-31.md`)**: invalida lo que revela respuestas, no lo que
+  enseña a revisar; toda lectura observada se registra y las no clasificadas se fundan una por
+  una. La auditoría no observó lectura invalidante.
+- **Sin mecanismo nuevo (D-5).** No se creó agente, rol, etapa, subfase, campo del estado ni
+  selector documental: el piloto usó los campos y el procedimiento ya existentes de
+  `010-001`/`010-002`. Trade-off: la promesa queda atada a la disciplina de despacho, no a una
+  guarda mecánica.
+
+**Evidencia.** **Cinco vueltas de `plan-review`**, cada una con sus resoluciones registradas:
+`plan-review.md` (primera; B-1..B-4 y O-1..O-8, resueltas en
+`plan-review-resolutions-2026-10-31.md`), `plan-review-002.md` (segunda; BN-1 y NB-1..NB-6,
+en `plan-review-2-resolutions-2026-10-31.md`), `plan-review-003.md` (tercera; BN-2 y
+O-9..O-12, en `plan-review-3-resolutions-2026-10-31.md`), `plan-review-004.md` (cuarta,
+acotada al delta; BN-3 y O-13/O-14, en `plan-review-4-resolutions-2026-10-31.md`) y
+`plan-review-005.md` (quinta, acotada al delta: veredicto **aprobable, sin bloqueantes**),
+cuyo cierre es `plan-review-closure-2026-10-31.md`. Las decisiones **D-1..D-6** son del
+**discovery** (`discovery-decisions-2026-10-31.md`), no del `plan-review`. También:
+`preparation-record.md` (fijación e inspección previa); `test-audit.md`/`post-audit.md`
+(selección y auditoría); `challenge-review.md` (informe original) y `challenge-contrast.md`
+(§1 auditoría de lecturas, §2 coincidencias, §4.1 la no conformidad); `product-review.md` (F-1
+de T6) y `product-review-002.md` (re-verificación sin bloqueantes); `tdd-t3-red.md`,
+`tdd-t4-green.md`, `tdd-t7-review-fix.md`; copias durables en `evidence/t5/`, `evidence/t6/`,
+`evidence/t7/` y `evidence/closing-suite/`. Commits: `cd2d57b3`, `4c822805`, `7fcca219`,
+`d2307c42`, `6596e804`, cierre `a6a2104e`.
+
+**Deuda técnica detectada.**
+
+- **I-15 (nuevo, no conformidad de forma declarada):** el request de T5 no citó los commits de
+  fijación que el contrato (§2.3, PC-03) exige. La fijación existe y es comprobable
+  (`cd2d57b3` y `4c822805`, ambos antecesores de `d2307c42`), pero la cláusula de forma se
+  incumplió; se registra y va al backlog del epic con condición de cierre (un chequeo en
+  `prepare` o en el procedimiento de despacho, con test). **No se borra del registro ni se
+  presenta como cumplida.**
+- **I-14 (heredada, defecto del skill):** el bloque del test-writer le manda leer
+  `references/documentary-contracts.md`, que su `read_scope` no admite (`skills/**` es
+  `implementation`). Hoy lo cubre el contrato de la feature, que cita y aplica la norma.
+- **I-8 (heredada, desviación declarada y decidida):** la lectura de la norma por `bash` en el
+  AUDIT de T2, registrada en `audit-reading-deviation-2026-10-31.md`; no afectó la sustancia.
+- **P-01 y P-02 siguen abiertos y declarados** (información faltante, condición de cierre,
+  responsable y clasificación). No se resuelven aquí; el contrato promete documentarlos.
+- **N-2 y N-3** quedan como observaciones opcionales aceptadas como límite, no corregidas, para
+  no reabrir un producto ya re-verificado.
+- **Intento 1 de la suite interrumpido sin veredicto:** se conserva completo en
+  `evidence/closing-suite/attempt-1-interrupted/`; no es fallo de la suite ni evidencia de nada.
+- **`deferred-hardening` de la spec §7 — seis ítems conservados y transcriptos en `closure.md`
+  §4 bis, ninguno aplaza una promesa comprometida:** parser documental universal / formatos
+  binarios / corpus de clientes (el piloto usa Markdown sintético); detección semántica
+  automática (no sustituye el contraste independiente); generalización estadística o
+  comparación de modelos (una muestra sembrada no la acredita); sandbox, vigilancia de accesos
+  o prueba de ausencia de escrituras (no son capacidades del mecanismo); reparar I-8–I-13 o
+  actualizar la instalación global (requieren sus contratos y autorizaciones); rendimiento,
+  cobertura exhaustiva y combinatoria sin consecuencia contractual. **Ninguna exclusión permite
+  omitir los tres hallazgos, la revisión del producto ni la aceptación** (spec §7). `closure.md`
+  §4 registra además las desviaciones y deudas (I-15, la lectura por `bash` de I-8, el intento 1
+  interrumpido, N-2/N-3 y I-14) con su destino.
+- **Límites que no se convierten en garantías (PC-15):** la detección es sobre un **desafío
+  declarado y sembrado**, no a ciegas; no se acreditan detección infalible, conducta general de
+  modelos, errores espontáneos del productor ni fidelidad de un documento de cliente; la
+  independencia es **contractual y de alcance**, no aislamiento técnico; el implementer no leyó
+  el verificador pero vio nombres de casos, mensajes y valores de aserción al ejecutarlo —
+  `pytest` no es un sandbox y no se promete aislamiento; la suite usó `--all` y 5 casos quedaron
+  omitidos por variables de entorno ausentes, declarados en el `attempt.json`.
+- **Deriva de la instalación global:** los agentes instalados no llevan la obligación documental
+  mientras no se publique; publicar es decisión del dueño y este cierre no lo hizo.
+
+**Next feature in queue.** La descomposición del `epic-010-documentary-specialization` queda
+completa (010-000, 010-004, 010-001, 010-002 y 010-003 cerradas individualmente), así que **no
+hay unidad siguiente en el plan**: lo que falta es la **integración de las cinco features y el
+cierre del epic** según `docs/epics/epic-010-documentary-specialization/plan.md`, con sus
+criterios de aceptación todavía sin marcar. El epic 010 **no** cierra con esta feature. Sigue en
+la cola del epic: I-6, R-A, I-8, I-9, I-10, I-11, I-12, I-13, I-14, I-15 y la publicación
+(orden del dueño). Mientras no se publique, todo despacho real sigue necesitando la toolchain del
+repositorio (I-9).
+
+## 2026-10-31 — Feature: 010-002-documentary-role-integration (epic 010, orden 3 del plan)
+
+**Cierre técnico declarado y aceptación funcional registrada por mandato; NO aprobado
+directamente por el dueño y NO publicado.** `closure.md` declara el cierre con su
+medición de suite completa, y `owner-acceptance-2026-10-31.md` registra la aceptación
+funcional del entregable y la aprobación de este Memory Bank, ambas ejercidas por el
+orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3) que cubre los gates del
+epic-010. Contrato: `docs/specs/010-002-documentary-role-integration/spec.md`, pin
+`0d630c49…81abc` (v4); plan v4 `3ead624c…1190`. Este cierre no publica, no hace push y
+no actualiza la instalación global. La aprobación es recuperable en el estado del
+proyecto; el encabezado de `spec.md` conserva la leyenda de borrador (N2 del dictamen
+de T8, no bloqueante).
+
+**Qué se cerró.** Un encargo cuyo producto es un documento —relevamiento, mapa de
+proceso, historia de usuario— ya tiene **procedimiento operativo** sin inventar
+mecanismo: se expresa con los campos que el encargo ya lleva (`objective` y promesas,
+`expected_output`, `inputs`/`read_scope`, `write_scope`, `invariants` y alcances,
+`evidence_required` con límites y pendientes). **No se creó** agente, rol, etapa,
+subfase, campo del estado ni selector documental, y `stack` conserva su significado de
+dominio. El procedimiento vive en `skills/cdad-cycle/references/handoff-prompts.md`
+(`## Documentary engagement — operating procedure`: siete declaraciones, pasos de
+preparación y de re-entry, parada ante superposición con insumos protegidos) y **remite**
+a la casa normativa de `010-001` sin reproducirla.
+
+Se incorporó la **aplicabilidad Odoo por rol y por producto o diff real**. Dentro de un
+módulo, el trabajo de addon es `models/`, `views/`, `controllers/`, `wizards/`,
+`security/`, `data/`, `static/src/`, `__manifest__.py` y el código o recurso funcional
+equivalente (imports, hooks, archivos Python de ejecución, informes, `wizard/`,
+`report/`); la documentación del módulo —`readme/`, `static/description/`, `README.rst`,
+`doc/`— es **producto documental** salvo que el contrato la declare parte del entregable
+funcional. La base de decisión es por rol: el architect se ata al producto propuesto en
+el contrato y sus alcances (nunca a su propio `write_scope`, que está vacío); el
+test-writer, al producto y las promesas que verifica (nunca al hecho de escribir tests);
+el implementer, al producto aprobado y su `write_scope`; el reviewer y el orquestador, al
+contrato **y al diff real**, que prevalece sobre la etiqueta. Esta frontera delimita
+obligaciones y **no** cambia la clasificación de rutas de la política, los permisos ni los
+alcances admitidos. Un verificador documental **no** es un test de addon: no exige
+`TransactionCase` ni `@tagged`, corre por el runner declarado del proyecto y, si ese
+runner no lo cubre, el encargo **declara el límite de evidencia** sin emitir comandos
+crudos ni ampliar permisos.
+
+Se cerró la **coherencia del destinatario** en dos niveles con momentos distintos.
+Contraste **estático** agente↔rol, en la validación compartida (`validate-request`,
+`render`, `validate-packet`, `receive`, `prepare` y reemplazo): `cdad-<role>` exacto o
+prefijo completo `cdad-<role>-` con sufijo no vacío; un agente de otro rol no valida ni
+produce render válido, y el diagnóstico nombra rol, agente recibido y familia esperada
+declarando que el stack no se evalúa. Contraste **contextual** rol/stack/agente, solo en
+dos límites: publicación de un request nuevo —ordinaria o por `prepare --replace-packet`—
+y registro de un intento nuevo de despacho con `agent` declarado. `--replace-packet`
+**rederiva** el agente del rol y del stack vigente y deja de copiar el del predecesor:
+un predecesor histórico sin agente produce un sucesor con agente derivado y un cambio de
+`stack` produce un sucesor acorde al dominio vigente, sin reescribir bytes históricos.
+La regla de presencia quedó explícita: `execution_context` exige `agent`. La distinción
+temporal protege la continuidad sin abrir reutilización: recepción de un paquete ya
+despachado, repetición idempotente de un registro idéntico y finalización válida del
+write-ahead **no** se reevalúan contra el stack vigente; un intento nuevo con agente
+declarado sí. Un histórico admitido sin contexto ni agente puede registrar un intento
+nuevo sin contraste contextual del destinatario y **sin** derivar ni sustituir agente en
+silencio. En la vía nativa la comprobación de publicación es **deber procedimental** del
+orquestador; la guarda mecánica pertenece solo al adaptador externo. El esquema publicado
+del request (`agent` y `execution_context`, `additionalProperties: false`,
+`dependentRequired`) **describe forma** y no sustituye al validador contextual.
+
+**Decisiones relevantes.**
+
+- **Especialización documental por contrato, con los seis roles y los campos
+  existentes.** Motivo: el transporte actual expresa producto, fuentes, producto
+  editable, verificadores protegidos, evidencia y límites sin multiplicar resolución,
+  clasificación y distribución. Trade-off aceptado: la obligación vive en superficies
+  compartidas —fuentes de rol, cinco bloques estáticos de `packets/roles/`, referencias
+  de despacho, cinco skills Odoo con su inventario de referencias y los 22 agentes
+  derivados— y ninguna sustituye a otra; el generador **no** compone la tabla §2 de
+  `SKILL.md`, que se corrige a mano.
+- **La frontera de addon es una delimitación de obligaciones, no un permiso.** Su casa
+  única es `skills/odoo-expert/SKILL.md` (`## Addon work vs. module documentation`) y los
+  demás consumidores la citan; el architect conserva conocimiento funcional, criterio de
+  configuración primero y `VERIFY`, y solo se le exigen inventario core/OCA y entorno de
+  pruebas cuando propone **modificar** un addon. Trade-off declarado: la palabra clave no
+  acredita la legitimidad de una exclusión; quien decide es el contrato o el diff, y un
+  addon oculto bajo etiqueta documental se informa y **bloquea** su aceptación como
+  documental puro, sin permiso retroactivo.
+- **Dos niveles de coherencia en lugar de un contraste único.** Se descartó validar solo
+  al despachar —dejaría renderizar agentes de otro rol— y se descartó comparar el stack
+  vigente en toda lectura —invalidaría continuidad histórica legítima—. Trade-off
+  aceptado: un cambio de `stack` puede bloquear un intento nuevo del paquete anterior sin
+  invalidar por ese motivo su recepción, su repetición idéntica ni la finalización de su
+  write-ahead; el reemplazo legítimo publica un sucesor rederivado. Consecuencia
+  registrada: **N7**, un paquete `prepared` sin otra obsolescencia queda sin salida
+  directa tras cambiar el stack; se acepta **fail-closed** con tres salidas legítimas
+  (restituir el `stack`, producir la obsolescencia legítima o retirar con `withdraw`).
+- **Garantía por construcción en las dos vías públicas de publicación.** La preparación
+  ordinaria y el reemplazo publican el agente derivado; la verificación observa el valor
+  publicado. No se atribuye a `prepare` una rama de rechazo de agente inyectado que su
+  interfaz pública no permite alcanzar.
+- **El esquema declara los campos admitidos y su dependencia estructural**, preservando
+  la admisión histórica sin ambos campos y la exclusión de `agent` del render entre
+  requests válidos. Trade-off: no se promete paridad total JSON Schema↔CLI contextual
+  —el esquema carece de archivos, estado y autoridad— y esa paridad queda en
+  `deferred-hardening`.
+- **Un verificador documental se ejecuta por el runner declarado del proyecto.** Precisión
+  incorporada al cerrar B2 (P-5, no presente en la spec original, declarada como tal en la
+  re-revisión): evita que la prohibición de comandos crudos del test-writer obligue a
+  fabricar un test de addon para un verificador documental, y prohibe que la salida sea
+  ampliar permisos.
+
+**Evidencia.** Cuatro pasadas de `plan-review` (v1 con dos bloqueantes —aplicabilidad
+Odoo fuera de los roles sin escritura de producto, y promesa contradictoria de
+selección—, v2 sin bloqueantes con N1–N4, v3 con un bloqueante nuevo —el reemplazo copiaba
+el agente—, v4 sin bloqueantes y recomendación de aprobación). AUDIT aprobado con
+resolución de alcance. RED/GREEN por tarea: T4 con `13 passed` en los grupos
+`TestEngagement`, `TestOdooApplicability`, `TestDispatchDoctrine` y `TestDistribution`, sin
+tocar tests; T6 con la derivación canónica única, los dos contrastes y la regla de
+presencia en `cdad_packet.py` y las dos propiedades del esquema. Review de T8 con **tres
+bloqueantes**: **B1** —los adaptadores nativos prometían un rechazo mecánico inexistente—,
+**B2** —los deltas Odoo de reviewer, implementer y test-writer conservaban la batería de
+addon incondicional— y **B3** —el registro de I-10 omitía que el registro del despacho
+corrió durante la restitución—. Los tres se cerraron **con los controles escritos antes de
+la corrección** (`735d977c`: 13 archivos, +106/−30) y `review-002.md` los declara
+**B1–B3 cerrados, sin bloqueantes nuevos**, con ocho mediciones propias (58 passed,
+`make agents` ×2 con hash idéntico, `diff -rq` sin diferencias, `git diff … -- tests`
+vacío, `validate-state` VALID).
+
+Suite de cierre en **dos intentos, ambos conservados**: el intento 1 (`35b81093`) dio
+**rc=1 — `4 failed, 1914 passed, 5 skipped`** en 1:06:07 con `canary_delta_lines: 18`, y
+encontró **cuatro regresiones estructurales** que el resto de la verificación no había
+ejecutado, todas introducidas por esta unidad en superficies compartidas: `005-006` PD-10
+(la fila que invoca el CLI instalado quedó en la 473, fuera de la ventana `(444, 464)`,
+por +9 líneas netas en `SKILL.md` §3.1), dos controles de `006-002` PD-2(b) (la
+asociación `subagent_type` ↔ mapeo quedó partida por un salto de línea) y `F007` del
+validador consolidado (el rewrap eliminó «resolve the stack»). Se corrigieron en
+`cc6dad54` (5 archivos, +29/−42) **sin editar ningún test**. El intento 2 (`d37227ea`,
+`--evidence-root .cdad/evidence/010-002-closure-2`) dio **rc=0**, **1923 nodeids**,
+`1918 passed, 0 failed, 0 errors, 5 skipped` en 1:10:04, `dirty 1` y
+**`canary_delta_lines: 0`**; los 5 skips son los condicionados por entorno ya declarados
+en el cierre de `010-001`. Verificación de la unidad: módulo `29 passed`, propiedades
+`7 passed` (semilla `20261031`), generador + `010-001` + techo estático `23 passed`,
+aceptación hermética `pd8b` `1 passed`; `make agents` ×2 con hash idéntico
+(`7f9c2d65…`), 22 agentes, ninguno editado a mano. Fuentes:
+`docs/specs/010-002-documentary-role-integration/{spec.md, plan.md, closure.md,
+closure-suite-attempt-001.md, owner-acceptance-2026-10-31.md, owner-approval-2026-10-31.md,
+review.md, review-002.md, review-fix.md, review-fix-002.md, test-audit.md,
+tdd-t4-green.md, tdd-t6-green.md, tdd-t7-properties.md,
+deviation-green-accreditation-2026-10-31.md}`.
+
+**Deuda técnica detectada.**
+
+- **`deferred-hardening` de la spec §9 (seis ítems, ninguno aplaza una promesa
+  comprometida):** validación semántica automática universal (la estructura no demuestra
+  fidelidad; sigue la revisión independiente); paridad total JSON Schema↔CLI contextual
+  (el esquema carece de archivos, estado y autoridad); sesiones vivas en ambos runtimes o
+  en una instancia Odoo (se acreditó integración distribuible y fixtures aislados);
+  sellado criptográfico histórico de `agent` o snapshot nuevo de `stack` (requeriría otro
+  contrato y transporte); guarda mecánica nueva para variantes ausentes en la vía nativa
+  (se comprometió doctrina procedimental); cobertura exhaustiva, rendimiento y
+  combinatoria sin consecuencia contractual. Registros de disposición en `closure.md` §8.
+- **I-10 (nuevo, defecto del mecanismo): la identidad del paquete no está pineada a sus
+  fuentes de instrucción.** `render_packet` lee `packets/{common,roles/<rol>,
+  substages/<rol>-<subfase>}.md` del árbol vivo en cada corrida, así que un encargo
+  autorizado a escribir `skills` invalida su propio paquete en cuanto el trabajo aterriza.
+  El GREEN de T4 modificó `packets/roles/implementer.md` y `record-dispatch` y `receive`
+  dejaron de reconocer un paquete **no alterado**. Se acreditó con el árbol restituido a
+  los bytes que la cabecera declara (`d93b44e4…`, recuperables de `0d935bc8`),
+  restaurándolo de inmediato y sin tocar `PACKET.md` ni `REQUEST.json`; los sellos
+  (dispatch `09:45:32.48`, `received_at` `09:45:47.98`, receipt `09:45:48.006`, bloque de
+  rol `09:45:48.129`, entrega `09:45:58`) son consistentes con esa secuencia, que corre en
+  un solo script con `trap` y por eso no deja huella propia. **Es una excepción a una
+  guarda fail-closed, no práctica reutilizable:** una recurrencia exige corregir I-10 o una
+  decisión del dueño. Documentado en `deviation-green-accreditation-2026-10-31.md` y
+  verificado por la re-revisión; en el backlog con dos correcciones posibles (verificar
+  los `sha256` declarados y fallar «instruction source drifted», o comparar contra un
+  render pineado al conjunto declarado).
+- **I-11 e I-12 (nuevos, oráculos heredados de otras unidades):** `005-006` PD-10 ubica los
+  puntos de cableado del CLI por rango de líneas de `SKILL.md` —la fila estaba en el
+  último renglón de la ventana—; `006-002` PD-2(b) exige dos conceptos en la misma línea y
+  a ≤80 caracteres. Ambos fallan con un rewrap legítimo aunque la promesa esté intacta.
+  Condición de cierre registrada: localizar por contenido y comparar por bloque
+  normalizado, en unidades propias sobre esos contratos.
+- **El canario no distingue la suite de otro gestor de agentes.** La deriva de 18 líneas del
+  intento 1 era el servidor de OpenChamber reescribiendo el agente instalado
+  `cdad-implementer.md` de su propia instalación (journal `13:42:29/36`), no una escritura
+  de la suite. El intento 2, en una ventana sin esa escritura, dio `0`. El canario mide el
+  entorno; el límite queda declarado.
+- **Deriva de la instalación global, declarada y no oculta:** los 22 agentes derivados **no
+  alcanzan la instalación global** mientras no se publique. Hasta entonces la obligación
+  llega por el paquete y por la toolchain del repositorio, no por el agente instalado.
+  Publicar es decisión del dueño; esta unidad no publica ni hace push.
+- **Heredados sin cambios:** **I-8** (el test-writer no puede leer sus propios
+  `instruction_sources`: `skills` es `implementation_root` y el guard deniega; se repitió en
+  T7, que leyó su doctrina por bash y lo declaró) e **I-9** (dos copias del skill componen
+  paquetes distintos, con el CLI instalado declarando hashes viejos). **N1/N2/O4** de
+  `010-001` siguen diferidos al piloto; **O2/O4** de esta unidad (condición «addon code» más
+  estrecha que la frontera amplia de `odoo-expert`, y método de comprobación de publicación
+  del agente sin fijar) quedan como nits diferidos, sin habilitar ninguna rebaja. También
+  queda **O1** de la re-revisión: `docs/epics/epic-010-documentary-specialization/execution.md`
+  sigue describiendo la acreditación como una comparación y conviene alinearlo.
+- **Límites que no se convierten en garantías:** un verde estructural —incluidos los 36
+  tests de la unidad— **no** acredita fidelidad semántica de un documento real ni conducta
+  efectiva de modelos; los contrastes son mecánicos en el CLI y en el adaptador externo y
+  solo procedimentales en la vía nativa; el esquema describe forma; la aceptación funcional
+  es de la autoridad que aprueba, aquí ejercida por mandato.
+- **Lección de proceso:** **los oráculos existían; lo que falló fue ejecutarlos.** Una
+  unidad que edita `SKILL.md` o los adaptadores debe incluir en su verificación los
+  oráculos de esas superficies (`005-006` PD-10, `006-002` PD-2b, `F007` del validador
+  consolidado), no solo los de su propio contrato. La suite de cierre fue el único control
+  que los miró.
+
+**Next feature in queue.** `010-003-documentary-pilot` (epic 010, orden 4;
+`depends_on: 010-001 y 010-002`, ambas cumplidas): es donde se acredita lo que esta unidad
+**no** acredita —fidelidad semántica de un entregable real, detección de defectos
+estructurales y semánticos con evidencia independiente, y conducta efectiva de modelos— y
+donde pueden absorberse N1/N2/O4 de `010-001` y O2/O4 de esta unidad. El piloto **no**
+cierra la épica por sí solo, y publicar la instalación sigue sin ser requisito de arranque
+pero tampoco está hecho: mientras no se publique, todo despacho real sigue necesitando la
+toolchain del repositorio (I-9) y los agentes instalados no llevan la obligación.
+
+## 2026-10-31 — Feature: 010-001-documentary-contracts (epic 010, orden 2 del plan)
+
+**Cierre técnico declarado y aceptación funcional registrada por mandato; NO aprobado
+directamente por el dueño y NO publicado.** `closure.md` declara el cierre con su
+evidencia de suite completa, y `owner-acceptance-2026-10-31.md` registra la aceptación
+funcional del entregable y la aprobación de este Memory Bank, ambas ejercidas por el
+orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3) que cubre los gates del
+epic-010. Contrato: `docs/specs/010-001-documentary-contracts/spec.md`, pin
+`9bf17a39…c94da`, aprobado el 2026-10-31 por el mismo mandato; plan v4
+`cb3c25a8…0265`. Este cierre no publica, no hace push y no actualiza la instalación
+global.
+
+**Qué se cerró.** Un encargo cuyo producto es un documento —relevamiento, proceso,
+historia de usuario— dejó de depender de criterios inventados por encargo. Existe una
+**casa normativa única** en `skills/cdad-cycle/references/documentary-contracts.md`
+(188 líneas, ocho secciones) que fija: las cuatro categorías obligatorias como
+criterio y no como formato (evidencia, propuesta, contradicción, pendiente, con sus
+distinciones); el localizador mínimo por tipo de fuente y el tratamiento de fuentes
+inaccesibles, mutables o insuficientes; la clasificación de pendientes bloqueantes y
+no bloqueantes con sus datos mínimos y la prohibición de rebaja unilateral; las cuatro
+declaraciones de todo encargo documental (fuentes autorizadas, producto editable por
+rutas, verificadores e insumos de aceptación protegidos, evidencia esperada y límites
+de verificación); la regla **«quien produce no modifica su oráculo»**; las fronteras
+documentales de los seis roles; y los **dos registros** del cierre, con el límite
+escrito de que la presencia de secciones, etiquetas, archivos o referencias
+resolubles **no demuestra fidelidad, suficiencia ni verdad semántica**.
+
+Las obligaciones viajan por **puntero breve, no por copia**: las seis fuentes de rol
+(`sources/roles/{architect,implementer,test-writer,reviewer,scribe,orchestrator}.md`),
+los cinco bloques estáticos de `skills/cdad-cycle/packets/roles/` y los 22 agentes
+derivados de ambos runtimes (11 × 2, variantes Odoo incluidas) declaran su obligación
+en sus propias palabras y nombran la referencia. La alineación del contrato del
+implementer se completó también en las tres superficies instalables que la tabla de
+roles publica (`SKILL.md` §2, `handoff-prompts.md`, `sub-agent-strategies.md`).
+
+**Decisiones relevantes.**
+
+- **Una referencia dentro de `cdad-cycle`, no un skill ni un agente nuevo.** El ciclo
+  ya distribuye referencias y ya obliga por puntero, así que la norma entra por la
+  infraestructura existente. Motivo: no agregar roles, etapas, mecanismos de aprobación
+  ni permisos por defecto (PC-16). Trade-off aceptado: la obligación depende de **dos
+  superficies distintas** —fuentes de rol y bloques estáticos— más la regeneración de
+  agentes; ninguna de las dos es sustituible por la otra, y el generador no compone la
+  tabla §2 de `SKILL.md`, que hubo que corregir a mano.
+- **Categorías como criterio, no como formato.** Imponer cuatro secciones o una tabla
+  universal habría fabricado instancias ficticias; se exige distinción verificable con
+  encabezados, etiquetas, columnas o formulación inequívoca, y el encargo puede fijar
+  una forma más específica cuando forma parte de su promesa observable. Trade-off
+  declarado: la comprobación automática de etiquetas **no** demuestra que la
+  clasificación sea correcta.
+- **Localizador mínimo por tipo de fuente, sin campos nuevos en el esquema.** Cada
+  respaldo permite recuperar la fuente examinada y el fragmento usado (ruta + líneas o
+  sección + revisión o snapshot; identificador del mensaje o minuta + contexto;
+  URL + ubicación + captura recuperable y fecha). Motivo: reproducibilidad práctica sin
+  inventar una protección por hash por insumo. Trade-off: una URL viva con su fecha,
+  sin el contenido examinado, **no** se acredita como respaldo.
+- **Pendientes clasificados por su efecto sobre el contrato, no por su visibilidad.**
+  Un pendiente bloquea cuando impide verificar una postcondición o un criterio de
+  aceptación; **también** cuando su impacto sobre una obligación aún se desconoce («no
+  conocer el efecto no es evidencia de que ninguna obligación se toque»). Una
+  contradicción solo permanece si la promesa es documentar posiciones divergentes, y
+  debe resolverse si lo prometido es una definición operativa que depende de ella.
+  Trade-off: se acepta que un entregable pueda quedar honestamente bloqueado en vez de
+  cerrarse por reclasificación.
+- **Frontera producto autorizado / fuentes / verificadores.** Compartir la
+  clasificación `docs` no convierte un archivo en producto editable: fuentes, contrato
+  de aceptación, verificadores y plantillas usadas como oráculo quedan fuera del GREEN,
+  y una superposición o una ambigüedad sobre qué papel juega un archivo detiene esa
+  parte. La regla «quien produce no modifica su oráculo» gobierna igual código y
+  documento. Trade-off: un cambio legítimo del oráculo vuelve al rol competente y, si
+  altera el contrato, a aprobación; no se resuelve desde GREEN.
+- **Dos registros que nunca se sustituyen.** Control automático/estructural (qué se
+  ejecutó, resultado, alcance, límites) y revisión semántica independiente (qué
+  afirmaciones y fuentes se examinaron, hallazgos, abstenciones). Un recibo de
+  transporte o la aceptación estructural de un paquete no acreditan revisión semántica;
+  una obligación textual o un paquete no son un sandbox.
+- **El implementer admite producto documental expresamente encargado sin ampliar
+  defaults.** Redacción final: «implementation product (code, or a documentary
+  deliverable the engagement expressly commissions)», conservando la prohibición
+  literal sobre tests y sin tocar la fila del refactorer.
+
+**Evidencia.** Gates registrados: spec y plan (`5b488a5e…`, con tres pasadas de
+`plan-review`), AUDIT (`593f34ea…`, `test-audit.md` y `audit-approval-2026-10-31.md`),
+RED (`tdd-red-t2`: 11 tests, **64 fallos por aserción, 0 errores**), GREEN T3
+(`3344526e`: referencia + seis fuentes; grupos A–C verdes, D rojo por diseño), GREEN T4
+(`2a918b72`: cinco bloques + 22 agentes regenerados por `make agents`, 27 archivos),
+review (`bb7d63bb…`) y review-fix (`71c2a7e2`: cuatro archivos bajo `skills/`). Review
+independiente con **dos bloqueantes**: **B1** —la norma omitía dos reglas de
+clasificación de D3, y el verde de los 11 tests no lo detectaba porque comprobaba
+conceptos, no cobertura semántica— y **B2** —el contrato del implementer quedaba
+dividido entre `SKILL.md` §2 / `handoff-prompts.md` / `sub-agent-strategies.md` y las
+fuentes de rol con sus agentes—. `review-002.md` declara **B1 y B2 cerrados**, O2 y O3
+incorporadas y **sin bloqueantes nuevos**; quedan los nits N1 y N2. Distribución:
+`make staging` dos veces con bytes idénticos (`9f556681…`, 23 archivos), instalación
+aislada con `cmp` sobre la referencia y bytes de los 22 agentes, techo estático
+**3709 / 12000** sin elevar. Gate de cierre (quien cierra corre la suite, un solo
+intento completado): `scripts/cdad-suite.py close --all`, **1887 nodeids** sobre el
+commit `6c5b5a8c`, **rc=0**, `1882 passed, 5 skipped in 4527.94s`, `dirty 1`,
+`canary_delta_lines=0`; los 5 skips son integraciones preexistentes condicionadas por
+variables de entorno, ajenas a la unidad y ninguna es un pase. Tests del feature:
+`tests/test_010_001_documentary_contracts.py`, **11 tests** en cuatro clases
+(`TestPromiseA`…`TestPromiseD`); medido por el scribe al redactar este borrador:
+`Ran 11 tests in 10.409s — OK`, y techo `3709/12000`. Después de la medición, `HEAD`
+es `a3d11cf5`, cuyo único cambio es `backlog.md` del epic (+3 líneas), sin archivo de
+producto, test ni instalador. Fuentes: `docs/specs/010-001-documentary-contracts/`
+`{spec.md, plan.md, closure.md, owner-acceptance-2026-10-31.md, review.md,
+review-002.md, tdd-t3-green.md, tdd-t4-green.md, tdd-t5-review-fix.md}`.
+
+**Deuda técnica detectada.**
+
+- **`deferred-hardening` de la spec §7 (cinco ítems, ninguno aplaza una promesa
+  comprometida):** parser/linter general para cualquier formato documental (no hay
+  promesa de interpretación automática universal); detección automática de verdad o
+  contradicciones semánticas (no es acreditable por presencia estructural ni puntajes);
+  protección mecánica adicional por insumo (requiere diseño de esquema no autorizado;
+  la separación contractual sí queda comprometida); formatos binarios y captura genérica
+  de fuentes externas (el alcance inicial es Markdown pequeño e insumos autorizados);
+  cobertura exhaustiva, rendimiento y combinatoria sin consecuencia contractual. Los
+  registros de disposición están en `closure.md` §6.
+- **N1** —«only» en la regla de contradicción (`documentary-contracts.md:81`): es más
+  estricto que D3 y nunca habilita una rebaja; diferido al piloto. **N2** —«Expected
+  output: implementation code» (`handoff-prompts.md:377`): descripción de salida, no
+  permiso; la línea de permiso (L372) es la que gobierna. **O4** —solapamiento de
+  6-gramas entre fuentes de rol y referencia: la medida contractual de PC-13 pasa y su
+  origen es la tabla de PC-08. Los tres quedaron registrados en
+  `docs/epics/epic-010-documentary-specialization/backlog.md`.
+- **Deriva de la instalación global (F011), declarada y no oculta:** `install.sh
+  --check` rc=1 con **52 archivos** en deriva (10 por cada uno de los tres árboles de
+  `skills/cdad-cycle` + 11 por cada uno de los dos árboles de agentes) y `make validate`
+  rc=2 con F011 como único FAIL. Es deriva de **publicación**, no una regresión: la
+  instalación aislada verificó los bytes correctos. Mientras no se publique, los roles
+  reciben la obligación documental **por el paquete** y no por el agente instalado.
+  Publicar es decisión del dueño.
+- **I-9 (defecto de la toolchain, origen de una desviación):** dos copias del skill
+  componen paquetes distintos —`prepare` arma los bloques desde la raíz del CLI que lo
+  ejecuta—, de modo que un paquete compuesto por el CLI instalado declara hashes viejos;
+  el reviewer lo rechazó con `validate-packet` rc=2 (fail-closed correcto, 1 despacho
+  consumido sin producto). Mientras tanto, el orquestador usa el CLI del proyecto.
+- **I-8 (heredado, sigue abierto):** el test-writer tiene denegada la lectura de
+  `skills/**`, que incluye la doctrina de subfase que su paquete declara como fuente de
+  instrucción; el AUDIT y el RED la leyeron con `cat` y lo declararon. Corregir permisos
+  de agentes generados exige su propio contrato.
+- **Desviaciones de proceso registradas:** aprobación aplicada antes del último
+  `record` de `plan-review-003` (bytes restituidos, digests `9bf17a39…`/`cb3c25a8…`
+  recuperados exactos; orden correcto: registrar la entrega antes de mutar el contrato);
+  checkpoint entre `begin` y `record` en el tercer `plan-review` (re-despacho bajo
+  `begin` nuevo, attempt 12); `write_scope` mecánico más ancho que el diff en T3 (la
+  política de rutas solo admite rutas exactas declaradas); volcado de fuentes en
+  mensajes de fallo del RED (oráculo sin cambio de concepto, `assertIn`→`assertTrue` en
+  mensajes); H-0 del AUDIT descartada con evidencia (comparaba dos archivos distintos);
+  estado heredado de `010-004`/`009-002` limpiado al abrir la unidad; diversidad de
+  modelos con reviewer distinto del implementer, y test-writer e implementer
+  compartiendo el modelo configurado por el runtime en sesiones separadas.
+- **Límites que no se convierten en garantías:** un verde estructural —incluido el de
+  los 11 tests— no acredita fidelidad semántica (B1 lo demostró: la regla faltaba y el
+  verde seguía); todos los recibos de la unidad quedaron `semantic_status: pending`
+  (ningún recibo aprobó un gate); la aceptación funcional es del usuario/dueño que
+  aprueba, ejercida aquí por mandato; la fidelidad de un documento real corresponde al
+  piloto `010-003`. Al redactarse este borrador, `closure.md` y
+  `owner-acceptance-2026-10-31.md` estaban **sin commitear**; su materialización es del
+  orquestador.
+
+**Next feature in queue.** `010-002-documentary-role-integration` (epic 010, orden 3
+del plan; `depends_on: 010-001`, ya cumplida por esta unidad): el orquestador debe poder
+encargar trabajo documental al rol correspondiente por el flujo canónico, sin perder su
+dominio ni ampliar permisos. Después, `010-003-documentary-pilot` (orden 4), que es
+donde se acredita la detección de defectos semánticos en un entregable real y donde
+pueden absorberse N1/N2/O4. Publicar la instalación **no** es requisito de arranque,
+pero mientras no se publique todo despacho real sigue necesitando la toolchain del repo
+(I-9) y los agentes instalados no llevan la obligación.
+
 ## 2026-10-31 — Feature: 010-004-packet-dispatch-ergonomics (epic 010, unidad 2/5)
 
 **Cierre técnico declarado; NO aprobado.** `closure.md` declara el cierre de la
@@ -705,8 +1272,8 @@ despacho packetizado**; no cubre un recorrido de fallo y no se presenta como tal
 
 ## 2026-10-26 — Feature: 007-005-serial-reception (epic 007)
 
-**Cerrada el 2026-10-26** tras review de **4 rondas → APTO** (sesiones `ses_e8678bf0affe0TJlgin9ZgvOYZ`,
-`ses_e867568fdfferpr70l8glyAbLB`, `ses_e8672ba4affe9zzS8rvBl9xxL1`, `ses_e8670d43effeCuzEW50G5RIivm`):
+**Cerrada el 2026-10-26** tras review de **4 rondas → APTO** (sesiones `<session>`,
+`<session>`, `<session>`, `<session>`):
 ronda 1 **NO APTO**, ronda 2 **NO APTO**, ronda 3 **1 bloqueante**, ronda 4 **APTO**. Séptima y última
 unidad del plan de `epic-007`: **recepción serial real** — la primera vez que un paquete de CDAD
 atraviesa **entre proyectos** el recorrido completo con la versión adoptada `538ec57`. La unidad **no
@@ -793,7 +1360,7 @@ alcance declarado en `closure.md` §«Criterio del epic»**.
 ## 2026-10-26 — Feature: 007-004-termination-not-success (epic 007)
 
 **Cerrada el 2026-10-26** tras review de **3 rondas → 0 bloqueantes** (sesión
-`ses_e8747b264ffev3rxxRyB0r1SNe`, reviewer `openai/gpt-6.1-sol`): ronda 1 **NO APTO con 3 bloqueantes
+`<session>`, reviewer `openai/gpt-6.1-sol`): ronda 1 **NO APTO con 3 bloqueantes
 + 1 menor**, ronda 2 **1 bloqueante** (el mismo B3, cerrado a medias) y ronda 3 **APTO** con ese
 bloqueante cerrado. Cuarta unidad del plan de `epic-007`: **terminar no es tener éxito** — el sobre de
 delegación declara explícitamente **qué entrega existe** (`delivery: none | staged | received`), y ni
@@ -938,7 +1505,7 @@ tests por HOME/XDG, corridas agrupadas que agotan límites sin resumen final). E
 ## 2026-10-26 — Feature: 007-006-withdraw-and-republish (epic 007)
 
 **Cerrada el 2026-10-26** tras review de **2 rondas → APTO** (sesión
-`ses_e894213beffebC8huMXrjC1Hb8`; la ronda 1 fue NO APTO con 3 bloqueantes, los tres cerrados en la
+`<session>`; la ronda 1 fue NO APTO con 3 bloqueantes, los tres cerrados en la
 ronda 2). Sexta unidad del plan de `epic-007`: dos bloqueos independientes dejan de resolverse por
 rodeo — un paquete `prepared` que nunca se va a despachar **se retira explícitamente con motivo**, y
 los agentes derivados del proyecto **se republican sin fabricar un paquete**. **Contrato:**
@@ -1074,7 +1641,7 @@ requiere versión adoptada) y, transversal, el **despliegue**. Orden acordado: 0
 ## 2026-10-25 — Feature: 007-007-suspend-resume-units (epic 007)
 
 **Cerrada el 2026-10-25** tras review de **4 rondas → APTO CON AJUSTES** (sesión
-`ses_e8ad5f723ffenb7IaCoN0egiCv`). Séptima unidad del plan de `epic-007` (alta aprobada por el
+`<session>`). Séptima unidad del plan de `epic-007` (alta aprobada por el
 dueño el 2026-10-25): una unidad se interrumpe en un **borde seguro**, se trabaja otra y la primera
 se **reanuda explícitamente**, sin perder estado, identidad ni trazabilidad y sin repetir efectos.
 **Contrato:** `docs/specs/007-007-suspend-resume-units/spec.md` (PC-01..PC-17, consolidadas en 10

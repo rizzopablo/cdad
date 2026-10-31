@@ -1,0 +1,29 @@
+{
+  "bundle_sha256": "61b2b54f45880aed1c7d0451136a19f7d72f99b91cc2b07eaadd35cec2435b49",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "identity_validation": "passed",
+  "packet_id": "010-003-documentary-pilot-implementer-review-fix-001",
+  "packet_validation": "passed",
+  "parts": [
+    {
+      "artifact_kind": "implementer-role-report",
+      "bytes": 6395,
+      "name": "010-003-review-fix",
+      "sha256": "0a0ecf0adb92d9cd59e4acbb33244549e80c1e105b364b8a40fd4c1b1a69db6b",
+      "stored_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-implementer-review-fix-001/parts/010-003-review-fix.utf8"
+    }
+  ],
+  "received_at": "2026-10-31T20:02:58.586826Z",
+  "role": "implementer",
+  "run_evidence_status": "not-provided",
+  "schema_version": 1,
+  "scope_validation": "unknown",
+  "semantic_status": "pending",
+  "source": {
+    "kind": "staged-file",
+    "sdk_message_ref": "<session>"
+  },
+  "state_transition_requested": "received",
+  "substage": "review-fix"
+}

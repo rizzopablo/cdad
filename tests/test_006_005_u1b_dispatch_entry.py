@@ -816,25 +816,42 @@ class U1bEntryCase(unittest.TestCase):
     def request_doc(self, ctx: dict | None = None) -> dict:
         return json.loads(self.request_path(ctx).read_text(encoding="utf-8"))
 
-    def drop_optional_agent(self, ctx: dict | None = None) -> None:
-        """Reconstructs the PRE-FEATURE packet form (PD-7/U1c): removes the
-        declared optional field `agent` from the published REQUEST.json and
-        rewrites it in place.
+    def restore_historical_without_agent_or_context(
+            self, ctx: dict | None = None) -> None:
+        """Reconstructs the historical request admitted by 010-002 PC-08/D3.
 
-        Since U1c `prepare` writes `agent` always, so the form this unit's
-        contract is about (a packet published before PD-7) has to be rebuilt by
-        the fixture. The device is the one declared by `tests/
-        test_006_005_u1c_packet_agent.py` (PD-7's own compatibility oracle) and
-        it is faithful because the packet RENDER is invariant to the field: the
-        reconstructed form differs from the published one only in the field
-        PD-7 added.
+        Obligación anterior (PD-7/U1c): la forma pre-feature se reconstruía
+        quitando solo `agent`, porque `prepare` pasó a publicarlo siempre.
+        Obligación nueva (010-002 PC-08): el histórico admitido NO declara
+        `execution_context` NI `agent`; quitar solo `agent` es el caso negativo
+        de la regla de presencia. Razón: `execution_context` participa en la
+        metadata del render, así que el paquete canónico se reconstruye con el
+        `render` público (plan T5, «Adaptación de históricos»). No se debilita
+        ninguna comprobación de 006-005: el test sigue exigiendo que la llave
+        «agente» sea `unknown` y que el diagnóstico la nombre.
         """
+        ctx = ctx or self.project
         path = self.request_path(ctx)
         request = json.loads(path.read_text(encoding="utf-8"))
-        request.pop("agent", None)
+        for field in ("execution_context", "agent"):
+            request.pop(field, None)
         path.write_text(
             json.dumps(request, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")
+        execution = (ctx["root"] / ".cdad" / "executions"
+                     / ctx["execution_id"] / "execution.json")
+        rendered = subprocess.run(
+            [sys.executable, str(PACKET_CLI), "render",
+             "--project-root", str(ctx["root"]),
+             "--execution-context", str(execution),
+             "--request", str(path)],
+            cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+        self.assertEqual(
+            rendered.returncode, 0,
+            msg="precondición (fixture): el request histórico debe renderizar "
+                "canónicamente: " + tail(self.output(rendered)))
+        (ctx["root"] / ".cdad" / "packets" / ctx["packet_id"]
+         / "PACKET.md").write_text(rendered.stdout, encoding="utf-8")
 
 
 # ---------------------------------------------------------------- PD-1
@@ -1232,24 +1249,29 @@ class TestPd5NativeCorrelation(U1bEntryCase):
         agent key is `unknown` — never `cdad-<rol>`. The observable is
         `unknown` (no accredited session) and a diagnosis naming the key.
 
-        The pre-feature form is rebuilt by the fixture: since U1c (PD-7)
-        `prepare` always publishes the declared optional `agent`, the fixture
-        removes it from the published REQUEST.json — the device U1c's own
-        compatibility oracle declares, faithful because the render is invariant
-        to the field. PD-7's publication is U1c's surface: the only precondition
-        asserted here is the absence of the field in the form under test."""
+        Adaptación de fixture 010-002 T5 (PC-08/D3). Obligación anterior: la
+        forma pre-feature se reconstruía quitando solo `agent`. Obligación
+        nueva: el histórico admitido no declara `execution_context` NI `agent`
+        (quitar solo `agent` es el caso negativo de la regla de presencia).
+        Razón: `execution_context` participa en la metadata del render y el
+        paquete canónico se reconstruye con el `render` público (plan T5,
+        «Adaptación de históricos»). No se debilita ninguna comprobación: el
+        test sigue exigiendo que la llave «agente» sea `unknown` y que el
+        diagnóstico la nombre."""
         request = self.request_doc()
-        self.assertIn(
-            "agent", request,
-            msg="precondición (fixture): PD-7/U1c publica `agent` en el "
-                "REQUEST.json; sin el campo no hay forma pre-feature que "
-                "reconstruir (%r)" % sorted(request))
-        self.drop_optional_agent()
+        for field in ("agent", "execution_context"):
+            self.assertIn(
+                field, request,
+                msg="precondición (fixture): `prepare` publica `%s` en el "
+                    "REQUEST.json; sin los campos no hay forma histórica que "
+                    "reconstruir (%r)" % (field, sorted(request)))
+        self.restore_historical_without_agent_or_context()
         request = self.request_doc()
-        self.assertNotIn(
-            "agent", request,
-            msg="precondición (declarada): esta unidad NO depende de PD-7; el "
-                "paquete del fixture no declara `agent` (%r)" % sorted(request))
+        for field in ("agent", "execution_context"):
+            self.assertNotIn(
+                field, request,
+                msg="precondición (declarada): el histórico del fixture no "
+                    "declara `%s` (%r)" % (field, sorted(request)))
         self.write_store(
             ["id TEXT PRIMARY KEY", "agent TEXT", "parent_id TEXT"],
             [{"id": NATIVE_SESSION, "agent": "cdad-test-writer",

@@ -113,6 +113,23 @@ Duty over the table of current decisions (canonical owner:
 `skills/cdad-cycle/references/stage-4-review.md`): compare the table with
 `docs/adr/`, and check that the change respects the current decisions that
 govern your role. That reference owns the procedure; it is not copied here.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): in an independent
+read-only session you contrast the product with its contract and with the
+sources, and you record your findings, your limits and your abstentions. A
+resolvable structure is not proof of fidelity.
+
+Product applicability (PC-05 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Reviewer result |
+|---|---|
+| Documentary | Confirms that the real diff is documentary; it contrasts document, contract and sources without demanding an addon battery that the diff does not justify. |
+| Addon | The real diff activates the addon review obligations, including the corresponding clean install, lint and OCA evidence. |
+| Mixed | Reviews both parts and both evidences; an addon change hidden under a documentary label is reported and blocks its acceptance as documentary pure. |
+
+The real diff prevails over the label: a documentary label never downgrades the obligations that diff activates.
 
 ## Roles-contract row (§2)
 

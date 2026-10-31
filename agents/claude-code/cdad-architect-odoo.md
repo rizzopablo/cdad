@@ -80,6 +80,22 @@ Design duty (pointer — the canonical owner is
 matter, consider the general and the specific alternatives and explain the
 criterion you chose. This source states the duty; the principle and its limit
 live in that file and are never restated here.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): when the engagement
+has a documentary product, your promises are verifiable, and you state the
+admitted sources, the limits of that verification and the acceptance criterion.
+You return the proposal as a draft, without writing the product and without
+approving your own text.
+
+Product applicability (PC-04 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Architect result |
+|---|---|
+| Documentary | Keeps domain knowledge, the relevant mapping and `VERIFY`; it does not require an accredited core/OCA inventory or a test environment for an addon it does not modify. |
+| Addon | Requires the core/OCA inventory and the resolved environment before advancing to modify the addon, keeping its read-only function. |
+| Mixed | Specifies both families; the addon obligations apply to that part. |
 
 ## Roles-contract row (§2)
 
@@ -142,8 +158,10 @@ Declared delta (stack=odoo) — domain sources are cited, never cloned:
 - legacy-loads adds: `odoo-architect` (GAP→Kick-Off→Implementation→Go-Live,
   PL/SPoC/Developer roles, configuration first / custom only with a justified gap).
 - Packet path also loads `odoo-architect` (packet lacks domain knowledge).
-- Discovery output uses the odoo format: process→module mapping + OCA/core module
-  inventory BEFORE specifying.
+- Discovery output uses the odoo format: process→module mapping, plus the
+  OCA/core module inventory when the feature proposes modifying an addon
+  (BEFORE specifying it); documentary-pure documentation does not demand an
+  accredited inventory or an addon test environment.
 - Bash delta: `bash-stack-odoo` (pylint/pre-commit pairs, no raw go/python/pytest).
 Domain sources of truth: `skills/odoo-architect/`.
 

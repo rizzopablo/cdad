@@ -245,12 +245,23 @@ class TestRequestFieldSetStaysClosed(PacketAgentCase):
 class TestAgentDoesNotEnterTheRender(PacketAgentCase):
     def test_pd7_agent_does_not_enter_the_packet_render(self) -> None:
         """PD-7: los bytes de `PACKET.md` son idénticos con y sin `agent`, y su
-        metadata no declara el campo."""
+        metadata no declara el campo.
+
+        Adaptación de fixture 010-002 T5 (PC-08, AUDIT §10 R3). Obligación
+        anterior: el oráculo quitaba solo `agent` y comparaba el render contra
+        el paquete moderno. Obligación nueva: con la regla de presencia, un
+        request con `execution_context` y sin `agent` es un caso NEGATIVO; el
+        par que acredita la exclusión son dos requests VÁLIDOS **sin contexto
+        declarado** que difieren solo en `agent`. Razón: `execution_context`
+        participa en la metadata del render, así que el paquete moderno no es
+        la línea base (plan T5, «Adaptación de históricos»). No se debilita
+        ninguna comprobación de 006-005: sigue exigiendo igualdad de bytes y
+        ausencia de `agent` en la metadata.
+        """
         project = self.project(stack="odoo")
         self.prepare_ok(project)
         packet_dir = project.out_dir / project.packet_id()
         published = (packet_dir / "PACKET.md").read_bytes()
-        request_path = packet_dir / "REQUEST.json"
         request = self.request_of(project)
         self.assertEqual(
             request.get("agent"),
@@ -259,13 +270,30 @@ class TestAgentDoesNotEnterTheRender(PacketAgentCase):
                 "agente del paquete antes de comparar el render",
         )
 
-        without = dict(request)
-        without.pop("agent")
+        # Forma histórica válida: sin `execution_context` declarado (la
+        # presencia de `agent` solo se exige cuando hay contexto). El agente
+        # es la única diferencia entre los dos requests comparados.
+        baseline = dict(request)
+        baseline.pop("execution_context", None)
+        without = dict(baseline)
+        without.pop("agent", None)
+        with_path = project.root / "request-with-agent-no-context.json"
         without_path = project.root / "request-without-agent.json"
-        without_path.write_text(
-            json.dumps(without, ensure_ascii=False, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        for path, document in ((with_path, baseline), (without_path, without)):
+            path.write_text(
+                json.dumps(document, ensure_ascii=False, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        for path in (with_path, without_path):
+            validation = self.validate_request(project, path)
+            self.assertEqual(
+                validation.returncode,
+                0,
+                msg="PD-7/010-002 PC-08: el request sin contexto declarado "
+                    "debe seguir siendo válido (la presencia de `agent` solo "
+                    "se exige con contexto): "
+                    + validation.stderr.decode(errors="replace"),
+            )
 
         common = [
             "--project-root",
@@ -274,41 +302,44 @@ class TestAgentDoesNotEnterTheRender(PacketAgentCase):
             str(project.execution_path),
         ]
         with_agent = run_cli_bytes(
-            PACKET_CLI, "render", *common, "--request", str(request_path))
+            PACKET_CLI, "render", *common, "--request", str(with_path))
         without_agent = run_cli_bytes(
             PACKET_CLI, "render", *common, "--request", str(without_path))
         self.assertEqual(
             with_agent.returncode,
             0,
             msg="precondición (fixture): `render` debe aceptar el request "
-                "publicado: " + with_agent.stderr.decode(errors="replace"),
+                "válido con `agent`: "
+                + with_agent.stderr.decode(errors="replace"),
         )
         self.assertEqual(
             without_agent.returncode,
             0,
-            msg="PD-7 violada (§2.7): el request sin el campo DECLARADO "
-                "`agent` debe seguir renderizando: "
+            msg="PD-7 violada (§2.7): el request válido sin `agent` debe "
+                "seguir renderizando: "
                 + without_agent.stderr.decode(errors="replace"),
         )
         self.assertEqual(
             with_agent.stdout,
-            published,
-            msg="precondición (fixture): stdout de `render` debe ser el "
-                "`PACKET.md` publicado",
-        )
-        self.assertEqual(
             without_agent.stdout,
-            published,
-            msg="PD-7 violada (§2.7): `agent` entró al render — los bytes de "
-                "`PACKET.md` difieren con y sin el campo",
+            msg="PD-7 violada (§2.7): `agent` entró al render — los bytes "
+                "difieren entre dos requests válidos que solo difieren en el "
+                "campo",
         )
-        metadata, _, _ = parse_packet(published.decode("utf-8"))
+        metadata, _, _ = parse_packet(with_agent.stdout.decode("utf-8"))
         self.assertNotIn(
             "agent",
             metadata,
             msg="PD-7 violada (§2.7): la metadata del paquete declara `agent` "
                 f"(el render debe usar su lista explícita de claves): "
                 f"{sorted(metadata)}",
+        )
+        published_metadata, _, _ = parse_packet(published.decode("utf-8"))
+        self.assertNotIn(
+            "agent",
+            published_metadata,
+            msg="PD-7 violada (§2.7): la metadata del `PACKET.md` publicado "
+                f"declara `agent`: {sorted(published_metadata)}",
         )
 
 
@@ -317,22 +348,57 @@ class TestPreFeaturePacketIsStillReceived(EstablishedProjectCase):
         """PD-7: un paquete publicado sin `agent` (la forma pre-feature) sigue
         siendo recibible —`receive` rc=0 y recibo durable—.
 
-        La forma pre-feature se reconstruye quitándole al request publicado el
-        campo opcional declarado; es fiel porque el render no cambia con el
-        campo (el oráculo de bytes de PD-7 en esta misma unidad)."""
+        Adaptación de fixture 010-002 T5 (PC-08/D3). Obligación anterior: el
+        oráculo quitaba solo `agent` y conservaba `execution_context`.
+        Obligación nueva: el histórico admitido por 010-002 tiene AMBOS campos
+        ausentes (quitar solo `agent` es ahora el caso negativo de la regla de
+        presencia). Razón: `execution_context` participa en la metadata del
+        render, así que el paquete canónico del histórico se reconstruye con el
+        `render` público (plan T5, «Adaptación de históricos»). No se debilita
+        ninguna comprobación de 006-005: sigue exigiendo `receive` rc=0 y
+        recibo durable.
+        """
         self.new_dispatched_project()
         request = json.loads(self.request_path.read_text(encoding="utf-8"))
-        self.assertIn(
-            "agent",
-            request,
-            msg="PD-7 violada (§2.7/D-13): `prepare` no publicó el campo "
-                f"declarado `agent` en el REQUEST.json del paquete: "
-                f"{sorted(request)}",
-        )
-        request.pop("agent")
+        for field in ("agent", "execution_context"):
+            self.assertIn(
+                field,
+                request,
+                msg="PD-7 violada (§2.7/D-13): `prepare` no publicó el campo "
+                    f"declarado `{field}` en el REQUEST.json del paquete: "
+                    f"{sorted(request)}",
+            )
+        for field in ("agent", "execution_context"):
+            request.pop(field)
         self.request_path.write_text(
             json.dumps(request, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8",
+        )
+
+        rendered = run_cli_bytes(
+            PACKET_CLI,
+            "render",
+            "--project-root",
+            str(self.root),
+            "--execution-context",
+            str(self.execution_context_path),
+            "--request",
+            str(self.request_path),
+        )
+        self.assertEqual(
+            rendered.returncode,
+            0,
+            msg="PD-7/010-002: el paquete histórico admitido (sin ambos "
+                "campos) debe renderizar canónicamente: "
+                + rendered.stderr.decode(errors="replace"),
+        )
+        self.packet_path.write_bytes(rendered.stdout)
+        metadata, _, _ = parse_packet(rendered.stdout.decode("utf-8"))
+        self.assertNotIn(
+            "execution_context",
+            metadata,
+            msg="PD-7/010-002: el paquete histórico reconstruido no debe "
+                "conservar `execution_context` en su metadata",
         )
 
         parts = self.write_staged_parts()

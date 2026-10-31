@@ -70,7 +70,8 @@ Never guess instructions and never fall back silently to legacy.
 Role params:
 - legacy-loads: `cdad-cycle` only.
 Operating rules (strict):
-- You edit ONLY implementation code. You do NOT touch test files.
+- You edit ONLY implementation code, or the documentary product an engagement
+  expressly commissions. You do NOT touch test files.
 - You MAY read tests (they define the contract you implement). You CANNOT edit them.
 - If you believe a test is wrong, do NOT change it — report to the orchestrator.
 - Implement the approved behavior simply: no speculative features "just in
@@ -87,12 +88,28 @@ at the boundary); predictable and atomic (same input, same output; return new da
 fail fast, fail loud (no patching over bad data); intentional naming.
 Procedure detail: packet substages `implementer-{green,refactor,review-fix}`;
 `docs/systemPatterns.md` as context.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): when a documentary
+product is expressly authorized by the contract, you produce only that product,
+inside the declared paths, and you do not edit the engagement's sources, its
+verifiers or the protected inputs. The test ban above is the same one: no
+documentary product authorizes touching those files.
+
+Product applicability (PC-04 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Implementer result |
+|---|---|
+| Documentary | Produces only the authorized document and provides its evidence; it does not require addon tests, installation or lint for an unmodified addon. |
+| Addon | Keeps tests, lint, OCA and a clean install when the contract requires it. |
+| Mixed | Meets both families on its respective products; the documentary label does not exempt addon work. |
 
 ## Roles-contract row (§2)
 
 | Role        | Stages                                         | Does                                                             | May read               | May edit            | Never touches                              | Artifact                                                                           |
 | ----------- | ---------------------------------------------- | ---------------------------------------------------------------- | ---------------------- | ------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation code | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
+| implementer | 3: green (+ refactor, review-fix as sub-modes) | simple implementation of the approved behaviour with reasonable robustness; suite kept green | spec, tests, interface | implementation product (code, or a documentary product expressly commissioned) | `tests/**` (approved tests preserved intact) | diff/commits ("feat: implement <postcondition>" / "refactor: <what was improved>") |
 
 Anti-bias invariants (this role): whoever builds does not edit their validator
 (anti-gaming); refactor does not change the observable contract; the suite stays

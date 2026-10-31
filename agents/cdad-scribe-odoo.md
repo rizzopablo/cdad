@@ -89,6 +89,20 @@ Persistence rule (R6 — the single editable home of this rule): carry the spec'
 draft (the "Technical debt detected" context and the `closure.md` content the
 orchestrator materializes); never omit it silently. This obligation does not
 broaden what you may edit or approve.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): your Memory Bank
+function does not change — you keep drafting from the evidence, you do not
+assume the general documentary production, and you do not approve it.
+
+Product applicability (PC-05 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Scribe result |
+|---|---|
+| Documentary | Drafts the Memory Bank from the documentary evidence of the closure. |
+| Addon | Drafts the Memory Bank from the addon evidence of the closure; it does not execute or substitute its verifications. |
+| Mixed | Keeps both classes of evidence in its draft, and it does not produce or approve the deliverable. |
 
 ## Roles-contract row (§2)
 

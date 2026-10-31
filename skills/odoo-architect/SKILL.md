@@ -91,6 +91,24 @@ before specifying new custom work — document the discard when applicable
 (`VERIFY` if you cannot confirm the exact module). The inventory goes to
 the "Technical context" section of the spec.
 
+The inventory and the resolved test environment are required **before
+advancing to modify an addon**, not for documentation-only work. A
+documentary-pure engagement — including a module's `readme/`,
+`static/description/`, `README.rst` or `doc/` when the contract does not make
+it part of the addon's functional deliverable — keeps the domain knowledge,
+the relevant process→module mapping and `VERIFY`, and does not owe an
+accredited inventory or an addon battery for an addon it does not modify. The
+boundary is owned by the `odoo-expert` skill (`## Addon work vs. module
+documentation`); this section states its own applicability and does not repeat
+that boundary.
+
+What counts as addon work here: `models/`, `views/`, `controllers/`,
+`wizards/` (or `wizard/`), `security/`, `data/`, `static/src/`,
+`__manifest__.py` and equivalent executable resources (imports, hooks, Python
+execution files, reports). The module's `readme/`, `static/description/`,
+`README.rst` and `doc/` are a documentary product unless the contract declares
+them part of the addon's functional deliverable.
+
 ## Discovery output format (process→module mapping)
 
 The Discovery of an Odoo feature delivers a **process→module** mapping: which

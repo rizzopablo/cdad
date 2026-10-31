@@ -1,56 +1,9 @@
 {
   "version": 1,
   "stack": null,
-  "active_epic": "epic-010-documentary-specialization",
-  "epic_stage": "features-loop",
-  "epic_features": [
-    {
-      "id": "010-000-continuity-relative-root",
-      "status": "done",
-      "depends_on": [],
-      "opened_at": "2026-10-29T17:42:07.979339+00:00",
-      "closed_at": "2026-10-29T21:47:53.403277+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/010-000-continuity-relative-root/closure.md",
-        "sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
-      }
-    },
-    {
-      "id": "010-004-packet-dispatch-ergonomics",
-      "status": "done",
-      "depends_on": [
-        "010-000-continuity-relative-root"
-      ],
-      "opened_at": "2026-10-29T21:48:10.987952+00:00",
-      "closed_at": "2026-10-31T05:42:45.776697+00:00",
-      "closure_evidence": {
-        "path": "docs/specs/010-004-packet-dispatch-ergonomics/closure.md",
-        "sha256": "820b1a31bc1a5923c1ee7fdb7ee5b8c98ba466a9193bbf35bf4fb8637b42ee5c"
-      }
-    },
-    {
-      "id": "010-001-documentary-contracts",
-      "status": "queued",
-      "depends_on": [
-        "010-004-packet-dispatch-ergonomics"
-      ]
-    },
-    {
-      "id": "010-002-documentary-role-integration",
-      "status": "queued",
-      "depends_on": [
-        "010-001-documentary-contracts"
-      ]
-    },
-    {
-      "id": "010-003-documentary-pilot",
-      "status": "queued",
-      "depends_on": [
-        "010-001-documentary-contracts",
-        "010-002-documentary-role-integration"
-      ]
-    }
-  ],
+  "active_epic": null,
+  "epic_stage": null,
+  "epic_features": [],
   "epic_history": [
     {
       "epic": "epic-010-documentary-specialization",
@@ -565,6 +518,11 @@
           }
         }
       ]
+    },
+    {
+      "epic": "epic-010-documentary-specialization",
+      "stage": "epic-closure",
+      "completed_at": "2026-10-31T21:49:58.820956+00:00"
     }
   ],
   "stage_history": [
@@ -26290,6 +26248,3322 @@
       "approved_by": "Pablo",
       "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
       "contract_sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-31T07:03:56.790555+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "e555b2091061f02be153a3a81155e32c1d07d5cde432602b8743393fbf2ece57",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-discovery-002",
+        "receipt_sha256": "43807dc9c823d4205d6a0912fe69f3bb8d83e5cbd3d33b966587b6d04be22266",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/discovery.md",
+            "80265c327861aeaa0374ffd095f65a4ffe9ac9a39ba0b469a354b8e5d58eb477"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-discovery-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-architect-discovery-002/receipt.json",
+      "receipt_sha256": "43807dc9c823d4205d6a0912fe69f3bb8d83e5cbd3d33b966587b6d04be22266",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/discovery.md": "80265c327861aeaa0374ffd095f65a4ffe9ac9a39ba0b469a354b8e5d58eb477"
+      },
+      "note": "Discovery de 010-001: informe read-only del architect, sin archivos modificados ni commit; materializado como discovery.md."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "architect-draft-1",
+      "substage": null,
+      "at": "2026-10-31T07:04:00.595154+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "496a56e255d31fa60548aebeba9c48762e0d546cd46e5b800958fe2915ffc931",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "architect-draft-1",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-draft-001",
+        "receipt_sha256": "564c297f34ed6f93b5534b8010af606ba4b71035239ed634e875b6b45894e84f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/architect-draft-001.md",
+            "b8cd9e71113d0f6a961ed0c9f476276b92b91c3ed42f6a24b7857e9ec96f6452"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/plan.md",
+            "b0c672a1d0e4c2b81588fd5758fffce3946761e07fbdee673532109a5cd11743"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/spec.md",
+            "3cf014dd82c8f264d3555e74bd7dea997bf6921227f8740042f19ed1d75c8fb0"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-architect-draft-001/receipt.json",
+      "receipt_sha256": "564c297f34ed6f93b5534b8010af606ba4b71035239ed634e875b6b45894e84f",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/spec.md": "3cf014dd82c8f264d3555e74bd7dea997bf6921227f8740042f19ed1d75c8fb0",
+        "docs/specs/010-001-documentary-contracts/plan.md": "b0c672a1d0e4c2b81588fd5758fffce3946761e07fbdee673532109a5cd11743",
+        "docs/specs/010-001-documentary-contracts/architect-draft-001.md": "b8cd9e71113d0f6a961ed0c9f476276b92b91c3ed42f6a24b7857e9ec96f6452"
+      },
+      "note": "Borrador de spec y plan de 010-001: FINAL TEXT particionado por tramos byte-identicos; plan incompleto por falta del bloque plan-tasks, que se encarga al architect en un despacho sucesor."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "architect-draft-2",
+      "substage": null,
+      "at": "2026-10-31T07:09:27.578275+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "45e05fa454887b92f8336e55b7ecce6c3e4ce87886e64b5289a5387ddfa8d8c5",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "architect-draft-2",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-draft-002",
+        "receipt_sha256": "2819958988cbf319a96e3b988d28d356eab9eecf234fa8362dc589ec92862db5",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/architect-draft-002.md",
+            "565ff1940bd364d1894172bf2adcc82d9e5b94a28d5b43c96ffbe46fb8e8321b"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/plan.md",
+            "67465c16a7ac0b95f43b03a4fec6798a9fc7e8f0b9e6187519e25138809ad79d"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/spec.md",
+            "3cf014dd82c8f264d3555e74bd7dea997bf6921227f8740042f19ed1d75c8fb0"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-architect-draft-002/receipt.json",
+      "receipt_sha256": "2819958988cbf319a96e3b988d28d356eab9eecf234fa8362dc589ec92862db5",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/spec.md": "3cf014dd82c8f264d3555e74bd7dea997bf6921227f8740042f19ed1d75c8fb0",
+        "docs/specs/010-001-documentary-contracts/plan.md": "67465c16a7ac0b95f43b03a4fec6798a9fc7e8f0b9e6187519e25138809ad79d",
+        "docs/specs/010-001-documentary-contracts/architect-draft-002.md": "565ff1940bd364d1894172bf2adcc82d9e5b94a28d5b43c96ffbe46fb8e8321b"
+      },
+      "note": "Borrador completo de 010-001: spec byte-identica (3cf014dd) y plan con bloque plan-tasks validado (_plan_tasks_from_contract + _check_plan_tasks) antes de la recepcion."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "plan-review-1",
+      "substage": null,
+      "at": "2026-10-31T07:12:50.843177+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "378eedcd95b580c1bd8b33208b675533781824f83202bdbcadc96a10a106658b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "plan-review-1",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-plan-review-001",
+        "receipt_sha256": "2a58f798f138f5f6f7657c65d5928fdbf18179008950e534feb2490c9c354286",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/plan-review.md",
+            "5366a15428cc652220f98766373a6a09f23f42e123e01ed8a5fa4d05d7f762ad"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "2a58f798f138f5f6f7657c65d5928fdbf18179008950e534feb2490c9c354286",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/plan-review.md": "5366a15428cc652220f98766373a6a09f23f42e123e01ed8a5fa4d05d7f762ad"
+      },
+      "note": "plan-review del borrador de 010-001: 1 bloqueante (nombre del dueno en producto instalable) y 5 observaciones; se corrige con el architect antes de aprobar."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "architect-draft-3",
+      "substage": null,
+      "at": "2026-10-31T07:18:10.612252+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "3d3d000b231030eee570a132a0e1fe348922cdb81d9726aa358446267875b1aa",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "architect-draft-3",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-draft-003",
+        "receipt_sha256": "3a07c127c0d87370e6d7ecb8786928ab0829b1f8e731510f92849a0c96af5b49",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/architect-draft-003.md",
+            "3d733aef41f3c511b02481fd07b34607614b9a448071662a85d3b0c268a77510"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/plan.md",
+            "9fee79a36dccb0faf6dbe9372f7d946e9aebf4886844b80162eb399fd506a478"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/spec.md",
+            "a01969d7f51da614c6e502d8660bafea17ad5ae8bb7caf5aea624f43927d94ac"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-draft-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-architect-draft-003/receipt.json",
+      "receipt_sha256": "3a07c127c0d87370e6d7ecb8786928ab0829b1f8e731510f92849a0c96af5b49",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/spec.md": "a01969d7f51da614c6e502d8660bafea17ad5ae8bb7caf5aea624f43927d94ac",
+        "docs/specs/010-001-documentary-contracts/plan.md": "9fee79a36dccb0faf6dbe9372f7d946e9aebf4886844b80162eb399fd506a478",
+        "docs/specs/010-001-documentary-contracts/architect-draft-003.md": "3d733aef41f3c511b02481fd07b34607614b9a448071662a85d3b0c268a77510"
+      },
+      "note": "Correccion de F1-F6 del plan-review: PC-12/INV-07 con autoridad generica, verificabilidad de PC-13, clases por grupo, INV-08 en PC-10, D1-D4 en T5 y secuencia de paquetes."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "plan-review-2",
+      "substage": null,
+      "at": "2026-10-31T07:21:02.402799+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "6dd7bba94448fb959bde2d5eb675002f8ffb790ed0596e2b4daa205ac0793c1c",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "plan-review-2",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-plan-review-002",
+        "receipt_sha256": "18dedf9bfcf9c1f7cccd1c7150105db03f4dba2cf9b7948b53f7ad5980d98a1a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/plan-review-002.md",
+            "5e1ceaf242f7fbcb8b53b8801ad81df689a5f0b03a2341b90057e69364ab9268"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-plan-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-reviewer-plan-review-002/receipt.json",
+      "receipt_sha256": "18dedf9bfcf9c1f7cccd1c7150105db03f4dba2cf9b7948b53f7ad5980d98a1a",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/plan-review-002.md": "5e1ceaf242f7fbcb8b53b8801ad81df689a5f0b03a2341b90057e69364ab9268"
+      },
+      "note": "Re-verificacion: F1/F3/F4/F5/F6 cerrados, F2 cerrado con reparo y bloqueante nuevo N1 (un solo paquete activo: T1 no puede preparar T2 y T3)."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "architect-draft-4",
+      "substage": null,
+      "at": "2026-10-31T07:26:40.614494+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "887daf58e50410c0f2b364c7c670fb7173f0408f20d2e21bab7284fa34fd5555",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "architect-draft-4",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-architect-draft-004",
+        "receipt_sha256": "9c5e61cc9038696b98e4742f087ce65dd39dcff7f476717af3fc578b895bbd02",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/architect-draft-004.md",
+            "c81a712858508d7bf1d7609e025ab098cd01482674d449b6ac89198a64418e8f"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/plan.md",
+            "5fe898b6d9128a3bfe4397c984f339a2e85eac56e236919f9b1aa9cdf5187fca"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-architect-draft-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-architect-draft-004/receipt.json",
+      "receipt_sha256": "9c5e61cc9038696b98e4742f087ce65dd39dcff7f476717af3fc578b895bbd02",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/plan.md": "5fe898b6d9128a3bfe4397c984f339a2e85eac56e236919f9b1aa9cdf5187fca",
+        "docs/specs/010-001-documentary-contracts/architect-draft-004.md": "c81a712858508d7bf1d7609e025ab098cd01482674d449b6ac89198a64418e8f"
+      },
+      "note": "Correccion N1/N2: T1 prepara y valida solo T2, secuencia de paquetes explicita, retorno de grupo D desde T4 a un GREEN acotado de T3. Spec sin cambios (a01969d7)."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-31T07:28:44.813149+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "5b488a5ed031373d84040a79b9975e60b21cdba5afd507e8bff2958c97809177",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [],
+        "approved_by": "Pablo (mandato HITL del 2026-10-30, ejercido por el orquestador)",
+        "contract": {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da"
+        },
+        "plan": {
+          "path": "docs/specs/010-001-documentary-contracts/plan.md",
+          "sha256": "cb3c25a8ba6b420baab8ec495620560c122ca17fbe749c95cb171e5867ab0265"
+        },
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Aprobacion de spec a01969d7 y plan v4 5fe898b8, tras tres pasadas de plan-review sin bloqueantes; observaciones O1/O2 diferidas con motivo en owner-approval-2026-10-31.md.",
+      "approved_by": "Pablo (mandato HITL del 2026-10-30, ejercido por el orquestador)",
+      "contract_path": "docs/specs/010-001-documentary-contracts/spec.md",
+      "contract_sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+      "plan_path": "docs/specs/010-001-documentary-contracts/plan.md",
+      "plan_sha256": "cb3c25a8ba6b420baab8ec495620560c122ca17fbe749c95cb171e5867ab0265",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "plan-review-3",
+      "substage": null,
+      "at": "2026-10-31T07:32:06.781616+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "1231b4a4d76c2f0d636331a9877c620c87c94d0b25113ca16e12ddd259e203d7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "plan-review-3",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-plan-review-003",
+        "receipt_sha256": "ab69e3f68027ea663345bf7e54716a9c153fb87ed764907274c29b43618a402c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/plan-review-003.md",
+            "adecd336d0a2094108de897ef577c2a504ad8ed4ec3cd04ee6386001e1cc29b6"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "ab69e3f68027ea663345bf7e54716a9c153fb87ed764907274c29b43618a402c",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/plan-review-003.md": "adecd336d0a2094108de897ef577c2a504ad8ed4ec3cd04ee6386001e1cc29b6"
+      },
+      "note": "Tercera pasada: N1 y N2 cerrados sin bloqueantes nuevos; unica observacion O1 (nit de redaccion). Re-transportada tras una secuencia invalida del orquestador (checkpoint entre begin y record)."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "test-audit",
+      "substage": null,
+      "at": "2026-10-31T07:41:04.258776+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "16b262583bd95398e83b36f1c7b3366912670d999304735951a3661c87eac141",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "test-audit",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-test-writer-audit-001",
+        "receipt_sha256": "992f250b1468b500734002fb2b1317e1dd7f4930e1e726d1648882c9020c7f6a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/test-audit.md",
+            "11d05dc88c982d37fbbd6ef131f5cdca6eaaa2826ee676bf7d61e7237d308193"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-test-writer-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "992f250b1468b500734002fb2b1317e1dd7f4930e1e726d1648882c9020c7f6a",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/test-audit.md": "11d05dc88c982d37fbbd6ef131f5cdca6eaaa2826ee676bf7d61e7237d308193"
+      },
+      "note": "AUDIT de 010-001: 11 PC sin cobertura, 5 parciales, cero sustituciones; 10 ambiguedades a resolver y H-0 reportada."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "audit",
+      "substage": "red",
+      "at": "2026-10-31T07:41:36.325436+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "593f34ea15899ade2b014a92766b1126b3eae51adc4abd3f36559e98c0745ed4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "gate",
+        "stage": "audit",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/test-audit.md",
+            "11d05dc88c982d37fbbd6ef131f5cdca6eaaa2826ee676bf7d61e7237d308193"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; AUDIT aprobado en docs/specs/010-001-documentary-contracts/audit-approval-2026-10-31.md)",
+        "contract": {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da"
+        },
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/test-audit.md": "11d05dc88c982d37fbbd6ef131f5cdca6eaaa2826ee676bf7d61e7237d308193"
+      },
+      "note": "AUDIT aprobado; A1-A10 resueltas y H-0 descartada con evidencia; RED aditivo habilitado, POST-AUDIT no requerido (cero sustituciones).",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; AUDIT aprobado en docs/specs/010-001-documentary-contracts/audit-approval-2026-10-31.md)",
+      "contract_path": "docs/specs/010-001-documentary-contracts/spec.md",
+      "contract_sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "tdd-red-t2",
+      "substage": null,
+      "at": "2026-10-31T07:56:08.790702+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "796230aa43a7d9df8f79dd7b80b3992c18cf51666a6f41f5ee78724ccebae50d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "tdd-red-t2",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-test-writer-red-001",
+        "receipt_sha256": "5fe7a9200aa33f7cb3766abbcfd90b010fd97b3d21c3831545c87c682dc5fa5f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/red-t2.md",
+            "596de8db462168f3c36d2a9b726c48971a5ad495e9fcebc685c45afc18834566"
+          ],
+          [
+            "tests/test_010_001_documentary_contracts.py",
+            "970d3977ba64acdaef73d11944899998cb67c11e97514285d26cbadc4ac6f9e5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-test-writer-red-001/receipt.json",
+      "receipt_sha256": "5fe7a9200aa33f7cb3766abbcfd90b010fd97b3d21c3831545c87c682dc5fa5f",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/red-t2.md": "596de8db462168f3c36d2a9b726c48971a5ad495e9fcebc685c45afc18834566",
+        "tests/test_010_001_documentary_contracts.py": "970d3977ba64acdaef73d11944899998cb67c11e97514285d26cbadc4ac6f9e5"
+      },
+      "note": "RED T2 de 010-001: modulo aditivo de 1404 lineas (commit 6e9ef3b6), 11 tests con 64 fallos por AssertionError y 0 ERROR; 4 controles declarados verdes."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "tdd-green-t3",
+      "substage": null,
+      "at": "2026-10-31T08:14:57.471277+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "7eb7724794430b406491c8a5dc7b5847097f23981ede314782a0485ff45db092",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "tdd-green-t3",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-implementer-green-001",
+        "receipt_sha256": "949b0e5c4483aa72a7fd5cc467d90699245af15b798c177a5695149eaa03e67c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/tdd-t3-green.md",
+            "94bc3e49bc0934cb81f93be6f98ed8dfd7a2ec8c92a082ef49d3ed3eb2892dd6"
+          ],
+          [
+            "skills/cdad-cycle/SKILL.md",
+            "5e4d424d1b704d109f39c4bfb06156dc5a493eb6b5b60de93c0aa2a1aa8c3f99"
+          ],
+          [
+            "skills/cdad-cycle/references/documentary-contracts.md",
+            "8e3d5a2aa3ced4e92575ada567452a11a92829435cc398b58ae8f8b642fb889f"
+          ],
+          [
+            "sources/roles/architect.md",
+            "35e207bd45d2f83bdf86fe92a504b0308e56c6e1b6eb8593909e37a7df193414"
+          ],
+          [
+            "sources/roles/implementer.md",
+            "84f934b85143cdbd2303656492752eaa6f79824a2b2e59198ed1c4c1c217f4ac"
+          ],
+          [
+            "sources/roles/orchestrator.md",
+            "bc549e3c05ad90eb0f0c8db268ae442a0db4e5dc1d2b77360e0da73016fc4bc8"
+          ],
+          [
+            "sources/roles/reviewer.md",
+            "210e70ec3c7aaf88c797d0eaf23250ebec6857f52cdac7b6f31c26483187e31a"
+          ],
+          [
+            "sources/roles/scribe.md",
+            "2ff83f3636d331b26be844a71e8324dedee081dd99883c2ae7c8f79948ea40cf"
+          ],
+          [
+            "sources/roles/test-writer.md",
+            "b6c33e7c60df449ad8e0aaf180366e7c30d96a1cac4d80189bf0609163ed7e71"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-implementer-green-001/receipt.json",
+      "receipt_sha256": "949b0e5c4483aa72a7fd5cc467d90699245af15b798c177a5695149eaa03e67c",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/tdd-t3-green.md": "94bc3e49bc0934cb81f93be6f98ed8dfd7a2ec8c92a082ef49d3ed3eb2892dd6",
+        "skills/cdad-cycle/references/documentary-contracts.md": "8e3d5a2aa3ced4e92575ada567452a11a92829435cc398b58ae8f8b642fb889f",
+        "skills/cdad-cycle/SKILL.md": "5e4d424d1b704d109f39c4bfb06156dc5a493eb6b5b60de93c0aa2a1aa8c3f99",
+        "sources/roles/architect.md": "35e207bd45d2f83bdf86fe92a504b0308e56c6e1b6eb8593909e37a7df193414",
+        "sources/roles/implementer.md": "84f934b85143cdbd2303656492752eaa6f79824a2b2e59198ed1c4c1c217f4ac",
+        "sources/roles/test-writer.md": "b6c33e7c60df449ad8e0aaf180366e7c30d96a1cac4d80189bf0609163ed7e71",
+        "sources/roles/reviewer.md": "210e70ec3c7aaf88c797d0eaf23250ebec6857f52cdac7b6f31c26483187e31a",
+        "sources/roles/scribe.md": "2ff83f3636d331b26be844a71e8324dedee081dd99883c2ae7c8f79948ea40cf",
+        "sources/roles/orchestrator.md": "bc549e3c05ad90eb0f0c8db268ae442a0db4e5dc1d2b77360e0da73016fc4bc8"
+      },
+      "note": "GREEN T3 (commit 3344526e): referencia documental y obligaciones de las seis fuentes; grupos A-C verdes, D rojo por diseno hasta T4. El informe materializado reproduce el FINAL TEXT desde su primer encabezado."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "tdd-green-t4",
+      "substage": null,
+      "at": "2026-10-31T08:33:03.502726+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "a26bd4f0d05c604326b861600924106a2bf4aa3ea5c012462009e0a9c0e16991",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "tdd-green-t4",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-implementer-green-002",
+        "receipt_sha256": "192efa06f6418b4e46f18830067b7106418fe631c705e84531723e8f923a446f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/tdd-t4-green.md",
+            "8630e0b6483c79ff42d8aa1b37fbe52565417a42abcc5ba961ef2bcc7d724d0a"
+          ],
+          [
+            "skills/cdad-cycle/packets/roles/architect.md",
+            "668b9df22c3cc671a576e2c74df11703454b432c87f059f5c6083ffed982e3d5"
+          ],
+          [
+            "skills/cdad-cycle/packets/roles/implementer.md",
+            "d93b44e411b89e35eae03184b341338bcd88e1345dbfc767eea314b0dc964fbe"
+          ],
+          [
+            "skills/cdad-cycle/packets/roles/reviewer.md",
+            "bbc4b6f2b838078ea265bd1536c15f9e8f3cf54fd5127f12f2fd60f514d16bd6"
+          ],
+          [
+            "skills/cdad-cycle/packets/roles/scribe.md",
+            "9afe0f3e610630c99c635f8bd2502e11a4e87d56c7e5e69b99840e5a7c1ba63a"
+          ],
+          [
+            "skills/cdad-cycle/packets/roles/test-writer.md",
+            "a211e9cfcc736c9d49a090e9bb39792efb308fba488d8683a13839d8d72f470c"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-implementer-green-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-implementer-green-002/receipt.json",
+      "receipt_sha256": "192efa06f6418b4e46f18830067b7106418fe631c705e84531723e8f923a446f",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/tdd-t4-green.md": "8630e0b6483c79ff42d8aa1b37fbe52565417a42abcc5ba961ef2bcc7d724d0a",
+        "skills/cdad-cycle/packets/roles/architect.md": "668b9df22c3cc671a576e2c74df11703454b432c87f059f5c6083ffed982e3d5",
+        "skills/cdad-cycle/packets/roles/implementer.md": "d93b44e411b89e35eae03184b341338bcd88e1345dbfc767eea314b0dc964fbe",
+        "skills/cdad-cycle/packets/roles/test-writer.md": "a211e9cfcc736c9d49a090e9bb39792efb308fba488d8683a13839d8d72f470c",
+        "skills/cdad-cycle/packets/roles/reviewer.md": "bbc4b6f2b838078ea265bd1536c15f9e8f3cf54fd5127f12f2fd60f514d16bd6",
+        "skills/cdad-cycle/packets/roles/scribe.md": "9afe0f3e610630c99c635f8bd2502e11a4e87d56c7e5e69b99840e5a7c1ba63a"
+      },
+      "note": "GREEN T4 (commit 2a918b72): cinco bloques con obligacion minima y puntero, 22 agentes promovidos por make agents, staging reproducible e instalacion aislada con bytes verificados; modulo completo verde y 64 regresiones OK. make validate falla solo por deriva de la instalacion global, declarada y no publicada."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "dispatch-disposition",
+      "substage": null,
+      "at": "2026-10-31T08:41:15.314017+00:00",
+      "by": "orchestrator",
+      "transition": "disposition",
+      "transition_key": "6a883a84666ac7d964c7e39eb30c0a93a69df3d8e8de2dc459c0c2e78a74621e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "disposition",
+        "stage": "dispatch-disposition",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-review-001",
+        "receipt_sha256": null,
+        "resolution": "superseded",
+        "replaced_by": "010-001-documentary-contracts-reviewer-review-002",
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-review-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "El reviewer rechazo el paquete por invalido (validate-packet rc=2): se compuso con el CLI instalado, cuya copia de packets/roles/reviewer.md es anterior a T4, mientras el arbol del proyecto ya tenia el bloque vigente. El rechazo es correcto (fail-closed). Evidencia: docs/specs/010-001-documentary-contracts/review-refused-packet-001.md. Se publica un sucesor compuesto con scripts/cdad_packet.py del proyecto.",
+      "resolution": "superseded",
+      "replaced_by": "010-001-documentary-contracts-reviewer-review-002"
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "review-t5",
+      "substage": null,
+      "at": "2026-10-31T08:45:04.860745+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "5643c2beac800ede3aaad51b58c83c21428ee0ad50e70f8fa3ec59f3ae962b6d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "review-t5",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-review-002",
+        "receipt_sha256": "f77b6cc6e6b6a7e388a4bbe7c775551704f997c7a4b2711cd56fd20dc1ed8b99",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/review.md",
+            "d752094467278aa76df8b992d822f2adeb8b5b8753cef7cb52feea53ba1e94d2"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-reviewer-review-002/receipt.json",
+      "receipt_sha256": "f77b6cc6e6b6a7e388a4bbe7c775551704f997c7a4b2711cd56fd20dc1ed8b99",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/review.md": "d752094467278aa76df8b992d822f2adeb8b5b8753cef7cb52feea53ba1e94d2"
+      },
+      "note": "Review de T5: dos bloqueantes semanticos (B1 reglas de D3 ausentes en la referencia; B2 contrato del implementer dividido entre SKILL.md, handoff-prompts y sub-agent-strategies) y cuatro observaciones. PC-13/PC-14/PC-15/PC-16 acreditadas."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "tdd-t5-review-fix",
+      "substage": null,
+      "at": "2026-10-31T08:50:37.317085+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "0146612f22b5ea7627426b22bd7ed5b3a6965f205b917f930543cd5a1a53282d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "tdd-t5-review-fix",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-implementer-review-fix-001",
+        "receipt_sha256": "d0c0f9f6000455cd45b9730d4f17c46d68aa8123e50d4cf4cd460b29b14098a3",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/tdd-t5-review-fix.md",
+            "52c8178fb1dded0bdbeab7c11e73e8d88083821e729abfbedf0abde2eb9522c1"
+          ],
+          [
+            "skills/cdad-cycle/SKILL.md",
+            "2465acee64384a492e8877f22660a90b34d5a421c430260192dc32d4c10bd97c"
+          ],
+          [
+            "skills/cdad-cycle/references/documentary-contracts.md",
+            "a1e0aeafa61a265ffa7c4bc4c013cfef53ee9b71aa5d4298d57f2f6f176be58a"
+          ],
+          [
+            "skills/cdad-cycle/references/handoff-prompts.md",
+            "02146ba22259e299b015864482977f4ba6e1e04eacfe464a22376e890e76e40f"
+          ],
+          [
+            "skills/cdad-cycle/references/sub-agent-strategies.md",
+            "e83b183b59a9b9fa205ffec918663b434f3524511c579e324001d6630e6888a2"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-implementer-review-fix-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-implementer-review-fix-001/receipt.json",
+      "receipt_sha256": "d0c0f9f6000455cd45b9730d4f17c46d68aa8123e50d4cf4cd460b29b14098a3",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/tdd-t5-review-fix.md": "52c8178fb1dded0bdbeab7c11e73e8d88083821e729abfbedf0abde2eb9522c1",
+        "skills/cdad-cycle/references/documentary-contracts.md": "a1e0aeafa61a265ffa7c4bc4c013cfef53ee9b71aa5d4298d57f2f6f176be58a",
+        "skills/cdad-cycle/SKILL.md": "2465acee64384a492e8877f22660a90b34d5a421c430260192dc32d4c10bd97c",
+        "skills/cdad-cycle/references/handoff-prompts.md": "02146ba22259e299b015864482977f4ba6e1e04eacfe464a22376e890e76e40f",
+        "skills/cdad-cycle/references/sub-agent-strategies.md": "e83b183b59a9b9fa205ffec918663b434f3524511c579e324001d6630e6888a2"
+      },
+      "note": "Review-fix de T5 (commit 71c2a7e2): B1 cerrado en la referencia, B2 alineado en SKILL.md, handoff-prompts y sub-agent-strategies, O2/O3 aceptadas; modulo de 11 tests y regresiones verdes."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "review-t5-r2",
+      "substage": null,
+      "at": "2026-10-31T08:53:13.262002+00:00",
+      "by": "orchestrator",
+      "transition": "delivery",
+      "transition_key": "1cb681322eb7edcf36d23ff0662343f9a52b695e2e4eb4c180f3ec8cf18f3f90",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "review-t5-r2",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-reviewer-review-003",
+        "receipt_sha256": "24076fae6eb4537a0caca34825e02950a031311e9ad27337a83e231a3308e086",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/review-002.md",
+            "c6c4ccdc677e52c02bccc97be775c8885c9decb3668944cc461fa8d56dd54817"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-reviewer-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-reviewer-review-003/receipt.json",
+      "receipt_sha256": "24076fae6eb4537a0caca34825e02950a031311e9ad27337a83e231a3308e086",
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/review-002.md": "c6c4ccdc677e52c02bccc97be775c8885c9decb3668944cc461fa8d56dd54817"
+      },
+      "note": "Re-verificacion de T5: B1 y B2 cerrados, O2 y O3 incorporadas, sin bloqueantes nuevos; quedan N1 y N2 como nits diferidos con motivo."
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-10-31T08:53:46.464683+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "bb7d63bbaad96477ddbf7aae8853a91fec407a1aa93ec6b2f431c6b26d471666",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "gate",
+        "stage": "review",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [
+          [
+            "docs/specs/010-001-documentary-contracts/review-002.md",
+            "c6c4ccdc677e52c02bccc97be775c8885c9decb3668944cc461fa8d56dd54817"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/review.md",
+            "d752094467278aa76df8b992d822f2adeb8b5b8753cef7cb52feea53ba1e94d2"
+          ],
+          [
+            "docs/specs/010-001-documentary-contracts/tdd-t5-review-fix.md",
+            "52c8178fb1dded0bdbeab7c11e73e8d88083821e729abfbedf0abde2eb9522c1"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; B1/B2 cerrados en docs/specs/010-001-documentary-contracts/review-002.md)",
+        "contract": null,
+        "plan": null,
+        "closure": null,
+        "exemption": {
+          "requested_by": "Pablo",
+          "delegated": true
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-001-documentary-contracts/review.md": "d752094467278aa76df8b992d822f2adeb8b5b8753cef7cb52feea53ba1e94d2",
+        "docs/specs/010-001-documentary-contracts/review-002.md": "c6c4ccdc677e52c02bccc97be775c8885c9decb3668944cc461fa8d56dd54817",
+        "docs/specs/010-001-documentary-contracts/tdd-t5-review-fix.md": "52c8178fb1dded0bdbeab7c11e73e8d88083821e729abfbedf0abde2eb9522c1"
+      },
+      "note": "Review de T5 aprobado: B1 y B2 cerrados tras el review-fix 71c2a7e2, O2/O3 incorporadas, sin bloqueantes nuevos; N1/N2 (nits) y O1/O4 diferidos con motivo al cierre.",
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; B1/B2 cerrados en docs/specs/010-001-documentary-contracts/review-002.md)",
+      "requested_by": "Pablo",
+      "delegated": true
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "packet-withdrawal",
+      "substage": null,
+      "at": "2026-10-31T10:12:49.628832+00:00",
+      "by": null,
+      "transition": "withdraw",
+      "transition_key": "05e371641ae3037fc2a35eecd6fb3e8f821dcb4792e4f7f19a75cb1ef8213b8b",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "withdraw",
+        "stage": "packet-withdrawal",
+        "substage": null,
+        "packet_id": "010-001-documentary-contracts-scribe-memory-001",
+        "receipt_sha256": null,
+        "resolution": "withdrawn",
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-scribe-memory-001",
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Paquete preparado y no despachado: sus 'Inputs' declaraban solo el contrato, omitiendo el cierre, las dos revisiones y el Memory Bank vigente que el objetivo exige como evidencia. Se retira antes de cualquier transporte y se republica con los insumos declarados.",
+      "resolution": "withdrawn"
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "t6-scribe-memory-received",
+      "substage": "memory",
+      "at": "2026-10-31T10:21:24.988699+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "920b0842400d4d40a713e0112c993a7fd82528a6c5ccb8924760d7b12ce742f3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "delivery",
+        "stage": "t6-scribe-memory-received",
+        "substage": "memory",
+        "packet_id": "010-001-documentary-contracts-scribe-memory-002",
+        "receipt_sha256": "f5e0c213e903ead79205f9bb72975d63338742efcc912b4a56fb6860af7b0f0c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-001-documentary-contracts-scribe-memory-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-001-documentary-contracts-002/010-001-documentary-contracts-scribe-memory-002/receipt.json",
+      "receipt_sha256": "f5e0c213e903ead79205f9bb72975d63338742efcc912b4a56fb6860af7b0f0c",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "memory-approved",
+      "substage": null,
+      "at": "2026-10-31T10:21:54.539113+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "c5b149fd704a7615621bf5cb2082ac7b75fe8107532e3a59d1828a945cf3b555",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "gate",
+        "stage": "memory-approved",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "merge",
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "8638e4c7e49449cc475d50fb4c3b5ca0e16a9f1760112439f2c57b8eb3a5ce38"
+          ],
+          [
+            "docs/progress.md",
+            "ebb75ae957248529ab696402fddb344f15ec0370668110fdbf5cd00bc7a48dd3"
+          ],
+          [
+            "docs/projectbrief.md",
+            "7f1e4a4a02e2f919c7ad5a5e90057925b0f6d4b7f4b397cecf959201c2d11fa8"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
+          ]
+        ],
+        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/projectbrief.md": "7f1e4a4a02e2f919c7ad5a5e90057925b0f6d4b7f4b397cecf959201c2d11fa8",
+        "docs/systemPatterns.md": "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2",
+        "docs/activeContext.md": "8638e4c7e49449cc475d50fb4c3b5ca0e16a9f1760112439f2c57b8eb3a5ce38",
+        "docs/progress.md": "ebb75ae957248529ab696402fddb344f15ec0370668110fdbf5cd00bc7a48dd3"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md"
+    },
+    {
+      "feature": "010-001-documentary-contracts",
+      "stage": "closure",
+      "substage": null,
+      "at": "2026-10-31T10:21:58.883209+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "b316e7e754c9178da3ba633f4689f6f4553db94e0cfbb5af3cc36b8b1dc37751",
+      "transition_key_payload": {
+        "execution_id": "exec-010-001-documentary-contracts-002",
+        "feature_id": "010-001-documentary-contracts",
+        "transition": "closure",
+        "stage": "closure",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "8638e4c7e49449cc475d50fb4c3b5ca0e16a9f1760112439f2c57b8eb3a5ce38"
+          ],
+          [
+            "docs/progress.md",
+            "ebb75ae957248529ab696402fddb344f15ec0370668110fdbf5cd00bc7a48dd3"
+          ],
+          [
+            "docs/projectbrief.md",
+            "7f1e4a4a02e2f919c7ad5a5e90057925b0f6d4b7f4b397cecf959201c2d11fa8"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
+          ]
+        ],
+        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/010-001-documentary-contracts/closure.md",
+          "sha256": "d48a1fcf8a25785daacb0786d69fc68c729f3dd43247d9997b39b5601a21ccf6"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/activeContext.md": "8638e4c7e49449cc475d50fb4c3b5ca0e16a9f1760112439f2c57b8eb3a5ce38",
+        "docs/progress.md": "ebb75ae957248529ab696402fddb344f15ec0370668110fdbf5cd00bc7a48dd3",
+        "docs/projectbrief.md": "7f1e4a4a02e2f919c7ad5a5e90057925b0f6d4b7f4b397cecf959201c2d11fa8",
+        "docs/systemPatterns.md": "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+      "closure_path": "docs/specs/010-001-documentary-contracts/closure.md",
+      "closure_sha256": "d48a1fcf8a25785daacb0786d69fc68c729f3dd43247d9997b39b5601a21ccf6"
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "discovery",
+      "substage": "discovery",
+      "at": "2026-10-31T10:27:53.055920+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e8195e24228954561f34ba8e2783beb49f698a4b573808b23a4e6c226d1382da",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": "discovery",
+        "packet_id": "010-002-documentary-role-integration-architect-discovery-001",
+        "receipt_sha256": "aeab2d28ab15214230d66dadb1b6ce9967b3a9a1103846f50621d59e46a6ceb5",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-architect-discovery-001/receipt.json",
+      "receipt_sha256": "aeab2d28ab15214230d66dadb1b6ce9967b3a9a1103846f50621d59e46a6ceb5",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "architect-draft-001",
+      "substage": "draft",
+      "at": "2026-10-31T10:36:11.409655+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "da096ecfcee25dec43d72173b0964fa943c4ac8a0fb753fbb77c11f74b451c75",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "architect-draft-001",
+        "substage": "draft",
+        "packet_id": "010-002-documentary-role-integration-architect-draft-001",
+        "receipt_sha256": "3de8b5c9394e633d44865cd2e717c987e40abc0a3aba075f6d560374230d6aa6",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-architect-draft-001/receipt.json",
+      "receipt_sha256": "3de8b5c9394e633d44865cd2e717c987e40abc0a3aba075f6d560374230d6aa6",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "plan-review-001",
+      "substage": "plan-review",
+      "at": "2026-10-31T10:41:53.867394+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "3a37cc066cba2b7576cb229d69bba27044d6c195e1a7aece17179275db62ef37",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "plan-review-001",
+        "substage": "plan-review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-001",
+        "receipt_sha256": "8571d8ab1f34bc502678561160e19004c6e22c45ca91e4fe75240fbdf50497f6",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "8571d8ab1f34bc502678561160e19004c6e22c45ca91e4fe75240fbdf50497f6",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "architect-draft-002",
+      "substage": "draft",
+      "at": "2026-10-31T10:49:03.451447+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "70b5aa4fd07b99a68996094d07d487f2bbf959766565cfba16c4aee0fe0ba7b8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "architect-draft-002",
+        "substage": "draft",
+        "packet_id": "010-002-documentary-role-integration-architect-draft-002",
+        "receipt_sha256": "7008e5ba4d48513014813e12b43a67f4b28b17b050fe3f7fad6369ce4a6148d3",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-architect-draft-002/receipt.json",
+      "receipt_sha256": "7008e5ba4d48513014813e12b43a67f4b28b17b050fe3f7fad6369ce4a6148d3",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "plan-review-002",
+      "substage": "plan-review",
+      "at": "2026-10-31T10:52:33.338773+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "49d4c90a1318f04eaa377cda1d9f71e79f442b0cfa3129bc5190a48905a7b312",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "plan-review-002",
+        "substage": "plan-review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-002",
+        "receipt_sha256": "89981ae13592df129c04a6a9c65b97007f82530c88007bb17b04f461fbe20e22",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-plan-review-002/receipt.json",
+      "receipt_sha256": "89981ae13592df129c04a6a9c65b97007f82530c88007bb17b04f461fbe20e22",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "architect-draft-003",
+      "substage": "draft",
+      "at": "2026-10-31T10:57:41.672356+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "38f27d62b6f8352d0e5b04bb3bf09ae5f765f1b253ed0620cd35d24516071d3e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "architect-draft-003",
+        "substage": "draft",
+        "packet_id": "010-002-documentary-role-integration-architect-draft-003",
+        "receipt_sha256": "1533e6b06660c760f35829394c4a6ee9a94b8386adc5857b20d23e34cecbcb7c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-architect-draft-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-architect-draft-003/receipt.json",
+      "receipt_sha256": "1533e6b06660c760f35829394c4a6ee9a94b8386adc5857b20d23e34cecbcb7c",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "plan-review-003",
+      "substage": "plan-review",
+      "at": "2026-10-31T11:00:51.352376+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9b4a821f253a040a4a14887b485e1176416e4b342fc7a2c4dc343721b0a4f075",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "plan-review-003",
+        "substage": "plan-review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-003",
+        "receipt_sha256": "81357171793fcc01fbf5d035c5abefa189cd07c1f40e642ef4498c4cd50bb3d8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "81357171793fcc01fbf5d035c5abefa189cd07c1f40e642ef4498c4cd50bb3d8",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "architect-draft-004",
+      "substage": "draft",
+      "at": "2026-10-31T11:06:48.801449+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "65a791ad2883d8c5ee393b64add34ef915e4e1ddbafe1eb25ed509cb4f974f4d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "architect-draft-004",
+        "substage": "draft",
+        "packet_id": "010-002-documentary-role-integration-architect-draft-004",
+        "receipt_sha256": "edeacc8acc124110e929430f8f76389a921f95d8ed1bf0433f7f5375dc774dc8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-architect-draft-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-architect-draft-004/receipt.json",
+      "receipt_sha256": "edeacc8acc124110e929430f8f76389a921f95d8ed1bf0433f7f5375dc774dc8",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "plan-review-004",
+      "substage": "plan-review",
+      "at": "2026-10-31T11:09:12.634627+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e75febbc5e8c3cd00d238268b8639ce9e76a7c52c4db9a1093e8bdd822af2973",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "plan-review-004",
+        "substage": "plan-review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-004",
+        "receipt_sha256": "55c783cb85a11a978a460e106d52248a07ce9f11f64073a1af4748c2779e6818",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-plan-review-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-plan-review-004/receipt.json",
+      "receipt_sha256": "55c783cb85a11a978a460e106d52248a07ce9f11f64073a1af4748c2779e6818",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "specification",
+      "substage": null,
+      "at": "2026-10-31T11:09:33.498525+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "ee3547fb68628582e57d01c7c11d91b972415e4f82736f70a37e9991b28c358c",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
+            "a245fcb5e421821f764959850f6676f9d5cfb9d210efe2095ce28107c2166ae3"
+          ]
+        ],
+        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
+        "contract": {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+        },
+        "plan": {
+          "path": "docs/specs/010-002-documentary-role-integration/plan.md",
+          "sha256": "3ead624c39a2436d6629afa11883f9cbffde885b548bbecff14f8c9500671190"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md": "a245fcb5e421821f764959850f6676f9d5cfb9d210efe2095ce28107c2166ae3"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
+      "contract_path": "docs/specs/010-002-documentary-role-integration/spec.md",
+      "contract_sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+      "plan_path": "docs/specs/010-002-documentary-role-integration/plan.md",
+      "plan_sha256": "3ead624c39a2436d6629afa11883f9cbffde885b548bbecff14f8c9500671190"
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "test-audit",
+      "substage": "audit",
+      "at": "2026-10-31T11:30:56.603493+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9551eb899b8768bb8f1ad482e3e79c086fc42b65437da5722081d39bd5af4254",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "test-audit",
+        "substage": "audit",
+        "packet_id": "010-002-documentary-role-integration-test-writer-audit-001",
+        "receipt_sha256": "691309f906dd1a1824f3e4b1298a55bb8660b1903fcfdc7944e245c88b5dd040",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-test-writer-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "691309f906dd1a1824f3e4b1298a55bb8660b1903fcfdc7944e245c88b5dd040",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "audit",
+      "substage": "red",
+      "at": "2026-10-31T11:31:17.251662+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "d59ad3d2b6ff1dffdb7fbe4f506ccb979466f32f62747cfa1550e6c828242d7e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "gate",
+        "stage": "audit",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/audit-approval-2026-10-31.md",
+            "6514a8fcecf6c5e30598adcd2d8534a837f3b2dd2f602725dc15d6181800f493"
+          ],
+          [
+            "docs/specs/010-002-documentary-role-integration/test-audit.md",
+            "03027b0ec7da74e4549c94cf241c7a6dbf8ed556083363be80f415699a66acc4"
+          ]
+        ],
+        "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada 2026-10-30); resolucion en docs/specs/010-002-documentary-role-integration/audit-approval-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/test-audit.md": "03027b0ec7da74e4549c94cf241c7a6dbf8ed556083363be80f415699a66acc4",
+        "docs/specs/010-002-documentary-role-integration/audit-approval-2026-10-31.md": "6514a8fcecf6c5e30598adcd2d8534a837f3b2dd2f602725dc15d6181800f493"
+      },
+      "note": null,
+      "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada 2026-10-30); resolucion en docs/specs/010-002-documentary-role-integration/audit-approval-2026-10-31.md"
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-red-t3",
+      "substage": "red",
+      "at": "2026-10-31T11:59:30.462948+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "25e0e4f323f1c9c998f12195f8062357cb0beff23a1bdadd380d02380edfc5c2",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-red-t3",
+        "substage": "red",
+        "packet_id": "010-002-documentary-role-integration-test-writer-red-001",
+        "receipt_sha256": "029811129ec0a18c047d9fe50ed302f4f996c60d6ee5a3faf37e46fd699d4d11",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_002_documentary_role_integration.py",
+            "07c919ecd22fc35503df49bbf099525a5a7297e424f2e18ed4fbc90d8a819f7a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-test-writer-red-001/receipt.json",
+      "receipt_sha256": "029811129ec0a18c047d9fe50ed302f4f996c60d6ee5a3faf37e46fd699d4d11",
+      "artifacts": {
+        "tests/test_010_002_documentary_role_integration.py": "07c919ecd22fc35503df49bbf099525a5a7297e424f2e18ed4fbc90d8a819f7a"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-green-t4",
+      "substage": "green",
+      "at": "2026-10-31T12:45:58.281323+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "53630f38964ac9e560ca71d807286a4149d3a8ecf2afb702c719d1964801a6d4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-green-t4",
+        "substage": "green",
+        "packet_id": "010-002-documentary-role-integration-implementer-green-001",
+        "receipt_sha256": "e5cca9549329fb715bcf5b64441e8fb6e45319f983161f09c061c1bba3c43404",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/deviation-green-accreditation-2026-10-31.md",
+            "6109970e23810bd021dad139d269a3e9b4a4141a758abf76f8806726a56609e2"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-implementer-green-001/receipt.json",
+      "receipt_sha256": "e5cca9549329fb715bcf5b64441e8fb6e45319f983161f09c061c1bba3c43404",
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/deviation-green-accreditation-2026-10-31.md": "6109970e23810bd021dad139d269a3e9b4a4141a758abf76f8806726a56609e2"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-red-t5",
+      "substage": "red",
+      "at": "2026-10-31T13:16:09.027383+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "5e32ffcb2b1ab98d83f229cc43e827e55a90a5a0e6ee810c9a620e2268194255",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-red-t5",
+        "substage": "red",
+        "packet_id": "010-002-documentary-role-integration-test-writer-red-002",
+        "receipt_sha256": "9f0ba6b3b6c902231fcd6728ae392753cbac6b9c6fc8920c0ca627f6b34c0e30",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_002_documentary_role_integration.py",
+            "8f47674feda40505c71592b8adc3d8506ef3fa025483ff997f9a565b9456c239"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-test-writer-red-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-test-writer-red-002/receipt.json",
+      "receipt_sha256": "9f0ba6b3b6c902231fcd6728ae392753cbac6b9c6fc8920c0ca627f6b34c0e30",
+      "artifacts": {
+        "tests/test_010_002_documentary_role_integration.py": "8f47674feda40505c71592b8adc3d8506ef3fa025483ff997f9a565b9456c239"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-green-t6",
+      "substage": "green",
+      "at": "2026-10-31T13:39:00.720974+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "216000e2149de50201214c89cc10d47b55122da29697fb77299b2e7e3ced5627",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-green-t6",
+        "substage": "green",
+        "packet_id": "010-002-documentary-role-integration-implementer-green-002",
+        "receipt_sha256": "c40485bfbd0875149947d4bf65bbd724953b1a26bfaa7549ff8b80f349528073",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-implementer-green-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-implementer-green-002/receipt.json",
+      "receipt_sha256": "c40485bfbd0875149947d4bf65bbd724953b1a26bfaa7549ff8b80f349528073",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-properties-t7",
+      "substage": "properties",
+      "at": "2026-10-31T14:28:12.640603+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "565f7e90056972e6b9b5a7961c914f494ac4d5a2d4173dd8a62ac10a77ccc523",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-properties-t7",
+        "substage": "properties",
+        "packet_id": "010-002-documentary-role-integration-test-writer-properties-001",
+        "receipt_sha256": "afe9424ce621f8ac8dc6b09199ca32a5a5813a266a8f4af070645dd765e253d9",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "tests/test_010_002_documentary_role_properties.py",
+            "d3f2fbb2366146f4f16e186d1aff2774fb05c004f9bbaca9b09bcc4016b00c0a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-test-writer-properties-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-test-writer-properties-001/receipt.json",
+      "receipt_sha256": "afe9424ce621f8ac8dc6b09199ca32a5a5813a266a8f4af070645dd765e253d9",
+      "artifacts": {
+        "tests/test_010_002_documentary_role_properties.py": "d3f2fbb2366146f4f16e186d1aff2774fb05c004f9bbaca9b09bcc4016b00c0a"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-review-t8",
+      "substage": "review",
+      "at": "2026-10-31T14:49:18.593467+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e9035d219e64046946e0c1d919eae94d4f344d705a32ba893123456212691135",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-review-t8",
+        "substage": "review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-review-001",
+        "receipt_sha256": "815dba2011822246a19e065c9ff5aaa131f07675803c4405343a2212866d25bd",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-review-001/receipt.json",
+      "receipt_sha256": "815dba2011822246a19e065c9ff5aaa131f07675803c4405343a2212866d25bd",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "tdd-red-t8",
+      "substage": "red",
+      "at": "2026-10-31T15:15:17.030245+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "679b4a86cd91b2de4a6b174a460c293a258a2d3bb823bdb15e1f6dd9ae5660e4",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "tdd-red-t8",
+        "substage": "red",
+        "packet_id": "010-002-documentary-role-integration-test-writer-red-003",
+        "receipt_sha256": "15e19236516a6455f5fd04f6855bb6f972b95c4f5204720a27edd622931be44d",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-test-writer-red-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-test-writer-red-003/receipt.json",
+      "receipt_sha256": "15e19236516a6455f5fd04f6855bb6f972b95c4f5204720a27edd622931be44d",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "review-fix-t8",
+      "substage": "review-fix",
+      "at": "2026-10-31T15:32:41.171287+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "bb015e115f0687f9a9eca79ea8400076086f43f0ac325cef96acd5a5ca0eeb43",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "review-fix-t8",
+        "substage": "review-fix",
+        "packet_id": "010-002-documentary-role-integration-implementer-review-fix-001",
+        "receipt_sha256": "c85c08decab496b4867c6a40a3ed62aebb00fae1accf2949b57298e3c63a718c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-implementer-review-fix-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-implementer-review-fix-001/receipt.json",
+      "receipt_sha256": "c85c08decab496b4867c6a40a3ed62aebb00fae1accf2949b57298e3c63a718c",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "review-002-t8",
+      "substage": "review",
+      "at": "2026-10-31T15:39:43.239440+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9103e6b07f2d7cf2a5e727c11bea78bc049144f50c2ef0547356cc48951523d3",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "review-002-t8",
+        "substage": "review",
+        "packet_id": "010-002-documentary-role-integration-reviewer-review-002",
+        "receipt_sha256": "a6199bd4083abe5c9c0f1501ad07c0ca4755463f0aaee5f2dbbccaf9aa94e695",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-reviewer-review-002/receipt.json",
+      "receipt_sha256": "a6199bd4083abe5c9c0f1501ad07c0ca4755463f0aaee5f2dbbccaf9aa94e695",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-10-31T15:40:19.492833+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "2956c2abe19c3999d48b87489cd10a00d8a9937970a7eeefa87a3f0b70ff6a38",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "gate",
+        "stage": "review",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/review-002.md",
+            "c3a2f6feeb7abd0bab0337f9c191afc5c1b7aa04f3c25dcd44490f2fe7667d3c"
+          ],
+          [
+            "docs/specs/010-002-documentary-role-integration/review-fix.md",
+            "499136d12a7c14853853c36bc9c9be3d1a5fec2c15317e818271fb38af19d3d3"
+          ],
+          [
+            "docs/specs/010-002-documentary-role-integration/review.md",
+            "2c6f366981e9265da3144b48867ff53088a7a2e439c9d702e709f70be0b89623"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/review.md": "2c6f366981e9265da3144b48867ff53088a7a2e439c9d702e709f70be0b89623",
+        "docs/specs/010-002-documentary-role-integration/review-002.md": "c3a2f6feeb7abd0bab0337f9c191afc5c1b7aa04f3c25dcd44490f2fe7667d3c",
+        "docs/specs/010-002-documentary-role-integration/review-fix.md": "499136d12a7c14853853c36bc9c9be3d1a5fec2c15317e818271fb38af19d3d3"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)"
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "review-fix-002-t8",
+      "substage": "review-fix",
+      "at": "2026-10-31T17:15:12.913225+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b684f759b075710b75a0ce876587b8bdc48628e7c0a30820451ce5ee5856be48",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "review-fix-002-t8",
+        "substage": "review-fix",
+        "packet_id": "010-002-documentary-role-integration-implementer-review-fix-002",
+        "receipt_sha256": "777b0b74a932295bbf9eb7d390be841c821f044a92910bebc7fdcbca2ff6eff4",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/closure-suite-attempt-001.md",
+            "f6a2488f4db33add717dd2ca8f8b7cca9e0381505843eca11398afb51df049a5"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-implementer-review-fix-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-implementer-review-fix-002/receipt.json",
+      "receipt_sha256": "777b0b74a932295bbf9eb7d390be841c821f044a92910bebc7fdcbca2ff6eff4",
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/closure-suite-attempt-001.md": "f6a2488f4db33add717dd2ca8f8b7cca9e0381505843eca11398afb51df049a5"
+      },
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "memory-t9",
+      "substage": "memory",
+      "at": "2026-10-31T18:31:58.117349+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b7b313b3ed2b9d4077ab3dd59a23e70c9274cf08671aacd99b829c66f9fb2992",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "delivery",
+        "stage": "memory-t9",
+        "substage": "memory",
+        "packet_id": "010-002-documentary-role-integration-scribe-memory-001",
+        "receipt_sha256": "c25eebcc3e448204af3e83d5fab7d7776b1ab6becfdd7750046e8efd215b4291",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-002-documentary-role-integration-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-002-documentary-role-integration-001/010-002-documentary-role-integration-scribe-memory-001/receipt.json",
+      "receipt_sha256": "c25eebcc3e448204af3e83d5fab7d7776b1ab6becfdd7750046e8efd215b4291",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "memory",
+      "substage": "memory",
+      "at": "2026-10-31T18:33:26.650466+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "57dd3f5735788235118b21f3dc8e9db428c06780a81365aebb7c7c5069e306b7",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "gate",
+        "stage": "memory",
+        "substage": "memory",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "merge",
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "9fc5a6eb5ded44c3daeedff0f8490d08fea934238508189259a41b7761e2ecbb"
+          ],
+          [
+            "docs/progress.md",
+            "602a92c68b53d35328d2aeb6e1712c40be949ff4117f4f57b8dc391138c19f71"
+          ],
+          [
+            "docs/projectbrief.md",
+            "bdb44d2cf268fc41cccb698a4d945a2990e9303eb774f6eb54fbb618f255869e"
+          ],
+          [
+            "docs/specs/010-002-documentary-role-integration/memory-bank-drafts-2026-10-31.md",
+            "270f4cc91beac710cd64b971530aa50e47c713240a55721b7f41b8983a418cc2"
+          ],
+          [
+            "docs/systemPatterns.md",
+            "32776aad664885286afe7ff65930d9751516db07ea64b37cd678613c580f68d7"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/projectbrief.md": "bdb44d2cf268fc41cccb698a4d945a2990e9303eb774f6eb54fbb618f255869e",
+        "docs/systemPatterns.md": "32776aad664885286afe7ff65930d9751516db07ea64b37cd678613c580f68d7",
+        "docs/activeContext.md": "9fc5a6eb5ded44c3daeedff0f8490d08fea934238508189259a41b7761e2ecbb",
+        "docs/progress.md": "602a92c68b53d35328d2aeb6e1712c40be949ff4117f4f57b8dc391138c19f71",
+        "docs/specs/010-002-documentary-role-integration/memory-bank-drafts-2026-10-31.md": "270f4cc91beac710cd64b971530aa50e47c713240a55721b7f41b8983a418cc2"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md"
+    },
+    {
+      "feature": "010-002-documentary-role-integration",
+      "stage": "done",
+      "substage": null,
+      "at": "2026-10-31T18:33:30.019074+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "5c4dbefd8e9af6729b753e13a249aa984817d0ac3f2891463cb64cdea299ca79",
+      "transition_key_payload": {
+        "execution_id": "exec-010-002-documentary-role-integration-001",
+        "feature_id": "010-002-documentary-role-integration",
+        "transition": "closure",
+        "stage": "done",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-002-documentary-role-integration/closure.md",
+            "3656cb9cf489c2144fdb2bb85132fc54c0ce733863079d06b62963fcbcbf5f18"
+          ],
+          [
+            "docs/specs/010-002-documentary-role-integration/owner-acceptance-2026-10-31.md",
+            "c3ff32366d4e28849bcde551b5e5df14c6c9410bff29c331b3e880499e61a090"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/010-002-documentary-role-integration/closure.md",
+          "sha256": "3656cb9cf489c2144fdb2bb85132fc54c0ce733863079d06b62963fcbcbf5f18"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-002-documentary-role-integration/closure.md": "3656cb9cf489c2144fdb2bb85132fc54c0ce733863079d06b62963fcbcbf5f18",
+        "docs/specs/010-002-documentary-role-integration/owner-acceptance-2026-10-31.md": "c3ff32366d4e28849bcde551b5e5df14c6c9410bff29c331b3e880499e61a090"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
+      "closure_path": "docs/specs/010-002-documentary-role-integration/closure.md",
+      "closure_sha256": "3656cb9cf489c2144fdb2bb85132fc54c0ce733863079d06b62963fcbcbf5f18"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "discovery",
+      "substage": "discovery",
+      "at": "2026-10-31T18:38:25.157658+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0e61a0f460da67874de4193e4994b8a1c0043327b169f3f018b518ad394f649e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "discovery",
+        "substage": "discovery",
+        "packet_id": "010-003-documentary-pilot-architect-discovery-001",
+        "receipt_sha256": "5c9837ff1a0e7218c434b5368404af172a2f92756f3e01cd6a891cfb1917872a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-discovery-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-discovery-001/receipt.json",
+      "receipt_sha256": "5c9837ff1a0e7218c434b5368404af172a2f92756f3e01cd6a891cfb1917872a",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "discovery",
+      "substage": null,
+      "at": "2026-10-31T18:38:46.929435+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "c936322aa8a99104dd536f7753b1676128d9b1647b430a5fd559a9871434bf09",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "discovery",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "specification",
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/discovery-decisions-2026-10-31.md",
+            "1504b5267a109e1229c371619b134474bae2f2a1dad212d5e1c2c9706737b0a2"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/discovery.md",
+            "6673d95144201d3a9e97017df7a6895b9dfa6c1cf7b3eec4b69497f9d56a4e15"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/discovery.md": "6673d95144201d3a9e97017df7a6895b9dfa6c1cf7b3eec4b69497f9d56a4e15",
+        "docs/specs/010-003-documentary-pilot/discovery-decisions-2026-10-31.md": "1504b5267a109e1229c371619b134474bae2f2a1dad212d5e1c2c9706737b0a2"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft",
+      "substage": "draft",
+      "at": "2026-10-31T18:43:36.587459+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "831c03b48f511b6aca3c0c25127daab07d1aabffd36b42941c917c424f58bc13",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-001",
+        "receipt_sha256": "306dd19c372eb02c8baa0f9183af534d2b24cecf646a81ccf6586728915bf348",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-001/receipt.json",
+      "receipt_sha256": "306dd19c372eb02c8baa0f9183af534d2b24cecf646a81ccf6586728915bf348",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-002-blocker",
+      "substage": "draft",
+      "at": "2026-10-31T18:46:53.947224+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "a2ce149939a3bbb08192ba64be3dc7fa9bc84c0525e7fcf8867aaf3c7841b70d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-002-blocker",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-002",
+        "receipt_sha256": "ffebcc43029161182ce231f4c1ce7d7452c8e1f34b60047c6a19b95542aaeaf2",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-002/receipt.json",
+      "receipt_sha256": "ffebcc43029161182ce231f4c1ce7d7452c8e1f34b60047c6a19b95542aaeaf2",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-003",
+      "substage": "draft",
+      "at": "2026-10-31T18:49:46.756144+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d0c9be34064f1eb205daa3e3bd7b298e09dd875eae68ecdf235f60ce32632c69",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-003",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-003",
+        "receipt_sha256": "20d600496863642bbaa775f81a0c693801fbd63613c78d9a1e10ccec17376413",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-003/receipt.json",
+      "receipt_sha256": "20d600496863642bbaa775f81a0c693801fbd63613c78d9a1e10ccec17376413",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "plan-review",
+      "substage": "plan-review",
+      "at": "2026-10-31T18:53:12.358004+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d66b6d00b3334996e69663c105545a711202b3abf7e9f67f71594301c0996ee0",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "plan-review",
+        "substage": "plan-review",
+        "packet_id": "010-003-documentary-pilot-reviewer-plan-review-001",
+        "receipt_sha256": "db9e588b11f2ccaa2e3c6c0621789fe94a6030ef2a0ec1789cc087d8a312b759",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-plan-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-plan-review-001/receipt.json",
+      "receipt_sha256": "db9e588b11f2ccaa2e3c6c0621789fe94a6030ef2a0ec1789cc087d8a312b759",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-004",
+      "substage": "draft",
+      "at": "2026-10-31T18:59:29.631291+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "e1cb197652954401653557a7662809d3afb7bec5e00ff382a03f8f474ecd738d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-004",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-004",
+        "receipt_sha256": "693271d43e9e5cd0d311d0feaebf6483b6735ee73d3c0bb53d5030e0508b6db5",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-004/receipt.json",
+      "receipt_sha256": "693271d43e9e5cd0d311d0feaebf6483b6735ee73d3c0bb53d5030e0508b6db5",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "plan-review-002",
+      "substage": "plan-review",
+      "at": "2026-10-31T19:03:14.876261+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "6e2b549233c5e4dcebb313912cd2321bd3a888b8534086208351dfc6f52c4c71",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "plan-review-002",
+        "substage": "plan-review",
+        "packet_id": "010-003-documentary-pilot-reviewer-plan-review-002",
+        "receipt_sha256": "a5ef51ebe390e398a2ae7f579a3ef3bf6972c0d734cf2cd1034a3679fbb31638",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-plan-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-plan-review-002/receipt.json",
+      "receipt_sha256": "a5ef51ebe390e398a2ae7f579a3ef3bf6972c0d734cf2cd1034a3679fbb31638",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-005",
+      "substage": "draft",
+      "at": "2026-10-31T19:08:18.210492+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "827976e6d3ce8f3122879026b5c91004bcb7b2d551523c223fbf5647aed4baf2",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-005",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-005",
+        "receipt_sha256": "81f9375108306998bc67b236e36409803c509b443999741344135ac7c6843190",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-005/receipt.json",
+      "receipt_sha256": "81f9375108306998bc67b236e36409803c509b443999741344135ac7c6843190",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "plan-review-003",
+      "substage": "plan-review",
+      "at": "2026-10-31T19:11:36.333282+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b173e2036ae6bd31a9b38e5093d0f0cd838e5e639a903c2eac4415c315caea74",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "plan-review-003",
+        "substage": "plan-review",
+        "packet_id": "010-003-documentary-pilot-reviewer-plan-review-003",
+        "receipt_sha256": "f2997fde29b25825d6855e02c13da4227dff9b4d3d94a31ace42074754eb778c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-plan-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-plan-review-003/receipt.json",
+      "receipt_sha256": "f2997fde29b25825d6855e02c13da4227dff9b4d3d94a31ace42074754eb778c",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-006",
+      "substage": "draft",
+      "at": "2026-10-31T19:16:17.096664+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d3909c1e201832bf12b0af00469dab12302c3f0d2173eff7c4a6d7e30fed24e8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-006",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-006",
+        "receipt_sha256": "a46bc5af5b9d16fbfc7c945b1bc55334a439ced4ba60b03840e6ea70280c53e3",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-006",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-006/receipt.json",
+      "receipt_sha256": "a46bc5af5b9d16fbfc7c945b1bc55334a439ced4ba60b03840e6ea70280c53e3",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "plan-review-004",
+      "substage": "plan-review",
+      "at": "2026-10-31T19:19:03.943689+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "69a4f272bcc61686a221751b621b9c8b673a61860bc516e6e75612b4b1d52f60",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "plan-review-004",
+        "substage": "plan-review",
+        "packet_id": "010-003-documentary-pilot-reviewer-plan-review-004",
+        "receipt_sha256": "97ad7d053966d323fe037c1ceab5ba66ff217d6b62a1cc0b83eb561554e03294",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-plan-review-004",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-plan-review-004/receipt.json",
+      "receipt_sha256": "97ad7d053966d323fe037c1ceab5ba66ff217d6b62a1cc0b83eb561554e03294",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "draft-007",
+      "substage": "draft",
+      "at": "2026-10-31T19:24:24.142268+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "a6697074169d11c6cdfd0cb13307b4742cca086234a7d57408891dbaeec85309",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "draft-007",
+        "substage": "draft",
+        "packet_id": "010-003-documentary-pilot-architect-draft-007",
+        "receipt_sha256": "70f2dd057d8b103fc75ca0aeeac8f4fbb078525b982f9a1b53cdbc8dd498616a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-architect-draft-007",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-architect-draft-007/receipt.json",
+      "receipt_sha256": "70f2dd057d8b103fc75ca0aeeac8f4fbb078525b982f9a1b53cdbc8dd498616a",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "plan-review-005",
+      "substage": "plan-review",
+      "at": "2026-10-31T19:26:36.956013+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b79874ff0978e7fff8ddba48af1eb0de914dae0bef109c5a97d6d81b6e4bd709",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "plan-review-005",
+        "substage": "plan-review",
+        "packet_id": "010-003-documentary-pilot-reviewer-plan-review-005",
+        "receipt_sha256": "5333df35f0dc0a40aa1a0f31dea37bc12a99aeb309e51e786e219218e529032e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-plan-review-005",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-plan-review-005/receipt.json",
+      "receipt_sha256": "5333df35f0dc0a40aa1a0f31dea37bc12a99aeb309e51e786e219218e529032e",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "specification",
+      "substage": "audit",
+      "at": "2026-10-31T19:27:02.002205+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "7a23f46c7259a027e95bf8cd67923b48bb031b3f651a81f821de1f4137938c03",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "audit",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/plan-review-005.md",
+            "8646b7eacd8e34adccb62c5a9c1eab0a3243d7831e273429047bcd606b95198e"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/plan-review-closure-2026-10-31.md",
+            "15d252239daf4e4cefa1ce564bd94c8c50331d78506d3f6d9bd74a1069aceb1f"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/plan.md",
+            "49ce6f813aeb4e0bea0ff4f44d541a48deef29dc42f2af5aa6e05e5bf3352b04"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/spec.md",
+            "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
+        "contract": {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+        },
+        "plan": {
+          "path": "docs/specs/010-003-documentary-pilot/plan.md",
+          "sha256": "49ce6f813aeb4e0bea0ff4f44d541a48deef29dc42f2af5aa6e05e5bf3352b04"
+        },
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/spec.md": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+        "docs/specs/010-003-documentary-pilot/plan.md": "49ce6f813aeb4e0bea0ff4f44d541a48deef29dc42f2af5aa6e05e5bf3352b04",
+        "docs/specs/010-003-documentary-pilot/plan-review-005.md": "8646b7eacd8e34adccb62c5a9c1eab0a3243d7831e273429047bcd606b95198e",
+        "docs/specs/010-003-documentary-pilot/plan-review-closure-2026-10-31.md": "15d252239daf4e4cefa1ce564bd94c8c50331d78506d3f6d9bd74a1069aceb1f"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
+      "contract_path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "contract_sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+      "plan_path": "docs/specs/010-003-documentary-pilot/plan.md",
+      "plan_sha256": "49ce6f813aeb4e0bea0ff4f44d541a48deef29dc42f2af5aa6e05e5bf3352b04"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "audit",
+      "substage": "audit",
+      "at": "2026-10-31T19:39:01.058665+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "abb732155bad8dc91db030e210155c5baa69f3169df3e2126b5264813197a089",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "audit",
+        "substage": "audit",
+        "packet_id": "010-003-documentary-pilot-test-writer-audit-001",
+        "receipt_sha256": "ff1cab26831f5514d562a4ebc191446a2967bfe881b495097879de4ca819f180",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-test-writer-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "ff1cab26831f5514d562a4ebc191446a2967bfe881b495097879de4ca819f180",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "post-audit",
+      "substage": "post-audit",
+      "at": "2026-10-31T19:45:41.992705+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b23a6019bdd73668514f2f273ba039b8840964f7227055c0baeb8cec2573daf9",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "post-audit",
+        "substage": "post-audit",
+        "packet_id": "010-003-documentary-pilot-test-writer-post-audit-001",
+        "receipt_sha256": "60154cafa1060a655b808ca0cfa875fd0f75b3f48625ba6fbe4e68087f1c04b8",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-test-writer-post-audit-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-test-writer-post-audit-001/receipt.json",
+      "receipt_sha256": "60154cafa1060a655b808ca0cfa875fd0f75b3f48625ba6fbe4e68087f1c04b8",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "audit",
+      "substage": "red",
+      "at": "2026-10-31T19:45:57.451714+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "e5c627f1130539c7345d35df20f35023e6b4360a0b87f5dc2cafeac57e472b8e",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "audit",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/audit-reading-deviation-2026-10-31.md",
+            "21925233d0d0a0a1c358107ddcd257ea5dbdb761907dac276e4e610a5dadbff1"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/post-audit.md",
+            "8c387c1f0e0ebeb14fca41e576b1518a54107194a5feddf84e40dc61efe7aeea"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/test-audit.md",
+            "6f04ccaab633b2bd1219e79e7ab7f94fb4192851936c92d0f3412399772c07ce"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/test-audit.md": "6f04ccaab633b2bd1219e79e7ab7f94fb4192851936c92d0f3412399772c07ce",
+        "docs/specs/010-003-documentary-pilot/post-audit.md": "8c387c1f0e0ebeb14fca41e576b1518a54107194a5feddf84e40dc61efe7aeea",
+        "docs/specs/010-003-documentary-pilot/audit-reading-deviation-2026-10-31.md": "21925233d0d0a0a1c358107ddcd257ea5dbdb761907dac276e4e610a5dadbff1"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "red",
+      "substage": "red",
+      "at": "2026-10-31T19:51:44.011250+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "b915a81f2fcf5ec07ff465a47015bb9b5a1f4b5e475778cdee4e5899935736eb",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": "red",
+        "packet_id": "010-003-documentary-pilot-test-writer-red-001",
+        "receipt_sha256": "0133ef95a26037931bc0ee210a3dca89566b0d1bb6b151434832a124640b558f",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-test-writer-red-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-test-writer-red-001/receipt.json",
+      "receipt_sha256": "0133ef95a26037931bc0ee210a3dca89566b0d1bb6b151434832a124640b558f",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "green",
+      "substage": "green",
+      "at": "2026-10-31T19:54:34.555563+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "65ed42ee55129c2ee884afe43f8ccd0c76910fe1c8a25823082215ab9eee7349",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "green",
+        "substage": "green",
+        "packet_id": "010-003-documentary-pilot-implementer-green-001",
+        "receipt_sha256": "73ee9586b717468e85dad6a754a3c032f0a3302c858ef1d6934902ecbdbfde89",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-implementer-green-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-implementer-green-001/receipt.json",
+      "receipt_sha256": "73ee9586b717468e85dad6a754a3c032f0a3302c858ef1d6934902ecbdbfde89",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "review",
+      "substage": "review",
+      "at": "2026-10-31T19:55:02.341553+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "adbff58553b5f85e0a4fb151a97fc2acffc119ddc8e6f786c5b28b6c06bd77a2",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "review",
+        "substage": "review",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/preparation-record.md",
+            "e84f1e2712596738adce6829aa643aba8a6de2d0b4d0caa6bdb49caf69eb2aa7"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+            "e1ff5a6fe4c93bd019fe3e1488e6db3ab5603da02d8d30a755be2ff2b95a2a09"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/tdd-t4-green.md",
+            "21b80cd515d2d38d0bcb0499f12c676365e440045c364ad4414fd1f1d8a7d929"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/tdd-t4-green.md": "21b80cd515d2d38d0bcb0499f12c676365e440045c364ad4414fd1f1d8a7d929",
+        "docs/specs/010-003-documentary-pilot/preparation-record.md": "e84f1e2712596738adce6829aa643aba8a6de2d0b4d0caa6bdb49caf69eb2aa7",
+        "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "e1ff5a6fe4c93bd019fe3e1488e6db3ab5603da02d8d30a755be2ff2b95a2a09"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "challenge-review",
+      "substage": "review",
+      "at": "2026-10-31T19:57:13.309110+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "685662904b1915e84a7db0a8d27d73b720f5d3ac941e4f510d8df22d4a223df5",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "challenge-review",
+        "substage": "review",
+        "packet_id": "010-003-documentary-pilot-reviewer-review-001",
+        "receipt_sha256": "7bf910529a841063107ce5662da0c6f64959195bed6b00fb3d86fe519190d7b7",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-review-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-review-001/receipt.json",
+      "receipt_sha256": "7bf910529a841063107ce5662da0c6f64959195bed6b00fb3d86fe519190d7b7",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "product-review",
+      "substage": "review",
+      "at": "2026-10-31T20:00:23.203957+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "bb8568ecbf42e6c0f4698f1a4c4831f5a7322c22af367250507385b16858d2b5",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "product-review",
+        "substage": "review",
+        "packet_id": "010-003-documentary-pilot-reviewer-review-002",
+        "receipt_sha256": "be6c63614db645f7bca281f7b08c56df419f97c157281db59e22ff8aa3a7d85c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-review-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-review-002/receipt.json",
+      "receipt_sha256": "be6c63614db645f7bca281f7b08c56df419f97c157281db59e22ff8aa3a7d85c",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "review-fix",
+      "substage": "review-fix",
+      "at": "2026-10-31T20:02:59.544563+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "5abb6cdefa97a3f03fb14278b1c9c02a35c1e37a7d69e85d4589aea0f5ea08f8",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "review-fix",
+        "substage": "review-fix",
+        "packet_id": "010-003-documentary-pilot-implementer-review-fix-001",
+        "receipt_sha256": "8088a89c26197c8fd3f76190437a1cee8ec17aa03adb35793165c90970de954d",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-implementer-review-fix-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-implementer-review-fix-001/receipt.json",
+      "receipt_sha256": "8088a89c26197c8fd3f76190437a1cee8ec17aa03adb35793165c90970de954d",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "reverify",
+      "substage": "review",
+      "at": "2026-10-31T20:07:00.514511+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "f9d1a7ae1f9603716fa58470b27efb9263660ef9071a4277fa11dc1e2f69ef3f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "reverify",
+        "substage": "review",
+        "packet_id": "010-003-documentary-pilot-reviewer-review-003",
+        "receipt_sha256": "bd57798a2c657da226f692f12bd32526bf602e128694517de244dac02644dbcb",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-reviewer-review-003",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-reviewer-review-003/receipt.json",
+      "receipt_sha256": "bd57798a2c657da226f692f12bd32526bf602e128694517de244dac02644dbcb",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "review",
+      "substage": "review",
+      "at": "2026-10-31T20:07:08.041344+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "4fdfea37c626c84a580b1862082959c28c14235ebc9379db1e32430e32d75a9f",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "review",
+        "substage": "review",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/product-review-002.md",
+            "f68f2ba3d0288d738b8624bfa537789ecf2a3770d38d9c26e75fc2f726a4b17f"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/product-review.md",
+            "a037609bbcb324d9467573a9dfa6c4177e9eca216b662f3b1e2ad90ea2336ad0"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+            "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/tdd-t7-review-fix.md",
+            "0a0ecf0adb92d9cd59e4acbb33244549e80c1e105b364b8a40fd4c1b1a69db6b"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/product-review.md": "a037609bbcb324d9467573a9dfa6c4177e9eca216b662f3b1e2ad90ea2336ad0",
+        "docs/specs/010-003-documentary-pilot/tdd-t7-review-fix.md": "0a0ecf0adb92d9cd59e4acbb33244549e80c1e105b364b8a40fd4c1b1a69db6b",
+        "docs/specs/010-003-documentary-pilot/product-review-002.md": "f68f2ba3d0288d738b8624bfa537789ecf2a3770d38d9c26e75fc2f726a4b17f",
+        "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "memory-attempt1",
+      "substage": "memory",
+      "at": "2026-10-31T21:35:32.565628+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "9d2dcbf217c5bcb0a97f7aee631df20f116e899ce29ff8c797cd17be493fbb0d",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "memory-attempt1",
+        "substage": "memory",
+        "packet_id": "010-003-documentary-pilot-scribe-memory-001",
+        "receipt_sha256": "768726076a809aab9e466e40b7809f3dd189dc631e4c46e7450537a3532f6851",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-scribe-memory-001",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-scribe-memory-001/receipt.json",
+      "receipt_sha256": "768726076a809aab9e466e40b7809f3dd189dc631e4c46e7450537a3532f6851",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "memory",
+      "substage": "memory",
+      "at": "2026-10-31T21:37:24.634165+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "0f54d0fcf9f144fbbd8d0f5e4cfed18e07bdf4251ccae4ae4d3093716832c192",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "delivery",
+        "stage": "memory",
+        "substage": "memory",
+        "packet_id": "010-003-documentary-pilot-scribe-memory-002",
+        "receipt_sha256": "5aa65a4fe27656c2f0102a9067e153122ca211b74b836570d4feb83c1003527e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "010-003-documentary-pilot-scribe-memory-002",
+      "receipt_ref": ".cdad/runtime/results/exec-010-003-documentary-pilot-001/010-003-documentary-pilot-scribe-memory-002/receipt.json",
+      "receipt_sha256": "5aa65a4fe27656c2f0102a9067e153122ca211b74b836570d4feb83c1003527e",
+      "artifacts": {},
+      "note": null
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "memory",
+      "substage": "memory",
+      "at": "2026-10-31T21:37:39.815353+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "6c9ec1f55c2591010cc8474590a0ac1d0498af4a48323c782585d3d04215e0bb",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "gate",
+        "stage": "memory",
+        "substage": "memory",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "1c33a6435f98826f0909895a555a0029f9469cb73038f344c296cd8ecb6e95ca"
+          ],
+          [
+            "docs/progress.md",
+            "411e5343b0ae9d5b7f58d11a677b3df0f35e5e915c6a745a40e46d2eefcb2599"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/memory-bank-drafts-2026-10-31.md",
+            "21a70f2fca86a3934fc78378ef86e8a4d043582f4183be7e67fb7b3fa74c19f8"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/memory-bank-drafts-2026-10-31.md": "21a70f2fca86a3934fc78378ef86e8a4d043582f4183be7e67fb7b3fa74c19f8",
+        "docs/activeContext.md": "1c33a6435f98826f0909895a555a0029f9469cb73038f344c296cd8ecb6e95ca",
+        "docs/progress.md": "411e5343b0ae9d5b7f58d11a677b3df0f35e5e915c6a745a40e46d2eefcb2599"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md"
+    },
+    {
+      "feature": "010-003-documentary-pilot",
+      "stage": "done",
+      "substage": null,
+      "at": "2026-10-31T21:37:46.214742+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "7355b767afa865fe61cfcb133bb8233cb652d293950c93848cb3dd0312ea74de",
+      "transition_key_payload": {
+        "execution_id": "exec-010-003-documentary-pilot-001",
+        "feature_id": "010-003-documentary-pilot",
+        "transition": "closure",
+        "stage": "done",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/010-003-documentary-pilot/closure.md",
+            "b9621af624ed372477fd2eb358668a903ffd559d28a001112fd98b5bcdd4f836"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/functional-acceptance.md",
+            "7464d5bb53327226355b41f4da6fbe7fe420a6ac58fb65a44ccb8790878490b1"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+            "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/semantic-evidence.md",
+            "502c9da1c01f27e400647fb7d59f5df0b61a39d42e7197a39e55e23c1ce11a83"
+          ],
+          [
+            "docs/specs/010-003-documentary-pilot/structural-evidence.md",
+            "07c83e9b35b7de802a62a72a8b0b3ee387bbef7178beafdc14df66c86ed79e56"
+          ]
+        ],
+        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/010-003-documentary-pilot/closure.md",
+          "sha256": "b9621af624ed372477fd2eb358668a903ffd559d28a001112fd98b5bcdd4f836"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/010-003-documentary-pilot/closure.md": "b9621af624ed372477fd2eb358668a903ffd559d28a001112fd98b5bcdd4f836",
+        "docs/specs/010-003-documentary-pilot/functional-acceptance.md": "7464d5bb53327226355b41f4da6fbe7fe420a6ac58fb65a44ccb8790878490b1",
+        "docs/specs/010-003-documentary-pilot/structural-evidence.md": "07c83e9b35b7de802a62a72a8b0b3ee387bbef7178beafdc14df66c86ed79e56",
+        "docs/specs/010-003-documentary-pilot/semantic-evidence.md": "502c9da1c01f27e400647fb7d59f5df0b61a39d42e7197a39e55e23c1ce11a83",
+        "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
+      },
+      "note": null,
+      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
+      "closure_path": "docs/specs/010-003-documentary-pilot/closure.md",
+      "closure_sha256": "b9621af624ed372477fd2eb358668a903ffd559d28a001112fd98b5bcdd4f836"
     }
   ],
   "approver": "Pablo",
@@ -26309,7 +29583,7 @@
     "expires": "cierre, cancelación o revocación de esta épica",
     "note": "Mandato de orquestacion del 2026-10-29 (execution.md) ampliado por instruccion literal del dueno del 2026-10-30: aprobacion de gates operativos en su nombre dentro del alcance aprobado. Revocable en cualquier momento (revoked_at)."
   },
-  "last_updated": "2026-10-31T05:53:43.685982+00:00",
+  "last_updated": "2026-10-31T21:49:58.820988+00:00",
   "delegation_history": [
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
@@ -26461,81 +29735,14 @@
   "active_feature": null,
   "current_stage": "idle",
   "tdd_substage": "memory",
-  "postconditions_status": {
-    "4": "green",
-    "5": "green",
-    "6": "green",
-    "7": "green",
-    "1": "green",
-    "2": "green",
-    "8": "green",
-    "9": "green",
-    "3": "green",
-    "10": "green",
-    "11": "green",
-    "12": "green"
-  },
-  "audit_status": {
-    "feature": "010-004-packet-dispatch-ergonomics",
-    "status": "approved",
-    "packet_id": "010-004-packet-dispatch-ergonomics-test-writer-audit-001",
-    "receipt_sha256": "5acf26667e67553827e815c8cd950260797287044b0725563427ddb0a1dc13d8",
-    "received_at": "2026-10-30T15:31:06.041442Z",
-    "artifact": "docs/specs/010-004-packet-dispatch-ergonomics/test-audit.md",
-    "artifact_sha256": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941",
-    "approval_effect": false,
-    "ambiguities": [
-      {
-        "id": "A1",
-        "summary": "La frontera de preambulo de la spec 4.4 para validate-packet no tiene test identificable; el plan T3 asignaba 4 garantias PC-08a a reutilizar y solo 3 tienen cobertura.",
-        "owner_decision": "anadir un RED de PC-08a para preambulo en T3, o registrarlo en deferred-hardening",
-        "recommendation": "anadir cobertura de preambulo en T3 como regresion faltante, no deuda silenciosa",
-        "resolution": "anadir cobertura de la frontera de preambulo de spec 4.4 para validate-packet (PC-08a) como RED de la tanda T3, en su dispatch RED separado; no se difiere a deferred-hardening",
-        "decided_at": "2026-10-30"
-      },
-      {
-        "id": "A2",
-        "summary": "PC-04 sustituye el lado EXEC de test_p2_default_execution_context_and_out_dir_under_project_cdad; el lado OUT (default .cdad/packets) no esta gobernado por 4.1.",
-        "owner_decision": "conservar el lado OUT en el test reescrito, o crear un test aparte",
-        "recommendation": "conservar el lado OUT en el test reescrito con contexto canonico explicito",
-        "resolution": "conservar el lado OUT (default .cdad/packets) en el test reescrito test_p2_default_execution_context_and_out_dir_under_project_cdad, con contexto v2 canonico explicito y una sola promesa (P2); no se crea test aparte",
-        "decided_at": "2026-10-30"
-      }
-    ],
-    "note": "AUDIT T1 aprobado bajo el mandato HITL del 2026-10-30 con fundamento y R4 registrados; A1 y A2 resueltas con trazabilidad a la recomendacion tecnica. Habilitado POST-AUDIT, precedido por el paso habilitante V2-1 (plantilla POST-AUDIT mono-subfase); RED sigue en dispatch separado.",
-    "approved_by": "Orquestador CDAD en nombre del dueno (mandato HITL owner-mandate-hitl-2026-10-30.md)",
-    "approved_at": "2026-10-30",
-    "approval_ref": "docs/specs/010-004-packet-dispatch-ergonomics/audit-approval-2026-10-30.md",
-    "approval_sha256": "fb0fa81f75b17b2249ba9b37183ec30200239382b75cf59ecf19431c2e65a941",
-    "approval_transition_key": "4ee87f985cf6bba694fd13c9d21f4e70f89c237c77b35a40fcb50a1214c66241",
-    "resolutions": {
-      "A1": {
-        "decision": "anadir cobertura de la frontera de preambulo de spec 4.4 para validate-packet (PC-08a) como RED de la tanda T3, en su dispatch RED separado; no se difiere a deferred-hardening",
-        "basis": "recomendacion tecnica del AUDIT 5-A1; plan.md:31 asigna 4 garantias PC-08a a T3 y solo 3 tienen cobertura; la spec exige conservar la diferencia de preambulo",
-        "decided_at": "2026-10-30",
-        "decided_under": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md"
-      },
-      "A2": {
-        "decision": "conservar el lado OUT (default .cdad/packets) en el test reescrito test_p2_default_execution_context_and_out_dir_under_project_cdad, con contexto v2 canonico explicito y una sola promesa (P2); no se crea test aparte",
-        "basis": "recomendacion tecnica del AUDIT 5-A2; PC-04 sustituye solo el lado EXEC y el default de salida no esta gobernado por spec 4.1",
-        "decided_at": "2026-10-30",
-        "decided_under": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md"
-      }
-    }
-  },
-  "review_status": {
-    "verdict": "sin bloqueantes; B1/B1-r/O2 y control write V2 cerrados",
-    "reviewer": "cdad-reviewer (sesiones nativas separadas de implementer; modelo no acreditado por el transporte)",
-    "review_path": "docs/specs/009-002-opencode-v2-frontmatter/review-gatefix-final.md",
-    "review_sha256": "8799308aee47c99862ca89c05e55f18dde70970fc775dbf75784efa961673169",
-    "criterion": "Contrato PC1-PC7, permisos efectivos, orden, privacidad, controles negativos y evidencia de runtime",
-    "disposition": "Actualizacion de campos derivados de cierre por el orquestador, basada en review-final/review-gatefix-final y gate atribuible 1772563. O1/O3 y variantes fuera del overlay declarados en closure.md. No es nueva aprobacion ni evidencia de modelo inventada."
-  },
+  "postconditions_status": {},
+  "audit_status": null,
+  "review_status": null,
   "active_packet": null,
   "execution": {
-    "id": "exec-010-004-packet-dispatch-ergonomics-001",
+    "id": "exec-010-003-documentary-pilot-001",
     "epic_id": "epic-010-documentary-specialization",
-    "feature_id": "010-004-packet-dispatch-ergonomics",
+    "feature_id": "010-003-documentary-pilot",
     "scope": "epic-010-documentary-specialization",
     "authority_ref": "docs/epics/epic-010-documentary-specialization/execution.md",
     "model_policy": "ordinary",

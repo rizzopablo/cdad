@@ -14,6 +14,26 @@ description: >
 > manifestoo) + official Odoo docs. Complements the generic CDAD reviewer
 > (the 5 axes of the reviewer role); here is the Odoo-specific catalog.
 
+## Applicability: documentary diff vs. addon diff
+
+The evidence below applies to the **addon part of the real diff**. When the
+diff is documentary only — a document, or a module's `readme/`,
+`static/description/`, `README.rst` or `doc/` that the contract does not make
+part of the addon's functional deliverable — the review contrasts the document
+with its contract and its sources and does not demand an addon battery
+(`test-clean`, lint, OCA) for an addon the diff does not touch.
+
+Addon work is what lives in `models/`, `views/`, `controllers/`, `wizards/`
+(or `wizard/`), `security/`, `data/`, `static/src/`, `__manifest__.py` or
+equivalent executable resources; module documentation is documentary product
+unless the contract puts it in the addon's functional deliverable.
+
+A change of addon hidden under a documentary label is reported and blocks its
+acceptance as documentary pure: the real diff activates the full addon
+evidence, and no retroactive permission is granted. The addon boundary is owned
+by the `odoo-expert` skill; this section states the reviewer's applicability
+only.
+
 ## Basic checks per axis (mapping to the 5 axes of the generic reviewer)
 
 | CDAD axis | Odoo checks |

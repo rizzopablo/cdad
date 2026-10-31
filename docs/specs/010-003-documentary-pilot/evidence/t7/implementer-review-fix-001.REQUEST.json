@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "packet_id": "010-003-documentary-pilot-implementer-review-fix-001",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "role": "implementer",
+  "substage": "review-fix",
+  "agent": "cdad-implementer",
+  "objective": "Correccion del producto de 010-003-documentary-pilot (T7, implementer/review-fix). Escribes SOLO `docs/specs/010-003-documentary-pilot/product/relevamiento.md`. Es una correccion acotada del producto existente: no lo reescribas ni lo reestructures.\n\nINSUMOS AUTORIZADOS (nada mas): el contrato aprobado, el inventario `inventory-010-003-v1`, las dos fuentes `s1.md` y `s2.md`, el candidato negativo, el producto actual y el informe de revision `product-review.md`. La norma `skills/cdad-cycle/references/documentary-contracts.md` se declara como lectura normativa (el selector mecanico es mas amplio y NO autoriza otras referencias). Quedan FUERA y no debes leerlos: `tests/fixtures/010_003_documentary_pilot/oracle/`, `tests/fixtures/010_003_documentary_pilot/structural/`, el verificador `tests/test_010_003_documentary_pilot.py`, y cualquier otro documento de la feature. No ejecutes operaciones git que muestren contenido (`git show`, `git log -p`, `git diff`).\n\nCAMBIOS A APLICAR (el informe trae la evidencia y las ubicaciones):\n\n1. F-1 (BLOQUEANTE, obligatorio). Hoy la seccion \"Plazo de respuesta\" yuxtapone reglas de inicio sin declarar la incertidumbre: `s1-f03` cuenta desde el registro de la solicitud, `s1-f01` registra toda solicitud el dia de su recepcion, y `s1-f05` y `s2-f04` cuentan desde la recepcion completa; ninguna fuente dice si una solicitud completada se registra de nuevo. Debes:\n   - atribuir cada regla de inicio a su fuente con localizador (ya estan las citas: conservalas y haz explicita la diferencia de inicio, no solo la del plazo);\n   - declarar expresamente que el corpus no aclara si una solicitud completada despues se registra de nuevo, y que por eso el inicio exacto queda sin dirimir;\n   - NO elegir una regla ni inventar una conciliacion;\n   - agregar un pendiente nuevo (P-02) con TODOS los campos de PC-12: informacion o decision faltante, condicion de cierre, responsable conocido o designacion pendiente, y clasificacion justificada. No lo marques como bloqueante si el contrato promete documentar la divergencia; justificalo.\n   - el pendiente debe quedar referido a la seccion por su nombre.\n\n2. O-1 (adoptado). En P-01, citar `s2-f01` como contexto (la nota de que el procedimiento de `s2` se aplica junto con el del Area de Registro y no lo reemplaza), SIN extraer de el una prelacion que la fuente no fija.\n\n3. O-2 (adoptado). En \"Archivo\", agregar una frase breve que indique que la diferencia de organizacion del legajo entre `s1-f04` y `s2-f05` queda sin dirimir. No la presentes como contradiccion cerrada ni como consenso.\n\n4. N-1 (adoptado). Reemplazar las referencias fragiles (\"seccion anterior\", \"la seccion\") por los nombres de seccion, para que los pendientes sean rastreables.\n\nRESTRICCIONES: conserva la estructura por secciones, las nueve citas existentes y la conservacion de ambas posiciones sobre la aprobacion de casos limite. Toda cita debe seguir resolviendo a fuente inventariada y ancla registrada. No agregues datos, personas ni organizaciones reales. No cambies la declaracion de documento sintetico ni la de correccion del candidato.\n\nVERIFICACION OBLIGATORIA: ejecuta `python3 -B -m pytest -q --tb=no tests/test_010_003_documentary_pilot.py` y reporta salida y rc (debe quedar verde); ejecuta tambien las regresiones `python3 -B -m pytest -q --tb=no tests/test_010_001_documentary_contracts.py tests/test_010_002_documentary_role_integration.py` y reporta su rc. No leas ni modifiques el verificador.\n\nCOMMIT: commitea SOLO el producto, con mensaje `fix(010-003): declara la divergencia del inicio del plazo y clasifica los pendientes (T7)`. El commit debe descender de `7fcca219e119ea72f29d68f406642afa5b2e1483` (el commit del producto de T4); cita ese hash y el nuevo en el informe.\n\nDevolver como FINAL TEXT: el diff conceptual de lo cambiado (que se agrego, que se preciso, que se dejo igual), la nueva seccion \"Plazo de respuesta\" y el nuevo P-02 completos, la tabla de comandos con salida y rc, el hash del commit y su ascendencia, y la lista de archivos modificados.",
+  "contract": {
+    "kind": "approved-feature-spec",
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+    "commit": null
+  },
+  "inputs": [
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "approved contract"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "contrato aprobado v5 (PC-10..PC-13, §2.4)"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+      "purpose": "producto actual a corregir"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/product-review.md",
+      "purpose": "informe de revision T6: F-1 bloqueante y O-1/O-2/N-1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/inventory.md",
+      "purpose": "inventario inventory-010-003-v1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s1.md",
+      "purpose": "fuente autorizada s1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s2.md",
+      "purpose": "fuente autorizada s2"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/challenge/negative.md",
+      "purpose": "candidato negativo de referencia"
+    },
+    {
+      "path": "skills/cdad-cycle/references/documentary-contracts.md",
+      "purpose": "norma documental (lectura normativa declarada)"
+    }
+  ],
+  "read_scope": [
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/spec.md"
+    },
+    {
+      "class": "contract",
+      "root": "docs/specs/010-003-documentary-pilot/product"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/product-review.md"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/sources"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/challenge"
+    },
+    {
+      "class": "implementation",
+      "root": "skills/cdad-cycle/references"
+    }
+  ],
+  "write_scope": [
+    {
+      "class": "docs",
+      "root": "docs/specs/010-003-documentary-pilot/product"
+    }
+  ],
+  "invariants": [
+    "Do not edit tests",
+    "El producto corregido no lee ni cita la clave ni las muestras estructurales: no estan en el alcance. La correccion se escribe contra las fuentes y el informe de revision.",
+    "El commit del producto corregido desciende de 7fcca219e119ea72f29d68f406642afa5b2e1483 y solo toca docs/specs/010-003-documentary-pilot/product/relevamiento.md.",
+    "El corpus no resuelve el inicio exacto del plazo cuando la solicitud llega incompleta: la correccion lo declara y agrega P-02, nunca elige una regla."
+  ],
+  "expected_output": "Role report with the required evidence",
+  "evidence_required": [
+    "modified files",
+    "exact commands",
+    "command output",
+    "commit"
+  ],
+  "execution_context": ".cdad/executions/exec-010-003-documentary-pilot-001/execution.json",
+  "plan_task": "T7"
+}

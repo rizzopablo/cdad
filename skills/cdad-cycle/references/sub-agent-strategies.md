@@ -32,7 +32,7 @@ Minimal sub-agents to create (one per file):
 
 - `architect` — read-only, discovery and Socratic brainstorm.
 - `test-writer` — edit in `tests/`, does NOT see `src/` or implementation code.
-- `implementer` — edit in implementation code, NOT in tests.
+- `implementer` — edit in the implementation product: code, or the documentary deliverable an engagement expressly commissions; NOT in tests.
 - `refactorer` — edit in code, NOT in tests; the proportional regression the change requires must stay green (evidence policy: `stage-3-tdd.md` §"Test evidence policy").
 - `reviewer` — read-only, model different from the implementer's if possible.
 - `scribe` — read-only, drafts Memory Bank updates.
@@ -134,7 +134,7 @@ Adapt the rules and context per role. The rules are negotiable only if the proje
 |-----|------|------|-------|
 | architect | nothing (plan-only) | everything | discovery + Socratic brainstorm |
 | test-writer | `tests/**` | spec, interface, systemPatterns | NOT `src/**` |
-| implementer | implementation code | spec, tests, interface | NOT `tests/**` |
+| implementer | implementation product: code or an expressly commissioned documentary deliverable | spec, tests, interface | NOT `tests/**` |
 | refactorer | implementation code | full suite | NOT `tests/**`, suite always green |
 | reviewer | nothing | everything | ideally model different from the implementer's |
 | scribe | nothing | spec, diff, review, Memory Bank | drafts Memory Bank updates |
@@ -154,8 +154,16 @@ variants are thin shells (frontmatter with paths scoped to Odoo modules and
 a bash allowlist `make *`/`pre-commit *`/`pylint *`/`git *`, + loading the
 role's Odoo skill) that preserve the generic role's directive.
 
-- `stack` absent or with another value → delegation goes to the generic
-  agents (`cdad-<role>`), default behavior unchanged.
+- The derivation is the canonical one and consumers do not re-implement it: a
+  `stack` that is absent, `null` or empty derives `cdad-<role>`; any non-empty
+  stack derives `cdad-<role>-<stack>`, a suffix by domain.
+- «Any other value» never means the generic agent; there is no fallback from a
+  non-empty stack to the generic `cdad-<role>`.
+- The dispatch uses the `agent` of the validated request. A required variant
+  that is not published stops the dispatch — a procedural duty of the
+  orchestrator — and it is never substituted silently; the external adapter
+  owns the mechanical rejection before launching the role work, and no new
+  mechanical guard is claimed for the native path.
 - `stack: odoo` → `*-odoo` variants.
 - The variants are installed with `install.sh` alongside the generic ones
   (`agents/cdad-*-odoo.md`) without touching existing agents.

@@ -87,11 +87,20 @@ class T2RedTestCase(unittest.TestCase):
         el `execution_context` indicado (o ninguno, si `locator` es None).
         `EXECUTION.json` se retira del proyecto para que la única vía de
         contexto sea el localizador (y, en GREEN, el argumento explícito
-        cuando se pasa)."""
+        cuando se pasa).
+
+        Adaptación de fixture 010-002 T5 (A1, PC-08): cuando el request
+        declara `execution_context`, la regla de presencia exige `agent`; el
+        fixture agrega el agente derivado del rol y del stack del estado
+        (None → genérico). No se debilita ninguna aserción de 010-004: el
+        localizador sigue siendo la única vía de contexto y el agente es un
+        campo de transporte que el render excluye.
+        """
         root = self.tempdir("cdad-t2red-")
         fixture = PacketFixture(root, "test-writer", "red")
         if locator is not None:
             fixture.request["execution_context"] = locator
+            fixture.request["agent"] = "cdad-test-writer"
         fixture.write()
         canonical = root / ".cdad" / "executions" / EXECUTION_ID / "execution.json"
         canonical.parent.mkdir(parents=True, exist_ok=True)

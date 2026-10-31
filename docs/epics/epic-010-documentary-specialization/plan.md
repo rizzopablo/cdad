@@ -70,21 +70,22 @@ no fija todavía nombres de skills, agentes ni campos nuevos del estado.
 
 ## Criterios de aceptación de la épica
 
-- [ ] Las cinco features cierran individualmente con evidencia de sus contratos.
-- [ ] El ciclo 010-000 incluye regresión de raíces relativas/absolutas y rechazo de escapes reales, revisión independiente y validación del artefacto instalable; no se modifica la instalación global como sustituto de corregir la fuente.
-- [ ] El flujo canónico genera, instala y resuelve los perfiles documentales
+- [x] Las cinco features cierran individualmente con evidencia de sus contratos.
+- [x] El ciclo 010-000 incluye regresión de raíces relativas/absolutas y rechazo de escapes reales, revisión independiente y validación del artefacto instalable; no se modifica la instalación global como sustituto de corregir la fuente.
+- [x] El flujo canónico genera, instala y resuelve los perfiles documentales
   definidos en Specification; sus restricciones por rol se conservan.
-- [ ] Los agentes genéricos y Odoo mantienen su comportamiento previo; la
+- [x] Los agentes genéricos y Odoo mantienen su comportamiento previo; la
   combinación documental/Odoo se verifica según el mecanismo aprobado en 010-002.
-- [ ] El piloto identifica un defecto estructural mediante un control automático.
-- [ ] La revisión independiente del piloto identifica una afirmación sin respaldo,
+- [x] El piloto identifica un defecto estructural mediante un control automático.
+- [x] La revisión independiente del piloto identifica una afirmación sin respaldo,
   una contradicción omitida y una referencia incorrecta, con ubicación y evidencia
   en las fuentes sintéticas. No se exige a un script decidir verdad semántica.
-- [ ] El entregable corregido conserva trazabilidad; las limitaciones y pendientes
-  quedan visibles y el usuario aprueba su aceptación funcional.
-- [ ] No se modifican verificadores ni insumos protegidos desde GREEN; cambios
+- [x] El entregable corregido conserva trazabilidad; las limitaciones y pendientes
+  quedan visibles y la aceptación funcional queda registrada —**ejercida por mandato
+  HITL, no aprobada directamente por el dueño** (`010-003/functional-acceptance.md`).
+- [x] No se modifican verificadores ni insumos protegidos desde GREEN; cambios
   legítimos vuelven al rol competente y, si alteran el contrato, a aprobación.
-- [ ] Validación y regresión pertinentes pasan; no se incluyen datos privados ni
+- [x] Validación y regresión pertinentes pasan; no se incluyen datos privados ni
   modelos concretos en el producto instalable. No se realiza push ni publicación.
 
 ## Riesgos y límites

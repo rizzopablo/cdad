@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "packet_id": "010-003-documentary-pilot-reviewer-review-003",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "role": "reviewer",
+  "substage": "review",
+  "agent": "cdad-reviewer",
+  "objective": "Re-verificacion del producto corregido de 010-003-documentary-pilot (T7, reviewer/review), en sesion distinta de T6 y de T5. Revisas TODO el diff del producto, no solo el hallazgo que lo motivo: el producto corregido en el commit 6596e804654f9b76d3e7710c2011b312350fe75d, que desciende del producto anterior 7fcca219e119ea72f29d68f406642afa5b2e1483. Emites dictamen final de revision del producto antes del cierre.\n\nQUE DEBES VERIFICAR, con ubicacion (ruta:linea) y evidencia:\n1. El diff: `git diff 7fcca219 6596e804 -- docs/specs/010-003-documentary-pilot/product/relevamiento.md`. Comprueba que toca SOLO ese archivo, que el commit desciende del anterior y que no hay cambios fuera del producto. Contrasta el diff con el informe del implementer (`tdd-t7-review-fix.md`): lo declarado coincide con lo efectivamente cambiado, sin cambios silenciosos.\n2. Cierre de F-1 (el bloqueante de `product-review.md`): la seccion \"Plazo de respuesta\" ahora atribuye cada regla de inicio a su fuente, declara que el corpus no aclara si una solicitud completada se registra de nuevo y que el inicio exacto queda sin dirimir, sin elegir regla ni inventar conciliacion. Verifica que la declaracion sea verdadera contra el corpus: `s1-f01`, `s1-f03`, `s1-f05`, `s2-f04`. Si el texto afirma algo que el corpus no sostiene, es bloqueante.\n3. P-02: existe, tiene todos los campos de PC-12 (informacion faltante, condicion de cierre, responsable conocido o designacion pendiente, clasificacion justificada) y su clasificacion no bloqueante esta justificada por el contrato. Verifica tambien que P-01 sigue completo y con su clasificacion.\n4. O-1, O-2 y N-1 adoptados: la cita de contexto `s2-f01` en P-01 no extrae prelacion; la diferencia de organizacion del legajo queda declarada sin dirimir; las referencias por nombre de seccion son correctas y no rompen la trazabilidad.\n5. NO REGRESION de lo ya aprobado: las tres correcciones de defectos (afirmacion sin respaldo eliminada, contradiccion `s1-f02`/`s2-f03` conservada con ambas posiciones, referencia del archivo apuntando a `s1-f04`), las nueve citas originales siguen resolviendo a fuente inventariada y ancla registrada, y la declaracion de documento sintetico se conserva. Usa la clave de contraste para confirmar que el diff no reintrodujo ninguno de los tres defectos, sin transcribirla en tu informe.\n6. Todas las afirmaciones factuales del producto, incluidas las nuevas, siguen respaldadas por el fragmento citado. Si una cita nueva no sostiene lo que afirma, es bloqueante.\n7. Ejecuta el control estructural `python3 -B -m pytest -q --tb=no tests/test_010_003_documentary_pilot.py` y las regresiones `python3 -B -m pytest -q tests/test_010_001_documentary_contracts.py tests/test_010_002_documentary_role_integration.py`; reporta salida y rc, y declara los limites del control (resolubilidad estructural, no fidelidad semantica).\n\nALCANCE DE LECTURA: producto, contrato, `product-review.md`, `tdd-t7-review-fix.md`, inventario, las dos fuentes, candidato, clave de contraste, `challenge-contrast.md` y la referencia normativa de revision. Puedes ejecutar git para el diff. Queda fuera `tests/fixtures/010_003_documentary_pilot/structural/` (se ejercita ejecutando el control, no leyendolo) y la implementacion del producto. `skills/cdad-cycle/references` es lectura normativa de metodo y el selector mecanico no autoriza otras referencias.\n\nFORMATO: FINAL TEXT con (1) verificacion del diff y de la ascendencia sincera, (2) dictamen de F-1 con ubicaciones, (3) dictamen de P-01/P-02 y de O-1/O-2/N-1, (4) no regresion de los tres defectos y de las citas, (5) afirmaciones nuevas contrastadas, (6) comandos con salida y rc, (7) hallazgos con veredicto/confianza/ubicacion, (8) alcance y abstenciones, (9) recomendacion final: aprobado para cierre o bloqueantes con su condicion.",
+  "contract": {
+    "kind": "approved-feature-spec",
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+    "commit": null
+  },
+  "inputs": [
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "approved contract"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "contrato aprobado v5 (PC-10..PC-13)"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/product/relevamiento.md",
+      "purpose": "producto corregido bajo re-verificacion"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/product-review.md",
+      "purpose": "informe de T6: F-1 bloqueante y O-1/O-2/N-1"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/tdd-t7-review-fix.md",
+      "purpose": "informe del implementer sobre la correccion"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/challenge-contrast.md",
+      "purpose": "contraste del ensayo T5"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/inventory.md",
+      "purpose": "inventario inventory-010-003-v1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s1.md",
+      "purpose": "fuente autorizada s1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s2.md",
+      "purpose": "fuente autorizada s2"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/challenge/negative.md",
+      "purpose": "candidato negativo de referencia"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/oracle/contrast-key.md",
+      "purpose": "clave de contraste fijada (protegida: no transcribir)"
+    },
+    {
+      "path": "skills/cdad-cycle/references/stage-4-review.md",
+      "purpose": "referencia normativa de la revision"
+    }
+  ],
+  "read_scope": [
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/spec.md"
+    },
+    {
+      "class": "contract",
+      "root": "docs/specs/010-003-documentary-pilot/product"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/product-review.md"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/tdd-t7-review-fix.md"
+    },
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/challenge-contrast.md"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/sources"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/challenge"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/oracle"
+    },
+    {
+      "class": "implementation",
+      "root": "skills/cdad-cycle/references"
+    }
+  ],
+  "write_scope": [],
+  "invariants": [
+    "Se re-verifica TODO el diff del producto (7fcca219..6596e804), no solo F-1: afirmaciones nuevas, cambios de respaldo, divergencias y pendientes.",
+    "El diff toca solo docs/specs/010-003-documentary-pilot/product/relevamiento.md y desciende de 7fcca219e119ea72f29d68f406642afa5b2e1483.",
+    "La clave de contraste se usa para confirmar que el diff no reintrodujo los tres defectos y NO se transcribe en el informe."
+  ],
+  "expected_output": "Role report with the required evidence",
+  "evidence_required": [
+    "modified files",
+    "exact commands",
+    "command output",
+    "commit"
+  ],
+  "execution_context": ".cdad/executions/exec-010-003-documentary-pilot-001/execution.json",
+  "plan_task": "T7"
+}

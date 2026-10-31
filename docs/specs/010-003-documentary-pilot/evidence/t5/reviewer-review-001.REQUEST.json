@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "packet_id": "010-003-documentary-pilot-reviewer-review-001",
+  "execution_id": "exec-010-003-documentary-pilot-001",
+  "feature_id": "010-003-documentary-pilot",
+  "role": "reviewer",
+  "substage": "review",
+  "agent": "cdad-reviewer",
+  "objective": "EnsayO semantico independiente del desafio de 010-003-documentary-pilot (T5, reviewer/review). Revisas UN SOLO OBJETO: el candidato negativo `tests/fixtures/010_003_documentary_pilot/challenge/negative.md`, contrastado contra el contrato aprobado, el inventario `inventory-010-003-v1` y las dos fuentes autorizadas. Entregas tu primer informe y ese informe queda cerrado: no habra una segunda oportunidad de \"encontrar\" lo que falte.\n\nOBJETO Y PRECEDENCIA (decision de la autoridad, registrada en plan-review-2-resolutions-2026-10-31.md, BN-1): el objeto revisado es SOLO el candidato frente al contrato, el inventario y las fuentes. El diff de la unidad y cualquier operacion git que muestre contenido (`git show`, `git log -p`, `git diff`) quedan FUERA del objeto y del alcance. Esta declaracion especifica prevalece sobre la frase generica del bloque de reviewer sobre \"the complete diff against the approved contract\"; no modifica los bloques de instrucciones ni concede lecturas adicionales.\n\nQUE DEBES HACER, con evidencia localizable (ruta y ancla de la fuente):\n1. Contrastar CADA afirmacion del candidato con el corpus inventariado y decir, para cada una, si esta respaldada, no respaldada, o respaldada por una referencia que no sostiene lo afirmado.\n2. Identificar y fundamentar las tres clases de defecto que el contrato compromete (PC-02): una afirmacion presentada como hecho sin respaldo en el corpus; una contradiccion omitida entre dos fuentes que sostienen posiciones incompatibles; y una referencia que existe y resuelve pero no sostiene lo afirmado. Para cada una: ubicacion en el candidato (seccion y oracion), fundamento contra el corpus (fuente y fragmento), y por que el fragmento citado no alcanza cuando corresponda.\n3. Distinguir lo que examinaste de lo que no: declara alcance y abstenciones. No conviertas la ausencia de respaldo en falsedad universal.\n4. Si no encuentras una de las tres clases, dilo y fundamenta por que; no inventes un hallazgo para completar la lista.\n\nLIMITES: no leas `product/`, `oracle/`, `structural/`, `discovery.md`, informes GREEN o de contraste, ni el plan ni los registros de preparacion: no son insumos y leerlos fuera del alcance clasifica la lectura segun la tabla de auditoria del contrato (las rutas reveladoras invalidan el ensayo). No leas el verificador. No ejecutes operaciones git que muestren contenido. No edites nada: eres read-only. Tus lecturas declaradas seran auditadas contra esas exclusiones; declarar una lectura no la autoriza. Las referencias normativas de metodo (`design-principles.md`, `stage-4-review.md`, `verdict-tuple.md`) se registran sin invalidar; `documentary-contracts.md` es la norma que el paquete manda leer. El selector mecanico de la raiz es mas amplio que esta autorizacion: no leas otras referencias.\n\nFORMATO DEL INFORME (FINAL TEXT): un hallazgo por defecto con (a) ubicacion exacta en el candidato, (b) fundamento contra el corpus con fuente y ancla, (c) veredicto y confianza, (d) consecuencia; mas una seccion de alcance examinado, otra de abstenciones y una conclusion sobre si el candidato es conforme o no conforme al contrato. No reproduzcas la clave: no la tienes. No propongas la correccion; tu trabajo es encontrar y fundamentar, no corregir.",
+  "contract": {
+    "kind": "approved-feature-spec",
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+    "commit": null
+  },
+  "inputs": [
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "approved contract"
+    },
+    {
+      "path": "docs/specs/010-003-documentary-pilot/spec.md",
+      "purpose": "contrato aprobado v5 (PC-02, PC-07..PC-09, promesa C)"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/inventory.md",
+      "purpose": "inventario inventory-010-003-v1 con digests, anclas y convencion de enlaces"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s1.md",
+      "purpose": "fuente autorizada s1"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/sources/s2.md",
+      "purpose": "fuente autorizada s2"
+    },
+    {
+      "path": "tests/fixtures/010_003_documentary_pilot/challenge/negative.md",
+      "purpose": "candidato negativo bajo revision, declarado no conforme"
+    },
+    {
+      "path": "skills/cdad-cycle/references/documentary-contracts.md",
+      "purpose": "norma documental (lectura normativa declarada)"
+    },
+    {
+      "path": "skills/cdad-cycle/references/design-principles.md",
+      "purpose": "referencia de metodo (lectura registrada, no invalidante)"
+    },
+    {
+      "path": "skills/cdad-cycle/references/stage-4-review.md",
+      "purpose": "referencia de metodo (lectura registrada, no invalidante)"
+    },
+    {
+      "path": "skills/cdad-cycle/references/verdict-tuple.md",
+      "purpose": "referencia de metodo (lectura registrada, no invalidante)"
+    }
+  ],
+  "read_scope": [
+    {
+      "class": "contract",
+      "path": "docs/specs/010-003-documentary-pilot/spec.md"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/sources"
+    },
+    {
+      "class": "tests",
+      "root": "tests/fixtures/010_003_documentary_pilot/challenge"
+    },
+    {
+      "class": "implementation",
+      "root": "skills/cdad-cycle/references"
+    }
+  ],
+  "write_scope": [],
+  "invariants": [
+    "El objeto revisado es solo el candidato negativo frente al contrato, el inventario y las fuentes; el diff y las operaciones git que muestren contenido quedan fuera del objeto y del alcance, y esta declaracion prevalece sobre la frase generica del bloque de reviewer (BN-1).",
+    "Leer product/, oracle/, structural/, discovery.md, informes reveladores o el verificador antes de cerrar el primer informe invalida el ensayo; declarar una lectura no la autoriza."
+  ],
+  "expected_output": "Role report with the required evidence",
+  "evidence_required": [
+    "modified files",
+    "exact commands",
+    "command output",
+    "commit"
+  ],
+  "execution_context": ".cdad/executions/exec-010-003-documentary-pilot-001/execution.json",
+  "plan_task": "T5"
+}

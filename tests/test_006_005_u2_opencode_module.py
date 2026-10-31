@@ -145,7 +145,10 @@ WAIT = {"timeout_seconds": 25}
 # Fixture sentinels (invented here; never a host value, INV-11).
 CREDENTIAL_SENTINEL = "cdad-006-005-u2-sentinel-credential"
 FOREIGN_ROW_AGENT = "cdad-reviewer"           # an agent of ANOTHER role
-UNPUBLISHED_AGENT = "cdad-006-005-u2-unpublished-agent"
+# 010-002 T5 (A2): la variante no publicada del fixture es una del MISMO rol,
+# derivada del stack vigente (`cdad-test-writer-odoo`), y el test retira su
+# archivo publicado; ya no se inyecta un agente de otro rol (el contraste
+# estático lo preemptaría).
 STORE_SESSION = "ses-006-005-u2-fixture-0001"
 FINAL_TEXT = "U2 fixture final text\n"
 
@@ -483,6 +486,30 @@ class U2ModuleCase(unittest.TestCase):
         mutate(request)
         write_json(ctx["request_path"], request)
         ctx["request"] = request
+        return request
+
+    def rewrite_request_and_packet(self, ctx: dict, mutate) -> dict:
+        """Reescribe el request y reconstruye el paquete canónico.
+
+        Adaptación 010-002 T5 (PC-08/D3): al retirar `execution_context` la
+        metadata del render cambia, así que el paquete que el módulo recibe por
+        stdin debe re-renderizarse con el CLI público. Obligación anterior: el
+        device solo retiraba `agent` y el render era invariante. Obligación
+        nueva: el histórico admitido no declara ninguno de los dos campos y su
+        paquete canónico se reconstruye (plan T5, «Adaptación de históricos»).
+        """
+        request = self.rewrite_request(ctx, mutate)
+        rendered = run_cli([
+            "render",
+            "--project-root", str(ctx["root"]),
+            "--execution-context", str(ctx["execution_path"]),
+            "--request", str(ctx["request_path"]),
+        ])
+        self.assertEqual(
+            rendered.returncode, 0,
+            "fixture: the historical request must render canonically: "
+            + tail(rendered.stdout + rendered.stderr))
+        ctx["packet_path"].write_text(rendered.stdout, encoding="utf-8")
         return request
 
     # -- fake runtime ----------------------------------------------------
@@ -903,28 +930,56 @@ class TestPd14AgentTravelsInThePacket(U2ModuleCase):
             self) -> None:
         """PD-14: a packet whose agent is not published fails closed BEFORE
         dispatching, naming that agent, with no client invocation and no
-        delivery. RED today: the module uses `cdad-<role>` (which is published)
-        and dispatches anyway."""
-        ctx = self.new_project()
-        self.rewrite_request(
-            ctx, lambda request: request.__setitem__("agent", UNPUBLISHED_AGENT))
+        delivery.
+
+        Adaptación de fixture 010-002 T5 (A2, PC-07/PC-08 O3). Obligación
+        anterior: el fixture inyectaba `cdad-006-005-u2-unpublished-agent`, un
+        agente de OTRO rol. Obligación nueva: el agente debe ser del MISMO rol
+        y contextualmente coherente con el stack vigente, y su variante debe
+        estar NO publicada; si no, el contraste estático de rol (010-002 PC-07)
+        podría preemptar el rechazo y el test quedaría verde sin probar la
+        publicación. Razón: atribuir el rechazo a la variante no publicada.
+        La vía externa es un rechazo MECÁNICO antes de lanzar; la vía nativa
+        conserva su obligación procedimental (no se le atribuye al módulo una
+        guarda que no tiene). No se debilita la promesa: sigue exigiendo
+        `blocked`, diagnóstico que nombra al agente y cero invocaciones.
+        """
+        ctx = self.new_project(stack="odoo")
+        self.assertEqual(
+            ctx["request"].get("agent"), "cdad-test-writer-odoo",
+            msg="fixture precondition: the packet's agent is the one derived "
+                "from role + current stack (PD-7): %r"
+                % ctx["request"].get("agent"))
+        derived = (ctx["root"] / ".opencode" / "agents"
+                   / "cdad-test-writer-odoo.md")
+        self.assertTrue(
+            derived.is_file(),
+            msg="fixture precondition: `prepare` publishes the project-local "
+                "derived agent the module resolves (%s)" % derived)
+        derived.unlink()
         self.assertFalse(
-            (ctx["root"] / ".opencode" / "agents"
-             / (UNPUBLISHED_AGENT + ".md")).exists(),
-            msg="fixture precondition: %r must not be published"
-                % UNPUBLISHED_AGENT)
+            derived.exists(),
+            msg="fixture precondition: the required variant is NOT published")
         fake = self.fake_runtime()
 
         proc = self.dispatch(ctx, fake)
-        out = self.envelope(proc, "PD-14 agente no publicado")
+        out = self.envelope(proc, "PD-14 variante no publicada")
         self.assertEqual(
             out["termination"], "blocked",
-            msg="PD-14: an unpublished agent must fail closed (never dispatch):"
-                " termination=%r" % out["termination"])
+            msg="PD-14: an unpublished variant must fail closed (never "
+                "dispatch): termination=%r" % out["termination"])
+        diagnosis = out_text(proc) + (out.get("diagnosis") or "")
         self.assertIn(
-            UNPUBLISHED_AGENT, out_text(proc) + (out.get("diagnosis") or ""),
+            "cdad-test-writer-odoo", diagnosis,
             msg="PD-14: the diagnosis must name the agent it refused: %r"
                 % out.get("diagnosis"))
+        self.assertRegex(
+            diagnosis,
+            r"(?i)publish|publicad|missing|absent|not found|no existe|"
+            r"unpublished|variante|variant",
+            msg="PD-14/010-002 O3: the diagnosis must attribute the refusal "
+                "to the UNPUBLISHED variant (not to a static role mismatch): "
+                "%r" % out.get("diagnosis"))
         self.assertEqual(
             self.run_calls(fake), [],
             msg="PD-14: the module must fail closed BEFORE dispatching the "
@@ -938,9 +993,30 @@ class TestPd14AgentTravelsInThePacket(U2ModuleCase):
         """PD-14 (compatibility): a packet published before the feature (no
         `agent` field) is still dispatchable with `cdad-<role>`, and the module
         DECLARES the absence of the field. RED today for the declaration half:
-        the argv fallback already holds."""
+        the argv fallback already holds.
+
+        Adaptación de fixture 010-002 T5 (PC-08/D3). Obligación anterior: la
+        forma pre-feature se simulaba quitando solo `agent`. Obligación nueva:
+        el histórico admitido no declara `execution_context` NI `agent`; quitar
+        solo `agent` es ahora el caso negativo de la regla de presencia. Razón:
+        el paquete canónico del histórico se reconstruye con el `render`
+        público (`execution_context` participa en la metadata; plan T5). No se
+        debilita la promesa: el fallback declarado sigue siendo tratamiento
+        histórico, no derivación silenciosa (P-3).
+        """
         ctx = self.new_project()
-        self.rewrite_request(ctx, lambda request: request.pop("agent", None))
+
+        def historical(request: dict) -> None:
+            request.pop("agent", None)
+            request.pop("execution_context", None)
+
+        self.rewrite_request_and_packet(ctx, historical)
+        for field in ("agent", "execution_context"):
+            self.assertNotIn(
+                field, ctx["request"],
+                msg="fixture precondition: the historical request declares no "
+                    "`%s` (010-002 PC-08): %r"
+                    % (field, sorted(ctx["request"])))
         fake = self.fake_runtime()
         before = self.dispatch_records(ctx)
 

@@ -1,5 +1,10 @@
 # Test run budget protocol (CDAD-Odoo)
 
+> Applicability: this protocol budgets runs of the addon test contract (the
+> `odoo-make-env` targets). An engagement that modifies no addon — a
+> documentary-pure product included — owes no addon run; its budget is zero.
+> The boundary that decides addon work is owned by the `odoo-expert` skill.
+
 > Origin: protocol designed and validated empirically during a feature of
 > a multi-module CDAD-Odoo project (Sep 2026), where the real cost turned out
 > to be `full setup × repeated runs × property tests`, not the number of

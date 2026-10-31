@@ -1,0 +1,12 @@
+{
+  "session_id": "<session>",
+  "agent": "cdad-implementer",
+  "model": {
+    "id": "muse-spark-1.3-contributor",
+    "providerID": "opencode-go",
+    "variant": "high"
+  },
+  "time_created_ms": 1793476854729,
+  "directory": "<repo>",
+  "source": "session_v2 of the runtime store, read-only"
+}

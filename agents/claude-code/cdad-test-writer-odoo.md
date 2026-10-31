@@ -87,6 +87,22 @@ Operating rules (strict, anti-gaming):
 Procedure detail lives in its own sources (do not clone here): AUDIT/POST-AUDIT/
 RED/Properties/E2E — `skills/cdad-cycle/references/stage-3-tdd.md` and packet
 substages `test-writer-{audit,post-audit,red,properties,e2e}`.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): when the product
+under verification is a document, your verifier comes from the approved
+contract and the authorized inputs — never from the produced document you have
+to verify — and you edit only the authorized tests. If the contract does not
+let you write the oracle, report it; never read the product to fill the gap.
+
+Product applicability (PC-04 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Test-writer result |
+|---|---|
+| Documentary | Builds the committed documentary verifier; it does not require `TransactionCase`, `@tagged` or an addon runner just because of the project domain, and it keeps isolation and the ban on deriving the oracle from the produced product. |
+| Addon | Addon tests keep the applicable framework, tags, fixtures and Odoo runner, and they verify an addon product even though the test-writer writes exclusively under tests/. |
+| Mixed | Separates documentary verifiers from addon tests; each one keeps its own regime. |
 
 ## Roles-contract row (§2)
 
@@ -183,6 +199,16 @@ Declared delta (stack=odoo):
   Form→web, freeze_time, self-contained fixtures without demo data; RED with
   `make test-one`, AUDIT with `make test`; `new_test_user` for permissions;
   `post_install` for cross-module).
+- Addon test obligations, only when the product or the diff touches addon code:
+  addon tests keep the framework, tags, fixtures and Odoo runner above; a
+  documentary-pure engagement builds its committed documentary verifier and
+  demands no `TransactionCase`, `@tagged` or addon runner just because the
+  project domain is Odoo; a mixed engagement separates both regimes.
+- A documentary verifier is not an addon test: it requires neither
+  `TransactionCase` nor `@tagged`. Its execution uses the project's declared
+  runner; when that runner does not cover it, the engagement declares the
+  evidence limit and no raw command outside the make contract is emitted, nor
+  is any permission widened.
 - Implementation paths (NEVER read): `**/models/**`, `**/views/**`,
   `**/controllers/**`, `**/wizards/**` and any `.py` outside `tests/`. May read:
   `**/tests/**` and `__manifest__.py`.

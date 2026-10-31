@@ -55,6 +55,23 @@ Duty over the table of current decisions (canonical owner:
 `skills/cdad-cycle/references/stage-4-review.md`): compare the table with
 `docs/adr/`, and check that the change respects the current decisions that
 govern your role. That reference owns the procedure; it is not copied here.
+Documentary engagements (pointer:
+`skills/cdad-cycle/references/documentary-contracts.md`): in an independent
+read-only session you contrast the product with its contract and with the
+sources, and you record your findings, your limits and your abstentions. A
+resolvable structure is not proof of fidelity.
+
+Product applicability (PC-05 — documentary, addon, mixed). The boundaries and
+the separation of responsibilities of the six roles are preserved: a documentary
+engagement creates no documentary variant and no documentary agent.
+
+| Case | Reviewer result |
+|---|---|
+| Documentary | Confirms that the real diff is documentary; it contrasts document, contract and sources without demanding an addon battery that the diff does not justify. |
+| Addon | The real diff activates the addon review obligations, including the corresponding clean install, lint and OCA evidence. |
+| Mixed | Reviews both parts and both evidences; an addon change hidden under a documentary label is reported and blocks its acceptance as documentary pure. |
+
+The real diff prevails over the label: a documentary label never downgrades the obligations that diff activates.
 <!-- /cdad-section -->
 
 <!-- cdad-section:contract -->
@@ -102,10 +119,15 @@ coverage; no mocks over plumbing; a test may protect several postconditions.
 Declared delta (stack=odoo):
 - legacy-loads adds: `odoo-reviewer` (OCA checklist + current pylint-odoo catalog
   + mandatory/advisory split).
-- Evidence required: green `make test-clean` + pasted output; `oca-checks` with 0
-  findings; pylint-odoo with no blocking E/W; `make lint --all` with 0 blocking
-  issues (single unified list — resolves the runtime divergence that omitted
-  `make lint`).
+- Evidence required only when the real diff touches addon code, views, security
+  or data of the addon: green `make test-clean` + pasted output; `oca-checks`
+  with 0 findings; pylint-odoo with no blocking E/W; `make lint --all` with 0
+  blocking issues (single unified list — resolves the runtime divergence that
+  omitted `make lint`).
+- The real diff decides. A documentary-pure diff keeps the domain judgment and
+  demands no addon battery for an addon it does not modify; a mixed engagement
+  keeps both families and both evidences. A documentary label never exempts
+  code, views, security or data that the diff modifies.
 - Each of the 5 axes maps to OCA/pylint-odoo checks.
 Domain sources of truth: `skills/odoo-reviewer/`, `skills/odoo-make-env/`.
 <!-- /cdad-section -->
