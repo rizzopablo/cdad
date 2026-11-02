@@ -99,6 +99,7 @@ from test_007_002_dispatch_recovery import (
     _RecoveryProject,
     SPEC_BYTES,
     SPEC_REL,
+    next_packet_id,
 )
 from test_007_003_continuity_at_edges import (
     _Project as _DispatchProject,
@@ -758,3 +759,131 @@ def test_begin_legado_sin_arbol_de_paquetes_se_acepta(tmp_path):
         f"rc={proc.returncode} stdout={proc.stdout!r} stderr={proc.stderr!r}")
     assert (root / LEGACY_HEAD_REL).is_file(), (
         "legado: el `begin` aceptado persiste la cabecera de continuidad")
+
+
+# ------------- 011: begin sobre paquete no publicado en ejecución v2 (wedge)
+# (RED 011 — PC-1/PC-2; oráculo y constructores, los de esta batería.)
+
+
+def _v2_execution_context(fx) -> Path:
+    """Precondición 011: el documento de ejecución declara `schema_version == 2`
+    (el discriminador de INV-1 sale del documento, nunca del rastro)."""
+    ctx = fx.execution_context_path()
+    doc = json.loads(ctx.read_text(encoding="utf-8"))
+    assert doc.get("schema_version") == 2, (
+        "precondición (011): la ejecución del fixture debe ser v2 "
+        f"(schema_version == 2): {doc.get('schema_version')!r}")
+    return ctx
+
+
+def _head_bytes(fx) -> bytes | None:
+    head = (fx.root / ".cdad" / "executions" / fx.execution_id
+            / "continuity" / "head.json")
+    return head.read_bytes() if head.is_file() else None
+
+
+def _begin_new(fx, packet_id: str, *, name: str):
+    """`begin` para un `packet_id` dado (publicado o no) por el CLI público."""
+    update = fx.base / name
+    update.write_text(json.dumps({
+        "packet_id": packet_id,
+        "attempt": 1,
+        "goal": "011 RED: begin para paquete no publicado",
+        "decisions": [{"decision": "fixture decision",
+                       "rationale": "fixture rationale"}],
+        "uncertainties": [],
+        "next_action": "continuar el encargo",
+        "references": [],
+    }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return fx._run(CONTINUITY_CLI, [
+        "begin", "--project-root", str(fx.root),
+        "--execution-context", str(fx.execution_context_path()),
+        "--update", str(update), "--json",
+    ])
+
+
+def test_011_begin_en_v2_sin_request_ni_rastro_se_rechaza_sin_efectos(tmp_path):
+    """PC-1 (011): en ejecución v2, un `begin` nuevo cuyo `packet_id` no tiene
+    REQUEST publicado ni rastro alguno en el árbol de paquetes se rechaza
+    (rc≠0): el diagnóstico nombra el `packet_id`, señala la ausencia de
+    `REQUEST.json` e indica `prepare`; no crea ni modifica cuerpos y conserva
+    los bytes de la cabeza (o su ausencia).
+
+    Sin este test, el orquestador persistiría continuidad para una encomienda
+    sin paquete verificable y el `resume` posterior reanudaría sobre ella.
+    """
+    fx = _RecoveryProject(tmp_path / "pc1-sin-rastro")
+    _v2_execution_context(fx)
+    new_id = next_packet_id(fx.packet_id)
+    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+        "precondición (011): el paquete nuevo no deja rastro alguno")
+    before_tree = fx.tree()
+    before_state = fx.state_bytes()
+    before_head = _head_bytes(fx)
+
+    proc = _begin_new(fx, new_id, name="begin-unpublished.json")
+
+    text = _assert_rechazo_limpio(proc, "PC-1 (011, begin sin REQUEST ni rastro)")
+    assert new_id in text, (
+        f"PC-1 (011): el diagnóstico nombra el packet_id {new_id!r}: "
+        f"{text[:500]!r}")
+    assert "REQUEST.json" in text, (
+        "PC-1 (011): el diagnóstico señala la ausencia de REQUEST.json: "
+        f"{text[:500]!r}")
+    assert "prepare" in text, (
+        "PC-1 (011): el diagnóstico indica preparar con prepare: "
+        f"{text[:500]!r}")
+    fx.assert_no_effects("PC-1 (011, rechazo sin REQUEST ni rastro)",
+                         before_tree, before_state)
+    assert _head_bytes(fx) == before_head, (
+        "PC-1 (011): la cabeza de continuidad conserva sus bytes (o su ausencia)")
+    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+        "PC-1 (011): el rechazo no publica cuerpos para el paquete nuevo")
+
+
+def test_011_tras_rechazo_prepare_begin_y_verify_begin_ok(tmp_path):
+    """PC-2 (011): tras el rechazo de PC-1, con la preparación corregida, un
+    `begin` legítimo da rc==0 y su `verify-begin` da rc==0, sin reparación
+    manual (solo CLIs públicos; ninguna cirugía de estado).
+
+    Sin este test, el rechazo preventivo podría dejar la ejecución en un estado
+    del que ningún camino público sale, y el usuario perdería el encargo tras
+    corregir la preparación.
+    """
+    fx = _RecoveryProject(tmp_path / "pc2-recuperacion")
+    _v2_execution_context(fx)
+    new_id = next_packet_id(fx.packet_id)
+    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+        "precondición (011): el paquete nuevo no deja rastro alguno")
+
+    rejected = _begin_new(fx, new_id, name="begin-rejected.json")
+    _assert_rechazo_limpio(rejected, "PC-2 (011, rechazo previo a la corrección)")
+
+    for label, proc in (("dispatch", fx.dispatch()),
+                        ("receive", fx.receive()),
+                        ("materialize", fx.materialize())):
+        assert proc.returncode == 0, (
+            f"precondición (011): el camino legítimo del paquete activo ({label}) "
+            f"debe acreditarse: {proc.stdout!r} {proc.stderr!r}")
+    prepared = fx.prepare()
+    assert prepared.returncode == 0, (
+        "PC-2 (011): la preparación corregida publica el paquete: "
+        f"{prepared.stdout!r} {prepared.stderr!r}")
+    assert fx.read_state().get("active_packet", {}).get("id") == new_id, (
+        "PC-2 (011): la preparación corregida publica exactamente el paquete "
+        f"rechazado {new_id!r}")
+
+    legit = _begin_new(fx, new_id, name="begin-legit.json")
+    assert legit.returncode == 0, (
+        "PC-2 (011): tras la preparación corregida, el begin legítimo se acredita "
+        f"(rc==0); got rc={legit.returncode} stdout={legit.stdout!r} "
+        f"stderr={legit.stderr!r}")
+
+    verify = fx._run(CONTINUITY_CLI, [
+        "verify-begin", "--project-root", str(fx.root),
+        "--execution-context", str(fx.execution_context_path()),
+        "--packet", new_id, "--attempt", "1", "--json",
+    ])
+    assert verify.returncode == 0, (
+        "PC-2 (011): el begin legítimo se acredita con verify-begin (rc==0); got "
+        f"rc={verify.returncode} stdout={verify.stdout!r} stderr={verify.stderr!r}")

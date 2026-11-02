@@ -1111,7 +1111,8 @@ def _plan_write(root: Path, exec_context: dict[str, Any], update: dict[str, Any]
     # new effects only: the replay recognized above already converged and never
     # reaches this point. Nothing has been written yet.
     if command == "begin":
-        admission = _admit_packet(root, body.get("packet_id"), state)
+        admission = _admit_packet(root, body.get("packet_id"), state,
+                                  exec_context=exec_context)
         if admission is not None:
             _refuse_covered_contract_references(
                 root, body.get("packet_id"), admission[0], admission[1],
@@ -1226,7 +1227,8 @@ def _published_commission_trace(directory: Path) -> bool:
 
 
 def _admit_packet(root: Path, packet_id: Any,
-                  state: dict[str, Any] | None = None
+                  state: dict[str, Any] | None = None,
+                  exec_context: dict[str, Any] | None = None
                   ) -> tuple[dict[str, Any], dict[str, Any]] | None:
     """008-004 PC-01/PC-03 (§Orden y efectos): the packet a NEW begin cites must
     verify before the write is planned, when it is a published CDAD commission.
@@ -1239,6 +1241,13 @@ def _admit_packet(root: Path, packet_id: Any,
     through the legacy route. A published one whose `PACKET.md` is absent,
     marker-less, unclosed or altered is refused the same way, with the shared
     verifier's diagnostic, having written nothing.
+
+    011 PC-1 (wedge): in a v2 execution (`schema_version == 2` of the execution
+    document, never of the trace) even an id with NO trace at all is refused
+    when its `REQUEST.json` is unpublished — the diagnostic names the packet,
+    signals the missing `REQUEST.json` and points at `prepare`. Non-v2 keeps
+    the legacy admission above. Decided before any write is planned (fail
+    closed); the replay recognized by the caller never reaches this point.
     """
     if not isinstance(packet_id, str) or not packet_id:
         return None
@@ -1246,6 +1255,12 @@ def _admit_packet(root: Path, packet_id: Any,
     request_path = directory / REQUEST_NAME
     if not request_path.is_file():
         if not _published_commission_trace(directory):
+            if (isinstance(exec_context, dict)
+                    and exec_context.get("schema_version") == 2):
+                raise ContinuityError(
+                    f"the begin is refused: packet {packet_id!r} has no "
+                    f"published REQUEST.json under {directory} — prepare the "
+                    f"packet with `prepare` before beginning it (011 PC-1)")
             return None
         raise ContinuityError(
             f"the begin is refused: packet {packet_id!r} was published under "

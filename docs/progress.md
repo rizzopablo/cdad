@@ -4,12 +4,66 @@ Estado de features del proyecto.
 
 ## In progress
 
-- **Despliegue:** la instalación soportada se **re-sincronizó** durante el cierre de 008-004 (respaldo en
-  `.cdad/local/deploy-backup-20261028/`): **11 agentes por runtime** con el intake corregido, sin `model:`,
-  `./install.sh --check` **PASS (414 grupos)** y `make validate` **68/68** (el F011 histórico era el drift de
-  los instalados). La publicación sigue reservada al dueño.
+Nada en curso: el epic 010 está cerrado y su publicación y despliegue quedaron
+resueltos (ver «Despliegue»). Las dos features de la serie de brechas de operación
+(011, 012) cerraron el 2026-11-01; ver «Done».
+
+## Despliegue
+
+- **Al día con la publicación del epic 010.** `main` remoto = `a42f2a20` (squash,
+  árbol idéntico al de `main` local), y la instalación soportada se re-sincronizó
+  desde ese mismo árbol: **11 agentes por runtime** en ambos runtimes,
+  `./install.sh --check` **PASS (417 grupos)** y `make validate` **183/0 + 68/0**.
+  El único conflicto —el overlay `model:` de `config/opencode/agents/cdad-implementer.md`,
+  cuyos bytes habían derivado fuera del overlay— se resolvió regenerando los
+  bytes de staging y conservando el valor del usuario (respaldo en
+  `.cdad/local/install-conflicts-20261031/`). La instalación previa (414 grupos,
+  cierre de 008-004) queda como historia del mismo eje.
+- **Por detrás del producto: 011 y 012 no están desplegadas.** La publicación y la re-sincronización
+  registradas arriba son las del epic 010 (árbol de `a42f2a20`). Los dos productos posteriores
+  —`87a16432` (el wedge de `begin` sobre paquete no publicado, 011) y `935328d8` (la exclusión de
+  `__pycache__`/`.pyc` en el registro de propiedad, 012)— no están en el árbol instalado.
+  Verificado: `./install.sh --check` reporta `DRIFT: differs` en
+  `cdad-cycle/scripts/cdad_continuity.py` en los tres runtimes. Consecuencia honesta: en la
+  instalación vigente, un `begin` v2 sobre un paquete no publicado sigue **sin** ese rechazo
+  preventivo y el manifiesto de propiedad sigue **registrando** bytecode de caché. **Redesplegar es
+  decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+
+- **012-installer-ignore-pycache** (2026-11-01) — el **registro de propiedad del instalador deja de
+  incluir bytecode de Python**: Python regenera `__pycache__/*.pyc` en cada corrida y el manifiesto
+  declaraba como propios archivos que no son contenido, así que `--check` reportaba drift o missing
+  sin que nada hubiera cambiado (caso real: 3 `.pyc` propios, luego "missing", poda 375→372 al
+  reinstalar). **Producto:** `install.sh` +29/−1 (`935328d8`) con `is_cache_artifact_path()` —forma de
+  ruta, `__pycache__` como segmento y `.pyc`/`.pyo` como extensión, INV-1— aplicado en las **tres**
+  fronteras (`sync_skill_to`, `check_skill_tree`, `count_tree_files`) más una rama de **poda** de
+  registros con forma de caché en `artifacts` y `pending_removal`. **PC-1..PC-5** cada una con test
+  (`887c057c`, 4 casos; `4241e337` endurece PC-4). **Review:** 1 bloqueante **cerrado** —el test de
+  PC-4 era vacuo post-GREEN y se reforzó sembrando 4 registros stale en un manifiesto real— con
+  **no vacuidad por mutación literal** (`pytest -k pc4`: **1 failed** sin la rama, **4 passed** con
+  ella); 2 OPTIONAL a deuda. **Gate:** 41 passed en 503.83s (5 archivos); **suite completa no corrida**
+  (no es gate, directiva del dueño). **Deuda:** F2 (coincidencia contra la ruta **absoluta** de origen
+  → verde falso si el repo vive bajo `__pycache__`; remedio: ruta relativa a la skill), F3
+  (`__pycache__/` vacío tras la poda), limpieza retroactiva de manifiestos instalados (no
+  implementada por diseño: se poda al reinstalar) y suite completa. **No desplegada.**
+
+- **011-begin-unpublished-packet-wedge** (2026-11-01) — **un `begin` v2 sobre un paquete no publicado
+  se rechaza antes de escribir**: el orquestador, desde una ejecución v2 válida con continuidad sana,
+  podía emitir un `begin` para un paquete todavía no preparado y quedar wedged. **Producto:**
+  `skills/cdad-cycle/scripts/cdad_continuity.py` +17/−2 (`87a16432`): `_admit_packet` recibe el
+  `exec_context` y, sólo si el **documento de ejecución** declara `schema_version == 2` (INV-1: nunca
+  el rastro del `packet_id`), rechaza el `begin` nuevo sin `REQUEST.json` ni rastro con un diagnóstico
+  que nombra el paquete, señala la ausencia y manda a `prepare`; no-v2 conserva la admisión legacy, la
+  rama de publicación incompleta sigue aplicando y el replay se reconoce antes (INV-2 fail-closed).
+  **Tests:** `fb743245` +129 (`test_011_begin_en_v2_sin_request_ni_rastro_se_rechaza_sin_efectos`,
+  `test_011_tras_rechazo_prepare_begin_y_verify_begin_ok`), rojos **por aserción de contrato** antes
+  del fix. **Review:** 0 bloqueantes, 2 OPTIONAL, 1 abstención; focal **116 passed**, barrido de 17
+  archivos con `begin` **194 passed**. **Gate:** suite completa **no corrida** (no es gate, directiva
+  del dueño). **Deuda:** F1 (`no_op == true` del replay de `begin` no fijado por test permanente; sólo
+  sonda), F2 (PC-5 sin caso v2 explícito — deferred-hardening), seguimientos 2-5 (unicidad por clave +
+  reanudación; recuperación, autoridad, reanchor), ejecuciones ya bloqueadas, y la discrepancia del
+  audit sobre `_RecoveryProject` (v1 vs v2) que quedó sin corregir. **No desplegada.**
 
 - **epic-010-documentary-specialization** (cerrado **2026-10-31**, **5/5**) — epic de
   **especialización documental**: CDAD produce documentación funcional verificable

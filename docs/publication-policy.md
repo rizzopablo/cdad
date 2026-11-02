@@ -1,8 +1,14 @@
 # Política de publicación del repositorio
 
-Decisión del usuario: 2026-10-29. Publicar los cambios acumulados mediante
-**un commit squash**, conservando el historial detallado local. Esta decisión
-rige las próximas publicaciones de este proyecto.
+Decisión del usuario: 2026-10-29, **confirmada como regla permanente el
+2026-10-31** («lo podemos dejar como regla de aquí en adelante»). Publicar los
+cambios acumulados mediante **un commit squash**, conservando el historial
+detallado local. Rige **todas** las publicaciones de este proyecto, no una
+entrega puntual: el formato no se vuelve a decidir en cada publicación.
+
+La regla fija **cómo** se publica, no **cuándo**: cada publicación sigue
+requiriendo la instrucción explícita del dueño. Lo que queda fijado es la forma
+—un único commit squash, fast-forward, sin reescribir el remoto.
 
 - Cada publicación parte del `main` remoto actualizado y crea un único commit
   descendiente suyo con el delta aprobado. No publica los commits intermedios
@@ -22,6 +28,12 @@ rige las próximas publicaciones de este proyecto.
 
 Después de publicar, las siguientes entregas vuelven a partir del nuevo `main`
 remoto y condensan únicamente el delta nuevo. Squash no borra historia previa.
+
+Consecuencia esperada: `main` local y `main` remoto **divergen por diseño** —el
+remoto tiene un commit squash por publicación y el local conserva la cronología
+detallada—. Los commits locales posteriores a una publicación no se empujan de a
+uno: se acumulan y entran en la siguiente publicación squashada, que vuelve a
+partir del `main` remoto actualizado.
 
 ## Intento de publicación del 2026-10-29: bloqueado antes del push
 

@@ -4,6 +4,116 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-11-01 — Feature: 012-installer-ignore-pycache
+
+**Cerrada; no publicada ni redesplegada.** El instalador dejó de mentir: dejó de registrar
+bytecode de Python como artefacto propio. `install.sh` (+29/−1, `935328d8`) excluye por **forma
+de ruta** todo lo que es caché, en las tres fronteras donde antes se enumeraba entero, y poda los
+registros de caché que un manifiesto anterior ya tuviera.
+
+**Qué se entregó.** (a) `is_cache_artifact_path()` — `__pycache__` como **segmento** de ruta y
+`.pyc`/`.pyo` como **extensión** — aplicado en `sync_skill_to` (registro de propiedad), en
+`check_skill_tree` (el `--check` legacy de árbol de skills) y en `count_tree_files` (los totales
+esperados). (b) Rama de poda en el barrido de obsoletos: un registro con forma de caché, en
+`artifacts` o en `pending_removal`, se borra si el archivo existe y **siempre** se descarta el
+registro. (c) Cuatro tests nuevos en `tests/test_012_installer_ignore_pycache.py` (`887c057c`,
+endurecido en `4241e337`), uno por promesa: PC-1 manifiesto sin formas de caché, PC-2 paridad
+instalación-con-caché vs sin-caché, PC-3 `--check` rc=0 con caché regenerado en el origen, PC-4
+reinstalación que poda registros stale. PC-5 (contenido sin cambios) queda cubierta por los 37
+tests de regresión existentes de los cuatro archivos que el AUDIT inventarió.
+
+**Medición.** Review: **1 BLOCKING / 2 OPTIONAL / 2 abstenciones**; el bloqueante no era el
+comportamiento —las sondas cumplían PC-1..PC-5— sino la **evidencia**: el test de PC-4 era
+**vacuo** después del GREEN (generaba el "manifiesto anterior" con el instalador ya corregido, que
+no registra `.pyc`; la rama de poda nunca se ejecutaba y `cache_keys == []` se cumplía sola).
+Cierre por `4241e337`: el test siembra **4 registros stale declarados** (`.pyc` por segmento,
+`.pyo` por extensión, uno con archivo presente, uno en `pending_removal`) en un manifiesto **real**
+y exige cero claves con forma de caché en ambas secciones con los registros de contenido
+byte-idénticos. No vacuidad acreditada por **mutación literal** en copia `git archive`: eliminada
+la rama de poda → `pytest -k pc4` **1 failed**; con la rama → **4 passed**. Regresión: `pytest` de
+los cinco archivos (los 4 de regresión + el nuevo) → **41 passed en 503.83s**. Suite completa **no
+corrida** (directiva del dueño: no es gate).
+
+**Decisiones relevantes.** *La caché no es contenido*: la exclusión es por **forma de ruta**
+(segmento/extensión), no por lista de nombres (INV-1) — cubre anidamiento y nombres no previstos,
+a costa de que un archivo de contenido legítimo dentro de `__pycache__/` nunca sería propio (no
+existe ninguno; declarado). *La exclusión va en las tres fronteras, no sólo en el registro*: si
+sólo se cambiaba `sync_skill_to`, el `--check` y los totales esperados seguían contando caché y se
+contradecían entre sí. *La poda ocurre al reinstalar, no retroactivamente* (PC-4): evita un barrido
+extra sobre manifiestos instalados, y deja `--check` rc=1 sobre un manifiesto viejo hasta la
+siguiente instalación — consecuencia declarada en la spec, no un defecto oculto. *INV-2 intacta*:
+un archivo de contenido alterado con caché presente sigue dando `--check` rc=1 (sonda del
+reviewer).
+
+**Deuda técnica detectada.** (1) **F2 (OPTIONAL)**: el filtro evalúa la ruta **completa**, no la
+relativa a la skill (`install.sh:1285`, `1813`, `205`); si el repo viviera bajo un directorio
+`__pycache__` se excluiría todo (sonda: `--basic` rc=0 con 0 archivos, un verde falso). Remedio
+propuesto: evaluar `${src_file#"$src"/}` y `find` relativo al árbol. Sin camino realista hoy.
+(2) **F3 (Nit)**: el bloque de poda deja un `__pycache__/` vacío (0 archivos, 1 directorio; no
+afecta `--check`). (3) Limpieza retroactiva de manifiestos ya instalados **fuera de un `install`
+normal**: no implementada por diseño (PC-4 poda al reinstalar). (4) **Suite completa no corrida**
+(deuda compartida con 011). Tipo de cambio: ninguna decisión arquitectónica nueva.
+
+**Next feature in queue.** Ninguna declarada: 011 y 012 cierran la serie de brechas de operación
+que el estado agrupa sin epic (`active_epic: null`), y la próxima la define el dueño. Antes de
+cualquier trabajo nuevo quedan **dos actos del dueño, no del ciclo**: publicar y redesplegar. Lo
+instalado en HOME es el producto de la publicación del epic 010 (`a42f2a20`), **anterior** a
+`87a16432` y a `935328d8`: el wedge de 011 y la exclusión de caché de 012 **no están activos** en
+la instalación hasta que el dueño redespliegue.
+
+---
+
+## 2026-11-01 — Feature: 011-begin-unpublished-packet-wedge
+
+**Cerrada; no publicada ni redesplegada.** El ciclo dejó de poder wedging él solo: en una ejecución
+v2, un `begin` nuevo sobre un paquete **no publicado** se rechaza antes de escribir nada, con un
+diagnóstico que dice qué falta y cómo prepararlo.
+
+**Qué se entregó.** `skills/cdad-cycle/scripts/cdad_continuity.py` (+17/−2, `87a16432`):
+`_admit_packet` recibe el `exec_context` que su llamador ya tenía (`_plan_write`), y cuando el
+**documento de ejecución** declara `schema_version == 2` rechaza un `begin` nuevo cuyo `packet_id`
+no tiene **ni rastro** en el árbol de paquetes, nombrando el `packet_id`, señalando la ausencia de
+`REQUEST.json` e indicando preparar con `prepare`. La ruta no-v2 conserva la admisión legacy; la
+comprobación de publicación incompleta (rastro sin `REQUEST.json`) sigue aplicando; el replay
+exacto se reconoce **antes** de la admisión y nunca llega a este punto. Dos tests nuevos en
+`tests/test_008_004_packet_enforcement.py` (`fb743245`, +129): T1 (PC-1) v2 sin rastro → rc≠0,
+diagnóstico, inventario y bytes de cabeza intactos; T2 (PC-2) tras el rechazo, `prepare` → `begin`
+→ `verify-begin` por CLIs públicos, rc=0 sin reparación manual. Ambos **rojos por aserción de
+contrato** antes del fix (rc=0), no por entorno.
+
+**Medición.** Review: **0 BLOCKING / 2 OPTIONAL / 1 abstención**. PC-1..PC-5 e INV-1/INV-2
+verificadas; regresión focal **116 passed** (incluye los dos casos nuevos); barrido adicional no
+exigido de 17 archivos que emiten `begin`: **194 passed**. Discriminador confirmado **del documento**
+(`schema_version == 2`), no del rastro; `_admit_packet` corre en `_plan_write` **después** del replay
+y **antes** del enlace y de la escritura (INV-2 fail-closed). Suite completa **no corrida**
+(directiva del dueño: no es gate).
+
+**Decisiones relevantes.** *El discriminador sale del documento de ejecución, nunca del rastro del
+`packet_id`*: keyear sobre la ausencia de rastro habría puesto en rojo los controles de
+compatibilidad (legado sin árbol y replay acreditado). *Rechazar dentro de `_admit_packet`, no en el
+llamador*: la frontera invocable ya era la admisión, y así ninguna rama nueva queda fuera de ella.
+*El diagnóstico enseña el camino (`prepare`) en vez de reparar por su cuenta*: el ciclo no crea
+paquetes en nombre del orquestador. **Trade-off declarado**: el arreglo es **preventivo** —no
+repara ejecuciones ya bloqueadas, no elimina todas las causas de split-brain y no cubre los
+seguimientos 2-5.
+
+**Deuda técnica detectada.** (1) **F1 (OPTIONAL)**: PC-4 (`no_op == true` en el replay de `begin`)
+no queda fijada por un test permanente; el comportamiento se verificó por sonda desechable en v2
+(`no_op` True, cabeza e inventario intactos) y el test actual cubre rc=0 y ausencia de efectos, no el
+flag. Cierre propuesto: aserción de `no_op` en `tests/test_008_004_packet_enforcement.py:524`.
+(2) **F2 (OPTIONAL/FYI)**: PC-5 sin caso v2 explícito — la rama es independiente de versión y la
+sonda en v2 pasó; **deferred-hardening** declarado. (3) Seguimientos **2-5** fuera de alcance
+(unicidad por clave + reanudación; recuperación, autoridad y reanchor), más ejecuciones ya bloqueadas
+y hash editorial. (4) **Suite completa no corrida**. (5) Discrepancia registrada: `test-audit.md`
+afirma que `_RecoveryProject` es v1 y en ejecución es v2 — la afirmación del audit es incorrecta y
+los tests corren en v2, como PC-1 exige; el audit **no se corrigió** en este cierre.
+
+**Next feature in queue.** Ninguna declarada (ver la entry de 012): misma serie, mismo `active_epic:
+null`, misma decisión del dueño pendiente — publicar y redesplegar. Mientras eso no ocurra, el fix
+vive en el repo y **no** en la instalación que usan los proyectos.
+
+---
+
 ## 2026-10-31 — Epic: epic-010-documentary-specialization (cerrado, 5/5)
 
 **Cierre del epic declarado; NO publicado y sin push.** Las cinco unidades cerradas

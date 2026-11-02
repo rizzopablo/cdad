@@ -202,10 +202,21 @@ count_flat_files() {  # dir pattern -> number of matching files (0 if dir missin
 count_tree_files() {  # dir -> number of files recursively (0 if dir missing)
   local dir="$1"
   if [ -d "$dir" ]; then
-    find "$dir" -type f 2>/dev/null | wc -l | tr -d ' '
+    find "$dir" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' ! -name '*.pyo' 2>/dev/null | wc -l | tr -d ' '
   else
     printf '0'
   fi
+}
+
+is_cache_artifact_path() {  # path -> 0 when bytecode-shaped (012 INV-1)
+  local p="$1"
+  case "$p" in
+    */__pycache__/*|__pycache__/*) return 0 ;;
+  esac
+  case "$p" in
+    *.pyc|*.pyo) return 0 ;;
+  esac
+  return 1
 }
 
 count_manifest_agents_installed() {  # dir -> how many declared agent names are present there
@@ -1271,6 +1282,9 @@ sync_skill_to() {  # skill_name target_base_dir — per-file owned copy (review-
   # the source are left alone (never --delete); if they were owned by a
   # previous install they surface as pending_removal (review-5 B3).
   while IFS= read -r -d '' src_file; do
+    if is_cache_artifact_path "$src_file"; then
+      continue
+    fi
     stage_owned_file "$src_file" "$dst/${src_file#"$src/"}" "skills/$skill/${src_file#"$src/"}"
   done < <(find "$src" -type f -print0)
 }
@@ -1479,6 +1493,17 @@ PY
     [ -n "$rel" ] || continue
     [ -n "${OWNED_ABS[$abs]:-}" ] && continue     # this run deploys it: not obsolete
     [ -n "${CONFLICT_ABS[$abs]:-}" ] && continue  # already reported and preserved
+    if is_cache_artifact_path "$rel" || is_cache_artifact_path "$source" || is_cache_artifact_path "$abs"; then
+      # 012 PC-4: stale bytecode ownership is never kept — delete when present
+      # and always drop the record (shape-based, INV-1; bytecode is never
+      # content, so INV-2 is untouched).
+      if [ -L "$abs" ] || [ -f "$abs" ]; then
+        do_run "REMOVE (own bytecode cache: no longer owned) $abs" rm -f -- "$abs"
+      fi
+      pruned_abs["$abs"]=1
+      PRUNED+=("$rel")
+      continue
+    fi
     if [ -n "${pruned_abs[$abs]:-}" ]; then
       PRUNED+=("$rel")                            # same destination, another key
       continue
@@ -1785,6 +1810,9 @@ check_skill_tree() {  # src_dir dst_dir — cmps every source file vs dst; 0 = i
     drift=1
   fi
   while IFS= read -r -d '' src_file; do
+    if is_cache_artifact_path "$src_file"; then
+      continue
+    fi
     rel=${src_file#"$src_dir"/}
     dst_file="$dst_dir/$rel"
     if [ ! -f "$dst_file" ]; then
