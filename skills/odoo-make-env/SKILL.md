@@ -2,7 +2,7 @@
 name: "odoo-make-env"
 description: >
   Make contract for running Odoo tests on CDAD projects (targets test /
-  test-one / test-clean / lint) and a guide for implementing the contract in a
+  test-one / test-clean / test-all / lint) and a guide for implementing the contract in a
   concrete environment (odoo.sh, private staging, local docker, oca-ci). Use when
   an Odoo project must expose its test runner to the CDAD-Odoo agents, or when
   creating the Makefile of a new Odoo project.
@@ -29,10 +29,10 @@ repeating that boundary.
 
 | Target | Semantics | Used by |
 |---|---|---|
-| `make test` | full suite on the warm DB | test-writer (AUDIT), implementer (GREEN) |
-| `make test-one TEST=mod:Class.method` | a single test | test-writer (RED) |
-| `make test-clean` | install the module from scratch + suite | implementer (GREEN gate), reviewer |
-| `make test-all` | unified multi-module gate: fresh DB + ONE install + all suites (optional in mono-module; condition: dependency graph in a chain, otherwise `-i mod1,mod2`) | implementer (GREEN closure), reviewer |
+| `make test` | full module suite on the warm DB (complete run; Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits) | complete run when the moment requires it, never default iteration (Durante el ciclo focal) |
+| `make test-one TEST=mod:Class.method` | a single test (declared selection for AUDIT/GREEN iteration) | test-writer (AUDIT selection, RED), implementer (GREEN iteration) |
+| `make test-clean` | install the module from scratch + module-scoped suite (`--test-tags $(MODULE)`; proves clean install, not suite breadth per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"; if the runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución, never `suite completa no realizada`) | implementer (GREEN installation gate when the spec marks it), reviewer (when tree changed) |
+| `make test-all` | unified multi-module gate: fresh DB + ONE install + all suites (optional in mono-module; condition: dependency graph in a chain, otherwise `-i mod1,mod2`); Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa, otherwise suite completa no realizada with motive and limits | cierre por momento / reviewer gate proporcional |
 | `make lint` | addon lint with `pre-commit-vauxoo` — `--diff` in development, `--all` for gate evidence | implementer (GREEN gate), reviewer |
 
 **Rules:**
@@ -134,10 +134,8 @@ possible, and CDAD/this skill do not depend on it.
 
 ## Run budget (mandatory protocol)
 
-The full suite is for the gate, not for debugging: iteration uses `test-one`
-on the warm DB with the anti-loop cycle (read failure → hypothesis → one
-change → one run; max 2 without convergence → STOP); the gate is closed with
-ONE `test-all` on a fresh DB. Hard budget per stage, default 2 full runs +
+Defaults por momento per hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy" — Durante el ciclo focal + proporcional, sin completa como rutina, never for debugging: AUDIT and GREEN iterate with the declared selection (`test-one` on the warm DB, or the project mechanism) under the anti-loop cycle (read failure → hypothesis → one
+change → one run; max 2 without convergence → STOP); Cierre de feature con `test-all` recomendada (fresh DB), Cierre de epic con `test-all` obligatoria por defecto o dispensa expresa registrada; otherwise record suite completa no realizada with motive, selection and limits, plus `test-clean` (module-scoped, instalación limpia distinta de amplitud) as clean-install evidence when the spec marks it; if its runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy", never `suite completa no realizada` as its valid output. Hard budget per stage, default 2 full runs when authorized +
 ~15 `test-one` per feature (adjustable per project by the owner in
 `systemPatterns.md`). Full detail: `references/run-budget-protocol.md`.
 

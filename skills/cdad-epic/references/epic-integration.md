@@ -73,7 +73,7 @@ Validate:
 
 - [ ] E2E test exists in `tests/integration/` or the project's equivalent.
 - [ ] The run output pasted by the user shows green.
-- [ ] Full suite still green (including previous tests of each feature).
+- [ ] Evidence per the hogar canónico Test evidence policy still green (Durante el ciclo focused + proportional regression; Cierre de feature con completa recomendada; Cierre de epic con completa obligatoria por defecto o dispensa expresa para ese cierre); otherwise suite completa no realizada with motive, selection and limits (including previous tests of each feature when the moment requires it).
 - [ ] Commit with prefix `test(epic):` or a similar consistent one.
 
 If it passes: mark that criterion as covered. If there are more cross-feature criteria left, issue the next handoff. If not, you move forward.
@@ -110,8 +110,8 @@ Pass the draft to the user for final approval of the file (it is not non-delegab
 
 - [ ] Each cross-feature acceptance criterion of the epic has its E2E test.
 - [ ] All cross-feature E2Es pass.
-- [ ] Full suite green (individual E2Es + cross-feature + unit + properties + linter + type checker).
-- [ ] CI green on main / the epic's branch.
+- [ ] Evidence green when the moment requires it (individual E2Es + cross-feature + unit + properties + linter + type checker); Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa, otherwise suite completa no realizada / gate no ejecutado as valid output with motive and limits.
+- [ ] Evidence green per the policy on main / the epic's branch (Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits).
 - [ ] `docs/epics/<id>/integration.md` exists and is committed.
 
 When all OK: update the state (`epic_stage: epic-closure`). Announce the transition. Load `epic-closure.md`.

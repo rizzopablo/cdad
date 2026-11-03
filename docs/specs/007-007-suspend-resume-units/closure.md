@@ -18,7 +18,7 @@ Una unidad se suspende en un borde seguro, se ejecuta otra y la primera se reanu
 
 - Contrato: `spec.md` con ajustes A1–A5.
 - Tests: `tests/test_007_007_suspend_resume_units.py` (19 casos; 16 en la versión aprobada por review).
-- Review: 4 rondas, sesión `ses_e8ad5f723ffenb7IaCoN0egiCv`; final APTO CON AJUSTES, sin bloqueantes en el alcance MVP.
+- Review: 4 rondas, sesión `<ses-328>`; final APTO CON AJUSTES, sin bloqueantes en el alcance MVP.
 - Gate por superficie (`819ebe5`): 947 passed / 0 failed (antes del último fix); tras los fixes, conjuntos focales 19+52 verdes.
 - Suite completa: 1582 passed, 38 failed — todos del RED de 007-004 (esperados).
 - **Uso real (esta sesión):** `suspend-unit 007-004` rc 0 → `status` = `units-suspended`; `open-unit --feature 007-007` rc 0 con dependencia 007-003 verificada. Es la primera aplicación real de la capacidad.

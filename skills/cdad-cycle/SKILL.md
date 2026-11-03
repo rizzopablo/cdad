@@ -124,6 +124,7 @@ feature's acceptance criterion.
   testable postconditions, maximally clear, before RED opens. Ambiguous spec → tests
   ambiguous → incorrect implementation that still passes the suite (AP-13
   Garbage Cascade).
+- **Sustituto de comportamiento vigente (recorrido POST-AUDIT, por referencia a R2):** R2 (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6) owns the maintenance dispositions and the sustituto recorrido — Sustituir/Consolidar of vigente identified in the approved AUDIT, with verde execution plus sensibilidad frente a defecto contractual concreto, originales kept until evidence, mapa PC-5; never to RED for being a new file. RED is only for pending behavior.
 
 Detail and relevance audit in `references/stage-3-tdd.md`.
 
@@ -201,7 +202,8 @@ belong to the user — approval is non-delegable, git execution is not.
 
 Each role session (sub-agent or new chat) starts without the orchestrator's
 context. The handoff/prompt must contain EVERYTHING necessary: atomic
-task (one postcondition, one test, one diff —don't group sub-phases), spec
+task (one promise, one test, one diff —don't group sub-phases; the unit of
+selection is the promise per R2, never the postcondition), spec
 inline or path, interface per the role, strict rules (from the table
 above), expected output and format. The role can also read
 `docs/.cdad-state.json` and `docs/specs/<id>/` by itself. Don't assume it
@@ -314,7 +316,7 @@ Stage 3: Anti-gaming TDD    → references/stage-3-tdd.md
 Stage 4: Review two-layer   → references/stage-4-review.md (+ verdict contract: references/verdict-tuple.md)
    ↓ (gate: blocking items resolved)
 Stage 5: Merge + Memory Bank → references/stage-5-merge.md
-   ↓ (gate: CI green + Memory Bank updated)
+   ↓ (gate: evidence green per the Test evidence policy + Memory Bank updated; suite completa / gate no ejecutado recorded when not authorized, never as green)
 [Feature done] → back to Stage 1 for the next feature
 ```
 
@@ -369,10 +371,10 @@ See **Roles contract §2** above for the full table with permissions, artifacts 
 
 ### Gate 5→done
 
-- [ ] **If CI is configured:** full CI green (linter, type checker,
-      import-linter, unit, integration, contract, property).
+- [ ] **Evidence green per the Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy": linter, type checker,
+      import-linter, focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado recorded as valid output, never as green).
 - [ ] **If there is NO CI configured** (new project, first feature): the local
-      suite green equals the gate, and the absence of CI gets recorded as
+      evidence green per the hogar canónico Test evidence policy (focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado recorded as valid output, never as green) equals the gate, and the absence of CI gets recorded as
       explicit debt in `docs/progress.md` — never silently. It does not block
       closing the first feature while waiting for a CI that bootstrap already
       noted as pending (`references/bootstrap.md` Step 2, question 4).
@@ -537,10 +539,10 @@ If there is NO active epic, the flow is exactly the current one, unmodified.
 | 1 → 2 (Discovery) | `docs/landscape.md` with real content; zero pending assumptions of the type "I think X exists" |
 | 2 → 3 (Spec) | `spec.md` with the 4 minimum sections + numbered postconditions + unambiguous user approval mark |
 | 3.1 RED | Suite output with RED tests failing with `AssertionError` (not with a compile/import error) |
-| 3.2 GREEN | Evidence per the **Test evidence policy**: focused + touched-modules regression green (final summary line included); COMPLETE suite green at feature closure |
+| 3.2 GREEN | Evidence per the **Test evidence policy**: Durante el ciclo focused + touched-modules regression green (final summary line included); Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits |
 | 3.3-3.5 | Suite green after each sub-phase; properties/E2E green if the spec marks them |
 | 4 (Review) | `review.md` with findings against the spec; blocking items resolved or dismissed with written reason |
-| 5 (Merge) | CI green if it exists, otherwise local suite + registered debt; Memory Bank with a new entry |
+| 5 (Merge) | Evidence green per the **Test evidence policy** (focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado); Memory Bank with a new entry |
 
 **Evidence rules:**
 

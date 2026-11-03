@@ -1,1 +1,3 @@
-Write deterministic seeded property tests only for explicit invariants. Use a reasonable generated sample and report the seed and executed case count.
+Write deterministic seeded property tests only for explicit invariants. Declare a finite positive presupuesto before each campaign with justificación from invariante, dominio y coste del recorrido; no universal minima or maxima apply. Report the seed and executed case count.
+
+Reproducible evidence per campaign: invariante; presupuesto declarado and cantidad realmente ejecutada; semilla fija; versión y configuración del generador; contraejemplo pertinente when it fails. Changing the presupuesto requires justificación and checking that no committed obligation is removed. Mandatory contractual variants stay verified and are never replaced by sampling expectation.

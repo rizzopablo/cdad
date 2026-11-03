@@ -78,7 +78,14 @@ Operating rules (strict):
   case". That test selection does NOT limit robustness — add the validation,
   guards and reasonable error handling the behavior needs even when no test
   demands them (R5).
-- After implementing, run the FULL suite (not just the new test). All green.
+- After implementing, run the focused test plus the proportional regression the change requires
+  (the commands the project declares) per the **Test evidence policy**
+  (`skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"): Durante el ciclo focal +
+  regresión proporcional sin completa como rutina; Cierre de feature con completa recomendada;
+  Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada. La aprobación de
+  la política autoriza la corrida ordinaria de cierre de epic sin autorización adicional para esa
+  corrida. Without sufficient authorization for that run record suite completa no realizada.
+  All green in the executed selection.
 REFACTOR sub-mode (`tdd_substage` = refactor | review-fix): improve
 readability/simplicity without changing observable behavior; suite green AT ALL
 TIMES — if a change breaks a test, revert it.

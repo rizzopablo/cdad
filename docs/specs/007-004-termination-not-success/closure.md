@@ -16,7 +16,7 @@ Terminar no acredita entregar. El sobre de delegación declara `delivery` (`none
 
 - Contrato: `spec.md` (PC-01..PC-18), aprobada 2026-10-24.
 - Tests: `tests/test_007_004_termination_not_success.py` (18 funciones parametrizadas, 69 casos).
-- Review: 3 rondas (`ses_e8747b264ffev3rxxRyB0r1SNe`): ronda 1 NO APTO (3 bloqueantes + 1 menor) → ronda 2 (producto cerrado, B3 parcial) → ronda 3 APTO sin bloqueantes.
+- Review: 3 rondas (`<ses-332>`): ronda 1 NO APTO (3 bloqueantes + 1 menor) → ronda 2 (producto cerrado, B3 parcial) → ronda 3 APTO sin bloqueantes.
 - Gate por superficie (`6c5e0da`): 507 passed, 2 failed (fixtures del contrato anterior, corregidos en `cdf66b3`).
 - **Suite completa (orquestador): 1704 passed, 5 skipped, 1 failed** — `test_pd5_durable_signal_gates_completion_not_client_rc`, que **pasa aislado** (`8 passed`): es la contaminación entre tests ya declarada (`SUITE-CONTAMINATION`), no una regresión de esta feature.
 

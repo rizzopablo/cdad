@@ -9,6 +9,7 @@ temporary fixture; the real HOME and the repository state are never touched.
 from __future__ import annotations
 
 import copy
+import base64
 import hashlib
 import json
 import os
@@ -301,6 +302,59 @@ class TestPrepareEffects(PrepareTestCase):
         )
         self.assertEqual(validated.returncode, 0, validated.stderr.decode(errors="replace"))
 
+        # 015-001 POST-AUDIT (A/PC-01, promesa A — Extender aprobado):
+        # el REQUEST publicado trae el respaldo congelado vigente con
+        # fuentes ordenadas, snapshots y hashes coherentes, y la
+        # proyección del encabezado deriva del respaldo.
+        # Sin este bloque, el usuario recibiría un paquete cuya
+        # recepción no puede anclarse a bytes congelados.
+        request_p1 = json.loads((packet_dir / "REQUEST.json").read_text(encoding="utf-8"))
+        self.assertIn(
+            "instruction_sources", request_p1,
+            "A/PC-01: el prepare publica `instruction_sources`; "
+            f"claves vistas: {sorted(request_p1)}",
+        )
+        expected_paths_p1 = [
+            "common.md",
+            f"roles/{project.role}.md",
+            f"substages/{project.role}-{project.substage}.md",
+        ]
+        sources_p1 = request_p1["instruction_sources"]
+        self.assertEqual(
+            [entry["path"] for entry in sources_p1], expected_paths_p1,
+            "A/PC-01: fuentes canónicas ordenadas (common, rol, subfase)",
+        )
+        packets_root = REPO_ROOT / "skills" / "cdad-cycle" / "packets"
+        for entry in sources_p1:
+            with self.subTest(path=entry.get("path")):
+                self.assertEqual(
+                    set(entry), {"path", "sha256", "snapshot"},
+                    "A/PC-01: cada entrada lleva exactamente path/sha256/snapshot",
+                )
+                live_bytes = (packets_root / entry["path"]).read_bytes()
+                snapshot_bytes = base64.b64decode(entry["snapshot"])
+                self.assertEqual(
+                    snapshot_bytes, live_bytes,
+                    f"A/PC-01: el snapshot de {entry['path']} es lo vivo byte a byte",
+                )
+                self.assertEqual(
+                    entry["sha256"], hashlib.sha256(snapshot_bytes).hexdigest(),
+                    f"A/PC-01: sha256 == sha256(snapshot) para {entry['path']}",
+                )
+        header_text = packet_bytes.split(b"---cdad-packet-json\n", 1)[1].split(
+            b"\n---end-cdad-packet-json\n", 1
+        )[0]
+        header_meta = json.loads(header_text.decode("utf-8"))
+        self.assertEqual(
+            header_meta.get("instruction_sources"),
+            [
+                {"path": path, "sha256": hashlib.sha256(
+                    (packets_root / path).read_bytes()).hexdigest()}
+                for path in expected_paths_p1
+            ],
+            "A/PC-01: el encabezado proyecta path+sha256 derivados del respaldo",
+        )
+
     def test_p1_state_binding_and_active_packet_are_written_other_keys_kept(self) -> None:
         """P1 (§2.3): execution = 7 binding fields, active_packet prepared, rest JSON-equal, indent 2 + final newline."""
         project = self.project()
@@ -374,6 +428,17 @@ class TestPrepareDefaults(PrepareTestCase):
         `agent` = rol + `stack` del estado. RAZÓN: la extensión declarada del
         conjunto cerrado cambia el documento que es el oráculo de esta prueba;
         se actualiza el valor esperado sin relajar el oráculo.
+
+        015-001 POST-AUDIT (D1/PC-01) — EXTENDIDO: el conjunto cerrado
+        vigente declara además `instruction_sources` presente (lista
+        ordenada de las tres fuentes canónicas, cada entrada con
+        exactamente `path`/`sha256`/`snapshot`; `snapshot` es lo vivo en
+        base64 y `sha256 == sha256(snapshot)`). Se actualiza el valor
+        esperado con el respaldo derivado de lo vivo, sin relajar la
+        igualdad exacta del documento (precedente: campo `agent`, 006-005
+        U1c). RAZÓN: D1 congela los bytes; el oráculo anterior a D1
+        rechaza el prepare congelado vigente (GREEN-002 lo acredita:
+        18/19, solo falla este oracle).
         """
         cases = (
             ("test-writer", "red"),
@@ -382,6 +447,7 @@ class TestPrepareDefaults(PrepareTestCase):
             ("reviewer", "review"),
             ("scribe", "memory"),
         )
+        packets_root = REPO_ROOT / "skills" / "cdad-cycle" / "packets"
         for role, substage in cases:
             with self.subTest(role=role, substage=substage):
                 project = self.project(role, substage)
@@ -390,6 +456,21 @@ class TestPrepareDefaults(PrepareTestCase):
                 contract_path = PLAN_CONTRACT if role == "architect" else SPEC_CONTRACT
                 contract_kind = "approved-epic-plan" if role == "architect" else "approved-feature-spec"
                 read_scope, write_scope = self.expected_scopes(role)
+                expected_paths = [
+                    "common.md",
+                    f"roles/{role}.md",
+                    f"substages/{role}-{substage}.md",
+                ]
+                expected_sources = [
+                    {
+                        "path": path,
+                        "sha256": hashlib.sha256(
+                            (packets_root / path).read_bytes()).hexdigest(),
+                        "snapshot": base64.b64encode(
+                            (packets_root / path).read_bytes()).decode("ascii"),
+                    }
+                    for path in expected_paths
+                ]
                 self.assertEqual(
                     request,
                     {
@@ -428,6 +509,13 @@ class TestPrepareDefaults(PrepareTestCase):
                         "invariants": DEFAULT_INVARIANTS[role],
                         "expected_output": DEFAULT_EXPECTED_OUTPUT,
                         "evidence_required": DEFAULT_EVIDENCE,
+                        # 015-001 POST-AUDIT (D1/PC-01): el conjunto
+                        # cerrado vigente declara `instruction_sources`
+                        # presente, con valor exacto derivado de lo
+                        # vivo (orden, claves, snapshot y digest).
+                        # Igualdad exacta conservada (endurecer, no
+                        # relajar; precedente campo `agent`).
+                        "instruction_sources": expected_sources,
                     },
                 )
 

@@ -13,7 +13,13 @@
   "feature_id": "008-002-suite-by-capability",
   "modules": [
     {
-      "assignments": [{"capability": "generation-install-permissions", "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md", "scope": "module"}],
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+          "scope": "module"
+        }
+      ],
       "confidence": "alta",
       "decision": "mantener",
       "helper_dependencies": [],
@@ -25,13 +31,23 @@
       "targets": []
     },
     {
-      "assignments": [{"capability": "generation-install-permissions", "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md", "scope": "module"}],
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+          "scope": "module"
+        }
+      ],
       "confidence": "alta",
       "decision": "mantener",
       "helper_dependencies": [],
       "kind": "test",
       "path": "tests/test_009_002_opencode_v2_frontmatter.py",
-      "product_surfaces": ["agents/*.md", "scripts/cdad-generate.py", "sources/agents/adapters/opencode.md"],
+      "product_surfaces": [
+        "agents/*.md",
+        "scripts/cdad-generate.py",
+        "sources/agents/adapters/opencode.md"
+      ],
       "rationale": "Forma V2, equivalencia y orden de permisos; esquema Claude Code conservado.",
       "static_test_nodeids": 3,
       "targets": []
@@ -82,7 +98,10 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": ["agent_frontmatter", "test_opencode_read_map_and_steps"],
+      "helper_dependencies": [
+        "agent_frontmatter",
+        "test_opencode_read_map_and_steps"
+      ],
       "kind": "helper",
       "path": "tests/pd10_permission_semantics.py",
       "product_surfaces": [
@@ -4556,7 +4575,9 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": ["agent_frontmatter"],
+      "helper_dependencies": [
+        "agent_frontmatter"
+      ],
       "kind": "test",
       "path": "tests/test_bash_policy_selection.py",
       "product_surfaces": [
@@ -4577,7 +4598,9 @@
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": ["agent_frontmatter"],
+      "helper_dependencies": [
+        "agent_frontmatter"
+      ],
       "kind": "test",
       "path": "tests/test_cdad_adapters_opencode.py",
       "product_surfaces": [
@@ -4663,13 +4686,15 @@
       "assignments": [
         {
           "capability": "generation-install-permissions",
-          "contract": "docs/specs/opencode-read-map-and-steps-2026-09-29/spec.md",
+          "contract": "docs/specs/opencode-read-map-and-steps-2026-09-29/spec.yaml",
           "scope": "module"
         }
       ],
       "confidence": "alta",
       "decision": "mantener",
-      "helper_dependencies": ["agent_frontmatter"],
+      "helper_dependencies": [
+        "agent_frontmatter"
+      ],
       "kind": "test",
       "path": "tests/test_opencode_read_map_and_steps.py",
       "product_surfaces": [
@@ -4809,6 +4834,447 @@
       ],
       "rationale": "docstring declara la feature de procedencia. Docstring: RED tests for 004-001 T3 PD-19: the static-block byte ceiling becomes policy.",
       "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "path": "tests/test_008_002_suite_evidence.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/008-002-suite-by-capability/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "008-002 evidencia de cierre (PC-6/AJ7): close/measure con intentos independientes y no sobreescritura. Docstring: PC-6 / AJ7: independent, non-overwriting closure evidence.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "path": "tests/test_008_003_lifecycle_decisions.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "scope": "module"
+        },
+        {
+          "capability": "suspension",
+          "contract": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "scope": "nodeids",
+          "nodeids": [
+            "tests/test_008_003_lifecycle_decisions.py::test_pc02_suspension_follows_the_accredited_owner",
+            "tests/test_008_003_lifecycle_decisions.py::test_pc02_direct_plan_write_respects_suspension",
+            "tests/test_008_003_lifecycle_decisions.py::test_pc02_direct_close_durable_receipt_respects_suspension"
+          ]
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "008-003 decisor compartido de ciclo de vida (PC-01..PC-05): identidad, propietario, autoridad y elegibilidad sobre P/C/R; módulo mixto con detalle por nodeids para suspensión (3 nodeids PC-02) sin capacidad por prefijo. Docstring: RED 008-003 — decisor compartido de ciclo de vida.",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "path": "tests/test_008_004_packet_enforcement.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "008-004 exigencia de paquete verificable en fronteras (PC-01, PC-03, PC-06, PC-07): marcador, intake y begin con contract cubierta. Docstring: RED 008-004 — exigencia de paquete verificable.",
+      "static_test_nodeids": 27,
+      "targets": []
+    },
+    {
+      "path": "tests/test_008_005_ci_gate.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/008-005-ci-gate/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "008-005 gate de CI como caja negra (PC-1..PC-8): entrypoint versionado, orden fijo, evidencia atribuible. Docstring: 008-005 PC-1..PC-8: el gate de CI como caja negra por CLI.",
+      "static_test_nodeids": 19,
+      "targets": []
+    },
+    {
+      "path": "tests/test_009_001_installer_agent_overlay.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "009-001 overlay de claves de usuario en agentes instalados (PC-1..PC-7): preserva model, actualiza resto, verificable. Docstring: Black-box RED coverage for 009-001 agent model overlay.",
+      "static_test_nodeids": 12,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_000_continuity_relative_root.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "continuity",
+          "contract": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-000 raíces equivalentes en continuidad (PC-01..PC-05): misma operación con raíz relativa y absoluta. Docstring: 010-000 RED — raíces equivalentes.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_001_documentary_contracts.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/010-001-documentary-contracts/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-001 contratos documentales compartidos (PC-01..PC-16): casa normativa, distribución a agentes generados/promovidos e instalación aislada. Docstring: 010-001 RED — contratos documentales compartidos.",
+      "static_test_nodeids": 11,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_002_documentary_role_integration.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "scope": "module"
+        },
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "scope": "nodeids",
+          "nodeids": [
+            "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_distributed_artifacts_carry_the_matrix"
+          ]
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-002 integración documental T3/T5/T8 (PC-01..PC-12, INV-04): agent binding, request schema y doctrina de despacho; módulo mixto con detalle por nodeids para generación/distribución (1 nodeid de artefactos distribuidos) sin capacidad por prefijo. Docstring: RED de T3/T5/T8 — 010-002-documentary-role-integration.",
+      "static_test_nodeids": 29,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_002_documentary_role_properties.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-002 propiedades T7 (INV-04, PC-12.b): derivación de publicación y contraste estático/contextual con semilla fija. Docstring: Propiedades de T7 — 010-002-documentary-role-integration.",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_003_documentary_pilot.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "delivery-evidence",
+          "contract": "docs/specs/010-003-documentary-pilot/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-003 piloto documental (PC-01, PC-04..PC-06, PC-10): corpus, inventario y control estructural. Docstring: 010-003 RED — piloto documental.",
+      "static_test_nodeids": 8,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t2_red.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T2 despacho por ruta C (PC-04..PC-07): localizador canónico v2 y resolución independiente de cwd. Docstring: BLACK-BOX RED — 010-004 T2.",
+      "static_test_nodeids": 6,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t3_red.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T3 ruta C positiva y rechazos (PC-01, PC-02, PC-08a): identificación exacta y rechazo fail-closed con causa. Docstring: BLACK-BOX RED — 010-004 T3.",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t4_red.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T4 guarda mecánica del camino de despacho (PC-03, PC-12): superficies nombran --route C y sobreviven regeneración. Docstring: RED — 010-004 T4: guarda mecánica.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t5_e2e.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T5 consumidor instalado aislado E2E (PC-12): prepara, emite C y valida sin modificar instalación global. Docstring: INTEGRATION/E2E — 010-004 T5.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t5_properties.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T5 propiedades sembradas INV-04/INV-05 (PC-01..PC-03, PC-08a): igualdad completa y no sustitución tras fallo. Docstring: PROPERTIES — 010-004 T5.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t6_b1_guard.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T6 guarda B1 (PC-03): intake-core exige contexto v2 y rechazo A+C aunque el inline coincida. Docstring: Guarda mecánica B1 — 010-004 T6.",
+      "static_test_nodeids": 1,
+      "targets": []
+    },
+    {
+      "path": "tests/test_010_004_t6_red.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "packets-authority-identity",
+          "contract": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "010-004 T6 remediación B2/B4 (PC-07b, PC-04): diagnóstico de paquete v1 activo y sucesor declara localizador. Docstring: RED 010-004 T6 — remediación de B2 y B4.",
+      "static_test_nodeids": 2,
+      "targets": []
+    },
+    {
+      "path": "tests/test_012_installer_ignore_pycache.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "generation-install-permissions",
+          "contract": "docs/specs/012-installer-ignore-pycache/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "012 instalador ignora pycache (PC-1..PC-4): manifiesto sin __pycache__/.pyc/.pyo, check y reinstall podan. Docstring: RED tests for 012 — the installer never registers __pycache__.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "path": "tests/test_013_001_criterion_coherence.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/013-001-criterion-coherence/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "013-001 coherencia de criterio (PC-1..PC-14, promesas A-E): selección por contribución, mantenimiento acreditable e instrucciones coherentes. Docstring: 013-001 RED — coherencia de criterio.",
+      "static_test_nodeids": 5,
+      "targets": []
+    },
+    {
+      "path": "tests/test_013_002_live_inventory.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "suite-isolation",
+          "contract": "docs/specs/013-002-live-inventory/spec.md",
+          "scope": "nodeids",
+          "nodeids": [
+            "tests/test_013_002_live_inventory.py::test_013_002_A_inventario_efectivo_y_validate_rc0",
+            "tests/test_013_002_live_inventory.py::test_013_002_A_contratos_recuperables_y_seleccion_cubre_union",
+            "tests/test_013_002_live_inventory.py::test_013_002_B_clasificacion_no_es_acreditacion",
+            "tests/test_013_002_live_inventory.py::test_013_002_C_mapa_inicial_B1_identificado_por_entrada",
+            "tests/test_013_002_live_inventory.py::test_013_002_C_conserva_origen_y_metadatos_historicos",
+            "tests/test_013_002_live_inventory.py::test_013_002_D_inventario_vivo_declarado_momentos_y_handoffs",
+            "tests/test_013_002_live_inventory.py::test_013_002_D_limites_y_surface_collect_only"
+          ]
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "013-002 inventario vivo (PC-1..PC-8, promesas A-D): módulo mixto con detalle por nodeids, sin capacidad por prefijo; cada focal protege una promesa observable. Docstring: 013-002 RED — inventario vivo.",
+      "static_test_nodeids": 7,
+      "targets": []
+    },
+    {
+      "path": "tests/test_014_001_suite_evidence_defaults.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "orientation-planning",
+          "contract": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "014-001 defaults de evidencia por momento (PC-1..PC-14, promesas A-D). Docstring: 014-001 RED.",
+      "static_test_nodeids": 4,
+      "targets": []
+    },
+    {
+      "path": "tests/test_015_001_frozen_reception.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/015-001-frozen-reception/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "015-001 recepción congelada del paquete despachado (PC-01..PC-06)",
+      "static_test_nodeids": 9,
+      "targets": []
+    },
+    {
+      "path": "tests/test_015_002_intake_guards.py",
+      "kind": "test",
+      "decision": "mantener",
+      "confidence": "alta",
+      "assignments": [
+        {
+          "capability": "dispatch-recovery",
+          "contract": "docs/specs/015-002-intake-guards/spec.md",
+          "scope": "module"
+        }
+      ],
+      "helper_dependencies": [],
+      "product_surfaces": [],
+      "rationale": "015-002 guardas de entrada: diagnósticos, docs=docs y open-unit (PC-01..PC-09)",
+      "static_test_nodeids": 10,
       "targets": []
     }
   ],

@@ -159,8 +159,10 @@ The packet instructs the receiver to apply `references/receiving-feedback.md` **
 If the code tree is identical to the one from the gate's evidence run
 (verifiable: `git diff --stat <commit-of-the-run>..HEAD` shows only
 `[STATE]`/docs commits), the reviewer **cites the recorded log (path + line)
-instead of re-running the suite** — run budget of 0. Only if the tree
-changed does ONE new full run apply. Static analyzers
+instead of re-running the suite** — run budget of 0. If the tree
+changed, the reviewer exige evidencia proporcional al cambio, no una nueva suite completa automática;
+`test-all` solo cuando el momento lo exige (cierre) o con autorización suficiente para esa corrida.
+Static analyzers
 (lint, import-linter) do not consume budget. Requirement: every gate
 run is recorded with its log and its commit (state file or commit
 message). In Odoo, details in `odoo-make-env/references/run-budget-protocol.md`.

@@ -228,6 +228,20 @@ here):
   `RESULT.json`), run the receive command, validate the receipt and register the
   single state transition; only the orchestrator writes `docs/.cdad-state.json`
   and `receive` never approves.
+- `inventario vivo` (013-002 PC-7) — la declaración vive en
+  `docs/suite-maintenance.md` `## Inventario vivo` (comando, inventario, mapa).
+  En re-entries de cambios de tests, lee esa sección y transmite la regla en los
+  handoffs (legacy y paquetes). Si no hay inventario vivo declarado, registra
+  `sin inventario vivo declarado` sin bloquear. El test-writer entrega el delta
+  de altas (nodeid, capacidad, contrato, procedencia) como texto; el orquestador
+  lo materializa al re-entry, antes de la siguiente transición. Los cambios de
+  orígenes o destinos incorporan además el delta del mapa de PC-6; POST-AUDIT
+  devuelve los deltas documentales pertinentes bajo la misma separación de
+  responsabilidades.
+  `el comando de integridad declarado` con rc=0 bloquea solo en entrada a
+  Review y cierre; en RED/properties/E2E/POST-AUDIT/GREEN no bloquea por inventario.
+  El rc=0 exigido se mide sobre la revisión que ya contiene los deltas
+  materializados y los últimos cambios de tests.
 
 Recovery wiring (installed contracts in `<skill-dir>/references/`; the checks are
 owned by the specs they cite and are never restated here):
@@ -320,9 +334,9 @@ are defined ONLY here):
   discover late, and it requires the recorded reason.
 Test convention (pointer): single editable definition in
 sources/roles/test-writer.md (cdad-shared:convention-rule); detail and the
-acceptance counterweight in `skills/cdad-cycle/references/stage-3-tdd.md`. The
-orchestrator applies selection rule R2 and counterweight R7 when validating
-RED/gates; it never restates them (drift checks AP-13/AP-14).
+acceptance counterweight in `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy". The
+orchestrator applies selection rule R2 (selección por promesa y protección pendiente, sin cuota) and counterweight R7 when validating
+AUDIT, POST-AUDIT, RED and re-entry; it never restates them (drift checks AP-13/AP-14). Secuencias diferenciadas: mantenimiento de comportamiento vigente AUDIT aprobado → POST-AUDIT (incluidos sustitutos nuevos con verde + sensibilidad, sin RED ni GREEN si no hay implementación que cambiar); comportamiento pendiente AUDIT → POST-AUDIT cuando corresponda → RED separado → GREEN separado. Exige por momento los registros correspondientes per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy": Durante el ciclo focal + regresión proporcional; Cierre de feature con omisión motivada (suite completa no realizada, motivo, selección ejecutada y límites) cuando se omite la recomendada; Cierre de epic con evidencia completa o dispensa expresa del dueño registrada para ese cierre; delta Odoo coherente sin imponer evidencias de addon a quien no modifica addon.
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->
@@ -341,10 +355,10 @@ itself (verified from both current bodies: legacy-loads = `cdad-cycle` only):
   procedural duty; it is never silently replaced by the generic agent, and no
   new mechanical guard is claimed here.
 - Gate validation for the stack consumes the delegated role's contract
-  according to the real diff: addon evidence (`make test`/`test-clean`/lint,
+  according to the real diff: addon evidence (declared `test-one` selection + `test-clean` as clean-install evidence scoped to the module + `test-all` as authorized complete run when authorized, lint,
   OCA checks) when the diff modifies an addon, and no addon battery for a
   documentary-pure diff of an unmodified addon — declared in the role
-  sources, never duplicated here.
+  sources, never duplicated here. If the `test-clean` runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución del entorno per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy", never `suite completa no realizada` as its valid output.
 Domain sources of truth: `skills/odoo-*/`, reached via the delegated role's
 packet — not loaded by the orchestrator.
 <!-- /cdad-section -->

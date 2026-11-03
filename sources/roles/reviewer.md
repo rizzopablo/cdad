@@ -105,8 +105,8 @@ Finding rule (R3 — the single editable home of this rule; consumers cite it):
 Test convention (pointer): single editable definition in
 sources/roles/test-writer.md (cdad-shared:convention-rule). Select tests by the
 observable promise (R2) and apply the acceptance counterweight (R7,
-`skills/cdad-cycle/references/stage-3-tdd.md`): observable contract, not
-coverage; no mocks over plumbing; a test may protect several postconditions.
+`skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"): observable contract, not
+coverage; no mocks over plumbing; a test may protect several postconditions. Contraste independiente de conservación (PC-7): disposiciones, mapa PC-5 y evidencia (verde + sensibilidad) before accepting sustitución; veredicto Mantener posible cuando no esté acreditada. Distinguir `test-clean` (instalación limpia) de suite completa: conservar la primera sin inferir ni autorizar la segunda; el régimen de la completa depende del momento (Durante el ciclo focal, Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa) per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->
@@ -120,7 +120,7 @@ Declared delta (stack=odoo):
 - legacy-loads adds: `odoo-reviewer` (OCA checklist + current pylint-odoo catalog
   + mandatory/advisory split).
 - Evidence required only when the real diff touches addon code, views, security
-  or data of the addon: green `make test-clean` + pasted output; `oca-checks`
+  or data of the addon: green `make test-clean` (scoped to the module; proves clean install, not suite breadth per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy") + pasted output; if its runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución del entorno, never `suite completa no realizada` as its valid output; `oca-checks`
   with 0 findings; pylint-odoo with no blocking E/W; `make lint --all` with 0
   blocking issues (single unified list — resolves the runtime divergence that
   omitted `make lint`).

@@ -543,20 +543,27 @@ def _require_content_fields(update: dict[str, Any]) -> None:
             f"update.decisions must be a list; got {decisions!r}")
     for index, decision in enumerate(decisions):
         if not isinstance(decision, dict):
+            # 015-002 D1 (PC-02): the rejection keeps pointing at the
+            # decisions element and shows the expected form with an example.
             raise ContinuityError(
                 f"update.decisions[{index}] must be an object with "
-                f"decision+rationale; got {decision!r}")
+                f"decision+rationale (forma esperada: "
+                f'{{"decision": "...", "rationale": "..."}}, e.g. '
+                f'[{{"decision": "...", "rationale": "..."}}]); '
+                f"got {decision!r}")
         if not isinstance(decision.get("decision"), str) or \
                 not decision["decision"].strip():
             raise ContinuityError(
                 f"update.decisions[{index}].decision must be a non-empty "
-                f"string (D11: each decision WITH its rationale); got "
+                f"string (D11: each decision WITH its rationale; forma "
+                f'esperada: {{"decision": "...", "rationale": "..."}}); got '
                 f"{decision.get('decision')!r}")
         rationale = decision.get("rationale")
         if not isinstance(rationale, str) or not rationale.strip():
             raise ContinuityError(
                 f"update.decisions[{index}].rationale must be a non-empty "
-                f"string (D11: each decision WITH its rationale); got "
+                f"string (D11: each decision WITH its rationale; forma "
+                f'esperada: {{"decision": "...", "rationale": "..."}}); got '
                 f"{rationale!r}")
 
     uncertainties = update.get("uncertainties", [])
@@ -1314,6 +1321,11 @@ def _refuse_covered_contract_references(
                     f"reference {rel!r} cannot be compared with the write_scope "
                     f"of packet {packet_id!r}: {exc}") from exc
             if covered:
+                # 015-002 D2 (PC-04): the rejection stays pre-persistence and
+                # names the reference and the selector, and now offers the
+                # actionable way out: narrow the scope, or living only for a
+                # genuinely mutable document — an approved contract is never
+                # reclassified to evade the check.
                 raise ContinuityError(
                     f"reference {rel!r} (class contract) is covered by the "
                     f"write_scope selector "
@@ -1321,7 +1333,13 @@ def _refuse_covered_contract_references(
                     f"{packet_id!r}: a contract reference must not be writable by "
                     f"the packet that cites it, and it is not reclassified "
                     f"automatically — refusing the begin before persisting "
-                    f"(008-004 PC-06)")
+                    f"(008-004 PC-06). To advance: narrow the packet scope "
+                    f"(--write-scope only to what the role will write; a "
+                    f"contract outside the write_scope stays admissible) or, "
+                    f"only when it fits a genuinely mutable document, declare "
+                    f"the reference explicitly as class living (ledgers, debt, "
+                    f"drafts); an approved contract is never reclassified to "
+                    f"living to evade this rejection.")
 
 
 def verify_begin(project_root: Path, execution_context_path: Path,

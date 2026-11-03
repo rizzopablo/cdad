@@ -4,7 +4,7 @@
 - **Date**: 2026-10-25
 - **Confidence**: Media
 - **Aprobación**: orquestador bajo HITL delegada del epic-007 (review de 4 rondas → APTO CON
-  AJUSTES, sesión `ses_e8ad5f723ffenb7IaCoN0egiCv`), a partir del borrador del scribe (patrón
+  AJUSTES, sesión `<ses-328>`), a partir del borrador del scribe (patrón
   Scribe; ADR-003/ADR-011).
 - **Origen**: `007-007-suspend-resume-units` (`spec.md` PC-01..PC-17 / A1–A5; `docs/planning/handoff-2026-10-24-epic-007.md`, secciones «007-007» y «007-007 en cierre»).
 

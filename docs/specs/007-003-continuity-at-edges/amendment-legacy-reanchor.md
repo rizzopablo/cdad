@@ -1,6 +1,6 @@
 # Enmienda 007-003 §2.3.1 — reanclaje de historia legada
 
-<!-- materializado de cdad-architect ses_e8d1a4be4ffem4SA7tR8Iy5Wuq ronda 2 (excepción de arranque, sin recibo) -->
+<!-- materializado de cdad-architect <ses-331> ronda 2 (excepción de arranque, sin recibo) -->
 
 **Estado:** aprobada por el orquestador (HITL delegada; el dueño autorizó la reparación el 2026-10-25) tras review ronda 2 APTO CON AJUSTES; ajustes de §10 aplicados. No autoriza por sí sola una reparación concreta.  
 **Fecha:** 2026-10-25.  

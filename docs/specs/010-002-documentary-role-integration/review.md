@@ -15,7 +15,7 @@
 | `make agents` dos veces sobre `git archive HEAD` | rc=0 y hash idéntico sobre `agents` + `build` (`594fbd6d…`) |
 | `diff -rq` contra `agents/` del repo | Sin diferencias |
 
-No modifiqué nada del repo. Los temporales están fuera, en `~/clawd/tmp/rv8`.
+No modifiqué nada del repo. Los temporales están fuera, en `<tmp>/rv8`.
 
 ## Bloqueantes
 

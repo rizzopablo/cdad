@@ -1,8 +1,13 @@
 # Gate de CI — un comando, una corrida, un veredicto atribuible
 
-`scripts/cdad-ci-gate.py` ejecuta los gates compartidos del ciclo en el orden fijado, deja la evidencia de
+`scripts/cdad-ci-gate.py` es una herramienta de corrida completa: se invoca con la autorización que exige el momento
+(hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy").
+La aprobación de la política es autorización suficiente para la corrida ordinaria de cierre de epic;
+otras corridas completas según el momento (cierre de feature: recomendada; durante el ciclo: no como rutina).
+Ejecuta los gates compartidos del ciclo en el orden fijado, deja la evidencia de
 la corrida y falla cerrado cuando el verde no es atribuible. No publica, no despliega y no necesita
-credenciales.
+credenciales. Sin autorización suficiente para esa corrida se registra suite completa no realizada; su omisión nunca es verde.
+La omisión del cierre de epic requiere además dispensa expresa del dueño registrada para ese cierre.
 
 ## Uso
 
@@ -59,8 +64,11 @@ causa (`commit-null`, `dirty-no-cero`, `attempt-no-finished`, `summary-unverifie
 - No decide qué runner lo ejecuta: es neutral de proveedor. Versionar un workflow (`.github/**`) o un
   target de `Makefile` exige una enmienda de la política de rutas, que hoy los clasifica `unclassified`.
 
-## Costo
+## Costo y autorización
 
-Una suite completa por corrida: 46–103 min medidos según la carga del host, sin paralelismo. El criterio
-del epic pide la suite en cada push; reducirla (por ejemplo, sólo superficie en pushes de documentación) es
-una decisión del dueño, no del gate.
+Una suite completa por corrida: 46–103 min medidos según la carga del host, sin paralelismo. No hay
+obligatoriedad automática por push ni workflow/trigger que la autorice implícitamente. La aprobación
+de la política es autorización suficiente para la corrida ordinaria de cierre de epic
+(`cdad-suite.py close`; hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy").
+Autorizar una modificación o cerrar una tarea no autoriza por sí sola otras corridas. Sin autorización
+suficiente para esa corrida se registra suite completa no realizada; su omisión nunca es verde.

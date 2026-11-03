@@ -4,6 +4,286 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-11-02 — Feature: 013-003-redundancy-pilot
+
+**Cerrada; no publicada ni desplegada.** El piloto de redundancia no podó nada y eso es el
+resultado: el procedimiento de sustitución de 013-002 se aplicó sobre un lote real y concluyó
+**Mantener A, B y C** con evidencia contrastada. **La hipótesis del epic no se confirmó en este
+lote**: el piloto demostró que el procedimiento funciona y que *Mantener es un resultado
+legítimo*, no un ahorro. Tests, mapa e inventario quedan **intactos**.
+
+**Qué se entregó** (`1e1ad7e3..a978b376`, **4 archivos, +646/−9**; solo documentación y estado).
+AUDIT (`test-audit.md`): comparación PC-2 de los tres recorridos contra `tests/test_005_013_t1_
+unit_projection.py:1117-1288` —A sin despacho: `rc!=0` + paquete nombrado en `stderr` + bytes
+intactos; B con despacho previo: pin coherente + `receive` `passed`/`pending` con binding
+restituido; C sin colisión: publicación custom válida y ruta canónica—, disposición única por test
+con su obligación (A → INV-3/PD-4; B → INV-3/PD-4/PD-6; C → PD-4/PD-5 control) y **contribuciones
+distintas con solape en la conservación del pin y los bytes**. **Delta de tests y delta de mapa
+explícitamente vacíos con su razón** (`pc-map.json:446-475`, dos registros `VERIFY`,
+`target_nodeid` como cadena, sin cambios); verificador histórico de 013-002 intacto. Review
+(`review.md`): **1 BLOCKING documental (F1, PC-5) y 2 OPTIONAL**, con el resultado Mantener
+sostenido.
+
+**Medición.** Focal A/B/C **3 passed** en la revisión inicial (`06fe83ce`, `3 passed in 3.10s`) y
+**3 passed in 2.80s** en `027064fb`; histórico 013-002 **2 passed in 0.06s**; `python3
+scripts/cdad-suite.py validate` **rc=0** en `027064fb`. **Mutaciones M1/M2/M3 en una copia
+temporal del reviewer** (repo sin tocar, copia eliminada; línea base 3 passed): **M1** guard
+retirado → fallan A **y** B, C pasa; **M2** diagnóstico sin el nombre del paquete → **solo falla
+A**; **M3** `if True` no discrimina (rompe el primer `prepare`, fallan los tres). Un cuarto
+intento sobre `semantic_status` aplicó **0 ocurrencias**: su verde **no vale** como evidencia.
+**PC-5 queda «no realizado»** (no hay sustitución que lo exija) y la **viabilidad por fixtures
+queda inconclusa**: `PACKET_CLI` apunta a `REPO_ROOT/skills/...` (`tests/test_005_013_t1_unit_
+projection.py:124,127`), solo el proyecto fixture está en tempdir, y los fixtures **no inyectan
+defecto**. F1 se cerró con nota de corrección del orquestador en `test-audit.md`; F2 (redacción
+«contribuciones disjuntas») y F3 (citas `test_pd1…:71-77` y `446-475` vs `446-474`) se recogen en
+`closure.md`. **No hubo segunda revisión independiente** de la corrección (documental, criterios de
+cierre escritos en F1). **Suite completa no realizada** (sin autorización expresa). Intake por ruta
+C válido (`render` == `PACKET.md`, `cmp` rc=0).
+
+**Decisiones relevantes.** *Mantener A/B/C frente a consolidar*: la spec no promete poda, PC-2
+exige localizar **todas** las comprobaciones y recorridos en el destino y PC-4 sensibilidad
+demostrada; M2 discrimina a A, así que Mantener **no es inercia** — el precio es conservar un
+solape real (M1 tumba a los dos) y dejar **sin evaluar** la relevancia contractual del estado «sin
+despacho». *Registro «no realizado» frente a «viable como control negativo caja negra»*: el
+experimento no se ejecutó y los fixtures no inyectan defecto; se prefiere el registro honesto a
+una viabilidad declamada, a costa de **no tener sensibilidad demostrada** en este lote y de deber
+re-encargar una copia mutada si alguna vez se pretende Sustituir — un futuro Sustituir/Consolidar
+**no puede heredar «viabilidad ya evaluada»**. *Delta vacío con razón frente a enriquecer el `id`
+de B a INV-3/PD-4*: enriquecerlo es cambio de asignación y pertenece a POST-AUDIT con aprobación,
+no al delta de un Mantener; el precio es que el arrastre de O4 (B mapeado solo a PD-6) sigue
+visible como deuda. *Corrección por nota fechada en el propio AUDIT frente a reescribirlo*:
+conserva el registro original y su autoría, a cambio de que el lector deba leer dos capas y de que
+la corrección quede sin segunda revisión independiente. *Piloto sin producto instalable*: se acepta
+cerrar una unidad que no cambia producto porque su promesa es **la decisión acreditada**, no el
+delta.
+
+**Deuda técnica detectada.** **(1) PC-5:** viabilidad de mutación **inconclusa**; la inyección de
+defecto exige copia mutada bajo encargo separado, y el verde de un mutante que no alcanza el
+subproceso no acredita nada (`semantic_status`, 0 ocurrencias, quedó fuera). **(2) Solape A/B no
+evaluado contractualmente:** con el guard retirado fallan los dos (`cdad_packet.py:6745`, mira
+solo si el archivo existe), así que las aserciones de A cabrían técnicamente en el recorrido de
+B; la relevancia del estado «sin despacho» **no fue evaluada** por nadie. **(3) Citas imprecisas
+(F3):** `test_pd1…:71-77` es el docstring de módulo, sin `test_pd1`; `pc-map.json:446-475` donde la
+spec cita `446-474`. **(4) INV-3/PD-4 en la entrada de mapa de B** tipificada solo como PD-6
+(continuación declarada de O4 de 013-002): la variante observable sí menciona el pin, pero el `id`
+no; no se propone cambio porque sería asignación y exigiría POST-AUDIT. **(5) Hallazgos de uso para
+013-004:** `docs/suite-maintenance.md` describe **solo el flujo de sustitución** —el delta vacío y
+Mantener proceden de la spec, no del procedimiento— y **no asigna quién registra `validate` en
+Mantener**: el test-writer no lo ejecutó (§8 del AUDIT) y el documento lo asigna a la entrada de
+Review. **(6) Abstenciones del reviewer sin cerrar:** exclusividad de `receive` en B (sin mutante
+válido), exclusividad de C (M3 no discrimina; el defecto «bloquear solo `--out-dir` custom» no se
+ejecutó), relevancia contractual del estado sin despacho, PC-3 sobre `06fe83ce` no reproducida
+(aunque los tests no cambian desde entonces) y tabla de decisiones vigentes vs `docs/adr/` no
+contrastada en su totalidad. **(7) Suite completa no realizada.** **(8) Sin segunda revisión
+independiente** de la corrección de F1. **(9) Despliegue pendiente (reserva del dueño):** esta
+unidad no agrega producto instalable, así que el desfase sigue siendo el de 013-001/013-002 y
+sigue vigente que **hasta desplegar los paquetes se preparan con `scripts/cdad_packet.py` del
+repo**. Los **siete `deferred-hardening`** de la spec §8 quedan conservados con su disposición en
+`docs/specs/013-003-redundancy-pilot/closure.md`, sin que ninguna exclusión aplace PC-1–PC-8.
+
+**Next feature in queue.** Ninguna abierta: `013-003` era **orden 3/4** y `013-004-suite-
+performance` (orden 4) **sólo se abre por decisión del dueño**. Lo que sigue es el **cierre del
+epic** `epic-013-test-criterion` (`epic_stage` en `features-loop`), con la suite completa declarada
+no realizada salvo autorización expresa, y el acto pendiente del dueño: **publicar/desplegar**.
+
+---
+
+## 2026-11-02 — Feature: 013-002-live-inventory
+
+**Cerrada; no publicada ni desplegada.** El inventario de la suite dejó de estar desactualizado sin
+que nadie lo viera: ahora es completo sobre la colección efectiva, distingue clasificación de
+acreditación, tiene una semilla mapeada para el lote piloto y una declaración de proyecto que el
+orquestador lee en los re-entry de cambios de tests.
+
+**Qué se entregó** (rango `54a667b9..dd5196df`, **10 archivos, +1042/−14**; RED `54a667b9`).
+Promesa **A** (PC-1–PC-3): `python3 scripts/cdad-suite.py validate` pasa de **rc=1 con 19 módulos y
+163 nodeids sin asignar** (colección 1942) a **rc=0** —**1949 nodeids, 232 módulos inventariados,
+31 registros de mapa**, 0 pendientes estructurales—; inventario +428 líneas con los 20 módulos
+faltantes, la referencia `test_opencode_read_map_and_steps.py` corregida a su `spec.yaml` real y la
+deuda del helper separada. Promesa **B** (PC-4): vocabulario operativo **asignación / obligación y
+variante / acreditación y evidencia / incertidumbre**, con `confidence` y `validate rc=0` declarados
+**no acreditantes**, y el legacy `eliminar` explícitamente distinto de *Retirar* (los 29 registros
+previos no son 29 tests). Promesa **C** (PC-5–PC-6): mapa **+2 entradas** del par B1 de
+`tests/test_005_013_t1_unit_projection.py`, cada una con `task: 013-002-live-inventory`, contrato,
+acreditación citada, `status: VERIFY` justificado y **destino = el test actual** (sin inventar
+sustituto); diff del mapa **solo aditivo**, `pilot_modules`/`pilot_nodeids_mapped` intactos; y el
+procedimiento de sustitución en 5 pasos (AUDIT → delta → POST-AUDIT → materialización → contraste),
+con `read_scope` expreso del mapa, identidad por contrato+id+variante, cadena de re-sustitución y
+varios destinos sin lista en `target_nodeid`. Promesa **D** (PC-7–PC-8): `docs/suite-maintenance.md`
+nuevo (**228 líneas**) con sección fija `## Inventario vivo` (comando, inventario, mapa), tabla de
+momentos —RED/properties/E2E/POST-AUDIT/GREEN **no bloquean** por inventario; **entrada a Review y
+cierre sí**, medido sobre la revisión que ya trae los deltas materializados—, registro PC-3 medido,
+declaración de `static_test_nodeids` como contador **estático/histórico** y límites de `validate`
+frente a contraste de mapa y revisión; la regla se distribuyó en `sources/roles/orchestrator.md`
+(+14), `handoff-prompts.md` (+15) y `re-entry.md` (+21) y se regeneraron los **2 agentes derivados**
+por `make agents`, ninguno a mano. **7 focales** nuevos en `tests/test_013_002_live_inventory.py`
+(A×2, B, C×2, D×2), uno por promesa observable.
+
+**Medición.** Revisión independiente: **4 bloqueantes** —B1 faltaba el procedimiento de sustitución
+de PC-6 en el documento (013-003 podía perder genealogía); B2 la norma distribuida fijaba el comando
+**de este proyecto** en otro proyecto (contra la spec §5: «no presume rutas ni comandos»); B3 sin
+registro de PC-3 y con 30 módulos de `static_test_nodeids` divergentes sin identificar; B4 módulos
+mixtos clasificados por una sola capacidad (`suspension` en `test_008_003`, generación/distribución
+en `test_010_002`), que ocultaba tests a `list --capability`—, **cerrados** en `dd5196df` junto con
+O1 y O2; O3 y O4 pasaron a deuda declarada. Al cerrar: `validate` **rc=0 (1949/232/31)**,
+`--collect-only` **1949 collected**, focales **7 passed**, `make agents` **rc=0 sin deriva** en copia
+`git archive`, y **7 de 9 mutaciones murieron**. **Suite completa no realizada** (directiva del
+dueño). **No hubo segunda revisión independiente**: el orquestador verificó los criterios de cierre
+exactos del reviewer y así queda declarado. Intake por ruta C válido en las dos revisiones.
+
+**Decisiones relevantes.** *Un solo índice vivo frente a crear otro*: el selector ya consume
+inventario y mapa, así que se conservan las fuentes existentes — a costa de arrastrar campos
+históricos (`static_test_nodeids`, cabecera T1) que hay que **declarar** en vez de limpiar. *Gates
+existentes y rc=0 sólo en Review y cierre, con materialización por el orquestador*: el test-writer
+propone y no edita producto documental, y RED no se invalida por datos que su autor no puede
+escribir — el precio es que la desactualización residual **vive en el árbol** hasta Review y se paga
+con registro explícito. *Declaración documental fija más norma distribuida, sin campo de política ni
+CLI nuevo*: la regla es condicional y su ausencia **no bloquea** («sin inventario vivo declarado»),
+lo que la vuelve adoptable en cualquier proyecto pero deja la detección fuera del producto. *Identidad
+del lote por entrada (`task`) frente a reutilizar `pilot_modules`*: permite recuperar el lote nuevo
+sin reinterpretar el piloto ni cambiar el esquema, a cambio de dos registros con `VERIFY` justificado
+que **no acreditan nada**. *Semilla B1 como propuesta revisable frente a declarar redundancia*: no se
+retira ni se consolida nada y sus diferencias (rechazo+bytes vs despacho+pin+recepción) quedan
+conservadas; la decisión cara queda donde corresponde, en 013-003. *Deuda del helper conservada como
+`VERIFY` con confianza baja*: se prefiere una asignación visiblemente no recuperable a un contrato
+inventado. *Comando de integridad por referencia frente al literal del proyecto*: la norma sirve a
+otros proyectos; el orquestador debe leer la declaración antes de invocar.
+
+**Deuda técnica detectada.** **(1) `O3`** — dos mutaciones sobreviven: invertir el gate a «bloquea en
+RED» deja los 7 focales en verde (D1 no verifica la semántica de los momentos), y eliminar los 2
+`VERIFY` históricos también (las 2 entradas nuevas satisfacen la aserción `legacy_verify`); A1 no
+ejecuta `validate` pese a su nombre y comprueba nodeids sólo por archivo —lo cubre el `validate` del
+gate—. **(2) `O4`** — `test_b1_collision_leaves_…` se mapea sólo a PD-6 aunque su docstring cubre
+también INV-3 y PD-4. **(3)** Correspondencia semántica de **16 de 21 asignaciones sin examinar a
+fondo** (el reviewer contrastó ruta, recuento y nombres, y sólo miró nombres de tests en 5 módulos):
+deuda declarada, no acreditación. **(4)** Contrato literal `VERIFY` del helper
+`tests/_rf2_open_pause.py`, con confianza baja, visible en `docs/suite-maintenance.md` y en la
+evidencia de PC-3; su resolución exige un contrato real y **no se acredita por `validate rc=0`**.
+**(5) Suite completa no realizada.** **(6) Sin segunda revisión independiente.** **(7) Despliegue
+pendiente (reserva del dueño)**: el producto no está en el árbol instalado, y sigue vigente la deuda
+de 013-001 —la CLI de HOME emite paquetes con instrucciones obsoletas, así que **hasta desplegar los
+paquetes se preparan con `scripts/cdad_packet.py` del repo**. **(8) Hallazgo de tooling** (aparecido
+al preparar paquetes de esta feature): un `--write-scope`/`scope.root` que apunta a un **archivo
+existente** se rechaza con `scope root must designate a directory` (`cdad_packet.py:1436-1437`) —hay
+que usar el selector `path`—; y `docs=docs` como selector de escritura **choca con las referencias
+`contract` en `begin`**, porque el contrato citado vive bajo `docs/`: `_refuse_covered_contract_
+references` rechaza antes de persistir («a contract reference must not be writable by the packet that
+cites it», 008-004 PC-06) —correcto como fail-closed, pero obliga a selectores más estrechos en los
+paquetes que documentan y citan a la vez—. **(9)** Quedan 3 `placeholder_targets` preexistentes del
+mapa y unos 30 módulos con `static_test_nodeids` histórico: declarados, **no** corregidos. **(10)**
+Abstenciones del reviewer sin cerrar: `tests/test_008_002_suite_selection.py` no se ejecutó (orden y
+deduplicación de `list` no verificados más allá del caso SELF), la tabla de decisiones vigentes no se
+contrastó contra `docs/adr/`, y el ejemplo `surface --base HEAD` de la documentación no se verificó
+sobre el repo real. Los **ocho `deferred-hardening`** de la spec §8 quedan conservados con su
+disposición en `docs/specs/013-002-live-inventory/closure.md`, sin que ninguna exclusión aplace
+PC-1–PC-8.
+
+**Next feature in queue.** `013-003-redundancy-pilot` (epic `epic-013-test-criterion`, orden 3,
+depende de 001 y 002): recibe de esta unidad el mapa semilla del par B1, el procedimiento de
+sustitución de PC-6 y la obligación de actualizar inventario y genealogía en cada sustitución.
+`013-004-suite-performance` **sólo se abre por decisión del dueño**. Antes de cualquier trabajo
+nuevo sigue pendiente el acto del dueño: **publicar/desplegar** (deuda 7).
+
+---
+
+## 2026-11-02 — Feature: 013-001-criterion-coherence
+
+**Cerrada; no publicada ni desplegada.** El criterio de los tests dejó de ser una norma por
+etapa y pasó a ser una sola aplicable: qué protección existe antes de añadir, qué aporta cada
+test y cómo se sustituye sin perder obligaciones. Legacy y paquetes transmiten el mismo texto;
+la suite completa deja de ser mandato de cierre y el gate de CI pasa a ser herramienta que sólo
+corre autorizada.
+
+**Qué se entregó** (rango `ef56a39d..4adc1e46`, **48 archivos, +952/−244**; RED `96ad443f`).
+Promesa **A** (PC-1–3): AUDIT identifica verificadores existentes por referencia recuperable y
+cada incorporación declara **qué protección falta** («sin este test, el usuario…» de esa
+diferencia, no el riesgo genérico de la capacidad); un test puede proteger varias
+postcondiciones y una promesa varios tests; postcondición, simetría y cobertura **no son
+cuotas**. Promesa **B** (PC-4–7): vocabulario de **disposición única**
+(Mantener/Extender/Sustituir/Consolidar/Añadir/Retirar) con su mapeo a las secciones de
+`assets/spec-template/test-audit.md`, mapa de conservación de PC-5, y **POST-AUDIT admitiendo
+sustitutos nuevos de comportamiento vigente** con verde más sensibilidad ante un defecto
+contractual concreto — sin RED, sin herramienta de mutación obligatoria y sin retirar los
+originales hasta tener destino ejecutable y esa evidencia. Promesa **C** (PC-8–9): selección por
+**promesa** en AUDIT/POST-AUDIT/RED/re-entry, pre-RED sin ordenar leer implementación, y
+`cdad-spec-and-test` **corregida** (duración y gates propios) **y no retirada** —el aplazamiento
+del dueño se respeta—. Promesa **D** (PC-10–11): **presupuesto declarado y justificado por
+campaña** con evidencia reproducible (invariante, declarado vs ejecutado, semilla, versión del
+generador, contraejemplo), en lugar de las cuotas rivales (100–1000 / mínimo 100 / 8–10 de Odoo).
+Promesa **E** (PC-12–14): `references/stage-3-tdd.md` §Test evidence policy como **único hogar**;
+suite completa **sólo con autorización expresa**; instalación limpia de addon como dimensión
+**distinta** de la amplitud (sin autorización la salida es **bloqueo y solicitud**, nunca omisión
+silenciosa: es el cierre de R1); relación explícita con **ADR-020** (se sustituye únicamente su
+exigencia automática) y **ADR-039** (no se vuelve obligatorio ni se ratifica su `Proposed`).
+Superficies: `sources/roles` ×4, skills de los dos ciclos y de las tres especializaciones Odoo,
+plantillas, `packets/common.md` y el docstring de `scripts/cdad-ci-gate.py` (contrato funcional
+conservado: `close --all` y verde atribuible cuando se autoriza). **14 agentes** regenerados
+(7 por runtime, `make agents`), ninguno a mano. `ADR-041` aceptado en la unidad (`b7125a47`) y ya
+en la tabla de decisiones vigentes de `systemPatterns.md`.
+
+**Medición.** Dos rondas de revisión independiente: la primera con **6 bloqueantes** (B1 corridas
+completas automáticas en Odoo y en cierres de merge/epic; B2 `make test` como runner por defecto
+de AUDIT y GREEN; B3 presupuestos rivales de propiedades; B5 ruta legacy sin disposiciones ni
+contribución; B6 recorrido de sustitución y control de la plantilla ausentes) y la segunda con
+**3** —R1 la instalación limpia quedaba omitible registrando «suite completa no realizada»,R2 dos
+gates de cierre seguían exigiendo CI/suite en verde, R3 el AUDIT legacy **prohibía** planificar
+Añadir—, todas cerradas. Los 5 tests de promesa y el sustituto `e19983fc` **no detectan R1–R3**:
+el defecto es **semántico**, y esa carga la asume la revisión independiente, como la spec declara
+(O1). Evidencia focal re-verificada al cerrar: `pytest` de los 4 archivos de la selección
+(013-001, G2, pd10, generate) → **30 passed en 7.01s**. **Suite completa no realizada**
+(directiva del dueño). **No hubo tercera revisión independiente**: el orquestador verificó los
+criterios de cierre exactos del reviewer y así queda declarado.
+
+**Decisiones relevantes.** *Criterio general en R2/R4/R7 frente a reglas por feature*: aplicar los
+hogares existentes a la protección **existente** evita clasificadores y excepciones por prefijo; el
+criterio es **conservar obligaciones**, no bajar un contador — a costa de que un verde textual
+nunca acredite fidelidad semántica, que es lo que obliga a la revisión independiente. *Ampliar
+POST-AUDIT frente a un RED artificial o una subfase nueva*: el mantenimiento de comportamiento
+vigente no tiene implementación pendiente que pueda fallar por la razón correcta, y fingir un rojo
+habría degradado el significado de RED; el precio es que POST-AUDIT puede crear archivos, y por eso
+se le exigen verde, sensibilidad y mapa de obligaciones. *Disposición frente a ubicación física*:
+separar la **decisión** (disposición) de la **sección** de la plantilla permite que un test nuevo
+sea Sustituir/Consolidar y que un test intacto conserve obligaciones de otro; sin eso, «nuevo»
+volvía a determinar RED por sí solo. *Presupuesto declarado frente a cuota universal*: calibra el
+coste sin confundir muestra con suficiencia contractual; aumentar la muestra deja de ser hardening
+automático cuando hace falta para verificar el compromiso actual. *Autorizar la invocación frente a
+rediseñar el gate*: conserva el recorrido completo y la atribución de ADR-039 y deja la decisión
+pendiente donde corresponde —cuándo usarla—, no en otro runner; a cambio, sin autorización el cierre
+debe registrar «suite completa no realizada» y «gate no ejecutado» como salidas válidas, no como
+verde. *Corregir la skill auxiliar frente a retirarla*: respeta el aplazamiento del dueño y elimina
+las contradicciones de hoy.
+
+**Deuda técnica detectada.** **(1) Despliegue pendiente, reserva del dueño:** el repo tiene la norma
+nueva y **el árbol instalado no la tiene** — verificado en este cierre: `autorización expresa`
+aparece **0 veces** en `~/.claude/skills/cdad-cycle/references/stage-3-tdd.md` y en
+`~/.config/opencode/…/stage-3-tdd.md`, y **0** en `packets/common.md` instalado, contra **6** y **1**
+en el repo—. Mientras no se despliegue, ambos runtimes siguen aplicando la política anterior.
+**(2) La CLI instalada en HOME emite paquetes con instrucciones obsoletas** después de cambiar las
+fuentes: el `post-audit-002` de esta feature se retiró por eso (`02f7ae49`; nota en el estado:
+«sus fuentes de instruccion difieren del render canonico del repo tras el GREEN») y el
+`post-audit-003` se preparó **con `scripts/cdad_packet.py` del repo**. Hasta desplegar, **todo
+paquete debe prepararse con la CLI del repo**. **(3) `O1`**: los 5 tests no detectan regresión
+semántica en superficies Odoo (dos mutaciones semánticas sobrevivieron: un mandato «ALWAYS runs at
+closure» junto al token de autorización y `8-10` en `odoo-test-writer`); la spec reparte esa carga
+con la revisión. **(4) `O2`**: ADR-020 y ADR-039 no apuntan a ADR-041; sólo el índice de
+`systemPatterns.md` lo enlaza. **(5) `O4`/`O5`/`O7`**: redacciones «suite green» sin precisar
+(`stage-4-review.md:180,188`, `cdad-cycle/SKILL.md:73,541`, `sub-agent-strategies.md:36,138`),
+«every postcondition has at least one test» (`SKILL.md:315,356`, sin POST-AUDIT en el diagrama de
+`:303`) y «Whole suite green» en `state-detection.md:69,71`. **(6) `O6`**: la exigencia residual de
+justificar en la spec cada test modificado convive con el mapa PC-5. **(7)** Los tests `007_00*` no
+se agotaron en la regresión del POST-AUDIT 2. **(8) Suite completa no realizada.** **(9) Sin tercera
+revisión independiente.** Los siete `deferred-hardening` de la spec §8 quedan conservados con su
+disposición en `docs/specs/013-001-criterion-coherence/closure.md` (Draft 4), sin que ninguna
+exclusión aplace una postcondición.
+
+**Next feature in queue.** `013-002-live-inventory` (epic `epic-013-test-criterion`, orden 2, sin
+dependencias): es la dueña de los datos del inventario y de cerrar `cdad-suite.py validate`
+**rc=1** con 158 nodeids en 18 archivos; `013-003-redundancy-pilot` depende de 001 y 002, y
+`013-004-suite-performance` **sólo se abre por decisión del dueño**. Antes de cualquier trabajo
+nuevo quedan dos actos del dueño, no del ciclo: **publicar/desplegar** (deuda 1 y 2).
+
+---
+
 ## 2026-11-01 — Feature: 012-installer-ignore-pycache
 
 **Cerrada; no publicada ni redesplegada.** El instalador dejó de mentir: dejó de registrar
@@ -5667,3 +5947,22 @@ two-layer → merge).
 
 Pendientes para completar manualmente:
 - CI del repo (GitHub Actions) — deuda registrada en progress.md.
+
+## 2026-11-02 — Feature: 014-001-suite-evidence-defaults
+
+ADR-042 corrige la generalización de ADR-041: defaults de suite completa por momento (ciclo focal; feature
+recomendada; epic obligatoria salvo dispensa expresa). Aprobar la política autoriza la corrida ordinaria de cierre
+de epic. Cierre: `docs/specs/014-001-suite-evidence-defaults/closure.md`. Pendiente: cierre del epic 014 con suite
+completa por `scripts/cdad-ci-gate.py`; despliegue reservado al dueño.
+
+## 2026-11-02 — Despliegue (decidido por Pablo)
+
+Epic 014 desplegado al HOME con `./install.sh` (commit `fea6e93b`; respaldo previo en
+`<workspace>/archive/20261102-cdad-pre-epic014`). Agentes: 11 presentes; skills idénticas al repo (sin `__pycache__`).
+Los agentes de OpenCode conservan sus líneas `model:` locales (overlay del usuario). `install.sh --check` sigue en
+rc=1 por un artefacto del entorno: `~/.config/opencode/skills/*` y `~/.claude/skills/*` son symlinks a
+`~/.agents/skills/*` (consolidación del 2026-11-02) y el verificador los cuenta como «0 files».
+
+## 2026-11-02 — Feature: 015-001-frozen-reception
+
+Recepción contra fuentes congeladas: `instruction_sources` con snapshots en REQUEST.json; render/validate/record/receive desde el respaldo; históricos con vía viva; replay intacto. Cierre: `docs/specs/015-001-frozen-reception/closure.md`. Commits 15051d35..daa4eb8f. Queda 015-002 (intake guards) y la suite completa de cierre del epic.

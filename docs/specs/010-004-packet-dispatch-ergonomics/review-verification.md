@@ -106,7 +106,7 @@ No aplicado: el paquete no declara `current_decisions`. Queda en abstenciones.
 
 ## Evidence required
 
-- **Archivos modificados:** ninguno. **Commit:** ninguno. Las fixtures y copias temporales se crearon bajo `~/clawd/tmp/rv002.*` y se borraron. `git status --short` conserva solo `docs/specs/010-000-continuity-relative-root/discovery.md`, que ya estaba.
+- **Archivos modificados:** ninguno. **Commit:** ninguno. Las fixtures y copias temporales se crearon bajo `<tmp>/rv002.*` y se borraron. `git status --short` conserva solo `docs/specs/010-000-continuity-relative-root/discovery.md`, que ya estaba.
 - **Comandos de admisión:** `cdad_packet.py render --project-root $PWD --request <REQUEST>` con `cmp` contra `PACKET.md`; `render --route C`; `validate-request`; `validate-packet`.
 - **Comandos de base:** `git merge-base --is-ancestor 1dd7661f HEAD`, `git rev-list --count`, `git log --oneline`, `git diff --stat`, `git merge-base --is-ancestor 932e0288 1dd7661f` (rc=0).
 - **Tests:** `env -u TMPDIR python3 -m pytest tests/test_010_004_t6_red.py tests/test_010_004_t6_b1_guard.py tests/test_010_004_t2_red.py tests/test_010_004_t3_red.py tests/test_010_004_t4_red.py tests/test_010_004_t5_e2e.py tests/test_cdad_generate.py -q` → **30 passed in 44.91s**.

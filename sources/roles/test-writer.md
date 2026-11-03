@@ -25,8 +25,10 @@ Operating rules (strict, anti-gaming):
 - Sub-phase from `tdd_substage` of `docs/.cdad-state.json`:
   audit | post-audit | red | properties | e2e.
 Procedure detail lives in its own sources (do not clone here): AUDIT/POST-AUDIT/
-RED/Properties/E2E — `skills/cdad-cycle/references/stage-3-tdd.md` and packet
-substages `test-writer-{audit,post-audit,red,properties,e2e}`.
+RED/Properties/E2E — `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy" and packet
+substages `test-writer-{audit,post-audit,red,properties,e2e}`. Runner compatible con los defaults por
+momento (Durante el ciclo focal, Cierre de feature recomendada, Cierre de epic obligatoria por defecto):
+selección por promesa observable y contribución sin cambios.
 Documentary engagements (pointer:
 `skills/cdad-cycle/references/documentary-contracts.md`): when the product
 under verification is a document, your verifier comes from the approved
@@ -79,34 +81,54 @@ deny. Matcher limit: no braces in globs (the matcher escapes them — audit 3.3)
 
 <!-- cdad-section:convention -->
 <!-- cdad-shared:convention-rule -->
-Test convention (single editable definition of selection rule R2; detail and
+Test convention (single editable definition of selection rule R2 — hogar de selección; detail and
 acceptance counterweight R7: `skills/cdad-cycle/references/stage-3-tdd.md`):
-1. Select by the **observable promise** of the user: one test per promise — not
+1. Select by the **observable promise** of the user — la promesa observable: one test per promise — not
    per postcondition, symmetry, coverage or an equivalent internal variant. One
    test may protect several postconditions of its promise: that is
-   traceability, not missing coverage.
-2. Not a ceiling (AJ2): do not multiply tests for equivalent observable
+   traceability, not missing coverage. No postcondition, symmetry, coverage or
+   variant constitutes a quota for creating a new test (sin cuota: selection never
+   converts a postcondition into an obligation to create a test).
+2. Contribution respecto de lo existente (PC-1–PC-3): before proposing new tests, AUDIT identifies
+   existing verifiers via referencias recuperables and contrasts which postconditions they protect.
+   Each incorporation declares which protection is missing; the consequence «without this test, the
+   user …» expresses that difference, not only the generic risk. If no difference is identified,
+   record reuse or uncertainty; never prescribe another equivalent test by default.
+3. Not a ceiling (AJ2): do not multiply tests for equivalent observable
    results, and do write every test a distinct committed behaviour needs, plus
    the ones the orchestrator's gate promotes with its recorded reason (the gate
    owns that procedure — never restate it here).
-3. Every test traces to the numbered postconditions it protects and declares the
+4. Every test traces to the numbered postconditions it protects and declares the
    consequence: "without this test, the user ...". With no named consequence it
    is not an ordinary requirement: register it in `deferred-hardening` with its
    reason.
-4. Feature tests verify behavioral postconditions (the observable contract) —
+5. Maintenance acreditable (PC-4 — disposición única): every test in the AUDIT receives exactly
+   one disposition — exactly una: Mantener (keep exactly), Extender (modify existing for missing
+   protection), Sustituir (replace keeping obligations), Consolidar (gather several protections
+   into a substitute run), Añadir (create for missing protection, never the mere destination of a
+   substitution), Retirar (remove because the approved spec removed the obligation). References
+   between sections do not duplicate the disposition; ante incertidumbre se conserva con Mantener.
+6. Sustituto de comportamiento vigente (PC-6): a physically new test is admitted in POST-AUDIT only
+   as Sustituir/Consolidar of vigentes identified in the approved AUDIT, with verde execution plus
+   sensibilidad demonstrated against a concrete contractual defect; originales stay until the
+   destination plus evidence exist. It never goes to RED for being a new file.
+7. Feature tests verify behavioral postconditions (the observable contract) —
    NOT implementation details (middleware call order, internal function names,
-   mocks over plumbing).
-5. Property tests ARE a declared stage-3 substage (corrected wording): property
+   mocks over plumbing). Pre-RED searches tests, contracts and authorized inputs; it never orders
+   to inspect implementation code to discover what to verify.
+8. Property tests ARE a declared stage-3 substage (corrected wording): property
    tests verify the spec invariants with random inputs — one invariant per
-   property test, 100-1000 inputs, FIXED seed for reproducibility in CI. They
-   are contract invariants, not an exhaustive-coverage device.
-6. Exhaustive coverage, load/perf and edge cases NOT demanded by a postcondition
+   property test, with a presupuesto finito y positivo declarado y justificado before each campaign
+   (invariante, dominio y coste del recorrido); no universal minima or maxima. Evidence is reproducible:
+   invariante, presupuesto declarado y cantidad realmente ejecutada, semilla (FIXED seed for
+   reproducibility in CI), versión y configuración del generador, contraejemplo pertinente when it fails.
+9. Exhaustive coverage, load/perf and edge cases NOT demanded by a postcondition
    do NOT belong to the feature cycle — later hardening stage/epic; each
    deferral decision is registered in `deferred-hardening` with its reason.
-7. Precision burden: with no exhaustive tests, the precision burden moves to the
+10. Precision burden: with no exhaustive tests, the precision burden moves to the
    spec — numbered, testable postconditions before RED (ambiguous spec →
    ambiguous tests → incorrect implementation that still passes the suite; AP-13).
-8. Wall-clock upper bounds: a duration assertion is a bound only when it declares
+11. Wall-clock upper bounds: a duration assertion is a bound only when it declares
    the pair of hypotheses it separates (correct behaviour vs. a concrete defect);
    without that pair it is liveness and is declared as liveness, never presented
    as a bound. Its ceiling stays at >= 10x the value the correct behaviour
@@ -128,8 +150,9 @@ acceptance counterweight R7: `skills/cdad-cycle/references/stage-3-tdd.md`):
 <!-- cdad-section:odoo -->
 Declared delta (stack=odoo):
 - legacy-loads adds: `odoo-test-writer` (TransactionCase, mandatory `@tagged`,
-  Form→web, freeze_time, self-contained fixtures without demo data; RED with
-  `make test-one`, AUDIT with `make test`; `new_test_user` for permissions;
+  Form→web, freeze_time, self-contained fixtures without demo data; RED and
+  AUDIT with the declared `test-one` selection, `make test` as authorized
+  complete run; `new_test_user` for permissions;
   `post_install` for cross-module).
 - Addon test obligations, only when the product or the diff touches addon code:
   addon tests keep the framework, tags, fixtures and Odoo runner above; a

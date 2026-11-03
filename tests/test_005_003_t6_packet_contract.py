@@ -77,8 +77,11 @@ Mapeo test → postcondición/borde:
       -> PD-10(iii) (referencia del contrato coincide con la del paquete; cada
          id emitido resuelve a un encabezado del contrato)
   test_pd10_instruction_declares_full_suite_policy
-      -> PD-10(iv) (la parte común declara la política de la suite completa; la
-         corre quien cierra; ningún asset de rol/subetapa la contradice)
+      -> PD-10(iv) + 013-001 PC-12/PC-13 Sustituir (POST-AUDIT, Resolución
+         2026-11-02): la parte común declara suite completa SOLO con
+         autorización expresa (hogar canónico stage-3-tdd.md Test evidence
+         policy) + registro de no-realizada; ningún asset de rol/subetapa
+         afirma gate-de-cierre-completo
   test_pd10_closure_includes_commit
       -> PD-10(v) (el cierre exige el commit y la instrucción lo declara)
   test_inv4_plan_task_is_declared_optional_and_closure_not_relaxed
@@ -641,38 +644,60 @@ def test_pd10_applicable_contract_references_resolve_to_headings(tmp_path: Path)
 
 
 _SUITE = re.compile(r"suite", re.IGNORECASE)
-_SUITE_CONDITION = re.compile(
-    r"unless|only if|only when|no se corre|salvo|solo si|sólo si|not run|"
-    r"does not run|is not run",
+# 013-001 POST-AUDIT Sustituir (PC-12/PC-13): la política autorizada se
+# reconoce por la autorización expresa en la ventana de cada `suite`, por el
+# registro de no-realizada y por la remisión al hogar canónico. El mandato
+# incondicional al responsable del cierre («siempre la corre quien cierra» /
+# «complete suite … closure gate») es la contradicción que ya no puede afirmar
+# ningún asset.
+_AUTH_EXPRESS = re.compile(
+    r"autorizaci[óo]n expresa|autorizaci[óo]n previa|autorizaci[óo]n suficiente|"
+    r"con autorizaci[óo]n|express authorization|authorized|authorization",
     re.IGNORECASE,
 )
-_SUITE_PACKET = re.compile(r"packet|paquete", re.IGNORECASE)
-_SUITE_CLOSER = re.compile(
-    r"closer|who closes|quien cierra|la corre quien|el que cierra|closes it",
+_NOREAL = re.compile(
+    r"no realizada|not run",
+    re.IGNORECASE,
+)
+_HOME = re.compile(
+    r"stage-3-tdd|Test evidence policy|hogar can[óo]nico",
     re.IGNORECASE,
 )
 
 
-def _suite_policy_declared(text: str) -> bool:
-    """¿El texto declara que la suite completa NO se corre salvo que el paquete
-    lo pida y que la corre quien cierra? (ventana alrededor de cada `suite`)."""
+def _authorized_policy_declared(text: str) -> bool:
+    """¿El texto declara que la suite completa solo corre con autorización
+    expresa? (ventana alrededor de cada `suite`)."""
     for match in _SUITE.finditer(text):
         window = text[max(0, match.start() - 160) : match.start() + 420]
-        if (
-            _SUITE_CONDITION.search(window)
-            and _SUITE_PACKET.search(window)
-            and _SUITE_CLOSER.search(window)
-        ):
+        if _AUTH_EXPRESS.search(window):
+            return True
+    return False
+
+
+def _no_realizada_recorded(text: str) -> bool:
+    """¿El texto registra `suite completa no realizada` sin autorización?
+    (ventana alrededor de cada `suite`)."""
+    for match in _SUITE.finditer(text):
+        window = text[max(0, match.start() - 160) : match.start() + 420]
+        if _NOREAL.search(window):
             return True
     return False
 
 
 def test_pd10_instruction_declares_full_suite_policy(tmp_path: Path) -> None:
-    """PD-10(iv): el bloque de instrucción del paquete (sus TRES fuentes
-    declaradas en `instruction_sources`, con sus hashes) declara en su parte
-    común que la suite completa no se corre salvo que el paquete lo pida y que
-    la corre quien cierra; ningún asset de `packets/roles/**` ni
-    `packets/substages/**` afirma lo contrario."""
+    """PD-10(iv) + 013-001 PC-12/PC-13 (Sustituir, POST-AUDIT aprobado con
+    Resolución 2026-11-02, disposición única): el bloque de instrucción del
+    paquete (sus TRES fuentes declaradas en `instruction_sources`, con sus
+    hashes) declara en su parte común que la suite completa SOLO corre con
+    autorización expresa (remisión al hogar canónico `stage-3-tdd.md`, sección
+    Test evidence policy) y que sin autorización se registra `suite completa
+    no realizada`; ningún asset de `packets/roles/**` ni
+    `packets/substages/**` afirma que la suite completa sea el gate de cierre.
+
+    Trazabilidad: promesa E; PC-12, PC-13. Sin este test, el usuario cierra
+    con (o sin) suite completa sin autorización trazable.
+    """
     fx = _Fixture(tmp_path)
     proc = fx.prepare()
     assert proc.returncode == 0, proc.stderr
@@ -701,14 +726,21 @@ def test_pd10_instruction_declares_full_suite_policy(tmp_path: Path) -> None:
     composed = "\n".join(
         (PACKETS_ROOT / e["path"]).read_text(encoding="utf-8") for e in sources
     )
-    assert _suite_policy_declared(common_text), (
-        "PD-10(iv) violada: la parte común de la instrucción no declara que la "
-        "suite completa NO se corre salvo que el paquete lo pida (y que la corre "
-        "quien cierra)"
+    assert _authorized_policy_declared(common_text), (
+        "PC-12/PC-13 violada: la parte común de la instrucción no declara que "
+        "la suite completa SOLO corre con autorización expresa"
     )
-    assert _suite_policy_declared(composed), (
-        "PD-10(iv) violada: el bloque de instrucción del paquete no declara la "
-        "política de la suite completa"
+    assert _authorized_policy_declared(composed), (
+        "PC-12/PC-13 violada: el bloque de instrucción del paquete no declara "
+        "la política de suite completa autorizada"
+    )
+    assert _no_realizada_recorded(common_text), (
+        "PC-13 violada: la parte común no registra `suite completa no "
+        "realizada` cuando no hay autorización"
+    )
+    assert _HOME.search(common_text), (
+        "PC-12 violada: la parte común no remite al hogar canónico "
+        "(`stage-3-tdd.md`, sección Test evidence policy)"
     )
 
     contradiction = re.compile(r"(?i)complete suite[^\n]{0,40}closure gate")

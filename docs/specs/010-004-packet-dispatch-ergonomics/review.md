@@ -186,7 +186,7 @@ No comparé la tabla de decisiones vigentes con `docs/adr/`: el paquete no decla
 
 ## Evidence required
 
-- **Archivos modificados:** ninguno. Las fixtures temporales se crearon en `~/clawd/tmp` y se borraron, y `git status --short` conserva solo `docs/specs/010-000-continuity-relative-root/discovery.md`, que ya estaba.
+- **Archivos modificados:** ninguno. Las fixtures temporales se crearon en `<tmp>` y se borraron, y `git status --short` conserva solo `docs/specs/010-000-continuity-relative-root/discovery.md`, que ya estaba.
 - **Commit:** ninguno.
 - **Comandos principales:**
   - `cdad_packet.py render`, `validate-request`, `validate-packet` y `render --route C` con el `--project-root` y `--execution-context` del paquete.

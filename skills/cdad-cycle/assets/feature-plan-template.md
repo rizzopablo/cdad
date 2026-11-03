@@ -38,7 +38,7 @@ silently ignored.
 
 ```plan-tasks
 {
-  "validation_strategy": "suite completa una vez por quien cierra; regresiones del area tocada",
+  "validation_strategy": "evidencia focal + regresion proporcional del area tocada; cierre de feature con suite completa recomendada (sino suite completa no realizada con motivo, seleccion y limites); cierre de epic con suite completa obligatoria por defecto o dispensa expresa registrada; ver hogar canonico skills/cdad-cycle/references/stage-3-tdd.md Test evidence policy",
   "tasks": [
     {
       "id": "T1",

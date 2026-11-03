@@ -4,9 +4,13 @@ Estado de features del proyecto.
 
 ## In progress
 
-Nada en curso: el epic 010 está cerrado y su publicación y despliegue quedaron
-resueltos (ver «Despliegue»). Las dos features de la serie de brechas de operación
-(011, 012) cerraron el 2026-11-01; ver «Done».
+`epic-013-test-criterion` **activo**, etapa `features-loop`, autoridad vigente
+`docs/epics/epic-013-test-criterion/execution.md` (HITL delegada del dueño).
+`013-001-criterion-coherence` (1/4), `013-002-live-inventory` (2/4) y
+`013-003-redundancy-pilot` (3/4) cerradas el 2026-11-02 —ver «Done»—. **No queda
+feature abierta:** `013-004-suite-performance` (4/4) **sólo se abre por decisión
+del dueño**, y el cierre del epic sigue pendiente de esa decisión y del orquestador.
+Los epics 010, 009, 008, 007 y 006 están cerrados.
 
 ## Despliegue
 
@@ -19,7 +23,44 @@ resueltos (ver «Despliegue»). Las dos features de la serie de brechas de opera
   bytes de staging y conservando el valor del usuario (respaldo en
   `.cdad/local/install-conflicts-20261031/`). La instalación previa (414 grupos,
   cierre de 008-004) queda como historia del mismo eje.
-- **Por detrás del producto: 011 y 012 no están desplegadas.** La publicación y la re-sincronización
+- **Al día con la publicación `46f17d29` (2026-11-01).** Desplegada desde el árbol publicado:
+  **11 agentes por runtime**, `./install.sh --check` **PASS (396 grupos)**, `make validate`
+  **183/0 + 68/0** y `scripts/validate-subagents.sh` **PASS**. Los dos fixes quedaron activos en los
+  tres runtimes: `cdad_continuity.py` byte-idéntico al repo (011) y el manifiesto de propiedad sin
+  entradas de `__pycache__` (012). Tres conflictos del overlay `model:` (`cdad-test-writer`,
+  `cdad-test-writer-odoo`, `cdad-scribe-odoo`) eran **solo cosméticos** —OpenCode reformateó el
+  `description` del frontmatter— y se resolvieron conservando el valor del usuario; respaldo en
+  `<workspace>/archive/install-conflicts-20261101/`.
+
+- **Por detrás de `main` local desde 013-001 (2026-11-02).** El producto de
+  `013-001-criterion-coherence` (`ef56a39d..4adc1e46`) **no está en el árbol instalado**:
+  verificado en este cierre, `autorización expresa` aparece **0 veces** en
+  `stage-3-tdd.md` y en `packets/common.md` de **ambos** runtimes instalados
+  (`~/.claude/skills/cdad-cycle/…` y `~/.config/opencode/skills/cdad-cycle/…`) contra
+  **6** y **1** en el repo. Consecuencia honesta: los agentes instalados siguen
+  aplicando la política **anterior** de evidencia (suite completa al cierre) y
+  `cdad-spec-and-test` instalada conserva las contradicciones ya corregidas en el repo.
+  **Redesplegar es decisión del dueño**; el instalador no se ejecutó en este cierre.
+  Añadido: la **CLI instalada en HOME emite paquetes con instrucciones obsoletas**
+  tras cambiar las fuentes (el `post-audit-002` de 013-001 se retiró por eso, `02f7ae49`),
+  así que **hasta desplegar, los paquetes se preparan con `scripts/cdad_packet.py` del
+  repo**.
+
+- **También por detrás desde 013-002 (2026-11-02).** El producto de
+  `013-002-live-inventory` (`54a667b9..dd5196df`: `docs/suite-maintenance.md`, inventario y
+  mapa, `orchestrator.md`, `handoff-prompts.md`, `re-entry.md` y los 2 agentes derivados)
+  **tampoco está en el árbol instalado**. Consecuencia honesta: los runtimes instalados no
+  transmiten la regla de inventario vivo, y el orquestador instalado no lee
+  `docs/suite-maintenance.md` en los re-entry de cambios de tests. **Redesplegar es decisión
+  del dueño**; el instalador no se ejecutó en este cierre.
+
+- **013-003 no agrega producto instalable.** El piloto cerró sin cambios de tests, mapa ni
+  implementación (`1e1ad7e3..a978b376`: solo `docs/specs/013-003-redundancy-pilot/` y el estado),
+  así que **no hay drift nuevo** que sincronizar; el desfase de la instalación sigue siendo el de
+  013-001/013-002 y **redesplegar sigue siendo decisión del dueño**.
+
+- **Histórico: por detrás hasta la publicación `46f17d29`.** (Ya resuelto por el despliegue de
+  arriba; se conserva como registro.) La publicación y la re-sincronización
   registradas arriba son las del epic 010 (árbol de `a42f2a20`). Los dos productos posteriores
   —`87a16432` (el wedge de `begin` sobre paquete no publicado, 011) y `935328d8` (la exclusión de
   `__pycache__`/`.pyc` en el registro de propiedad, 012)— no están en el árbol instalado.
@@ -30,6 +71,93 @@ resueltos (ver «Despliegue»). Las dos features de la serie de brechas de opera
   decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+
+- **013-003-redundancy-pilot** (2026-11-02, epic 013 — **orden 3/4**; **cerrada, no publicada ni
+  desplegada**) — **el piloto no podó nada, y ese es el resultado**: el procedimiento de
+  sustitución se aplicó sobre un lote real y concluyó **Mantener A, B y C** con evidencia
+  contrastada. **La hipótesis del epic no se confirmó en este lote**: quedó demostrado el
+  procedimiento y que **Mantener es resultado legítimo, no ahorro**. **Producto**
+  (`1e1ad7e3..a978b376`, **4 archivos, +646/−9**, solo documentación y estado): **AUDIT**
+  comparación PC-2 de los tres recorridos (A: `rc!=0` + paquete nombrado + bytes intactos; B: pin
+  coherente + `receive` `passed`/`pending`; C: publicación custom válida), disposición única con
+  obligación por test (A→INV-3/PD-4, B→INV-3/PD-4/PD-6, C→PD-4/PD-5) y **contribuciones distintas
+  con solape en la conservación del pin y los bytes**; **delta de tests y de mapa vacíos con su
+  razón** (`pc-map.json:446-475`, dos `VERIFY`, `target_nodeid` cadena) y verificador histórico de
+  013-002 intacto. **Review:** **1 BLOCKING documental (F1, PC-5)** cerrado por nota de corrección
+  del orquestador y **2 OPTIONAL** recogidos en `closure.md`; resultado Mantener sostenido.
+  **Gate:** focal **3 passed** (inicial `06fe83ce`, 3.10s) y **3 passed in 2.80s** (`027064fb`),
+  histórico 013-002 **2 passed in 0.06s**, `cdad-suite.py validate` **rc=0** en `027064fb`;
+  **mutantes M1/M2/M3 en copia temporal del reviewer** (M1 tumba A y B; M2 solo A; M3 no
+  discrimina; el intento sobre `semantic_status` aplicó 0 ocurrencias y no vale); **PC-5 «no
+  realizado»** con **viabilidad por fixtures inconclusa** (`PACKET_CLI` → `REPO_ROOT/skills/...`,
+  los fixtures no inyectan defecto); **suite completa no realizada** (sin autorización); **sin
+  segunda revisión independiente** de la corrección. **Sin cambios en tests, mapa o
+  implementación.** **Deuda:** viabilidad de mutación inconclusa, solape A/B sin evaluación
+  contractual («sin despacho»), citas F3, INV-3/PD-4 de B tipificada solo como PD-6, hallazgos de
+  uso para 013-004 (`suite-maintenance.md` solo cubre sustitución y no asigna quién registra
+  `validate` en Mantener), abstenciones del reviewer sin cerrar, siete `deferred-hardening`
+  conservados en `closure.md`, **despliegue pendiente (reserva del dueño)**. **No publicada ni
+  desplegada.** Detalle en `docs/specs/013-003-redundancy-pilot/closure.md`.
+
+- **013-002-live-inventory** (2026-11-02, epic 013 — **orden 2/4**; **cerrada, no publicada ni
+  desplegada**) — **el inventario de la suite deja de mentir**: pasa a ser completo sobre la
+  colección efectiva, separa clasificación de acreditación, entrega la semilla del lote piloto y
+  hace visible la desactualización en el mantenimiento ordinario. **Producto**
+  (`54a667b9..dd5196df`, **10 archivos, +1042/−14**; RED `54a667b9`): **A** (PC-1–PC-3)
+  `validate` de **rc=1 (19 módulos, 163 nodeids)** a **rc=0** —**1949 nodeids, 232 módulos, 31
+  registros**, 0 pendientes estructurales—, con los 20 módulos que faltaban, la referencia
+  `test_opencode_read_map_and_steps.py` corregida y la deuda del helper aparte; **B** (PC-4)
+  vocabulario asignación/obligación/acreditación/incertidumbre, `rc=0` no acredita semántica,
+  legacy `eliminar` ≠ Retirar; **C** (PC-5–PC-6) mapa **+2 entradas** del par B1 con `task` por
+  entrada, destino = test actual, diff **solo aditivo**, y procedimiento de sustitución en 5
+  pasos con `read_scope` del mapa, identidad por contrato+id+variante y re-sustitución;
+  **D** (PC-7–PC-8) `docs/suite-maintenance.md` nuevo (**228 líneas**) con `## Inventario vivo`,
+  tabla de momentos (RED/properties/E2E/POST-AUDIT/GREEN no bloquean; **Review y cierre sí**),
+  registro PC-3, contadores estáticos declarados y límites de `validate`, distribuido en
+  orquestador, handoffs y re-entry y **2 agentes** regenerados por `make agents`. **7 focales**
+  nuevos (A×2, B, C×2, D×2). **Review:** **4 bloqueantes cerrados** —B1 procedimiento de PC-6
+  ausente, B2 comando de este proyecto incrustado en la norma distribuida, B3 sin registro de
+  PC-3 y contadores sin identificar, B4 mixtos con una sola capacidad que ocultaba tests a
+  `list --capability`— más O1/O2; O3/O4 a deuda. **Gate:** `validate` **rc=0** (1949/232/31),
+  `--collect-only` **1949**, focales **7 passed**, `make agents` sin deriva, **7 de 9 mutaciones
+  muertas**; **suite completa no realizada** (directiva del dueño); **sin segunda revisión
+  independiente** —verificación del orquestador sobre los criterios del reviewer, declarada—.
+  **Deuda:** O3 (los tests no detectan la inversión del gate a «bloquea en RED» ni la
+  eliminación de los 2 `VERIFY` históricos; A1 no ejecuta `validate`), O4, correspondencia
+  semántica de **16 de 21 asignaciones** no examinada a fondo, helper `_rf2_open_pause.py` con
+  `VERIFY`/confianza baja, 3 `placeholder_targets` y ~30 `static_test_nodeids` históricos,
+  abstenciones del reviewer sin cerrar, hallazgo de tooling de selectores (`root` a archivo y
+  `docs=docs` vs referencias `contract` en `begin`), ocho `deferred-hardening` conservados en
+  `closure.md`, **despliegue pendiente (reserva del dueño)**. **No publicada ni desplegada.**
+  Detalle en `docs/specs/013-002-live-inventory/closure.md`.
+
+- **013-001-criterion-coherence** (2026-11-02, epic 013 — **orden 1/4**; **cerrada, no
+  publicada ni desplegada**) — **el criterio de los tests se vuelve uno solo y aplicable**:
+  buscar la protección existente antes de añadir, declarar la contribución de cada test y
+  poder sustituir redundancias sin perder obligaciones. **Producto** (`ef56a39d..4adc1e46`,
+  **48 archivos, +952/−244**; RED `96ad443f`): **A** (PC-1–3) verificadores existentes por
+  referencia recuperable + diferencia declarada por incorporación, sin cuotas por
+  postcondición; **B** (PC-4–7) **disposición única** (Mantener/Extender/Sustituir/
+  Consolidar/Añadir/Retirar) con mapeo a la plantilla, mapa de conservación PC-5 y
+  **POST-AUDIT admitiendo sustitutos nuevos de comportamiento vigente** (verde +
+  sensibilidad, sin RED, originales conservados); **C** (PC-8–9) selección por **promesa** en
+  las cuatro rutas y `cdad-spec-and-test` corregida **sin retirar**; **D** (PC-10–11)
+  **presupuesto declarado** que sustituye las cuotas rivales (100–1000 / mínimo 100 / 8–10);
+  **E** (PC-12–14) hogar único `stage-3-tdd.md`, **suite completa sólo con autorización
+  expresa**, instalación limpia de addon como dimensión distinta —sin autorización, **bloqueo
+  y solicitud**, nunca omisión—, relación explícita con ADR-020 y ADR-039. **14 agentes**
+  regenerados. **ADR-041** aceptado en la unidad (`b7125a47`) y en la tabla de decisiones
+  vigentes. **Review:** dos rondas independientes, **6 bloqueantes** (B1–B6) y luego **3**
+  (R1 instalación limpia omitible, R2 gates de cierre con suite verde, R3 AUDIT legacy
+  prohibiendo Añadir), **cerradas**; el defecto fue **semántico** y los tests no lo detectaron
+  (O1), carga que la spec asigna a la revisión. **Gate:** focal **30 passed en 7.01s**
+  (013-001, G2, pd10, generate); **suite completa no realizada** (directiva del dueño); **sin
+  tercera revisión independiente** —verificación del orquestador sobre los criterios del
+  reviewer, declarada—. **Deuda:** O1–O7, tests `007_00*` sin agotar en la regresión del
+  POST-AUDIT 2, siete `deferred-hardening` de la spec §8 conservados en `closure.md`,
+  **despliegue pendiente (reserva del dueño)** y la **CLI de HOME emitiendo paquetes
+  obsoletos** (hasta desplegar: preparar con la CLI del repo). **No publicada ni desplegada.**
+  Detalle en `docs/specs/013-001-criterion-coherence/closure.md`.
 
 - **012-installer-ignore-pycache** (2026-11-01) — el **registro de propiedad del instalador deja de
   incluir bytecode de Python**: Python regenera `__pycache__/*.pyc` en cada corrida y el manifiesto

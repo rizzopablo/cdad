@@ -38,6 +38,15 @@ it in the spec's `deferred-hardening` with its reason (gate rule R4,
 
 ## Modified tests
 
+Cada test recibe exactamente una disposición — disposición única: Mantener (keep exactly), Extender, Sustituir, Consolidar, Añadir o Retirar. Una referencia desde una sustitución no añade otra disposición; un destino existente intacto sigue Mantener; un destino nuevo/modificado que solo conserva obligaciones es Sustituir/Consolidar, no Añadir/Extender.
+
+Sección y disposición:
+- **Test selection by promise**: registro único por test (disposición, promesa, postcondiciones, contribución respecto de lo existente con referencias recuperables; operaciones de sustitución cuando correspondan).
+- **Modified tests**: tests existentes cuyo contenido o existencia cambia (Extender, Sustituir, Consolidar, Retirar).
+- **New tests to write**: tests físicamente nuevos (Añadir o destinos nuevos de Sustituir/Consolidar, identificados como POST-AUDIT con verde + sensibilidad).
+- **Unchanged tests (untouched)**: tests intactos con disposición Mantener; pueden ser destinos por referencia.
+- Retirar exige referencia explícita a la eliminación de la obligación en la spec aprobada. Ante incertidumbre se conserva con Mantener.
+
 Each entry has this structure:
 
 ```
@@ -103,10 +112,13 @@ silence.
 
 ## Test Audit Gate
 
+- [ ] Every test carries exactly one disposition (Mantener, Extender, Sustituir, Consolidar, Añadir, Retirar); references between operations do not duplicate it; uncertainty kept as Mantener
+- [ ] Every Sustituir/Consolidar identifies origen y destino, committed vigente obligations, relevant differences, location of each check in the destination, and evidence + sensitivity + limits (PC-5); Retirar cites the obligation removed in the approved spec
+- [ ] Physically new Sustituir/Consolidar destinations are marked as POST-AUDIT with verde + sensibilidad required (per R2 puntos 5-6, `sources/roles/test-writer.md`); no vigente sustituto is sent to RED for being a new file
 - [ ] Every modified test is justified in spec.md with an explicit reference
 - [ ] Every test names the promise it serves, the postconditions it protects and the user consequence ("without this test, the user...")
 - [ ] No test was added for an equivalent observable result (no quota per postcondition, symmetry or coverage)
 - [ ] There is no modified test without documented justification
-- [ ] Untouched tests are listed (confirms the implications are known)
+- [ ] Untouched tests are listed (Mantener, including destinations by reference that stay intact; confirms the implications are known)
 - [ ] Regression risk assessment completed; every deferred risk is registered in `deferred-hardening` with its reason
 - [ ] The user (human or higher-hierarchy agent) approved this report before moving to RED

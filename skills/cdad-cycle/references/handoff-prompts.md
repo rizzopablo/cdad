@@ -182,14 +182,13 @@ Context:
 
 Strict rules:
 - Permissions: read-only on the codebase. You do NOT edit anything yet.
-- Re-read the spec with a critical eye: what old behavior changes?
-- For each existing test that could be affected, determine:
-  - Does it validate behavior that CHANGES? → Mark for modification
-  - Does it validate behavior that STAYS? → Mark as untouched
-  - Unrelated? → Ignore
+- Selection and dispositions per R2 (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`): the unit is the promise, never the postcondition; every test in the AUDIT receives exactly one disposition — Mantener, Extender, Sustituir, Consolidar, Añadir or Retirar (references between operations do not duplicate it; ante incertidumbre se conserva con Mantener).
+- Re-read the spec with a critical eye: what old behavior changes? For each existing test, contrast via referencias recuperables which postconditions it protects and declare which protection is missing (PC-1–PC-3; «without this test, the user…» expresses the difference, never generic risk).
+- AUDIT declares Añadir for pending protection (PC-2/PC-4; «without this test, the user…» expresses the faltante), RED writes those Añadir; only physically new Sustituir/Consolidar destinations of comportamiento vigente identified here are created in POST-AUDIT (verde + sensibilidad per R2 puntos 5-6, PC-6).
+- Every Sustituir/Consolidar identifies origen y destino, committed obligations that stay vigente, initial states/actions/effects whose difference may matter, location of each check in the destination, and evidence/sensitivity/limits of the comparison (PC-5); Retirar requires explicit reference to the obligation removed in the approved spec.
 - Every modified test MUST have explicit justification in the spec (line/section)
-- List untouched tests EXPLICITLY (not implicitly)
-- Identify regression risks: new behavior without test coverage
+- List untouched tests EXPLICITLY (Mantener, including destinations by reference that stay intact)
+- Identify regression risks: obligations without accredited protection, uncertainties and blocks (never certify sufficiency under uncertainty).
 
 Expected output: the Test Audit Report as FINAL TEXT with this structure (the orchestrator materializes `docs/specs/<feat>/test-audit.md` from that text — Roles contract §5; the canonical mechanism is the "Orchestrator materialization protocol" in `references/re-entry.md`):
 - Summary of changing behavior
@@ -287,7 +286,7 @@ Expected output: the spec draft as complete FINAL TEXT (the orchestrator or the 
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Task: update the existing test suite according to the approved Test Audit Report, and stop there. This is ONE subphase: POST-AUDIT only. Writing new tests is RED, a separate dispatch with its own packet and session.
+Task: update the existing test suite according to the approved Test Audit Report, and stop there. This is ONE subphase: POST-AUDIT only. New tests for pending behavior are RED, a separate dispatch with its own packet and session; physically new Sustituir/Consolidar of comportamiento vigente identified in the approved AUDIT belong to this POST-AUDIT (verde + sensibilidad per R2, originales kept until evidence), never to RED.
 
 Context:
 1. Approved Test Audit Report (paste the content of docs/specs/<feat>/test-audit.md)
@@ -321,8 +320,8 @@ For EACH test listed in the "Tests untouched" section of test-audit.md:
 
 #### STOP here — this subphase is over
 
-- You do NOT write new tests: new tests are RED, dispatched separately, with its own packet and its own session.
-- You do NOT run the full suite (the closer runs it once, at closure).
+- You do NOT write Añadir for pending behavior here: those are RED, a separate dispatch with its own packet and session; you DO create the approved physically new Sustituir/Consolidar destinations of vigente identified in the AUDIT (verde + sensibilidad per R2, PC-6).
+- You do NOT run the full suite as routine — Durante el ciclo focal + proporcional per the **Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy"); Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; without sufficient authorization for that run record suite completa no realizada.
 - You do NOT implement anything, and you do not read implementation code.
 
 Expected output:
@@ -351,8 +350,8 @@ Commits:
 **Notes for the orchestrator**:
 - Updated tests may be **red** post-session (that is correct, expected).
 - Untouched tests must be **green** (regression gate).
-- POST-AUDIT does **not** write new tests: RED is a separate dispatch.
-- The sequence is THREE separate dispatches: POST-AUDIT (existing audited tests only) → RED (new tests, its own packet and session) → GREEN (implementer).
+- POST-AUDIT executes the approved maintenance: existing audited tests plus approved sustitutos nuevos of comportamiento vigente (Sustituir/Consolidar with verde + sensibilidad, originales kept until evidence). RED is a separate dispatch only for pending behavior.
+- Secuencia reconciliada: mantenimiento de vigente AUDIT → POST-AUDIT (incluidos sustitutos, sin GREEN si no hay implementación que cambiar); pendiente AUDIT → POST-AUDIT cuando corresponda → RED separado → GREEN separado.
 - NEVER say "migrated tests must pass". It is incorrect.
 
 ---
@@ -364,7 +363,7 @@ Commits:
 Before touching a test file, run through:
 
 1. **Re-read the new spec in full** focusing on: what old behavior changes?
-2. **Walk the codebase**: import the modules/models the feature touches. What existing tests touch that?
+2. **Search authorized sources**: tests, contracts and authorized inputs. What existing tests touch that via referencias recuperables? Never import or inspect implementation code to discover what to verify.
 3. **Create `test-audit.md`** (template in assets) with:
    - What behavior changes (paragraph)
    - What tests get modified + justification for each
@@ -375,7 +374,7 @@ Before touching a test file, run through:
 
 If you can't confidently answer "every modified test is in the spec", **don't proceed**. Asking is cheaper than fixing afterwards.
 
-**The POST-AUDIT comes first, in its own dispatch**: the previous section (Test-writer POST-AUDIT) updates ONLY the audited existing tests and stops there. New tests are written HERE, in this separate session with its own packet. A feature with no prior affected tests has no POST-AUDIT dispatch, and RED is dispatched directly.
+**The POST-AUDIT comes first, in its own dispatch**: the previous section (Test-writer POST-AUDIT) executes the approved maintenance — audited existing tests plus physically new Sustituir/Consolidar destinations of vigente identified in the approved AUDIT (PC-6) — and stops there. New Añadir declared in the AUDIT for pending behavior are written HERE in RED, in this separate session with its own packet. A feature with no prior affected tests has no POST-AUDIT dispatch, and RED is dispatched directly.
 
 ---
 
@@ -429,7 +428,7 @@ Strict rules:
 - Permissions: edit ONLY the implementation product: code, or the documentary deliverable the engagement expressly commissions. You do NOT touch tests/. If you think the test is wrong, do NOT change it; report to the orchestrator.
 - Implement the approved behavior simply, with the robustness it needs (R5 — `sources/roles/implementer.md`): add the validation, guards and reasonable error handling the behavior needs even when no test demands them.
 - You do NOT add unrequested features "just in case".
-- After implementing, run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy"); the complete suite is the closure gate.
+- After implementing, run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`references/stage-3-tdd.md` §"Test evidence policy"); Durante el ciclo sin completa como rutina, Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits.
 
 Expected output: implementation code + commit "feat: implement <postcondition>". When you finish:
 
@@ -491,8 +490,8 @@ Context:
 Strict rules:
 - Permissions: edit ONLY in tests/. You do NOT look at implementation code.
 - One invariant per property test, clear and legible.
-- Reasonable volume: 100-1000 inputs per property.
-- FIXED seed in config for reproducibility in CI.
+- Presupuesto finito y positivo declarado y justificado before each campaign (invariante, dominio y coste); no universal minima or maxima.
+- FIXED semilla in config plus reproducible evidence: invariante, presupuesto declarado y cantidad realmente ejecutada, semilla, versión/config del generador, contraejemplo pertinente when it fails.
 
 Expected output: property tests file + commit "test: add property tests for invariants". When you finish:
 
@@ -677,18 +676,20 @@ When you finish:
 When the project has an expensive test suite (in Odoo: `odoo-make-env/references/run-budget-protocol.md`), the orchestrator adds this block at the end of the "Strict rules" of the test-writer (RED), implementer (GREEN), refactorer and reviewer packets:
 
 ```text
-## RUN RULES (mandatory)
+## RUN RULES (mandatory, hogar `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy")
 - Iterate ONLY with minimal runs against a warm environment
   (Odoo: make test-one against the warm DB). test-clean /
-  make test FORBIDDEN during iteration (the full suite is for the
-  gate, not for debugging).
+  make test FORBIDDEN during iteration (Durante el ciclo: focal + proporcional,
+  sin suite completa como rutina, not for debugging).
 - Cycle: read the full failure -> written hypothesis -> ONE change -> ONE
   run. Never re-run without a change. Max 2 runs per failure without
   convergence: STOP and report findings (it is a signal to escalate, not
   a "one more run").
-- Gate: ONE single full run on a fresh environment (Odoo: make test-all;
-  single-module: make test-clean). Task budget: max ~15 minimal
-  runs and 1 full one (default; the project calibrates it in systemPatterns).
+- Gate by moment: Cierre de feature con suite completa recomendada (Odoo: make test-all;
+  single-module: make test-clean); Cierre de epic con suite completa obligatoria por defecto
+  o dispensa expresa registrada para ese cierre. La aprobación de la política autoriza la corrida
+  ordinaria de cierre de epic sin autorización adicional para esa corrida. Task budget: max ~15 minimal
+  runs; completa solo cuando el momento la exige (default; the project calibrates it in systemPatterns).
 - Run logs named under stable paths of the declared workspace so the
   evidence is referenceable.
 - Gate evidence: the line "0 failed, 0 error(s) of N tests" + commit of the
@@ -698,11 +699,12 @@ When the project has an expensive test suite (in Odoo: `odoo-make-env/references
 For the reviewer's packet, the equivalent block:
 
 ```text
-## RUN RULES (review: 0 budget by default)
+## RUN RULES (review: 0 budget by default, hogar `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy")
 - If git diff --stat <evidence-run-commit>..HEAD shows only
   [STATE]/docs commits, the tree is identical: CITE the log (path + line).
   You do NOT re-run the suite.
-- Only if the tree changed: ONE full run as new evidence.
+- If the tree changed: evidencia proporcional al cambio, no una nueva suite completa automática;
+  completa solo cuando el momento lo exige (cierre) o con autorización suficiente para esa corrida.
 - Static analyzers (lint, import-linter) consume no budget.
 ```
 
@@ -711,9 +713,24 @@ For the reviewer's packet, the equivalent block:
 ## Notes for the orchestrator when generating the packet
 
 - **Fill in ALL the context** before handing it to the user. Don't tell them "paste the spec here"; paste it yourself in the packet (if you have access to the file).
-- **Atomic task**: one postcondition per test-writer, one test per implementer, one diff per reviewer. Do NOT group unless the spec marks explicitly orthogonal postconditions.
+- **Atomic task**: one promise per test-writer (R2: the unit of selection is the promise, never the postcondition), one test per implementer, one diff per reviewer. Do NOT group unless the spec marks explicitly orthogonal promises.
 - **Attaching files**: when you can, give exact paths. When the content fits, paste it inline in the packet.
 - **Final line of the packet**: your turn always ends with the packet and the instruction to the user to "come back when the role finishes, with the output". Nothing else.
+
+### Inventario vivo (013-002 PC-7) — regla para handoffs
+
+La declaración vive en `docs/suite-maintenance.md` `## Inventario vivo`
+(el comando de integridad declarado, inventario y mapa). El
+orquestador la lee en los re-entries de cambios de tests y transmite la regla
+en estos handoffs, por ruta legacy y por paquetes. Si no hay inventario vivo
+declarado, registra `sin inventario vivo declarado` sin bloquear. El
+test-writer entrega el delta de altas (nodeid, capacidad, contrato,
+procedencia) como texto; el orquestador lo materializa al re-entry antes de la
+siguiente transición. Los cambios de orígenes o destinos incorporan además el
+delta del mapa de PC-6; POST-AUDIT devuelve los deltas documentales
+pertinentes bajo la misma separación de responsabilidades. `validate` con rc=0
+bloquea solo en entrada a Review y cierre, medido sobre la revisión que ya
+contiene los deltas materializados y los últimos cambios de tests.
 
 ---
 

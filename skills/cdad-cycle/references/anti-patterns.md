@@ -26,7 +26,7 @@ For upcoming postconditions, reinforce the discipline: test first, no exceptions
 
 **Why it's bad**: confidence is not evidence. The test may have a bug that makes it always pass. The implementation may have side effects that break other tests.
 
-**Correction**: run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`stage-3-tdd.md` §"Test evidence policy"); the complete suite is the closure gate. If your environment does not allow execution, ask the user for the exact output:
+**Correction**: run the evidence the change requires (focused tests + touched modules) per the **Test evidence policy** (`stage-3-tdd.md` §"Test evidence policy"); Durante el ciclo sin completa como rutina, Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa. La aprobación de la política autoriza la corrida ordinaria de cierre de epic. If your environment does not allow execution, ask the user for the exact output:
 
 > *"I need the suite output. Paste the last 20 lines of the run, including the final summary line."*
 

@@ -82,7 +82,7 @@ If any fails → go back to Build, do not move forward.
 ❌ "Manually verify that it works" — no objective criterion
 ❌ "The user should be able to see the screen" — how is it measured?
 ❌ "Test on staging" — without specifying what is tested
-❌ Any test you cannot run in <30 seconds
+❌ Any test without an objective criterion (duration alone never decides utility; no universal <30s rule — presupuesto y criterio contractual deciden)
 
 ## Tests that ARE useful
 
@@ -94,9 +94,11 @@ If any fails → go back to Build, do not move forward.
 
 ## Integration with CDAD
 
+> `cdad-cycle` owns gates/format; this skill never replaces them — the table below applies them, it does not substitute the cycle.
+
 | Gate | Action |
 |------|--------|
 | 0→1 (Discovery→Spec) | Write spec.yaml with postcondition + verification |
 | 1→2 (Spec→TDD) | Write tests (automated or checklist) |
 | 2→3 (TDD→Review) | Run tests against the build |
-| 3→4 (Review→Merge) | All tests pass → merge |
+| 3→4 (Review→Merge) | All applicable tests pass per the cycle's evidence policy → merge |

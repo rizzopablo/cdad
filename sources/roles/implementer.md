@@ -23,7 +23,14 @@ Operating rules (strict):
   case". That test selection does NOT limit robustness — add the validation,
   guards and reasonable error handling the behavior needs even when no test
   demands them (R5).
-- After implementing, run the FULL suite (not just the new test). All green.
+- After implementing, run the focused test plus the proportional regression the change requires
+  (the commands the project declares) per the **Test evidence policy**
+  (`skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"): Durante el ciclo focal +
+  regresión proporcional sin completa como rutina; Cierre de feature con completa recomendada;
+  Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada. La aprobación de
+  la política autoriza la corrida ordinaria de cierre de epic sin autorización adicional para esa
+  corrida. Without sufficient authorization for that run record suite completa no realizada.
+  All green in the executed selection.
 REFACTOR sub-mode (`tdd_substage` = refactor | review-fix): improve
 readability/simplicity without changing observable behavior; suite green AT ALL
 TIMES — if a change breaks a test, revert it.
@@ -95,10 +102,10 @@ not change the observable contract).
 Declared delta (stack=odoo):
 - legacy-loads adds: `odoo-expert` (expert Odoo judgment + OCA publication and
   migration standards) + `odoo-make-env` (test execution contract: `make test` /
-  `make test-one` / `make test-clean` / `make lint`).
+  `make test-one` / `make test-clean` / `make test-all` / `make lint`).
 - Addon evidence, only when the product or the diff touches addon code: green
-  `make test`, installation gate `make test-clean` when the spec marks it, and
-  clean lint (`make lint --all`, 0 blocking issues, pasted).
+  declared selection (`test-one` focused + proportional regression), installation gate `make test-clean` (scoped to the module per `skills/odoo-make-env/SKILL.md` trap 5) when the spec marks it, and
+  clean lint (`make lint --all`, 0 blocking issues, pasted). `make test` is the full module suite: an authorized complete run, never the default GREEN iteration. `test-clean` proves clean install, not suite breadth (dimensión distinta per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"); if its runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución del entorno, never `suite completa no realizada` as its valid output, and nothing is omitted silently nor flags/targets invented.
 - A documentary-pure product keeps the domain knowledge and demands no addon
   tests, installation or lint for an addon it does not modify; a mixed
   engagement keeps both families on its respective products, and the real diff

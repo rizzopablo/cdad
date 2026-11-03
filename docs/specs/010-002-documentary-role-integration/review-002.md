@@ -17,7 +17,7 @@ Válido. El render completo es igual byte a byte a `PACKET.md` y `render --route
 
 - **Alcance de `735d977c`:** 13 archivos, solo `sources/roles`, `sources/agents/adapters` y `agents`. No toca CLI, permisos, guardas ni defaults.
 - **Suite completa:** no ejecutada, por política; la corre quien cierra.
-- **Temporales:** usé `~/clawd/tmp/rv8b`, ya eliminado. No modifiqué nada del repo.
+- **Temporales:** usé `<tmp>/rv8b`, ya eliminado. No modifiqué nada del repo.
 
 ## Verificación
 

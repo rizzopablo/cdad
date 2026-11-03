@@ -1757,6 +1757,128 @@ def _validate_declared_agent(document: dict[str, Any]) -> None:
         f"when a published request is read")
 
 
+# --------------------------- 015-001 frozen reception (D1/D2/D3, PC-01..PC-06)
+#
+# A published packet carries its own instruction bytes: `instruction_sources`
+# is the ordered canonical list (common, role, subphase), each entry carrying
+# exactly `path`, `sha256` and `snapshot` (the original bytes, base64). The
+# publication reads the live files ONCE and computes the digests; it never
+# accepts digests from the caller. Rendering and validation rebuild from those
+# bytes WITHOUT consulting the live files. A historical request WITHOUT the
+# field keeps the strict live validation. ONE shared criterion (D3): every
+# surface compares against the canonical render, whose origin is the frozen
+# backup for frozen requests.
+
+def _canonical_instruction_paths(role: str, substage: str) -> list[str]:
+    """The ordered canonical instruction sources for a role/substage pair."""
+    return ["common.md", f"roles/{role}.md", f"substages/{role}-{substage}.md"]
+
+
+def _validate_instruction_sources(entries: Any, role: str, substage: str) -> list[bytes]:
+    """Validate the frozen backup from the request ALONE (never live files).
+
+    Returns the decoded snapshot bytes in canonical order. Any malformed
+    backup — bad shape, missing/duplicate/discordant paths, broken base64,
+    digest mismatch, non-UTF-8 bytes — is rejected with a diagnostic naming
+    the cause, identically with drift and without it. There is no silent
+    fallback to the live files.
+    """
+    canonical = _canonical_instruction_paths(role, substage)
+    if not isinstance(entries, list):
+        raise PolicyError(
+            "request.instruction_sources must be the ordered list of frozen "
+            "instruction sources (common, role, subphase)")
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict) or set(entry) != {"path", "sha256", "snapshot"}:
+            seen = sorted(entry) if isinstance(entry, dict) else entry
+            raise PolicyError(
+                f"instruction_sources[{index}] fields are invalid (seen {seen!r}): "
+                "each entry carries exactly path/sha256/snapshot — a malformed "
+                "backup is rejected, never repaired from the live files")
+        for key in ("path", "sha256", "snapshot"):
+            if not isinstance(entry[key], str) or not entry[key]:
+                raise PolicyError(
+                    f"instruction_sources[{index}].{key} must be a non-empty string")
+    paths = [entry["path"] for entry in entries]
+    if len(set(paths)) != len(paths):
+        raise PolicyError(
+            f"instruction_sources paths are duplicadas: {paths!r} — a frozen "
+            "backup lists each canonical source exactly once")
+    if set(paths) != set(canonical):
+        if set(paths) < set(canonical):
+            raise PolicyError(
+                f"instruction_sources is faltante (missing sources "
+                f"{sorted(set(canonical) - set(paths))!r}): the frozen backup "
+                "lists the three canonical sources")
+        raise PolicyError(
+            f"instruction_sources paths are discordantes with the canonical "
+            f"sources {canonical!r} (seen {paths!r}): the frozen backup lists "
+            "exactly common, role and subphase")
+    if paths != canonical:
+        raise PolicyError(
+            f"instruction_sources paths are discordantes in order (seen {paths!r}, "
+            f"canonical {canonical!r}): the frozen backup preserves the "
+            "canonical order")
+    snapshots: list[bytes] = []
+    for entry in entries:
+        try:
+            raw = base64.b64decode(entry["snapshot"], validate=True)
+        except ValueError as exc:
+            raise PolicyError(
+                f"instruction_sources entry for {entry['path']!r} carries a "
+                f"broken base64 snapshot: {exc} — the snapshot bytes are the "
+                "frozen backup, a malformed backup is rejected") from exc
+        digest = hashlib.sha256(raw).hexdigest()
+        if entry["sha256"] != digest:
+            raise PolicyError(
+                f"instruction_sources entry for {entry['path']!r} has a digest "
+                f"discordante with its snapshot: asserted sha256 "
+                f"{entry['sha256']!r} does not match sha256(snapshot) "
+                f"{digest!r} — the publication computes digests, it never "
+                "accepts them from the caller")
+        try:
+            raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise PolicyError(
+                f"instruction_sources entry for {entry['path']!r} snapshot is "
+                f"not UTF-8: {exc}") from exc
+        snapshots.append(raw)
+    return snapshots
+
+
+def _capture_instruction_sources(role: str, substage: str) -> list[dict[str, str]]:
+    """Capture the frozen backup for a NEW publication from the live files.
+
+    The bytes are read once and the digests computed here; the caller never
+    supplies them. A successor is a new publication: it captures the CURRENT
+    live instructions, never the predecessor's bytes.
+    """
+    asset = _asset_root() / "packets"
+    entries = []
+    for rel in _canonical_instruction_paths(role, substage):
+        content = _read_bytes(asset / Path(rel), "packet instruction")
+        entries.append({
+            "path": rel,
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "snapshot": base64.b64encode(content).decode("ascii"),
+        })
+    return entries
+
+
+def _instruction_source_bytes(request: dict[str, Any]) -> tuple[list[Path], list[bytes]]:
+    """Instruction paths and bytes for rendering: the frozen backup when the
+    request carries it (decoded strictly, failing loud — never a live
+    fallback), the live files for a historical request without the field."""
+    role, substage = request["role"], request["substage"]
+    rels = [Path(path) for path in _canonical_instruction_paths(role, substage)]
+    if "instruction_sources" not in request:
+        asset = _asset_root() / "packets"
+        return rels, [_read_bytes(asset / path, "packet instruction") for path in rels]
+    snapshots = _validate_instruction_sources(
+        request["instruction_sources"], role, substage)
+    return rels, snapshots
+
+
 def validate_request(document: dict[str, Any], execution_document: dict[str, Any],
                      state: dict[str, Any], project_root: Path,
                      contract_bytes_override: bytes | None = None) -> dict[str, Any]:
@@ -1794,7 +1916,14 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     # packet was prepared from). It is optional so historical requests keep
     # being admitted; every NEW publication declares it. The closure is not
     # relaxed: any other unknown key still fails the set equality below.
-    optional = {"plan_task", "agent", "current_decisions", REQUEST_LOCATOR_FIELD}
+    # 015-001 (D1/D2, PC-05): a FIFTH declared optional property is added the
+    # same way (`instruction_sources`, the frozen per-source bytes — path,
+    # sha256 and base64 snapshot — the publication captured from the live
+    # instruction files). A historical request WITHOUT the field keeps the
+    # strict live validation; any other unknown key still fails the set
+    # equality below.
+    optional = {"plan_task", "agent", "current_decisions", REQUEST_LOCATOR_FIELD,
+                "instruction_sources"}
     if (not required <= set(document) <= (required | optional)
             or document.get("schema_version") != 1):
         raise PolicyError("request fields do not match schema")
@@ -1831,6 +1960,13 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
     # and the cap are the product's, never the caller's.
     if "current_decisions" in document:
         _validate_current_decisions(document["current_decisions"], role, project_root)
+    # 015-001 (D1, PC-04): a frozen request carries its own instruction bytes;
+    # the backup is validated HERE, from the request alone, never consulting
+    # the live files — so the diagnosis is identical with drift and without
+    # it. A historical request without the field is untouched: the render
+    # below keeps reading the live files and stays strict (D2/PC-05).
+    if "instruction_sources" in document:
+        _validate_instruction_sources(document["instruction_sources"], role, substage)
     contract = _object(document.get("contract"), "request.contract")
     contract_keys = {"kind", "path", "sha256", "commit"}
     plan_version = contract.get("plan_version")
@@ -1994,10 +2130,7 @@ def _asset_root() -> Path:
 
 def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
                   project_root: Path | None = None) -> str:
-    asset = _asset_root() / "packets"
-    source_paths = [Path("common.md"), Path("roles") / f"{request['role']}.md",
-                    Path("substages") / f"{request['role']}-{request['substage']}.md"]
-    source_bytes = [_read_bytes(asset / path, "packet instruction") for path in source_paths]
+    source_paths, source_bytes = _instruction_source_bytes(request)
     static_bytes = b"\n".join(source_bytes)
     try:
         static = static_bytes.decode("utf-8")
@@ -2294,12 +2427,27 @@ def _declared_object_form(form: Any, label: str) -> str:
     return form
 
 
-def _cli_scope(raw: str, project_root: Path) -> dict[str, Any]:
+def _cli_scope(raw: str, project_root: Path,
+               option: str = "--write-scope") -> dict[str, Any]:
+    """Parse ONE `CLASS=SELECTOR` scope of the named CLI option (015-002 D1).
+
+    `repository-read` stays the bare exception (no `=`); every other form
+    requires a non-empty CLASS and a non-empty SELECTOR. The rejection names
+    the option, the expected form and a valid example — it never converts a
+    read scope into a write scope.
+    """
     scope_class, separator, selector = raw.partition("=")
     if not separator:
         if scope_class != "repository-read":
-            raise PolicyError(f"scope must be CLASS=SELECTOR: {raw!r}")
+            raise PolicyError(
+                f"{option} requires CLASS=SELECTOR with non-empty CLASS and "
+                f"SELECTOR, got {raw!r}; ejemplo: {option} "
+                f"implementation=skills")
         return {"class": scope_class}
+    if not scope_class or not selector:
+        raise PolicyError(
+            f"{option} requires CLASS=SELECTOR with non-empty CLASS and "
+            f"SELECTOR, got {raw!r}; ejemplo: {option} implementation=skills")
     candidate = _project_path(project_root, selector, "scope selector")
     return {"class": scope_class, "path" if candidate.is_file() else "root": selector}
 
@@ -3810,10 +3958,10 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
             assignment["inputs"] = [_cli_input(raw) for raw in raw_inputs]
         raw_read = _sentinel_list(args.read_scope, "--read-scope")
         if raw_read is not None:
-            assignment["read_scope"] = [_cli_scope(raw, project_root) for raw in raw_read]
+            assignment["read_scope"] = [_cli_scope(raw, project_root, "--read-scope") for raw in raw_read]
         raw_write = _sentinel_list(args.write_scope, "--write-scope")
         if raw_write is not None:
-            assignment["write_scope"] = [_cli_scope(raw, project_root) for raw in raw_write]
+            assignment["write_scope"] = [_cli_scope(raw, project_root, "--write-scope") for raw in raw_write]
         raw_invariants = _sentinel_list(args.invariant, "--invariant")
         if raw_invariants is not None:
             assignment["invariants"] = _with_role_floor(
@@ -3841,6 +3989,10 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # not silently drop the decisions that govern the role.
         if "current_decisions" in request:
             new_request["current_decisions"] = request["current_decisions"]
+        # 015-001 (D1, PC-01): a successor is a NEW publication, so it freezes
+        # its OWN current instruction bytes — never the predecessor's. The
+        # predecessor's bytes are never rewritten.
+        new_request["instruction_sources"] = _capture_instruction_sources(role, substage)
         # 010-002 §2 D3/PC-06 (P-4/B1): a successor is a NEW publication, so it
         # REDERIVES its `agent` from the role and the stack in force through the
         # ONE canonical derivation. It NEVER copies the predecessor's agent: a
@@ -4127,9 +4279,22 @@ def _load_observation_document(path: Path) -> dict[str, Any]:
     """
     document = _load_json(path, "dispatch observation")
     if set(document) != OBSERVATION_KEYS:
+        # 015-002 D1 (PC-01): the rejection identifies the field/problem
+        # (which keys are missing or unexpected), the expected closed form
+        # and a valid example — the example never authorizes inventing
+        # values (unobserved fields stay null).
+        missing = sorted(OBSERVATION_KEYS - set(document))
+        unexpected = sorted(set(document) - OBSERVATION_KEYS)
         raise PolicyError(
-            "dispatch observation fields do not match the closed schema: runtime, "
-            "model_configured, model_reported, session, started_at, provenance")
+            "dispatch observation fields do not match the closed schema "
+            f"(missing: {missing or 'none'}; unexpected: {unexpected or 'none'}): "
+            "expected exactly the six keys runtime, model_configured, "
+            "model_reported, session, started_at, provenance; ejemplo de "
+            "documento válido: "
+            '{"runtime": null, "model_configured": null, '
+            '"model_reported": null, "session": null, "started_at": null, '
+            '"provenance": {}} '
+            "(los null marcan campos no observados; no invente valores)")
     for field in OBSERVATION_TEXT_FIELDS:
         value = document.get(field)
         if value is not None and (not isinstance(value, str) or not value):
@@ -5693,6 +5858,7 @@ def _locate_unit(plan_text: str, feature_id: str
                         "header": lines[index],
                         "separator": lines[index + 1],
                         "row": lines[row_index],
+                        "row_index": row_index,
                         "table_start": index,
                         "table_end": body,
                     })
@@ -6775,8 +6941,8 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                           "purpose": "draft spec for review"}]
                          if is_declared_draft and "spec_path" in contract_object else [])
                       + [_cli_input(raw) for raw in args.input],
-            "read_scope": [_cli_scope(raw, project_root) for raw in args.read_scope] or read_default,
-            "write_scope": [_cli_scope(raw, project_root) for raw in args.write_scope] or write_default,
+            "read_scope": [_cli_scope(raw, project_root, "--read-scope") for raw in args.read_scope] or read_default,
+            "write_scope": [_cli_scope(raw, project_root, "--write-scope") for raw in args.write_scope] or write_default,
             "invariants": DEFAULT_INVARIANTS.get(role, []) + args.invariant,
             "expected_output": args.expected_output or DEFAULT_EXPECTED_OUTPUT,
             "evidence_required": args.evidence or DEFAULT_EVIDENCE,
@@ -6795,6 +6961,11 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         # the request (and the render) stay byte-identical to today's.
         if current_decisions:
             request["current_decisions"] = current_decisions
+        # 015-001 (D1, PC-01): a NEW publication freezes its own instruction
+        # bytes. The bytes are read once from the live files and the digests
+        # computed here; the caller never supplies them. A historical request
+        # without the field is never given one retrospectively (D2/PC-05).
+        request["instruction_sources"] = _capture_instruction_sources(role, substage)
         binding_fields = (V2_BINDING_FIELDS if execution_document.get("schema_version") == V2_SCHEMA_VERSION
                           else BINDING_FIELDS)
         new_state = dict(state)
@@ -6853,10 +7024,139 @@ _QUEUED_UNIT_STATUS = "queued"
 _DONE_UNIT_STATUS = "done"
 
 
+# ---------------------------------------------------------------- 015-002 D3
+# Elegibilidad por pertenencia documentada (PC-06..PC-08): a closed epic never
+# lends a queued unit back. Closures are `epic_history` entries with
+# `stage: "epic-closure"` AND an `epic`/`epic_id` identity; membership is the
+# unit's structural row in `docs/epics/<epic>/plan.md` (the `_locate_unit`
+# criterion — never a prefix, never a free note). A unit that appears in
+# several plans belongs to the one holding its LOWEST structural row; a tie,
+# a missing closed plan or an ambiguous locator blocks instead of opening
+# silently. Excluded units stay `queued` (never reclassified to `done`).
+_CLOSURE_STAGE = "epic-closure"
+
+
+def _closed_epic_identities(state: dict[str, Any]) -> list[str]:
+    """Epics with a registered closure (015-002 D3).
+
+    Only entries with an `epic`/`epic_id` identity name a plan; entries
+    without one exclude nothing and block nothing — membership is documented,
+    never guessed.
+    """
+    history = state.get("epic_history")
+    if not isinstance(history, list):
+        return []
+    closed: list[str] = []
+    for row in history:
+        if not isinstance(row, dict) or row.get("stage") != _CLOSURE_STAGE:
+            continue
+        identity = row.get("epic_id") or row.get("epic")
+        if isinstance(identity, str) and identity and identity not in closed:
+            closed.append(identity)
+    return closed
+
+
+def _read_existing_epic_plans(project_root: Path, closed: list[str]
+                               ) -> dict[str, str]:
+    """Every usable epic plan: the closed epics' (required) plus any other
+    existing `docs/epics/*/plan.md` (015-002 D3).
+
+    A missing or unreadable plan of a CLOSED epic blocks: without the source
+    the membership of its units cannot be decided. A missing plan of any other
+    epic simply claims nothing; an unreadable one blocks as well (its rows are
+    needed for the attribution and cannot be guessed).
+    """
+    epics_dir = project_root / "docs" / "epics"
+    plans: dict[str, str] = {}
+    wanted: set[str] = set(closed)
+    if epics_dir.is_dir():
+        try:
+            found = sorted(path.parent.name for path in epics_dir.glob("*/plan.md")
+                           if path.is_file())
+        except OSError as exc:
+            raise PolicyError(
+                f"cannot decide eligibility: the epic plans under "
+                f"{(epics_dir.relative_to(project_root)).as_posix()} cannot be "
+                f"listed ({exc})") from exc
+        wanted.update(found)
+    for epic_id in sorted(wanted):
+        plan_rel = f"docs/epics/{epic_id}/plan.md"
+        try:
+            plan_path = _project_path(project_root, plan_rel, "epic plan")
+        except PolicyError as exc:
+            raise PolicyError(
+                f"cannot decide eligibility: the plan source of closed epic "
+                f"{epic_id!r} is not a safe project path "
+                f"({plan_rel}: {exc})") from exc
+        if not plan_path.is_file():
+            if epic_id not in closed:
+                continue
+            raise PolicyError(
+                f"cannot decide eligibility: the plan source of closed epic "
+                f"{epic_id!r} is missing ({plan_rel}): open-unit never opens a "
+                f"queued unit that could belong to a closed epic")
+        try:
+            plans[epic_id] = plan_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise PolicyError(
+                f"cannot decide eligibility: the plan source {plan_rel} of "
+                f"epic {epic_id!r} is unreadable ({exc})") from exc
+    return plans
+
+
+def _attribute_closed_units(project_root: Path, state: dict[str, Any],
+                            queued_ids: list[str]) -> dict[str, str]:
+    """Map each queued unit that belongs to a closed epic to that epic
+    (015-002 D3, PC-06). Empty when no closure is registered — the common
+    case keeps the historical selection untouched.
+
+    The unit belongs to the plan holding its structural row (`_locate_unit`).
+    Zero rows in a plan is no claim; a structural row in two or more plans
+    is ambiguous and blocks, naming the plans and the motive. Row positions
+    are never compared across different files.
+    """
+    closed = _closed_epic_identities(state)
+    if not closed or not queued_ids:
+        return {}
+    plans = _read_existing_epic_plans(project_root, closed)
+    excluded: dict[str, str] = {}
+    for unit_id in queued_ids:
+        claims: list[str] = []
+        for epic_id, plan_text in plans.items():
+            located, reason = _locate_unit(plan_text, unit_id)
+            if located is None:
+                if "ambiguous" in reason:
+                    raise PolicyError(
+                        f"cannot decide eligibility: the membership of "
+                        f"{unit_id!r} in epic {epic_id!r} is ambiguous "
+                        f"({reason} in docs/epics/{epic_id}/plan.md): "
+                        f"open-unit never reopens silently — disambiguate "
+                        f"the plan rows")
+                continue
+            claims.append(epic_id)
+        if not claims:
+            continue
+        if len(claims) > 1:
+            owners = sorted(claims)
+            sources = ", ".join(
+                f"{epic} (docs/epics/{epic}/plan.md)" for epic in owners)
+            raise PolicyError(
+                f"cannot decide eligibility: {unit_id!r} is claimed by "
+                f"several epics (ambiguous) ({sources}): open-unit never "
+                f"reopens silently — disambiguate the plan rows")
+        if claims[0] in closed:
+            excluded[unit_id] = claims[0]
+    return excluded
+
+
 def _select_open_unit_entry(features: list[Any],
-                            requested: str | None) -> dict[str, Any]:
-    """The entry to open: the requested `--feature` (must exist and be queued),
-    or the FIRST `queued` entry (the plan order is the authority)."""
+                            requested: str | None,
+                            excluded: dict[str, str] | None = None
+                            ) -> dict[str, Any]:
+    """The entry to open: the requested `--feature` (must exist, be queued
+    and NOT belong to a closed epic), or the FIRST `queued` entry not
+    excluded (the plan order is the authority) (015-002 D3, PC-06..PC-08)."""
+    excluded = excluded or {}
     if requested is not None:
         matching = [item for item in features
                     if isinstance(item, dict) and item.get("id") == requested]
@@ -6864,6 +7164,12 @@ def _select_open_unit_entry(features: list[Any],
             raise PolicyError(
                 f"unknown unit {requested!r}: --feature requires an existing "
                 f"epic_features entry with status {_QUEUED_UNIT_STATUS!r}")
+        if requested in excluded:
+            raise PolicyError(
+                f"unit {requested!r} belongs to closed epic "
+                f"{excluded[requested]!r} (registered {_CLOSURE_STAGE}): "
+                f"open-unit never reopens a unit of a closed epic and "
+                f"--feature does not evade the closure")
         entry = matching[0]
         if entry.get("status") != _QUEUED_UNIT_STATUS:
             raise PolicyError(
@@ -6871,14 +7177,27 @@ def _select_open_unit_entry(features: list[Any],
                 f"{entry.get('status')!r}): open-unit only opens a "
                 f"{_QUEUED_UNIT_STATUS!r} unit")
         return entry
-    first = next((item for item in features
-                  if isinstance(item, dict)
-                  and item.get("status") == _QUEUED_UNIT_STATUS), None)
-    if first is None:
+    eligible = next((item for item in features
+                     if isinstance(item, dict)
+                     and item.get("status") == _QUEUED_UNIT_STATUS
+                     and item.get("id") not in excluded), None)
+    if eligible is not None:
+        return eligible
+    queued_any = any(isinstance(item, dict)
+                     and item.get("status") == _QUEUED_UNIT_STATUS
+                     for item in features)
+    if not queued_any:
         raise PolicyError(
             f"no {_QUEUED_UNIT_STATUS!r} unit in epic_features: there is "
             f"nothing to open")
-    return first
+    omitted = ", ".join(
+        f"{unit_id!r} (closed epic {epic_id!r})"
+        for unit_id, epic_id in excluded.items())
+    raise PolicyError(
+        f"no hay candidata elegible: every queued unit belongs to an epic "
+        f"with a registered closure ({omitted}); open-unit opens nothing "
+        f"and writes nothing — resolve the closure explicitly instead of "
+        f"reopening it")
 
 
 def _check_open_unit_dependencies(entry: dict[str, Any],
@@ -6932,7 +7251,16 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
         if not isinstance(features, list):
             raise PolicyError(
                 "epic_features record missing: state.epic_features must be a list")
-        entry = _select_open_unit_entry(features, args.feature)
+        # 015-002 D3 (PC-06..PC-08): exclude queued units of closed epics
+        # BEFORE selecting the first queued entry; the plan order stays the
+        # authority among the eligible ones. Read-only: a rejection here
+        # writes nothing.
+        queued_ids = [item.get("id") for item in features
+                      if isinstance(item, dict)
+                      and item.get("status") == _QUEUED_UNIT_STATUS
+                      and isinstance(item.get("id"), str)]
+        excluded = _attribute_closed_units(project_root, state, queued_ids)
+        entry = _select_open_unit_entry(features, args.feature, excluded)
         unit_id = entry.get("id")
         dependencies_note = _check_open_unit_dependencies(entry, features)
 
@@ -6972,9 +7300,18 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
         dependencies_note = (
             f"no declared dependencies for {unit_id!r}; the plan order is the "
             f"authority (dependencies not verified)")
+    # 015-002 D3 (PC-06): when closed-epic units were skipped, the opening
+    # says so explicitly — the exclusion is observable, never silent.
+    omitted_note = ""
+    if excluded:
+        omitted = ", ".join(
+            f"{queued_id!r} (closed epic {epic_id!r})"
+            for queued_id, epic_id in excluded.items())
+        omitted_note = f"omitted queued units of closed epics: {omitted}\n"
     return (f"opened unit {unit_id!r}: active_feature={unit_id} "
             f"current_stage=discovery execution={execution['id']}\n"
-            f"{dependencies_note}\n")
+            f"{dependencies_note}\n"
+            f"{omitted_note}")
 
 
 # ---------------------------------------------------------------- 005-012 T1

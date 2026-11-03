@@ -26,6 +26,8 @@ Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índic
 | `docs/adr/ADR-018-clases-de-referencia-declaradas-por-el-escritor.md` | `vigente` | Las clases de referencia de la continuidad (contrato/vivo) las declara el escritor, nunca la ruta. | `orchestrator` | el propio ADR |
 | `docs/adr/ADR-019-aprobacion-por-rol-nombra-el-contrato-reemplazo-conserva-el-encargo.md` | `vigente` | La aprobación de contrato por rol nombra el contrato; el reemplazo de paquete conserva y corrige el encargo anterior. | `test-writer`, `implementer`, `orchestrator` | el propio ADR |
 | `docs/adr/ADR-020-politica-unica-de-evidencia-y-procedencia-declarada.md` | `vigente` | Una sola política de evidencia con dueño canónico y la procedencia de la instalación declarada en el artefacto publicado. | `test-writer`, `implementer`, `reviewer`, `orchestrator` | el propio ADR |
+| `docs/adr/ADR-041-evidencia-autorizada-y-criterio-de-contribucion.md` | `vigente con supersesión parcial (ver ADR-042)` | Cláusula de autorización/defaults sustituida por ADR-042; conserva contribución, propiedades, instalación limpia y atribución. | `test-writer`, `implementer`, `reviewer`, `orchestrator` | `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy" |
+| `docs/adr/ADR-042-defaults-de-evidencia-por-momento.md` | `vigente` | Defaults por momento (Durante el ciclo focal, Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa); autorización suficiente del cierre de epic; supersede parcial de ADR-041. | `test-writer`, `implementer`, `reviewer`, `orchestrator` | `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy" |
 | `docs/adr/ADR-021-arranque-guiado-procedimiento-corto-por-referencia.md` | `vigente` | El arranque desde reposo se resuelve con un procedimiento corto que compone por referencia, una entrada de intake y un dueño canónico por objeto de reconocimiento. | `orchestrator` | el propio ADR |
 | `docs/adr/ADR-022-mapas-de-permisos-derivados-coherentes-con-el-clasificador.md` | `vigente` | Los mapas de permisos derivados son una proyección coherente del clasificador único: la excepción de tests reabre solo los árboles/archivos declarados y `private` gana por findLast. | `test-writer`, `implementer`, `orchestrator` | el propio ADR |
 | `docs/adr/ADR-023-delegacion-externa-interfaz-comun-adaptador-por-destino.md` | `vigente` | La delegación externa entre CLI es una interfaz común con un adaptador por destino que reutiliza el mecanismo existente; rol, CLI y modelo son decisiones independientes, la entrega no aprueba el gate y la delegación no amplía autoridad. | `orchestrator` | el propio ADR |
@@ -787,15 +789,19 @@ catch-all deny o pares de comandos durante la simplificación.
 - **Una sola política de evidencia, con dueño canónico y consumidores que remiten
   (INV-6).** La política vive en **un único lugar** editable:
   `skills/cdad-cycle/references/stage-3-tdd.md` §**«Test evidence policy»**
-  (regresión proporcional al cambio; suite completa **al cierre** de la feature o
-  antes si se toca instalador/staging/renderer; reutilización de evidencia
-  equivalente; **la metodología define la evidencia y el proyecto declara los
-  comandos**; una condición local se registra y no se vuelve requisito). La regla
+  (defaults por momento: Durante el ciclo focal + regresión proporcional sin completa como rutina;
+  Cierre de feature con completa recomendada sino suite completa no realizada con motivo, selección y límites;
+  Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada; la aprobación de la
+  política autoriza la corrida ordinaria de cierre de epic; instalación limpia de addon como dimensión distinta;
+  reutilización de evidencia equivalente; **la metodología define la evidencia y el proyecto declara los
+  comandos**; una condición local se registra y no se vuelve requisito; ver ADR-042 que sustituye
+  parcialmente ADR-041). La regla
   de **equivalencia** conserva su dueño en `references/re-entry.md`
   §«Equivalence of a registered run». Los consumidores (paquetes de
   GREEN/refactor/review-fix, `packets/roles/implementer.md`, `SKILL.md`, las
   referencias de etapa) **referencian** la política y **no copian** su texto; la
-  suite completa es gate de **cierre**, nunca «por GREEN».
+  completa sigue el default de su momento (Durante el ciclo sin completa como rutina;
+  Cierre de feature recomendada; Cierre de epic obligatoria por defecto o dispensa expresa).
 - **El reemplazo valida el encargo resultante completo (005-005 PD-1..PD-7;
   INV-4).** `--replace-packet` valida **todo** el encargo resultante (conservado +
   corregido): cada `input` existe y cae dentro de algún `read_scope`; scopes
@@ -1388,9 +1394,8 @@ catch-all deny o pares de comandos durante la simplificación.
   extiende con una propiedad declarada (una clave desconocida sigue rechazándose). La **provenance**
   de los valores se afirma contra lo parseado del bloque, no contra texto a mano.
 - **Política de la suite: declarada una sola vez, consumidores que referencian.** La instrucción del
-  paquete declara, en su parte **común** (`packets/common.md`), que la **suite completa no se corre
-  salvo que el paquete lo pida** y que **la corre quien cierra**; los assets de rol/subetapa la
-  **referencian** (no la copian) y se corrigieron los que afirmaban lo contrario. El **cierre del
+  paquete declaraba, en su parte **común** (`packets/common.md`), que la **suite completa solo corría con autorización expresa** (hogar canónico Test evidence policy) y que **sin autorización se registraba suite completa no realizada**; los assets de rol/subetapa la
+  **referenciaban** (no la copiaban) y se corrigieron los que afirmaban lo contrario. [Sustituida por ADR-042: defaults por momento en `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".] El **cierre del
   encargo incluye el commit** (el reporte del rol lo declara; no hay gate automático, la verificación
   es la auditoría del orquestador).
 - **Resumen del conjunto aditivo + regla del documento multiplexado (`set-summary-v1` /

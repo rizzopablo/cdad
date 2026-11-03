@@ -1,35 +1,35 @@
 # Stage 5 — Merge and Memory Bank
 
-Full CI + Memory Bank update with the Scribe pattern.
+Evidence per the **Test evidence policy** (owner: `stage-3-tdd.md` §"Test evidence policy") + Memory Bank update with the Scribe pattern. Cierre de feature con suite completa recomendada; si se omite se registra suite completa no realizada con motivo, selección ejecutada y límites, and gate no ejecutado as valid outputs, never as green. Cierre de epic con suite completa obligatoria por defecto o dispensa expresa registrada. La aprobación de la política autoriza la corrida ordinaria de cierre de epic sin autorización adicional para esa corrida.
 
 ## Your role as orchestrator
 
 You do NOT update the Memory Bank on your own. You coordinate:
 
-1. Verify full CI (you run it if you have bash, or ask the user for the output).
+1. Verify evidence per the **Test evidence policy** (you run the authorized selection if you have bash, or ask the user for the output / authorization decision).
 2. Emit handoff to the **scribe** with spec + diff + review + current Memory Bank.
 3. Validate the drafts at re-entry.
 4. Pass the drafts to the **user** for APPROVAL (non-delegable); you commit them after the approval.
-5. Feature closure when CI is green + Memory Bank committed.
+5. Feature closure when evidence is green per the policy + Memory Bank committed (suite completa / gate no ejecutado recorded when not authorized, never as green).
 
 ## 5.1 — CI verification
 
 **Not optional.**
 
-Mandatory checks:
+Mandatory checks (evidence per the **Test evidence policy** with its defaults por momento; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa):
 
 - Full linter over the modified files.
 - Type checker (mypy / tsc / etc.).
 - Import-linter or equivalent.
-- Full suite: unit + integration + contract + property.
+- Evidence green per the policy (focused + proportional regression; full suite: unit + integration + contract + property — only when authorized for that run, otherwise suite completa no realizada / gate no ejecutado).
 - Project-specific checks.
 
-The complete suite belongs to **closure** (evidence policy owner:
-`stage-3-tdd.md` §"Test evidence policy"); the project declares the exact command.
+Cierre de feature con suite completa recomendada, Cierre de epic con suite completa obligatoria por defecto o dispensa expresa (evidence policy owner:
+`stage-3-tdd.md` §"Test evidence policy"); the project declares the exact command. Without sufficient authorization for that run record suite completa no realizada with motive, selection and limits; never present its omission as green.
 
-If you have bash: run the suite. If not: ask the user for the output.
+If you have bash and authorization: run the suite. If not: ask the user for the output or the authorization decision.
 
-> *"Run the full suite (`<the project's command>`). I need to see: linter, type checker, import-linter, all the tests. If anything fails, we go back to Stage 3."*
+> *"Run the full suite (`<the project's command>`) with the authorization the moment requires — cierre de feature: recomendada; cierre de epic: autorizada por política. I need to see: linter, type checker, import-linter, all the tests. If anything fails, we go back to Stage 3. Without sufficient authorization for that run, record suite completa no realizada with motive, selection and limits (cierre de epic: dispensa expresa registrada)."*
 
 If CI fails: activate `stage-debugging` (`references/stage-debugging.md`) with the failure output — without a verified root cause there is no fix. With the diagnosis and the red loop, go back to Stage 3. No exceptions.
 
@@ -171,10 +171,10 @@ If the removal is rejected (uncommitted files): show the output of `git status -
 
 ## 🛑 Exit gate (Stage 5 → done)
 
-- [ ] **If CI is configured:** full CI green (linter, type checker,
-      import-linter, unit, integration, contract, property).
-- [ ] **If NO CI is configured** (new project, first feature): the local green
-      suite equals the gate, and the absence of CI is recorded as explicit
+- [ ] **Evidence green per the Test evidence policy** (linter, type checker,
+      import-linter, focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado recorded as valid output, never as green).
+- [ ] **If NO CI is configured** (new project, first feature): the local evidence
+      green per the hogar canónico Test evidence policy (focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado recorded as valid output, never as green) equals the gate, and the absence of CI is recorded as explicit
       debt in `docs/progress.md` — never silently. It does not block
       the closure of the first feature while waiting for a CI that bootstrap already noted as
       pending (`references/bootstrap.md` Step 2, question 4).

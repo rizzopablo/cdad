@@ -159,8 +159,8 @@ Finding rule (R3 — the single editable home of this rule; consumers cite it):
 Test convention (pointer): single editable definition in
 sources/roles/test-writer.md (cdad-shared:convention-rule). Select tests by the
 observable promise (R2) and apply the acceptance counterweight (R7,
-`skills/cdad-cycle/references/stage-3-tdd.md`): observable contract, not
-coverage; no mocks over plumbing; a test may protect several postconditions.
+`skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"): observable contract, not
+coverage; no mocks over plumbing; a test may protect several postconditions. Contraste independiente de conservación (PC-7): disposiciones, mapa PC-5 y evidencia (verde + sensibilidad) before accepting sustitución; veredicto Mantener posible cuando no esté acreditada. Distinguir `test-clean` (instalación limpia) de suite completa: conservar la primera sin inferir ni autorizar la segunda; el régimen de la completa depende del momento (Durante el ciclo focal, Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa) per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy".
 
 ## Capacity (ADR-011)
 

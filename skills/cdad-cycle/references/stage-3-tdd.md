@@ -48,7 +48,7 @@ The test→postcondition mapping (`test-audit.md` or equivalent) is **not audite
 
 ## Run budget (keeping the runtime from devouring the cycle)
 
-The full suite is for **gates, not for debugging**. In projects with a slow suite
+Durante el ciclo la suite completa no corre como rutina de iteración o depuración (ver defaults por momento en §"Test evidence policy"). In projects with a slow suite
 (typical in Odoo: the setup from scratch dominates the cost, not the number of
 tests), iteration uses minimal runs with an anti-loop cycle: read the full
 failure → written hypothesis → ONE change → ONE run; maximum 2 runs without
@@ -56,30 +56,70 @@ convergence → STOP and escalate, never re-run "to see if it passes". Hard
 budget per stage with a STOP rule; exceeding it is a signal to escalate, not
 justification for "one more run". In Odoo projects the full protocol lives in
 `odoo-make-env/references/run-budget-protocol.md`; in other stacks,
-adapt it to the same structure (cheap debugging, single full gate).
+adapt it to the same structure (cheap debugging, single authorized full gate when authorized).
 
 ## Test evidence policy
 
-Single canonical owner of the evidence policy. Consumers (`packets/`, `SKILL.md`,
+Single canonical owner of the evidence policy — hogar canónico. Consumers (`packets/`, `SKILL.md`,
 the stage references) **reference** this section and never copy its text (INV-6).
 
+Defaults por momento (PC-2):
+
+| Momento | Default |
+|---|---|
+| Durante el ciclo | Tests focales y regresión proporcional; sin suite completa como rutina de iteración o depuración. |
+| Cierre de feature | Suite completa recomendada. Si se omite se registra «suite completa no realizada», motivo, selección ejecutada y límites. |
+| Cierre de epic | Suite completa obligatoria por defecto. Omitirla requiere dispensa expresa del dueño, registrada con motivo para ese cierre. |
+
+La aprobación de esta política autoriza la corrida ordinaria de cierre de epic. Ninguna instrucción
+operativa exige autorización adicional para esa corrida ni permite omitirla por simple ausencia de
+permiso individual (PC-3). Autorizar una modificación, cerrar una tarea o disponer de un comando no
+autoriza por sí sola otras corridas. La autorización no equivale a evidencia, ni autoriza publicación,
+despliegue o reintentos indiscriminados.
+
 1. **Proportional regression.** A change is verified with the **focused** tests
-   plus the tests of the modules it touches; the regression is proportional to
-   the change, not a fixed retake of the whole suite on every sub-phase.
-2. **Complete suite at feature closure.** The complete suite runs when the
-   feature **closes** — at **closure** — or earlier if a change touches the
-   installer, the staging pipeline or the renderer.
+   plus the tests of the modules it touches; the regresión proporcional to
+   the change, not a fixed retake of the whole suite on every sub-phase. La suite
+   completa recomendada al cierre de feature y obligatoria al cierre de epic no
+   sustituyen esta regresión proporcional durante el ciclo.
+2. **Complete suite por momento.** Durante el ciclo no corre como rutina; al cierre de feature es
+   recomendada; al cierre de epic es obligatoria por defecto salvo dispensa expresa del dueño para
+   ese cierre. Sin autorización suficiente para esa corrida se registra suite completa no realizada,
+   with the executed selection and its limits; never declare a green complete suite (nor a green
+   CI gate) without its evidence. Ninguna omisión se etiqueta como verde ni como gate ejecutado.
+   If the authorized evidence is insufficient for a committed obligation, that part blocks and
+   requests the owner's decision. Un fallo, error o resultado no atribuible impide declarar verde
+   la corrida; el cierre conserva el diagnóstico y la evidencia. La dispensa de ejecutar una suite
+   no transforma una corrida roja en verde ni elimina una promesa incumplida.
 3. **Equivalence of a registered run.** A recorded run may be cited instead of
    re-executed; the rule has a single canonical owner in `re-entry.md`
    §"Equivalence of a registered run" — this policy **references** it and does
    not copy its text.
 4. **The methodology defines the evidence; the project declares the commands.**
-   What evidence each gate requires is defined by the methodology; the focused
-   command and the full-suite command are **declared by the project** (e.g. its
-   Makefile or systemPatterns).
+   What evidence each gate requires is defined by the methodology; the comando focal
+   and the comando completo (suite completa) are **declared by the project** (e.g. its
+   Makefile or systemPatterns). Cada proyecto declara además: entorno, costo conocido con
+   procedencia o costo desconocido expreso, presupuesto y estrategia de ejecución. Una suite
+   lenta no constituye dispensa implícita: exige resolver presupuesto/entorno o solicitar
+   dispensa cuando sea admisible; sin dispensa implícita por lentitud, costo o disponibilidad.
 5. **Local/environment conditions.** A local or environment condition is
    captured in the evidence **registration** (registered as data) and does not
    become a requirement.
+6. **Skips, esperados e inestables.** Los skips y los esperados no ejecutados satisfactoriamente —
+   incluidos xfail cuando corresponda — quedan visibles con motivo y efecto sobre las obligaciones
+   comprometidas. No bloquean por mera existencia, pero sí cuando dejan una promesa comprometida sin
+   verificación suficiente. rc=0 no demuestra por sí solo suficiencia contractual. Una inestabilidad
+   (inestable) no se resuelve reintentando hasta obtener verde ni repitiendo hasta lograr verde: se
+   conservan los intentos; otro intento exige hipótesis nueva o información nueva y respeto al
+   presupuesto. Si no puede acreditarse el resultado, se declara el bloqueo y se escala, sin
+   seleccionar únicamente el intento favorable.
+7. **Instalación limpia de addon (dimensión distinta).** When applicable, demonstrate instalación limpia
+   from scratch with `test-clean` or the project's declared equivalent mechanism (verificación pertinente
+   del addon; a warm run never replaces it). Instalación limpia and amplitud of selection are distinct
+   dimensions: never infer the whole suite from the `test-clean`/`test-all` name. If the runner inseparably
+   joins required clean install with a non-authorized complete suite, report the block and request
+   authorization or environment resolution; omit neither silently nor invent flags/targets. Encargos without
+   addon changes acquire no installation obligations by project domain.
 
 ## Conceptual anchor: the TDD loop is induction, not abduction
 
@@ -108,11 +148,14 @@ You do NOT write tests, you do NOT implement, you do NOT refactor. You coordinat
 
 | Sub-phase | Role | When |
 |----------|-----|--------|
-| RED | test-writer | Pending postcondition |
+| AUDIT / POST-AUDIT | test-writer | Existing suite + approved sustitutos of vigente (recorrido below, per R2) |
+| RED | test-writer | Pending promise (pending behavior) |
 | GREEN | implementer | After a valid RED |
 | REFACTOR | refactorer | Optional, if there is friction |
 | PROPERTIES | test-writer in properties mode | Spec marks invariants |
 | INTEGRATION/E2E | test-writer in E2E mode | Spec marks E2E criteria |
+
+Sustituto de comportamiento vigente (recorrido POST-AUDIT, por referencia a R2): R2 (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6) owns the dispositions and the sustituto recorrido — physically new Sustituir/Consolidar admitted only in POST-AUDIT as identified in the approved AUDIT, with verde execution plus sensibilidad frente a defecto contractual concreto, originales kept until destination + evidence, mapa PC-5; never to RED for being a new file. Maintenance of vigente needs no GREEN when no implementation changes; pending behavior follows RED → GREEN separately.
 
 ## Sub-phase 3.1 — RED
 
@@ -168,7 +211,7 @@ The orthogonal packet (one test-writer, N postconditions) remains the **default*
 
 1. Review each summary (the agent's summary is **not evidence** that it went well).
 2. Check file overlap between domains: `git diff --name-only` + `comm` (or equivalent) over what each session touched.
-3. Run the **COMPLETE** suite once at the end (AP-3: without empirical verification there is no green).
+3. Run the evidence the consolidation requires per the **Test evidence policy** (§ above) with its defaults por momento (Durante el ciclo focal, Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa); otherwise record suite completa no realizada with motive and limits (AP-3: without empirical verification there is no green).
 
 Conflicts are resolved by the orchestrator, **never by the subagents** — a subagent resolving a conflict is touching someone else's domain, with a partial view and no contract. If integration fails, the orchestrator diagnoses and re-delegates with the corrected scope.
 
@@ -182,7 +225,7 @@ Conflicts are resolved by the orchestrator, **never by the subagents** — a sub
 |---|---|
 | "The files don't collide, I don't need analysis" | The independence analysis is what enables parallelism, not what holds it back; without an interface contract, "no collisions today" breaks tomorrow. |
 | "It's a single task, basically sequential" | Yes, and then it goes sequential — the decision tree does not present it as a parallel option. |
-| "The agent's summary says it went well" | The summary is not evidence: COMPLETE suite when consolidating (AP-3). |
+| "The agent's summary says it went well" | The summary is not evidence: run the evidence the consolidation requires per the **Test evidence policy** with its defaults por momento; otherwise suite completa no realizada with motive and limits (AP-3). |
 | "The conflict is small, I'll fix it in my fix session" | Conflicts between domains are resolved by the orchestrator with full context, never by a subagent with a partial view. |
 | "Same file in 2 tasks, I'll dispatch in parallel anyway" | Wave dispatch: same file = serial. |
 | "Each session can update the state file" | Only the orchestrator: concurrent writes = undefined state. |
@@ -195,13 +238,13 @@ Handoff to implementer with: spec, the test that has to pass, interface, systemP
 
 Load `re-entry.md` section "Implementer — GREEN". Critical checks:
 
-- Evidence per the **Test evidence policy** (§ above): the focused test plus the
-  modules the change touches; the complete suite is the closure gate.
+- Evidence per the **Test evidence policy** (§ above) with its defaults por momento: Durante el ciclo the focused test plus the
+  modules the change touches; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits.
 - Implementer did NOT modify tests/.
 
-The evidence follows the **Test evidence policy** (§ above): the focused test plus
-the regression the change requires; the complete suite runs once at the feature's
-closure, not for every GREEN. A registered run may be cited for consecutive
+The evidence follows the **Test evidence policy** (§ above) with its defaults por momento: the focused test plus
+the regression the change requires; see the hogar canónico for the complete suite by moment (recomendada al cierre de feature, obligatoria por defecto al cierre de epic).
+A registered run may be cited for consecutive
 controls under the equivalence rule owned by `re-entry.md` §"Equivalence of a
 registered run" (single canonical source), not duplicated here. If the
 equivalence fails, the affected checks are re-run.
@@ -230,7 +273,7 @@ Handoff to test-writer in properties mode.
 
 ### Re-entry
 
-Properties green with a fixed seed, ≥100 inputs.
+Properties green with a fixed seed and a presupuesto finito y positivo declarado y justificado before the campaign (invariante, dominio y coste); evidence reproducible with semilla.
 
 If a property fails with a specific input: that input is a bug. Handoff to implementer with the counterexample.
 

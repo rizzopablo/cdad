@@ -16,7 +16,7 @@ Un paquete `prepared` que nunca se despachará se retira con motivo y libera `pr
 
 - Contrato: `spec.md` + AJ1–AJ4 + notas de implementación.
 - Tests: `tests/test_007_006_withdraw_and_republish.py` (61 casos).
-- Review: 2 rondas (`ses_e894213beffebC8huMXrjC1Hb8`): ronda 1 NO APTO con 3 bloqueantes (generación parcial en republicación; cuerpo huérfano al fallar la cabeza; guarda AJ1 sobre la unidad activa) → ronda 2 APTO con los tres cerrados y reproducidos.
+- Review: 2 rondas (`<ses-333>`): ronda 1 NO APTO con 3 bloqueantes (generación parcial en republicación; cuerpo huérfano al fallar la cabeza; guarda AJ1 sobre la unidad activa) → ronda 2 APTO con los tres cerrados y reproducidos.
 - **Suite completa (orquestador): 1643 passed, 38 failed — todos del RED de 007-004 (esperados), 5 skipped** (log `.cdad/local/full-007-006.log`).
 - Gate por superficie (`dd095bc`): 946 passed, 1 failed (fixture, corregido en `679305d`), 5 skipped.
 - `validate-state`: VALID. Specs cerradas 007-001/007-002 byte-idénticas a su aprobación.

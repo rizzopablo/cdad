@@ -12,7 +12,7 @@ Uso::
 Orden fijo, cada paso **una** vez (D1): ``validate-state`` -> ``surface
 --collect-only`` (solo si el cambio incluye alguna ruta no documental) ->
 doctrina -> especializacion Odoo -> ``close --all`` (la unica corrida de
-pytest de la corrida entera).
+pytest de la corrida entera, solo bajo autorizacion expresa; sin ella se registra no realizada). Herramienta de corrida completa, no gate focal; su omision nunca es verde.
 
 Evidencia (D8/D10): una raiz nueva por invocacion bajo la base de evidencia
 (default ``.cdad/local``), con ``gate.json`` (esquema 1) y

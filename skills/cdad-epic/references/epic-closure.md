@@ -90,7 +90,7 @@ ADRs that emerged during individual features **should already be** in `docs/adr/
 
 Once:
 
-- Full CI green.
+- Evidence green per the hogar canónico Test evidence policy (Durante el ciclo focused + proportional regression; Cierre de feature con completa recomendada; Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada para ese cierre; otherwise suite completa no realizada with motive, selection and limits / gate no ejecutado recorded as valid output, never as green). La aprobación de la política autoriza la corrida ordinaria de cierre de epic (PC-3); un fallo, error o resultado no atribuible impide declarar verde (PC-6); skips/xfail visibles con motivo y efecto, rc=0 no demuestra suficiencia contractual (PC-7); inestables sin reintentar hasta verde, con hipótesis nueva o bloqueo+escalada (PC-8).
 - The four drafts approved by the user and committed by the orchestrator.
 - ADRs (if any) committed.
 
@@ -98,7 +98,7 @@ You merge the epic branch to main (or whatever the project's flow indicates). St
 
 ## 🛑 Exit gate (E4 → epic done)
 
-- [ ] Full CI green.
+- [ ] Evidence green per the hogar canónico Test evidence policy (focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado as valid output).
 - [ ] `docs/epics/<id>/closure.md` exists with summary, retrospective, debt carried forward.
 - [ ] `docs/activeContext.md` with the epic closure entry.
 - [ ] `docs/progress.md` moved the epic to "done".

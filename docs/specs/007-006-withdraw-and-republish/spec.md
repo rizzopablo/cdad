@@ -1,4 +1,4 @@
-<!-- materializado de cdad-architect ses_e8ae0b6bdffeE9lKjTd2y8drpv (excepción de arranque, sin recibo) -->
+<!-- materializado de cdad-architect <ses-334> (excepción de arranque, sin recibo) -->
 # 007-006 — Withdraw de paquetes preparados y republicación independiente
 
 **Estado:** aprobada por el orquestador (HITL delegada; alcance aprobado por el dueño el 2026-10-25) tras review APTO CON AJUSTES; ajustes AJ1–AJ4 aplicados al final del documento.

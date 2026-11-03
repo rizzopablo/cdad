@@ -72,8 +72,9 @@ Apply the following checks in order:
 | Memory Bank updated, feature merged | **done** |
 
 > Suite frequency follows the evidence policy owned by
-> `references/stage-3-tdd.md` §"Test evidence policy" (proportional regression;
-> complete suite at feature closure).
+> `references/stage-3-tdd.md` §"Test evidence policy" (Durante el ciclo regresión proporcional sin completa
+> como rutina; Cierre de feature recomendada; Cierre de epic obligatoria por defecto o dispensa expresa;
+> detectar estado nunca dispara por sí solo una suite completa).
 
 ### Step 3: Detect the spec's approval mark
 

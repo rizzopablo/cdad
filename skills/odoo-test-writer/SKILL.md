@@ -3,15 +3,15 @@ name: "odoo-test-writer"
 description: >
   Odoo test framework for the CDAD test-writer role on Odoo projects.
   TransactionCase, mandatory @tagged, Form→web, freeze_time for dates,
-  self-contained fixtures without demo data (OCA), make test-one for RED /
-  make test for AUDIT, new_test_user for permissions, post_install for
+  self-contained fixtures without demo data (OCA), test-one selection for RED /
+  AUDIT, make test as authorized complete run, new_test_user for permissions, post_install for
   cross-module. Use in stage 3 (TDD) of any feature on an Odoo addon.
 ---
 
 # odoo-test-writer — test framework in Odoo addons
 
 > OCA rules + official Odoo docs (testing framework). The execution contract
-> (`make test` / `make test-one` / `make test-clean`) lives in the
+> (`make test` / `make test-one` / `make test-clean` / `make test-all`) lives in the
 > `odoo-make-env` skill; here is the test content, not the runner.
 
 ## Applicability: addon tests vs. documentary verifiers
@@ -115,7 +115,7 @@ be found`, a failure that appears far from the cause.
 - The addon's `__init__.py` imports `tests` (or declares the package).
 - One test file per area/case; names `test_<description>.py`.
 
-## Runner: `make test-one` for RED, `make test` for AUDIT
+## Runner: `make test-one` selection for RED/AUDIT, `make test` as authorized complete
 
 - **RED** (new test that must fail): run ONLY that test with
   `make test-one TEST=mod:Class.method` and verify it fails for the right
@@ -127,24 +127,30 @@ be found`, a failure that appears far from the cause.
     valid RED: the method genuinely is not implemented.
   * Invalid as RED: **ImportError** or module load error (indicates the
     test or `tests/__init__.py` is broken, not the feature).
-- **AUDIT / full suite**: `make test` runs the whole suite on the warm DB.
+- **AUDIT**: iterate with the declared selection (`test-one` focused runs, or the project mechanism) for evidencia focal + regresión proporcional (Durante el ciclo); `make test` is the full module suite on the warm DB — Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa, otherwise suite completa no realizada with motive and limits.
 - **Install gate**: `make test-clean` (or `test-all` in multi-module)
-  installs from scratch on a fresh DB — the gate's only full run.
+  installs from scratch on a fresh DB — `test-clean` scoped to the module proves clean install, not suite breadth (amplitud) per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"; `test-all` is the gate's full run when the moment requires it (Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa), otherwise suite completa no realizada with motive and limits. If the `test-clean` runner joins inseparably the required install with a non-authorized complete suite, the salida is bloqueo de instalación limpia y solicitud de autorización o resolución del entorno, never `suite completa no realizada` as its valid output.
 - Evidence = pasted output with the `0 failed, 0 error(s) of N tests` line.
 
-**Run budget:** RED and iteration ONLY with `test-one` on the warm DB (full
-suite = gate, not debugging). Anti-loop cycle: read the full failure →
+**Run budget:** RED and iteration ONLY with `test-one` on the warm DB (Durante el ciclo: focal + regresión proporcional, sin suite completa como rutina, never for debugging; ver hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy"). Anti-loop cycle: read the full failure →
 written hypothesis → ONE change → ONE run; max 2 without convergence → STOP
 and report. Full protocol:
 `odoo-make-env/references/run-budget-protocol.md`.
 
-## Property tests: N as calibration, not contract
+## Property tests: presupuesto declarado, not contract quota
 
-The spec defines WHAT invariant (postcondition); the N of random scenarios
-is a runtime budget, not semantics. Feature-cycle default: small (8-10),
-with a **fixed seed** and explicit N as a file constant. Reducing N is
-documented in the commit as calibration (never as weakening the test);
-raising N belongs to hardening, without touching postconditions.
+The spec defines WHAT invariant (postcondition); the presupuesto finito y positivo declarado before each campaign (invariante, dominio y coste) is a runtime budget, not semantics; no universal minima or maxima. Evidence reproducible: invariante, presupuesto declarado y cantidad realmente ejecutada, semilla fija, versión/config del generador, contraejemplo pertinente. Changing the presupuesto requires justificación and checking no committed obligation is removed.
+
+## Sustitutos de comportamiento vigente (recorrido POST-AUDIT, por referencia a R2)
+
+El recorrido de sustitución/consolidación se rige por R2
+(`sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6):
+disposición única, sustituto físicamente nuevo admitido solo en POST-AUDIT
+como Sustituir/Consolidar de vigente identificado en el AUDIT aprobado, con
+ejecución verde más sensibilidad demostrada frente a un defecto contractual
+concreto, originales conservados hasta la evidencia y mapa de obligaciones
+PC-5. Nunca va a RED por ser archivo nuevo. RED queda solo para
+comportamiento pendiente.
 
 ## Permissions: `new_test_user`
 

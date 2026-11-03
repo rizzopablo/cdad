@@ -301,10 +301,21 @@ If it fails for the wrong reason (ImportError, etc.): handoff back to the test-w
 
 If it passes: update `postconditions_status: { "<N>": "red" }` and `tdd_substage: "green"`. Emit handoff to implementer.
 
+### Test-writer — POST-AUDIT (sustitutos de vigente, por referencia a R2)
+
+Check (R2 owns the recorrido: `sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6):
+
+- [ ] Every test carries exactly one disposition; references between operations do not duplicate it; uncertainty kept as Mantener.
+- [ ] Every Sustituir/Consolidar identifies origen y destino, committed vigente obligations, relevant state/action/effect differences, location of each check in the destination, and evidence + sensitivity + limits (PC-5); Retirar cites the obligation removed in the approved spec.
+- [ ] Physically new destinations show verde execution plus sensibilidad frente a defecto contractual concreto (no import/fixture/false assert as sensitivity); originales kept until destination + evidence; never sent to RED for being new files.
+- [ ] Untouched tests stay exactly intact and green; modified/sustituto results reported separately from untouched ones.
+
+If sensitivity is missing or unaccredited: verdict Mantener possible; do not accept the substitution — record the block and keep the originals.
+
 ### Implementer — GREEN
 
 Check:
-- [ ] The user pasted the evidence the change requires — focused tests plus the modules it touches — per the **Test evidence policy** (`stage-3-tdd.md` §"Test evidence policy"); the complete suite is the closure gate.
+- [ ] The user pasted the evidence the change requires — focused tests plus the modules it touches — per the **Test evidence policy** (`stage-3-tdd.md` §"Test evidence policy"); Durante el ciclo focal + proporcional, Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits.
 - [ ] The regression is green, including previous tests.
 - [ ] A commit with the `feat:` prefix exists.
 - [ ] The implementer did NOT modify `tests/` (check with `git diff --stat <base>..HEAD -- tests/` if you have access, or by asking the user).
@@ -338,7 +349,7 @@ If it passes: the state file does not change (the postcondition stays green). Yo
 
 Check:
 - [ ] Property tests exist and run with a fixed seed.
-- [ ] The user pasted output showing the properties green with reasonable volume (≥100 inputs).
+- [ ] The user pasted output showing the properties green with presupuesto declarado y justificado, semilla fija and reproducible evidence (declarado vs ejecutado).
 - [ ] Commit with the `test:` prefix.
 
 If a property fails with a specific input: that input is a bug. Handoff to implementer with the counterexample input.
@@ -409,6 +420,27 @@ If the role's output doesn't meet the expected format, or critical info is missi
 > *"To validate the RED of postcondition <N>, I need the run output showing the assertion error. Can you paste it for me?"*
 
 You don't assume green. You don't assume correct. Verification is empirical.
+
+---
+
+## Inventario vivo (013-002 PC-7) — re-entry de cambios de tests
+
+La declaración vive en `docs/suite-maintenance.md` `## Inventario vivo`
+(el comando de integridad declarado, inventario y mapa). En cada
+re-entry de RED, properties, E2E y POST-AUDIT con cambios de tests, y en el
+re-entry de GREEN, el orquestador lee esa sección y materializa los deltas
+antes de la siguiente transición; en GREEN comprueba y registra la
+desactualización respecto de la revisión recibida (GREEN no produce cambios
+de tests). Si no hay inventario vivo declarado, registra
+`sin inventario vivo declarado` sin bloquear. El test-writer entrega el delta
+de altas (nodeid, capacidad, contrato, procedencia) como texto; el orquestador
+lo materializa al re-entry. Los cambios de orígenes o destinos incorporan
+además el delta del mapa de PC-6; POST-AUDIT devuelve los deltas documentales
+pertinentes bajo la misma separación de responsabilidades. `validate` con rc=0
+bloquea solo en entrada a Review y cierre, medido sobre la revisión que ya
+contiene los deltas materializados y los últimos cambios de tests; en los
+re-entries intermedios un resultado no cero se registra sin bloquear por
+inventario.
 
 ---
 

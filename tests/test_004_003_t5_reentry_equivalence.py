@@ -141,6 +141,19 @@ EVIDENCE_RE = re.compile(r"evidencia|evidence", re.IGNORECASE)
 ONCE_PER_GREEN_RE = re.compile(r"una vez|once", re.IGNORECASE)
 GREEN_RE = re.compile(r"green", re.IGNORECASE)
 
+# 013-001 PC-12/PC-13 (Sustituir, disposición única, Resolución 2026-11-02):
+# la política autorizada se reconoce por la autorización expresa en la ventana
+# de cada `suite` y por la cláusula de equivalencia (o la referencia a la
+# fuente única re-entry). El mandato incondicional «una vez por GREEN» es la
+# norma anterior que ya no puede exigirse.
+SUITE_RE = re.compile(r"suite", re.IGNORECASE)
+AUTH_EXPRESS_RE = re.compile(
+    r"autorizaci[óo]n expresa|autorizaci[óo]n previa|autorizaci[óo]n suficiente|"
+    r"con autorizaci[óo]n|express authorization|authorized|authorization",
+    re.IGNORECASE,
+)
+EQUIV_OR_REENTRY_RE = re.compile(r"equivalenc|re-entry", re.IGNORECASE)
+
 REENTRY_REF_RE = re.compile(r"re-entry", re.IGNORECASE)
 
 
@@ -353,22 +366,28 @@ class TestPd10TwoAttemptsReconciledWithNoProgress(ReEntryRuleOracle):
 
 class TestG2Stage3GateGainsEquivalenceClause(unittest.TestCase):
     def test_g2_stage3_tdd_gate_cites_the_equivalence_clause(self) -> None:
-        """G2: el gate 'suite completa una vez por GREEN / suite completa
-        verde' de stage-3-tdd.md gana la cláusula de equivalencia (o refiere
-        la fuente única), para que el cierre del ciclo cite la misma regla de
-        re-entry."""
+        """G2 + 013-001 PC-12/PC-13 (Sustituir, disposición única, Resolución
+        2026-11-02): el gate de suite completa de stage-3-tdd.md solo corre con
+        autorización expresa y cita la cláusula de equivalencia (o refiere la
+        fuente única re-entry), para que el cierre cite la misma regla.
+
+        Trazabilidad: promesa E; PC-12, PC-13. Sin este test, el usuario cierra
+        con (o sin) suite completa sin autorización trazable o pierde la cita
+        de equivalencia en el cierre.
+        """
         text = load(STAGE3)
         gate = find_region(
             text,
-            ONCE_PER_GREEN_RE,
-            GREEN_RE,
-            EQUIVALENCE_RE,
+            SUITE_RE,
+            AUTH_EXPRESS_RE,
+            EQUIV_OR_REENTRY_RE,
         )
         self.assertIsNotNone(
             gate,
-            "stage-3-tdd.md no presenta el gate de suite completa una vez por "
-            "GREEN con la cláusula de equivalencia (G2): el cierre del ciclo "
-            "no cita la regla única de corridas de re-entry",
+            "stage-3-tdd.md no presenta el gate de suite completa con "
+            "autorización expresa y la cláusula de equivalencia (G2 + "
+            "PC-12/PC-13): el cierre del ciclo no cita la regla única de "
+            "corridas de re-entry bajo la política autorizada",
         )
 
 

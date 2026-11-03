@@ -158,6 +158,34 @@ Example — declare what is living and what is contract:
 `contract`: approved spec/plan, `docs/cdad-policy.json`, and the state projected
 to its authority fields.
 
+### Broad documentary scopes vs `contract` references (008-004 PC-06 / 015-002 D2)
+
+A documentary scope such as `docs=docs` is deliberately broad — and that is
+exactly where it collides with `contract` references. A NEW `begin` whose
+`contract` reference falls inside the packet's own `write_scope` is refused
+**before persisting** (008-004 PC-06): a contract reference must not be
+writable by the packet that cites it, and it is never reclassified
+automatically.
+
+- **Limit:** `docs=docs` does **not** cover the packet's own contract folder
+  (`docs/specs/<feature>/` of the packet's contract): citing that spec as
+  `contract` while the packet may write under `docs/` is refused. Narrow the
+  scope instead (`--write-scope` only to what the role will actually write,
+  e.g. `--write-scope implementation=skills`); a `contract` outside the
+  `write_scope` stays admissible.
+- **Living, only when genuinely mutable:** when the document is genuinely
+  mutable (a ledger, `debt.md`, a closing/amendment draft), declare it
+  explicitly as living — and only then:
+
+  ```json
+  {"path": "docs/specs/015-002-intake-guards/debt.md", "class": "living"}
+  ```
+
+  An explicit `living` that validates is admitted; an approved contract is
+  never reclassified to `living` to evade the rejection, and there are no
+  shortcuts over approved contracts (no negative exclusions, no nonexistent
+  selectors).
+
 ## Known limits
 
 - **No rollback/replay of an old head:** restoring an older head plus its bodies

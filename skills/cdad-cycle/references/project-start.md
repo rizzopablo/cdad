@@ -147,7 +147,14 @@ when that entry exists and is `queued`), and atomically writes `active_feature`,
 the entry's `in-progress`+`opened_at` and `current_stage=discovery`. It
 **refuses** (without writing) when a unit is already open or when a declared
 `depends_on` dependency is not `done`; when the entry declares no dependencies
-it says so explicitly (the plan order is the authority). The rule lives in the
+it says so explicitly (the plan order is the authority). **First `queued`
+means the first *eligible* one (015-002 D3):** `queued` units that belong to
+an epic with a registered closure (`epic-closure` in `epic_history`,
+membership by structural row in `docs/epics/<epic>/plan.md`) are skipped —
+they stay `queued`, never `done` — and the opening names them; `--feature`
+of such a unit is refused naming the unit and its closed epic (the flag does
+not evade the closure); with no eligible unit the operation reports it
+(`no hay candidata elegible`) and writes nothing. The rule lives in the
 spec (`PD-7`), the executable invocation in the asset
 `assets/orientation-examples.json` and its operating row in `orientation.md` —
 this section **references** them and does not repeat the procedure.

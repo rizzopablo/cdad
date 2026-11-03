@@ -573,7 +573,8 @@ class TestInv04Properties(AgentBindingCase):
         """INV-04/PC-08 (conservación): para cada una de las 100 entradas
         válidas generadas, el request publicado conserva los campos que ya
         tenía (ninguno se pierde y el conjunto solo crece con
-        ``agent``/``execution_context``), los campos declarados por el fixture
+        ``agent``/``execution_context``/``instruction_sources``), los campos
+        declarados por el fixture
         y el contrato conservan su valor, y el render publicado no contiene el
         campo ``agent``.
 
@@ -614,11 +615,12 @@ class TestInv04Properties(AgentBindingCase):
 
                 self.assertEqual(
                     set(published),
-                    set(fixture_request) | {"agent", "execution_context"},
+                    set(fixture_request)
+                    | {"agent", "execution_context", "instruction_sources"},
                     msg="INV-04 violada: el request publicado no conserva el "
                     "conjunto de campos admitido (creció con un campo que no es "
-                    f"`agent`/`execution_context`); {case.label}: "
-                    f"{sorted(set(published) ^ (set(fixture_request) | {'agent', 'execution_context'}))}",
+                    f"`agent`/`execution_context`/`instruction_sources`); {case.label}: "
+                    f"{sorted(set(published) ^ (set(fixture_request) | {'agent', 'execution_context', 'instruction_sources'}))}",
                 )
                 for key in preserved_values:
                     self.assertEqual(

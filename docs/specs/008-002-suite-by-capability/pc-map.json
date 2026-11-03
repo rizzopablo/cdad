@@ -442,6 +442,36 @@
       "target_nodeid": "tests/test_005_010_t1_durable_signal.py:296,:336; tests/test_005_010_reviewfix.py:424; tests/test_005_010_b1_last_assistant.py:180",
       "decision": "mantener",
       "equivalence_justification": "cota instrumental; NO acredita el ≤2s de 006-001 PD-11 (:316-323). No removibles en ninguna fusión de T4"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-013-unit-contract/spec.md",
+        "id": "PD-4"
+      },
+      "accreditation_source": "docs/specs/005-013-unit-contract/spec.md:375-389 (PD-4 publicación única y pin; semilla 013-002 sin acreditación de sustitución, VERIFY justificado)",
+      "amendment": null,
+      "status": "VERIFY",
+      "original_nodeid": "tests/test_005_013_t1_unit_projection.py::test_b1_collision_with_published_projection_fails_closed_and_keeps_bytes",
+      "variant_observable": "con paquete ya publicado y prepare con --out-dir custom vacío que acuña el mismo packet_id: falla cerrado rc!=0 nombrando el paquete en conflicto; bytes de UNIT-CONTRACT.md y REQUEST.json del paquete viejo byte-idénticos (sha antes == después)",
+      "target_nodeid": "tests/test_005_013_t1_unit_projection.py::test_b1_collision_with_published_projection_fails_closed_and_keeps_bytes",
+      "decision": "mantener",
+      "equivalence_justification": "semilla revisable B1 (013-002): conserva la diferencia de observar rechazo, diagnóstico y conservación de bytes frente al par; sin sustituto ni acreditación; destino actual antes de sustitución acreditada",
+      "task": "013-002-live-inventory"
+    },
+    {
+      "contract": {
+        "spec": "docs/specs/005-013-unit-contract/spec.md",
+        "id": "PD-6"
+      },
+      "accreditation_source": "docs/specs/005-013-unit-contract/spec.md:389-406 (PD-6 recepción y resume contra contrato recibido; semilla 013-002 sin acreditación de sustitución, VERIFY justificado)",
+      "amendment": null,
+      "status": "VERIFY",
+      "original_nodeid": "tests/test_005_013_t1_unit_projection.py::test_b1_collision_leaves_the_old_packet_valid_and_receivable",
+      "variant_observable": "tras colisión fallida y restitución del binding: contract.sha256 sigue coincidiendo con la proyección y receive da packet_validation passed, identity_validation passed y semantic_status pending (paquete viejo recebible)",
+      "target_nodeid": "tests/test_005_013_t1_unit_projection.py::test_b1_collision_leaves_the_old_packet_valid_and_receivable",
+      "decision": "mantener",
+      "equivalence_justification": "semilla revisable B1 (013-002): conserva la diferencia de observar despacho previo, correspondencia del pin y recepción posterior frente al par; sin sustituto ni acreditación; destino actual antes de sustitución acreditada",
+      "task": "013-002-live-inventory"
     }
   ],
   "form_only_duplication_applied": "tests/suite_signal_helpers.py (commit 3bbfc8b)"

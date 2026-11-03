@@ -1,4 +1,4 @@
-<!-- materializado de cdad-architect ses_e8adeb3e4ffexoEIxZycZVAit3 (excepción de arranque acotada, sin recibo) -->
+<!-- materializado de cdad-architect <ses-335> (excepción de arranque acotada, sin recibo) -->
 # 007-007 — Suspender y reanudar unidades
 
 **Estado:** aprobada por el orquestador (HITL delegada; alcance aprobado por el dueño el 2026-10-25) tras review NO APTO → ajustes A1–A5 aplicados en «Ajustes del orquestador».  

@@ -82,7 +82,7 @@ Lint evidence is mandatory in the review:
 The review of an Odoo feature requires, in addition to the diff analysis:
 
 1. **`make test-clean`** green — install-from-scratch gate with demo data,
-   pasted output (`0 failed, 0 error(s) of N tests` line).
+   pasted output (`0 failed, 0 error(s) of N tests` line). Instalación limpia and suite-complete breadth (amplitud) are distinct dimensions per the hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy": never infer the whole suite from the `test-clean` name; la completa sigue su default por momento (Durante el ciclo sin completa como rutina, Cierre de feature recomendada, Cierre de epic obligatoria por defecto o dispensa expresa), otherwise suite completa no realizada.
 2. **oca-checks** with no findings — the OCA manifest checker (`oca-checks
    --manifest` / `--oca-addons-cfg`) returns 0 problems.
 3. **pylint-odoo** with no blocking `E` (see catalog above), `W`/`C`

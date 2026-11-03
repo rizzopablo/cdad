@@ -14,8 +14,13 @@
 
 ## Principles
 
-1. **The full suite is for the gate, not for debugging.** Debugging =
-   `test-one` on the warm DB; the full suite runs ONCE to close the gate.
+1. **Defaults por momento (hogar canónico `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy").**
+   Durante el ciclo: `test-one` focal + regresión proporcional, sin suite completa como rutina;
+   cierre de feature: suite completa recomendada, si se omite se registra suite completa no realizada
+   con motivo, selección ejecutada y límites; cierre de epic: suite completa obligatoria por defecto,
+   omitirla requiere dispensa expresa del dueño para ese cierre. Debugging =
+   `test-one` on the warm DB; la aprobación de la política autoriza la corrida ordinaria de cierre
+   de epic sin exigir autorización adicional para esa corrida.
 2. **The cost is the setup.** Minimize the number of setups, not the number
    of tests. A setup that does not follow a change with a hypothesis is pure
    waste.
@@ -25,19 +30,34 @@
    escalate, not retry.
 5. **Evidence already produced is reusable** if the code tree is identical
    (see "Review: budget 0").
-6. **The N of property tests is runtime calibration, not contract.** The
-   postcondition defines WHAT invariant; M scenarios is a budget. A larger N
-   belongs to hardening.
+6. **El N de property tests es presupuesto declarado, no contrato.** La postcondición
+   define QUÉ invariante; su presupuesto se rige por R2
+   (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`): finito y
+   positivo declarado y justificado antes de cada campaña (invariante, dominio
+   y coste), sin mínimos ni máximos universales. Evidencia reproducible por
+   referencia a R2.
 
 ## Budget per stage (defaults; adjust per project)
 
 | Stage | Allowed run | Default budget |
 |---|---|---|
 | RED (test-writer) | `test-one` per class, warm DB | 1-2 runs, 0 full |
-| GREEN (implementer, iteration) | `test-one` | max 2 per failure without convergence → STOP. `test-clean`/`make test` forbidden during iteration |
-| GREEN closure | ONE `test-all` (fresh DB) | 1 |
-| Review (reviewer) | none if the tree is identical; if it changed, 1 `test-all` | 0-1 |
-| Review fix | mini RED→fix cycle with `test-one` + ONE `test-all` gate | ~15 `test-one` and 2 full runs per feature |
+| GREEN (implementer, iteration = Durante el ciclo) | `test-one` | max 2 per failure without convergence → STOP. `test-clean`/`make test` forbidden during iteration |
+| Cierre de feature | `test-all` recomendada (fresh DB); si se omite, suite completa no realizada con motivo, selección ejecutada y límites | 0-1, recomendada |
+| Cierre de epic | `test-all` obligatoria por defecto (fresh DB); omitirla requiere dispensa expresa del dueño para ese cierre | 1 por defecto, 0 solo con dispensa registrada |
+| Review (reviewer) | none if the tree is identical; if it changed, evidencia proporcional al cambio, no una nueva suite completa automática; `test-all` solo cuando el momento lo exige (cierre) o con autorización suficiente para esa corrida, otherwise cite + suite completa no realizada | 0-1 cuando el momento lo exige |
+| Review fix | mini RED→fix cycle with `test-one` + evidencia proporcional; `test-all` solo cuando el momento lo exige, otherwise focal + suite completa no realizada | ~15 `test-one`; completa solo si el momento la exige |
+
+## Instalación limpia frente a amplitud (PC-14)
+
+Instalación limpia y amplitud son dimensiones distintas: `test-clean` (instalación desde cero en
+DB nueva, módulo acotado) prueba instalación limpia, no amplitud de suite. La amplitud (cuántos
+tests corren) no demuestra instalación limpia y la instalación limpia no demuestra amplitud total.
+`test-clean` sigue exigible cuando la spec lo marca; si su runner une inseparablemente la
+instalación exigida con una suite completa no autorizada para esa corrida, la salida es bloqueo de
+instalación limpia y solicitud de autorización o resolución del entorno, nunca `suite completa no
+realizada` como su salida válida. Un encargo sin cambios de addon no adquiere obligaciones de
+instalación por dominio del proyecto.
 
 ## Target `test-all` (multi-module: one setup for all suites)
 
@@ -83,12 +103,16 @@ If `git diff --stat <commit-of-the-evidence-run>..HEAD` shows only
 its log and its commit (state file or commit message). Static analyzers
 (`make lint`) do not consume budget.
 
-## Property tests: N as calibration
+## Property tests: presupuesto declarado por referencia a R2
 
-The spec defines the postcondition; the default N of the feature cycle is
-small (8-10), with a **fixed seed** and explicit N as a constant. Reducing N
-is documented in the commit as calibration (not weakening). Raising N
-belongs to hardening, without touching postconditions.
+La postcondición define QUÉ invariante; el presupuesto se rige por R2
+(`sources/roles/test-writer.md`, `cdad-shared:convention-rule`): finito y
+positivo declarado y justificado antes de cada campaña (invariante, dominio y
+coste), sin mínimos ni máximos universales; evidencia reproducible
+(invariante, presupuesto declarado y cantidad realmente ejecutada, semilla
+fija, versión/config del generador, contraejemplo pertinente). Cambiar el
+presupuesto exige justificación y comprobar que no elimina obligaciones
+comprometidas; se registra como calibración, nunca como cuota rival.
 
 ## Self-contained fixtures (fresh DB condition)
 

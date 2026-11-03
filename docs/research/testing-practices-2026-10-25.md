@@ -1,4 +1,4 @@
-<!-- researcher ses_e8a77e229ffe4aYDFB8aY1DJvu, 2026-10-25 -->
+<!-- researcher <ses-330>, 2026-10-25 -->
 # Diseño, consolidación y validación de una suite de tests escrita por un agente LLM
 
 Marco cada afirmación así: **[F]** es un hecho tomado de la fuente enlazada; **[R]** es una recomendación o inferencia mía, que no viene de ninguna fuente. Ningún umbral numérico de las secciones 5b y 5c sale de la literatura: todos son propuestas mías.

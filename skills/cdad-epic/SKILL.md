@@ -116,8 +116,8 @@ E4: Epic closure                  → references/epic-closure.md
 ### Gate E3 → E4 — Integration → Closure
 
 - [ ] Cross-feature E2E tests exist and pass.
-- [ ] Full suite green (including all individual feature tests and the new cross-feature ones).
-- [ ] CI green on main / the epic's release branch.
+- [ ] Evidence per the hogar canónico Test evidence policy (Durante el ciclo focused + proportional regression; Cierre de feature con completa recomendada; Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada para ese cierre; otherwise suite completa no realizada with motive, selection and limits / gate no ejecutado recorded as valid output, never as green; including all individual feature tests and the new cross-feature ones when the moment requires it).
+- [ ] CI green per the hogar canónico Test evidence policy (Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada; otherwise suite completa no realizada / gate no ejecutado recorded as valid output, never as green) on main / the epic's release branch. La aprobación de la política autoriza la corrida ordinaria de cierre de epic.
 
 ### Gate E4 → done — Closure
 

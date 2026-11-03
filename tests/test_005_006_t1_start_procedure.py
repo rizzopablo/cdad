@@ -605,22 +605,60 @@ def _unmarked_install_relative_lines(text: str, lo: int, hi: int):
 
 
 def test_pd10_installed_cli_paths_in_t1_wiring_points():
-    # SKILL.md ≈:260-261 y ≈:451-452 (ventanas acotadas a los puntos que lista
-    # el plan; toleran el corrimiento de las ediciones del paso 1 ≈:242-244 y
-    # de la fila de tabla ≈:443-460, sin arrastrar puntos fuera del plan).
+    # PD-10 005-006 + 014-002 PC-1/PC-2. Sin este test, el usuario seguiría una
+    # guía cuyos puntos de cableado invocan al CLI con una ruta relativa al
+    # proyecto consumidor y el arranque fallaría fuera del repo instalado sin
+    # diagnóstico (promesa: puntos de cableado con ruta derivada de <skill-dir>).
+    # SKILL.md ≈:260-261 (ventana acotada al punto que lista el plan; tolera el
+    # corrimiento de las ediciones del paso 1 ≈:242-244, sin arrastrar puntos
+    # fuera del plan).
     skill = _load(SKILL)
-    for label, lo, hi in (("SKILL.md:260-261", 250, 276), ("SKILL.md:451-452", 444, 464)):
-        window_lines = [line for _, line in _window(skill, lo, hi)]
-        assert any(PD10_CLI_RELATIVE.search(line) for line in window_lines), (
-            f"PD-10 violada: el punto de cableado {label} ya no invoca al CLI "
-            "(cdad_packet/cdad_continuity/cdad_result) — no se puede corregir "
-            "su ruta ni verificar la ruta instalada"
+    label, lo, hi = ("SKILL.md:260-261", 250, 276)
+    window_lines = [line for _, line in _window(skill, lo, hi)]
+    assert any(PD10_CLI_RELATIVE.search(line) for line in window_lines), (
+        f"PD-10 violada: el punto de cableado {label} ya no invoca al CLI "
+        "(cdad_packet/cdad_continuity/cdad_result) — no se puede corregir "
+        "su ruta ni verificar la ruta instalada"
+    )
+    offenders = _unmarked_install_relative_lines(skill, lo, hi)
+    assert not offenders, (
+        f"PD-10 violada en {label}: ruta del CLI relativa al proyecto "
+        "consumidor (debe expresarse con la ruta derivada del directorio "
+        f"de la skill cargada, marcador `<skill-dir>`): {offenders}"
+    )
+    # 014-002 PC-1: la ventana fija 444-464 (SKILL.md:451-452) derivó — el punto
+    # está hoy en :466-467 — y cualquier edición la vuelve a desplazar; se ancla
+    # por contenido: filas continuity.md y project-execution.md de la tabla
+    # «How to read the references», una por vez para que la ausencia de
+    # cualquiera de las dos falle (014-002 PC-2: sin per-fila, una fila
+    # superviviente enmascara la desaparición de la otra).
+    idx, rows = _table_rows_under_heading(skill, PD1_HEADING)
+    assert idx is not None, (
+        "PD-10 violada: SKILL.md no declara la sección «How to read the "
+        "references» que ancla el punto de cableado (014-002 PC-1)"
+    )
+    for anchor in ("continuity.md", "project-execution.md"):
+        target_rows = [row for row in rows if anchor in row]
+        assert target_rows, (
+            "PD-10 violada: la tabla «How to read the references» de SKILL.md ya no "
+            f"tiene la fila de {anchor} que ancla el punto de cableado "
+            "(014-002 PC-2: la fila desapareció de la ventana/ancla)"
         )
-        offenders = _unmarked_install_relative_lines(skill, lo, hi)
-        assert not offenders, (
-            f"PD-10 violada en {label}: ruta del CLI relativa al proyecto "
-            "consumidor (debe expresarse con la ruta derivada del directorio "
-            f"de la skill cargada, marcador `<skill-dir>`): {offenders}"
+        assert any(PD10_CLI_RELATIVE.search(row) for row in target_rows), (
+            f"PD-10 violada: la fila de {anchor} ya no "
+            "invoca al CLI (cdad_packet/cdad_continuity/cdad_result) — no se puede "
+            "verificar la ruta instalada (014-002 PC-1)"
+        )
+        anchor_offenders = [
+            row.strip()
+            for row in target_rows
+            if PD10_CLI_RELATIVE.search(row) and not PD10_SKILL_DIR_MARK.search(row)
+        ]
+        assert not anchor_offenders, (
+            f"PD-10 violada en la fila de {anchor}: ruta del "
+            "CLI relativa al proyecto consumidor (debe expresarse con la ruta derivada "
+            "del directorio de la skill cargada, marcador `<skill-dir>`; 014-002 PC-2): "
+            f"{anchor_offenders}"
         )
 
     # continuity.md ≈:31-44.
