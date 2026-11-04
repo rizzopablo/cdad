@@ -14,10 +14,17 @@ suite no forman parte del epic; el tramo 2 está autorizado por
 
 ## Despliegue
 
-- **016-001, 016-002 y 016-003 no agregan instalación publicada.** Las tres cerraron **sin publicar ni
-desplegar** (su `closure.md` lo declara): el registro de vínculo, el `gap-report` y el revisor de tramos
-existen en el repo y **no en el árbol instalado**. Redesplegar sigue siendo decisión del dueño; el
-instalador no se ejecutó en estos cierres.
+- **Al día con la publicación `cbeab5f0` (epic 016, 2026-11-04).** Instalado desde el árbol local
+`b015f7b0` y publicado como un commit squash sobre `origin/main` (`666c37b8..cbeab5f0`, fast-forward,
+exactamente 1 commit desde la base capturada; 98 archivos, +50 643/−5 326). El instalador dejó **11/11
+agentes** y el árbol canónico de skills **byte-idéntico al repo** (incluye `cdad_contract_links.py`,
+`cdad_suite_review.py` y las referencias nuevas); respaldo previo en
+`<workspace>/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check` y `scripts/validate-subagents.sh`
+(F011) salen **rc=1** por los 16 caminos de skills que son symlinks a `~/.agents/skills` (artefacto del
+entorno, no drift de contenido); `make validate` **182 PASS / 1 FAIL** por el mismo F011 preexistente, y ese
+ejercicio no se declara gate verde. Publicación saneada: rutas locales e ids de sesión —incluidos los
+truncados que ya estaban publicados en 43 archivos previos— quedaron como marcadores estables, y el escaneo
+de patrones privados no encontró hallazgos.
 
 - **Al día con la publicación del epic 010.** `main` remoto = `a42f2a20` (squash,
   árbol idéntico al de `main` local), y la instalación soportada se re-sincronizó

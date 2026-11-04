@@ -1,0 +1,19 @@
+{
+  "attempt": 1,
+  "body_sha256": "9038f7ee24d09e59e63d94039008328470e8d8dbe0291771227f4668eb055b7c",
+  "bytes": 697,
+  "checkpoint": "continuity-checkpoint-v1",
+  "execution_id": "exec-003-007-t1-red-001",
+  "max_bytes": 16384,
+  "no_op": false,
+  "packet_id": "003-007-living-continuity-implementer-red-001",
+  "prev_checkpoint_sha256": null,
+  "references": [
+    {
+      "path": "fixture/legacy-note.md",
+      "sha256": "82992b324a36ab6e4cb18b41a1b7b8d83cbf631704f862fd59057744e64a313d"
+    }
+  ],
+  "schema_version": 1,
+  "seq": 1
+}

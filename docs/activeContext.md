@@ -6005,3 +6005,16 @@ rama local, así que el diff mezcló 593 rutas previas al epic y tres quedaron s
 `gap-report` y el revisor de tramos. Los tramos 2–5 de la revisión no forman parte del epic; el tramo 2 está
 autorizado por `docs/specs/016-003-suite-review-tranche-1/tranche-1/decision.md`, con revisión si el costo se aparta
 más de 30 % de la proyección.
+
+## 2026-11-04 — Despliegue y publicación del epic 016 (autorizados por Pablo)
+
+Epic 016 desplegado al HOME y publicado en `origin/main` como un commit squash (`cbeab5f0`, padre
+`666c37b8`, fast-forward, exactamente 1 commit desde la base capturada; 98 archivos, +50 643/−5 326).
+Instalador: **11/11 agentes**, árbol canónico de skills **byte-idéntico al repo** (con las dos herramientas
+nuevas y sus referencias), respaldo en `<workspace>/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check`
+y `scripts/validate-subagents.sh` (F011) salen rc=1 por los 16 caminos de skills que son symlinks a
+`~/.agents/skills` —artefacto del entorno, no drift de contenido—; `make validate` da 182 PASS / 1 FAIL por el
+mismo F011 preexistente y no se declara gate verde. Saneamiento de la publicación: rutas locales e ids de
+sesión, incluidos los truncados que ya estaban publicados en 43 archivos previos, a marcadores estables; sin
+hallazgos de patrones privados. Lo publicado coincide con el árbol del cierre más ese saneamiento; el
+historial detallado sigue local y `main` local queda un commit por delante del remoto, por diseño.
