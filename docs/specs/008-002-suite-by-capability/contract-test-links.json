@@ -1,0 +1,655 @@
+{
+  "schema_version": 1,
+  "unit": "008-002-suite-by-capability",
+  "contract": {
+    "path": "docs/specs/008-002-suite-by-capability/spec.md",
+    "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "Inventario exhaustivo y selector válido"
+    },
+    {
+      "id": "PC-2",
+      "promise": "B",
+      "locator": "Selección ejecutable por capacidad"
+    },
+    {
+      "id": "PC-3",
+      "promise": "C",
+      "locator": "Conservación de obligaciones y variantes"
+    },
+    {
+      "id": "PC-5",
+      "promise": "D",
+      "locator": "Gate sensible a cambios exclusivamente de tests"
+    },
+    {
+      "id": "PC-6",
+      "promise": "E",
+      "locator": "Evidencia de cierre sin sobrescritura"
+    },
+    {
+      "id": "PC-7",
+      "promise": "F",
+      "locator": "Deuda temporal explícita"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_ok_with_complete_inventory"
+      },
+      "protects": "test_pc1_validate_ok_with_complete_inventory: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "todos los módulos Python versionados bajo"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_rejects_omitted_module"
+      },
+      "protects": "test_pc1_validate_rejects_omitted_module: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "módulo omitido, nodeid inexistente"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_rejects_nonexistent_nodeid"
+      },
+      "protects": "test_pc1_validate_rejects_nonexistent_nodeid: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "módulo omitido, nodeid inexistente"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_rejects_unknown_capability"
+      },
+      "protects": "test_pc1_validate_rejects_unknown_capability: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "módulo omitido, nodeid inexistente"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_rejects_incomplete_mixed_assignment"
+      },
+      "protects": "test_pc1_validate_rejects_incomplete_mixed_assignment: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Las asignaciones de módulos mixtos declaran nodeids explícitos"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc1_validate_rejects_nonexistent_inventory_nodeid"
+      },
+      "protects": "test_pc1_validate_rejects_nonexistent_inventory_nodeid: validate acepta un inventario íntegro y rechaza el defecto estructural declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Las asignaciones de módulos mixtos declaran nodeids explícitos"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc2_list_returns_exact_sorted_unique_selection"
+      },
+      "protects": "test_pc2_list_returns_exact_sorted_unique_selection: list/run operan exactamente sobre la selección de la capacidad.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "devuelve exactamente los nodeids asignados a X, ordenados y sin duplicados"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc2_mixed_module_selects_exact_nodeids"
+      },
+      "protects": "test_pc2_mixed_module_selects_exact_nodeids: list/run operan exactamente sobre la selección de la capacidad.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "devuelve exactamente los nodeids asignados a X, ordenados y sin duplicados"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc2_run_executes_only_selection"
+      },
+      "protects": "test_pc2_run_executes_only_selection: list/run operan exactamente sobre la selección de la capacidad.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "sin errores de imports ni ejecución de tests ajenos"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc2_run_propagates_selected_failure"
+      },
+      "protects": "test_pc2_run_propagates_selected_failure: list/run operan exactamente sobre la selección de la capacidad.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Los comandos de ejecución propagan el resultado de pytest"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc3_validate_rejects_missing_target"
+      },
+      "protects": "test_pc3_validate_rejects_missing_target: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "rechaza destinos inexistentes, desaparición de obligaciones acreditadas"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc3_validate_rejects_disappeared_accredited_obligation"
+      },
+      "protects": "test_pc3_validate_rejects_disappeared_accredited_obligation: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Cada obligación acreditada antes conserva destinos recolectables después"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc3_validate_rejects_elimination_with_pending_verify"
+      },
+      "protects": "test_pc3_validate_rejects_elimination_with_pending_verify: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Cada eliminación exige sustituto identificado"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc3_validate_rejects_committed_disappearance_vs_baseline"
+      },
+      "protects": "test_pc3_validate_rejects_committed_disappearance_vs_baseline: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Cada obligación acreditada antes conserva destinos recolectables después"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_selects_uncommitted_test_only_change"
+      },
+      "protects": "test_pc5_surface_selects_uncommitted_test_only_change: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "modificar únicamente un test hace que"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_base_without_inventory_fails"
+      },
+      "protects": "test_pc5_surface_base_without_inventory_fails: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Una dependencia sin clasificación produce diagnóstico no cero"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_all_explicit_selects_everything"
+      },
+      "protects": "test_pc5_surface_all_explicit_selects_everything: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Una dependencia sin clasificación produce diagnóstico no cero"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_selects_new_untracked_test"
+      },
+      "protects": "test_pc5_surface_selects_new_untracked_test: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "modificar únicamente un test hace que"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_deleted_test_selects_declared_substitute"
+      },
+      "protects": "test_pc5_surface_deleted_test_selects_declared_substitute: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "modificar únicamente un test hace que"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_moved_test_selects_base_map_targets"
+      },
+      "protects": "test_pc5_surface_moved_test_selects_base_map_targets: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "modificar únicamente un test hace que"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_helper_change_selects_declared_consumers"
+      },
+      "protects": "test_pc5_surface_helper_change_selects_declared_consumers: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Una dependencia sin clasificación produce diagnóstico no cero"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_product_change_selects_surface_assignments"
+      },
+      "protects": "test_pc5_surface_product_change_selects_surface_assignments: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Una dependencia sin clasificación produce diagnóstico no cero"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc5_surface_selector_change_selects_everything"
+      },
+      "protects": "test_pc5_surface_selector_change_selects_everything: surface selecciona el cambio exclusivamente de tests con el sustituto o diagnóstico declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "Una dependencia sin clasificación produce diagnóstico no cero"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc7_validate_rejects_missing_timing_disposition"
+      },
+      "protects": "test_pc7_validate_rejects_missing_timing_disposition: validate exige disposición temporal explícita y rechaza la resolución sin evidencia.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "identifica los cuatro casos de"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_selection.py::test_pc7_validate_rejects_resolved_without_evidence"
+      },
+      "protects": "test_pc7_validate_rejects_resolved_without_evidence: validate exige disposición temporal explícita y rechaza la resolución sin evidencia.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "motivo por el que 5s no acredita 2s"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_evidence.py::test_sequential_attempts_preserve_first_bytes"
+      },
+      "protects": "test_sequential_attempts_preserve_first_bytes: close reserva evidencia independiente sin sobrescribir ni declarar éxito espurio.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "reserva exclusivamente un directorio de intento nuevo"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_evidence.py::test_simultaneous_attempts_are_independent"
+      },
+      "protects": "test_simultaneous_attempts_are_independent: close reserva evidencia independiente sin sobrescribir ni declarar éxito espurio.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "dos intentos secuenciales controlados con resultados distintos"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_evidence.py::test_attempt_records_selection_result_and_skip_reason"
+      },
+      "protects": "test_attempt_records_selection_result_and_skip_reason: close reserva evidencia independiente sin sobrescribir ni declarar éxito espurio.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "reserva exclusivamente un directorio de intento nuevo"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_evidence.py::test_interrupted_attempt_is_never_success"
+      },
+      "protects": "test_interrupted_attempt_is_never_success: close reserva evidencia independiente sin sobrescribir ni declarar éxito espurio.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "nunca se interpreta como éxito"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_suite_evidence.py::test_measure_does_not_modify_tree"
+      },
+      "protects": "test_measure_does_not_modify_tree: close reserva evidencia independiente sin sobrescribir ni declarar éxito espurio.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "emite JSON por stdout, sin modificar archivos"
+        }
+      ],
+      "limits": "Acredita el caso sintético del CLI en repositorio temporal; no ejecuta la suite real ni demuestra ausencia universal de regresiones."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_baseline_pd6_destination_passes_without_deviation"
+      },
+      "protects": "test_baseline_pd6_destination_passes_without_deviation: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "controles negativos dirigidos, versionados y reproducibles"
+        }
+      ],
+      "limits": "La desviación se inyecta en el artefacto observado (registro I8 que el destino lee), no en el producto; equivale para un oráculo que sólo observa artefactos durables."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_plain_text_model_null_detected_by_pd6_destination"
+      },
+      "protects": "test_r2_plain_text_model_null_detected_by_pd6_destination: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "el sustituto debe detectar la desviación contractual declarada"
+        }
+      ],
+      "limits": "La desviación se inyecta en el artefacto observado (registro I8 que el destino lee), no en el producto; equivale para un oráculo que sólo observa artefactos durables."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_plain_text_model_prefixed_detected_by_pd6_destination"
+      },
+      "protects": "test_r2_plain_text_model_prefixed_detected_by_pd6_destination: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "el sustituto debe detectar la desviación contractual declarada"
+        }
+      ],
+      "limits": "La desviación se inyecta en el artefacto observado (registro I8 que el destino lee), no en el producto; equivale para un oráculo que sólo observa artefactos durables."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_002_variant_controls.py::TestR2PlainTextVariantControls::test_r2_closed_i8_schema_extra_key_detected_by_pd6_destination"
+      },
+      "protects": "test_r2_closed_i8_schema_extra_key_detected_by_pd6_destination: validate conserva la obligación acreditada o el control dirigido detecta la desviación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-002-suite-by-capability/spec.md",
+          "sha256": "c772585bbc859fe227f77dc9646bceaecbf8400fe7851183b84f8266da2599e3",
+          "locator": "controles negativos dirigidos, versionados y reproducibles"
+        }
+      ],
+      "limits": "La desviación se inyecta en el artefacto observado (registro I8 que el destino lee), no en el producto; equivale para un oráculo que sólo observa artefactos durables."
+    }
+  ],
+  "note": "Índice por demanda de esta revisión (lote B7): cubre las obligaciones indexadas PC-1, PC-2, PC-3, PC-5, PC-6 y PC-7 protegidas por los 34 nodeids del tramo, no una extracción exhaustiva del contrato."
+}

@@ -1,0 +1,16 @@
+{
+ "copy": "sin copia descartable: no hubo candidatos que experimentar; el original no se tocó",
+ "workspace": "sin workspace de experimentos: no se ejecutaron intentos ni comparaciones",
+ "logs": [
+  "experiments/no-candidates.log"
+ ],
+ "controls": {
+  "original_intact": "verificado por el validador (PC-9) sobre el checkout de tests y producto",
+  "oracles_untouched": "no hubo experimento, así que ningún oráculo fue modificado",
+  "candidate_count": 0
+ },
+ "limits": [
+  "con cero candidatos no hay evidencia de sensibilidad ni de redundancia universal",
+  "el costo experimental por candidato queda sin calibrar"
+ ]
+}

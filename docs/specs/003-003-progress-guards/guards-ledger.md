@@ -6,10 +6,10 @@ Grabador: un script **desechable** fuera del producto, `evidence/t5/recorder.py`
 
 | Sesión (real) | Situación real | Lo que dio el guard | Lectura | dedup_key | cambio_relevante |
 |---|---|---|---|---|---|
-| `ses_eec41f67…` (T1 GREEN) | **C2 + C1 reales**: la suite se lanzó en segundo plano y murió con la sesión, y el turno se cerró «esperando que me retomen» | 0 incidentes, 0 escaladas | **Falso negativo.** La llamada en segundo plano vuelve `ok` al instante y la espera se ve como `sleep`/`echo` `ok` | — | — |
-| `ses_eebf15cd…` (T2 rf GREEN) | **C2 + C1 reales**, repetidos; luego se recuperó con una reanudación | 1 `repetition-without-progress` ×5 | **Falsa alarma**: 5 ediciones distintas al mismo archivo. El incidente real **no** se detectó | `repetition-without-progress·sha256:2405a99d…·exec-003-003-progress-guards-001·…-green-00x` | — |
-| `ses_eeb95ac0…` (T3 rf GREEN) | Sana (475 passed) | 1 `repetition-without-progress` ×7 | **Falsa alarma**, por la misma causa | misma huella; difiere solo el `packet_id` | — |
-| `ses_eeb7c146…` (T4 test-writer) | Sana | 0 | Correcto | — | — |
+| `<ses-218>` (T1 GREEN) | **C2 + C1 reales**: la suite se lanzó en segundo plano y murió con la sesión, y el turno se cerró «esperando que me retomen» | 0 incidentes, 0 escaladas | **Falso negativo.** La llamada en segundo plano vuelve `ok` al instante y la espera se ve como `sleep`/`echo` `ok` | — | — |
+| `<ses-222>` (T2 rf GREEN) | **C2 + C1 reales**, repetidos; luego se recuperó con una reanudación | 1 `repetition-without-progress` ×5 | **Falsa alarma**: 5 ediciones distintas al mismo archivo. El incidente real **no** se detectó | `repetition-without-progress·sha256:2405a99d…·exec-003-003-progress-guards-001·…-green-00x` | — |
+| `<ses-225>` (T3 rf GREEN) | Sana (475 passed) | 1 `repetition-without-progress` ×7 | **Falsa alarma**, por la misma causa | misma huella; difiere solo el `packet_id` | — |
+| `<ses-224>` (T4 test-writer) | Sana | 0 | Correcto | — | — |
 
 ## Qué permitió decidir
 Con datos reales, el guard **no** detectó los incidentes reales. Los detectó el seguimiento del orquestador:

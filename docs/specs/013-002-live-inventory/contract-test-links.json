@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "unit": "013-002-live-inventory",
+  "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "**PC-1. Inventario completo.**"
+    },
+    {
+      "id": "PC-2",
+      "promise": "A",
+      "locator": "**PC-2. Clasificación fundada y seleccionable.**"
+    },
+    {
+      "id": "PC-3",
+      "promise": "A",
+      "locator": "**PC-3. Datos comparables.**"
+    },
+    {
+      "id": "PC-4",
+      "promise": "B",
+      "locator": "**PC-4. Estados y vocabulario inequívocos.**"
+    },
+    {
+      "id": "PC-5",
+      "promise": "C",
+      "locator": "**PC-5. Mapa inicial acotado y verificable.**"
+    },
+    {
+      "id": "PC-6",
+      "promise": "C",
+      "locator": "**PC-6. Actualización reproducible con cada sustitución.**"
+    },
+    {
+      "id": "PC-7",
+      "promise": "D",
+      "locator": "**PC-7. Declaración, responsables y momentos de comprobación explícitos.**"
+    },
+    {
+      "id": "PC-8",
+      "promise": "D",
+      "locator": "**PC-8. Límites de los controles explícitos.**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_A_inventario_efectivo_y_validate_rc0"
+      },
+      "protects": "el inventario cubre la colección efectiva y validate termina rc=0 sobre la revisión candidata",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-1. Inventario completo.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-2",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_A_contratos_recuperables_y_seleccion_cubre_union"
+      },
+      "protects": "las asignaciones nombran contratos recuperables con procedencia y la selección cubre la unión",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-2. Clasificación fundada y seleccionable.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_B_clasificacion_no_es_acreditacion"
+      },
+      "protects": "la documentación distingue asignación de acreditación y rc=0 no se presenta como protección semántica",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-4. Estados y vocabulario inequívocos.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_C_mapa_inicial_B1_identificado_por_entrada"
+      },
+      "protects": "el mapa inicial del lote se recupera por entrada con sus diferencias observables",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-5. Mapa inicial acotado y verificable.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-5",
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_C_conserva_origen_y_metadatos_historicos"
+      },
+      "protects": "el origen histórico sigue recuperable y los registros VERIFY no desaparecen para lograr verde",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-6. Actualización reproducible con cada sustitución.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_D_inventario_vivo_declarado_momentos_y_handoffs"
+      },
+      "protects": "la desactualización se declara y transmite en los momentos ordinarios sin exigir rc=0 fuera de Review",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-7. Declaración, responsables y momentos de comprobación explícitos.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_D_limites_y_surface_collect_only"
+      },
+      "protects": "los controles distinguen integridad, conservación y protección semántica y la inspección usa --collect-only",
+      "evidence": [
+        {
+          "path": "docs/specs/013-002-live-inventory/spec.md",
+          "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
+          "locator": "**PC-8. Límites de los controles explícitos.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    }
+  ],
+  "note": "índice por demanda de esta revisión (tramo 1 de 016-003, lote B2a): cubre las obligaciones indexadas PC-1 a PC-8, no una extracción exhaustiva del contrato"
+}

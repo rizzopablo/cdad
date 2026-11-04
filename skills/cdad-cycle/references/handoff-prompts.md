@@ -732,6 +732,19 @@ pertinentes bajo la misma separación de responsabilidades. `validate` con rc=0
 bloquea solo en entrada a Review y cierre, medido sobre la revisión que ya
 contiene los deltas materializados y los últimos cambios de tests.
 
+### Vínculos contrato↔test (016-001 PC-6) — regla para handoffs
+
+El hogar canónico es `skills/cdad-cycle/references/contract-test-links.md`
+(formato y uso; esta sección solo la cita). El orquestador transmite la regla
+en estos handoffs, por ruta legacy y por paquetes: ruta del registro, contrato
+(path + sha256), regla de delta (`CURRENT − BASE` del mismo ámbito) y
+comprobación aplicable. El test-writer entrega el delta del registro como
+texto; el orquestador lo materializa al re-entry antes de la siguiente
+transición. En entrada a Review y cierre se exige comprobación sobre los
+deltas y tests actuales; en los re-entries intermedios un resultado no cero se
+registra sin convertirse en gate de RED («tests nuevos no comprobados» sin
+baseline).
+
 ---
 
 ## If the user is in mode B (specific role)

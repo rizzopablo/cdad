@@ -1,0 +1,11 @@
+# Bitácora de experimentos — tramo 1
+
+El tramo no registró candidatos: ninguna de las 398 filas quedó con sospecha de redundancia,
+de variante sin protección observable ni de obligación irrecuperable. Con cero candidatos no se
+ejecutó ningún experimento, no se creó copia descartable del árbol ni workspace de trabajo, y no
+se produjo ninguna modificación experimental de tests o producto.
+
+Consecuencia para el costo: el costo experimental por candidato queda SIN CALIBRAR. La ausencia
+de candidatos no se interpreta como costo experimental cero (016-003 §7).
+
+Medición del cierre: 42.3 s de reloj, 31 comandos, suma de duraciones 41.44 s.

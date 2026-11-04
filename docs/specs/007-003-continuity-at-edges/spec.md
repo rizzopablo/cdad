@@ -3,7 +3,7 @@
 **Estado:** aprobada el 2026-10-24 por el orquestador (HITL delegada), tras resolver los dos VERIFY.
 **Unidad:** fila 3 de `epic-007-reliable-cycle-operation`.
 **Plan adicional:** no requerido.
-**Materialización:** redactada por el rol architect (sesión `ses_e9339cdb6ffe…`); el orquestador materializa y resuelve los VERIFY de §7.
+**Materialización:** redactada por el rol architect (sesión `<ses-381>`); el orquestador materializa y resuelve los VERIFY de §7.
 
 ## 1. Descripción funcional
 

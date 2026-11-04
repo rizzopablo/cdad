@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "unit": "010-001-documentary-contracts",
+  "contract": {
+    "path": "docs/specs/010-001-documentary-contracts/spec.md",
+    "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "La referencia canónica define evidencia"
+    },
+    {
+      "id": "PC-02",
+      "promise": "A",
+      "locator": "Prescribe respaldo localizable"
+    },
+    {
+      "id": "PC-03",
+      "promise": "A",
+      "locator": "Establece el localizador mínimo por tipo de fuente"
+    },
+    {
+      "id": "PC-04",
+      "promise": "A",
+      "locator": "Establece la clasificación de pendientes"
+    },
+    {
+      "id": "PC-05",
+      "promise": "B",
+      "locator": "La norma exige que cada encargo documental identifique"
+    },
+    {
+      "id": "PC-06",
+      "promise": "B",
+      "locator": "Prescribe que fuentes, contrato de aceptación"
+    },
+    {
+      "id": "PC-07",
+      "promise": "B",
+      "locator": "Declara la regla «quien produce no modifica su oráculo»"
+    },
+    {
+      "id": "PC-08",
+      "promise": "B",
+      "locator": "Las obligaciones por rol conservan estas fronteras"
+    },
+    {
+      "id": "PC-09",
+      "promise": "C",
+      "locator": "La norma separa dos registros"
+    },
+    {
+      "id": "PC-10",
+      "promise": "C",
+      "locator": "Declara que presencia de secciones"
+    },
+    {
+      "id": "PC-11",
+      "promise": "C",
+      "locator": "Prescribe contrastar afirmaciones con sus fuentes"
+    },
+    {
+      "id": "PC-12",
+      "promise": "C",
+      "locator": "Prescribe que la aceptación funcional corresponda"
+    },
+    {
+      "id": "PC-13",
+      "promise": "D",
+      "locator": "Existe una única casa normativa en `skills/cdad-cycle/references/documentary-contracts.md`"
+    },
+    {
+      "id": "PC-14",
+      "promise": "D",
+      "locator": "Las seis fuentes de rol de PC-08 contienen su obligación"
+    },
+    {
+      "id": "PC-15",
+      "promise": "D",
+      "locator": "La instalación aislada mediante el instalador existente distribuye la referencia"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01",
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseA::test_the_norm_defines_the_four_categories_with_their_distinctions"
+      },
+      "protects": "sin este test, el usuario aceptaría una norma que no distingue evidencia, propuesta, contradicción y pendiente y confundiría una propuesta con un hecho.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "La referencia canónica define evidencia"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-03",
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseA::test_the_norm_prescribes_locators_per_source_type_and_pending_classification"
+      },
+      "protects": "sin este test, el usuario citaría fuentes sin localizador recuperable o reclasificaría un pendiente bloqueante como no bloqueante sin control.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Establece el localizador mínimo por tipo de fuente"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-05",
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseB::test_the_norm_requires_the_four_engagements_and_protects_the_oracle"
+      },
+      "protects": "sin este test, el usuario encargaría producto documental sin declarar fuentes, alcance editable ni insumos protegidos y GREEN tocaría su propio oráculo.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "La norma exige que cada encargo documental identifique"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseB::test_the_norm_states_the_six_role_boundaries"
+      },
+      "protects": "sin este test, el usuario perdería la frontera de un rol y un encargo acumularía permisos de otro sin que la suite lo detecte.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Las obligaciones por rol conservan estas fronteras"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-09",
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseC::test_the_norm_separates_structural_control_from_semantic_review"
+      },
+      "protects": "sin este test, el usuario presentaría un verde estructural como aceptación semántica y daría por fiel lo que solo era presencia de etiquetas.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "La norma separa dos registros"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-11",
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseC::test_the_norm_requires_contrast_with_sources_and_owner_acceptance"
+      },
+      "protects": "sin este test, el usuario aceptaría un producto con respaldo insuficiente o con un pendiente que impide acreditar el contrato.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Prescribe contrastar afirmaciones con sus fuentes"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-13"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseD::test_the_norm_lives_in_one_house_listed_in_the_reference_table"
+      },
+      "protects": "sin este test, el usuario acabaría con dos casas normativas y no sabría cuál cita sostiene una afirmación.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Existe una única casa normativa en `skills/cdad-cycle/references/documentary-contracts.md`"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-13"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseD::test_no_installable_surface_copies_the_normative_phrases"
+      },
+      "protects": "sin este test, una superficie instalable copiaría frases normativas y habría dos casas de la misma frase sin que nadie lo note.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Existe una única casa normativa en `skills/cdad-cycle/references/documentary-contracts.md`"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-14"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseD::test_the_six_role_sources_and_five_blocks_carry_their_obligation_and_pointer"
+      },
+      "protects": "sin este test, un rol quedaría sin su obligación documental y el usuario operaría sin saber qué parte del contrato le toca.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Las seis fuentes de rol de PC-08 contienen su obligación"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-14"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseD::test_generated_and_promoted_agents_of_both_runtimes_carry_the_obligations"
+      },
+      "protects": "sin este test, un agente generado o promovido perdería la obligación documental y el usuario delegaría a un rol que ya no conoce su frontera.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "Las seis fuentes de rol de PC-08 contienen su obligación"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-15"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_001_documentary_contracts.py::TestPromiseD::test_isolated_install_distributes_the_reference_with_source_bytes"
+      },
+      "protects": "sin este test, la instalación aislada distribuiría una referencia vieja y el usuario trabajaría con criterios que ya no son los aprobados.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-001-documentary-contracts/spec.md",
+          "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
+          "locator": "La instalación aislada mediante el instalador existente distribuye la referencia"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva."
+}

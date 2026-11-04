@@ -173,7 +173,7 @@ execution `exec-005-004-claude-code-roles-001`. Contrato: `docs/epics/epic-005-r
   el adaptador corrió (`:90`); "un adaptador por destino" (`:75-79`); límites honestos (`:172-183`).
 - **Reutilización verificada en este repo (no solo en tests):**
   - `.cdad/local/exec-config-005-007-architect-discovery.json` + `.cdad/local/runs/005-007-discovery.delegate.json`
-    → `{"attempt":"delegate-opencode-2ac2addcb404","termination":"completed","session":"ses_bd66a7…",
+    → `{"attempt":"delegate-opencode-2ac2addcb404","termination":"completed","session":"<ses-190>",
     "delivery_ref":"…/receipt.json"}`.
   - La aceptación PD-10 de 005-010 (paso a) corrió `cdad_delegate.py` **desde una sesión de Claude Code**
     (`docs/specs/005-010-real-opencode-delegation/evidence/pd10-acceptance.md:38-58`): coordinador = esa
@@ -581,7 +581,7 @@ preexistente). Escritos sólo temporales declarados: `/tmp/opencode/cc-check.out
   `--session-id`, `--permission-mode`, `--allowedTools`, `--permission-prompts`, `--output-format`,
   `--bare`, `--restricted`, `--no-session-persistence`.
 - `cat .cdad/local/runs/005-007-discovery.delegate.json` →
-  `{"attempt":"delegate-opencode-2ac2addcb404","termination":"completed","session":"ses_bd66a7…", …}`;
+  `{"attempt":"delegate-opencode-2ac2addcb404","termination":"completed","session":"<ses-190>", …}`;
   `cat .cdad/local/exec-config-005-007-architect-discovery.json` → config con `binary`, `model`,
   `sessions_db`, `wait.timeout_seconds`.
 

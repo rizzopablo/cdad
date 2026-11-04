@@ -4,15 +4,20 @@ Estado de features del proyecto.
 
 ## In progress
 
-`epic-013-test-criterion` **activo**, etapa `features-loop`, autoridad vigente
-`docs/epics/epic-013-test-criterion/execution.md` (HITL delegada del dueño).
-`013-001-criterion-coherence` (1/4), `013-002-live-inventory` (2/4) y
-`013-003-redundancy-pilot` (3/4) cerradas el 2026-11-02 —ver «Done»—. **No queda
-feature abierta:** `013-004-suite-performance` (4/4) **sólo se abre por decisión
-del dueño**, y el cierre del epic sigue pendiente de esa decisión y del orquestador.
-Los epics 010, 009, 008, 007 y 006 están cerrados.
+**Nada activo.** `epic-016-traceability-and-suite-review` **cerrado el 2026-11-04** con las 3/3 features
+(`016-001-contract-test-link`, `016-002-gap-report`, `016-003-suite-review-tranche-1`) y **suite completa verde
+atribuible** por `scripts/cdad-ci-gate.py` (commit `4c543721`, base `116ef8cf`, 1 989 passed, 0 failed, 5 skipped).
+No publicado ni desplegado: publicar y desplegar siguen reservados al dueño. Los tramos 2–5 de la revisión de la
+suite no forman parte del epic; el tramo 2 está autorizado por
+`docs/specs/016-003-suite-review-tranche-1/tranche-1/decision.md`. Detalle:
+`docs/epics/epic-016-traceability-and-suite-review/closure.md`.
 
 ## Despliegue
+
+- **016-001, 016-002 y 016-003 no agregan instalación publicada.** Las tres cerraron **sin publicar ni
+desplegar** (su `closure.md` lo declara): el registro de vínculo, el `gap-report` y el revisor de tramos
+existen en el repo y **no en el árbol instalado**. Redesplegar sigue siendo decisión del dueño; el
+instalador no se ejecutó en estos cierres.
 
 - **Al día con la publicación del epic 010.** `main` remoto = `a42f2a20` (squash,
   árbol idéntico al de `main` local), y la instalación soportada se re-sincronizó
@@ -71,6 +76,23 @@ Los epics 010, 009, 008, 007 y 006 están cerrados.
   decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+
+- **016-002-gap-report** (2026-11-03, epic 016 — **orden 2/3**; **cerrada, no publicada ni desplegada**) — informe
+  reproducible de huecos sobre contratos cerrados (`gap-report`): universo desde el estado con la fila actual por
+  encima de sus copias históricas, obligaciones desde marcadores reales o índice legacy sin mezclarlos, «no indexado»
+  distinto de «hueco», agrupación por promesa y exclusiones justificadas que no inflan la cobertura. 5 verificadores
+  R-A..R-E (PC-1..PC-10), **5 passed** y 16 con 016-001; review independiente con 4 bloqueantes corregidos y verificados
+  en sesión nueva. Suite completa de la feature no realizada. Detalle: `docs/specs/016-002-gap-report/closure.md`.
+
+- **016-001-contract-test-link** (2026-11-03, epic 016 — **orden 1/3**; **cerrada, no publicada ni desplegada**) —
+  forma mínima y verificable del vínculo test→contrato→promesa, separada del inventario (que clasifica) y del mapa de
+  PC (que guarda genealogía): registro JSON por unidad validado por CLI autónoma (`validate`, 0/1/2, JSON determinista,
+  sin escribir ni ejecutar tests), universo por marcadores reales `cdad:pc` con índice legacy por demanda, verificadores
+  `kind: review` admitidos con motivo y referencia. 11 verificadores, **11 passed**; review con 2 bloqueantes corregidos
+  y verificados. Suite completa de la feature no realizada. Detalle: `docs/specs/016-001-contract-test-link/closure.md`.
+
+- **016-003-suite-review-tranche-1** (2026-11-04, epic 016 — **orden 3/3**; **cerrada, no publicada ni desplegada**) — **el primer tramo del 20 % de la suite quedó revisado con control estructural y revisión semántica independiente**: selección congelada y reproducible (revisión `120fa8b9`, **398 de 1 988 nodeids**, 36 módulos y 25 unidades de contrato), **398 filas auditadas** una por nodeid (**398 `Mantener`**, **0 candidatos**, 12 filas con incertidumbre declarada), costo medido en 22 sesiones y decisión autorizada de continuar el tramo 2 con cambios explícitos de método. **Validador con resolución legacy** (`--registry` por `contract.path`+`sha256`), nacida de un defecto real detectado a mitad del tramo —no resolvía las obligaciones de los contratos sin marcadores, 35 de 36 módulos—: RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`. **Vínculos:** 25 unidades afectadas con registro validado y **26 registros del proyecto, todos rc 0**; el registro de la propia unidad valida con `--baseline` contra la colección viva (1 994 nodeids) y vincula los seis verificadores R-A..R-F a PC-1..PC-10. **Gate:** `cdad_suite_review.py validate` sobre el tramo real → `ok`, 398 filas, 0 candidatos, 0 errores; `cdad_contract_links.py validate` 26/26 rc 0; `pytest tests/test_016_003_suite_review_tranche_1.py` **6 passed** y **22 passed** con 016-001/016-002; `python3 scripts/cdad-suite.py validate` `ok` (1 994 nodeids, 238 módulos, 31 entradas). **Costo:** 17 actividades de auditoría, 31 comandos medidos y 3 bloques de preparación compartida; **7 081,8 s** de auditoría (17,79 s por test), **8 692,5 s** por unión de intervalos (suma cruda 8 782,3 s, solapamiento de 90,1 s declarado), **9 643,7 s** de reloj, **2 716 861 / 702 509** tokens de entrada/salida y **92 903 503** de lectura de caché; proyección del resto (1 590 nodeids) **29 986,6 s ≈ 8,3 h** como cota alta. **Review:** tres pasadas —`review.md` rechazado (H1 bloqueante, H2 mayor, H3–H5 menores) y `review-r2.md` rechazado (B1/B2 sobre el costo)— hasta `review-r3.md` **aprobado con observaciones**, con los seis cierres verificados contra los archivos y la aritmética al decimal. **Commits:** RED `39d54116`, GREEN `a2321a66`/`7568db1f`; defecto del validador RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`; lotes `4a8cce87`, `b5cc2467`, `9cf0d6c9`, `3e283a39`, `70ce4865`+`45f99492`, `82264fcc`, `56faf334`, `310cb2ed`, `ab39889f`, `3dddebd5`, `04240f5f`, `5771cace`, `f92aaca1`; cierre del tramo `77717c1e`; fixes de la revisión `0b6046a9`, `6bdbb854`, `afbb4c2e`, `8805eaff`; POST-AUDIT `94c86e80`. **Deuda:** cero candidatos no acredita redundancia y deja el costo experimental sin calibrar (S1/S2/S3 registradas sin experimento); N3 (seis filas con citas que viven en un test hermano), N2 (`ses_orquestador_cierre` sin id de sesión, tokens «no disponibles»), O2 (si la lectura de caché entra en la noción de costo del dueño), proyección lineal sin descontar los cambios de método, tramo no aleatorio por construcción, **suite completa de la feature no realizada** y **siete `deferred-hardening`** conservados en `docs/specs/016-003-suite-review-tranche-1/closure.md`. **No publicada ni desplegada.**
+
 
 - **013-003-redundancy-pilot** (2026-11-02, epic 013 — **orden 3/4**; **cerrada, no publicada ni
   desplegada**) — **el piloto no podó nada, y ese es el resultado**: el procedimiento de

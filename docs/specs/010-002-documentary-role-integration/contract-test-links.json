@@ -1,0 +1,730 @@
+{
+  "schema_version": 1,
+  "unit": "010-002-documentary-role-integration",
+  "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-06",
+      "promise": "C",
+      "locator": "**PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`"
+    },
+    {
+      "id": "PC-07",
+      "promise": "C",
+      "locator": "**PC-07.** Se distinguen tres vías observables:"
+    },
+    {
+      "id": "PC-08",
+      "promise": "C",
+      "locator": "**PC-08.** Se conservan conjuntamente:"
+    },
+    {
+      "id": "PC-12",
+      "promise": "F",
+      "locator": "**PC-12.** La distribución se acredita en dos tramos:"
+    },
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "**PC-01.** El procedimiento explica cómo expresar objetivo, producto, fuentes, alcance, verificadores protegidos, evidencia y límites mediante los campos existentes, sin otro selector."
+    },
+    {
+      "id": "PC-02",
+      "promise": "A",
+      "locator": "**PC-02.** Conserva las fronteras de los seis roles y utiliza los agentes actuales; no crea variantes documentales."
+    },
+    {
+      "id": "PC-03",
+      "promise": "A",
+      "locator": "**PC-03.** La producción documental requiere alcance editable explícito."
+    },
+    {
+      "id": "PC-04",
+      "promise": "B",
+      "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+    },
+    {
+      "id": "PC-05",
+      "promise": "B",
+      "locator": "**PC-05.** Las fuentes competentes y sus artefactos distribuidos contienen los siguientes resultados para los roles de revisión, coordinación y memoria, conservando cargas de dominio y permisos:"
+    },
+    {
+      "id": "PC-09",
+      "promise": "D",
+      "locator": "**PC-09.** Los adaptadores nativos, el orquestador, `skills/cdad-cycle/SKILL.md` y las referencias de selección expresan la derivación para cualquier stack no vacío y la regla de variante ausente."
+    },
+    {
+      "id": "PC-10",
+      "promise": "E",
+      "locator": "**PC-10.** El asset:"
+    },
+    {
+      "id": "PC-11",
+      "promise": "F",
+      "locator": "**PC-11.** `make agents` genera y promueve ambos runtimes desde sus fuentes."
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_publication_derivation_matches_the_canonical_rule"
+      },
+      "protects": "toda entrada admitida publica el agente canónico del rol y del stack vigente y valida por la misma vía",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_publication_conserves_the_admitted_request_and_render_fields"
+      },
+      "protects": "el request publicado conserva campos y valores y el render excluye el campo de transporte agent",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_static_contrast_admits_the_declared_role_and_rejects_foreign_families"
+      },
+      "protects": "el contraste estático admite la familia del rol declarado y rechaza familias ajenas sin consultar el stack",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-07.** Se distinguen tres vías observables:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_contextual_contrast_rejects_a_new_intent_with_a_discordant_agent"
+      },
+      "protects": "un intento nuevo con agente discorde del stack vigente falla sin efectos durables y con diagnóstico de rol, stack y agente esperado",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-07.** Se distinguen tres vías observables:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_presence_rule_rejects_context_without_agent_and_admits_the_historical"
+      },
+      "protects": "el contexto presente exige agente y el histórico sin ambos campos sigue admitido",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestFinalIsolatedDistribution::test_isolated_install_distributes_the_final_cli_and_schema"
+      },
+      "protects": "la instalación aislada distribuye CLI y esquema con los bytes de la fuente y agentes promovidos, sin escribir el HOME del proceso",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-12.** La distribución se acredita en dos tramos:"
+        }
+      ],
+      "limits": "no acredita conducta efectiva de modelos ni recepción nativa real; es distribución con recorrido aislado"
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_properties.py::TestFinalIsolatedDistribution::test_final_documentary_journeys_keep_domain_product_and_frontiers"
+      },
+      "protects": "los recorridos documental genérico y documental/odoo conservan dominio, producto editable y fronteras por la interfaz pública instalada",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-12.** La distribución se acredita en dos tramos:"
+        }
+      ],
+      "limits": "no acredita fidelidad semántica de un documento funcional real (PC-13 va por informe independiente)"
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestEngagement::test_documentary_procedure_uses_the_existing_fields_without_a_new_selector"
+      },
+      "protects": "sin este test, el usuario no sabría por qué campo viaja cada declaración del encargo documental y podría recibir un selector paralelo que rompe resolución y distribución.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-01.** El procedimiento explica cómo expresar objetivo, producto, fuentes, alcance, verificadores protegidos, evidencia y límites mediante los campos existentes, sin otro selector."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestEngagement::test_six_role_boundaries_and_no_documentary_variant"
+      },
+      "protects": "sin este test, el usuario podría recibir un agente o selector documental paralelo y su encargo dejaría de llegar por el flujo canónico de seis roles.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-02.** Conserva las fronteras de los seis roles y utiliza los agentes actuales; no crea variantes documentales."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestEngagement::test_explicit_editable_scope_and_stop_on_protected_overlap"
+      },
+      "protects": "sin este test, un productor podría escribir en tests u oráculos o producir documentación sin alcance declarado, superponiendo producto y fuentes.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-03.** La producción documental requiere alcance editable explícito."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_addon_boundary_and_module_documentation"
+      },
+      "protects": "sin este test, la documentación dentro de un módulo se trataría como trabajo de addon o el addon se colaría como documentación por su ubicación.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_producer_roles_matrix"
+      },
+      "protects": "sin este test, architect, test-writer e implementer no sabrían cuándo rige la batería de addon y exigirían inventario para documentación pura o modificarían addon sin lint ni OCA.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_review_coordination_memory_matrix_and_diff_prevalence"
+      },
+      "protects": "sin este test, un cambio de addon oculto bajo etiqueta documental se aceptaría como documental puro sin instalación limpia, lint ni OCA y con permisos retroactivos.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-05.** Las fuentes competentes y sus artefactos distribuidos contienen los siguientes resultados para los roles de revisión, coordinación y memoria, conservando cargas de dominio y permisos:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_documentary_verifier_is_not_an_addon_test"
+      },
+      "protects": "sin este test, un verificador estructural documental se convertiría en test de addon por estar en un proyecto Odoo y se olvidarían sus fronteras.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04",
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_distributed_artifacts_carry_the_matrix"
+      },
+      "protects": "sin este test, la matriz quedaría en las fuentes pero no llegaría a los agentes instalados y el encargo aplicaría la obligación incondicional de addon.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04",
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestOdooApplicability::test_odoo_role_deltas_are_conditioned_on_product_or_diff"
+      },
+      "protects": "sin este test, los deltas Odoo exigirían o fabricarían evidencia de addon sobre un diff puramente documental desde la matriz de otra sección.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-04.** Las fuentes competentes y sus artefactos distribuidos contienen la frontera de addon y los siguientes resultados para los roles que especifican, verifican y producen:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDispatchDoctrine::test_every_selection_surface_derives_a_suffix_and_keeps_no_other_value_fallback"
+      },
+      "protects": "sin este test, el usuario recibiría el agente genérico aunque su stack exija variante y la selección caería a un fallback silencioso.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-09.** Los adaptadores nativos, el orquestador, `skills/cdad-cycle/SKILL.md` y las referencias de selección expresan la derivación para cualquier stack no vacío y la regla de variante ausente."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-09",
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDispatchDoctrine::test_absent_variant_is_mechanical_external_and_procedural_native"
+      },
+      "protects": "sin este test, una variante requerida y no publicada se sustituiría en silencio y el despacho lanzaría trabajo sin destinatario publicado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-09.** Los adaptadores nativos, el orquestador, `skills/cdad-cycle/SKILL.md` y las referencias de selección expresan la derivación para cualquier stack no vacío y la regla de variante ausente."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDispatchDoctrine::test_native_adapters_do_not_claim_a_mechanical_guard"
+      },
+      "protects": "sin este test, el orquestador nativo omitiría la comprobación de publicación confiando en una guarda inexistente y lanzaría la variante ausente.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-09.** Los adaptadores nativos, el orquestador, `skills/cdad-cycle/SKILL.md` y las referencias de selección expresan la derivación para cualquier stack no vacío y la regla de variante ausente."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-11"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_generation_is_reproducible_and_promoted_matches_staging"
+      },
+      "protects": "sin este test, los agentes promovidos podrían editarse a mano o divergir de staging y la procedencia de PC-11 quedaría sin garantía.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-11.** `make agents` genera y promueve ambos runtimes desde sus fuentes."
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_isolated_install_distributes_corrected_surfaces_and_the_generic_journey"
+      },
+      "protects": "sin este test, el perfil documental no existiría tras instalar y la resolución caería fuera del destino instalado o tocaría el HOME real.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-12.** La distribución se acredita en dos tramos:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_documentary_odoo_journey_keeps_domain_and_write_frontier"
+      },
+      "protects": "sin este test, el recorrido con stack=odoo podría resolver el agente genérico o ampliar la escritura hacia un addon no autorizado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-12.** La distribución se acredita en dos tramos:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_ordinary_publication_publishes_derived_agent_and_context"
+      },
+      "protects": "sin este test, una publicación nueva podría omitir agent o contexto o exponer agent en el render sin que nadie lo detecte.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_replacement_of_historical_successor_without_agent_rederives"
+      },
+      "protects": "sin este test, el reemplazo de un histórico sin agente publicaría un sucesor sin destinatario o copiaría el vacío anterior.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_replacement_after_stack_change_rederives_current_stack"
+      },
+      "protects": "sin este test, un cambio de dominio publicaría un sucesor que iría al agente anterior y el encargo llegaría al dominio equivocado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_static_role_contrast_rejects_foreign_agent_and_does_not_evaluate_stack"
+      },
+      "protects": "sin este test, un agente de otro rol obtendría un paquete válido y el error se descubriría tarde en el despacho.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-07.** Se distinguen tres vías observables:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-07",
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_contextual_contrast_rejects_a_new_intent_with_wrong_stack_agent"
+      },
+      "protects": "sin este test, un intento nuevo con agente discordante del stack vigente se registraría y lanzaría trabajo de rol en el dominio equivocado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-07.** Se distinguen tres vías observables:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_historical_without_both_fields_records_a_new_intent_without_destination_contrast"
+      },
+      "protects": "sin este test, el histórico admitido quedaría bloqueado o se le inventaría un destinatario, rompiendo la compatibilidad histórica.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_context_without_agent_is_rejected_on_validation_and_publication"
+      },
+      "protects": "sin este test, un request con contexto y sin agente se publicaría y el render expondría un destinatario incompleto.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_agent_is_excluded_from_render_between_valid_requests"
+      },
+      "protects": "sin este test, el render filtraría agent de forma distinta según el request y la integridad del destinatario quedaría sin sello comparable.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBinding::test_identical_repetition_after_stack_change_stays_idempotent"
+      },
+      "protects": "sin este test, la excepción temporal se convertiría en revalidación del stack sobre registros hechos o permitiría sobrescribir un registro.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBindingReception::test_reception_after_stack_change_keeps_the_static_contrast_only"
+      },
+      "protects": "sin este test, un cambio de stack invalidaría retrospectivamente la recepción de un despacho ya realizado y se perdería trabajo válido.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestAgentBindingWriteAheadFinalization::test_write_ahead_finalization_after_stack_change_completes_once"
+      },
+      "protects": "sin este test, el cambio de dominio impediría completar el write-ahead válido del intento ya admitido y se perdería su efecto.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-08.** Se conservan conjuntamente:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestRequestSchema::test_schema_accepts_valid_current_and_historical_requests"
+      },
+      "protects": "sin este test, el esquema podría rechazar históricos legítimos o admitir el caso contexto-sin-agent y romper la compatibilidad D5.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-10.** El asset:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10",
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestRequestSchema::test_schema_rejects_invalid_shape_unknown_keys_and_context_without_agent"
+      },
+      "protects": "sin este test, el esquema admitiría formas inválidas o contexto sin agente y la validación estructural dejaría pasar requests rotos.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-10.** El asset:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_002_documentary_role_integration.py::TestRequestSchema::test_schema_shape_is_distinct_from_cli_role_and_dispatch_contrast"
+      },
+      "protects": "sin este test, el esquema se confundiría con el contraste de rol o de despacho y se le atribuirían comprobaciones de archivos o autoridad que no tiene.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+          "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
+          "locator": "**PC-10.** El asset:"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas (PC-06, PC-07, PC-08 y PC-12 verificadas por este tramo), no una extracción exhaustiva del contrato | índice por demanda de esta revisión: cubre las obligaciones indexadas (PC-01 a PC-12 verificadas por este tramo), no una extracción exhaustiva del contrato"
+}

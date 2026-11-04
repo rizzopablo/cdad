@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "unit": "015-002-intake-guards",
+  "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "diagnóstico-por-formato",
+      "locator": "**PC-01**"
+    },
+    {
+      "id": "PC-02",
+      "promise": "diagnóstico-por-formato",
+      "locator": "**PC-02**"
+    },
+    {
+      "id": "PC-03",
+      "promise": "diagnóstico-por-formato",
+      "locator": "**PC-03**"
+    },
+    {
+      "id": "PC-04",
+      "promise": "rechazo-accionable",
+      "locator": "**PC-04**"
+    },
+    {
+      "id": "PC-05",
+      "promise": "guía-coherente",
+      "locator": "**PC-05**"
+    },
+    {
+      "id": "PC-06",
+      "promise": "elegibilidad",
+      "locator": "**PC-06**"
+    },
+    {
+      "id": "PC-07",
+      "promise": "elegibilidad",
+      "locator": "**PC-07**"
+    },
+    {
+      "id": "PC-08",
+      "promise": "elegibilidad",
+      "locator": "**PC-08**"
+    },
+    {
+      "id": "PC-09",
+      "promise": "elegibilidad",
+      "locator": "**PC-09**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_ana_observacion_incompatible_explica_campo_formato_y_ejemplo"
+      },
+      "protects": "el test acredita que el usuario no recibe «fields do not match» sin saber qué campo falta ni la forma válida, y acaba adivinando o inventando valores.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-01**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_anb_decisions_senala_elemento_forma_y_ejemplo"
+      },
+      "protects": "el test acredita que el usuario no recibe «must be an object» sin ver la forma exacta del elemento válido e itera a ciegas sobre el begin.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-02**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_anc_write_scope_malformado_identifica_opcion_exige_forma_y_ejemplo"
+      },
+      "protects": "el test acredita que el usuario no recibe «scope must be CLASS=SELECTOR» suelto sin saber qué opción corregir ni la forma válida.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-03**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_and_begin_contract_cubierta_ofrece_estrechar_o_living"
+      },
+      "protects": "el test acredita que el usuario no recibe el rechazo PC-06 sin salida accionable: no sabe si estrechar scope, si cabe living, ni que un contrato aprobado no se reclasifica.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-04**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_ane_guia_docs_docs_documentada"
+      },
+      "protects": "sin este test, la guía D2 podría perderse en una edición y el usuario ante el choque scopes amplios vs contract no tendría documento de estrechamiento ni vía living.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-05**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_anf_open_unit_omite_cerrada_y_abre_primera_elegible"
+      },
+      "protects": "el test acredita que el usuario no reabre por accidente una unidad de un epic ya cerrado (la primera queued), contaminando un cierre registrado.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-06**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_ang_feature_excluida_rechaza_nombrando_unidad_y_epic"
+      },
+      "protects": "el test acredita que el usuario no elude el cierre con --feature y reabre una unidad excluida sin que el diagnóstico nombre el bloqueo.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-07**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_anh_solo_excluidas_informa_sin_candidata_sin_cambios"
+      },
+      "protects": "el test acredita que el usuario no obtiene una apertura silenciosa sobre un epic cerrado en vez de un informe que lo detenga.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-08**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_ani_apertura_elegible_conserva_garantias_y_documenta"
+      },
+      "protects": "sin este test, una implementación podría abrir sin las comprobaciones conservadas, o «primera elegible» quedaría sin documentar y se leería «primera queued» sin filtrar.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-09**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_002_intake_guards.py::test_anj_unidad_en_dos_planes_bloquea_sin_abrir"
+      },
+      "protects": "sin este test, una tabla de contexto que nombre la unidad en un plan abierto reabriría la unidad por atribuir al dueño de la línea más baja.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-002-intake-guards/spec.md",
+          "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+          "locator": "**PC-08**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    }
+  ],
+  "note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato",
+  "coverage_note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato"
+}

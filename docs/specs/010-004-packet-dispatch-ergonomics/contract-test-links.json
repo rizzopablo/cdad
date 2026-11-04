@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "unit": "010-004-packet-dispatch-ergonomics",
+  "contract": {
+    "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+    "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "`render --route C` emite únicamente la declaración"
+    },
+    {
+      "id": "PC-02",
+      "promise": "A",
+      "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+    },
+    {
+      "id": "PC-03",
+      "promise": "A",
+      "locator": "El intake y despacho documentados exigen contexto v2 para C"
+    },
+    {
+      "id": "PC-04",
+      "promise": "B",
+      "locator": "Toda nueva publicación declara en request y cabecera"
+    },
+    {
+      "id": "PC-05",
+      "promise": "B",
+      "locator": "`render`, `validate-request` y `validate-packet` cumplen la matriz completa"
+    },
+    {
+      "id": "PC-06",
+      "promise": "B",
+      "locator": "Los checks compartidos rechazan localizadores fuera de dominio"
+    },
+    {
+      "id": "PC-07",
+      "promise": "B",
+      "locator": "Con raíz explícita y argumentos de archivo válidos"
+    },
+    {
+      "id": "PC-07b",
+      "promise": "B",
+      "locator": "El procedimiento para retomar un proyecto v1 distingue recuperación histórica"
+    },
+    {
+      "id": "PC-08a",
+      "promise": "C",
+      "locator": "Los verificadores mantienen aceptación del paquete canónico completo"
+    },
+    {
+      "id": "PC-09",
+      "promise": "C",
+      "locator": "Los diagnósticos afectados distinguen las causas"
+    },
+    {
+      "id": "PC-12",
+      "promise": "E",
+      "locator": "Fuentes, agentes regenerados, ambos adaptadores"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC04NewPreparationDeclaresLocator::test_pc04a_new_preparation_with_canonical_v2_context_declares_locator"
+      },
+      "protects": "sin este test, un encargo nuevo se publicaría sin decir dónde vive su contexto y el rol tendría que adivinarlo o aceptar ubicaciones sin autoridad.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Toda nueva publicación declara en request y cabecera"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC05MatrixLocatorWithoutArgument::test_pc05a_locator_resolved_without_explicit_argument_by_three_clis"
+      },
+      "protects": "sin este test, la fila 1 de la matriz quedaría sin oráculo y despachar sin retranscribir el cuerpo tampoco tendría contexto declarado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "`render`, `validate-request` y `validate-packet` cumplen la matriz completa"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC06SharedChecksRejectOutOfDomainLocator::test_pc06a_out_of_domain_locator_variants_rejected_with_cause"
+      },
+      "protects": "sin este test, un localizador absoluto o con escapes sería aceptado y el rol cargaría un contexto fuera de autoridad.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Los checks compartidos rechazan localizadores fuera de dominio"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC06ExplicitArgumentAgreesWithLocator::test_pc06b_explicit_argument_must_agree_with_declared_locator"
+      },
+      "protects": "sin este test, un argumento explícito distinto del localizador pasaría y el rol no sabría cuál de los dos contextos es el autorizado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Los checks compartidos rechazan localizadores fuera de dominio"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC07InvocationDirectoryIndependence::test_pc07a_locator_resolution_is_invocation_directory_independent"
+      },
+      "protects": "sin este test, el despacho solo funcionaría desde un directorio y el usuario creería que el contexto se perdió.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Con raíz explícita y argumentos de archivo válidos"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t2_red.py::TestPC07HistoricalRequestWithoutField::test_pc07c_historical_request_without_field_gains_no_locator_metadata"
+      },
+      "protects": "sin este test, un request histórico ganaría metadatos que nunca declaró y el usuario confundiría recuperación con preparación nueva.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Con raíz explícita y argumentos de archivo válidos"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-01",
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestRouteCPositiveIdentification::test_pc01_route_c_emits_only_declaration_and_exact_identification"
+      },
+      "protects": "sin este test, la ruta C emitiría algo distinto de la declaración exacta y el receptor ejecutaría un encargo que no es el publicado.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "`render --route C` emite únicamente la declaración"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestRouteCRejections::test_pc02_route_c_rejects_v1_context_as_v2_only"
+      },
+      "protects": "sin este test, una ruta C sobre v1 pasaría en silencio y el usuario prepararía trabajo nuevo sobre un contexto sin vigencia.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestRouteCRejections::test_pc02_route_c_rejects_request_outside_published_location"
+      },
+      "protects": "sin este test, una copia byte-idéntica fuera de la ubicación publicada seleccionaría otro encargo.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestRouteCRejections::test_pc02_route_c_rejects_non_canonical_context_copy"
+      },
+      "protects": "sin este test, un contexto no canónico con la misma identidad sería aceptado y crearía una fuente de autoridad alternativa.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestRouteCRejections::test_pc02_route_c_rejects_divergent_published_packet"
+      },
+      "protects": "sin este test, un paquete divergente obtendría identificación válida y el usuario ejecutaría instrucciones que nunca se validaron.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-08a"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestPC08aPreambleBoundary::test_pc08a_validate_packet_does_not_strip_preamble"
+      },
+      "protects": "sin este test, validate-packet aceptaría un mensaje con envoltura como si fuera el archivo y ocultaría una divergencia real.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Los verificadores mantienen aceptación del paquete canónico completo"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-08a"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t3_red.py::TestPC08aPreambleBoundary::test_pc08a_route_c_accepts_published_packet_with_legitimate_preamble"
+      },
+      "protects": "sin este test, un preámbulo legítimo del runtime bloquearía un despacho válido y el usuario no podría usar la ruta C.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Los verificadores mantienen aceptación del paquete canónico completo"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-03",
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t4_red.py::TestDispatchSurfacesNameRouteC::test_pc03_pc12_dispatch_surfaces_name_the_route_c_path"
+      },
+      "protects": "sin este test, el despacho no diría que la ruta C existe y el usuario seguiría retranscribiendo cuerpos.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "El intake y despacho documentados exigen contexto v2 para C"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t4_red.py::TestRegeneratedAgentsKeepRouteC::test_pc12_declaration_and_derived_orchestrators_survive_regeneration"
+      },
+      "protects": "sin este test, una regeneración borraría la declaración y el consumidor instalado dejaría de saber emitir la ruta C.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Fuentes, agentes regenerados, ambos adaptadores"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t5_e2e.py::TestIsolatedConsumerE2E::test_pc12_isolated_consumer_prepares_validates_and_emits_canonical_route_c"
+      },
+      "protects": "sin este test, la corrección funcionaría solo en el checkout y el producto distribuido seguiría sin poder despachar.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Fuentes, agentes regenerados, ambos adaptadores"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-12",
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t5_e2e.py::TestIsolatedConsumerFailClosed::test_pc12_isolated_consumer_rejects_divergent_packet_and_non_canonical_copies_fail_closed"
+      },
+      "protects": "sin este test, el consumidor instalado aceptaría un paquete alterado y el usuario ejecutaría un encargo infiel.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Fuentes, agentes regenerados, ambos adaptadores"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-08a",
+        "PC-01",
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t5_properties.py::TestInv05CompleteEqualityProperties::test_inv05_complete_equality_rejects_every_seeded_byte_divergence"
+      },
+      "protects": "sin este test, una normalización de cabecera o bytes tras el cierre despacharía un paquete cuyas instrucciones nunca se validaron.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Los verificadores mantienen aceptación del paquete canónico completo"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t5_properties.py::TestInv04NoSubstitutePacketProperties::test_inv04_failed_admission_never_emits_another_packet_identification"
+      },
+      "protects": "sin este test, un rechazo se deslizaría al paquete que sí existe en disco y el usuario ejecutaría un encargo nunca admitido.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "La emisión C rechaza un contexto v1 con diagnóstico explícito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-07b"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t6_red.py::TestB2ActiveV1PacketDiagnosis::test_b2_active_v1_packet_is_diagnosed_and_escalated_without_effects"
+      },
+      "protects": "sin este test, el usuario seguiría la indicación de completar o fallar y terminaría bloqueado sin paso que escale al dueño.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "El procedimiento para retomar un proyecto v1 distingue recuperación histórica"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t6_red.py::TestB4ReplaceSuccessorDeclaresLocator::test_b4_replace_successor_declares_locator_over_historical_predecessor"
+      },
+      "protects": "sin este test, el sucesor se publicaría sin localizador y el defecto solo se vería en el gate del padre o nunca.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "Toda nueva publicación declara en request y cabecera"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_004_t6_b1_guard.py::TestB1IntakeCoreGuard::test_b1_intake_core_and_derived_role_agents_keep_c_v2_and_a_plus_c_rejection"
+      },
+      "protects": "sin este test, una edición borraría el enunciado C/v2 o el rechazo A+C y el usuario recibiría un intake ambiguo.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
+          "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2",
+          "locator": "El intake y despacho documentados exigen contexto v2 para C"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva."
+}

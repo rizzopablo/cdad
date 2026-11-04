@@ -1,0 +1,520 @@
+{
+  "schema_version": 1,
+  "unit": "008-004-role-packet-enforcement",
+  "contract": {
+    "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+    "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "### PC-01 — Admisión antes de efectos nuevos"
+    },
+    {
+      "id": "PC-03",
+      "promise": "B",
+      "locator": "### PC-03 — Integridad completa y selección inequívoca"
+    },
+    {
+      "id": "PC-06",
+      "promise": "C",
+      "locator": "### PC-06 — Coherencia entre referencias y escritura"
+    },
+    {
+      "id": "PC-07",
+      "promise": "D",
+      "locator": "### PC-07 — Preservación durable e idempotencia"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc06_begin_con_contract_cubierta_por_write_scope_se_rechaza"
+      },
+      "protects": "sin este test, el usuario publicaría un begin con referencia cubierta por write_scope y contaminaría la continuidad antes del registro (P1 tardío en vez de rechazo previo).",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un nuevo begin con referencia contract cubierta por write_scope se rechaza"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc06_controles_contract_fuera_de_scope_y_living_dentro_se_aceptan"
+      },
+      "protects": "sin este test, una implementación que rechace todo begin pasaría el rechazo de PC-06 y el usuario perdería continuidad legítima (falso positivo indetectable).",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un nuevo begin con referencia contract cubierta por write_scope se rechaza"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_begin_sin_paquete_verificable_no_publica_continuidad[sin-paquete]"
+      },
+      "protects": "sin este test (sin-paquete), un begin sin paquete verificable quedaría publicado y el resume posterior reanudaría sobre una encomienda que nadie puede verificar.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_begin_sin_paquete_verificable_no_publica_continuidad[sin-marcador]"
+      },
+      "protects": "sin este test (sin-marcador), un begin sin paquete verificable quedaría publicado y el resume posterior reanudaría sobre una encomienda que nadie puede verificar.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_begin_sin_paquete_verificable_no_publica_continuidad[bloque-sin-cierre]"
+      },
+      "protects": "sin este test (bloque-sin-cierre), un begin sin paquete verificable quedaría publicado y el resume posterior reanudaría sobre una encomienda que nadie puede verificar.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_registro_de_despacho_rechaza_packet_md_alterado[objetivo]"
+      },
+      "protects": "sin este test (objetivo), se registraría un despacho cuyos bytes difieren del render validado y el registro acreditaría texto no validado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_registro_de_despacho_rechaza_packet_md_alterado[linea-de-instrucciones]"
+      },
+      "protects": "sin este test (linea-de-instrucciones), se registraría un despacho cuyos bytes difieren del render validado y el registro acreditaría texto no validado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_receive_rechaza_packet_md_alterado_tras_despacho_valido"
+      },
+      "protects": "sin este test, una entrega se acreditaría contra un paquete ya alterado y el recibo quedaría ligado a bytes no validados.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_control_dispatch_con_paquete_intacto_lanza_worker_una_vez"
+      },
+      "protects": "sin este test, un rechazo universal de la frontera pasaría los rechazos de PC-03 y el usuario no podría despachar nunca (control positivo ausente).",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_dispatch_rechaza_packet_md_alterado_antes_de_lanzar[objetivo]"
+      },
+      "protects": "sin este test (objetivo), el worker recibiría un paquete distinto del validado en transporte y el usuario no sabría qué encomienda ejecutó.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_dispatch_rechaza_packet_md_alterado_antes_de_lanzar[linea-de-instrucciones]"
+      },
+      "protects": "sin este test (linea-de-instrucciones), el worker recibiría un paquete distinto del validado en transporte y el usuario no sabría qué encomienda ejecutó.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_dispatch_sin_paquete_verificable_no_lanza_worker[sin-paquete]"
+      },
+      "protects": "sin este test (sin-paquete), una sesión ejecutaría una encomienda sin paquete verificable en transporte y nadie podría demostrar qué se pidió.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_dispatch_sin_paquete_verificable_no_lanza_worker[sin-marcador]"
+      },
+      "protects": "sin este test (sin-marcador), una sesión ejecutaría una encomienda sin paquete verificable en transporte y nadie podría demostrar qué se pidió.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc01_dispatch_sin_paquete_verificable_no_lanza_worker[bloque-sin-cierre]"
+      },
+      "protects": "sin este test (bloque-sin-cierre), una sesión ejecutaría una encomienda sin paquete verificable en transporte y nadie podría demostrar qué se pidió.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc07_rechazo_no_altera_registros_durables_previos"
+      },
+      "protects": "sin este test, un rechazo podría corromper la cadena durable de un begin válido anterior y el usuario perdería la evidencia de lo ya acreditado.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "El rechazo no modifica registros durables previos."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc07_begin_identico_repetido_es_replay_sin_efectos"
+      },
+      "protects": "sin este test, un reintento del orquestador duplicaría continuidad y el usuario vería dos encargos donde hay uno.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "El rechazo no modifica registros durables previos."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc07_recepcion_repetida_es_replay_sin_recibo_ni_enlace_nuevos"
+      },
+      "protects": "sin este test, un reintento de receive publicaría un segundo recibo para la misma entrega y el usuario no sabría cuál es válido.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "El rechazo no modifica registros durables previos."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_delegate_directo_rechaza_packet_md_alterado_antes_de_lanzar[objetivo]"
+      },
+      "protects": "sin este test (objetivo), el delegate directo lanzaría un worker con instrucciones distintas de las validadas saltando la admisión de dispatch.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_delegate_directo_rechaza_packet_md_alterado_antes_de_lanzar[linea-de-instrucciones]"
+      },
+      "protects": "sin este test (linea-de-instrucciones), el delegate directo lanzaría un worker con instrucciones distintas de las validadas saltando la admisión de dispatch.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_delegate_directo_control_paquete_intacto_lanza_worker_una_vez"
+      },
+      "protects": "sin este test, un rechazo universal de la vía directa pasaría el rechazo anterior y el usuario no podría delegar nunca por esa vía.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_record_rechaza_packet_md_alterado_sin_observar_ni_registrar[objetivo]"
+      },
+      "protects": "sin este test (objetivo), se registraría una observación con el runtime ya consultado sobre un paquete no validado, con residuo y registro.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_record_rechaza_packet_md_alterado_sin_observar_ni_registrar[linea-de-instrucciones]"
+      },
+      "protects": "sin este test (linea-de-instrucciones), se registraría una observación con el runtime ya consultado sobre un paquete no validado, con residuo y registro.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_pc03_record_control_paquete_intacto_registra_una_entrada"
+      },
+      "protects": "sin este test, un rechazo universal de record pasaría el test anterior y el usuario no podría registrar observaciones (ausencia de sondeo indetectable).",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Una alteración del objetivo, instrucciones, contrato o scopes respecto"
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_begin_con_request_ausente_y_rastro_de_publicacion_se_rechaza"
+      },
+      "protects": "sin este test, se persistiría un begin para una encomienda sin request y el resume reanudaría sobre texto sin paquete verificable.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_begin_legado_sin_arbol_de_paquetes_se_acepta"
+      },
+      "protects": "sin este test, la admisión por paquete rechazaría todo begin sin paquete y el usuario perdería la continuidad de sus proyectos legados.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_011_begin_en_v2_sin_request_ni_rastro_se_rechaza_sin_efectos"
+      },
+      "protects": "sin este test, el orquestador persistiría continuidad para una encomienda v2 sin paquete y el resume reanudaría sobre ella.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-01",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_004_packet_enforcement.py::test_011_tras_rechazo_prepare_begin_y_verify_begin_ok"
+      },
+      "protects": "sin este test, el rechazo preventivo dejaría la ejecución en un estado sin salida pública y el usuario perdería el encargo tras corregir la preparación.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-004-role-packet-enforcement/spec.md",
+          "sha256": "48c553e7852ab761615d895c806a2b5d5472d60028432c7896ae83e181e6df96",
+          "locator": "Un prompt sin marcador conserva la ruta legacy y no acredita despacho CDAD."
+        }
+      ],
+      "limits": "Estructural; pertinencia y ejecución quedan a revisión independiente."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas (PC-01, PC-03, PC-06, PC-07), no una extracción exhaustiva"
+}

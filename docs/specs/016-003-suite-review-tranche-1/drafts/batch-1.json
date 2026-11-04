@@ -1,0 +1,1209 @@
+{
+ "batch": 1,
+ "modules": [
+  "tests/test_016_002_gap_report.py",
+  "tests/test_016_001_contract_test_link.py",
+  "tests/test_015_002_intake_guards.py",
+  "tests/test_015_001_frozen_reception.py",
+  "tests/test_014_001_suite_evidence_defaults.py"
+ ],
+ "rows": [
+  {
+   "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_A_universo_desde_estado_y_cierre_no_registrado_vs_roto",
+   "module": "tests/test_016_002_gap_report.py",
+   "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+   },
+   "pc_ids": [
+    "PC-1",
+    "PC-2"
+   ],
+   "promise": "A",
+   "check": "Universo desde estado (unit-a dentro, unit-b como cierre-no-registrado, unit-c histórica fuera con status recuperable) y evidencia rota da 1 identificando la referencia sin decir «completo».",
+   "consequence": "sin este test, el usuario reincorporaría una unidad cerrada-histórica sobre una fila actual no cerrada, o confundiría «sin evidencia» con «evidencia rota» aceptando un informe incompleto como completo.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-002-gap-report/spec.md",
+     "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+     "locator": "### A — Saber qué contratos se examinaron + <!-- cdad:pc PC-1 promise=A --> / PC-2"
+    },
+    {
+     "path": "tests/test_016_002_gap_report.py",
+     "sha256": "5970bdacc23adeff8cedacacd4ca6f14246aff7a237bc4d2cb7f1f236c819c35",
+     "locator": "def test_R_A_universo_desde_estado_y_cierre_no_registrado_vs_roto"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa A en su producto (gap-report); sin solapamiento con validate de 016-001 (universo distinto).",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_B_obligaciones_huecos_agrupados_y_review_declarado",
+   "module": "tests/test_016_002_gap_report.py",
+   "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+   },
+   "pc_ids": [
+    "PC-3",
+    "PC-4"
+   ],
+   "promise": "B",
+   "check": "Obligaciones de marcadores/legacy sin mezclar; hueco PC-3 agrupado bajo promesa B; verificador compartido no exige tests extra; review con motivo cuenta como declarado sin figurar como ejecución; registro sin obligaciones da 1.",
+   "consequence": "sin este test, el usuario presentaría «not_indexed» como cubierta o hueco, inventaría promesas, exigiría un test por obligación compartida, o confundiría un review con un test ejecutado.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-002-gap-report/spec.md",
+     "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+     "locator": "### B — Distinguir huecos de desconocimiento + <!-- cdad:pc PC-3 promise=B --> / PC-4"
+    },
+    {
+     "path": "tests/test_016_002_gap_report.py",
+     "sha256": "5970bdacc23adeff8cedacacd4ca6f14246aff7a237bc4d2cb7f1f236c819c35",
+     "locator": "def test_R_B_obligaciones_huecos_agrupados_y_review_declarado"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa B; el aparente solape con R-B1 de 016-001 opera sobre otro universo (gaps de registros vs validate) y otro defecto observable.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_C_exclusion_valida_aparta_e_invalida_da_1",
+   "module": "tests/test_016_002_gap_report.py",
+   "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+   },
+   "pc_ids": [
+    "PC-5",
+    "PC-6"
+   ],
+   "promise": "C",
+   "check": "Exclusión válida aparta la promesa con motivo recuperable (fuera de gaps y de declared); motivo vacío y duplicada dan 1 sin suprimir el hueco ni aplicar la entrada.",
+   "consequence": "sin este test, el usuario leería una promesa excluida como «protegida» (cobertura inflada) o colaría una exclusión con motivo vacío que borra huecos accionables.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-002-gap-report/spec.md",
+     "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+     "locator": "## 5. Exclusiones justificadas + <!-- cdad:pc PC-5 promise=C --> / PC-6"
+    },
+    {
+     "path": "tests/test_016_002_gap_report.py",
+     "sha256": "5970bdacc23adeff8cedacacd4ca6f14246aff7a237bc4d2cb7f1f236c819c35",
+     "locator": "def test_R_C_exclusion_valida_aparta_e_invalida_da_1"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa C; cubre además regresiones B1/B2 declaradas en el propio test.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_D_reproducible_orden_estable_sin_efectos_y_codigos",
+   "module": "tests/test_016_002_gap_report.py",
+   "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+   },
+   "pc_ids": [
+    "PC-7",
+    "PC-8"
+   ],
+   "promise": "D",
+   "check": "Bytes reproducibles y orden estable entre corridas, sin mutar entradas, sin afirmar ejecución; estado corrupto da 1, uso inválido da 2, y validate sigue compatible.",
+   "consequence": "sin este test, el usuario aceptaría informes no reproducibles, un exit 0 que mutó fuentes o ejecutó tests, o una regresión silenciosa de validate.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-002-gap-report/spec.md",
+     "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+     "locator": "## 6. Forma y reproducibilidad del informe + <!-- cdad:pc PC-7 promise=D --> / PC-8"
+    },
+    {
+     "path": "tests/test_016_002_gap_report.py",
+     "sha256": "5970bdacc23adeff8cedacacd4ca6f14246aff7a237bc4d2cb7f1f236c819c35",
+     "locator": "def test_R_D_reproducible_orden_estable_sin_efectos_y_codigos"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa D; sin verificador alternativo que compare los mismos códigos.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_E_sin_registros_produce_informe_con_limites",
+   "module": "tests/test_016_002_gap_report.py",
+   "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+   },
+   "pc_ids": [
+    "PC-9",
+    "PC-10"
+   ],
+   "promise": "E",
+   "check": "Sin registros hay informe sin colección: declara «sin registro», unit-b en not_indexed fuera de gaps/obligations, y bloque de límites que niega ejecución/pertinencia/sensibilidad/aprobación sin afirmarlas.",
+   "consequence": "sin este test, el usuario bloquearía el ciclo por no tener registros, exigiría migración para adoptar gap-report, o leería el informe como prueba de ejecución o aceptación.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-002-gap-report/spec.md",
+     "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+     "locator": "### E — Adoptarlo sin imponer una migración + <!-- cdad:pc PC-9 promise=E --> / PC-10"
+    },
+    {
+     "path": "tests/test_016_002_gap_report.py",
+     "sha256": "5970bdacc23adeff8cedacacd4ca6f14246aff7a237bc4d2cb7f1f236c819c35",
+     "locator": "def test_R_E_sin_registros_produce_informe_con_limites"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa E; el oráculo de límites (negaciones) no existe en otro test.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_A1_enlace_recuperable_y_roturas_identificadas",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-1",
+    "PC-2"
+   ],
+   "promise": "A",
+   "check": "Registro válido da status ok recuperable; cinco roturas (hash, pc inexistente, referencia irresoluble, nodeid ausente, colección fallida) dan 1 identificando el vínculo afectado.",
+   "consequence": "sin este test, el usuario creería un vínculo que no resuelve o recibiría un 1 sin saber qué vínculo falló.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### A — Recuperar el compromiso protegido: **PC-1.** Dado un registro válido… / **PC-2.** …termina con `1` e identifica el vínculo afectado"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_A1_enlace_recuperable_y_roturas_identificadas"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada en el registro materializado; promesa A sin alternativa.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B1_huecos_agrupados_y_reutilizacion_sin_cuota",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-3",
+    "PC-4"
+   ],
+   "promise": "B",
+   "check": "Hueco PC-3 enumerado y agrupado por promesa con 1; compartir test no genera defecto; review sin motivo da 1 y con motivo no se presenta como ejecución.",
+   "consequence": "sin este test, el usuario no vería promesas sin verificador, o se le exigirían tests de más, o un kind:review pasaría como ejecución.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### B — Ver huecos sin imponer cuotas: **PC-3.** …las agrupa por promesa / **PC-4.** Un test existente puede satisfacer varias obligaciones sin exigir tests adicionales"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B1_huecos_agrupados_y_reutilizacion_sin_cuota"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; el solape aparente con R-B de 016-002 es otro producto y otro universo.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B2_ejemplo_inline_y_bloque_no_son_obligaciones",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-3"
+   ],
+   "promise": "B",
+   "check": "Marcador en ejemplo inline y en bloque de código no amplía el universo: el vínculo de la única obligación real da 0 sin huecos y PC-1 no pertenece al universo.",
+   "consequence": "sin este test, el usuario vería un hueco fantasma con exit 1 aunque su registro vincule la única obligación real.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### Obligaciones nuevas y contratos antiguos: cada postcondición lleva un marcador estable… (ejemplos no son obligaciones)"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B2_ejemplo_inline_y_bloque_no_son_obligaciones"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; defecto (universo truncado por ejemplo) no cubierto por R-B1.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B3_backtick_suelto_no_traga_marcador_posterior",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-3"
+   ],
+   "promise": "B",
+   "check": "Un backtick sin cerrar en la prosa no oculta obligaciones reales: el universo no queda truncado y no hay falso verde.",
+   "consequence": "sin este test, el usuario recibiría un verde con rc 0 aunque PC-2 no tenga verificador: el span inline abierto se traga el marcador posterior.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### B — Ver huecos sin imponer cuotas: **PC-3.** Sobre todas las obligaciones obtenidas de marcadores…"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B3_backtick_suelto_no_traga_marcador_posterior"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Defecto de parsing (span inline abierto) distinto del de R-B2 (ejemplos); ningún otro test lo provoca.",
+   "candidate": null,
+   "uncertainties": [
+    "Nodeid NO presente en docs/specs/016-001-contract-test-link/contract-test-links.json materializado (7 links cubren R-A1,R-B1,R-B2,R-C1,R-C2,R-D1,R-D2). Ausencia visible; delta propuesto en link_deltas, no alta inventada."
+   ]
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B4_resultado_declara_modo_y_obligaciones",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-1",
+    "PC-8"
+   ],
+   "promise": "A+D",
+   "check": "El resultado declara mode (marcadores vs índice legacy acotado) y lista obligations; el modo queda distinguible en el informe.",
+   "consequence": "sin este test, el usuario no sabría si el informe cubre marcadores o el índice legacy: un verde en modo legacy parecería extracción exhaustiva.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "**PC-8.** Un resultado estructural verde declara su ámbito… / **PC-1.** …obligación, promesa, verificador y comprobación protegida"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B4_resultado_declara_modo_y_obligaciones"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único test que fija el campo mode; R-A1/R-D2 no lo exigen.",
+   "candidate": null,
+   "uncertainties": [
+    "Nodeid NO presente en el registro materializado. Ausencia visible; delta propuesto en link_deltas."
+   ]
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B5_contrato_sin_obligaciones_no_da_verde",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-3",
+    "PC-8"
+   ],
+   "promise": "B+D",
+   "check": "Sin marcadores ni índice legacy el resultado es 1: cero obligaciones no es verde.",
+   "consequence": "sin este test, el usuario recibiría un verde con cero obligaciones: un falso verde sobre un contrato que no declara nada.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "**PC-3.** Sobre todas las obligaciones obtenidas… / **PC-8.** …no afirma pertinencia, ejecución, sensibilidad ni aprobación"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B5_contrato_sin_obligaciones_no_da_verde"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Caso borde (universo vacío) no cubierto por R-B1 (universo no vacío con hueco) ni R-D1.",
+   "candidate": null,
+   "uncertainties": [
+    "Nodeid NO presente en el registro materializado. Ausencia visible; delta propuesto en link_deltas."
+   ]
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B6_marcador_duplicado_con_promesas_distintas",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-3"
+   ],
+   "promise": "B",
+   "check": "Id de marcador duplicado con promesas distintas da 1 (regresión O1): el universo ambiguo no se resuelve silenciosamente.",
+   "consequence": "sin este test, el usuario creería cubiertas dos promesas distintas con un solo vínculo y el hueco de una nunca se informaría.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "**PC-3.** Sobre todas las obligaciones obtenidas de marcadores… (protección de regresión O1)"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_B6_marcador_duplicado_con_promesas_distintas"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Regresión O1 de review sin otro verificador que duplique marcadores.",
+   "candidate": null,
+   "uncertainties": [
+    "Nodeid NO presente en el registro materializado. Ausencia visible; delta propuesto en link_deltas."
+   ]
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_C1_nuevos_nodeids_entre_colecciones",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-5"
+   ],
+   "promise": "C",
+   "check": "Nodeid nuevo sin vínculo da 1 nombrándolo; vinculado da 0; sin baseline la comprobación se declara no realizada sin acusar al nodeid.",
+   "consequence": "sin este test, el usuario introduciría tests sin vínculo sin enterarse; sin baseline la comprobación quedaría silenciosa.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### C — Aplicar el vínculo hacia adelante: **PC-5.** …cada nodeid nuevo aparece vinculado o se informa… Sin baseline… no realizada"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_C1_nuevos_nodeids_entre_colecciones"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; única que compara CURRENT contra BASELINE.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_C2_delta_y_exigencia_en_review_sin_gate_en_red",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-6"
+   ],
+   "promise": "C",
+   "check": "Delta válido como texto intermedio sin baseline (no bloquea RED, se registra no comprobado con ámbito, sin mutar contrato/tests); en cierre el nodeid nuevo sin vínculo da 1 nombrándolo.",
+   "consequence": "sin este test, el usuario perdería deltas en los handoffs o vería intermedios convertidos en gate de RED.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "**PC-6.** …El test-writer entrega el delta y el orquestador lo materializa… los resultados intermedios se registran sin convertirse en gate de RED"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_C2_delta_y_exigencia_en_review_sin_gate_en_red"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; única sobre el régimen de deltas intermedios.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_D1_sin_registro_no_bloquea_y_corrupto_no_es_ausencia",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-7"
+   ],
+   "promise": "D",
+   "check": "Sin registro: status not_configured no bloqueante con diagnóstico «sin registro»; registro corrupto da 1 (inválido, no ausencia).",
+   "consequence": "sin este test, el usuario quedaría bloqueado sin haber adoptado el registro, o un registro corrupto pasaría como ausencia no bloqueante.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "### D — Conservar compatibilidad y límites: **PC-7.** Un proyecto sin registro continúa su ciclo…"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_D1_sin_registro_no_bloquea_y_corrupto_no_es_ausencia"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; única sobre adopción no bloqueante.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_D2_ambito_limites_y_reorden_sin_cambios",
+   "module": "tests/test_016_001_contract_test_link.py",
+   "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+   },
+   "pc_ids": [
+    "PC-8"
+   ],
+   "promise": "D",
+   "check": "Verde estructural declara ámbito y límites sin afirmar ejecución; reordenar links no cambia el resultado.",
+   "consequence": "sin este test, el usuario confundiría un verde estructural con prueba de pertinencia o ejecución.",
+   "evidence": [
+    {
+     "path": "docs/specs/016-001-contract-test-link/spec.md",
+     "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+     "locator": "**PC-8.** Un resultado estructural verde declara su ámbito y no afirma pertinencia, ejecución, sensibilidad ni aprobación"
+    },
+    {
+     "path": "tests/test_016_001_contract_test_link.py",
+     "sha256": "ab71e84ca1219eede95dc58d2b90016ae78e5ad0736bd7937f1a94b776163470",
+     "locator": "def test_R_D2_ambito_limites_y_reorden_sin_cambios"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Protección existente y vinculada; única sobre invariancia ante reorden.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_ana_observacion_incompatible_explica_campo_formato_y_ejemplo",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-01"
+   ],
+   "promise": "diagnóstico-por-formato",
+   "check": "Observación incompatible se rechaza (rc!=0, sin traceback) identificando provenance y con ejemplo JSON de las seis claves más la forma válida como ejemplo.",
+   "consequence": "sin este test, el usuario recibe «fields do not match» sin saber qué campo falta ni la forma válida, y acaba adivinando o inventando valores.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "## 4. Postcondiciones: **PC-01** (observación de despacho): rechaza documento incompatible identificando campo/problema, formato esperado y ejemplo JSON con las seis claves"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_ana_observacion_incompatible_explica_campo_formato_y_ejemplo"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de PC-01; sin alternativa que exija ejemplo de seis claves.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_anb_decisions_senala_elemento_forma_y_ejemplo",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-02"
+   ],
+   "promise": "diagnóstico-por-formato",
+   "check": "decisions malformado conserva el rechazo señalando decisions/elemento, con forma esperada y ejemplo objeto decision+rationale.",
+   "consequence": "sin este test, el usuario recibe «must be an object» sin ver la forma exacta del elemento válido e itera a ciegas sobre el begin.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-02** (decisions de begin): conserva rechazo, señala decisions/elemento, incluye forma esperada y ejemplo"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_anb_decisions_senala_elemento_forma_y_ejemplo"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de PC-02.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_anc_write_scope_malformado_identifica_opcion_exige_forma_y_ejemplo",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-03"
+   ],
+   "promise": "diagnóstico-por-formato",
+   "check": "Write-scope malformado (bare y empty) identifica --write-scope, exige CLASS=SELECTOR no vacíos, incluye ejemplo implementation=skills; no convierte read en escritura.",
+   "consequence": "sin este test, el usuario recibe «scope must be CLASS=SELECTOR» suelto sin saber qué opción corregir ni la forma válida.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-03** (write scope): CLI mal formado identifica la opción, exige `CLASS=SELECTOR` no vacíos, incluye ejemplo"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_anc_write_scope_malformado_identifica_opcion_exige_forma_y_ejemplo"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de PC-03; parametriza dos variantes del mismo defecto observable (una promesa, no cuota).",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_and_begin_contract_cubierta_ofrece_estrechar_o_living",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-04"
+   ],
+   "promise": "rechazo-accionable",
+   "check": "Begin con referencia contract cubierta sigue rechazado pre-persistencia (árbol y state intactos) ofreciendo estrechar scope o vía living solo cuando corresponda.",
+   "consequence": "sin este test, el usuario recibe el rechazo PC-06 sin salida accionable: no sabe si estrechar scope, si cabe living, ni que un contrato aprobado no se reclasifica.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-04** (rechazo accionable PC-06): nuevo begin con referencia contract cubierta sigue rechazándose pre-persistencia"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_and_begin_contract_cubierta_ofrece_estrechar_o_living"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único que combina persistencia-nula con oferta de salidas; conserva PC-06 intacto.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_ane_guia_docs_docs_documentada",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-05"
+   ],
+   "promise": "guía-coherente",
+   "check": "continuity.md existe y documenta docs=docs con su límite, ejemplo living mutable y admisión de contract fuera de scope (presencia mecánica mínima; la semántica es revisión independiente).",
+   "consequence": "sin este test, la guía D2 podría perderse en una edición y el usuario ante el choque scopes amplios vs contract no tendría documento de estrechamiento ni vía living.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-05** (guía coherente): continuity.md documenta el caso `docs=docs`, su límite (carpeta del contrato)"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_ane_guia_docs_docs_documentada"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador mecánico de PC-05; declara expresamente su límite no-mecánico en vez de fingir cobertura.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_anf_open_unit_omite_cerrada_y_abre_primera_elegible",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-06"
+   ],
+   "promise": "elegibilidad",
+   "check": "open-unit omite la queued del epic cerrado, abre la primera elegible, conserva orden; omitida sigue queued e historia intacta.",
+   "consequence": "sin este test, el usuario reabre por accidente una unidad de un epic ya cerrado, contaminando un cierre registrado.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-06** (selección automática): open-unit omite queued de epic cerrado y abre la primera elegible"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_anf_open_unit_omite_cerrada_y_abre_primera_elegible"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Núcleo de D3; el defecto (reapertura de cierre) no lo provoca ningún otro test del lote.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_ang_feature_excluida_rechaza_nombrando_unidad_y_epic",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-07"
+   ],
+   "promise": "elegibilidad",
+   "check": "--feature de unidad excluida se rechaza nombrando unidad y epic, sin abrir ni persistir (árbol y state intactos).",
+   "consequence": "sin este test, el usuario elude el cierre con --feature y reabre una unidad excluida sin que el diagnóstico nombre el bloqueo.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-07** (selección explícita): `--feature <ID>` de unidad excluida rechaza nombrando unidad y epic, sin abrir ni persistir"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_ang_feature_excluida_rechaza_nombrando_unidad_y_epic"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único sobre selección explícita; vía de elusión distinta de la automática (anf).",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_anh_solo_excluidas_informa_sin_candidata_sin_cambios",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-08"
+   ],
+   "promise": "elegibilidad",
+   "check": "Con solo excluidas, open-unit informa «sin candidata» (rc!=0) sin activar nada ni cambiar árbol/state.",
+   "consequence": "sin este test, el usuario obtiene una apertura silenciosa sobre un epic cerrado en vez de un informe que lo detenga.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-08** (sin candidata): solo excluidas → informa sin candidata, sin ejecución ni cambios"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_anh_solo_excluidas_informa_sin_candidata_sin_cambios"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Rama «sin candidata» de PC-08; anj cubre la rama bloqueante (ambigüedad), defecto distinto.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_ani_apertura_elegible_conserva_garantias_y_documenta",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-09"
+   ],
+   "promise": "elegibilidad",
+   "check": "Apertura elegible conserva garantías (validate-state acepta) y project-start.md documenta «primera queued» = primera elegible.",
+   "consequence": "sin este test, una implementación podría abrir sin las comprobaciones conservadas, o «primera elegible» quedaría sin documentar y el usuario leería «primera queued» sin filtrar.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-09** (apertura compatible): conserva comprobaciones… project-start.md: «primera queued» = primera elegible"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_ani_apertura_elegible_conserva_garantias_y_documenta"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único sobre conservación de garantías + documentación de la regla; control de montaje incluido.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_002_intake_guards.py::test_anj_unidad_en_dos_planes_bloquea_sin_abrir",
+   "module": "tests/test_015_002_intake_guards.py",
+   "contract": {
+    "path": "docs/specs/015-002-intake-guards/spec.md",
+    "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
+   },
+   "pc_ids": [
+    "PC-08"
+   ],
+   "promise": "elegibilidad",
+   "check": "Unidad con fila en dos planes (uno de epic cerrado) bloquea open-unit y --feature con diagnóstico de ambigüedad, sin abrir ni persistir (cierra F1: comparación row_index entre archivos).",
+   "consequence": "sin este test, una tabla de contexto que nombre la unidad en un plan abierto reabriría la unidad por atribuir al dueño de la línea más baja.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-002-intake-guards/spec.md",
+     "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
+     "locator": "**PC-08** (sin candidata): fuente bloqueante → identifica fuente y motivo"
+    },
+    {
+     "path": "tests/test_015_002_intake_guards.py",
+     "sha256": "b48c9bb1962334b03e35922762945faadf6feb104b0488f3331930b5b320e24a",
+     "locator": "def test_anj_unidad_en_dos_planes_bloquea_sin_abrir"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Rama bloqueante de PC-08 (ambigüedad entre planes); defecto de atribución cross-file que anh/ang no provocan.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestA1FrozenPublication::test_an_a1_prepare_congelado_publica_respaldo_coherente",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-01"
+   ],
+   "promise": "A",
+   "check": "Prepare congelado publica REQUEST con fuentes ordenadas, claves exactas, sha256==sha256(snapshot), snapshot idéntico a lo vivo, encabezado derivado del respaldo y stdout idéntico a PACKET.md.",
+   "consequence": "sin este test, el usuario recibiría un paquete cuya recepción no está anclada a bytes verificables y ninguna comparación posterior detectaría la deriva.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "### 4. Postcondiciones: **PC-01:** preparación nueva publica REQUEST con fuentes, snapshots y hashes coherentes; stdout coincide con PACKET.md"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "class TestA1FrozenPublication: def test_an_a1_prepare_congelado_publica_respaldo_coherente"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Base de toda la congelación; A2/A2b presuponen esta publicación.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestA2SuccessorCapturesCurrent::test_an_a2_sucesor_legitimo_captura_instrucciones_vigentes",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-01"
+   ],
+   "promise": "A",
+   "check": "Preparación posterior con deriva intermedia captura sus instrucciones vigentes, no las del predecesor (respaldo y snapshots propios).",
+   "consequence": "sin este test, un sucesor podría reutilizar los bytes congelados del predecesor y despachar instrucciones obsoletas como vigentes.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-01:** …Sucesor legítimo captura sus propias instrucciones vigentes"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "class TestA2SuccessorCapturesCurrent"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Sucesión normal vs reemplazo (A2b): vías de preparación distintas, defectos distintos.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestA2bReplaceSuccessorCapturesCurrent::test_an_a2b_replace_packet_sucesor_captura_vigente_no_predecesor",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-01"
+   ],
+   "promise": "A",
+   "check": "Sucesor por --replace-packet con deriva captura lo vivo, no los bytes del predecesor (mata mutante M6 de la review).",
+   "consequence": "sin este test, un sucesor por reemplazo podría reutilizar los bytes congelados del predecesor y el defecto M6 pasaría silencioso.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-01:** …Sucesor legítimo captura sus propias instrucciones vigentes (cierre F-2 de la review: reemplazo)"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5d27d1e9dcf3e15c3",
+     "locator": "class TestA2bReplaceSuccessorCapturesCurrent"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Cierre de finding F-2 con mutante concreto (M6); A2 no ejerce la vía --replace-packet.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestB1RenderStableUnderDrift::test_an_b1_render_byte_identico_tras_mutar_fuentes_vivas",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-02"
+   ],
+   "promise": "B",
+   "check": "Tras mutar las tres fuentes vivas, render es byte-idéntico y validate-request/validate-packet siguen rc=0 (RED nuclear).",
+   "consequence": "sin este test, cambiar una coma en las instrucciones vivas impediría re-emitir o validar un paquete ya congelado.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-02:** tras preparar un paquete congelado, cambiar fuentes vivas no altera `render`"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "class TestB1RenderStableUnderDrift"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "RED nuclear de la feature; ningún otro test muta fuentes vivas contra render.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestB2DispatchReceiveUnderDrift::test_an_b2_record_y_receive_acreditan_con_deriva",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-03"
+   ],
+   "promise": "B",
+   "check": "Con deriva viva, record-dispatch registra (dispatched) y receive acredita con packet_validation=passed sin withdraw.",
+   "consequence": "sin este test, una deriva inocua de instrucciones condenaría un despacho válido e impediría su recepción.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-03:** con esa deriva, `prepare --record-dispatch` registra… `receive` conserva `packet_validation=passed`"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "class TestB2DispatchReceiveUnderDrift"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Transición dispatched/receive bajo deriva; B1 solo cubre render+validate.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestC1AlterationsRejected::test_an_c1_alteraciones_rechazadas_en_record_y_receive",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-04"
+   ],
+   "promise": "C",
+   "check": "Clases de alteración (objetivo, línea de instrucciones, forja viva-consistente con encabezado actualizado y fuentes mutadas a juego) rechazadas en record y receive; el respaldo congelado rechaza aunque el vivo coincida.",
+   "consequence": "sin este test, un encabezado maquillado para coincidir con instrucciones alteradas pasaría el registro y el usuario despacharía una encomienda distinta de la validada.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-04:** alterar cuerpo/metadatos de PACKET.md respecto del request congelado impide registrar/recibir; incluye alterar instrucciones y solo actualizar hashes"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "def test_an_c1_alteraciones_rechazadas_en_record_y_receive"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Ataques por alteración vs respaldo inválido (C2): clases de defecto distintas, incluida forja viva-consistente.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestC2InvalidBackupRejected::test_an_c2_respaldo_invalido_rechazado_sin_fuentes_vivas",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-04"
+   ],
+   "promise": "C",
+   "check": "Respaldo inválido (base64 roto, digest discordante, ruta faltante/duplicada/discordante, entrada sin snapshot) se rechaza con diagnóstico, idéntico con deriva y sin ella, sin consultar fuentes vivas.",
+   "consequence": "sin este test, un respaldo corrupto podría aceptarse según las fuentes vivas del momento y el usuario no sabría si su paquete está anclado o a la deriva.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-04:** …Respaldo inválido también se rechaza sin recurrir a fuentes vivas"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "def test_an_c2_respaldo_invalido_rechazado_sin_fuentes_vivas"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Corruptos/malformados vs alteraciones coherentes (C1); además fija independencia de fuentes vivas.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestD1HistoricPreserved::test_an_d1_historico_sin_campo_conserva_validacion_estricta",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-05"
+   ],
+   "promise": "D",
+   "check": "Request histórico sin el campo conserva validación estricta viva, sin snapshots ni modificaciones, conviviendo con un congelado válido aceptado.",
+   "consequence": "sin este test, introducir la congelación podría reescribir o invalidar silenciosamente paquetes históricos y el usuario perdería encargos previos.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-05:** request histórico sin el campo conserva comportamiento anterior; validarlo no añade snapshots ni modifica archivos"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5d27d1e9dcf3e15c3",
+     "locator": "def test_an_d1_historico_sin_campo_conserva_validacion_estricta"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único sobre compatibilidad hacia atrás con históricos.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_015_001_frozen_reception.py::TestD2ReplayDurable::test_an_d2_recepcion_repetida_tras_deriva_es_replay",
+   "module": "tests/test_015_001_frozen_reception.py",
+   "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+   },
+   "pc_ids": [
+    "PC-06"
+   ],
+   "promise": "D",
+   "check": "Recepción acreditada repetida tras deriva devuelve el mismo recibo (cero registros nuevos); contrato alterado y referencia cubierta por write_scope siguen rechazados. Guarda verde hoy.",
+   "consequence": "sin este test, un reintento del orquestador tras deriva inocua duplicaría registros o la congelación futura rompería la durabilidad del replay sin que nadie lo note.",
+   "evidence": [
+    {
+     "path": "docs/specs/015-001-frozen-reception/spec.md",
+     "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+     "locator": "**PC-06:** repetir recepción acreditada conserva precedencia del replay durable y devuelve el mismo recibo… no duplica registros"
+    },
+    {
+     "path": "tests/test_015_001_frozen_reception.py",
+     "sha256": "5dd5ef64ce320a88b0ed6f3a50594f65dd365da8351f42c5b27d1e9dcf3e15c3",
+     "locator": "def test_an_d2_recepcion_repetida_tras_deriva_es_replay"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Clava durabilidad del replay como guarda contra la congelación; controles de contrato alterado/referencia cubierta incluidos.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_A_defaults_inequivocos_y_autorizacion_suficiente",
+   "module": "tests/test_014_001_suite_evidence_defaults.py",
+   "contract": {
+    "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+    "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
+   },
+   "pc_ids": [
+    "PC-1",
+    "PC-2",
+    "PC-3",
+    "PC-4"
+   ],
+   "promise": "A",
+   "check": "Hogar con tabla de tres momentos, aprobación-que-autoriza-cierre-epic y dispensa expresa distinguible; ADR-042 de supersesión parcial con cláusula sustituida, contribución e instalación limpia, sin ratificar ADR-039.",
+   "consequence": "sin este test, el usuario cierra el epic esperando un permiso que la política ya da, o itera con suites completas como rutina.",
+   "evidence": [
+    {
+     "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+     "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+     "locator": "**PC-1.** Un nuevo ADR identifica expresamente qué cláusula… / §5 tabla: hogar con tres momentos"
+    },
+    {
+     "path": "tests/test_014_001_suite_evidence_defaults.py",
+     "sha256": "b4441b43b70a3515ed7825f325e6c523b18bd15f24efdd15f42732aa70732",
+     "locator": "def test_A_defaults_inequivocos_y_autorizacion_suficiente"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa A; cuatro PC trazadas como una promesa (R2, no cuota).",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_B_cierres_honestos_ante_resultados_incompletos_o_adversos",
+   "module": "tests/test_014_001_suite_evidence_defaults.py",
+   "contract": {
+    "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+    "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
+   },
+   "pc_ids": [
+    "PC-5",
+    "PC-6",
+    "PC-7",
+    "PC-8"
+   ],
+   "promise": "B",
+   "check": "Omisión registrada con motivo/selección/límites y dispensa del dueño (nunca verde); fallo impide verde con diagnóstico; skips visibles y rc=0 insuficiente; inestables sin reintento hasta verde, con bloqueo+escalada.",
+   "consequence": "sin este test, el usuario etiqueta como verde una omisión, una corrida roja o una inestable reintentada hasta obtener verde.",
+   "evidence": [
+    {
+     "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+     "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+     "locator": "§5 tabla: cierres honestos (B1–B4) con motivo, diagnóstico, skips e inestables"
+    },
+    {
+     "path": "tests/test_014_001_suite_evidence_defaults.py",
+     "sha256": "b4441b43b70a3515ed7825f325e6c523b18bd15f24efdd15f42732aa70732",
+     "locator": "def test_B_cierres_honestos_ante_resultados_incompletos_o_adversos"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa B.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_C_politica_llega_coherentemente_a_todas_sus_entradas",
+   "module": "tests/test_014_001_suite_evidence_defaults.py",
+   "contract": {
+    "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+    "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
+   },
+   "pc_ids": [
+    "PC-9",
+    "PC-10",
+    "PC-11"
+   ],
+   "promise": "C",
+   "check": "Barrido de 24 superficies §5 sin órdenes incompatibles y con referencia al hogar/dominio; common.md distingue autorización de evidencia real; sources/+Makefile regenerables sin edición manual.",
+   "consequence": "sin este test, un handoff o un paquete transmitiría al usuario la orden vieja aunque el hogar ya cambió.",
+   "evidence": [
+    {
+     "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+     "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+     "locator": "**PC-9.** Cada superficie de §5 referencia el hogar o su fuente de dominio… / **PC-10.** …transmite los mismos defaults… / **PC-11.** …se realizan en `sources/`, seguidos de `make agents`"
+    },
+    {
+     "path": "tests/test_014_001_suite_evidence_defaults.py",
+     "sha256": "b4441b43b70a3515ed7825f325e6c523b18bd15f24efdd15f42732aa70732",
+     "locator": "def test_C_politica_llega_coherentemente_a_todas_sus_entradas"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador transversal de coherencia (24 superficies); nada equivalente en el lote.",
+   "candidate": null,
+   "uncertainties": []
+  },
+  {
+   "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_D_costo_y_entorno_explicitos_sin_exenciones_implicitas",
+   "module": "tests/test_014_001_suite_evidence_defaults.py",
+   "contract": {
+    "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+    "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
+   },
+   "pc_ids": [
+    "PC-12",
+    "PC-13",
+    "PC-14"
+   ],
+   "promise": "D",
+   "check": "Hogar exige comando focal/completo, entorno, costo con procedencia, presupuesto y estrategia (lentitud no dispensa); ci-gate conserva interfaz real y autorización suficiente; run-budget distingue instalación limpia de amplitud con test-clean.",
+   "consequence": "sin este test, el usuario usa «suite lenta» como dispensa tácita o pierde test-clean al confundir amplitud con instalación.",
+   "evidence": [
+    {
+     "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+     "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+     "locator": "**PC-12.** …comando focal y completo, entorno, costo conocido con procedencia… / **PC-13.** …`docs/ci-gate.md` conserva la interfaz real… / **PC-14.** Odoo conserva instalación limpia y amplitud…"
+    },
+    {
+     "path": "tests/test_014_001_suite_evidence_defaults.py",
+     "sha256": "b4441b43b70a3515ed7825f325e6c523b18bd15f24efdd15f42732aa70732",
+     "locator": "def test_D_costo_y_entorno_explicitos_sin_exenciones_implicitas"
+    }
+   ],
+   "disposition": "Mantener",
+   "motive": "Único verificador de la promesa D.",
+   "candidate": null,
+   "uncertainties": []
+  }
+ ]
+}

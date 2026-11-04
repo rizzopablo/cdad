@@ -4,7 +4,7 @@
 **Fecha:** 2026-10-24.
 **Unidad:** fila 2 de `epic-007-reliable-cycle-operation`.
 **Plan adicional:** no requerido; clasificación y reemplazo consumen una misma decisión canónica y cierran un único resultado operativo.
-**Nota de materialización:** el texto proviene del rol architect (sesión `ses_e93df4769ffe…`). El orquestador resolvió aquí el VERIFY de §2.4 y extendió PC-7 (decisión del 2026-10-24, HITL delegada).
+**Nota de materialización:** el texto proviene del rol architect (sesión `<ses-380>`). El orquestador resolvió aquí el VERIFY de §2.4 y extendió PC-7 (decisión del 2026-10-24, HITL delegada).
 
 ## 1. Descripción funcional
 

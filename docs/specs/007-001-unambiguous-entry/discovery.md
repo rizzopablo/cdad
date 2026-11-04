@@ -1,4 +1,4 @@
-<!-- materializado desde .cdad/runtime/results/exec-007-001-unambiguous-entry-001/007-001-unambiguous-entry-architect-discovery-001/parts (sesión ses_65324cdc…, cdad-architect, gpt-6.1-sol), recibo VALID -->
+<!-- materializado desde .cdad/runtime/results/exec-007-001-unambiguous-entry-001/007-001-unambiguous-entry-architect-discovery-001/parts (sesión <ses-378>, cdad-architect, gpt-6.1-sol), recibo VALID -->
 ## Discovery — 007-001
 
 **Contrato validado:** SHA-256 del `UNIT-CONTRACT.md`, plan y política coinciden con sus referencias. No presupongo una spec de feature aprobada.

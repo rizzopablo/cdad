@@ -190,6 +190,16 @@ Load `references/re-entry.md` section "Test-writer — RED". Critical checks:
 If it passes: update state, emit handoff to implementer.
 If it fails for the wrong reason, or violates the contract convention: handoff back to the test-writer with the reason.
 
+### Vínculos contrato↔test (016-001 PC-6) — RED / POST-AUDIT
+
+El hogar canónico es `references/contract-test-links.md` (esta sección solo
+lo cita). En proyectos que adopten el registro, RED y POST-AUDIT transmiten
+ruta del registro, contrato y regla de delta (`CURRENT − BASE` del mismo
+ámbito): el test-writer entrega el delta del registro como texto y el
+orquestador lo materializa antes de la siguiente transición. La comprobación
+se exige en entrada a Review y cierre; los resultados intermedios se registran
+(«tests nuevos no comprobados» sin baseline) sin convertirse en gate de RED.
+
 ## Parallel dispatch
 
 The orthogonal packet (one test-writer, N postconditions) remains the **default**: a single RED session, a single GREEN handoff. Parallel dispatch — several sessions of the same role running at once — is the exception, justified only when the packet is too large or the tasks are genuinely disjoint domains.

@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "unit": "014-001-suite-evidence-defaults",
+  "contract": {
+    "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+    "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "**PC-1.**"
+    },
+    {
+      "id": "PC-2",
+      "promise": "A",
+      "locator": "**PC-2.**"
+    },
+    {
+      "id": "PC-3",
+      "promise": "A",
+      "locator": "**PC-3.**"
+    },
+    {
+      "id": "PC-4",
+      "promise": "A",
+      "locator": "**PC-4.**"
+    },
+    {
+      "id": "PC-5",
+      "promise": "B",
+      "locator": "**PC-5.**"
+    },
+    {
+      "id": "PC-6",
+      "promise": "B",
+      "locator": "**PC-6.**"
+    },
+    {
+      "id": "PC-7",
+      "promise": "B",
+      "locator": "**PC-7.**"
+    },
+    {
+      "id": "PC-8",
+      "promise": "B",
+      "locator": "**PC-8.**"
+    },
+    {
+      "id": "PC-9",
+      "promise": "C",
+      "locator": "**PC-9.**"
+    },
+    {
+      "id": "PC-10",
+      "promise": "C",
+      "locator": "**PC-10.**"
+    },
+    {
+      "id": "PC-11",
+      "promise": "C",
+      "locator": "**PC-11.**"
+    },
+    {
+      "id": "PC-12",
+      "promise": "D",
+      "locator": "**PC-12.**"
+    },
+    {
+      "id": "PC-13",
+      "promise": "D",
+      "locator": "**PC-13.**"
+    },
+    {
+      "id": "PC-14",
+      "promise": "D",
+      "locator": "**PC-14.**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2",
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_A_defaults_inequivocos_y_autorizacion_suficiente"
+      },
+      "protects": "el test acredita que el usuario no cierra el epic esperando un permiso que la política ya da, o itera con suites completas como rutina.",
+      "evidence": [
+        {
+          "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+          "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+          "locator": "**PC-1.**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-5",
+        "PC-6",
+        "PC-7",
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_B_cierres_honestos_ante_resultados_incompletos_o_adversos"
+      },
+      "protects": "el test acredita que el usuario no etiqueta como verde una omisión, una corrida roja o una inestable reintentada hasta obtener verde.",
+      "evidence": [
+        {
+          "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+          "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+          "locator": "**PC-5.**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-9",
+        "PC-10",
+        "PC-11"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_C_politica_llega_coherentemente_a_todas_sus_entradas"
+      },
+      "protects": "sin este test, un handoff o un paquete transmitiría al usuario la orden vieja aunque el hogar ya cambió.",
+      "evidence": [
+        {
+          "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+          "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+          "locator": "**PC-9.**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-12",
+        "PC-13",
+        "PC-14"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_014_001_suite_evidence_defaults.py::test_D_costo_y_entorno_explicitos_sin_exenciones_implicitas"
+      },
+      "protects": "el test acredita que el usuario no usa suite lenta como dispensa tácita o pierde test-clean al confundir amplitud con instalación.",
+      "evidence": [
+        {
+          "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
+          "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
+          "locator": "**PC-12.**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    }
+  ],
+  "note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato",
+  "coverage_note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato"
+}

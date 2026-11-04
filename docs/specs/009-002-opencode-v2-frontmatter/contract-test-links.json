@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "unit": "009-002-opencode-v2-frontmatter",
+  "contract": {
+    "path": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+    "sha256": "c62c9e7c8ea8c3600d24024957616a8c4b6d4fae69641469b32945293131d605"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "emision-v2",
+      "locator": "como **lista** de entradas"
+    },
+    {
+      "id": "PC-2",
+      "promise": "emision-v2",
+      "locator": "mismo `resource` y el mismo `effect`"
+    },
+    {
+      "id": "PC-3",
+      "promise": "emision-v2",
+      "locator": "request: body: temperature: 0.1"
+    },
+    {
+      "id": "PC-4",
+      "promise": "emision-v2",
+      "locator": "mode: all"
+    },
+    {
+      "id": "PC-5",
+      "promise": "claude-intacto",
+      "locator": "esquema propio"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2",
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_002_opencode_v2_frontmatter.py::test_generated_opencode_agents_use_v2_frontmatter"
+      },
+      "protects": "sin este test, el usuario recibiría agentes V1 cuyo model: es ignorado por el runtime sin ningún fallo visible.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+          "sha256": "c62c9e7c8ea8c3600d24024957616a8c4b6d4fae69641469b32945293131d605",
+          "locator": "como **lista** de entradas"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_002_opencode_v2_frontmatter.py::test_generated_permissions_preserve_v1_rules_and_order"
+      },
+      "protects": "sin este test, una migración V1→V2 cambiaría, quitaría o reordenaría reglas y un rol ganaría o perdería accesos.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+          "sha256": "c62c9e7c8ea8c3600d24024957616a8c4b6d4fae69641469b32945293131d605",
+          "locator": "mismo `resource` y el mismo `effect`"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_002_opencode_v2_frontmatter.py::test_claude_code_agent_frontmatter_remains_on_its_own_schema"
+      },
+      "protects": "sin este test, una migración V2 contaminaría los agentes de Claude Code y rompería su esquema tools:.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-002-opencode-v2-frontmatter/spec.md",
+          "sha256": "c62c9e7c8ea8c3600d24024957616a8c4b6d4fae69641469b32945293131d605",
+          "locator": "esquema propio"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva"
+}

@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "unit": "007-007-suspend-resume-units",
+  "contract": {
+    "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+    "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "estado-restauración",
+      "locator": "Preserva valores y ausencias"
+    },
+    {
+      "id": "PC-2",
+      "promise": "borde-seguro",
+      "locator": "Sin paquete seleccionado: no hay trabajo pendiente"
+    },
+    {
+      "id": "PC-3",
+      "promise": "continuidad-enlazada",
+      "locator": "Sin cabeza, no crear cadena ficticia"
+    },
+    {
+      "id": "PC-4",
+      "promise": "selección-explícita",
+      "locator": "No hay selección por directorio reciente"
+    },
+    {
+      "id": "PC-5",
+      "promise": "vigencia-conservadora",
+      "locator": "Verificación conservadora"
+    },
+    {
+      "id": "PC-6",
+      "promise": "apertura-con-suspendidas",
+      "locator": "No reabre una suspendida"
+    },
+    {
+      "id": "PC-7",
+      "promise": "prohibición-mutaciones",
+      "locator": "ningún consumidor permite avanzar una suspendida"
+    },
+    {
+      "id": "PC-8",
+      "promise": "orientación-coherente",
+      "locator": "situation: \"units-suspended\""
+    },
+    {
+      "id": "PC-9",
+      "promise": "publicación-atómica",
+      "locator": "rollback ante fallo"
+    },
+    {
+      "id": "PC-10",
+      "promise": "recorrido-integrado",
+      "locator": "Flujo 007-004-like completo"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_continuity_checkpoints_link_without_fabricating_history"
+      },
+      "protects": "Checkpoints de suspensión y reanudación enlazados sin nueva ejecución; sin cabeza no se fabrica cadena y la ilegible bloquea.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Sin cabeza, no crear cadena ficticia"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_dispatch_without_active_packet_is_not_a_safe_boundary"
+      },
+      "protects": "Un prepared limpio o RED recibido es borde seguro; despacho pendiente o señales inconclusas se rechazan sin cambios.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Sin paquete seleccionado: no hay trabajo pendiente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_managed_checkpoint_after_state_removal_is_blocked"
+      },
+      "protects": "Consumidores mutantes y checkpoints gestionados no avanzan suspendidas; standalone sin estado sigue permitido.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "ningún consumidor permite avanzar una suspendida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_mutating_consumers_block_suspended_units"
+      },
+      "protects": "Consumidores mutantes y checkpoints gestionados no avanzan suspendidas; standalone sin estado sigue permitido.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "ningún consumidor permite avanzar una suspendida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_open_unit_preserves_suspended_registry_and_dependencies"
+      },
+      "protects": "Abrir desde reposo conserva suspendidas y solo abre unidad elegible; no reabre suspendidas ni ignora dependencias.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "No reabre una suspendida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-9"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_publication_lock_and_repetition_are_atomic"
+      },
+      "protects": "Lock ocupado y repetición rechazan sin efectos; fallo real de publicación deja estado y cabeza byte-idénticos.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "rollback ante fallo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_received_red_unit_can_suspend_open_other_and_resume_verified_begin[close-B]"
+      },
+      "protects": "Flujo RED recibido → suspender A → trabajar en B (cierre o suspensión) → reanudar A y continuar sin repetir despacho.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Flujo 007-004-like completo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_received_red_unit_can_suspend_open_other_and_resume_verified_begin[suspend-B]"
+      },
+      "protects": "Flujo RED recibido → suspender A → trabajar en B (cierre o suspensión) → reanudar A y continuar sin repetir despacho.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Flujo 007-004-like completo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_resume_explicit_selection_and_active_exclusion"
+      },
+      "protects": "Reanudar exige --feature explícito y reposo sin otra unidad activa; selección inválida rechaza sin efectos.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "No hay selección por directorio reciente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_resume_rejects_stale_authority_contract_policy_or_evidence"
+      },
+      "protects": "Autoridad, digests, política y evidencia deben conservar vigencia; cualquier pérdida bloquea resume o suspend sin mutar.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Verificación conservadora"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_safe_boundary_prepared_unresolved_and_received_red"
+      },
+      "protects": "Un prepared limpio o RED recibido es borde seguro; despacho pendiente o señales inconclusas se rechazan sin cambios.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Sin paquete seleccionado: no hay trabajo pendiente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_standalone_checkpoint_without_project_state_still_works"
+      },
+      "protects": "Consumidores mutantes y checkpoints gestionados no avanzan suspendidas; standalone sin estado sigue permitido.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "ningún consumidor permite avanzar una suspendida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_state_and_restore_exactly_preserve_unit_state"
+      },
+      "protects": "Preserva valores y ausencias de la unidad al suspender y los restaura exactos al reanudar, publicando reposo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Preserva valores y ausencias"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_status_and_validate_state_report_suspension_coherently"
+      },
+      "protects": "Status resume forma previa con resumen determinista units-suspended y alternativas explícitas sin auto-elección.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "situation: \"units-suspended\""
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_status_does_not_offer_open_for_suspended_dependency"
+      },
+      "protects": "Status resume forma previa con resumen determinista units-suspended y alternativas explícitas sin auto-elección.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "situation: \"units-suspended\""
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_suspend_open_unit_without_packet_then_resume_prior_unit"
+      },
+      "protects": "Un prepared limpio o RED recibido es borde seguro; despacho pendiente o señales inconclusas se rechazan sin cambios.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Sin paquete seleccionado: no hay trabajo pendiente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_suspend_rejects_stale_vigency_present_before_suspension[changed-evidence]"
+      },
+      "protects": "Autoridad, digests, política y evidencia deben conservar vigencia; cualquier pérdida bloquea resume o suspend sin mutar.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Verificación conservadora"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_suspend_rejects_stale_vigency_present_before_suspension[missing-evidence]"
+      },
+      "protects": "Autoridad, digests, política y evidencia deben conservar vigencia; cualquier pérdida bloquea resume o suspend sin mutar.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Verificación conservadora"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_007_suspend_resume_units.py::test_007_007_suspend_rejects_stale_vigency_present_before_suspension[changed-pinned-contract]"
+      },
+      "protects": "Autoridad, digests, política y evidencia deben conservar vigencia; cualquier pérdida bloquea resume o suspend sin mutar.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-007-suspend-resume-units/spec.md",
+          "sha256": "ef7ff2cf1506c61275c3557175aba69ce593b4371d491f5a77ff85ab9e2c6771",
+          "locator": "Verificación conservadora"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva."
+}

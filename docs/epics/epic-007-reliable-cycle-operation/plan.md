@@ -91,7 +91,7 @@ brecha están en la consulta del architect (discovery notes §8).
 ## Cambios al plan
 
 ### 2026-10-23 — Ajustes de la revisión del borrador
-Revisión read-only del reviewer (sesión `ses_e94d5fd29ffe…`, APTO CON AJUSTES, sin BLOCKING): se precisa «sin diagnóstico externo», se explicita la adopción como precondición de 005 y se acota el diagnóstico de continuidad a la ruta observada. Hallazgo de producto: no existe `plan-review` para planes de epic (`prepare` exige feature activa).
+Revisión read-only del reviewer (sesión `<ses-370>`, APTO CON AJUSTES, sin BLOCKING): se precisa «sin diagnóstico externo», se explicita la adopción como precondición de 005 y se acota el diagnóstico de continuidad a la ruta observada. Hallazgo de producto: no existe `plan-review` para planes de epic (`prepare` exige feature activa).
 
 ---
 

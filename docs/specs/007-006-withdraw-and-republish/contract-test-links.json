@@ -1,0 +1,1181 @@
+{
+  "schema_version": 1,
+  "unit": "007-006-withdraw-and-republish",
+  "contract": {
+    "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+    "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "retiro-válido",
+      "locator": "test_withdraw_prepared_packet_preserves_artifacts_and_frees_prepare"
+    },
+    {
+      "id": "PC-03",
+      "promise": "rechazo-ante-efectos",
+      "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+    },
+    {
+      "id": "PC-04",
+      "promise": "retiro-con-continuidad",
+      "locator": "test_withdraw_closes_current_begin_without_fabricating_delivery"
+    },
+    {
+      "id": "PC-05",
+      "promise": "retiro-sin-cabeza-ajena",
+      "locator": "test_withdraw_handles_absent_foreign_and_invalid_continuity"
+    },
+    {
+      "id": "PC-06",
+      "promise": "retiro-idempotente",
+      "locator": "test_withdraw_is_idempotent_and_rejects_conflicting_repetition"
+    },
+    {
+      "id": "PC-08",
+      "promise": "republicación-independiente",
+      "locator": "test_republish_agents_repairs_project_drift_without_cycle_changes"
+    },
+    {
+      "id": "PC-09",
+      "promise": "modelo-instalado",
+      "locator": "Modelo instalado personalizado se conserva literalmente"
+    },
+    {
+      "id": "PC-10",
+      "promise": "guardas-derivación",
+      "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+    },
+    {
+      "id": "PC-11",
+      "promise": "orientación-conservada",
+      "locator": "test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+    },
+    {
+      "id": "PC-12",
+      "promise": "recorrido-integrado",
+      "locator": "republicar funciona sin retirar"
+    },
+    {
+      "id": "PC-13",
+      "promise": "publicación-transaccional",
+      "locator": "Fallo de escritura provocado mediante condición real del filesystem"
+    },
+    {
+      "id": "AJ1",
+      "promise": "convivencia-suspensión",
+      "locator": "con 007-004 suspendida, retirar o repetir el retiro de su paquete"
+    },
+    {
+      "id": "PC-02",
+      "promise": "elegibilidad-y-motivo",
+      "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+    },
+    {
+      "id": "PC-07",
+      "promise": "rechazo-flags-ajenos",
+      "locator": "test_withdraw_rejects_unrelated_transition_flags"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_prepared_begin_and_project_drift_recovery_both_orders[republish-then-withdraw]"
+      },
+      "protects": "Recorrido integrado prepared, begin y DRIFT en ambos órdenes, con cadena trazable y nuevo `prepare` exitoso.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "republicar funciona sin retirar"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-12"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_prepared_begin_and_project_drift_recovery_both_orders[withdraw-then-republish]"
+      },
+      "protects": "Recorrido integrado prepared, begin y DRIFT en ambos órdenes, con cadena trazable y nuevo `prepare` exitoso.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "republicar funciona sin retirar"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-09"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_inherits_installed_model_and_is_idempotent"
+      },
+      "protects": "El `model:` instalado se conserva literalmente (incluida su ausencia); la segunda ejecución no reescribe.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Modelo instalado personalizado se conserva literalmente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[context-unreadable]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[destination-read-only]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[hand-modified-derived]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[manifest-write-failure]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[missing-source]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-illegible]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]"
+      },
+      "protects": "Fuente/política/contexto inválidos o derivado modificado a mano rechazan sin publicación parcial.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fuente/política/contexto inválidos y modificación local protegida"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes"
+      },
+      "protects": "`republish-agents` repara el DRIFT exclusivo de `project` sin cambiar estado, paquetes, política ni continuidad.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_republish_agents_repairs_project_drift_without_cycle_changes"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-11"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+      },
+      "protects": "Se conserva `packet-prepared/validate-packet`; sólo el DRIFT exclusivo de `project` ofrece `republish-agents`; tras retirar no se propone despacho.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "AJ1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units"
+      },
+      "protects": "La guarda de suspensión es por unidad: retirar/repetir sobre unidad suspendida da rc=1; `republish-agents` sin binding rechaza; `suspended_units` íntegro.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "con 007-004 suspendida, retirar o repetir el retiro de su paquete"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery"
+      },
+      "protects": "Con `begin` vigente, el retiro anexa un checkpoint enlazado con decisión de retiro, conserva evidencia y antecedentes, y no fabrica entrega.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_closes_current_begin_without_fabricating_delivery"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]"
+      },
+      "protects": "Sin cabeza no se crea continuidad ficticia; la cabeza ajena permanece idéntica; cadena ilegible/incoherente bloquea el retiro.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_handles_absent_foreign_and_invalid_continuity"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[foreign-head]"
+      },
+      "protects": "Sin cabeza no se crea continuidad ficticia; la cabeza ajena permanece idéntica; cadena ilegible/incoherente bloquea el retiro.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_handles_absent_foreign_and_invalid_continuity"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[incoherent-head]"
+      },
+      "protects": "Sin cabeza no se crea continuidad ficticia; la cabeza ajena permanece idéntica; cadena ilegible/incoherente bloquea el retiro.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_handles_absent_foreign_and_invalid_continuity"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[unreadable-head]"
+      },
+      "protects": "Sin cabeza no se crea continuidad ficticia; la cabeza ajena permanece idéntica; cadena ilegible/incoherente bloquea el retiro.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_handles_absent_foreign_and_invalid_continuity"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_is_idempotent_and_rejects_conflicting_repetition"
+      },
+      "protects": "La repetición idéntica es éxito sin escrituras ni nueva entrada; un motivo distinto es conflicto (rc=1).",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_is_idempotent_and_rejects_conflicting_repetition"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_prepared_packet_preserves_artifacts_and_frees_prepare"
+      },
+      "protects": "El retiro válido tiene éxito, conserva byte a byte paquete y contexto, registra `withdraw`/`withdrawn` con clave verificable, deja el binding en `failed` y habilita un nuevo `prepare`.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_prepared_packet_preserves_artifacts_and_frees_prepare"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-13"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_publication_failure_preserves_state_and_continuity[head-publication-failure]"
+      },
+      "protects": "Un fallo real de escritura durante la publicación conserva conjuntamente estado y continuidad anteriores.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fallo de escritura provocado mediante condición real del filesystem"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-13"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_publication_failure_preserves_state_and_continuity[state-publication-failure]"
+      },
+      "protects": "Un fallo real de escritura durante la publicación conserva conjuntamente estado y continuidad anteriores.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "Fallo de escritura provocado mediante condición real del filesystem"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[dispatch-identity-absent]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[dispatch-identity-mismatch]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[dispatch-registered]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[dispatch-unreadable]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[disposition-registered]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[disposition-unverifiable]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[materialization-registered]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[materialization-unreadable]"
+      },
+      "protects": "Toda senal positiva o inconclusa (despacho, resultado, materialización, disposición) impide `withdraw` con rc=2, fuente/causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[receipt-unreadable]"
+      },
+      "protects": "Recibo ilegible bloquea el retiro con rc=2, causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[result-without-receipt]"
+      },
+      "protects": "Resultado sin recibo bloquea el retiro con rc=2, causa nombrada y árbol intacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_effects_and_inconclusive_signals"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--approve-by]"
+      },
+      "protects": "El flag ajeno --approve-by rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--artifact]"
+      },
+      "protects": "El flag ajeno --artifact rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--closure-path]"
+      },
+      "protects": "El flag ajeno --closure-path rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--closure-sha256]"
+      },
+      "protects": "El flag ajeno --closure-sha256 rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--contract-path]"
+      },
+      "protects": "El flag ajeno --contract-path rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--contract-sha256]"
+      },
+      "protects": "El flag ajeno --contract-sha256 rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--current-stage]"
+      },
+      "protects": "El flag ajeno --current-stage rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--delegated]"
+      },
+      "protects": "El flag ajeno --delegated rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--exempted-by]"
+      },
+      "protects": "El flag ajeno --exempted-by rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--exemption-reason]"
+      },
+      "protects": "El flag ajeno --exemption-reason rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--outcome]"
+      },
+      "protects": "El flag ajeno --outcome rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--plan-path]"
+      },
+      "protects": "El flag ajeno --plan-path rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--plan-sha256]"
+      },
+      "protects": "El flag ajeno --plan-sha256 rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--postcondition]"
+      },
+      "protects": "El flag ajeno --postcondition rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--receipt]"
+      },
+      "protects": "El flag ajeno --receipt rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--replaced-by]"
+      },
+      "protects": "El flag ajeno --replaced-by rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--requested-by]"
+      },
+      "protects": "El flag ajeno --requested-by rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--resolution]"
+      },
+      "protects": "El flag ajeno --resolution rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--stage]"
+      },
+      "protects": "El flag ajeno --stage rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--substage]"
+      },
+      "protects": "El flag ajeno --substage rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_unrelated_transition_flags[--supersedes]"
+      },
+      "protects": "El flag ajeno --supersedes rechaza el retiro con rc=2 sin cambios y nombrando la opción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_rejects_unrelated_transition_flags"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[absent-note]"
+      },
+      "protects": "Elegibilidad y motivo (absent-note) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[dispatched-state]"
+      },
+      "protects": "Elegibilidad y motivo (dispatched-state) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[empty-note]"
+      },
+      "protects": "Elegibilidad y motivo (empty-note) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[failed-state]"
+      },
+      "protects": "Elegibilidad y motivo (failed-state) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[foreign-packet]"
+      },
+      "protects": "Elegibilidad y motivo (foreign-packet) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_requires_reason_and_matching_active_prepared_packet[state-identity-mismatch]"
+      },
+      "protects": "Elegibilidad y motivo (state-identity-mismatch) rechazan con rc=2 sin cambios y causa nombrada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "test_withdraw_requires_reason_and_matching_active_prepared_packet"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "AJ1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_withdraw_suspension_guard_is_per_unit_with_other_unit_active"
+      },
+      "protects": "La guarda de suspensión es por unidad: A suspendida no bloquea el retiro real de B; retirar A da rc=1 sin cambios.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
+          "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
+          "locator": "con 007-004 suspendida, retirar o repetir el retiro de su paquete"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    }
+  ],
+  "note": "Índice por demanda de esta revisión (lote B3, 31 nodeids): cubre las obligaciones indexadas, no una extracción exhaustiva del contrato; sin backfill (S11). | Índice por demanda de esta revisión (lote B4, 30 nodeids): cubre las obligaciones indexadas, no una extracción exhaustiva del contrato; sin backfill (S11)."
+}

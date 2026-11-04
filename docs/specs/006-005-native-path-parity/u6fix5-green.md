@@ -44,7 +44,7 @@ AssertionError: 2 != 1 : PD-1: el re-despacho bloqueado no debe registrar un seg
 The two records after the blocked re-dispatch (measured from a scratch copy under `/tmp/opencode`, `tests/` untouched):
 
 ```
-DIAG opencode-6e3d4c6fc985 session='ses_5ade…' mark='write-ahead: provisional' …
+DIAG opencode-6e3d4c6fc985 session='<ses-385>' mark='write-ahead: provisional' …
 DIAG opencode-71692350e1b6 session=None  term_source='not dispatched; store=configured sessions_db; row=absent; store_reads=unknown; prior_check_reads=1'
 ```
 

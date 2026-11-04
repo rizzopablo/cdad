@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "unit": "007-008-receipt-next-action",
+  "contract": {
+    "path": "docs/specs/007-008-receipt-next-action/spec.md",
+    "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "acción-canónica",
+      "locator": "Todo cierre **nuevo** producido por `_closing_body` contiene exactamente"
+    },
+    {
+      "id": "PC-02",
+      "promise": "preservación-cierre",
+      "locator": "Respecto del comportamiento vigente, el único cambio funcional"
+    },
+    {
+      "id": "PC-03",
+      "promise": "convergencia-entradas",
+      "locator": "Las siguientes entradas producen un cierre nuevo"
+    },
+    {
+      "id": "PC-04",
+      "promise": "replay-historia",
+      "locator": "Un cierre existente demostrable se reconoce antes de construir otro"
+    },
+    {
+      "id": "PC-05",
+      "promise": "suspensión-reanudación-orientada",
+      "locator": "Suspender y luego reanudar una unidad con cierre nuevo restaura"
+    },
+    {
+      "id": "PC-06",
+      "promise": "lecturas-coherentes",
+      "locator": "proyecta literalmente la acción de la cabeza"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_conflicting_valid_receipt_is_rejected"
+      },
+      "protects": "Replay con igual identidad y recibo es no-op byte a byte; conflicto con recibo distinto se rechaza sin segundo cierre.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Un cierre existente demostrable se reconoce antes de construir otro"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_entries_converge_without_approval[checkpoint-receipt-after-transition]"
+      },
+      "protects": "Recepción ordinaria, recibo externo y recuperación convergen en la misma regla de acción sin aprobación ni re-recepción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Las siguientes entradas producen un cierre nuevo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_entries_converge_without_approval[checkpoint-receipt]"
+      },
+      "protects": "Recepción ordinaria, recibo externo y recuperación convergen en la misma regla de acción sin aprobación ni re-recepción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Las siguientes entradas producen un cierre nuevo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_entries_converge_without_approval[external-validate]"
+      },
+      "protects": "Recepción ordinaria, recibo externo y recuperación convergen en la misma regla de acción sin aprobación ni re-recepción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Las siguientes entradas producen un cierre nuevo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_entries_converge_without_approval[ordinary-receive]"
+      },
+      "protects": "Recepción ordinaria, recibo externo y recuperación convergen en la misma regla de acción sin aprobación ni re-recepción.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Las siguientes entradas producen un cierre nuevo"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_new_close_has_canonical_action[absent]"
+      },
+      "protects": "Todo cierre nuevo lleva exactamente la acción canónica de §3.2, independiente de la acción previa.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Todo cierre **nuevo** producido por `_closing_body` contiene exactamente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_new_close_has_canonical_action[null]"
+      },
+      "protects": "Todo cierre nuevo lleva exactamente la acción canónica de §3.2, independiente de la acción previa.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Todo cierre **nuevo** producido por `_closing_body` contiene exactamente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_new_close_has_canonical_action[other-text]"
+      },
+      "protects": "Todo cierre nuevo lleva exactamente la acción canónica de §3.2, independiente de la acción previa.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Todo cierre **nuevo** producido por `_closing_body` contiene exactamente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_new_close_has_canonical_action[redispatch]"
+      },
+      "protects": "Todo cierre nuevo lleva exactamente la acción canónica de §3.2, independiente de la acción previa.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Todo cierre **nuevo** producido por `_closing_body` contiene exactamente"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_new_close_preserves_context_and_link"
+      },
+      "protects": "El cierre nuevo solo cambia next_action: conserva contexto, agrega una decisión mecánica y enlaza prev sin reescribir historia.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Respecto del comportamiento vigente, el único cambio funcional"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_reads_are_coherent_without_approval"
+      },
+      "protects": "Tras cierre nuevo, resume/reconcile/status son lecturas coherentes sin aprobación ni efectos y con forma conservada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "proyecta literalmente la acción de la cabeza"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_replay_preserves_history[historical-after-links]"
+      },
+      "protects": "Replay con igual identidad y recibo es no-op byte a byte; conflicto con recibo distinto se rechaza sin segundo cierre.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Un cierre existente demostrable se reconoce antes de construir otro"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_replay_preserves_history[historical-obsolete]"
+      },
+      "protects": "Replay con igual identidad y recibo es no-op byte a byte; conflicto con recibo distinto se rechaza sin segundo cierre.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Un cierre existente demostrable se reconoce antes de construir otro"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_replay_preserves_history[immediate]"
+      },
+      "protects": "Replay con igual identidad y recibo es no-op byte a byte; conflicto con recibo distinto se rechaza sin segundo cierre.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Un cierre existente demostrable se reconoce antes de construir otro"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_resume_unit_keeps_unreceived_action"
+      },
+      "protects": "Tras cierre nuevo, suspender/reanudar restaura la acción canónica de inmediato; lo no recibido conserva su acción propia.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Suspender y luego reanudar una unidad con cierre nuevo restaura"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_resume_unit_restores_canonical_action[close-B]"
+      },
+      "protects": "Tras cierre nuevo, suspender/reanudar restaura la acción canónica de inmediato; lo no recibido conserva su acción propia.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Suspender y luego reanudar una unidad con cierre nuevo restaura"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_008_receipt_next_action.py::test_007_008_resume_unit_restores_canonical_action[suspend-B]"
+      },
+      "protects": "Tras cierre nuevo, suspender/reanudar restaura la acción canónica de inmediato; lo no recibido conserva su acción propia.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-008-receipt-next-action/spec.md",
+          "sha256": "e31cb0155908503b0f35cbbfb83cf43813d5498c84134996a328aae263b50c49",
+          "locator": "Suspender y luego reanudar una unidad con cierre nuevo restaura"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva."
+}

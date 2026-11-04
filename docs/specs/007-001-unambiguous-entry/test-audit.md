@@ -1,6 +1,6 @@
 # AUDIT — 007-001-unambiguous-entry (test-writer, 2026-10-23)
 
-Materializado desde el texto final del test-writer (sesión `ses_e94ca5f2…`), substage AUDIT.
+Materializado desde el texto final del test-writer (sesión `<ses-379>`), substage AUDIT.
 Contrato: spec `c88bab66…` + enmienda menor post-audit (aclaraciones del architect).
 
 ## Cobertura test ↔ postcondición

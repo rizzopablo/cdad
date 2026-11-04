@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "unit": "008-003-lifecycle-decision-model",
+  "contract": {
+    "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+    "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "rechazo-sin-efectos",
+      "locator": "Contradicciones rechazadas sin efectos"
+    },
+    {
+      "id": "PC-02",
+      "promise": "suspension-por-propietario",
+      "locator": "El propietario acreditado determina la suspensión"
+    },
+    {
+      "id": "PC-03",
+      "promise": "autoridad-criterio-unico",
+      "locator": "Autoridad con un solo criterio"
+    },
+    {
+      "id": "PC-04",
+      "promise": "replay-sin-duplicacion",
+      "locator": "Replay converge sin duplicación"
+    },
+    {
+      "id": "PC-05",
+      "promise": "rutas-historia-conservadas",
+      "locator": "Rutas e historia conservadas"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc01_contradictory_identity_is_rejected_without_effects"
+      },
+      "protects": "contradicciones de identidad rechazadas sin efectos",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Contradicciones rechazadas sin efectos"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc02_suspension_follows_the_accredited_owner"
+      },
+      "protects": "suspensión sigue al propietario acreditado",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "El propietario acreditado determina la suspensión"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc03_authority_is_one_criterion_across_consumers"
+      },
+      "protects": "autoridad con un solo criterio y replay acreditado primero",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Autoridad con un solo criterio"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc03_accredited_replay_precedes_eligibility"
+      },
+      "protects": "autoridad con un solo criterio y replay acreditado primero",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Autoridad con un solo criterio"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc04_replay_converges_after_the_active_state_advances"
+      },
+      "protects": "replay converge sin duplicar tras avanzar el estado",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Replay converge sin duplicación"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc05_routes_and_legacy_history_are_conserved"
+      },
+      "protects": "rutas normal/tardía e historia legacy conservadas",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Rutas e historia conservadas"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc01_direct_plan_write_rejects_contradictory_owner"
+      },
+      "protects": "contradicciones de identidad rechazadas sin efectos",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "Contradicciones rechazadas sin efectos"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc02_direct_plan_write_respects_suspension"
+      },
+      "protects": "suspensión sigue al propietario acreditado",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "El propietario acreditado determina la suspensión"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_003_lifecycle_decisions.py::test_pc02_direct_close_durable_receipt_respects_suspension"
+      },
+      "protects": "suspensión sigue al propietario acreditado",
+      "evidence": [
+        {
+          "path": "docs/specs/008-003-lifecycle-decision-model/spec.md",
+          "sha256": "3c2aa400fe7e1cec52b7412ef4c7c546bca09f61e1571cedc6eafbfd3df52031",
+          "locator": "El propietario acreditado determina la suspensión"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones que estos tests del tramo protegen, no es extracción exhaustiva"
+}

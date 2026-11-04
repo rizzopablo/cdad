@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "unit": "016-001-contract-test-link",
+  "contract": {
+    "path": "docs/specs/016-001-contract-test-link/spec.md",
+    "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
+  },
+  "coverage_note": "Cubre las obligaciones indexadas PC-1..PC-8 (índice legacy por demanda); no es una extracción exhaustiva del contrato.",
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "permite recuperar contrato y revisión por hash"
+    },
+    {
+      "id": "PC-2",
+      "promise": "A",
+      "locator": "e identifica el vínculo afectado"
+    },
+    {
+      "id": "PC-3",
+      "promise": "B",
+      "locator": "las que carecen de verificador y las agrupa por promesa"
+    },
+    {
+      "id": "PC-4",
+      "promise": "B",
+      "locator": "Un test existente puede satisfacer varias obligaciones sin exigir tests adicionales"
+    },
+    {
+      "id": "PC-5",
+      "promise": "C",
+      "locator": "cada nodeid nuevo aparece vinculado o se informa"
+    },
+    {
+      "id": "PC-6",
+      "promise": "C",
+      "locator": "los handoffs legacy y por paquetes transmiten ruta, contrato"
+    },
+    {
+      "id": "PC-7",
+      "promise": "D",
+      "locator": "Un proyecto sin registro continúa su ciclo"
+    },
+    {
+      "id": "PC-8",
+      "promise": "D",
+      "locator": "Un resultado estructural verde declara su ámbito y no afirma pertinencia"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_A1_enlace_recuperable_y_roturas_identificadas"
+      },
+      "protects": "Vínculo recuperable por contrato/revisión/hash/obligación/promesa/verificador/protección; cada rotura (contrato, obligación, referencia, nodeid, colección fallida) termina en 1 identificando el vínculo.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "permite recuperar contrato y revisión por hash"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B1_huecos_agrupados_y_reutilizacion_sin_cuota"
+      },
+      "protects": "Huecos enumerados y agrupados por promesa; reutilizar un test entre obligaciones no exige más tests; review exige motivo y referencia y no se presenta como ejecución.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "las que carecen de verificador y las agrupa por promesa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B2_ejemplo_inline_y_bloque_no_son_obligaciones"
+      },
+      "protects": "El ejemplo de marcador en prosa (inline y en bloque fenced) no crea obligación ni hueco fantasma.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "las que carecen de verificador y las agrupa por promesa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_C1_nuevos_nodeids_entre_colecciones"
+      },
+      "protects": "Nodeids nuevos (CURRENT−BASE) vinculados o informados con 1; sin baseline se declara «tests nuevos no comprobados».",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "cada nodeid nuevo aparece vinculado o se informa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_C2_delta_y_exigencia_en_review_sin_gate_en_red"
+      },
+      "protects": "Delta como texto materializado por el orquestador; el intermedio válido sin baseline no bloquea RED; en cierre con baseline el nuevo sin vínculo da 1.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "los handoffs legacy y por paquetes transmiten ruta, contrato"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_D1_sin_registro_no_bloquea_y_corrupto_no_es_ausencia"
+      },
+      "protects": "Sin registro: not_configured no bloqueante; registro corrupto es invalid, no ausencia.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "Un proyecto sin registro continúa su ciclo"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_D2_ambito_limites_y_reorden_sin_cambios"
+      },
+      "protects": "Verde estructural declara ámbito y límites sin afirmar ejecución/pertinencia/sensibilidad/aprobación; reorden no cambia conjuntos; validar no modifica nada.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "Un resultado estructural verde declara su ámbito y no afirma pertinencia"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B3_backtick_suelto_no_traga_marcador_posterior"
+      },
+      "protects": "Un backtick suelto sin cerrar en la prosa no oculta obligaciones reales: PC-2 sin verificador se informa como hueco agrupado por promesa, sin falso verde.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "las que carecen de verificador y las agrupa por promesa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B4_resultado_declara_modo_y_obligaciones"
+      },
+      "protects": "El resultado declara mode (markers frente a legacy acotado) y lista obligations con id, promesa y verificadores; en legacy declara que cubre las obligaciones indexadas.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "permite recuperar contrato y revisión por hash"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3",
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B5_contrato_sin_obligaciones_no_da_verde"
+      },
+      "protects": "Sin marcadores ni índice legacy el resultado es 1 con diagnóstico explícito: cero obligaciones no es verde y el status no puede ser ok.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "las que carecen de verificador y las agrupa por promesa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_001_contract_test_link.py::ContractTestLinkRed::test_R_B6_marcador_duplicado_con_promesas_distintas"
+      },
+      "protects": "Id de marcador duplicado con promesas distintas da 1 con duplicate_marker: el universo ambiguo no se resuelve silenciosamente.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-001-contract-test-link/spec.md",
+          "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
+          "locator": "las que carecen de verificador y las agrupa por promesa"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    }
+  ]
+}

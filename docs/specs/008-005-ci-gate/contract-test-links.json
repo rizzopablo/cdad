@@ -1,0 +1,390 @@
+{
+  "schema_version": 1,
+  "unit": "008-005-ci-gate",
+  "contract": {
+    "path": "docs/specs/008-005-ci-gate/spec.md",
+    "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "un-comando-una-corrida",
+      "locator": "Un comando, un orden, una corrida"
+    },
+    {
+      "id": "PC-2",
+      "promise": "verde-atribuible",
+      "locator": "Verde atribuible o salida distinta de cero"
+    },
+    {
+      "id": "PC-3",
+      "promise": "rojo-diagnosticable",
+      "locator": "Rojo diagnosticable sin repetir la suite"
+    },
+    {
+      "id": "PC-4",
+      "promise": "superficie-clasificada",
+      "locator": "Superficie clasificada sin castigar la documentación"
+    },
+    {
+      "id": "PC-5",
+      "promise": "portable-hermetico",
+      "locator": "Portable, hermético y sin publicar"
+    },
+    {
+      "id": "PC-7",
+      "promise": "evidencia-por-corrida",
+      "locator": "Evidencia por corrida, sin sobrescritura"
+    },
+    {
+      "id": "PC-8",
+      "promise": "canario-carga-visibles",
+      "locator": "Canario y carga: visibles, no decisorios"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc1_un_comando_orden_fijo_y_una_sola_corrida_de_pytest"
+      },
+      "protects": "una sola corrida en orden fijo con una sola invocación de pytest",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Un comando, un orden, una corrida"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[verde-atribuible]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[commit-nulo]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[dirty-no-cero]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[intento-no-finished]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[summary-no-verified]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[cero-intentos]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[intentos-multiples]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc2_atribucion_fail_closed[close-rc]"
+      },
+      "protects": "verde sólo si atribuible con causa nombrada",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Verde atribuible o salida distinta de cero"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc3_rojo_nombra_fallos_y_skips_completos_sin_repetir_suite"
+      },
+      "protects": "rojo nombra fallos/skips con motivo sin repetir suite",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Rojo diagnosticable sin repetir la suite"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc3_error_de_coleccion_se_nombra_y_referencia_stdout_log"
+      },
+      "protects": "rojo nombra fallos/skips con motivo sin repetir suite",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Rojo diagnosticable sin repetir la suite"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc4_cambio_solo_documentacion_no_ejecuta_superficie[docs-only]"
+      },
+      "protects": "superficie clasificada sin castigar docs",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Superficie clasificada sin castigar la documentación"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc4_cambio_solo_documentacion_no_ejecuta_superficie[readme-only]"
+      },
+      "protects": "superficie clasificada sin castigar docs",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Superficie clasificada sin castigar la documentación"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc4_cambio_de_producto_sin_superficie_es_rojo_y_nombra_ruta"
+      },
+      "protects": "superficie clasificada sin castigar docs",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Superficie clasificada sin castigar la documentación"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc5_hermetico_sin_home_sin_red_y_sin_escrituras_fuera"
+      },
+      "protects": "portable y hermético sin publicar ni escribir fuera",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Portable, hermético y sin publicar"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc7_dos_corridas_dos_raices_y_gate_json_aun_fallando"
+      },
+      "protects": "evidencia por corrida con raíz propia y causa aun fallando",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Evidencia por corrida, sin sobrescritura"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_pc8_canario_y_carga_visibles_y_no_decisorios"
+      },
+      "protects": "canario y carga visibles sin decidir",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "Canario y carga: visibles, no decisorios"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_exit2_sin_base_es_error_de_uso_y_no_abre_raiz"
+      },
+      "protects": "evidencia por corrida con raíz propia y causa aun fallando",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "`--base` obligatorio, sin default silencioso"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_005_ci_gate.py::test_exit2_repo_root_archivo_es_error_de_uso"
+      },
+      "protects": "evidencia por corrida con raíz propia y causa aun fallando",
+      "evidence": [
+        {
+          "path": "docs/specs/008-005-ci-gate/spec.md",
+          "sha256": "3e4a9c76eedb3472ed5c8bc05e5018b36f17496e5f41062dc44f4148439bd2ec",
+          "locator": "raíz inutilizable"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; ejecución y sensibilidad aún no acreditadas en este lote"
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones que estos tests del tramo protegen, no es extracción exhaustiva"
+}

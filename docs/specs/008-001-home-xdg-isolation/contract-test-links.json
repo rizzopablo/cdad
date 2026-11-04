@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "unit": "008-001-home-xdg-isolation",
+  "contract": {
+    "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+    "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "raices-exclusivas",
+      "locator": "Dos tests ejecutados en una misma invocación"
+    },
+    {
+      "id": "PC-2",
+      "promise": "resolucion-lazy",
+      "locator": "resuelve después el origen global desde el HOME vigente"
+    },
+    {
+      "id": "PC-3",
+      "promise": "sin-habilitacion",
+      "locator": "Sin las variables explícitas requeridas"
+    },
+    {
+      "id": "PC-4",
+      "promise": "escrituras-confinadas",
+      "locator": "inventario y `mtime_ns` del HOME real antes y después"
+    },
+    {
+      "id": "PC-5",
+      "promise": "restauracion",
+      "locator": "se restauran entorno y `tempfile.tempdir`"
+    },
+    {
+      "id": "PC-7",
+      "promise": "wrapper-margen",
+      "locator": "sesión conservada"
+    },
+    {
+      "id": "PC-8a",
+      "promise": "sin-presupuesto-no-despacha",
+      "locator": "con una preparación que cruza su deadline"
+    },
+    {
+      "id": "PC-8b",
+      "promise": "presupuesto-reservado",
+      "locator": "con preparación admisible"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC1Roots::test_pc1_roots_exclusive_and_inherited"
+      },
+      "protects": "sin este test, dos tests compartirían HOME/XDG o heredarían el HOME real del operador y se contaminarían.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "Dos tests ejecutados en una misma invocación"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC2LazyOrigin::test_pc2_global_agents_origin_follows_current_home"
+      },
+      "protects": "sin este test, el origen global quedaría capturado en la importación y el producto usaría agentes del HOME viejo.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "resuelve después el origen global desde el HOME vigente"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC2LazyOrigin::test_pc2_precedence_override_activation_fallback"
+      },
+      "protects": "sin este test, un override explícito o la activación perdería contra HOME o un origen ausente rompería en vez de rc 0 con aviso.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "resuelve después el origen global desde el HOME vigente"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC3Overrides::test_pc3_inherited_overrides_neutralized_per_aj2"
+      },
+      "protects": "sin este test, overrides CDAD_* heredados desviarían configuración, agentes o store al entorno del operador.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "Sin las variables explícitas requeridas"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC3Overrides::test_pc3_real_acceptances_stay_skipped_without_vars"
+      },
+      "protects": "sin este test, la fixture convertiría un skip en pass o inventaría IDs/stores y la aceptación real mentiría.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "Sin las variables explícitas requeridas"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC4Canary::test_pc4_writes_confined_external_home_unchanged"
+      },
+      "protects": "sin este test, un test escribiría en el HOME real del operador sin que la suite lo detecte.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "inventario y `mtime_ns` del HOME real antes y después"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC4Canary::test_pc4_canary_detects_deliberate_external_write"
+      },
+      "protects": "sin este test, el canario podría ser ciego y una fuga real pasaría como suite limpia.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "inventario y `mtime_ns` del HOME real antes y después"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_home_xdg_isolation.py::TestPC5Restore::test_pc5_restores_env_and_tempdir_after_failure"
+      },
+      "protects": "sin este test, un fallo dejaría entorno/tempdir contaminados o procesos huérfanos y el siguiente test heredaría basura.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "se restauran entorno y `tempfile.tempdir`"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8a"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::Pc8BudgetCase::test_pc8a_preparation_exhausts_budget_no_run"
+      },
+      "protects": "sin este test, el adaptador lanzaría el cliente sin presupuesto y devolvería un timeout falso con sesión fabricada.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con una preparación que cruza su deadline"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8b"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::Pc8BudgetCase::test_pc8b_fast_preparation_dispatches_and_completes"
+      },
+      "protects": "sin este test, una corrección de presupuesto rompería el caso rápido y la delegación válida dejaría de completar.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con preparación admisible"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8b"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::Pc8BudgetCase::test_pc8b_fast_preparation_hanging_client_times_out_with_session"
+      },
+      "protects": "sin este test, un cliente colgado daría timeout sin sesión o con espera 0.0s indistinguible del falso.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con preparación admisible"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8a",
+        "PC-8b"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::Pc8BudgetCase::test_pc8_edge_preparation_never_launches_with_zero_wait"
+      },
+      "protects": "sin este test, el borde de reserva agotada lanzaría el cliente con 0.0s y el usuario vería un timeout falso.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con una preparación que cruza su deadline"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8a"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::TestPc8ServiceMode::test_pc8_service_status_slow_cuts_preparation"
+      },
+      "protects": "sin este test, un service status lento lanzaría run o fabricaría sesión/recibo en mode service.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con una preparación que cruza su deadline"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-8b"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc8_adapter_budget.py::TestPc8ServiceMode::test_pc8_service_status_fast_dispatches"
+      },
+      "protects": "sin este test, el modo service rápido dejaría de despachar tras un cambio de presupuesto.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "con preparación admisible"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc7_wrapper_margin.py::TestPc7WrapperWaitsAdapterEnvelope::test_pc7_envelope_after_cota_within_margin_is_relayed"
+      },
+      "protects": "sin este test, el wrapper mataría al adaptador a la cota y el usuario perdería la sesión con un did not answer within falso.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "sesión conservada"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc7_wrapper_margin.py::TestPc7WrapperWaitsAdapterEnvelope::test_pc7_adapter_silent_beyond_margin_gets_wrapper_timeout"
+      },
+      "protects": "sin este test, un adaptador colgado nunca sería cortado o sería cortado a la cota sin declarar el límite efectivo.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "sesión conservada"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_008_001_pc7_wrapper_margin.py::TestPc7WrapperWaitsAdapterEnvelope::test_pc7_control_answer_before_cota_is_intact"
+      },
+      "protects": "sin este test, el wrapper podría alterar un sobre rápido válido sin que la suite lo note.",
+      "evidence": [
+        {
+          "path": "docs/specs/008-001-home-xdg-isolation/spec.md",
+          "sha256": "864082764ac7cd6dccc5653e7e2b0be5a1d54fd306ae05e4ae95b7745c24186d",
+          "locator": "sesión conservada"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva"
+}

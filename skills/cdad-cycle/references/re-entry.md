@@ -442,6 +442,18 @@ contiene los deltas materializados y los últimos cambios de tests; en los
 re-entries intermedios un resultado no cero se registra sin bloquear por
 inventario.
 
+## Vínculos contrato↔test (016-001 PC-6) — re-entry de deltas del registro
+
+El hogar canónico es `references/contract-test-links.md` (formato y uso;
+esta sección solo lo cita). En proyectos que adopten el registro, el
+test-writer entrega el delta del registro como texto y el orquestador lo
+materializa al re-entry antes de la siguiente transición (ruta del registro,
+contrato path + sha256, regla `CURRENT − BASE` del mismo ámbito). En entrada
+a Review y cierre se exige la comprobación aplicable (PC-6) sobre los deltas y
+tests actuales; en los re-entries intermedios un resultado no cero se registra
+sin bloquear RED («tests nuevos no comprobados» sin baseline). Rige la
+equivalencia de una corrida registrada (§"Equivalence of a registered run").
+
 ---
 
 ## State file update

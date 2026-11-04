@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "unit": "015-001-frozen-reception",
+  "contract": {
+    "path": "docs/specs/015-001-frozen-reception/spec.md",
+    "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "**PC-01:**"
+    },
+    {
+      "id": "PC-02",
+      "promise": "B",
+      "locator": "**PC-02:**"
+    },
+    {
+      "id": "PC-03",
+      "promise": "B",
+      "locator": "**PC-03:**"
+    },
+    {
+      "id": "PC-04",
+      "promise": "C",
+      "locator": "**PC-04:**"
+    },
+    {
+      "id": "PC-05",
+      "promise": "D",
+      "locator": "**PC-05:**"
+    },
+    {
+      "id": "PC-06",
+      "promise": "D",
+      "locator": "**PC-06:**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestA1FrozenPublication::test_an_a1_prepare_congelado_publica_respaldo_coherente"
+      },
+      "protects": "el test acredita que el usuario no recibiría un paquete cuya recepción no está anclada a bytes verificables y ninguna comparación posterior detectaría la deriva.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-01:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestA2SuccessorCapturesCurrent::test_an_a2_sucesor_legitimo_captura_instrucciones_vigentes"
+      },
+      "protects": "sin este test, un sucesor podría reutilizar los bytes congelados del predecesor y despachar instrucciones obsoletas como vigentes.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-01:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestA2bReplaceSuccessorCapturesCurrent::test_an_a2b_replace_packet_sucesor_captura_vigente_no_predecesor"
+      },
+      "protects": "sin este test, un sucesor por reemplazo podría reutilizar los bytes congelados del predecesor y el defecto M6 pasaría silencioso.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-01:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestB1RenderStableUnderDrift::test_an_b1_render_byte_identico_tras_mutar_fuentes_vivas"
+      },
+      "protects": "sin este test, cambiar una coma en las instrucciones vivas impediría re-emitir o validar un paquete ya congelado.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-02:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestB2DispatchReceiveUnderDrift::test_an_b2_record_y_receive_acreditan_con_deriva"
+      },
+      "protects": "sin este test, una deriva inocua de instrucciones condenaría un despacho válido e impediría su recepción.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-03:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestC1AlterationsRejected::test_an_c1_alteraciones_rechazadas_en_record_y_receive"
+      },
+      "protects": "sin este test, un encabezado maquillado para coincidir con instrucciones alteradas pasaría el registro y el usuario despacharía una encomienda distinta de la validada.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-04:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestC2InvalidBackupRejected::test_an_c2_respaldo_invalido_rechazado_sin_fuentes_vivas"
+      },
+      "protects": "sin este test, un respaldo corrupto podría aceptarse según las fuentes vivas del momento y el usuario no sabría si su paquete está anclado o a la deriva.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-04:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestD1HistoricPreserved::test_an_d1_historico_sin_campo_conserva_validacion_estricta"
+      },
+      "protects": "sin este test, introducir la congelación podría reescribir o invalidar silenciosamente paquetes históricos y el usuario perdería encargos previos.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-05:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_015_001_frozen_reception.py::TestD2ReplayDurable::test_an_d2_recepcion_repetida_tras_deriva_es_replay"
+      },
+      "protects": "sin este test, un reintento del orquestador tras deriva inocua duplicaría registros o la congelación futura rompería la durabilidad del replay sin que nadie lo note.",
+      "evidence": [
+        {
+          "path": "docs/specs/015-001-frozen-reception/spec.md",
+          "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
+          "locator": "**PC-06:**"
+        }
+      ],
+      "limits": "verificacion estructural del vinculo; no acredita ejecucion, sensibilidad ni suficiencia semantica"
+    }
+  ],
+  "note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato",
+  "coverage_note": "indice por demanda de esta revision: cubre las obligaciones indexadas, no una extraccion exhaustiva del contrato"
+}

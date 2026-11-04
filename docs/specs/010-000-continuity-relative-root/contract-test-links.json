@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "unit": "010-000-continuity-relative-root",
+  "contract": {
+    "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+    "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "Un nuevo `begin` válido y un `checkpoint` válido obtienen éxito"
+    },
+    {
+      "id": "PC-02",
+      "promise": "A",
+      "locator": "Con entradas idénticas y raíces equivalentes"
+    },
+    {
+      "id": "PC-03",
+      "promise": "A",
+      "locator": "`plan_write` continúa siendo exclusivamente planificador"
+    },
+    {
+      "id": "PC-04",
+      "promise": "B",
+      "locator": "Para el mismo estado inicial y contenido de `begin` o `checkpoint`, cambiar solamente la expresión de la raíz conserva los bytes canónicos"
+    },
+    {
+      "id": "PC-05",
+      "promise": "B",
+      "locator": "Repetir contenido ya publicado utilizando otra raíz equivalente conserva el replay existente"
+    },
+    {
+      "id": "PC-06",
+      "promise": "C",
+      "locator": "La normalización no modifica decisiones de admisión"
+    },
+    {
+      "id": "PC-07",
+      "promise": "C",
+      "locator": "Se conservan los controles de rutas existentes"
+    },
+    {
+      "id": "PC-08",
+      "promise": "D",
+      "locator": "Desde una copia aislada del producto corregido se genera staging"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01",
+        "PC-02"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_000_continuity_relative_root.py::test_A_relative_root_begin_and_checkpoint_match_absolute"
+      },
+      "protects": "sin este test, usar la raíz relativa rehusaría el begin nuevo y el usuario dependería de una restricción accidental del CLI.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2",
+          "locator": "Un nuevo `begin` válido y un `checkpoint` válido obtienen éxito"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-02",
+        "PC-03"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_000_continuity_relative_root.py::test_A2_programmatic_api_equivalence_and_purity"
+      },
+      "protects": "sin este test, la integración programática seguiría rota aunque el CLI se arreglara o planificaría con efectos laterales.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2",
+          "locator": "Con entradas idénticas y raíces equivalentes"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-04",
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_000_continuity_relative_root.py::test_B_portable_evidence_and_replay_across_equivalent_roots"
+      },
+      "protects": "sin este test, la corrección duplicaría trabajo o invalidaría evidencia ya emitida al cambiar solo la raíz.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2",
+          "locator": "Para el mismo estado inicial y contenido de `begin` o `checkpoint`, cambiar solamente la expresión de la raíz conserva los bytes canónicos"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-06",
+        "PC-07"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_000_continuity_relative_root.py::test_C_existing_controls_hold_under_relative_root"
+      },
+      "protects": "sin este test, aceptar relativas legítimas debilitaría barreras o dejaría continuidad parcial con efectos publicados.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2",
+          "locator": "La normalización no modifica decisiones de admisión"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_000_continuity_relative_root.py::test_D_installed_consumer_reproduces_relative_equivalence"
+      },
+      "protects": "sin este test, el arreglo funcionaría solo en el checkout y el producto distribuido seguiría sin equivalencia de raíces.",
+      "evidence": [
+        {
+          "path": "docs/specs/010-000-continuity-relative-root/spec.md",
+          "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2",
+          "locator": "Desde una copia aislada del producto corregido se genera staging"
+        }
+      ],
+      "limits": "Acredita existencia del vínculo y resolución del localizador; no acredita ejecución, sensibilidad ni revisión semántica."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva."
+}

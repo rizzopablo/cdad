@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "unit": "016-003-suite-review-tranche-1",
+  "contract": {
+    "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+    "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4"
+  },
+  "coverage_note": "Cubre las 10 obligaciones PC-1..PC-10 (marcadores reales); un verificador por promesa observable, sin exigir tests adicionales.",
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_A_seleccion_congelada_reproducible_y_diagnostico_ante_insumo_incompatible"
+      },
+      "protects": "Selección reproducible byte a byte (orden por antigüedad de módulo, ceil(N/5), identidad literal con parámetros); insumos incompatibles del §4 dan 1 con diagnóstico sin acreditar tramo ni ejecutar tests.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "repetirlo con los mismos insumos produce los mismos bytes"
+        },
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "producen diagnóstico y salida no satisfactoria, sin acreditar un tramo completo ni ejecutar tests"
+        }
+      ],
+      "limits": "Estructural; que la antigüedad por módulo sea proxy declarado (no genealogía individual) queda a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_B_fila_por_nodeid_con_disposicion_y_vinculo_recuperable"
+      },
+      "protects": "Exactamente una fila por nodeid con disposición R2 y vínculo que resuelve contra contrato y obligación reales; filas de menos/más, vínculo inventado o disposición fuera de R2 dan 1.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "exactamente una fila por nodeid seleccionado, sin omisiones ni incorporaciones externas"
+        },
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "resuelve contra contrato y obligación reales conforme a 016-001"
+        }
+      ],
+      "limits": "Estructural; pertinencia de cada protección y corrección de la disposición R2 quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-5",
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_C_candidato_con_hipotesis_y_comparacion_con_resultado_acotado"
+      },
+      "protects": "Cada candidato trae hipótesis preregistrada, defecto contractual, comparación literal y los 5 pasos del §6; ningún resultado acotado se presenta como redundancia universal ni autoriza poda.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "hipótesis preregistrada, selección de comparación y evidencia de los intentos del §6"
+        },
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "Ningún resultado acotado se presenta como redundancia universal ni autoriza poda"
+        }
+      ],
+      "limits": "Estructural; idoneidad del defecto y del conjunto de comparación quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-7",
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_D_costo_reconstruible_y_proyeccion_con_supuestos_mas_decision"
+      },
+      "protects": "Costo reconstruible por actividad sin doble conteo ni ceros inventados; proyección con fórmula, cantidades y supuestos más decisión autorizada explícita sobre continuar.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "distingue ausencia de métricas de cero y evita doble conteo de trabajo paralelo"
+        },
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "incluye una decisión autorizada y explícita sobre continuar, modificar o detener"
+        }
+      ],
+      "limits": "Estructural; razonabilidad de supuestos y de la decisión quedan a revisión independiente."
+    },
+    {
+      "pc_ids": [
+        "PC-9",
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_E_experimentos_en_copia_y_entrega_con_control_declarado"
+      },
+      "protects": "Experimentos confinados a copia y workspace declarados con tests y producto original intactos; entrega que distingue control estructural, ejecución real y revisión semántica sin pendientes que impidan verificar.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "los cambios experimentales y logs pertenecen exclusivamente a la copia y workspace autorizados"
+        },
+        {
+          "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
+          "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
+          "locator": "distingue control estructural, ejecución real y revisión semántica independiente"
+        }
+      ],
+      "limits": "Estructural; qué afirmó cada registro y sus límites quedan a revisión independiente; ningún gate promete detección semántica infalible."
+    },
+    {
+      "pc_ids": [
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_003_suite_review_tranche_1.py::SuiteReviewTranche1Red::test_R_F_contrato_sin_marcadores_resuelve_por_indice_legacy"
+      },
+      "protects": "Fila legítima de contrato sin marcadores con registro enlazado (path y sha coincidentes y promesa igual a la del índice) resuelve por índice legacy con status ok y los rechazos concretos dan 1 nombrando la fila.",
+      "evidence": [
+        {
+          "path": "tests/test_016_003_suite_review_tranche_1.py",
+          "sha256": "c59cc32aa407a82ea70a3b933297795cb658e1e5d03f8440e6bfc79bc3f0e136",
+          "locator": "fila de contrato sin marcadores resuelve por registro"
+        },
+        {
+          "path": "tests/test_016_003_suite_review_tranche_1.py",
+          "sha256": "c59cc32aa407a82ea70a3b933297795cb658e1e5d03f8440e6bfc79bc3f0e136",
+          "locator": "promesa igual a la del indice"
+        }
+      ],
+      "limits": "Estructural; no acredita pertinencia semántica de la fila legacy ni sensibilidad frente a otros defectos; la idoneidad del defecto y del índice legacy quedan a revisión independiente."
+    }
+  ]
+}

@@ -87,6 +87,20 @@ the acceptance counterweight is R7
 
 <Output of the per-feature discovery: which APIs/hooks/modules it touches, specific conventions that apply, known gotchas.>
 
+## Contract-test links (optional, only when adopting the registry)
+
+This section is optative and applies only when the project adopts the
+contract↔test link registry. It is never mandatory and it does not normalize
+previous contracts. The canonical format and usage live in
+`skills/cdad-cycle/references/contract-test-links.md` (single owner; this
+template only points at it).
+
+When adopted, each postcondition above carries one stable marker on its own
+line: `<!-- cdad:pc PC-1 promise=A -->` (one ID, one observable `promise`
+group). Contracts without markers stay as they are; their coverage, if needed,
+uses the on-demand `legacy_obligations` index declared in the canonical
+reference, never a retroactive rewrite.
+
 ---
 
 Status: <Pending approval | Approved by <name> on <YYYY-MM-DD>>

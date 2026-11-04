@@ -472,6 +472,7 @@ The references are **deepening material**, not a condition for understanding the
 | `stage-debugging.md` | When a fix fails, a bug needs diagnosing or CI is broken (failed GREEN in §3.2, CI in §5.1) |
 | `design-principles.md` | When a role owes a design duty and you need the canonical wording of the principle behind it (the architect's criterion, the reviewer's judgement and its limit) — the single canonical owner; the roles point at it, they do not restate it |
 | `documentary-contracts.md` | When an engagement has a documentary product (discovery notes, process maps, user stories) and you need the canonical criteria: the four categories, the locator per source type, the pending classification, the four declarations of the engagement, the role boundaries, the two closure records and the acceptance authority — the single canonical owner; the roles point at it, they do not restate it |
+| `contract-test-links.md` | When the project adopts the contract↔test link registry (016-001): the canonical format and usage — minimal registry form, stable `cdad:pc` markers, `legacy_obligations` on demand, `kind: review` verifiers, admitted collection, exit codes and declared limits — the single canonical owner; handoffs, stage-3 and re-entry point at it, they do not restate it |
 
 Load one at a time. Don't keep the whole tree in context.
 

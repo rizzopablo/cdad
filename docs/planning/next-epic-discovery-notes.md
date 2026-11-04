@@ -65,7 +65,7 @@ El dueño: «Tengo que salir. Te delego todo hitl, pero consulta al architect ca
 
 ## 8. Consulta al architect y decisión de E1 — 2026-10-23
 
-Consulta read-only (sesión `ses_e94d835d1ffe…`, agente `cdad-architect`). Respuesta, resumida:
+Consulta read-only (sesión `<ses-374>`, agente `cdad-architect`). Respuesta, resumida:
 - **Dos epics, operación primero**, con alcance acotado y aplicando ya los criterios mínimos de capacidad consumible y evidencia positiva. Concurrencia fuera (B3 depende de A, `plan.md:163`).
 - **Incongruencia confirmada en código:** `cdad_packet.py` reconoce disposiciones (`5690-5701`, `5756-5760`) y `cdad_continuity.py` clasifica sólo autoridad/recibo/despacho/materialización (`965-991`, `1010-1017`).
 - **Cinco features:** entrada inequívoca (brechas 3-4; `cdad_packet.py:6709-6743`), recuperación de despacho (2, 5; `--replace-packet` limitado, `6928-6929`), continuidad en los bordes (1; reutilizar `cdad_continuity.py:622-669`), terminación ≠ éxito (6; `cdad_dispatch.py:1011-1022`, `cdad_delegate.py:325-333`), recepción serial real.

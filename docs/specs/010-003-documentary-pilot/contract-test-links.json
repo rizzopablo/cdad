@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "unit": "010-003-documentary-pilot",
+  "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-01",
+      "promise": "A",
+      "locator": "**PC-01.** El inventario identifica todas las fuentes autorizadas"
+    },
+    {
+      "id": "PC-04",
+      "promise": "B",
+      "locator": "**PC-04.** Al comprobar una muestra con un fragmento citado inexistente, el control rechaza esa muestra"
+    },
+    {
+      "id": "PC-05",
+      "promise": "B",
+      "locator": "**PC-05.** Al corregir ese localizador, manteniendo lo demás equivalente, el control acepta la muestra estructural corregida"
+    },
+    {
+      "id": "PC-06",
+      "promise": "B",
+      "locator": "**PC-06.** El mismo control acepta una tercera muestra: el candidato negativo semántico"
+    },
+    {
+      "id": "PC-10",
+      "promise": "D",
+      "locator": "**PC-10.** Existe un relevamiento Markdown en el directorio de producto, separado del contrato"
+    },
+    {
+      "id": "INV-06",
+      "promise": "invariante",
+      "locator": "**INV-06.** El piloto no modifica la toolchain ni `packets/{roles,substages}`"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-01"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_inventory_accounts_for_every_source_with_matching_digest_and_declares_synthetic_origin"
+      },
+      "protects": "el inventario identifica las fuentes y permite recuperar las versiones usadas, con digests coincidentes y origen sintético declarado",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "**PC-01.** El inventario identifica todas las fuentes autorizadas"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-04"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_broken_locator_is_rejected_with_document_reference_and_cause"
+      },
+      "protects": "el control rechaza la muestra con fragmento inexistente con diagnóstico de documento, referencia y causa",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "Al comprobar una muestra con un fragmento citado inexistente, el control rechaza esa muestra"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-05"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_corrected_locator_is_accepted_and_the_pair_differs_only_in_the_locator"
+      },
+      "protects": "corregido solo el localizador, la muestra se acepta y el par difiere únicamente en él",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "Al corregir ese localizador, manteniendo lo demás equivalente, el control acepta la muestra estructural corregida"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_semantically_defective_candidate_is_structurally_accepted"
+      },
+      "protects": "el candidato negativo es estructuralmente resoluble; no acredita la persistencia de los tres defectos (límite C-2)",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "El mismo control acepta una tercera muestra: el candidato negativo semántico"
+        }
+      ],
+      "limits": "fracción estructural; la persistencia de los tres defectos se acredita por clave y contraste posterior, no por este vínculo"
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_product_with_no_references_is_rejected"
+      },
+      "protects": "un producto con cero referencias se rechaza; no se acepta un verde vacío",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "Existe un relevamiento Markdown en el directorio de producto, separado del contrato"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_product_citing_an_uninventoried_source_is_rejected"
+      },
+      "protects": "toda referencia a fuente no inventariada se rechaza en la frontera del corpus autorizado",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "Existe un relevamiento Markdown en el directorio de producto, separado del contrato"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_the_product_cites_only_inventoried_fragments_and_at_least_one"
+      },
+      "protects": "el producto existe y toda su cita resuelve a fuente inventariada y ancla registrada, con al menos una",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "Existe un relevamiento Markdown en el directorio de producto, separado del contrato"
+        }
+      ],
+      "limits": "fracción estructural del producto; la suficiencia semántica de cada afirmación va por revisión independiente"
+    },
+    {
+      "pc_ids": [
+        "INV-06"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_010_003_documentary_pilot.py::test_control_verdict_is_invariant_under_rewrap_of_the_examined_document"
+      },
+      "protects": "el veredicto del control no depende de líneas ni del rewrap del documento examinado",
+      "evidence": [
+        {
+          "path": "docs/specs/010-003-documentary-pilot/spec.md",
+          "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
+          "locator": "El piloto no modifica la toolchain ni `packets/{roles,substages}`"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas (PC-01, PC-04, PC-05, PC-06, PC-10 e INV-06 verificadas por este tramo), no una extracción exhaustiva del contrato"
+}

@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "unit": "016-002-gap-report",
+  "contract": {
+    "path": "docs/specs/016-002-gap-report/spec.md",
+    "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
+  },
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_A_universo_desde_estado_y_cierre_no_registrado_vs_roto"
+      },
+      "protects": "Universo desde cierres registrados con históricos aplicables y evidencia recuperable; la fila actual no cerrada no es reincorporada por su copia histórica; el cierre no registrado queda fuera con diagnóstico y la evidencia rota da 1 identificando la referencia, sin informe completo.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-002-gap-report/spec.md",
+          "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+          "locator": "Una fila actual no cerrada impide que una copia histórica la reincorpore silenciosamente."
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-3",
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_B_obligaciones_huecos_agrupados_y_review_declarado"
+      },
+      "protects": "Obligaciones desde marcadores reales o índice legacy sin mezclar; sin ambos la spec es no indexada; quitar el último verificador produce hueco agrupado por promesa; compartir verificador no exige más tests; el review válido cuenta como declarado sin ejecutarse.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-002-gap-report/spec.md",
+          "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+          "locator": "Compartir un verificador entre obligaciones no exige tests adicionales."
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-5",
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_C_exclusion_valida_aparta_e_invalida_da_1"
+      },
+      "protects": "Exclusión válida aparta la promesa completa a su sección con motivo recuperable sin presentarla como protegida; exclusión inválida (motivo vacío, identidad ambigua, referencias que no corresponden) da 1 sin suprimir el hueco.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-002-gap-report/spec.md",
+          "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+          "locator": "Una exclusión nunca crea un verificador ni incrementa un contador de protección."
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-7",
+        "PC-8"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_D_reproducible_orden_estable_sin_efectos_y_codigos"
+      },
+      "protects": "Informe con entradas identificadas por hash, orden estable y byte-reproducibilidad (reorden de bindings sin efecto); no modifica entradas, no ejecuta tests, respeta códigos 0/1/2 y mantiene compatible el comportamiento de validate.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-002-gap-report/spec.md",
+          "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+          "locator": "Reordenar bindings de registros no altera el resultado."
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    },
+    {
+      "pc_ids": [
+        "PC-9",
+        "PC-10"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_016_002_gap_report.py::GapReportRed::test_R_E_sin_registros_produce_informe_con_limites"
+      },
+      "protects": "Sin registros el informe se produce sin colección (declara sin registro declarado, muestra no indexados y huecos conocidos con marcadores) sin exigir inventario, pc-map, backfill ni gate nuevo; declara comprobación estructural y niega ejecución, pertinencia, sensibilidad y aprobación.",
+      "evidence": [
+        {
+          "path": "docs/specs/016-002-gap-report/spec.md",
+          "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
+          "locator": "No exige inventario vivo, `pc-map` ni backfill"
+        }
+      ],
+      "limits": "Declarado; ejecución y pertinencia aún no acreditadas."
+    }
+  ]
+}

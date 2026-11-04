@@ -1,0 +1,955 @@
+{
+ "batch": 2,
+ "modules": [
+  "tests/test_013_002_live_inventory.py",
+  "tests/test_013_001_criterion_coherence.py",
+  "tests/test_012_installer_ignore_pycache.py",
+  "tests/test_010_003_documentary_pilot.py",
+  "tests/test_010_002_documentary_role_properties.py"
+ ],
+ "rows": [
+  {
+   "candidate": null,
+   "check": "Todos los test_*.py del checkout figuran en suite-inventory.json con archivo existente y asignación con capacidad+contrato (los nodeids con archivo existente); el helper de deuda figura como módulo.",
+   "consequence": "sin este test, el usuario cerraría con un inventario estructuralmente incompleto creyendo que el verde sintético lo cubre.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Todos los módulos Python del universo inspeccionado por `validate` están inventariados con su tipo correcto.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_A_inventario_efectivo_y_validate_rc0",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único verificador de la completitud efectiva del inventario con validate rc=0 (PC-1) y presencia de la deuda explícita del helper (PC-3).",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_A_inventario_efectivo_y_validate_rc0",
+   "pc_ids": [
+    "PC-1",
+    "PC-3"
+   ],
+   "promise": "A",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El propio módulo tiene asignación con contrato recuperable (no VERIFY, con procedencia explicada); VERIFY solo aparece para el helper con confianza baja y deuda declarada en suite-maintenance.md; la unión de asignaciones cubre todos los test files; sin módulos mixtos por prefijo.",
+   "consequence": "sin este test, el usuario seleccionaría por capacidad sin poder recuperar los contratos.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Las asignaciones nuevas o corregidas nombran contratos recuperables y explican su procedencia.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_A_contratos_recuperables_y_seleccion_cubre_union",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que acredita contratos recuperables con procedencia y que la unión de la selección cubre la colección (PC-2), sin presentar VERIFY como acreditación (PC-4).",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_A_contratos_recuperables_y_seleccion_cubre_union",
+   "pc_ids": [
+    "PC-2",
+    "PC-4"
+   ],
+   "promise": "A",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "docs/suite-maintenance.md existe y fija el vocabulario que distingue asignación de acreditación (asignación, obligación, acreditación, evidencia, incertidumbre, confidence, validate rc=0, lectura legacy de eliminar).",
+   "consequence": "sin este test, el usuario confunde presencia de campos y verde estructural con protección semántica.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "`confidence` del inventario y `validate rc=0` no acreditan protección semántica.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_B_clasificacion_no_es_acreditacion",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que distingue clasificación de acreditación con vocabulario operativo exigible.",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_B_clasificacion_no_es_acreditacion",
+   "pc_ids": [
+    "PC-4"
+   ],
+   "promise": "B",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "pc-map.json contiene los dos nodeids B1 de colisión de 005-013 identificados por entrada (task o decision_note), con los seis campos obligatorios, destino igual al test actual (sin sustituto inventado) y variante observable no vacía.",
+   "consequence": "sin este test, el usuario no puede recuperar el lote nuevo ni distinguirlo del piloto histórico.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Se entrega un mapa inicial del candidato formado por los dos tests B1 de colisión de 005-013:",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_C_mapa_inicial_B1_identificado_por_entrada",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que fija el mapa inicial acotado B1 identificable por entrada.",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_C_mapa_inicial_B1_identificado_por_entrada",
+   "pc_ids": [
+    "PC-5"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Lote identificado por entrada; target_nodeid como cadena; obligación identificada por contrato+identificador+variante sin colapsos; pilot_modules no vacío; registros históricos VERIFY conservados.",
+   "consequence": "sin este test, el usuario pierde la genealogía al primer mv o rm.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "No se identifica una obligación únicamente por su nodeid: se consideran contrato, identificador y variante.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_C_conserva_origen_y_metadatos_historicos",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que conserva origen y metadatos históricos con cada sustitución sin borrar VERIFY para lograr verde.",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_C_conserva_origen_y_metadatos_historicos",
+   "pc_ids": [
+    "PC-5",
+    "PC-6"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "suite-maintenance.md trae sección Inventario vivo, comando validate, rutas de inventario y mapa, salidas, deltas y materialización; los handoffs distribuyen la regla (inventario vivo o suite-maintenance).",
+   "consequence": "sin este test, el usuario no ve la desactualización hasta entrar a Review.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Esta salida general no exime a esta unidad de entregar su declaración: `docs/suite-maintenance.md` y su contenido son producto comprometido por PC-7.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_D_inventario_vivo_declarado_momentos_y_handoffs",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que declara momentos, responsables y transmisión a handoffs de PC-7.",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_D_inventario_vivo_declarado_momentos_y_handoffs",
+   "pc_ids": [
+    "PC-7"
+   ],
+   "promise": "D",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Distingue validate, contraste del mapa y revisión independiente; exige --collect-only para inspeccionar y prohíbe ejecutar una selección completa sin autorización expresa.",
+   "consequence": "sin este test, el usuario ejecuta toda la suite creyendo que inspecciona o que fue autorizado.",
+   "contract": {
+    "path": "docs/specs/013-002-live-inventory/spec.md",
+    "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Para inspeccionar esa selección se usa `--collect-only`; para evidencia focal se ejecuta una selección explícita.",
+     "path": "docs/specs/013-002-live-inventory/spec.md",
+     "sha256": "31a6ddbdd1eef65b358b51356c0dc1001a429d095a3fdc2258c1727e1"
+    },
+    {
+     "locator": "def test_013_002_D_limites_y_surface_collect_only",
+     "path": "tests/test_013_002_live_inventory.py",
+     "sha256": "5528378fd682d815928d5317b5a28b7058d6a9fc8421436c2c09ae2008bb5990"
+    }
+   ],
+   "module": "tests/test_013_002_live_inventory.py",
+   "motive": "Único que fija los límites de los controles y la prohibición de corrida completa no autorizada.",
+   "nodeid": "tests/test_013_002_live_inventory.py::test_013_002_D_limites_y_surface_collect_only",
+   "pc_ids": [
+    "PC-8"
+   ],
+   "promise": "D",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El rol exige contribución respecto de lo existente con referencias recuperables y selección por promesa; test-writer-red.md selecciona por promesa sin convertir postcondición en cuota de test nuevo.",
+   "consequence": "sin este test, el usuario aprueba incorporaciones sin saber qué ya protege la suite y duplica verificadores equivalentes (o deja huecos creyéndolos cubiertos).",
+   "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| A — Selección por contribución | AUDIT distingue protección existente y faltante | PC-1–PC-3 |",
+     "path": "docs/specs/013-001-criterion-coherence/spec.md",
+     "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+    },
+    {
+     "locator": "def test_A_selection_by_contribution",
+     "path": "tests/test_013_001_criterion_coherence.py",
+     "sha256": "be390ba49fd348e772a7e365c49ea0a37df2dce15231962da1f4e3c7f2ec80f3"
+    }
+   ],
+   "module": "tests/test_013_001_criterion_coherence.py",
+   "motive": "Único que exige selección por contribución con referencias recuperables y prohíbe la cuota por postcondición.",
+   "nodeid": "tests/test_013_001_criterion_coherence.py::test_A_selection_by_contribution",
+   "pc_ids": [
+    "PC-1",
+    "PC-2",
+    "PC-3"
+   ],
+   "promise": "A",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El rol trae las seis disposiciones con disposición exactamente única; post-audit admite sustitutos nuevos vigentes con verde+sensibilidad; red deriva el vigente a POST-AUDIT en vez de reclamarlo.",
+   "consequence": "sin este test, el usuario acumula tests sin disposición o retira originales sin destino ejecutable, y envía sustitutos vigentes a RED en vez de acreditarlos en POST-AUDIT.",
+   "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| B — Mantenimiento acreditable | Cada test recibe una disposición y las sustituciones conservan obligaciones | PC-4–PC-7 |",
+     "path": "docs/specs/013-001-criterion-coherence/spec.md",
+     "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+    },
+    {
+     "locator": "def test_B_maintenance_with_post_audit_substitute",
+     "path": "tests/test_013_001_criterion_coherence.py",
+     "sha256": "be390ba49fd348e772a7e365c49ea0a37df2dce15231962da1f4e3c7f2ec80f3"
+    }
+   ],
+   "module": "tests/test_013_001_criterion_coherence.py",
+   "motive": "Único del mantenimiento acreditable con sustituto de vigente a POST-AUDIT (verde+sensibilidad).",
+   "nodeid": "tests/test_013_001_criterion_coherence.py::test_B_maintenance_with_post_audit_substitute",
+   "pc_ids": [
+    "PC-4",
+    "PC-5",
+    "PC-6",
+    "PC-7"
+   ],
+   "promise": "B",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "RED selecciona por promesa sin el universal de que todo test nuevo pertenece a RED, distingue el sustituto vigente y no ordena leer implementación; el rol referencia el hogar R2 de selección.",
+   "consequence": "sin este test, el usuario vuelve a exigir un test por postcondición o a ordenar inspección de implementación en pre-RED, y reedita doctrinas paralelas en vez de referenciar R2/R4/R7.",
+   "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| C — Instrucciones coherentes | Legacy y paquetes transmiten el mismo criterio aplicable | PC-8–PC-9 |",
+     "path": "docs/specs/013-001-criterion-coherence/spec.md",
+     "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+    },
+    {
+     "locator": "def test_C_coherent_instructions_without_quota_or_read",
+     "path": "tests/test_013_001_criterion_coherence.py",
+     "sha256": "be390ba49fd348e772a7e365c49ea0a37df2dce15231962da1f4e3c7f2ec80f3"
+    }
+   ],
+   "module": "tests/test_013_001_criterion_coherence.py",
+   "motive": "Único que prohíbe cuota por postcondición y lectura de implementación en pre-RED.",
+   "nodeid": "tests/test_013_001_criterion_coherence.py::test_C_coherent_instructions_without_quota_or_read",
+   "pc_ids": [
+    "PC-8",
+    "PC-9"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Properties exige presupuesto finito/positivo declarado antes de la campaña con justificación, semilla y versión/configuración; el rol presupuesta propiedades; sin cuotas universales rivales.",
+   "consequence": "sin este test, el usuario reintroduce cuotas universales rivales y acepta propiedades no reproducibles.",
+   "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| D — Propiedades presupuestadas | Presupuesto explícito y reproducible, sin cuotas rivales | PC-10–PC-11 |",
+     "path": "docs/specs/013-001-criterion-coherence/spec.md",
+     "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+    },
+    {
+     "locator": "def test_D_budget_declared_before_campaign",
+     "path": "tests/test_013_001_criterion_coherence.py",
+     "sha256": "be390ba49fd348e772a7e365c49ea0a37df2dce15231962da1f4e3c7f2ec80f3"
+    }
+   ],
+   "module": "tests/test_013_001_criterion_coherence.py",
+   "motive": "Único que exige presupuesto declarado y evidencia reproducible con semilla para propiedades.",
+   "nodeid": "tests/test_013_001_criterion_coherence.py::test_D_budget_declared_before_campaign",
+   "pc_ids": [
+    "PC-10",
+    "PC-11"
+   ],
+   "promise": "D",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "stage-3-tdd.md es el hogar canónico Test evidence policy con autorización expresa, registro de suite no realizada e instalación limpia; ci-gate.md condiciona el gate a autorización expresa.",
+   "consequence": "sin este test, el usuario dispersa la política en hogares paralelos, ejecuta suite completa sin autorización y confunde instalación limpia con suite completa.",
+   "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| E — Evidencia proporcional autorizada | El cierre no exige una suite completa no autorizada y conserva la evidencia específica de addon | PC-12–PC-14 |",
+     "path": "docs/specs/013-001-criterion-coherence/spec.md",
+     "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+    },
+    {
+     "locator": "def test_E_authorized_only_with_clean_install",
+     "path": "tests/test_013_001_criterion_coherence.py",
+     "sha256": "be390ba49fd348e772a7e365c49ea0a37df2dce15231962da1f4e3c7f2ec80f3"
+    }
+   ],
+   "module": "tests/test_013_001_criterion_coherence.py",
+   "motive": "Único que fija hogar canónico, autorización expresa e instalación limpia (distinto del pd10 de common.md).",
+   "nodeid": "tests/test_013_001_criterion_coherence.py::test_E_authorized_only_with_clean_install",
+   "pc_ids": [
+    "PC-12",
+    "PC-13",
+    "PC-14"
+   ],
+   "promise": "E",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Install --basic sobre árbol con __pycache__/.pyc/.pyo registra cero claves y cero fuentes con forma de caché en el manifiesto de propiedad.",
+   "consequence": "sin este test, el usuario vería artefactos de caché como propios y una limpieza posterior reportaría installs missing sin que nada real cambiara.",
+   "contract": {
+    "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+    "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-1.** El registro de propiedad de una skill nunca incluye rutas con un segmento `__pycache__` ni archivos con extension `.pyc` o `.pyo`.",
+     "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+     "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+    },
+    {
+     "locator": "def test_pc1_manifest_never_registers_cache_shapes",
+     "path": "tests/test_012_installer_ignore_pycache.py",
+     "sha256": "edf765905b10cdfb96819c3015156c6d4ce17cd62294a7d4d9e17ce4f785b6052"
+    }
+   ],
+   "module": "tests/test_012_installer_ignore_pycache.py",
+   "motive": "Único verificador de que el manifiesto nunca registra formas de caché.",
+   "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc1_manifest_never_registers_cache_shapes",
+   "pc_ids": [
+    "PC-1"
+   ],
+   "promise": "manifiesto sin rutas de caché",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Mismo árbol con y sin caché producen idéntico conjunto de artefactos (claves, digests y fuentes) en el manifiesto.",
+   "consequence": "sin este test, el usuario obtendría manifiestos cuyo contenido depende de si Python regeneró bytecode antes del install: installs no reproducibles.",
+   "contract": {
+    "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+    "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-2.** Un `install` sobre un arbol de origen que contiene `__pycache__` produce el mismo conjunto de artefactos registrados que el mismo arbol sin el: la presencia de cache no altera el manifiesto.",
+     "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+     "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+    },
+    {
+     "locator": "def test_pc2_install_with_cache_matches_install_without",
+     "path": "tests/test_012_installer_ignore_pycache.py",
+     "sha256": "edf765905b10cdfb96819c3015156c6d4ce17cd62294a7d4d9e17ce4f785b6052"
+    }
+   ],
+   "module": "tests/test_012_installer_ignore_pycache.py",
+   "motive": "Único que acredita que la presencia de caché no altera el manifiesto (reproducibilidad).",
+   "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc2_install_with_cache_matches_install_without",
+   "pc_ids": [
+    "PC-2"
+   ],
+   "promise": "caché no altera el manifiesto",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "--check sobre install válido con __pycache__ regenerado sale 0 y no reporta líneas drift/missing por bytecode.",
+   "consequence": "sin este test, el usuario vería --check FAIL justo después de correr un skill instalado, sin drift real que resolver.",
+   "contract": {
+    "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+    "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-3.** `--check` sobre una instalacion valida cuyo arbol de origen tiene `__pycache__` regenerado no reporta drift ni missing por esa causa, y sale 0.",
+     "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+     "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+    },
+    {
+     "locator": "def test_pc3_check_passes_with_regenerated_cache",
+     "path": "tests/test_012_installer_ignore_pycache.py",
+     "sha256": "edf765905b10cdfb96819c3015156c6d4ce17cd62294a7d4d9e17ce4f785b6052"
+    }
+   ],
+   "module": "tests/test_012_installer_ignore_pycache.py",
+   "motive": "Único que acredita --check verde ante bytecode regenerado.",
+   "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc3_check_passes_with_regenerated_cache",
+   "pc_ids": [
+    "PC-3"
+   ],
+   "promise": "check pasa con caché regenerada",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Reinstall sobre manifiesto con registros .pyc/.pyo sembrados (artifacts y pending_removal) los poda todos dejando claves, digests y fuentes de contenido byte-idénticos.",
+   "consequence": "sin este test, el usuario arrastraría registros de propiedad de bytecode para siempre: cada reinstall re-adoptaría la basura en vez de limpiarla.",
+   "contract": {
+    "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+    "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-4.** Los registros de `.pyc` preexistentes en un manifiesto anterior se podan en la siguiente instalacion, sin afectar los artefactos de contenido.",
+     "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+     "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+    },
+    {
+     "locator": "def test_pc4_reinstall_prunes_preexisting_pyc_records",
+     "path": "tests/test_012_installer_ignore_pycache.py",
+     "sha256": "edf765905b10cdfb96819c3015156c6d4ce17cd62294a7d4d9e17ce4f785b6052"
+    }
+   ],
+   "module": "tests/test_012_installer_ignore_pycache.py",
+   "motive": "Único que acredita la poda de registros pyc preexistentes sin tocar el contenido.",
+   "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc4_reinstall_prunes_preexisting_pyc_records",
+   "pc_ids": [
+    "PC-4"
+   ],
+   "promise": "reinstalación poda registros pyc",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El control rechaza la muestra con fragmento inexistente con exactamente un diagnóstico que identifica documento examinado, referencia problemática tal como está escrita y causa missing_fragment.",
+   "consequence": "sin este control, el usuario recibiría un verde sobre una cita que no localiza nada en el corpus.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-04.** Al comprobar una muestra con un fragmento citado inexistente, el control rechaza esa muestra y ofrece un diagnóstico que identifica documento examinado, referencia problemática y causa.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_broken_locator_is_rejected_with_document_reference_and_cause",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que exige rechazo con diagnóstico documento+referencia+causa ante localizador roto.",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_broken_locator_is_rejected_with_document_reference_and_cause",
+   "pc_ids": [
+    "PC-04"
+   ],
+   "promise": "B",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "La muestra corregida se acepta sin diagnósticos y ambos textos difieren solo en el localizador (#s1-f99 por #s1-f03).",
+   "consequence": "sin este control, el usuario no sabría si la aceptación se debe a la corrección del localizador o a que se relajó todo lo demás.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-05.** Al corregir ese localizador, manteniendo lo demás equivalente, la muestra estructural corregida se acepta.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_corrected_locator_is_accepted_and_the_pair_differs_only_in_the_locator",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que acredita aceptación por equivalencia salvo el localizador corregido.",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_corrected_locator_is_accepted_and_the_pair_differs_only_in_the_locator",
+   "pc_ids": [
+    "PC-05"
+   ],
+   "promise": "B",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El candidato negativo se acepta sin diagnósticos con al menos una cita resuelta; acredita resolubilidad estructural, no la persistencia de los tres defectos (límite C-2).",
+   "consequence": "sin este test, el usuario leería el verde del candidato como prueba semántica, o rompería su resolubilidad estructural sin notarlo.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-06.** El mismo control acepta una tercera muestra: el candidato negativo semántico, cuyas referencias son estructuralmente resolubles aunque conserva los tres defectos de PC-02.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_semantically_defective_candidate_is_structurally_accepted",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que separa resolubilidad estructural de acreditación semántica del candidato.",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_semantically_defective_candidate_is_structurally_accepted",
+   "pc_ids": [
+    "PC-06"
+   ],
+   "promise": "B",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Un documento con cero referencias se rechaza con causa no_reference.",
+   "consequence": "sin este control, un relevamiento sin una sola cita pasaría como verde vacío.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "La comprobación del producto incluye los rechazos por cero referencias y fuente no inventariada de §2.4; no se acepta un verde vacío.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_product_with_no_references_is_rejected",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que rechaza el verde vacío (cero referencias).",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_product_with_no_references_is_rejected",
+   "pc_ids": [],
+   "promise": "B",
+   "uncertainties": [
+    "Sin PC numerada: el rechazo vive en §2.4 y en el párrafo de verificación de la Promesa B; no se inventa vínculo a PC-04/05/06."
+   ]
+  },
+  {
+   "candidate": null,
+   "check": "Una referencia a fuente no inventariada se rechaza con causa uninventoried_source que nombra la referencia.",
+   "consequence": "sin este control, el relevamiento podría citar material que no forma parte del corpus autorizado.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Rechaza un producto con **cero referencias a fuentes**, así como toda referencia a una fuente no inventariada.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_product_citing_an_uninventoried_source_is_rejected",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que cierra la frontera de autorización del corpus (fuente no inventariada).",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_product_citing_an_uninventoried_source_is_rejected",
+   "pc_ids": [],
+   "promise": "B",
+   "uncertainties": [
+    "Sin PC numerada: la frontera vive en §2.4 y en el párrafo de verificación de la Promesa B; no se inventa vínculo a PC-04/05/06."
+   ]
+  },
+  {
+   "candidate": null,
+   "check": "El producto existe y toda su cita resuelve a fuente inventariada y ancla registrada, con al menos una cita resuelta.",
+   "consequence": "sin este control, el relevamiento presentaría afirmaciones sin respaldo localizable, que es lo que PC-10 compromete.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-10.** Existe un relevamiento Markdown en el directorio de producto, separado del contrato, las fuentes, la clave y los verificadores. Cada afirmación factual conservada identifica respaldo localizable en el inventario.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_the_product_cites_only_inventoried_fragments_and_at_least_one",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que acredita trazabilidad estructural del producto (fracción estructural de PC-10).",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_the_product_cites_only_inventoried_fragments_and_at_least_one",
+   "pc_ids": [
+    "PC-10"
+   ],
+   "promise": "D",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Inventario identificado con s1+s2, sha256 de bytes coincidente por fuente, declaración sintética, anclas exactas/únicas/prefijadas; todo archivo bajo sources/ listado y viceversa; candidato declarado sintético.",
+   "consequence": "sin este control, una fuente podría cambiar o faltar del inventario sin que nadie lo note.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-01.** El inventario identifica todas las fuentes autorizadas y permite recuperar exactamente las versiones utilizadas. El corpus y los candidatos están declarados como sintéticos.",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_inventory_accounts_for_every_source_with_matching_digest_and_declares_synthetic_origin",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que acredita integridad byte a byte del inventario y origen sintético declarado.",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_inventory_accounts_for_every_source_with_matching_digest_and_declares_synthetic_origin",
+   "pc_ids": [
+    "PC-01"
+   ],
+   "promise": "A",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Las cuatro combinaciones (corregida/roto × original/re-envuelta con líneas movidas) comparten veredicto y diagnósticos con el original.",
+   "consequence": "sin este control, una implementación por ventanas de línea pasaría T1 y T2 y el usuario creería que las citas se localizan por identificador.",
+   "contract": {
+    "path": "docs/specs/010-003-documentary-pilot/spec.md",
+    "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "| **INV-06.** El piloto no modifica la toolchain ni `packets/{roles,substages}` y no depende de líneas o rewrap para sus controles. | Diff y revisión del verificador. |",
+     "path": "docs/specs/010-003-documentary-pilot/spec.md",
+     "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
+    },
+    {
+     "locator": "def test_control_verdict_is_invariant_under_rewrap_of_the_examined_document",
+     "path": "tests/test_010_003_documentary_pilot.py",
+     "sha256": "8e2a1878538838306543e2767d54980cb4147f8f7b205415d9f7f48e35737"
+    }
+   ],
+   "module": "tests/test_010_003_documentary_pilot.py",
+   "motive": "Único que acredita que el control localiza por identificador y no por ventanas de línea.",
+   "nodeid": "tests/test_010_003_documentary_pilot.py::test_control_verdict_is_invariant_under_rewrap_of_the_examined_document",
+   "pc_ids": [],
+   "promise": "B",
+   "uncertainties": [
+    "Sin PC numerada: la invariancia vive en INV-06 (spec.md:211) y §2.2:44 sobre el control de la Promesa B; no se inventa vínculo a PC numerada."
+   ]
+  },
+  {
+   "candidate": null,
+   "check": "Cada una de las 100 publicaciones válidas (semilla 20261031) deriva el agente canónico del rol y stack vigente (D3) con execution_context relativo a execution.json, y el mismo request valida por la vía compartida.",
+   "consequence": "sin este test, una combinación admitida podría publicar un destinatario que no corresponde al rol o al dominio, y el usuario no sabría a qué agente se publicó su encargo.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-06.** Toda publicación nueva, por preparación ordinaria o por `prepare --replace-packet`, publica `agent` y `execution_context`.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_publication_derivation_matches_the_canonical_rule",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único que acredita derivación canónica del agente por construcción con presupuesto y semilla fijos.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_publication_derivation_matches_the_canonical_rule",
+   "pc_ids": [
+    "PC-06",
+    "PC-07"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "El request publicado conserva campos, forma, valores, packet_id y objetivo (solo crece con agent/execution_context/instruction_sources) y el render excluye agent pero conserva execution_context.",
+   "consequence": "sin este test, la corrección podría haber perdido o cambiado campos del request, o un campo de transporte entraría al render y rompería la compatibilidad de bytes.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Exclusión de `agent` del render entre requests válidos.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_publication_conserves_the_admitted_request_and_render_fields",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único que acredita conservación del request admitido y exclusión de agent del render.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_publication_conserves_the_admitted_request_and_render_fields",
+   "pc_ids": [
+    "PC-08"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "20 admisiones de la familia declarada validan; 100 discordancias se rechazan sin consultar el stack con diagnóstico que nombra rol, agente y familia y declara stack no evaluado; render no publica familia ajena.",
+   "consequence": "sin este test, un agente de otro rol podría recibir el trabajo, una coincidencia parcial del nombre pasaría, o un rechazo estático se confundiría con el contextual.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **`validate-request` y `render`: rechazo estático.** Un request con agente de otro rol es rechazado por la validación compartida y no produce un render válido, sin consultar el stack vigente.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_static_contrast_admits_the_declared_role_and_rejects_foreign_families",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único del contraste estático con diagnóstico que discrimina del contextual (stack no evaluado).",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_static_contrast_admits_the_declared_role_and_rejects_foreign_families",
+   "pc_ids": [
+    "PC-07"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "100 intentos nuevos con agente discorde al stack vigente fallan antes de publicar registro, con diagnóstico de rol, stack y agente esperado y sin efectos durables (dispatch y estado intactos).",
+   "consequence": "sin este test, un encargo se despacharía a un dominio que ya no corresponde, o el diagnóstico no permitiría distinguir este rechazo del estático.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **`record-dispatch`: contraste contextual del intento nuevo.** Un intento nuevo con agente declarado que no corresponde al rol y stack vigente falla antes de publicar su registro o habilitar la invocación del trabajo de rol.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_contextual_contrast_rejects_a_new_intent_with_a_discordant_agent",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único del contraste contextual con preservación de estado y registros ante el rechazo.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_contextual_contrast_rejects_a_new_intent_with_a_discordant_agent",
+   "pc_ids": [
+    "PC-07"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "execution_context presente sin agent se rechaza (diagnóstico nombra ambos); el histórico sin ambos campos sigue admitido, en los 5 roles del dominio.",
+   "consequence": "sin este test, un request con contexto quedaría sin destinatario, o la corrección rompería los históricos legítimos al exigirles un agente que nunca declararon.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "Rechazo de `execution_context` presente sin `agent`.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_presence_rule_rejects_context_without_agent_and_admits_the_historical",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único de la regla de presencia con admisión histórica preservada.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_presence_rule_rejects_context_without_agent_and_admits_the_historical",
+   "pc_ids": [
+    "PC-08"
+   ],
+   "promise": "C",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Las tres raíces de skills publican CLI y esquema con bytes exactos de la fuente más agentes promovidos en la copia descartable (ambos runtimes); canario EV-05: HOME del proceso y destino global intactos.",
+   "consequence": "sin este test, el recorrido documental podría ejecutarse contra un CLI o un esquema anteriores al GREEN de T6 y la instalación no acreditaría PC-12.b por sus bytes.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-12.b — T6/T7:** la instalación aislada actualizada distribuye CLI y esquema corregidos; el recorrido documental/Odoo se repite con las validaciones finales de PC-06–10.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_isolated_install_distributes_the_final_cli_and_schema",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único que acredita distribución por bytes del CLI/esquema finales con aislamiento EV-05.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestFinalIsolatedDistribution::test_isolated_install_distributes_the_final_cli_and_schema",
+   "pc_ids": [
+    "PC-12"
+   ],
+   "promise": "F",
+   "uncertainties": []
+  },
+  {
+   "candidate": null,
+   "check": "Encargo documental genérico y documental con stack=odoo recorren preparación, validación y registro con el CLI instalado, derivan el agente del dominio en ambos runtimes y conservan producto editable y fronteras de escritura.",
+   "consequence": "sin este test, la instalación final podría resolver el agente genérico para un dominio Odoo, permitir que la etiqueta documental amplíe la escritura hacia tests o addon, o no poder despachar el encargo con el CLI instalado.",
+   "contract": {
+    "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+    "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+   },
+   "disposition": "Mantener",
+   "evidence": [
+    {
+     "locator": "- **PC-12.b — T6/T7:** la instalación aislada actualizada distribuye CLI y esquema corregidos; el recorrido documental/Odoo se repite con las validaciones finales de PC-06–10.",
+     "path": "docs/specs/010-002-documentary-role-integration/spec.md",
+     "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
+    },
+    {
+     "locator": "def test_final_documentary_journeys_keep_domain_product_and_frontiers",
+     "path": "tests/test_010_002_documentary_role_properties.py",
+     "sha256": "88be6b3406fa973622da60bbd3775d68c3a222e5f56825f4e3912c03"
+    }
+   ],
+   "module": "tests/test_010_002_documentary_role_properties.py",
+   "motive": "Único que recorre ambos dominios por la interfaz pública instalada conservando fronteras.",
+   "nodeid": "tests/test_010_002_documentary_role_properties.py::TestFinalIsolatedDistribution::test_final_documentary_journeys_keep_domain_product_and_frontiers",
+   "pc_ids": [
+    "PC-12"
+   ],
+   "promise": "F",
+   "uncertainties": []
+  }
+ ]
+}

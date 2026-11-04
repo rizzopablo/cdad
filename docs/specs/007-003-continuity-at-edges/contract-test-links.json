@@ -1,0 +1,390 @@
+{
+  "schema_version": 1,
+  "unit": "007-003-continuity-at-edges",
+  "contract": {
+    "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+    "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-R1",
+      "promise": "reanclaje-f5-conserva-historia",
+      "locator": "Los cuerpos **antiguos** sin `prev` se leen"
+    },
+    {
+      "id": "PC-R2",
+      "promise": "segmento-demostrable-f265",
+      "locator": "Pertenencia demostrable:"
+    },
+    {
+      "id": "PC-R3",
+      "promise": "ancla-no-habilita-transporte",
+      "locator": "No basta un `begin` histórico bajo esos identificadores"
+    },
+    {
+      "id": "PC-R4",
+      "promise": "replay-idempotente",
+      "locator": "Misma clave y mismo contenido"
+    },
+    {
+      "id": "PC-R5",
+      "promise": "rechazo-fail-closed",
+      "locator": "El comando es de solo lectura; el rechazo termina con"
+    },
+    {
+      "id": "PC-R6",
+      "promise": "corrupción-posterior-rechazada",
+      "locator": "Los cuerpos huérfanos o de historia no demostrable no acreditan"
+    },
+    {
+      "id": "PC-R7",
+      "promise": "evidencia-no-rehabilitada",
+      "locator": "Una evidencia invalidada no vuelve a `vigente` conservando su identidad"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-R1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_legacy_prepared_preserves_history"
+      },
+      "protects": "sin este test, el usuario creería que el reanclaje F5 altera el paquete prepared o los cuerpos históricos, o que el recorrido reanchor→begin→cierre no completa.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Los cuerpos **antiguos** sin `prev` se leen"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_long_mixed_chain_starts_demonstrable_segment"
+      },
+      "protects": "sin este test, el usuario no sabría que F265 con dos begin históricos se reancla con frontera exacta y que resume/reconcile reconocen el segmento nuevo sin ampliar el límite al cuerpo ordinario.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Pertenencia demostrable:"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r2_rejects_oversized_anchor_without_inventory"
+      },
+      "protects": "sin este test, el usuario creería que un motivo gigante amplía el límite del ancla y publicaría un cuerpo sobredimensionado sin inventario.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Pertenencia demostrable:"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_requires_fresh_begin_before_transport"
+      },
+      "protects": "sin este test, el usuario usaría el ancla como begin y transportaría sin begin fresco, o aceptaría un begin divergente posterior.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "No basta un `begin` histórico bajo esos identificadores"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_replay_is_idempotent_and_conflicts_fail"
+      },
+      "protects": "sin este test, el usuario repetiría el reanclaje y obtendría un ancla distinta o aceptaría un motivo divergente como éxito.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Misma clave y mismo contenido"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r4_replay_after_begin_and_checkpoint"
+      },
+      "protects": "sin este test, el usuario creería que el replay tras begin/checkpoint reescribe o que un approval-ref distinto con mismos bytes es aceptado.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Misma clave y mismo contenido"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r4_replay_rejects_alternate_approval_path"
+      },
+      "protects": "sin este test, el usuario aceptaría un replay con ruta de aprobación distinta aunque los bytes coincidan, rompiendo la identidad de la frontera.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Misma clave y mismo contenido"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r4_replay_rejects_modified_approval_bytes"
+      },
+      "protects": "sin este test, el usuario aceptaría un replay con aprobación modificada y creería que la frontera sigue autorizada.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Misma clave y mismo contenido"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_preconditions_fail_closed"
+      },
+      "protects": "sin este test, el usuario no sabría que cada precondición (cabeza, aprobación, inventario, autoridad, efectos) falla cerrada sin escribir y que el dueño directo sigue admitido.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_demonstrable_modern_genesis"
+      },
+      "protects": "sin este test, el usuario reanclaría una cadena moderna demostrable y destruiría una historia válida.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_packet_not_prepared"
+      },
+      "protects": "sin este test, el usuario reanclaría con paquete fuera de prepared y omitiría efectos durables.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_existing_receipt_even_if_empty"
+      },
+      "protects": "sin este test, el usuario reanclaría con recibo existente y perdería la garantía de no efectos registrados.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_registered_disposition"
+      },
+      "protects": "sin este test, el usuario reanclaría con disposición registrada y creería que no hay efectos que impidan la reparación.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_inconclusive_dispatch_signal"
+      },
+      "protects": "sin este test, el usuario confundiría una señal inconclusa con ausencia de despacho y reanclaría sobre efectos ambiguos.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_unverifiable_delegation"
+      },
+      "protects": "sin este test, el usuario aceptaría una delegación no comprobable como vigente y publicaría un ancla sin autoridad.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r5_rejects_unknown_registered_delegation"
+      },
+      "protects": "sin este test, el usuario aceptaría una delegación en estado desconocido como vigente.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "El comando es de solo lectura; el rechazo termina con"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r6_orphan_divergent_begin_rejected"
+      },
+      "protects": "sin este test, el usuario aceptaría un begin huérfano divergente tras el ancla y creería íntegro un segmento divergente.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Los cuerpos huérfanos o de historia no demostrable no acreditan"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_pc_r6_interior_corruption_rejected"
+      },
+      "protects": "sin este test, el usuario no detectaría corrupción interior tras el ancla y reanclaría para ocultarla.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Los cuerpos huérfanos o de historia no demostrable no acreditan"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-R7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_does_not_rehabilitate_legacy_evidence"
+      },
+      "protects": "sin este test, el usuario rehabilitaría evidencia histórica como vigente en el segmento nuevo o aceptaría antecedentes que cruzan el ancla.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-003-continuity-at-edges/spec.md",
+          "sha256": "77cbedd22d97f194c8b56a49dee9671591841ec938d2a3015e9b8b186a12ac29",
+          "locator": "Una evidencia invalidada no vuelve a `vigente` conservando su identidad"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones PC-R1..PC-R7 protegidas por este tramo, no una extracción exhaustiva del contrato."
+}

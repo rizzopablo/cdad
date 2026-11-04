@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "unit": "012-installer-ignore-pycache",
+  "contract": {
+    "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+    "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "**PC-1.**"
+    },
+    {
+      "id": "PC-2",
+      "promise": "B",
+      "locator": "**PC-2.**"
+    },
+    {
+      "id": "PC-3",
+      "promise": "C",
+      "locator": "**PC-3.**"
+    },
+    {
+      "id": "PC-4",
+      "promise": "D",
+      "locator": "**PC-4.**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc1_manifest_never_registers_cache_shapes"
+      },
+      "protects": "el manifiesto nunca registra rutas con forma de caché como artefactos propios",
+      "evidence": [
+        {
+          "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+          "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4",
+          "locator": "**PC-1.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc2_install_with_cache_matches_install_without"
+      },
+      "protects": "instalar con caché produce el mismo manifiesto que sin ella",
+      "evidence": [
+        {
+          "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+          "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4",
+          "locator": "**PC-2.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc3_check_passes_with_regenerated_cache"
+      },
+      "protects": "--check pasa con bytecode regenerado sin reportar drift/missing",
+      "evidence": [
+        {
+          "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+          "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4",
+          "locator": "**PC-3.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_012_installer_ignore_pycache.py::TestInstallerIgnorePycache::test_pc4_reinstall_prunes_preexisting_pyc_records"
+      },
+      "protects": "la reinstalación poda registros .pyc preexistentes sin tocar el contenido",
+      "evidence": [
+        {
+          "path": "docs/specs/012-installer-ignore-pycache/spec.md",
+          "sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4",
+          "locator": "**PC-4.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    }
+  ],
+  "note": "índice por demanda de esta revisión (tramo 1 de 016-003, lote B2a): cubre las obligaciones indexadas PC-1 a PC-4 (PC-5 es superficie de regresión de otros tests, fuera de este tramo), no una extracción exhaustiva del contrato"
+}

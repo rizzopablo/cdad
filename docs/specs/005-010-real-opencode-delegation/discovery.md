@@ -252,7 +252,7 @@ El fixture actual (`opencode-fake`) escribe un **JSON** `sessions.json` — infi
 - `_read_signal(<db real>)` → `UnicodeDecodeError` (no capturado).
 - `sqlite3 "file:<db>?mode=ro" ".schema session_v2" / ".schema session_message" / ".tables"` → esquema §3.4.
 - `sqlite3 … "SELECT type,count(*) FROM session_message …"` y consultas por sesión → §3.4/§3.5.
-- Corridas reales `--standalone`: `probe-primary`→`PRIMARY` (rc 0), `probe-sub`→`SUB` (rc 0), `no-such-agent-xyz`→`Agent not found`, stdin sin argumento→`STDIN-OK` (rc 0), `--session ses_probe…`→ fila durable con ese id (salidas en `/tmp/opencode/probe-005-010/run-*.txt`).
+- Corridas reales `--standalone`: `probe-primary`→`PRIMARY` (rc 0), `probe-sub`→`SUB` (rc 0), `no-such-agent-xyz`→`Agent not found`, stdin sin argumento→`STDIN-OK` (rc 0), `--session <ses-322>`→ fila durable con ese id (salidas en `/tmp/opencode/probe-005-010/run-*.txt`).
 - `opencode models` (sin `--standalone`) → error de puerto del servicio gestionado (§3.7).
 
 **Archivos modificados:** ninguno (read-only). **Temporales:** solo en `/tmp/opencode/` (workspace declarado); transport del reporte en `/tmp/opencode/discovery-005-010.md`. **Commit:** ninguno.

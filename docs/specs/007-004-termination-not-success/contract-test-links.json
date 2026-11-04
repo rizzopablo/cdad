@@ -1,0 +1,450 @@
+{
+  "schema_version": 1,
+  "unit": "007-004-termination-not-success",
+  "contract": {
+    "path": "docs/specs/007-004-termination-not-success/spec.md",
+    "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-08",
+      "promise": "rechazo-protocolo",
+      "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[blocked-none-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría blocked/none con referencia válida y avanzaría sin diagnóstico, rompiendo el fallo cerrado que exige null para none.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[blocked-received-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría blocked/received como entrega consumible e intentaría validar un recibo desde un bloqueo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[blocked-staged-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría blocked/staged como descriptor preparado e intentaría recibir desde un bloqueo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[cancelled-none-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría cancelled/none con referencia válida y perdería el diagnóstico que exige null para none.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[cancelled-received-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría cancelled/received como recibo durable e intentaría continuar tras una cancelación.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[cancelled-staged-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría cancelled/staged como descriptor y ejecutaría recepción sobre una cancelación.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-none-null]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/none/null como éxito sin entrega y lo trataría como cierre sin artefacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-received-empty]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/received con referencia vacía como recibo válido y fallaría al validar sin diagnóstico de protocolo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-received-null]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/received con referencia nula como recibo y avanzaría sin artefacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-received-wrong-type]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/received con referencia de tipo incorrecto (entero) y la trataría como recibo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-staged-empty]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/staged con referencia vacía como descriptor y ejecutaría receive sin artefacto.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-staged-null]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/staged con referencia nula como descriptor preparado.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-staged-wrong-type]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed/staged con referencia de tipo incorrecto y la trataría como descriptor.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[completed-unknown-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría completed con delivery desconocido y avanzaría con vocabulario fuera del cerrado none|staged|received.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[not-a-termination-none-null]"
+      },
+      "protects": "sin este test, el usuario aceptaría una terminación desconocida como sobre válido y la consumiría sin diagnóstico de protocolo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[timeout-none-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría timeout/none con referencia válida y reconciliaría efectos sin diagnóstico.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[timeout-received-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría timeout/received como recibo durable y validaría un recibo desde un timeout.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[timeout-staged-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría timeout/staged como descriptor y recibiría desde un timeout.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[transport-error-none-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría transport-error/none con referencia válida y ocultaría el fallo de transporte tras una referencia.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[transport-error-received-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría transport-error/received como entrega y continuaría tras un fallo de adaptador.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[transport-error-staged-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría transport-error/staged como descriptor y recibiría desde un fallo de protocolo.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[unknown-none-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría unknown/none con referencia válida y avanzaría sin diagnóstico ante no-entrega incoherente.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[unknown-received-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría unknown/received como recibo y validaría sin terminación concluyente.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    },
+    {
+      "pc_ids": [
+        "PC-08"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_007_004_termination_not_success.py::test_007_004_delegate_rejects_invalid_delivery_combinations[unknown-staged-valid]"
+      },
+      "protects": "sin este test, el usuario aceptaría unknown/staged como descriptor y recibiría sin terminación concluyente.",
+      "evidence": [
+        {
+          "path": "docs/specs/007-004-termination-not-success/spec.md",
+          "sha256": "4afbeaa5f90e8ab5ac4cace4d9e77ae2d36c0a83dd8a8a5a4391869da36494fc",
+          "locator": "test_007_004_delegate_rejects_invalid_delivery_combinations"
+        }
+      ],
+      "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre la obligación PC-08 protegida por este tramo, no una extracción exhaustiva del contrato."
+}

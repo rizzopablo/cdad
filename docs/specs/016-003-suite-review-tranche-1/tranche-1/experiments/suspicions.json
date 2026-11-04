@@ -1,0 +1,38 @@
+{
+ "note": "Sospechas examinadas y NO promovidas a candidato: sin evidencia experimental no se declara redundancia ni se autoriza poda (016-003 §5, PC-6).",
+ "suspicions": [
+  {
+   "id": "S1",
+   "nodeids": [
+    "tests/test_014_001_suite_evidence_defaults.py::test_A_defaults_inequivocos_y_autorizacion_suficiente",
+    "tests/test_014_001_suite_evidence_defaults.py::test_B_cierres_honestos_ante_resultados_incompletos_o_adversos",
+    "tests/test_014_001_suite_evidence_defaults.py::test_C_politica_llega_coherentemente_a_todas_sus_entradas",
+    "tests/test_014_001_suite_evidence_defaults.py::test_D_costo_y_entorno_explicitos_sin_exenciones_implicitas"
+   ],
+   "hypothesis": "Los cuatro tests verifican presencia de términos en documentos; una mutación que invierta la norma conservando los términos (negar la autorización o invertir el default manteniendo el vocabulario) los pasaría.",
+   "why_not_promoted": "Sin experimento: no se ejecutó ningún mutante sobre la norma ni se comparó sensibilidad con verificador alternativo; ante incertidumbre R2 ordena Mantener y registrar, no declarar redundancia ni candidato.",
+   "evidence_needed": "Mutante contractual que invierta la norma conservando términos + corrida de los cuatro tests sobre el mutante + contraste con un verificador alternativo que sí distinga la inversión; solo entonces evaluar promoción o descarte."
+  },
+  {
+   "id": "S2",
+   "nodeids": [
+    "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc3_legacy_unowned_overlay_conflict_is_adopted_on_update",
+    "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc3_overlay_remains_owned_and_unchanged_check_is_successful"
+   ],
+   "hypothesis": "La rama legacy-unowned (adopción al reinstalar con manifiesto sin entrada) podría estar cubierta por la rama owned (overlay propio intacto).",
+   "why_not_promoted": "Insumos distintos (manifiesto sin entrada frente a owned con digest) y verificadores distintos (adopción sin CONFLICT + model user/A + owned clean check frente a digest/SYNC/check); sin experimento de sensibilidad comparada no se promueve a candidato.",
+   "evidence_needed": "Quitar el test legacy-unowned y comprobar si owned+vecinos detectan un defecto en la rama de adopción (no adoptar o marcar CONFLICT), y la recíproca quitando owned; solo con sensibilidad comparada decidir promoción o descarte."
+  },
+  {
+   "id": "S3",
+   "nodeids": [
+    "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[receipt-unreadable]",
+    "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[materialization-unreadable]",
+    "tests/test_007_006_withdraw_and_republish.py::test_withdraw_rejects_effects_and_inconclusive_signals[dispatch-unreadable]"
+   ],
+   "hypothesis": "Las tres variantes comparten la misma tríada de aserciones (rc=2, árbol intacto, causa nombrada) y podrían colapsar en una sola señal inconclusa genérica.",
+   "why_not_promoted": "Causas y fixtures distintos (recibo corrupto con RECEIPT_CAUSE vs materialización corrupta con MATERIALIZATION_CAUSE vs despacho corrupto con DISPATCH_CAUSE, con aislamientos de señal diferentes); sin experimento que muestre un verificador único detectando los tres defectos no se promueve.",
+   "evidence_needed": "Defectos contractuales separados por señal (corromper solo recibo, solo materialización, solo despacho) + sensibilidad de cada variante y de un verificador único hipotético; comparar cobertura antes de promover o descartar."
+  }
+ ]
+}

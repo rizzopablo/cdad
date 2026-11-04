@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "unit": "013-001-criterion-coherence",
+  "contract": {
+    "path": "docs/specs/013-001-criterion-coherence/spec.md",
+    "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "A",
+      "locator": "**PC-1.**"
+    },
+    {
+      "id": "PC-2",
+      "promise": "A",
+      "locator": "**PC-2.**"
+    },
+    {
+      "id": "PC-3",
+      "promise": "A",
+      "locator": "**PC-3.**"
+    },
+    {
+      "id": "PC-4",
+      "promise": "B",
+      "locator": "**PC-4.**"
+    },
+    {
+      "id": "PC-5",
+      "promise": "B",
+      "locator": "**PC-5.**"
+    },
+    {
+      "id": "PC-6",
+      "promise": "B",
+      "locator": "**PC-6.**"
+    },
+    {
+      "id": "PC-7",
+      "promise": "B",
+      "locator": "**PC-7.**"
+    },
+    {
+      "id": "PC-8",
+      "promise": "C",
+      "locator": "**PC-8.**"
+    },
+    {
+      "id": "PC-9",
+      "promise": "C",
+      "locator": "**PC-9.**"
+    },
+    {
+      "id": "PC-10",
+      "promise": "D",
+      "locator": "**PC-10.**"
+    },
+    {
+      "id": "PC-11",
+      "promise": "D",
+      "locator": "**PC-11.**"
+    },
+    {
+      "id": "PC-12",
+      "promise": "E",
+      "locator": "**PC-12.**"
+    },
+    {
+      "id": "PC-13",
+      "promise": "E",
+      "locator": "**PC-13.**"
+    },
+    {
+      "id": "PC-14",
+      "promise": "E",
+      "locator": "**PC-14.**"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2",
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_001_criterion_coherence.py::test_A_selection_by_contribution"
+      },
+      "protects": "AUDIT distingue protección existente y faltante y selecciona por promesa sin cuotas",
+      "evidence": [
+        {
+          "path": "docs/specs/013-001-criterion-coherence/spec.md",
+          "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
+          "locator": "**PC-1.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-4",
+        "PC-5",
+        "PC-6",
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_001_criterion_coherence.py::test_B_maintenance_with_post_audit_substitute"
+      },
+      "protects": "cada test recibe disposición única y los sustitutos vigentes van a POST-AUDIT con verde y sensibilidad",
+      "evidence": [
+        {
+          "path": "docs/specs/013-001-criterion-coherence/spec.md",
+          "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
+          "locator": "**PC-4.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-8",
+        "PC-9"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_001_criterion_coherence.py::test_C_coherent_instructions_without_quota_or_read"
+      },
+      "protects": "legacy y paquetes transmiten el mismo criterio sin cuotas ni lecturas de implementación",
+      "evidence": [
+        {
+          "path": "docs/specs/013-001-criterion-coherence/spec.md",
+          "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
+          "locator": "**PC-8.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-10",
+        "PC-11"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_001_criterion_coherence.py::test_D_budget_declared_before_campaign"
+      },
+      "protects": "las propiedades usan presupuesto declarado y evidencia reproducible sin cuotas rivales",
+      "evidence": [
+        {
+          "path": "docs/specs/013-001-criterion-coherence/spec.md",
+          "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
+          "locator": "**PC-10.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    },
+    {
+      "pc_ids": [
+        "PC-12",
+        "PC-13",
+        "PC-14"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_013_001_criterion_coherence.py::test_E_authorized_only_with_clean_install"
+      },
+      "protects": "el cierre no exige suite completa sin autorización y conserva la instalación limpia de addon",
+      "evidence": [
+        {
+          "path": "docs/specs/013-001-criterion-coherence/spec.md",
+          "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
+          "locator": "**PC-12.**"
+        }
+      ],
+      "limits": "verificación estructural del vínculo; no acredita ejecución, sensibilidad ni suficiencia semántica"
+    }
+  ],
+  "note": "índice por demanda de esta revisión (tramo 1 de 016-003, lote B2a): cubre las obligaciones indexadas PC-1 a PC-14, no una extracción exhaustiva del contrato"
+}

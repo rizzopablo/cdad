@@ -57,6 +57,6 @@ RED genuino (5/6 failed en `1ebe1a8`, verificado por mí en worktree); GREEN lim
 - **Rendimiento:** O(n·m) sobre listas pequeñas; sin hot path medible ni medición — no afirmo.
 - **`--project-root` relativo:** no probado (retiene la abstención de review-t2; el runner actual usa rutas absolutas).
 - **Prevalencia real de entradas clase-sin-root en contextos de ejecución:** el mismatch está verificado en código con la forma que el propio packet declara; no relevé exhaustivamente los contextos en `.cdad/` — cuantificación insuficiente.
-- **Contenido de la sesión GREEN del implementer (`ses_eebf15cd…`):** no tengo acceso a su transcript; los conteos «Focales 20/20» no los puedo reconciliar — va dentro de E1 como evidencia a regularizar.
+- **Contenido de la sesión GREEN del implementer (`<ses-222>`):** no tengo acceso a su transcript; los conteos «Focales 20/20» no los puedo reconciliar — va dentro de E1 como evidencia a regularizar.
 
 **Dictamen:** 0 bloqueantes de producto. 1 bloqueante de evidencia (E1: despacho test-writer del RED sin registrar — cierre: registrar la fila + stage entry). Puntos 1-5 y O-B/O-D **cerrados y verificados**; deuda declarada (O-A, O-C, calibración) correctamente diferida y sin regresiones. El diff es apto para avanzar a stage 5 una vez regularizado E1.

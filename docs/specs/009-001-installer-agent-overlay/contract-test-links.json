@@ -1,0 +1,269 @@
+{
+  "schema_version": 1,
+  "unit": "009-001-installer-agent-overlay",
+  "contract": {
+    "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+    "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe"
+  },
+  "legacy_obligations": [
+    {
+      "id": "PC-1",
+      "promise": "config-sobrevive",
+      "locator": "conserva exactamente"
+    },
+    {
+      "id": "PC-2",
+      "promise": "config-sobrevive",
+      "locator": "coincide byte a byte con el staging nuevo"
+    },
+    {
+      "id": "PC-3",
+      "promise": "config-sobrevive",
+      "locator": "sigue owned"
+    },
+    {
+      "id": "PC-4",
+      "promise": "excepcion-no-destruye",
+      "locator": "no se adopta como owned"
+    },
+    {
+      "id": "PC-5",
+      "promise": "no-distribuye-modelos",
+      "locator": "por un overlay válido"
+    },
+    {
+      "id": "PC-6",
+      "promise": "no-distribuye-modelos",
+      "locator": "identifican el agente y el overlay preservado"
+    },
+    {
+      "id": "PC-7",
+      "promise": "desinstalar-conserva",
+      "locator": "conserva byte a byte"
+    }
+  ],
+  "links": [
+    {
+      "pc_ids": [
+        "PC-1"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc1_preserves_valid_frontmatter_model_without_conflict"
+      },
+      "protects": "sin este test, el usuario perdería su model: elegido sin aviso o vería un conflicto falso por su overlay válido.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "conserva exactamente"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc1a_changing_user_model_keeps_agent_owned_and_check_clean"
+      },
+      "protects": "sin este test, el usuario que cambia de modelo vería un conflicto falso o perdería la sincronía owned/SYNC.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "conserva exactamente"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-2",
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc1b_removing_user_model_rebases_to_staging_and_check_clean"
+      },
+      "protects": "sin este test, el usuario que retira su model: quedaría con bytes huérfanos o un conflicto en vez de volver al staging.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "conserva exactamente"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-2"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc2_update_rebases_non_overlay_bytes_onto_new_staging"
+      },
+      "protects": "sin este test, el usuario no recibiría la actualización upstream o perdería su overlay al actualizar.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "coincide byte a byte con el staging nuevo"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc3_overlay_remains_owned_and_unchanged_check_is_successful"
+      },
+      "protects": "sin este test, el usuario vería una copia owned marcada como pendiente o un --check rojo sin motivo.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "sigue owned"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-1",
+        "PC-3"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc3_legacy_unowned_overlay_conflict_is_adopted_on_update"
+      },
+      "protects": "sin este test, el usuario con overlay heredado quedaría en conflicto permanente en vez de ser adoptado una vez.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "sigue owned"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-4"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc4_non_overlay_local_edit_is_preserved_and_not_adopted"
+      },
+      "protects": "sin este test, una edición local fuera del overlay sería sobrescrita o adoptada como owned y --check daría verde falso.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "no se adopta como owned"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc5_validator_rejects_installable_model_but_accepts_installed_overlay"
+      },
+      "protects": "sin este test, el validador dejaría pasar un model: distribuido o fallaría por un overlay instalado legítimo.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "por un overlay válido"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-5"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc5_validator_uses_agent_overlay_for_installable_model_check"
+      },
+      "protects": "sin este test, una segunda definición de la regla model: divergería del helper único y el validador mentiría.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "por un overlay válido"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc6_check_diagnostics_name_installed_agent_and_overlay"
+      },
+      "protects": "sin este test, el --check no diría qué ruta instalada ni qué overlay preservó y el usuario no sabría qué reparar.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "identifican el agente y el overlay preservado"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-4",
+        "PC-6"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc6_check_summary_names_installed_path_for_outside_overlay_drift"
+      },
+      "protects": "sin este test, el resumen Check: FAIL señalaría staging en vez de la ruta instalada y el usuario editaría el archivo equivocado.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "identifican el agente y el overlay preservado"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    },
+    {
+      "pc_ids": [
+        "PC-7"
+      ],
+      "verifier": {
+        "kind": "test",
+        "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc7_uninstall_preserves_owned_agent_with_overlay_byte_for_byte"
+      },
+      "protects": "sin este test, --uninstall borraría el agente con configuración del usuario pese a estar owned.",
+      "evidence": [
+        {
+          "path": "docs/specs/009-001-installer-agent-overlay/spec.md",
+          "sha256": "61caacb693d2b33ec1484ef999223092aa0f9a074822aeb4f5661ec700956bbe",
+          "locator": "conserva byte a byte"
+        }
+      ],
+      "limits": "Acredita existencia del verificador y su vínculo estructural; no acredita ejecución, sensibilidad ni aprobación."
+    }
+  ],
+  "note": "índice por demanda de esta revisión: cubre las obligaciones indexadas, no una extracción exhaustiva"
+}
