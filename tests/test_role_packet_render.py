@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 
+from tests.suite_operation_markers import operation
 from tests.test_role_packets import (
     AUTHORITY_REF,
     EPIC_ID,
@@ -59,13 +60,14 @@ STATIC_END = b"\n<!-- cdad-instructions:end -->"
 
 
 def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(PACKET_CLI), *args],
-        cwd=REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    with operation("external.python"):
+        return subprocess.run(
+            [sys.executable, str(PACKET_CLI), *args],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
 
 
 def parse_packet(packet: str) -> tuple[dict, str, str]:

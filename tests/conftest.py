@@ -47,6 +47,7 @@ _RETIRED_OVERRIDES = (
 
 
 from tests.product_staging import _fallback_base as _system_temp_base  # noqa: E402
+from tests.suite_operation_markers import operation  # noqa: E402
 
 
 def _isolate_into(root: Path) -> None:
@@ -95,7 +96,9 @@ def _cdad_session_tmp_root(tmp_path_factory):
                                  dir=_system_temp_base())).resolve()
     from tests import product_staging
     try:
-        _isolate_into(root)
+        with operation("isolation.seed", owner_scope="shared", nodeid=None,
+                       branch="session"):
+            _isolate_into(root)
         tmp_path_factory.getbasetemp()
         product_staging._RUN_SCOPED_BASE = root
         yield root
@@ -119,7 +122,8 @@ def _cdad_isolated_home(_cdad_session_tmp_root):
     root = Path(tempfile.mkdtemp(prefix="cdad-test-home-",
                                  dir=_system_temp_base())).resolve()
     try:
-        _isolate_into(root)
+        with operation("isolation.seed", owner_scope="test", branch="test"):
+            _isolate_into(root)
         yield root
     finally:
         _restore(saved_env, saved_tempdir)

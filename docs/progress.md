@@ -4,11 +4,17 @@ Estado de features del proyecto.
 
 ## In progress
 
-**Nada activo.** `epic-016-traceability-and-suite-review` **cerrado el 2026-11-04** con las 3/3 features
+**Nada activo.** El último epic cerrado es `epic-017-suite-performance` (**2026-11-08**, **1/1**:
+`017-001-suite-performance`): suite instrumentada con base reproducible y lote paralelo medido — serial
+4459 s → paralela **2593.15 s** con 2 workers (**−41.84 %** de pared) y equivalencia exacta por nodeid
+(2059 vs 2059, 0 diferencias; 2054 passed + 5 skipped en ambos regímenes), sobre la revisión `bf0e7483`.
+No publicado ni desplegado: publicar y desplegar siguen reservados al dueño. Detalle:
+`docs/epics/epic-017-suite-performance/closure.md`.
+
+Antes: `epic-016-traceability-and-suite-review` **cerrado el 2026-11-04** con las 3/3 features
 (`016-001-contract-test-link`, `016-002-gap-report`, `016-003-suite-review-tranche-1`) y **suite completa verde
 atribuible** por `scripts/cdad-ci-gate.py` (commit `4c543721`, base `116ef8cf`, 1 989 passed, 0 failed, 5 skipped).
-No publicado ni desplegado: publicar y desplegar siguen reservados al dueño. Los tramos 2–5 de la revisión de la
-suite no forman parte del epic; el tramo 2 está autorizado por
+Los tramos 2–5 de la revisión de la suite no forman parte de ese epic; el tramo 2 está autorizado por
 `docs/specs/016-003-suite-review-tranche-1/tranche-1/decision.md`. Detalle:
 `docs/epics/epic-016-traceability-and-suite-review/closure.md`.
 
@@ -24,7 +30,12 @@ agentes** y el árbol canónico de skills **byte-idéntico al repo** (incluye `c
 entorno, no drift de contenido); `make validate` **182 PASS / 1 FAIL** por el mismo F011 preexistente, y ese
 ejercicio no se declara gate verde. Publicación saneada: rutas locales e ids de sesión —incluidos los
 truncados que ya estaban publicados en 43 archivos previos— quedaron como marcadores estables, y el escaneo
-de patrones privados no encontró hallazgos.
+de patrones privados no encontró hallazgos. **Corrección posterior:** `cbeab5f0..39232b77` incorpora el fixture
+versionado del store legado 003-007, que `.cdad/` ocultaba al export (un clon público fallaba 2 tests; verificado
+22/22 verdes tras el fix). Queda como deuda que el `.gitignore` siga ignorando un fixture que debe publicarse.
+Exclusión declarada del export (además del fixture ya corregido): los 5 borradores de Memory Bank de 010-004
+bajo `docs/.cdad/memory-drafts/` —material de trabajo, nunca publicado—; el resto de la diferencia entre el árbol
+local y el publicado son los marcadores de saneamiento (ids de sesión y rutas locales).
 
 - **Al día con la publicación del epic 010.** `main` remoto = `a42f2a20` (squash,
   árbol idéntico al de `main` local), y la instalación soportada se re-sincronizó
@@ -83,6 +94,31 @@ de patrones privados no encontró hallazgos.
   decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+
+- **017-001-suite-performance** (2026-11-08, epic 017 — **orden 1/1**; **cerrada, no publicada ni
+  desplegada**) — la suite deja de ser una caja de ~70 minutos sin atribución: queda **instrumentada**,
+  con **base reproducible**, atribución sin cifras ficticias y un **lote paralelo seguro y medido**.
+  **Producto:** `close` con `pytest.xml` + `profile.json` (fases, operaciones, diagnóstico de integridad)
+  sin cambiar selección, `rc`, skips ni canarios (comparación AST); `reconcile`/`entry-check` para
+  reproducir la conciliación desde los crudos; y el subcomando `parallel` —partición **por archivo**,
+  workers configurables (default 2, tope `nproc-1`), veredicto *fail-closed*. **Medición:** base T4 sobre
+  `7426438b` **4994.27 s**, 2029 passed + 5 skipped, preparación **186.2 s (3.73 %)** y el **96.27 %**
+  restante **desconocido**; auditoría de **76** invocaciones de `install.sh` con **0 de 76** preparación
+  pura compartible (47 acción bajo prueba, 29 mixtas), así que la optimización serial quedó **sin costo
+  reducible demostrado**; corrida final `--all` sobre `bf0e7483`, misma revisión y árbol limpio:
+  **serial 4459 s → paralela 2593.15 s (−41.84 %**, objetivo ≥ 15 %) con **2059 nodeids sin una
+  diferencia** y 2054 passed + 5 skipped en ambos; `reconcile` preparación **448.90 s**, resto
+  **4002.51 s** desconocido, `R_pytest` 7.12 s, `R_exterior` 0.47 s; `family_verifiable: true`, **0
+  huérfanos con 20 transitorios**, canario del checkout limpio (`incomplete: []`, 20 607 archivos),
+  preparación duplicada **16.34 s** informada aparte; `validate` `ok`, 2059 nodeids; **22** verificadores
+  en `tests/test_017_001_suite_parallel.py`. **Integración:** cuatro defectos reales del runner y cuatro
+  huecos de integridad del veredicto, todos corregidos con test (veredicto por contenido, timeouts de
+  liveness en convención, scratch de test fuera del checkout, fail-closed del veredicto). **Deuda:**
+  carga del host y canario no instrumentados en la pierna serial de `close`; resto desconocido; el lote
+  no es capacidad de CDAD todavía; huella ciega a modos y directorios vacíos; seis `deferred-hardening`
+  conservados en el `closure.md` del epic; **par de `83674246` histórico y no acreditable**. **No
+  publicada ni desplegada.** Detalle: `docs/specs/017-001-suite-performance/closure.md` y
+  `docs/epics/epic-017-suite-performance/closure.md`.
 
 - **016-002-gap-report** (2026-11-03, epic 016 — **orden 2/3**; **cerrada, no publicada ni desplegada**) — informe
   reproducible de huecos sobre contratos cerrados (`gap-report`): universo desde el estado con la fila actual por

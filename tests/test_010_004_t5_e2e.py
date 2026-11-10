@@ -17,10 +17,11 @@ invocado por subproceso (caja negra) con `HOME`, `XDG_CONFIG_HOME`,
 `scripts/cdad_packet.py` del checkout NUNCA se usa como sustituto: se afirma
 que el entrypoint resuelve bajo la raíz aislada, no en el checkout.
 
-Raíz temporal declarada: `.cdad/tmp/t5-isolated-consumer/` (subdirectorio
-único por corrida, retirado al final por limpieza de clase; `.cdad/` está
-ignorado por git). `.cdad/tmp` es raíz temporal declarada por la política del
-proyecto.
+Raíz aislada FUERA del checkout: `tests.product_staging.run_scoped_mkdtemp`
+(prefijo propio `cdad-t5-isolated-`; subdirectorio único por corrida, retirado
+al final por limpieza de clase). Nada del recorrido escribe dentro del checkout
+real: `.cdad/tmp` NO es raíz temporal declarada por la política del proyecto
+(hoy `docs/cdad-policy.json` declara `temporary_roots` vacío).
 
 Nota de fixture declarada: el instalador rechaza un destino gestionado dentro
 del repositorio fuente («Managed install destination overlaps the source
@@ -80,7 +81,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.product_staging import product_root
+from tests.product_staging import product_root, run_scoped_mkdtemp
 from tests.test_010_004_t3_red import (
     ROUTE_C_CONTRACT_KEYS,
     Published,
@@ -94,8 +95,9 @@ from tests.test_packet_prepare import PrepareProject, run_prepare
 from tests.test_role_packets import REPO_ROOT
 
 
-# Raíz temporal declarada por el paquete (subdirectorio único por corrida).
-ISOLATED_ROOT_PARENT = REPO_ROOT / ".cdad" / "tmp" / "t5-isolated-consumer"
+# Raíz aislada FUERA del checkout (subdirectorio único por corrida, vía el
+# helper existente `tests.product_staging.run_scoped_mkdtemp`). No se escribe
+# ninguna ruta dentro del checkout real.
 
 # Destino que `install.sh` publica para el runtime opencode (mismo layout que
 # citan `tests/test_003_002_t4_integration.py` y `tests/test_004_001_t6.py`).
@@ -243,8 +245,9 @@ class IsolatedInstalledConsumerCase(PublishedPacketCase):
     """Instalación aislada del producto (una vez por clase) y proyecto
     consumidor por prueba.
 
-    Nada escribe fuera de `.cdad/tmp/t5-isolated-consumer/<corrida>/`: la
-    copia del producto, el instalador, el HOME, los XDG, la raíz de
+    Nada escribe dentro del checkout real ni fuera de su raíz aislada (fuera
+    del checkout, vía `run_scoped_mkdtemp` con prefijo `cdad-t5-isolated-`):
+    la copia del producto, el instalador, el HOME, los XDG, la raíz de
     instalación, los destinos extra y el proyecto consumidor viven bajo esa
     raíz, que se retira al terminar.
     """
@@ -253,11 +256,8 @@ class IsolatedInstalledConsumerCase(PublishedPacketCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        ISOLATED_ROOT_PARENT.mkdir(parents=True, exist_ok=True)
         cls.iso_root = Path(
-            tempfile.mkdtemp(
-                prefix=f"run-{os.getpid()}-", dir=ISOLATED_ROOT_PARENT
-            )
+            run_scoped_mkdtemp(f"cdad-t5-isolated-run-{os.getpid()}-")
         ).resolve()
         cls.addClassCleanup(cls._remove_isolated_root)
 

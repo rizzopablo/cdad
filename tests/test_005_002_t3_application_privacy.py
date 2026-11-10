@@ -344,8 +344,13 @@ class ApplicationPrivacyT3Test(unittest.TestCase):
     sintéticos en temporales; la base real JAMÁS se abre."""
 
     def setUp(self) -> None:
+        preferred = Path("/tmp/opencode")
+        if preferred.is_dir() and os.access(preferred, os.W_OK | os.X_OK):
+            tmp_dir = str(preferred)
+        else:
+            tmp_dir = tempfile.gettempdir()
         tmp = tempfile.TemporaryDirectory(prefix="cdad-005-002-t3-",
-                                         dir="/tmp/opencode")
+                                         dir=tmp_dir)
         self.addCleanup(tmp.cleanup)
         base = Path(tmp.name)
         self.base_dir = base

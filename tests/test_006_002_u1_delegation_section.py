@@ -93,6 +93,7 @@ from pathlib import Path
 # compartido con las demás superficies (definición única en u2).
 from tests.test_006_002_u2_neutral_skill import all_offenders
 from tests.product_staging import run_scoped_mkdtemp
+from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -180,21 +181,26 @@ def staging_root() -> Path:
     rutas de host en las aserciones (INV: sin valores del host).
     """
     global _STAGING_ROOT
-    if _STAGING_ROOT is None:
+    if _STAGING_ROOT is not None:
+        with operation("u1.lookup", branch="cached"):
+            return _STAGING_ROOT
+    with operation("u1.lookup", branch="cold"):
         tmp = run_scoped_mkdtemp("cdad-006-002-u1-")
         atexit.register(shutil.rmtree, tmp, ignore_errors=True)
         copy = Path(tmp) / "product"
-        shutil.copytree(
-            REPO_ROOT,
-            copy,
-            symlinks=True,
-            ignore=shutil.ignore_patterns(
-                ".git", ".pytest_cache", "__pycache__", "build"),
-        )
-        run = subprocess.run(
-            ["make", "staging"],
-            cwd=str(copy), text=True, capture_output=True,
-        )
+        with operation("u1.copy", branch="cold"):
+            shutil.copytree(
+                REPO_ROOT,
+                copy,
+                symlinks=True,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".pytest_cache", "__pycache__", "build"),
+            )
+        with operation("u1.generate", branch="cold"):
+            run = subprocess.run(
+                ["make", "staging"],
+                cwd=str(copy), text=True, capture_output=True,
+            )
         manifest = copy / "build" / "staging" / "manifest.json"
         if run.returncode != 0 or not manifest.is_file():
             raise AssertionError(
@@ -202,7 +208,7 @@ def staging_root() -> Path:
                 f"del fixture (rc={run.returncode}): "
                 f"{run.stdout[-400:]!r} {run.stderr[-400:]!r}")
         _STAGING_ROOT = copy
-    return _STAGING_ROOT
+        return _STAGING_ROOT
 
 
 class U1Case(unittest.TestCase):

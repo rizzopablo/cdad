@@ -1,0 +1,613 @@
+{
+  "schema_version": 1,
+  "status": "calibrated",
+  "feature_id": "017-001-suite-performance",
+  "source_revision": "05b58cc413cfd0669ddf9b5c6fd7e558502be672",
+  "calibrated": true,
+  "defaults": {
+    "state": "comprometida",
+    "classification": "preparacion",
+    "mechanism": "explicit-synchronous-markers",
+    "producer": {
+      "boundaries": "test-writer",
+      "clock_context_capture_and_profile": "implementer",
+      "materialization": "orchestrator"
+    },
+    "context": "current-nodeid-and-phase; shared-if-outside-test",
+    "boundary_semantics": "before-first-statement through after-last-statement; finally-on-exception",
+    "limits": "inclusive-wall-time; children-are-breakdowns-not-additional-cost",
+    "missing_expected_interval": "incomplete; block-baseline; do-not-reclassify-as-unknown"
+  },
+  "mechanisms": {
+    "explicit-synchronous-markers": {
+      "status": "proposed-new-interface",
+      "transport": "dedicated-logging-channel",
+      "clock": "monotonic-in-observer",
+      "interval_identity": "attempt-process-occurrence",
+      "fields": [
+        "operation",
+        "interval_id",
+        "parent_id",
+        "process_id",
+        "nodeid",
+        "phase",
+        "owner_scope",
+        "branch",
+        "started",
+        "finished",
+        "termination"
+      ],
+      "verify_before_green": [
+        "marker-interface",
+        "pytest-context-hooks",
+        "capture-error-isolation",
+        "shared-context",
+        "exceptional-close",
+        "nesting"
+      ]
+    }
+  },
+  "sources": {
+    "I": "tests/conftest.py",
+    "R": "tests/test_007_002_dispatch_recovery.py",
+    "E": "tests/test_007_003_continuity_at_edges.py",
+    "B": "tests/test_004_002_t2_bootstrap.py",
+    "P": "tests/product_staging.py",
+    "U1": "tests/test_006_002_u1_delegation_section.py",
+    "U3": "tests/test_006_004_u3_principle_single_source.py",
+    "U4": "tests/test_006_005_u4_single_entry.py",
+    "D": "tests/test_010_002_documentary_role_integration.py",
+    "W": "tests/test_007_004_termination_not_success.py",
+    "DELEGATE": "skills/cdad-cycle/scripts/cdad_delegate.py",
+    "OC": "skills/cdad-cycle/scripts/cdad_delegate_opencode.py"
+  },
+  "selections": {
+    "C-R": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_007_002_dispatch_recovery.py::test_reconcile_abandoned_dispatch_is_disposed"
+      ]
+    },
+    "C-E": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_007_003_continuity_at_edges.py::test_durable_registration_replay_does_not_require_current_continuity"
+      ]
+    },
+    "C-P-cold": {
+      "existing": false,
+      "proposed_verifier": true,
+      "fresh_process": true,
+      "conditions": [
+        "real-disposable-product-source-without-staging-manifest",
+        "empty-product-root-cache",
+        "two-calls-to-real-product_root",
+        "real-make-staging",
+        "no-checkout-mutation"
+      ],
+      "nodeids": [
+        "tests/test_017_001_suite_operations.py::test_product_root_cold_then_reuse"
+      ]
+    },
+    "C-P-present": {
+      "existing": false,
+      "proposed_verifier": true,
+      "fresh_process": true,
+      "conditions": [
+        "real-disposable-product-source-with-staging-manifest-and-recorded-provenance",
+        "empty-product-root-cache",
+        "two-calls-to-real-product_root",
+        "no-forced-generation"
+      ],
+      "nodeids": [
+        "tests/test_017_001_suite_operations.py::test_product_root_existing_manifest_then_reuse"
+      ]
+    },
+    "C-U1": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_opencode_adapter_has_exactly_one_delegation_section",
+        "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_claude_code_adapter_has_exactly_one_delegation_section"
+      ]
+    },
+    "C-U4": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_006_005_u4_single_entry.py::TestPd20DeterministicStaging::test_pd20_staging_is_deterministic_and_matches_committed_outputs",
+        "tests/test_006_005_u4_single_entry.py::TestPd20GeneratedDelegationLabel::test_pd20_generated_delegation_label_drops_the_adapter_qualifier"
+      ]
+    },
+    "C-U3": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_006_004_u3_principle_single_source.py::TestPd13GeneratedAgents::test_pd13_the_generated_agents_carry_the_duty_after_make_agents",
+        "tests/test_006_004_u3_principle_single_source.py::TestPd13GeneratedAgents::test_pd13_make_staging_is_deterministic_across_two_runs"
+      ]
+    },
+    "C-D": {
+      "existing": true,
+      "fresh_process": true,
+      "nodeids": [
+        "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_generation_is_reproducible_and_promoted_matches_staging",
+        "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_isolated_install_distributes_corrected_surfaces_and_the_generic_journey",
+        "tests/test_010_002_documentary_role_integration.py::TestDistribution::test_documentary_odoo_journey_keeps_domain_and_write_frontier"
+      ]
+    },
+    "C-W": {
+      "existing": true,
+      "required_for_current_calibration": false,
+      "purpose": "candidate-for-additional-calibration-if-wait-cost-becomes-decision-relevant",
+      "nodeids": [
+        "tests/test_007_004_termination_not_success.py::test_007_004_opencode_noncompleted_never_claims_delivery[client-hangs-timeout]",
+        "tests/test_007_004_termination_not_success.py::test_007_004_transport_failures_have_no_delivery[own-timeout]"
+      ],
+      "verify": "confirm-parametrized-nodeids-from-collection-before-any-run"
+    }
+  },
+  "families": [
+    {
+      "family": "isolation",
+      "source": "I",
+      "selection": "all-required-selections",
+      "operations": [
+        {
+          "id": "isolation.seed",
+          "begin": 55,
+          "end": 68,
+          "contexts": [
+            {
+              "caller": 98,
+              "owner_scope": "session",
+              "nodeid": null,
+              "expected": "one-per-pytest-process"
+            },
+            {
+              "caller": 122,
+              "owner_scope": "test",
+              "expected": "one-per-executed-test"
+            }
+          ],
+          "limits": "session-operation-may-be-contained-in-first-setup; report-shared-without-double-counting",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "recovery-project-in-call",
+      "source": "R",
+      "selection": "C-R",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "recovery.construct",
+          "begin": 411,
+          "end": 440,
+          "expected": 1,
+          "parent": null,
+          "expected_in_full_run": true
+        },
+        {
+          "id": "recovery.build",
+          "begin": 445,
+          "end": 502,
+          "expected": 1,
+          "parent": "recovery.construct",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "recovery.initial-prepare",
+          "begin": 416,
+          "end": 416,
+          "boundary_kind": "around-call",
+          "subprocess_source": "R:514-518",
+          "expected": 1,
+          "parent": "recovery.construct",
+          "limits": "constructor-call-only; excludes-later-prepare-replacement-dispatch-and-reconcile",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "continuity-project-in-call",
+      "source": "E",
+      "selection": "C-E",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "continuity.construct",
+          "begin": 494,
+          "end": 515,
+          "expected": 2,
+          "parent": null,
+          "expected_in_full_run": true
+        },
+        {
+          "id": "continuity.build",
+          "begin": 501,
+          "end": 501,
+          "boundary_kind": "around-call",
+          "callee_source": "B:200-207",
+          "expected": 2,
+          "parent": "continuity.construct",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "continuity.initial-prepare",
+          "begin": 502,
+          "end": 502,
+          "boundary_kind": "around-call",
+          "subprocess_source": "E:528-531,533-537",
+          "expected": 2,
+          "parent": "continuity.construct",
+          "limits": "constructor-only; subsequent-continuity-and-registration-actions-stay-real",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "portable-product-staging",
+      "source": "P",
+      "operations": [
+        {
+          "id": "product.lookup",
+          "begin": 86,
+          "end": 92,
+          "expected": {
+            "C-P-cold": {
+              "total": 2,
+              "cold": 1,
+              "cached": 1
+            },
+            "C-P-present": {
+              "total": 2,
+              "checkout-manifest": 1,
+              "cached": 1
+            }
+          },
+          "limits": "manifest-presence-is-not-freshness",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "product.copy",
+          "begin": 61,
+          "end": 68,
+          "parent": "product.lookup",
+          "volume": "product-copy-volume",
+          "expected": {
+            "C-P-cold": 1,
+            "C-P-present": 0
+          },
+          "expected_in_full_run": false,
+          "expected_in_full_run_reason": "cold-branch-requires-manifest-less-source; base-checkout-has-build/staging/manifest.json"
+        },
+        {
+          "id": "product.generate",
+          "begin": 69,
+          "end": 74,
+          "parent": "product.lookup",
+          "expected": {
+            "C-P-cold": 1,
+            "C-P-present": 0
+          },
+          "limits": "real-subprocess; excludes-post-run-manifest-validation",
+          "expected_in_full_run": false,
+          "expected_in_full_run_reason": "cold-branch-requires-manifest-less-source; base-checkout-has-build/staging/manifest.json"
+        }
+      ]
+    },
+    {
+      "family": "u1-staging-cache",
+      "source": "U1",
+      "selection": "C-U1",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "u1.lookup",
+          "begin": 182,
+          "end": 205,
+          "expected": {
+            "total": 2,
+            "cold": 1,
+            "cached": 1
+          },
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u1.copy",
+          "begin": 187,
+          "end": 193,
+          "parent": "u1.lookup",
+          "volume": "product-copy-volume",
+          "expected": 1,
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u1.generate",
+          "begin": 194,
+          "end": 197,
+          "parent": "u1.lookup",
+          "expected": 1,
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "u4-recomputed-staging",
+      "source": "U4",
+      "selection": "C-U4",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "u4.lookup",
+          "begin": 859,
+          "end": 881,
+          "expected": {
+            "total": 3,
+            "cold": 1,
+            "cached": 2
+          },
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u4.copy",
+          "begin": 864,
+          "end": 871,
+          "parent": "u4.lookup",
+          "volume": "product-copy-volume",
+          "expected": 1,
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u4.initial-generate",
+          "begin": 872,
+          "end": 872,
+          "boundary_kind": "around-call",
+          "subprocess_source": "U4:844-850",
+          "parent": "u4.lookup",
+          "expected": 1,
+          "limits": "initial-generation-remains-real; preparatory-does-not-mean-removable",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u4.contract-regenerate",
+          "classification": "accion-contractual",
+          "call_boundaries": [
+            {
+              "begin": 893,
+              "end": 893
+            },
+            {
+              "begin": 913,
+              "end": 913
+            }
+          ],
+          "boundary_kind": "around-call",
+          "subprocess_source": "U4:844-850",
+          "parent": null,
+          "expected": 2,
+          "relation": "ordered-siblings-after-u4.lookup",
+          "limits": "both-real-generations-required; no-cache-substitution",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "u3-disposable-product",
+      "source": "U3",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "u3.lookup",
+          "begin": 641,
+          "end": 661,
+          "expected": {
+            "C-U3": {
+              "total": 2,
+              "cold": 1,
+              "cached": 1
+            },
+            "C-D": {
+              "total": 2,
+              "cold": 1,
+              "cached": 1
+            }
+          },
+          "limits": "classify-exclusive-parent-time; initial-contract-generation-is-a-child",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u3.copy",
+          "begin": 646,
+          "end": 646,
+          "boundary_kind": "around-call",
+          "parent": "u3.lookup",
+          "expected": {
+            "C-U3": 1,
+            "C-D": 1
+          },
+          "volume": "product-copy-volume",
+          "limits": "filter-U3:607-622-excludes-source-root-.cdad; do-not-attribute-that-volume",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u3.initial-generate",
+          "classification": "accion-contractual",
+          "begin": 652,
+          "end": 659,
+          "parent": "u3.lookup",
+          "expected": {
+            "C-U3": 1,
+            "C-D": 1
+          },
+          "limits": "preserve-real-producer-result-checked-by-consumers",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "u3.contract-staging",
+          "classification": "accion-contractual",
+          "begin": 667,
+          "end": 674,
+          "selection": "C-U3",
+          "expected": 2,
+          "parent": null,
+          "relation": "ordered-siblings-after-u3.lookup",
+          "limits": "calls-U3:1123-1124-remain-real",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "documentary-generation-and-install-cache",
+      "source": "D",
+      "selection": "C-D",
+      "context": "test-call",
+      "operations": [
+        {
+          "id": "documentary.contract-regenerate",
+          "classification": "accion-contractual",
+          "begin": 1138,
+          "end": 1145,
+          "expected": 2,
+          "parent": null,
+          "relation": "ordered-siblings; callers-D:2303,2311",
+          "limits": "do-not-count-u3-initial-generation-again",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "documentary.install-lookup",
+          "begin": 1170,
+          "end": 1191,
+          "expected": {
+            "total": 4,
+            "cold": 1,
+            "cached": 3
+          },
+          "limits": "cold-path-contains-u3.lookup-and-real-install; no-additional-product-copy",
+          "expected_in_full_run": true
+        },
+        {
+          "id": "documentary.install",
+          "classification": "accion-contractual",
+          "begin": 1180,
+          "end": 1187,
+          "parent": "documentary.install-lookup",
+          "expected": 1,
+          "limits": "real-isolated-installer; no-global-installation",
+          "expected_in_full_run": true
+        }
+      ]
+    },
+    {
+      "family": "deliberate-waits",
+      "source": "W",
+      "selection": "C-W",
+      "state": "desconocida",
+      "classification": "desconocida",
+      "candidate_classification": "espera-deliberada",
+      "mechanism": "none-for-pure-child-wait-in-current-scope",
+      "producer": {
+        "mapping": "architect",
+        "additional-measurement-proposal": "implementer",
+        "independent-oracle": "test-writer",
+        "decision": "orchestrator"
+      },
+      "context": "child-processes-within-test-call",
+      "operations": [
+        {
+          "id": "wait.client-hangs",
+          "begin": 246,
+          "end": 246,
+          "boundary_kind": "candidate-parent-call-not-pure-wait",
+          "fixture_source": "W:239-245",
+          "child_sources": [
+            "OC:625-639",
+            "OC:543-551",
+            "OC:1016-1029"
+          ],
+          "expected": "one-scenario; actual-sleep-poll-and-grace-occurrences-unknown",
+          "expected_in_full_run": false,
+          "expected_in_full_run_reason": "declared-unknown; not-required-for-current-calibration"
+        },
+        {
+          "id": "wait.external-own-timeout",
+          "begin": 367,
+          "end": 367,
+          "boundary_kind": "candidate-parent-call-not-pure-wait",
+          "fixture_source": "W:357-366",
+          "child_sources": [
+            "DELEGATE:288-303"
+          ],
+          "expected": "one-scenario; effective-sleep-time-unknown",
+          "expected_in_full_run": false,
+          "expected_in_full_run_reason": "declared-unknown; not-required-for-current-calibration"
+        }
+      ],
+      "limits": [
+        "configured-sleep-and-deadline-are-not-observed-duration",
+        "parent-command-duration-is-not-pure-wait",
+        "no-shortened-timeouts-or-replaced-child-processes",
+        "no-claim-of-universal-observation-impossibility"
+      ],
+      "decision_rule": "retain-in-call-remainder; if-decision-depends-on-wait-cost-stop-and-propose-calibrated-multiprocess-focal-on-recoverable-base-before-changing-it"
+    }
+  ],
+  "volume_observations": {
+    "product-copy-volume": {
+      "producer": "implementer",
+      "independent_checks": "test-writer",
+      "mechanism": "source-and-destination-path-kind-size-manifests",
+      "clock_context": "separate-from-copy-interval",
+      "source_scope": "exact-source-root-of-each-copy",
+      "required_fields": [
+        "source_root",
+        "destination_root",
+        "ignore_policy",
+        "regular_files",
+        "regular_bytes",
+        "symlinks",
+        "manifest_sha256",
+        "scan_started",
+        "scan_finished"
+      ],
+      "limits": [
+        "preserve-symlinks-policy",
+        "do-not-follow-symlink-targets-for-regular-byte-count",
+        "volume-is-not-time",
+        "whole-copy-time-does-not-isolate-.cdad-time",
+        "exclude-live-evidence-by-location-not-by-silent-product-filter-change"
+      ],
+      "calibration": {
+        "C-P-cold": "one-slim-copy-excluding-.cdad-build-.git-and-caches",
+        "C-U1": "one-including-.cdad-copy",
+        "C-U4": "one-including-.cdad-copy",
+        "C-U3": "one-copy-excluding-source-root-.cdad",
+        "C-D": "one-U3-copy-excluding-source-root-.cdad",
+        "C-P-present": "no-copy: existing-staging-manifest-path"
+      },
+      "unknown_component": {
+        "id": "copy.cdad-specific-duration",
+        "state": "desconocida",
+        "classification": "desconocida",
+        "reason": "current-boundaries-observe-the-whole-copy-not-recursive-.cdad-subtree-time",
+        "decision_rule": "do-not-infer-from-size; calibrate-additional-focal-on-recoverable-base-if-exclusion-decision-depends-on-this-cost"
+      },
+      "calibration_rule": "dimension-product-root-cost-with-C-U1-or-C-U4-copies-they-include-.cdad;c-p-proves-branch-and-nesting-only-slim-source;c-u3-c-d-exclude-source-root-.cdad-do-not-use-them-for-.cdad-volume"
+    }
+  },
+  "acceptance": [
+    "all-committed-intervals-exercised-and-captured-before-baseline",
+    "constructor-preparation-observed-in-real-candidate-call-paths",
+    "ordered-selection-and-expected-counts-fixed-before-run",
+    "shared-preparation-not-arbitrarily-owned-by-first-test",
+    "parent-child-time-not-double-counted",
+    "contractual-generations-and-cli-transitions-preserved",
+    "missing-capture-is-not-zero-or-retrospective-unknown",
+    "unknown-cost-not-used-to-select-optimization"
+  ],
+  "location_note": "Materializado por el orquestador desde operation-scope-mapping.md. Vive bajo docs/specs/017-001-suite-performance/performance/ para respetar la raiz de materializacion de los artefactos de rol; el nombre operativo que cita la spec es performance/operation-scope.json."
+}

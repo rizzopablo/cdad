@@ -131,6 +131,21 @@ En la entrada a Review y en el cierre, rc=0 se mide sobre la revisión que
 **ya contiene los deltas materializados y los últimos cambios de tests**.
 Un resultado anterior a esos cambios no acredita la revisión posterior.
 
+### Quién registra `validate` (PC-7)
+
+- **Entrada a Review:** lo mide y lo registra el **revisor independiente** en
+  `review.md`, sobre la revisión vigente. El orquestador materializa el informe
+  y lo usa como evidencia del gate; el recibo no aprueba nada.
+- **Cierre:** lo mide y lo registra el **orquestador** en el cierre de la
+  unidad, sobre la revisión candidata final.
+- **Resultado `Mantener` (delta de tests vacío):** no cambia el responsable. El
+  test-writer no ejecuta `validate` en ese recorrido (AUDIT §8); si hace falta
+  una medición antes de la revisión, la corre el orquestador y la declara como
+  propia, sin atribuirla a un rol.
+
+La asignación es de registro, no de autoridad: medir `validate` no aprueba el
+gate ni sustituye la revisión independiente.
+
 La aceptación exige además contraste independiente de conservación cuando
 haya sustitución. Las demás condiciones de los gates existentes mantienen
 su fuerza.

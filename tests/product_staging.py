@@ -27,6 +27,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from tests.suite_operation_markers import operation
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STAGING_MANIFEST = Path("build") / "staging" / "manifest.json"
 
@@ -39,6 +41,11 @@ _RUN_SCOPED_BASE: Path | None = None
 
 
 def _fallback_base() -> str:
+    # Opt-in: a shared tmpfs can fill up under concurrent load; the operator
+    # may point the suite's temporaries to another disk. Default unchanged.
+    override = os.environ.get("CDAD_TEST_TMP_BASE", "")
+    if override and os.path.isdir(override) and os.access(override, os.W_OK | os.X_OK):
+        return override
     for candidate in ("/tmp", "/var/tmp", "/usr/tmp"):
         if os.path.isdir(candidate) and os.access(candidate, os.W_OK | os.X_OK):
             return candidate
@@ -58,20 +65,22 @@ def _generate_staging_copy() -> Path:
     tmp = run_scoped_mkdtemp("cdad-staging-fixture-")
     atexit.register(shutil.rmtree, tmp, ignore_errors=True)
     copy = Path(tmp) / "product"
-    shutil.copytree(
-        REPO_ROOT,
-        copy,
-        symlinks=True,
-        ignore=shutil.ignore_patterns(
-            ".git", ".pytest_cache", "__pycache__", "build"
-        ),
-    )
-    run = subprocess.run(
-        ["make", "staging"],
-        cwd=str(copy),
-        text=True,
-        capture_output=True,
-    )
+    with operation("product.copy", branch="cold"):
+        shutil.copytree(
+            REPO_ROOT,
+            copy,
+            symlinks=True,
+            ignore=shutil.ignore_patterns(
+                ".git", ".pytest_cache", "__pycache__", "build"
+            ),
+        )
+    with operation("product.generate", branch="cold"):
+        run = subprocess.run(
+            ["make", "staging"],
+            cwd=str(copy),
+            text=True,
+            capture_output=True,
+        )
     if not (copy / STAGING_MANIFEST).is_file():
         raise AssertionError(
             "portabilidad de staging: `make staging` no generó "
@@ -84,9 +93,13 @@ def _generate_staging_copy() -> Path:
 def product_root() -> Path:
     """Raíz de producto con build/staging garantizado (repo o copia temporal)."""
     global _product_root
-    if _product_root is None:
-        if (REPO_ROOT / STAGING_MANIFEST).is_file():
+    if _product_root is not None:
+        with operation("product.lookup", branch="cached"):
+            return _product_root
+    if (REPO_ROOT / STAGING_MANIFEST).is_file():
+        with operation("product.lookup", branch="checkout-manifest"):
             _product_root = REPO_ROOT
-        else:
+    else:
+        with operation("product.lookup", branch="cold"):
             _product_root = _generate_staging_copy()
     return _product_root

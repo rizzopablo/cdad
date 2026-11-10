@@ -155,6 +155,7 @@ from tests.test_packet_prepare import (
     run_prepare,
 )
 from tests.test_role_packet_render import parse_packet
+from tests.suite_operation_markers import operation
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -1135,14 +1136,15 @@ def _home_env(base: dict) -> dict:
 
 
 def _run_make_agents(product: Path, env: dict[str, str], label: str) -> None:
-    run = subprocess.run(
-        ["make", "agents"],
-        cwd=str(product),
-        env=_home_env(env),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    with operation("documentary.contract-regenerate"):
+        run = subprocess.run(
+            ["make", "agents"],
+            cwd=str(product),
+            env=_home_env(env),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
     if run.returncode != 0:
         raise AssertionError(
             f"PC-11: `make agents` ({label}) falló en la copia descartable "
@@ -1168,27 +1170,30 @@ def installed_product() -> dict[str, object]:
     instalación global ni el HOME real (EV-05/PC-12.a).
     """
     if "install_root" in _INSTALL:
+        with operation("documentary.install-lookup", branch="cached"):
+            return _INSTALL
+    with operation("documentary.install-lookup", branch="cold"):
+        disposable = disposable_product()
+        product = disposable["product"]
+        base = dict(disposable["env"])  # type: ignore[arg-type]
+        assert isinstance(product, Path)
+        install_root = Path(run_scoped_mkdtemp("cdad-010-002-install-"))
+        env = _home_env(base)
+        env["CDAD_INSTALL_ROOT"] = str(install_root)
+        env["CDAD_SKILL_EXTRA_DIRS"] = ""
+        with operation("documentary.install", branch="cold"):
+            run = subprocess.run(
+                ["bash", str(product / "install.sh")],
+                cwd=str(product),
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        _INSTALL.update(
+            {"product": product, "home_env": base, "env": env, "install_root": install_root, "run": run}
+        )
         return _INSTALL
-    disposable = disposable_product()
-    product = disposable["product"]
-    base = dict(disposable["env"])  # type: ignore[arg-type]
-    assert isinstance(product, Path)
-    install_root = Path(run_scoped_mkdtemp("cdad-010-002-install-"))
-    env = _home_env(base)
-    env["CDAD_INSTALL_ROOT"] = str(install_root)
-    env["CDAD_SKILL_EXTRA_DIRS"] = ""
-    run = subprocess.run(
-        ["bash", str(product / "install.sh")],
-        cwd=str(product),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    _INSTALL.update(
-        {"product": product, "home_env": base, "env": env, "install_root": install_root, "run": run}
-    )
-    return _INSTALL
 
 
 class _ProductCase(unittest.TestCase):

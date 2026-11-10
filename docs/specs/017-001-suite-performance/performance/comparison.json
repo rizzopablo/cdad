@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "feature": "017-001-suite-performance",
+  "task": "T7",
+  "objective_registered": {
+    "rule": "(pared_serial - pared_paralela) / pared_serial >= 0.15",
+    "threshold": 0.15,
+    "plus": "conjuntos de passed/failed/skipped identicos por nodeid y cero fallos, errores o skip no declarado",
+    "registered_in": "docs/specs/017-001-suite-performance/performance/parallelism.md (antes de medir)"
+  },
+  "revision": {
+    "commit": "bf0e7483c0403b545760efbcb0134cd958d31a30",
+    "serial_dirty": 0,
+    "parallel_dirty": 0,
+    "same_revision": true,
+    "clean_both": true
+  },
+  "serial": {
+    "T_exterior_s": 4459.0,
+    "T_pytest_s": 4458.528495434672,
+    "preparation_s": 448.9,
+    "remainder_s": 4002.508,
+    "R_pytest_s": 7.121,
+    "R_exterior_s": 0.472,
+    "n_tests": 2059,
+    "rounding_bound_s": 1.0295,
+    "results": {
+      "passed": 2054,
+      "failed": 0,
+      "skipped": 5
+    },
+    "reconciliation_status": "complete",
+    "reconciliation_diagnostics": [
+      "operation-without-register-entry"
+    ]
+  },
+  "parallel": {
+    "total_wall_s": 2593.152868203819,
+    "command_wall_s": 2601.3036751411855,
+    "total_work_s": 5095.3259999999955,
+    "overlap_s": 2514.308850746602,
+    "results": {
+      "failed": 0,
+      "passed": 2054,
+      "skipped": 5
+    },
+    "verdict": "accepted",
+    "family_verifiable": true,
+    "workers_launched": 2,
+    "skipped_empty_workers": 0,
+    "workers": [
+      {
+        "index": 0,
+        "pgid": 4052896,
+        "wall_s": 2514.313842806965,
+        "result": {
+          "failed": 0,
+          "passed": 1042,
+          "skipped": 4
+        },
+        "preparation_measured_s": 73.95231463387609
+      },
+      {
+        "index": 1,
+        "pgid": 4052897,
+        "wall_s": 2593.1478761434555,
+        "result": {
+          "failed": 0,
+          "passed": 1012,
+          "skipped": 1
+        },
+        "preparation_measured_s": 96.11814170330763
+      }
+    ],
+    "orphans": 0,
+    "orphans_found": 20,
+    "orphans_cleaned": 0,
+    "orphans_remaining": 0,
+    "subreaper": true,
+    "grace_window_s": 5.0,
+    "canary": {
+      "config_unchanged": true,
+      "checkout_unchanged": true,
+      "checkout_files": 20607,
+      "checkout_bytes": 480096308,
+      "fingerprint": "13c7374c234492b0f1ea4a74596dba4b1d320df75e8b6fd3d0a0fe66eee3e8c1",
+      "fingerprint_algo": "sha256-per-file-sorted",
+      "incomplete": [],
+      "fingerprint_cost_s": 3.4757774621248245
+    },
+    "preparation": {
+      "source": "per-worker-profiles",
+      "total_preparation_s": 170.0704563371837,
+      "duplicated_preparation_s": 16.33735377341509
+    },
+    "host": {
+      "loadavg": [
+        7.5439453125,
+        7.044921875,
+        6.86181640625
+      ],
+      "platform": "Linux-6.17.4-2-pve-x86_64-with-glibc2.41"
+    }
+  },
+  "equivalence": {
+    "serial_nodeids": 2059,
+    "parallel_nodeids": 2059,
+    "only_in_serial": [],
+    "only_in_parallel": [],
+    "outcome_differences": [],
+    "exact": true
+  },
+  "objective": {
+    "wall_reduction": 0.418445,
+    "threshold": 0.15,
+    "meets": true,
+    "met_and_equivalent": true
+  },
+  "superseded_pair": {
+    "commit": "83674246",
+    "note": "par anterior a las correcciones fail-closed del veredicto; sus cifras no se usan como evidencia"
+  },
+  "evidence": {
+    "workspace": {
+      "serial": "<repo-parent>/evidence/017-001-final4/serial/attempt-20261108T130956030211Z-3353585-0e8da988",
+      "parallel": "<repo-parent>/evidence/017-001-final4/parallel"
+    },
+    "repo_copy": ".cdad/tmp/017-001-final-evidence"
+  },
+  "limits": [
+    "pared medida con carga del host registrada en parallel.json.host; no se controla la carga externa",
+    "la preparacion duplicada del lote (16.34 s) se informa aparte y no se presenta como ahorro",
+    "el trabajo medido (5095.3 s) es la suma de ambos workers y supera la pared por concurrencia",
+    "la garantia de familia requiere Linux (prctl + /proc) y se declara; sin ella la corrida no se acepta",
+    "los 5 skips son los mismos en ambos regimenes y estan declarados por sus tests"
+  ]
+}

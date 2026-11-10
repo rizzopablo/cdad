@@ -189,6 +189,8 @@ from pathlib import Path
 
 from test_004_002_t2_bootstrap import build_project
 
+from tests.suite_operation_markers import operation
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILL_DIR = REPO_ROOT / "skills" / "cdad-cycle"
 PACKET_CLI = SKILL_DIR / "scripts" / "cdad_packet.py"
@@ -491,28 +493,31 @@ class _Project:
     """Proyecto descartable con el camino legítimo del CLI hasta el despacho."""
 
     def __init__(self, base: Path, name: str = "proj") -> None:
-        self.base = base
-        self.name = name
-        self.home = base / "home"
-        self.home.mkdir(parents=True, exist_ok=True)
-        self.config_home = base / "config-home"
-        self.config_home.mkdir(parents=True, exist_ok=True)
-        self.root = base / "proj"
-        build_project(self.root)
-        prepared = self.prepare()
-        assert_rc0(prepared, f"{name}/prepare", "`prepare` debe publicar el "
-                   "paquete")
-        state = self.read_state()
-        active = state.get("active_packet") or {}
-        self.packet_id = active.get("id")
-        self.execution_id = (state.get("execution") or {}).get("id")
-        self.feature_id = state.get("active_feature")
-        assert self.packet_id and self.execution_id, (
-            f"precondición (fixture {name}): paquete y ejecución activos: "
-            f"{state!r}")
-        self.ctx = (self.root / ".cdad" / "executions" / self.execution_id
-                    / "execution.json")
-        self._update_count = 0
+        with operation("continuity.construct"):
+            self.base = base
+            self.name = name
+            self.home = base / "home"
+            self.home.mkdir(parents=True, exist_ok=True)
+            self.config_home = base / "config-home"
+            self.config_home.mkdir(parents=True, exist_ok=True)
+            self.root = base / "proj"
+            with operation("continuity.build"):
+                build_project(self.root)
+            with operation("continuity.initial-prepare"):
+                prepared = self.prepare()
+            assert_rc0(prepared, f"{name}/prepare", "`prepare` debe publicar el "
+                       "paquete")
+            state = self.read_state()
+            active = state.get("active_packet") or {}
+            self.packet_id = active.get("id")
+            self.execution_id = (state.get("execution") or {}).get("id")
+            self.feature_id = state.get("active_feature")
+            assert self.packet_id and self.execution_id, (
+                f"precondición (fixture {name}): paquete y ejecución activos: "
+                f"{state!r}")
+            self.ctx = (self.root / ".cdad" / "executions" / self.execution_id
+                        / "execution.json")
+            self._update_count = 0
 
     # -- CLI (caja negra) -------------------------------------------------
 

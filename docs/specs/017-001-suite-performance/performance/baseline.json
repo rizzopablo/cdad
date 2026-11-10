@@ -1,0 +1,256 @@
+{
+  "schema_version": 2,
+  "kind": "suite-baseline",
+  "feature_id": "017-001-suite-performance",
+  "attempt": {
+    "path": "evidence/017-001-baseline2/attempt-20261107T171212569537Z-1474770-69bdbdcf",
+    "workspace_copy": ".cdad/tmp/017-001-baseline-attempt (copia de solo lectura para revision)",
+    "commit": "7426438bdbace78d55f3ea97f1a74e2d000a7310",
+    "dirty": 0,
+    "rc": 0,
+    "started_at": "2026-11-07T17:12:12Z",
+    "finished_at": "2026-11-07T18:35:27Z"
+  },
+  "selection": {
+    "kind": "all",
+    "nodeids": 2034
+  },
+  "results": {
+    "passed": 2029,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 5
+  },
+  "run": {
+    "R_exterior": 0.73,
+    "R_pytest": 7.671,
+    "T_exterior": 4995.0,
+    "T_pytest": 4994.27,
+    "n_tests": 2034,
+    "preparation_s": 186.506,
+    "remainder_s": 4800.094,
+    "resolution": "T_pytest/phases: monotonic, tolerance 1e-3 s; T_exterior: wall clock, 1 s declared resolution",
+    "resolution_s": {
+      "exterior": 1.0,
+      "pytest": 0.001
+    },
+    "rounding_bound_s": 1.017,
+    "rounding_note": "totales de corrida con redondeo (rounding) a 3 decimales calculados desde los valores sin redondear; cota (bound) al sumar valores por test publicados: N x 0.0005 s; comparacion con tolerancia 1e-3 s",
+    "sum_S_test": 4986.6,
+    "tolerance_s": 0.001
+  },
+  "reconciliation": {
+    "status": "complete",
+    "diagnostics": [],
+    "register": {
+      "calibrated": true,
+      "coverage": {
+        "blocked": false,
+        "measurement": "complete",
+        "missing": [],
+        "selection": "all",
+        "status": "all-selection",
+        "unexercised": [
+          {
+            "operation": "product.copy",
+            "reason": "cold-branch-requires-manifest-less-source; base-checkout-has-build/staging/manifest.json"
+          },
+          {
+            "operation": "product.generate",
+            "reason": "cold-branch-requires-manifest-less-source; base-checkout-has-build/staging/manifest.json"
+          }
+        ],
+        "unexpected": [],
+        "without_entry": []
+      },
+      "path": "docs/specs/017-001-suite-performance/performance/operation-scope.json",
+      "status": "calibrated"
+    },
+    "tests": 2034,
+    "files": 237
+  },
+  "attribution": {
+    "prepared_s": 186.506,
+    "prepared_share_pct": 3.74,
+    "unattributed_remainder_s": 4800.094,
+    "unattributed_share_pct": 96.26,
+    "classification": "el resto NO esta clasificado: no se afirma que sea trabajo contractual ni preparacion; permanece desconocido",
+    "top_operations": [
+      {
+        "operation": "continuity.construct",
+        "total_s": 78.636,
+        "occurrences": 210,
+        "share_of_s_test_pct": 1.577
+      },
+      {
+        "operation": "recovery.construct",
+        "total_s": 74.522,
+        "occurrences": 162,
+        "share_of_s_test_pct": 1.494
+      },
+      {
+        "operation": "u1.lookup",
+        "total_s": 9.684,
+        "occurrences": 24,
+        "share_of_s_test_pct": 0.194
+      },
+      {
+        "operation": "documentary.install-lookup",
+        "total_s": 8.6,
+        "occurrences": 4,
+        "share_of_s_test_pct": 0.172
+      },
+      {
+        "operation": "u4.lookup",
+        "total_s": 6.036,
+        "occurrences": 11,
+        "share_of_s_test_pct": 0.121
+      },
+      {
+        "operation": "isolation.seed",
+        "total_s": 5.286,
+        "occurrences": 1905,
+        "share_of_s_test_pct": 0.106
+      },
+      {
+        "operation": "u3.lookup",
+        "total_s": 1.543,
+        "occurrences": 6,
+        "share_of_s_test_pct": 0.031
+      },
+      {
+        "operation": "u4.contract-regenerate",
+        "total_s": 0.913,
+        "occurrences": 2,
+        "share_of_s_test_pct": 0.018
+      },
+      {
+        "operation": "u3.contract-staging",
+        "total_s": 0.662,
+        "occurrences": 2,
+        "share_of_s_test_pct": 0.013
+      },
+      {
+        "operation": "documentary.contract-regenerate",
+        "total_s": 0.626,
+        "occurrences": 2,
+        "share_of_s_test_pct": 0.013
+      },
+      {
+        "operation": "product.lookup",
+        "total_s": 0.0,
+        "occurrences": 13,
+        "share_of_s_test_pct": 0.0
+      }
+    ]
+  },
+  "top_tests": [
+    {
+      "nodeid": "tests/test_role_packet_render.py::TestDeterministicProperties::test_p1_p2_seeded_100_valid_requests_are_deterministic_and_canonical",
+      "S_test_s": 106.041
+    },
+    {
+      "nodeid": "tests/test_007_003_legacy_reanchor.py::test_reanchor_long_mixed_chain_starts_demonstrable_segment",
+      "S_test_s": 80.606
+    },
+    {
+      "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_static_contrast_admits_the_declared_role_and_rejects_foreign_families",
+      "S_test_s": 65.564
+    },
+    {
+      "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_presence_rule_rejects_context_without_agent_and_admits_the_historical",
+      "S_test_s": 58.159
+    },
+    {
+      "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_publication_derivation_matches_the_canonical_rule",
+      "S_test_s": 52.842
+    },
+    {
+      "nodeid": "tests/test_010_002_documentary_role_properties.py::TestInv04Properties::test_contextual_contrast_rejects_a_new_intent_with_a_discordant_agent",
+      "S_test_s": 51.1
+    },
+    {
+      "nodeid": "tests/test_010_004_t5_properties.py::TestInv05CompleteEqualityProperties::test_inv05_complete_equality_rejects_every_seeded_byte_divergence",
+      "S_test_s": 50.296
+    },
+    {
+      "nodeid": "tests/test_009_001_installer_agent_overlay.py::AgentOverlayContract::test_pc3_overlay_remains_owned_and_unchanged_check_is_successful",
+      "S_test_s": 45.209
+    },
+    {
+      "nodeid": "tests/test_010_004_t5_properties.py::TestInv04NoSubstitutePacketProperties::test_inv04_failed_admission_never_emits_another_packet_identification",
+      "S_test_s": 43.602
+    },
+    {
+      "nodeid": "tests/test_role_packet_review_regressions.py::TestReviewRegressions::test_p6_install_and_uninstall_reject_source_overlap_and_list_runtime_targets",
+      "S_test_s": 42.503
+    }
+  ],
+  "top_files": [
+    {
+      "path": "tests/test_009_001_installer_agent_overlay.py",
+      "S_file_s": 298.995,
+      "tests": 12
+    },
+    {
+      "path": "tests/test_010_002_documentary_role_properties.py",
+      "S_file_s": 241.239,
+      "tests": 7
+    },
+    {
+      "path": "tests/test_install_ownership.py",
+      "S_file_s": 178.31,
+      "tests": 11
+    },
+    {
+      "path": "tests/test_007_003_legacy_reanchor.py",
+      "S_file_s": 162.933,
+      "tests": 19
+    },
+    {
+      "path": "tests/test_install_review5_regressions.py",
+      "S_file_s": 150.936,
+      "tests": 6
+    },
+    {
+      "path": "tests/test_role_packet_render.py",
+      "S_file_s": 149.184,
+      "tests": 17
+    },
+    {
+      "path": "tests/test_006_003_u7_prune_obsolete.py",
+      "S_file_s": 136.82,
+      "tests": 6
+    },
+    {
+      "path": "tests/test_007_006_withdraw_and_republish.py",
+      "S_file_s": 114.163,
+      "tests": 61
+    },
+    {
+      "path": "tests/test_006_003_u8_acceptance.py",
+      "S_file_s": 108.119,
+      "tests": 5
+    },
+    {
+      "path": "tests/test_012_installer_ignore_pycache.py",
+      "S_file_s": 102.305,
+      "tests": 4
+    }
+  ],
+  "shared": [
+    {
+      "operation": "isolation.seed",
+      "duration_s": 0.0024,
+      "phase": "setup"
+    }
+  ],
+  "limits": [
+    "Resolucion del reloj exterior: 1 s; R_exterior no distingue diferencias menores.",
+    "La suma de los valores por test publicados (3 decimales) puede diferir del total en hasta N x 0.0005 s = 1.017 s (cota declarada); los totales se calculan desde valores sin redondear.",
+    "product.copy/generate no se ejercitan en la corrida completa (el checkout trae manifiesto de staging); su costo se midio solo en C-P-cold sobre fuente descartable slim.",
+    "El resto no desglosado (4800.094 s) es DESCONOCIDO: no se clasifica como trabajo contractual ni como preparacion, y no fundamenta por si solo ninguna decision de optimizacion.",
+    "Esperas deliberadas: familia declarada desconocida, no medida.",
+    "La carga del host no se muestreo al iniciar; la corrida convivio con actividad del operador."
+  ]
+}

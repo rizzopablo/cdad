@@ -4,6 +4,65 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-11-08 — Epic: epic-017-suite-performance (cerrado, 1/1)
+
+**Cierre del epic declarado; NO publicado ni desplegado.** El epic tuvo **una sola unidad**
+(`017-001-suite-performance`, cerrada el 2026-11-08 sobre `bf0e7483`), así que no hubo integración *entre*
+features: lo que exigió integración real fue el encuentro del runner nuevo con los 2059 tests escritos sin
+saber de él. La aceptación la ejerció el orquestador por **HITL delegada** del dueño, registrada en
+`docs/.cdad-state.json`; la decisión es del dueño por delegación expresa.
+
+**Qué se entregó.** (a) `close` instrumentado de forma fija y aditiva: `pytest.xml` y `profile.json` con
+fases por test, operaciones y diagnóstico de integridad, sin cambiar selección, `rc`, skips ni canarios
+(comparación AST en `review-T6-005`). (b) Base reproducible sobre `7426438b`: **4994.27 s**, 2029 passed +
+5 skipped, preparación medida **186.2 s (3.73 %)** y el **96.27 % restante publicado como desconocido**.
+(c) Atribución y conciliación reproducibles (`reconcile`, `entry-check`) y auditoría de las **76**
+invocaciones de `install.sh`: **0 de 76** son preparación pura compartible (47 acción bajo prueba, 29
+mixtas), de modo que la optimización serial de preparación quedó **sin costo reducible demostrado**. (d)
+Lote paralelo como **subcomando separado** (`parallel`), partición **por archivo**, workers configurables
+(default 2, tope `nproc-1`), con veredicto *fail-closed*.
+
+**Medición de cierre.** Corrida final `--all` sobre `bf0e7483`, misma revisión y árbol limpio en ambas
+pasadas: **serial 4459 s** vs **paralela 2593.15 s con 2 workers = 41.84 %** de reducción de pared
+(objetivo registrado ≥ 15 %), con **2059 nodeids sin una sola diferencia** y **2054 passed + 5 skipped**
+en ambos regímenes. `reconcile` de la pierna serial: preparación **448.90 s**, resto **4002.51 s**
+desconocido, `R_pytest` 7.12 s, `R_exterior` 0.47 s, cota de redondeo 1.03 s, `status: complete`.
+Integridad del lote: `family_verifiable: true`, **0 huérfanos con 20 transitorios**, canario de
+configuración limpio y canario del checkout limpio con `incomplete: []` sobre **20 607** archivos;
+preparación duplicada **16.34 s**, informada aparte. `python3 scripts/cdad-suite.py validate` →
+`status: ok`, 2059 nodeids. **22** verificadores en `tests/test_017_001_suite_parallel.py`.
+
+**Qué NO promete (límites declarados, no dispensas).** No explica el resto: **89.9 %** queda desconocido y
+no se clasifica por descarte. `close` **no** instrumenta carga del host ni canario del checkout en la
+pierna serial: esas dos condiciones **no están demostradas** allí. La garantía de familia de procesos
+requiere Linux (`prctl` + `/proc`); sin ella la corrida **no se acepta**. Un solo host y una repetición por
+régimen: sin significancia estadística. La huella del checkout no ve cambios de modo ni directorios vacíos.
+El par de `83674246` (30.92 %) es **histórico** y no acredita: se midió con un runner anterior a las
+correcciones *fail-closed*. No autoriza poda ni publicación. El epic **no publica ni despliega**: eso sigue
+reservado al dueño.
+
+**Decisiones relevantes.** *Paralelizar frente a recortar cobertura*: con 0 de 76 instalaciones
+compartibles, el paralelismo por procesos era la única palanca de pared que no cambia lo verificado; el
+precio es convivir con un observador que fotografía el árbol. *Subcomando separado frente a un modo de
+`close`*: deja el camino serial intacto y disponible para cualquier entorno, a costa de dos superficies
+que mantener. *Veredicto por contenido frente a `mtime`*: el churn legítimo de directorios rechazaba
+corridas byte a byte idénticas; el precio es no ver modos ni directorios vacíos, declarado. *Sacar el
+scratch del test fuera del checkout frente a debilitar el canario*: el rechazo era correcto —el árbol
+cambiaba de verdad—, así que se corrigió el test, no el observador.
+
+**Deuda que se lleva.** Carga del host y canario ausentes en la pierna serial de `close` (mejora
+pendiente); el resto desconocido; el lote vive en `scripts/cdad-suite.py` **de este proyecto** y no como
+capacidad del ciclo CDAD (promoverlo exige workers configurables, reglas de tests paralelizables y
+declaración de aislamiento por módulo: unidad nueva, no abierta); la huella no cubre modos ni directorios
+vacíos. Los **seis `deferred-hardening`** de la spec §9 quedan conservados con su disposición en el
+`closure.md` del epic. Detalle: `docs/epics/epic-017-suite-performance/{integration.md,closure.md}`.
+
+**Next feature in queue.** Ninguna: el epic cerró con su única unidad y no hay unidad siguiente en el plan.
+Quedan actos del dueño, no del ciclo: **publicar/desplegar** y decidir si se abre la unidad que convierte
+el lote paralelo en capacidad de CDAD.
+
+---
+
 ## 2026-11-02 — Feature: 013-003-redundancy-pilot
 
 **Cerrada; no publicada ni desplegada.** El piloto de redundancia no podó nada y eso es el
@@ -6018,3 +6077,7 @@ mismo F011 preexistente y no se declara gate verde. Saneamiento de la publicaci�
 sesión, incluidos los truncados que ya estaban publicados en 43 archivos previos, a marcadores estables; sin
 hallazgos de patrones privados. Lo publicado coincide con el árbol del cierre más ese saneamiento; el
 historial detallado sigue local y `main` local queda un commit por delante del remoto, por diseño.
+
+Corrección posterior: la publicación `39232b77` incorpora el fixture versionado del store legado 003-007,
+que la regla `.cdad/` del `.gitignore` ocultaba al export —un clon público fallaba 2 tests—. Verificado sobre un
+worktree limpio de `origin/main`: 22/22 verdes. El `.gitignore` que ignora un fixture publicable queda como deuda.

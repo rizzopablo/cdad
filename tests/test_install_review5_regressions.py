@@ -91,6 +91,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.suite_operation_markers import operation
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "install.sh"
 INSTALL_MANIFEST_NAME = ".cdad-install-manifest.json"
@@ -152,14 +154,15 @@ def run_installer(
     env["CDAD_SKILL_EXTRA_DIRS"] = ""
     if env_extra:
         env.update(env_extra)
-    return subprocess.run(
-        ["bash", str(repo / "install.sh"), *args],
-        cwd=str(repo),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    with operation("external.install"):
+        return subprocess.run(
+            ["bash", str(repo / "install.sh"), *args],
+            cwd=str(repo),
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
 
 
 def load_staging_manifest(repo: Path) -> dict:

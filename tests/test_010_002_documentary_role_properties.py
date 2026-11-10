@@ -84,6 +84,7 @@ except ImportError:  # pragma: no cover - entorno sin el motor
     jsonschema = None
 
 from tests.product_staging import run_scoped_base
+from tests.suite_operation_markers import operation
 from tests.test_006_004_u3_principle_single_source import disposable_product
 from tests.test_010_001_documentary_contracts import (
     INSTALLED_AGENTS_DIRS,
@@ -377,13 +378,14 @@ def _foreign_agent(rng: random.Random, role: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _run(cli: Path, *args: str, cwd: Path, env: dict) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(cli), *args],
-        cwd=str(cwd),
-        env=env,
-        capture_output=True,
-        check=False,
-    )
+    with operation("external.python"):
+        return subprocess.run(
+            [sys.executable, str(cli), *args],
+            cwd=str(cwd),
+            env=env,
+            capture_output=True,
+            check=False,
+        )
 
 
 def home_inventory() -> dict[str, str]:
@@ -432,6 +434,20 @@ _INSTALL_BUNDLE: dict[str, object] | None = None
 _HOME_BASELINE: dict[str, str] | None = None
 
 
+def _run_product_install(
+    product: Path, env: dict, *args: str
+) -> subprocess.CompletedProcess:
+    with operation("external.install"):
+        return subprocess.run(
+            ["bash", str(product / "install.sh"), *args],
+            cwd=str(product),
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+
 def final_install_bundle() -> dict[str, object]:
     """Instalación aislada propia, una vez por proceso.
 
@@ -453,14 +469,7 @@ def final_install_bundle() -> dict[str, object]:
         install_root = _stable_mkdtemp("cdad-010-002-prop-install-")
         env["CDAD_INSTALL_ROOT"] = str(install_root)
         env["CDAD_SKILL_EXTRA_DIRS"] = ""
-        run = subprocess.run(
-            ["bash", str(product / "install.sh")],
-            cwd=str(product),
-            env=env,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        run = _run_product_install(product, env)
         _INSTALL_BUNDLE = {
             "product": product,
             "install_root": install_root,

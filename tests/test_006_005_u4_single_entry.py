@@ -116,6 +116,7 @@ from pathlib import Path
 # generados): patrón u6→u1 de 006-002.
 from tests.test_006_002_u1_delegation_section import CC_ORCH_REL, OC_ORCH_REL
 from tests.product_staging import run_scoped_mkdtemp
+from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -857,19 +858,24 @@ def _recomputed_root() -> Path:
     """Copia temporal del checkout con `make staging` ejecutado (nunca escribe
     en el repo): el generado que evalúan los oráculos es RECOMPUTADO."""
     global _STAGING_COPY
-    if _STAGING_COPY is None:
+    if _STAGING_COPY is not None:
+        with operation("u4.lookup", branch="cached"):
+            return _STAGING_COPY
+    with operation("u4.lookup", branch="cold"):
         tmp = run_scoped_mkdtemp("cdad-006-005-u4-")
         atexit.register(shutil.rmtree, tmp, ignore_errors=True)
         copy = Path(tmp) / "product"
-        shutil.copytree(
-            REPO_ROOT,
-            copy,
-            symlinks=True,
-            ignore=shutil.ignore_patterns(
-                ".git", ".pytest_cache", "__pycache__", "build"
-            ),
-        )
-        run = _run_make_staging(copy)
+        with operation("u4.copy", branch="cold"):
+            shutil.copytree(
+                REPO_ROOT,
+                copy,
+                symlinks=True,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".pytest_cache", "__pycache__", "build"
+                ),
+            )
+        with operation("u4.initial-generate", branch="cold"):
+            run = _run_make_staging(copy)
         manifest = copy / "build" / "staging" / "manifest.json"
         if run.returncode != 0 or not manifest.is_file():
             raise AssertionError(
@@ -878,7 +884,7 @@ def _recomputed_root() -> Path:
                 f"{run.stdout[-400:]!r} {run.stderr[-400:]!r}"
             )
         _STAGING_COPY = copy
-    return _STAGING_COPY
+        return _STAGING_COPY
 
 
 class TestPd20DeterministicStaging(unittest.TestCase):
@@ -890,7 +896,8 @@ class TestPd20DeterministicStaging(unittest.TestCase):
             self) -> None:
         """PD-20/plan U4: determinismo + paridad fuente↔generado."""
         root = _recomputed_root()
-        first = _run_make_staging(root)
+        with operation("u4.contract-regenerate"):
+            first = _run_make_staging(root)
         self.assertEqual(
             first.returncode,
             0,
@@ -910,7 +917,8 @@ class TestPd20DeterministicStaging(unittest.TestCase):
         before = _tree_hashes(agents_dir)
         self.assertTrue(before, msg="PD-20/plan U4: el staging no publicó agentes")
 
-        second = _run_make_staging(root)
+        with operation("u4.contract-regenerate"):
+            second = _run_make_staging(root)
         self.assertEqual(
             second.returncode,
             0,

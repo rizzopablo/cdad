@@ -18,6 +18,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.suite_operation_markers import operation
+
 
 REPO = Path(__file__).resolve().parents[1]
 MANIFEST = ".cdad-install-manifest.json"
@@ -27,10 +29,20 @@ def run(repo: Path, root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["CDAD_INSTALL_ROOT"] = str(root)
     env["CDAD_SKILL_EXTRA_DIRS"] = ""
-    return subprocess.run(
-        ["bash", str(repo / "install.sh"), *args], cwd=repo, env=env,
-        text=True, capture_output=True, check=False,
-    )
+    with operation("external.install"):
+        return subprocess.run(
+            ["bash", str(repo / "install.sh"), *args], cwd=repo, env=env,
+            text=True, capture_output=True, check=False,
+        )
+
+
+def run_validator(repo: Path, root: Path) -> subprocess.CompletedProcess[str]:
+    env = {**os.environ, "CDAD_INSTALL_ROOT": str(root)}
+    with operation("external.cli"):
+        return subprocess.run(
+            ["bash", "scripts/validate-subagents.sh"], cwd=repo, env=env,
+            text=True, capture_output=True, check=False, timeout=300,
+        )
 
 
 class AgentOverlayContract(unittest.TestCase):
@@ -167,18 +179,11 @@ class AgentOverlayContract(unittest.TestCase):
         staged, _, _ = self.staged_agent()
         original = staged.read_bytes()
         staged.write_bytes(original.replace(b"---\n", b"---\nmodel: user/chosen-model\n", 1))
-        env = {**os.environ, "CDAD_INSTALL_ROOT": str(self.root)}
-        rejected = subprocess.run(
-            ["bash", "scripts/validate-subagents.sh"], cwd=self.repo, env=env,
-            text=True, capture_output=True, check=False, timeout=300,
-        )
+        rejected = run_validator(self.repo, self.root)
         staged.write_bytes(original)
         self.assertNotEqual(rejected.returncode, 0,
                             "PC-5: validator must reject model declarations in installable text")
-        accepted = subprocess.run(
-            ["bash", "scripts/validate-subagents.sh"], cwd=self.repo, env=env,
-            text=True, capture_output=True, check=False, timeout=300,
-        )
+        accepted = run_validator(self.repo, self.root)
         accepted_output = accepted.stdout + accepted.stderr
         # Other installable-text drift (for example, an unrelated agent) must
         # not make this assertion blame the valid user-owned installed overlay.

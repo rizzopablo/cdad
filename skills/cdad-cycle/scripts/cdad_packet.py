@@ -5220,34 +5220,86 @@ def _rewrite_derived_agent(origin: bytes, maps: dict[str, list[tuple[str, str]]]
     return ("\n".join(lines) + rest).encode("utf-8")
 
 
-def _reject_hand_modified_derived(derived_dir: Path, policy_sha: str) -> None:
-    """PD-8/I9: a derived agent changed by hand makes prepare fail before any
-    write, while the manifest matches the accepted policy revision."""
+def _frontmatter_model(data: bytes) -> str | None:
+    """The column-0 `model:` value of the frontmatter (009-001 grammar), or None."""
+    lines = data.decode("utf-8", "replace").split("\n")
+    if not lines or lines[0].rstrip("\r") != "---":
+        return None
+    for line in lines[1:]:
+        if line.rstrip("\r") == "---":
+            return None
+        if line.startswith("model:"):
+            value = line[len("model:"):].strip()
+            return value or None
+    return None
+
+
+def _set_frontmatter_model(data: bytes, model: str | None) -> bytes:
+    """`data` with its column-0 `model:` replaced, inserted or (None) removed."""
+    lines = data.decode("utf-8").split("\n")
+    if not lines or lines[0].rstrip("\r") != "---":
+        return data
+    for index in range(1, len(lines)):
+        if lines[index].rstrip("\r") == "---":
+            close = index
+            break
+    else:
+        return data
+    header = [line for line in lines[1:close] if not line.startswith("model:")]
+    if model is not None:
+        at = next((i for i, line in enumerate(lines[1:close])
+                   if line.startswith("model:")), len(header))
+        header.insert(at, f"model: {model}")
+    return "\n".join([lines[0], *header, *lines[close:]]).encode("utf-8")
+
+
+def _project_models(derived_dir: Path, policy_sha: str,
+                    expected: dict[str, bytes]) -> dict[str, str]:
+    """PD-8/I9 + lite 2026-11-10: the `model:` each derived agent keeps because
+    the project owner set it. A derived agent changed by hand outside `model:`
+    makes prepare fail before any write, while the manifest matches the
+    accepted policy revision. `expected` are the derivations from the source,
+    used to recognise a model-only edit under a manifest without
+    `base_sha256`."""
     manifest_path = derived_dir / DERIVED_MANIFEST_NAME
     if not manifest_path.is_file():
-        return
+        return {}
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return
-    if not isinstance(manifest, dict) or manifest.get("policy_sha256") != policy_sha:
-        return  # misaligned with the accepted policy: regenerate
-    agents = manifest.get("agents")
+        return {}
+    agents = manifest.get("agents") if isinstance(manifest, dict) else None
     if not isinstance(agents, dict):
-        return
+        return {}
+    aligned = manifest.get("policy_sha256") == policy_sha
+    models: dict[str, str] = {}
     for name, entry in sorted(agents.items()):
+        entry = entry if isinstance(entry, dict) else {}
         path = derived_dir / name
-        if not path.is_file():
-            return
-        recorded = entry.get("derived_sha256") if isinstance(entry, dict) else None
         try:
-            actual = _sha256_bytes(path.read_bytes())
+            data = path.read_bytes()
         except OSError:
-            return
-        if recorded != actual:
+            continue
+        kept = entry.get("project_model")
+        if _sha256_bytes(data) == entry.get("derived_sha256"):
+            if isinstance(kept, str) and kept:
+                models[name] = kept
+            continue
+        base = _sha256_bytes(_set_frontmatter_model(data, None))
+        recorded_base = entry.get("base_sha256")
+        source_base = (_sha256_bytes(_set_frontmatter_model(expected[name], None))
+                       if name in expected else None)
+        if base in (recorded_base, source_base):
+            owner = _frontmatter_model(data)
+            if owner is not None:
+                models[name] = owner
+            continue
+        if aligned:
             raise PolicyError(
                 f"derived agent {name!r} in {DERIVED_RELPATH.as_posix()} was modified by "
-                f"hand; resolve the difference before preparing a new packet (PD-8/I9)")
+                f"hand; resolve the difference before preparing a new packet (PD-8/I9). "
+                f"Only its `model:` line belongs to the project")
+    return models
 
 
 def _retired_derived_names(derived_dir: Path,
@@ -5293,19 +5345,31 @@ def _build_derived_payloads(project_root: Path,
     if sources is None:
         return None
     policy_sha = execution_document["execution"]["policy_sha256"]
-    _reject_hand_modified_derived(derived_dir, policy_sha)
     path_policy = execution_document["path_policy"]
     temporary_roots = _accepted_temporary_roots(execution_document, project_root)
+    expected = {
+        name: _rewrite_derived_agent(
+            origin, _derived_maps(_derived_role(name), path_policy, temporary_roots))
+        for name, origin in sources.items()
+    }
+    # The project owner's `model:` wins over the installed one (009-001 rule
+    # applied to the derivation); without it the installed model is inherited.
+    project_models = _project_models(derived_dir, policy_sha, expected)
     payloads: list[tuple[str, bytes]] = []
     manifest_agents: dict[str, dict[str, str]] = {}
     for name, origin in sources.items():
-        derived = _rewrite_derived_agent(
-            origin, _derived_maps(_derived_role(name), path_policy, temporary_roots))
+        derived = expected[name]
+        owner = project_models.get(name)
+        if owner is not None and owner != _frontmatter_model(derived):
+            derived = _set_frontmatter_model(derived, owner)
         payloads.append((name, derived))
         manifest_agents[name] = {
             "source_sha256": _sha256_bytes(origin),
             "derived_sha256": _sha256_bytes(derived),
+            "base_sha256": _sha256_bytes(_set_frontmatter_model(derived, None)),
         }
+        if owner is not None:
+            manifest_agents[name]["project_model"] = owner
     manifest = {
         "schema_version": 1,
         "policy_sha256": policy_sha,
@@ -8134,7 +8198,8 @@ def republish_agents(args: argparse.Namespace, project_root: Path) -> str:
     provenance, manifest, hand-modification detection and retirement of the
     previously administered names), so it never re-derives a second way. It
     touches NO cycle state, NO packet, NO policy and NO continuity (I5), and it
-    inherits the installed `model:` literally (I6): the derivation changes
+    keeps the project owner's `model:` (lite 2026-11-10), inheriting the
+    installed one only when the owner set none (I6): the derivation changes
     permissions, never a model, and the CLI never chooses one."""
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)

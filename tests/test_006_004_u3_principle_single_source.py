@@ -155,6 +155,8 @@ import unittest
 from pathlib import Path
 
 from tests.test_role_packet_render import PacketFixture, static_instruction_bytes
+from tests.product_staging import run_scoped_base
+from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -624,9 +626,9 @@ def _ignore(_dirname: str, names: list[str]) -> set[str]:
 
 def _temp_root() -> Path:
     preferred = Path("/tmp/opencode")
-    if preferred.is_dir():
+    if preferred.is_dir() and os.access(preferred, os.W_OK | os.X_OK):
         return preferred
-    return Path(tempfile.gettempdir())
+    return Path(run_scoped_base())
 
 
 _DISPOSABLE: dict[str, object] = {}
@@ -639,55 +641,60 @@ def disposable_product() -> dict[str, object]:
     se regenera nunca y el HOME real no se toca nunca.
     """
     if "product" in _DISPOSABLE:
+        with operation("u3.lookup", branch="cached"):
+            return _DISPOSABLE
+    with operation("u3.lookup", branch="cold"):
+        base = Path(tempfile.mkdtemp(prefix="cdad-006-004-u3-", dir=str(_temp_root())))
+        atexit.register(shutil.rmtree, base, ignore_errors=True)
+        product = base / "product"
+        with operation("u3.copy", branch="cold"):
+            shutil.copytree(REPO_ROOT, product, symlinks=True, ignore=_ignore)
+        home = base / "home"
+        home.mkdir()
+        env = os.environ.copy()
+        env["HOME"] = str(home)
+        env["XDG_CONFIG_HOME"] = str(home / ".config")
+        with operation("u3.initial-generate", branch="cold"):
+            run = subprocess.run(
+                ["make", "agents"],
+                cwd=str(product),
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        _DISPOSABLE.update({"product": product, "home": home, "env": env, "run": run})
         return _DISPOSABLE
-    base = Path(tempfile.mkdtemp(prefix="cdad-006-004-u3-", dir=str(_temp_root())))
-    atexit.register(shutil.rmtree, base, ignore_errors=True)
-    product = base / "product"
-    shutil.copytree(REPO_ROOT, product, symlinks=True, ignore=_ignore)
-    home = base / "home"
-    home.mkdir()
-    env = os.environ.copy()
-    env["HOME"] = str(home)
-    env["XDG_CONFIG_HOME"] = str(home / ".config")
-    run = subprocess.run(
-        ["make", "agents"],
-        cwd=str(product),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    _DISPOSABLE.update({"product": product, "home": home, "env": env, "run": run})
-    return _DISPOSABLE
 
 
 def staging_digests(product: Path, env: dict[str, str]) -> dict[str, str]:
     """Una corrida de `make staging` en la copia + el sha256 de los agentes
     generados de los dos roles que U3 toca."""
-    run = subprocess.run(
-        ["make", "staging"],
-        cwd=str(product),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if run.returncode != 0:
-        raise AssertionError(
-            "`make staging` falló en la copia descartable (rc="
-            f"{run.returncode}):\n{run.stdout}\n{run.stderr}"
+    with operation("u3.contract-staging"):
+        run = subprocess.run(
+            ["make", "staging"],
+            cwd=str(product),
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
         )
-    staging = product / "build" / "staging"
-    digests: dict[str, str] = {}
-    for relpath in STAGED_AGENTS:
-        path = staging / relpath
-        if not path.is_file():
+        if run.returncode != 0:
             raise AssertionError(
-                f"`make staging` no publicó el agente declarado {relpath} en la "
-                "copia descartable."
+                "`make staging` falló en la copia descartable (rc="
+                f"{run.returncode}):\n{run.stdout}\n{run.stderr}"
             )
-        digests[relpath] = hashlib.sha256(path.read_bytes()).hexdigest()
-    return digests
+        staging = product / "build" / "staging"
+        digests: dict[str, str] = {}
+        for relpath in STAGED_AGENTS:
+            path = staging / relpath
+            if not path.is_file():
+                raise AssertionError(
+                    f"`make staging` no publicó el agente declarado {relpath} en la "
+                    "copia descartable."
+                )
+            digests[relpath] = hashlib.sha256(path.read_bytes()).hexdigest()
+        return digests
 
 
 # ---------------------------------------------------------------------------

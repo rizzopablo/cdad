@@ -149,6 +149,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.suite_operation_markers import operation
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKET_CLI = REPO_ROOT / "skills" / "cdad-cycle" / "scripts" / "cdad_packet.py"
 CONTINUITY_CLI = (
@@ -408,36 +410,39 @@ class _RecoveryProject:
 
     def __init__(self, base: Path, *, plan_task: bool = False,
                  decision: bool = False) -> None:
-        self.base = base
-        self.home = base / "home"
-        self.home.mkdir(parents=True, exist_ok=True)
-        self.root = base / "proj"
-        self._build_project()
-        prepared = self.prepare(plan_task=plan_task, decision=decision)
-        assert prepared.returncode == 0, (
-            "precondición (fixture, comportamiento existente): `prepare` debe "
-            f"publicar el paquete (rc=0): {prepared.stdout!r} "
-            f"{prepared.stderr!r}")
-        state = self.read_state()
-        active = state.get("active_packet") or {}
-        self.packet_id = active.get("id")
-        self.execution_id = (state.get("execution") or {}).get("id")
-        assert self.packet_id and self.execution_id, (
-            f"precondición (fixture): paquete y ejecución activos: {state!r}")
-        self._observation = self.root / "docs" / "dispatch-observation.json"
-        self._observation.write_text(
-            json.dumps({
-                "runtime": "demo-runtime",
-                "model_configured": "demo-model",
-                "model_reported": "demo-model",
-                "session": "ses-demo-700-0001",
-                "started_at": "2026-10-24T00:00:00Z",
-                "provenance": {
-                    "runtime": "reported by runtime",
-                    "model_reported": "orchestrator",
-                    "session": "orchestrator",
-                },
-            }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        with operation("recovery.construct"):
+            self.base = base
+            self.home = base / "home"
+            self.home.mkdir(parents=True, exist_ok=True)
+            self.root = base / "proj"
+            with operation("recovery.build"):
+                self._build_project()
+            with operation("recovery.initial-prepare"):
+                prepared = self.prepare(plan_task=plan_task, decision=decision)
+            assert prepared.returncode == 0, (
+                "precondición (fixture, comportamiento existente): `prepare` debe "
+                f"publicar el paquete (rc=0): {prepared.stdout!r} "
+                f"{prepared.stderr!r}")
+            state = self.read_state()
+            active = state.get("active_packet") or {}
+            self.packet_id = active.get("id")
+            self.execution_id = (state.get("execution") or {}).get("id")
+            assert self.packet_id and self.execution_id, (
+                f"precondición (fixture): paquete y ejecución activos: {state!r}")
+            self._observation = self.root / "docs" / "dispatch-observation.json"
+            self._observation.write_text(
+                json.dumps({
+                    "runtime": "demo-runtime",
+                    "model_configured": "demo-model",
+                    "model_reported": "demo-model",
+                    "session": "ses-demo-700-0001",
+                    "started_at": "2026-10-24T00:00:00Z",
+                    "provenance": {
+                        "runtime": "reported by runtime",
+                        "model_reported": "orchestrator",
+                        "session": "orchestrator",
+                    },
+                }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     # -- construcción (interfaz pública del CLI) --------------------------
 

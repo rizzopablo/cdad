@@ -330,8 +330,12 @@ terminal and **does not operate on it**: the cycle state, the packets, the polic
 and the continuity stay identical (I5). Matching bytes are a success without
 rewriting the destination; with no installed source — or without a verifiable v2
 context and accepted policy revision — it rejects explicitly instead of claiming a
-republication it did not publish. It inherits the installed `model:`, absence
-included: CDAD does not choose the model (I6).
+republication it did not publish. The `model:` line of a derived agent belongs
+to the project owner: an edit limited to it is not a hand modification, and
+`prepare`/`republish-agents` keep it across source updates (recorded as
+`project_model` in the manifest). Without it the installed `model:` is
+inherited, absence included: CDAD does not choose the model (I6). Never resolve
+a model-only edit with `git checkout` or a republication.
 
 ## Suspended units
 
