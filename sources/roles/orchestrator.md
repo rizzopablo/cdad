@@ -175,12 +175,15 @@ section declares `contract` vs `living`; the installed CLI is
 `<skill-dir>/scripts/cdad_continuity.py` — its interfaces are never duplicated
 here):
 - On legacy continuity, stop transport, obtain approval with `reanchor --dry-run`, and never auto-reanchor.
-- **Session entry (every new session):** the first action is to load the
-  `cdad-cycle` skill and consult its read-only compact view `status`, by
-  reference to `orientation.md` §1 (the rule "view first, expand on a concrete
-  need" is composed in `project-start.md` §11; it is cited, never restated).
-  The full state is a **conditional expansion**, loaded only on a concrete need
-  that affects the next dispatch, with the motive recorded.
+- **Session entry (every new session):** the first action is to consult the
+  read-only compact `status` view, by reference to `orientation.md` §1 (the
+  rule "view first, expand on a concrete need" is composed in
+  `project-start.md` §11; it is cited, never restated). The full `cdad-cycle`
+  skill is NOT loaded by default in a generated orchestrator session that
+  carries its contract; it is loaded only on the legacy path, when the
+  orchestrator contract is absent or the project is not recognized. The full
+  state is a **conditional expansion**, loaded only on a concrete need that
+  affects the next dispatch, with the motive recorded.
 - `begin` — freeze the write-ahead record before dispatching a packet; it
   carries the INTEGER continuity attempt (`N`, the integer of the frozen body —
   never the textual attempt id of the dispatch ledger).

@@ -101,6 +101,26 @@ runtime informa al cargarla. La decisión y su verificación están en
 
 ## Referencias
 
+### Enmienda de entrada compacta aprobada por el dueño (2026-11-12)
+
+Pablo aprueba la siguiente precisión a la decisión 3, conservando los demás
+principios y controles de esta ADR. En una sesión de orquestador generado cuyo
+contrato está presente, con proyecto reconocido y procedencia efectiva de
+`<skill-dir>` ya conocida, la orientación inicial consulta la vista compacta
+`status` y carga las referencias necesarias para la operación. La ausencia de
+una ejecución o un request preparado no exige por sí sola volver a cargar toda
+la skill ni convierte esa sesión en flujo legacy; esta precedencia también
+aplica en reposo. El flujo legacy del orquestador fuera de esa rama conserva sus
+cargas y límites, sin alterar los de los roles delegados.
+
+Si el proyecto no está reconocido o no puede establecerse la procedencia
+efectiva, se mantienen las cargas y el reconocimiento existentes; las rutas
+convencionales son pistas, no prueba de procedencia. La vista no autoriza abrir
+una unidad, fabricar aprobaciones, omitir gates ni repetir efectos. El arranque
+desde reposo, el bootstrap y la continuidad mantienen sus garantías y dueños
+canónicos. Esta decisión autoriza actualizar los procedimientos y agentes; no
+acredita que una sesión abierta haya cargado la versión actualizada.
+
 * Contrato: `docs/specs/005-006-guided-project-start/spec.md` (PD-1..PD-17, INV-1..INV-8; D1–D8)
   y `plan.md` (T1–T5).
 * Insumo: `docs/epics/epic-005-real-operation/evidence/005-006-attempt-1.md` y

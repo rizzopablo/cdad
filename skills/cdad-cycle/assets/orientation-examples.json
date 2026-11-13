@@ -1,4 +1,5 @@
 {
+  "_procedures": ["skills/cdad-cycle/references/orientation.md", "skills/cdad-cycle/references/project-start.md"],
   "examples": [
     {
       "id": "dispatch-record",

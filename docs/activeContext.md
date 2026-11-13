@@ -6081,3 +6081,7 @@ historial detallado sigue local y `main` local queda un commit por delante del r
 Corrección posterior: la publicación `39232b77` incorpora el fixture versionado del store legado 003-007,
 que la regla `.cdad/` del `.gitignore` ocultaba al export —un clon público fallaba 2 tests—. Verificado sobre un
 worktree limpio de `origin/main`: 22/22 verdes. El `.gitignore` que ignora un fixture publicable queda como deuda.
+
+## 2026-11-13 — 018-001-orchestrator-start
+
+Feature 018-001 completada: entrada compacta del orquestador, ayudas CLI accionables, ejemplos conectados, patrón de captura de evidencia. Implementación en commit 6fad577c. Tests reales en tests/test_orchestrator_startup_usability.py (6 pasan). Revisión independiente sin bloqueantes. Deferred-hardening: control automático de lecturas, benchmarks estadísticos, ayudas exhaustivas, rediseño de historial, transporte externo completo.

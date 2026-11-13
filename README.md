@@ -1,276 +1,178 @@
 # Contract-Driven AI Development (CDAD)
 
-The deterministic role-packet renderer requires **Python 3** and uses only
-the Python standard library (stdlib), with no third-party packages or downloads.
-After installation its public entrypoint is
-`<skill-dir>/scripts/cdad_packet.py` (`<skill-dir>` is the directory of the
-loaded `cdad-cycle` skill, as the runtime reports it when the skill is loaded).
-Its companion is
-the artifact CLI `<skill-dir>/scripts/cdad_result.py`,
-which persists and materializes role outputs and records suite evidence (the
-interface is owned by the CLI `--help` and the feature spec; each subcommand has
-its own usage):
+**Make AI-assisted work easier to specify, verify and hand over.**
 
-- `receive` — persists the original result bytes and emits a mechanical receipt.
-- `validate-receipt` — re-verifies a durable receipt against its stored payload.
-- `materialize` — copies receipt parts to authorized canonical targets.
-- `run-python-unittest` — runs the supported `python3 -m unittest` runner and emits evidence.
-- `validate-run-evidence` — recomputes current snapshots and classifies the run evidence.
+An agent can produce convincing work without meeting the need behind it. Reviewing
+everything afterward is expensive, and a new session can lose the decisions that
+made the work understandable.
 
-The protocol that integrates a finished read-only role's output (receive →
-validate-receipt → materialize → state transition) is documented in
-[`skills/cdad-cycle/references/re-entry.md`](skills/cdad-cycle/references/re-entry.md).
+CDAD is a methodology and a set of skills, role definitions and command-line tools
+for addressing that problem. Agree on the outcome before implementation, separate
+production from verification, and keep decisions and evidence available for the
+next session. It adds discipline and traceability, not a guarantee of correctness.
 
-**A disciplined methodology for building software with AI agents**
+## Is it for you?
 
----
+CDAD fits teams and individuals who regularly delegate to AI agents, maintain
+work over time, or need to explain why a change is acceptable. It is useful when
+requirements, independent checks and continuity matter more than the shortest
+path to a first draft.
 
-## Guided project start
+The full cycle may be excessive for disposable experiments or small, low-risk
+edits. The smaller `cdad-spec-and-test` skill provides a focused spec-and-check
+workflow; choose the scope deliberately rather than scoring a project against
+an arbitrary threshold. CDAD complements TDD, BDD and domain modeling rather than
+replacing them.
 
-A brief instruction is enough to reach a first useful delegation: ask CDAD to
-initialize this project and run its preliminary analysis, and it drives the
-start from there. The step-by-step procedure lives in
-[`skills/cdad-cycle/references/project-start.md`](skills/cdad-cycle/references/project-start.md);
-that reference is the single owner of the guided start and is not reproduced here.
+## How the work happens
 
----
+1. **Discovery:** understand the existing system, constraints and actual need.
+2. **Specification:** describe the promised behavior, limits and acceptance evidence;
+   obtain the required approval before implementation.
+3. **Anti-gaming TDD:** inspect existing protection, write discriminating checks for
+   new behavior, implement, and refactor. Select checks by the promise they protect,
+   not quotas per postcondition or a coverage target.
+4. **Review:** a separate reviewer challenges the result and reports prioritized
+   findings; the authorized decision-maker determines their disposition.
+5. **Merge and memory:** verify the required evidence, obtain approval, and preserve
+   decisions, remaining risks and next steps in the project's Memory Bank.
 
-## What is CDAD?
+An orchestrator coordinates; an architect investigates and specifies; a
+test-writer checks; an implementer builds; a reviewer challenges; a scribe drafts
+the memory update. Separate sessions and scoped context reduce shared blind
+spots, but **they are not a sandbox or proof of independence**. Runtime permissions
+and deployment controls still matter; ignore files are not access controls.
 
-CDAD is a software development methodology designed specifically to work with AI agents as implementers. It solves a fundamental problem: language models are brilliant but inconsistent. They can produce excellent or defective code, and the difference is often not predictable.
+**You decide the objective, privacy boundaries and authority.** Agents can research,
+draft, test and coordinate. Approval checkpoints remain with you unless you
+explicitly delegate the applicable decisions with recorded limits. A receipt,
+successful command or completed agent session never grants approval. Publication,
+deployment and model changes need their own authority.
 
-Instead of relying on post-hoc, exhausting human review, **CDAD inserts structural barriers before and during the implementation process**. These barriers are automated and guarantee that the agent is never the only one responsible for verifying that its work is correct.
+There is an operational cost: more preparation, evidence and review. Tests can miss
+semantic defects, reviews can miss defects, and instructions cannot force a model
+to read correctly. See the [methodology](CDAD_metodologia.md) and
+[supervised-autonomy decision](docs/adr/ADR-011-autonomia-supervisada-limites-proporcionales.md).
 
----
+## First steps
 
-## The Five Foundational Principles
+Start with one bounded piece of work and a person available to decide its scope.
+After installation, ask your agent to **initialize this project with CDAD and run
+its preliminary analysis**. It should preserve existing conventions, identify
+what is missing, ask only for decisions it cannot infer, and prepare the first
+useful delegation. The [guided start](skills/cdad-cycle/references/project-start.md)
+owns that procedure; existing work must be resumed rather than initialized again.
 
-CDAD rests on five structural principles that form the backbone of the methodology:
+### Requirements and installation
 
-### 1. **Spec before code (always)**
-Before any agent touches a single line of implementation code, a written document must exist that defines what the feature does, with verifiable contracts included.
+Use a local checkout of this repository, **Bash 4 or newer, Python 3**, and **Make** to generate
+staging. The packet tools use Python's standard library; the installer does not
+download Python dependencies. Your chosen runtime and the project's own test
+environment must already be available. CDAD does not install either for you.
 
-### 2. **Verifiable contracts as the guardian**
-The contracts between components are defined as formal types (interfaces, protocols, traits) with explicit postconditions, verified automatically through parameterized contract tests.
+Run these commands **from the repository root**, after reviewing the installer:
 
-### 3. **Separate role contexts with supervised autonomy**
-Roles work in separate sessions with clear contracts, sufficient capabilities,
-and scope appropriate to their task. The orchestrator verifies outcomes and
-handles deviations with evidence. Preventive controls protect specific effects
-and information boundaries; command allowlists are not a correctness guarantee.
-
-The [supervised-autonomy decision](docs/adr/ADR-011-autonomia-supervisada-limites-proporcionales.md)
-defines the target policy. Runtime migration is planned in epic 004; this
-principle update does not change installed permissions.
-
-### 4. **TDD with the "Iron Law"**
-Implementation code is never written without first having a test that fails for the right reason. No exceptions, no shortcuts, no "I'll add the test later."
-
-### 5. **Persistent Memory Bank**
-The project maintains a set of versioned files that capture the current state, the decisions made, the accumulated learnings, and the context for future sessions.
-
----
-
-## The Cycle: The Five Stages
-
-### 🔍 Stage 1: Discovery
-Maps the terrain of the system. Destroys the assumptions the AI model drags along from its training. Generates landscape documentation and technical context.
-
-### 📋 Stage 2: Specification
-Socratic brainstorm, spec writing with functional description, contract, invariants and acceptance criteria, and human approval.
-
-### 🧪 Stage 3: Anti-gaming TDD
-Separate sub-agents write tests (which fail), implement code (which passes), refactor, and write property tests. All in isolated sessions.
-
-### 👀 Stage 4: Two-Layer Review
-A reviewer sub-agent generates a prioritized report of findings. You validate the prioritization before the merge.
-
-### ✅ Stage 5: Merge + Memory Bank
-Automated CI validates. You update the Memory Bank with decisions, learnings, and project status.
-
----
-
-## Complete Documentation
-
-- 📖 **[CDAD_metodologia.md](./CDAD_metodologia.md)** — Complete document with 13 chapters
-- 🧑‍🎓  **[NotebookLM CDAD](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)** — Resources to facilitate the study of CDAD
-- 🎯 **[docs/specs/](./docs/specs/)** — Specification structure
-- 🏗️ **[docs/adr/](./docs/adr/)** — Architecture Decision Records
-- 📝 **[docs/projectbrief.md](./docs/projectbrief.md)** — Project brief
-
----
-
-## When is CDAD Worth It?
-
-CDAD has an operational cost. It is not for everything. It is worth it when at least **two of these conditions** are met:
-
-- The code will live a long time (months or years) and will evolve
-- Code correctness matters beyond "it compiles and passes tests"
-- The project is large enough that no human can keep all the context in mind
-- The team will use AI agents as a regular part of the workflow
-- Quality must be sustainable in the long run
-
-### Decision Matrix
-
-| Score | Recommended Mode | Application |
-|---------|------------------|-----------|
-| 3-4 | **Vibe Coding** | No spec, no isolated sessions, no Memory Bank |
-| 5-6 | **CDAD Light** | Brief spec, anti-gaming TDD with isolated sessions on critical components |
-| 7-9 | **Full CDAD** | All five stages complete, no shortcuts |
-
----
-
-## Structure of a CDAD Project
-
-```
-proyecto/
-├── docs/
-│   ├── projectbrief.md          # What the project is
-│   ├── landscape.md             # Terrain mapping
-│   ├── systemPatterns.md        # Technical patterns
-│   ├── activeContext.md         # Current state
-│   ├── progress.md              # Feature status
-│   ├── adr/                     # Architecture Decision Records
-│   │   ├── 001-decisión.md
-│   │   └── 002-decisión.md
-│   └── specs/                   # Versioned specifications
-│       ├── 001-feature-a/
-│       │   ├── spec.md
-│       │   ├── plan.md
-│       │   └── tasks.md
-│       └── 002-feature-b/
-├── src/                         # Implementation
-├── tests/                       # Tests
-└── .aiignore                    # Permission control for sub-agents
+```sh
+bash install.sh --help
+make staging
+bash install.sh --dry-run
+bash install.sh
+bash install.sh --check
 ```
 
----
+`make staging` generates the OpenCode and Claude Code agent sets (the current
+Makefile includes the Odoo stack). The installer consumes `build/staging/manifest.json`,
+not the role sources directly. It deploys owned copies into runtime directories
+under HOME: `.config/opencode/`, `.claude/` and `.agents/skills/`; it does not install
+into a public `agents/` or `skills/` directory at the install root.
 
-## Spec: Minimal Structure
+For a separate adoption root, set `CDAD_INSTALL_ROOT` to an **existing absolute
+directory**, outside the source tree, for each install/check operation. Then follow
+[project adoption](skills/cdad-cycle/references/runtime-adoption.md) to activate
+that root for OpenCode, Claude Code or Codex. Codex activation exposes skills;
+it is not a claim that all runtimes have identical agent or transport support.
+`CDAD_SKILL_EXTRA_DIRS` adds colon-separated skill destinations for other
+environments; it does not configure their runtime integration.
 
-Each feature has a spec that follows this structure:
+**Update by regenerating staging and repeating install/check.** Valid user-owned
+`model:` overlays survive updates. Other local modifications and conflicting
+symlinks are preserved and reported, not silently overwritten. Exit code 1 can
+mean pending conflicts, removals or drift: partial deployment is **not** a clean
+success. Resolve the named items and check again. `--force` skips confirmation;
+it is not an overwrite-conflicts switch. Uninstall is `bash install.sh --uninstall`
+and follows recorded ownership. The [installer](install.sh) owns options and details.
 
-```markdown
-# Spec: [feature name]
+### Runtime, model and delegation choices
 
-## Functional description
-What it does, in non-technical language.
+Installing definitions is not the same as configuring delegation. External CLI
+delegation uses **`runtimes.json` for execution settings** and **`delegation.json`
+for model selection and the credential-file reference**. These are deployment
+configuration, not choices an installer or agent should invent. The installer
+preserves existing runtime configuration; deprecated model-profile options do
+not select a model.
 
-## Contract (signature and invariants)
-Formal types with explicit postconditions.
+Follow the [delegation guide](skills/cdad-cycle/references/cli-delegation.md) for
+configuration locations, destination adapters, execution modes, migration and
+`capabilities` verification before dispatch. Use the runtime's own supported
+configuration for permissions; do not copy configuration syntax between versions.
 
-## Verifiable invariants
-That will become property tests.
+## Operating an adopted project
 
-## Acceptance criteria
-Measurable metrics to consider the feature done.
+This section is for the human supervising work and the agent carrying it out.
+`<skill-dir>` means the actual directory reported when `cdad-cycle` is loaded,
+not an assumed machine path. Each CLI and subcommand provides `--help`.
 
-## Out of scope
-What it does NOT do, to avoid scope creep.
-```
+- **Orient and continue:** start with `cdad_packet.py status`; it reports the
+  situation and next operation, not authorization. `open-unit` opens eligible
+  queued work; continuity checkpoints, `reconcile` and resume preserve the
+  execution boundary. See [orientation](skills/cdad-cycle/references/orientation.md)
+  and [continuity](skills/cdad-cycle/references/continuity.md).
+- **Delegate and receive:** prepare a canonical packet and transmit its bytes
+  unchanged. Routes A/C have different delivery forms; neither permits manual
+  reconstruction of the packet. Receive, validate the durable receipt and
+  materialize only authorized artifacts before the applicable state transition.
+  Reception is mechanical, not acceptance. See
+  [execution](skills/cdad-cycle/references/project-execution.md) and
+  [re-entry](skills/cdad-cycle/references/re-entry.md).
+- **Recover without repeating effects:** withdraw a prepared assignment that
+  will not be dispatched; reconcile uncertain delivery before retrying;
+  `republish-agents` refreshes derived project agents without preparing another
+  packet and preserves supported model overlays. These operations are owned by
+  the execution and continuity references above.
+- **Choose evidence by promise:** reuse existing checks where they protect the
+  obligation, explain each addition, and declare property-test budgets. Full-suite
+  policy distinguishes focal work, feature closure and epic closure; CI hosting
+  is not a universal installation prerequisite. See
+  [TDD](skills/cdad-cycle/references/stage-3-tdd.md) and
+  [closure](skills/cdad-cycle/references/stage-5-merge.md).
+- **Use the right domain:** documentary engagements use evidence-backed
+  [documentary contracts](skills/cdad-cycle/references/documentary-contracts.md).
+  Odoo roles and skills apply when the product or actual change is Odoo-related,
+  not merely because the coordinator runs in that environment. See
+  [Odoo architecture](skills/odoo-architect/SKILL.md).
 
----
+## Maintaining CDAD itself
 
-## Comparison with Other Methodologies
+This repository also contains its **own development tooling**, not a mandatory
+toolchain for every adopting project. Its suite inventory and capability/surface
+selection are described in [suite maintenance](docs/suite-maintenance.md);
+[contract links](skills/cdad-cycle/references/contract-test-links.md) and
+[suite review](skills/cdad-cycle/references/suite-review.md) distinguish structural
+traceability from semantic protection. A valid inventory is not proof that every
+promise is adequately tested.
 
-| Aspect | Vibe Coding | Classic TDD | BDD | DDD | CDAD |
-|---------|-------------|-------------|-----|-----|------|
-| **Who implements** | Unrestricted agent | Human dev | Human dev | Human dev | Limited sub-agents |
-| **Spec before code** | No | Implicit | Yes (Gherkin) | Yes (model) | Yes (markdown) |
-| **Tests first** | Sometimes | Yes | Yes | Non-prescriptive | Yes |
-| **Formal contracts** | No | Optional | Not central | Yes | Yes |
-| **Persistent memory** | No | No | No | Yes (model) | Yes |
-| **Long-term quality** | Variable | High with discipline | High | High | Consistently high |
-| **Designed for AI agents** | No | Partial | Partial | No | Yes |
+The repository's [CI gate](docs/ci-gate.md) records attributable evidence.
+Suite profiling, reconciliation and parallel execution have recorded results and
+limits in the [performance closure](docs/epics/epic-017-suite-performance/closure.md);
+those measurements are not a speed guarantee for another project or host.
 
----
+## Further reading
 
-## Key Operational Rules
-
-✅ **Never skip stages.** Features that look simple frequently reveal ambiguities.
-
-✅ **If a stage fails, you go back to the previous stage.** No further back.
-
-✅ **Human approval at key moments is non-delegable.** You approve the spec, validate the review, evaluate the Memory Bank.
-
----
-
-## Use Cases
-
-**✅ Use CDAD when:**
-- You will use AI agents as the primary implementers
-- The code will live months/years and will evolve
-- Sustainable quality matters more than initial speed
-- You need persistent documentation of decisions
-
-**❌ Do not use CDAD when:**
-- You are in pure exploration or prototyping something disposable
-- It is a one-off script headed for the trash
-- The code has less than a month of expected useful life
-
----
-
-## Key Differences from Alternatives
-
-### vs. Vibe Coding
-CDAD brings structure and quality guarantees that vibe coding does not offer. With agents, no structure = unpredictable code.
-
-### vs. Classic TDD
-CDAD + TDD, but with agent separation. The test-writer does not see the implementation. This eliminates the internal-coherence bias that agents naturally have.
-
-### vs. BDD
-CDAD is more technical and agent-specific. BDD focuses on communication with non-technical stakeholders.
-
-### vs. DDD
-CDAD does not exclude DDD. They can be combined perfectly. CDAD focuses on *how* to implement with agents; DDD focuses on *what* to model.
-
----
-
-## Next Steps
-
-1. **Read the full document** (`CDAD_metodologia.md`) to understand each stage in depth
-2. **Start with CDAD Light** if it is your first project
-3. **Set up your Memory Bank** with the structural documents
-4. **Set up sub-agents** with clear role contracts, appropriate context and sufficient scoped capabilities
-5. **Apply the discipline:** specs before code, always
-
----
-
-## Per-deploy configuration
-
-The `agents/cdad-*.md` agents are machine-agnostic in the machine they run on:
-they do not declare `permission.external_directory` in the repo. Access to directories
-outside the workspace (for example, the runtime's skill directories) is
-**configuration of each deployment** and is declared in the runtime's
-`opencode.jsonc` under `agent.<name>.permission.external_directory`:
-
-```jsonc
-{
-  "agent": {
-    "cdad-architect": {
-      "permission": {
-        "external_directory": {
-          "<abs path to the runtime's skill dir>/**": "allow",
-          "<another external dir>/**": "allow",
-          "/tmp/opencode/*": "allow"
-        }
-      }
-    }
-  }
-}
-```
-
-Each deployment adds its own `external_directory` (real paths of that
-machine) via `opencode.jsonc`; that local config layer is not versioned in the
-repo. Note: opencode **does not expand** `${HOME}` nor environment variables in the
-`external_directory` patterns — use absolute paths.
-
----
+- [Full methodology](CDAD_metodologia.md)
+- [Project brief](docs/projectbrief.md), [progress](docs/progress.md) and [changelog](CHANGELOG.md)
+- [Specifications](docs/specs/) and [architecture decisions](docs/adr/)
+- [Study resources on NotebookLM](https://notebooklm.google.com/notebook/c4a9bab2-d26d-49bd-9ec7-50d256ed1dec)
 
 ## License
 
-This repository contains open documentation and methodology for building software with AI agents.
-
----
-
-**CDAD: Contract-Driven AI Development** — Structural discipline for AI agents that pays off.
+See [LICENSE](LICENSE) for the GNU General Public License, version 3.

@@ -3,6 +3,8 @@
 **Status:** Working artifact for the `translation-en` branch. Delete or keep at merge time.
 **Purpose:** Binding terminology decisions for the Spanish→English translation of the CDAD docs. Every translator MUST apply these decisions verbatim. Consistency across files matters more than any individual preference.
 
+The Spanish source terms in the tables below are intentional: this bilingual reference maps them to their canonical English equivalents. Explanations and translation guidance are in English.
+
 ## Hard rules (apply to every file)
 
 1. **Atomic tokens:** `CDAD`, `cdad-*`, `cdad_`, `cdad_state`, `.cdad-state.json`, `cdad_model_*`, and every token derived from `cdad` are IDENTIFIERS. Translate around them, never inside them. They will be renamed (`cdad` → `coda`) in a separate mechanical commit. Example: `cdad-cycle` stays `cdad-cycle`.
@@ -57,4 +59,4 @@
 
 ## Source-of-truth definitions
 
-The methodology's own glossary (§13.4 of `CDAD_metodologia.md`) defines 27 terms in Spanish. The English translations above are the canonical names for those definitions. When translating the §13.4 glossary itself, translate the definitions and keep the canonical English term as the bold headword.
+The methodology's own glossary (§13.4 of `CDAD_metodologia.md`) originally defined 27 terms in Spanish. The English translations above are the canonical names for those definitions. The translated §13.4 glossary uses English definitions and canonical English terms as bold headwords.

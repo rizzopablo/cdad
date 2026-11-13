@@ -94,6 +94,15 @@ local y el publicado son los marcadores de saneamiento (ids de sesión y rutas l
   decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+- **018-001-orchestrator-start** (2026-11-13, epic 018 — **orden 1/1**; **cerrada, no publicada ni
+  desplegada**) — entrada compacta del orquestador, ayudas CLI accionables, ejemplos conectados al
+  procedimiento, patrón de captura de evidencia. **Producto:** `sources/roles/orchestrator.md` con
+  entrada por `status` (legacy solo sin contrato); `cdad_packet.py` y `cdad_continuity.py` con ayuda
+  de formatos; `orientation.md` con recorrido de captura completo; `orientation-examples.json` con
+  `_procedures`. **Tests:** `tests/test_orchestrator_startup_usability.py` (6 pasan). **Revisión:**
+  independiente sin bloqueantes. **Deferred-hardening:** control automático de lecturas, benchmarks
+  estadísticos, ayudas exhaustivas, rediseño de historial, transporte externo completo.
+
 
 - **017-001-suite-performance** (2026-11-08, epic 017 — **orden 1/1**; **cerrada, no publicada ni
   desplegada**) — la suite deja de ser una caja de ~70 minutos sin atribución: queda **instrumentada**,

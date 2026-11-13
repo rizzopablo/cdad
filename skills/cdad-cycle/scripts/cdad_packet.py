@@ -10285,7 +10285,9 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--resume-packet", metavar="PACKET_ID",
                       help="recover a published packet byte-for-byte without changing identity")
     prep.add_argument("--replace-packet", metavar="PACKET_ID",
-                      help="replace a prepared, never-dispatched obsolete packet (PD-7)")
+                      help="replace a prepared, never-dispatched obsolete packet "
+                           "(PD-7). Incompatible with --role, --substage and "
+                           "--objective; requires --reason and active authority.")
     prep.add_argument("--reason", metavar="TEXT",
                       help="mandatory non-empty reason for --replace-packet (PD-9)")
     prep.add_argument("--propose-policy", action="store_true",
@@ -10306,7 +10308,10 @@ def build_parser() -> argparse.ArgumentParser:
                       help="the INTEGER continuity attempt of a dispatch "
                            "registration (007-003; mandatory for an execution "
                            "with continuity, declared absent otherwise)")
-    prep.add_argument("--input", action="append", default=[])
+    prep.add_argument("--input", action="append", default=[],
+                      help="repeatable. Format: PATH=PURPOSE for a documental "
+                           "input (PATH exists), or a JSON file path of "
+                           "dispatch observations for --record-dispatch.")
     prep.add_argument("--read-scope", action="append", default=[])
     prep.add_argument("--write-scope", action="append", default=[])
     prep.add_argument("--invariant", action="append", default=[])

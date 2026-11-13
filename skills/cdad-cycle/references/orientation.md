@@ -71,6 +71,20 @@ out=$(python3 "<skill-dir>/scripts/cdad_packet.py" status --project-root ROOT); 
 `set -o pipefail` is an alternative where it is available. The bounded output goes
 to the context; the **complete** evidence stays available **by reference**.
 
+Recommended recorrido (even under `set -e`): capture stdout and stderr to
+authorized workspace paths, preserve the process return immediately, then show
+extracts. Execute the command inside an explicit condition so `set -e` does not
+abort before the code is captured:
+
+```sh
+out=.cdad/inbox/cli.stdout err=.cdad/inbox/cli.stderr
+python3 "<skill-dir>/scripts/cdad_packet.py" status --project-root ROOT >"$out" 2>"$err"; rc=$?
+# then show extracts from "$out"/"$err" — never the exit of head/tail
+```
+
+For dispatch payloads, preserve bytes directly: do not use command substitution
+that strips trailing newlines, and do not mix metadata into the render.
+
 ## 3. Frequent operations
 
 | Operation | Command | When | Required | Notable default | Effect |

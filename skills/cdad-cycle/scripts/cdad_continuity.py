@@ -2982,7 +2982,9 @@ def _build_parser() -> argparse.ArgumentParser:
         command = sub.add_parser(name, help=help_text)
         command.add_argument("--project-root", required=True)
         command.add_argument("--execution-context", required=True)
-        command.add_argument("--update")
+        command.add_argument("--update", metavar="PATH",
+                            help="path to a JSON file whose content is an object "
+                                 "(not literal text or Markdown)")
         command.add_argument("--max-bytes", type=int, default=None)
         command.add_argument("--json", action="store_true")
 
