@@ -122,8 +122,8 @@
   },
   "evidence": {
     "workspace": {
-      "serial": "<repo-parent>/evidence/017-001-final4/serial/attempt-20261108T130956030211Z-3353585-0e8da988",
-      "parallel": "<repo-parent>/evidence/017-001-final4/parallel"
+      "serial": "~/clawd/projects/cdad/evidence/017-001-final4/serial/attempt-20261108T130956030211Z-3353585-0e8da988",
+      "parallel": "~/clawd/projects/cdad/evidence/017-001-final4/parallel"
     },
     "repo_copy": ".cdad/tmp/017-001-final-evidence"
   },

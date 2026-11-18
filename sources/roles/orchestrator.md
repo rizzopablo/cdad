@@ -65,7 +65,11 @@ without its inline body, emit the identification of the published request with
 `<skill-dir>/scripts/cdad_packet.py render --route C` (`--request
 .cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
 that stdout ALONE: the identification is moved exactly as emitted, never
-recomposed, retranscribed or accompanied by the packet body. The complete render
+recomposed, retranscribed or accompanied by the packet body. The dispatch MUST
+also name the installed packet CLI the receiver runs (`<cli>` of its `intake`
+rule) and the product root as explicit locator lines outside the identification;
+those lines grant no authority, alter nothing in the identification and replace
+no validation. The complete render
 (route A) keeps its force and is transferred unaltered when the transport
 requires it; C authorizes no mix with an inline body — A+C is rejected even when
 the inline coincides — and a divergent inline is never rescued by switching to
@@ -81,6 +85,12 @@ published stops the dispatch — a procedural duty of the orchestrator — and i
 never substituted silently by the generic agent; the external adapter owns the
 mechanical rejection before launching the role work, and no new mechanical
 guard is promised for this native path.
+
+**Project root.** Pass `--project-root <product-root>` explicitly to every packet,
+layout and intake call. It governs the project's declarations and may differ from
+your session directory; never substitute the session directory. For a nested root,
+relocate a fresh child per role unit as shown in `references/sub-agent-strategies.md`
+("Native child when the project root is nested"); never create a top-level runner.
 
 **Packet rendering (the driver produces the packet).** Produce each role packet
 with the cdad-cycle skill's renderer:
@@ -148,8 +158,8 @@ Operating rules (strict):
 - State passing: every role session arrives fresh — the packet/handoff
   carries a single **dispatchable unit**: one task of the plan or one TDD
   sub-phase, never two sub-phases in one invocation. The unit carries its
-  inputs, strict rules and expected format; each postcondition is traced to at
-  least one test, and the unit yields one scoped, reviewable diff.
+  inputs, strict rules and expected format; each postcondition is traced to its
+  selected verification (at least one test for executable behavior, contextual review for semantic parts), and the unit yields one scoped, reviewable diff.
 - Concretely, a plan task whose RED and GREEN are separate dispatches satisfies the rule: each dispatch is its own unit, with its own diff.
 - Never assume the role remembers anything.
 - After each handoff/delegation: end the turn; re-enter when the result
@@ -165,7 +175,10 @@ Operating rules (strict):
 Context discipline (four compact rules; `references/orientation.md` §1 is the owner of "view first" — the first rule cites it and never duplicates it):
 - **Orient first with the compact `status` view.** The first read is the compact `status` view (`references/orientation.md` §1, its owner); never dump the state, the ledger or the whole skill into the session.
 - **Rotate the session at task boundaries, not mid-unit.** Start a fresh session when a task or sub-phase boundary closes; never rotate in the middle of a unit.
-- **No self-repair: re-dispatch the role naming the defect.** If a role returns something broken or incomplete, never repair or fix it yourself — re-dispatch that role stating the defect and what failed.
+- **No self-repair: re-dispatch the role naming the defect.** If a role returns something broken or incomplete, never repair or fix it yourself — re-dispatch that role stating the defect and what failed. The one allowance: a trivial formal correction (typo, formatting) may appear in a separate, explicitly attributed corrected presentation; the original, its receipt and journaled copy stay byte-identical, and substance, evidence, conclusions and attributed decisions are never changed.
+- **Discovery dialogue.** You are the user's single interlocutor: you may read code, run the product and investigate to resolve situations, recording technical findings that ground a decision as attributed evidence (who found it, how). Consult the architect when consequential uncertainty or independent technical judgment warrants it — not for every question, and not only after readiness — and delegate the spec draft. Keep current confirmed choices, open consequential questions and corrections (with provenance) in the existing notes/handoffs, in ordinary prose; partial answers, silence and unaccepted defaults are not consent, and readiness is not approval. Your one hard prohibition is writing or correcting the product or the tests. The installed methodology in use is not automatically the product under development.
+- **Bounded correction rounds (pointer — owner: `skills/cdad-cycle/references/bounded-review-cycles.md`).** The architect declares and justifies the unit's maximum; you apply it independently to the draft, audit and result families, count by unit + family (never by packet, execution, route or digest), and record each round in the existing note of the ordinary transition with the fixed note pattern. A closing check that continues the loop consumes the next round; at the maximum you finish the verification of the last permitted correction and then adjudicate every remaining finding (supported dismissal, accepted optional residue, or blocked/replan) — "budget exhausted" never dismisses a blocker. Further correction after exhaustion needs a recorded unmet-promise adjudication with a finite ceiling carrying the consumed ordinal. Handoffs carry the family, round/ceiling, evidence, required verification and stop status; roles never authorize an extra round. You apply and record; you do not approve or classify beyond your authority.
+- **Self-contained dispatch, sender duty (pointer — owner: `skills/cdad-cycle/references/handoff-prompts.md` §"Self-contained dispatch").** Every dispatch names the packet CLI (`<skill-dir>/scripts/cdad_packet.py`, an existing absolute path) and the product root on explicit locator lines; keeps every required read and write inside the declared scopes (a needed resource outside them is added by re-preparing the packet or re-planning, never left for the role to find); never relies on instructions a runtime loads automatically from a directory; and, when the child runs in a different directory, states the context it does not have. A dispatch lacking the locator is incomplete and is not sent. A gap a role reports is resolved by you with a corrected dispatch, never by letting the role search or substitute.
 - **Stable workspace paths for what must last.** Anything that must last, leave evidence or be read by another process or role (artifacts, receipts, run logs) goes to stable paths of the declared workspace — `.cdad/inbox` for the receipt and the declared workspace for everything else.
 
 Continuity wiring (`<skill-dir>` is the directory of the loaded `cdad-cycle`
@@ -339,7 +352,7 @@ Test convention (pointer): single editable definition in
 sources/roles/test-writer.md (cdad-shared:convention-rule); detail and the
 acceptance counterweight in `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy". The
 orchestrator applies selection rule R2 (selección por promesa y protección pendiente, sin cuota) and counterweight R7 when validating
-AUDIT, POST-AUDIT, RED and re-entry; it never restates them (drift checks AP-13/AP-14). Secuencias diferenciadas: mantenimiento de comportamiento vigente AUDIT aprobado → POST-AUDIT (incluidos sustitutos nuevos con verde + sensibilidad, sin RED ni GREEN si no hay implementación que cambiar); comportamiento pendiente AUDIT → POST-AUDIT cuando corresponda → RED separado → GREEN separado. Exige por momento los registros correspondientes per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy": Durante el ciclo focal + regresión proporcional; Cierre de feature con omisión motivada (suite completa no realizada, motivo, selección ejecutada y límites) cuando se omite la recomendada; Cierre de epic con evidencia completa o dispensa expresa del dueño registrada para ese cierre; delta Odoo coherente sin imponer evidencias de addon a quien no modifica addon.
+AUDIT, POST-AUDIT, RED and re-entry; it never restates them (drift checks AP-13/AP-14). Secuencias diferenciadas: mantenimiento de comportamiento vigente AUDIT aprobado → POST-AUDIT (incluidos sustitutos nuevos con verde + sensibilidad, sin RED ni GREEN si no hay implementación que cambiar); comportamiento pendiente AUDIT → POST-AUDIT cuando corresponda → RED separado → GREEN separado. Routing by method (canonical owner `skills/cdad-cycle/references/stage-3-tdd.md` §"Routing by verification method", cited, never restated): RED only for promises with pending executable behavior; semantic-only promises go to production and then contextual review, with no fabricated RED; mixed commitments take both families. Exige por momento los registros correspondientes per `skills/cdad-cycle/references/stage-3-tdd.md` §"Test evidence policy": Durante el ciclo focal + regresión proporcional; Cierre de feature con omisión motivada (suite completa no realizada, motivo, selección ejecutada y límites) cuando se omite la recomendada; Cierre de epic con evidencia completa o dispensa expresa del dueño registrada para ese cierre; delta Odoo coherente sin imponer evidencias de addon a quien no modifica addon.
 <!-- /cdad-section -->
 
 <!-- cdad-section:capacity -->

@@ -51,7 +51,31 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 # the project root so the guard still applies the policy when the cwd is not the
 # root (a subdirectory). Without the variable pwd is kept (legacy behavior).
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-POLICY_FILE="$PROJECT_ROOT/docs/cdad-policy.json"
+
+# 019-004 §4.2: the policy follows the selected methodology layout, resolved by
+# the shared resolver installed beside the packet CLI. A registered locator that
+# cannot be resolved, or whose policy is missing, blocks: never a docs/ fallback.
+LOCATOR="$PROJECT_ROOT/.cdad/project-layout.json"
+LAYOUT_CLI="$(dirname "${CDAD_PACKET_CLI:-$HOME/.claude/skills/cdad-cycle/scripts/cdad_packet.py}")/cdad_layout.py"
+LAYOUT_PY="${CDAD_PYTHON:-python3}"
+if [[ -e "$LOCATOR" || -L "$LOCATOR" ]]; then
+  if [[ ! -f "$LAYOUT_CLI" ]]; then
+    echo "CDAD path-guard: registered methodology layout but the resolver was not found ($LAYOUT_CLI); blocking without fallback" >&2
+    exit 2
+  fi
+  if ! METHOD_BASE="$("$LAYOUT_PY" "$LAYOUT_CLI" base --project-root "$PROJECT_ROOT")"; then
+    echo "CDAD path-guard: invalid registered methodology layout (see the resolver diagnostic above); blocking without fallback" >&2
+    exit 2
+  fi
+else
+  METHOD_BASE="docs"
+fi
+POLICY_FILE="$PROJECT_ROOT/$METHOD_BASE/cdad-policy.json"
+
+if [[ -e "$LOCATOR" || -L "$LOCATOR" ]] && [[ ! -f "$POLICY_FILE" ]]; then
+  echo "CDAD path-guard: registered methodology layout has no policy ($METHOD_BASE/cdad-policy.json); blocking without fallback" >&2
+  exit 2
+fi
 
 if [[ -f "$POLICY_FILE" ]]; then
   case "$ROL" in
@@ -174,7 +198,7 @@ if [[ -f "$POLICY_FILE" ]]; then
     # derived agents (derivatives and manifest) — the exclusion of the policy
     # prevails over any class-based permission.
     if [[ "$IS_EDIT_TOOL" == "1" ]]; then
-      if [[ "$CLASS" == "policy" || "$REL_PATH" == ".opencode/agents/"* ]]; then
+      if [[ "$CLASS" == "policy" || "$REL_PATH" == ".opencode/agents/"* || "$REL_PATH" == ".cdad/project-layout.json" ]]; then
         echo "CDAD path-guard: no role edits the policy or the published derived agents ($REL_PATH); blocking (PD-7)" >&2
         exit 2
       fi

@@ -19,7 +19,14 @@ Two dispatch vehicles exist, and the packet is never re-typed by hand:
   --route C` on the published request (`--request
   .cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
   that stdout ALONE: the identification travels without an inline body, and it is
-  never recomposed, retranscribed or accompanied by the packet body.
+  never recomposed, retranscribed or accompanied by the packet body. A transport may
+  add inert preamble or trailing text around that stdout; the receiver's `intake`
+  admits it and that text grants no authority. The dispatch MUST name the
+  installed packet CLI the receiver runs (`<cli>` of its `intake` rule) and the
+  product root as explicit locator lines outside the identification (see
+  "Self-contained dispatch" below); those lines grant no authority, do not alter
+  the identification, and replace no validation. The sender never adds a second
+  identification, a packet fragment or a rewritten copy.
 - **Route A — the complete render.** Where the transport requires the full
   packet, transfer the complete render unaltered; it keeps its force. C
   authorizes no mix with an inline body — A+C is rejected even when the inline
@@ -44,6 +51,41 @@ epic plan delegates the architect through the legacy template.
 If the prepared inputs are absent or invalid, do not invent authority or send a
 partial packet. Continue with the legacy templates below.
 
+### Self-contained dispatch (owner of the sender and receiver rule)
+
+A role never has to discover, inherit or guess a resource its unit requires. This
+section is the single statement of that rule; the orchestrator source, the
+shared intake block and the packet instructions point here and do not restate it.
+
+**Sender (orchestrator).** Every dispatch, on either route and on the legacy
+path:
+
+- names every external executable the unit requires — always at least the
+  installed packet CLI (`<skill-dir>/scripts/cdad_packet.py`, as an existing
+  absolute path) — on an explicit locator line, together with the product root
+  the role passes as `--project-root`; a role uses the named path and never
+  resolves it from installation metadata. A dispatch without that line is
+  incomplete and is not sent;
+- keeps every required read and write inside the declared `read_scope` and
+  `write_scope`; a resource the unit needs that lies outside them is added by a
+  re-prepared packet or the unit is re-planned, never left for the role to find;
+- never relies on instructions a runtime loads automatically from a directory
+  (project instruction files such as `AGENTS.md`/`CLAUDE.md`, local skill
+  folders): anything required from them travels in the packet or in a reference
+  the packet names inside the scopes;
+- when the role session runs in a different directory from the orchestrator,
+  states in the dispatch the context that is not available there (loaded
+  instructions, session history, workspace files) instead of letting the role
+  assume it.
+
+**Receiver (role).** Use the named locator and product root. When a required
+resource is missing, unnamed or outside the declared scopes, report the gap to
+the orchestrator and stop that part: no search of the checkout or the
+filesystem, no out-of-scope read, no improvised substitute.
+
+The locator lines are inert: they grant no authority, are not part of the
+packet or its identification, and replace no validation.
+
 How the orchestrator generates the prompt the user pastes into a new chat (or a native sub-agent) to start a specific role.
 
 ## Invocation with native sub-agents
@@ -53,6 +95,10 @@ If the environment has `cdad-*` sub-agents installed, invoke the role through
 (its `delegation` section: the dispatch tool, the role→sub-agent mapping and how
 the packet is passed). For a prepared execution, the Task prompt is the renderer
 stdout unchanged. The adaptations below apply only to the legacy flow:
+
+For an OpenCode coordinator in a parent directory, see the
+[nested-project native child example](sub-agent-strategies.md#native-child-when-the-project-root-is-nested).
+It relocates an initialization-only child before canonical packet delivery.
 
 - Start the prompt with: "Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand your role within the cycle. Act as `<role>` with the following task:"
 - Add the line: "Also, read `docs/.cdad-state.json` and `docs/specs/<feature-id>/` as applicable to your role."
@@ -189,6 +235,7 @@ Strict rules:
 - Every modified test MUST have explicit justification in the spec (line/section)
 - List untouched tests EXPLICITLY (Mantener, including destinations by reference that stay intact)
 - Identify regression risks: obligations without accredited protection, uncertainties and blocks (never certify sufficiency under uncertainty).
+- Bounded rounds (`references/bounded-review-cycles.md`): this audit belongs to the unit's **audit family**. Report the family round and ceiling the packet gives you (the orchestrator carries them from the ordinary records), the verification still required, and any stop/escalation condition; you never authorize an extra round, and at the maximum you report the remaining findings for adjudication instead of continuing.
 
 Expected output: the Test Audit Report as FINAL TEXT with this structure (the orchestrator materializes `docs/specs/<feat>/test-audit.md` from that text — Roles contract §5; the canonical mechanism is the "Orchestrator materialization protocol" in `references/re-entry.md`):
 - Summary of changing behavior
@@ -239,7 +286,7 @@ Brainstorm:
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `architect` with the following task:
 
-Task: help the user define the feature "<feature-name>" by asking questions that expose ambiguities. You do NOT propose design yet, you only ask.
+Task: answer a targeted technical consultation on the feature "<feature-name>" so the orchestrator can hold the dialogue with the user: expose the consequential ambiguities as questions.
 
 Context:
 1. Preliminary functional description: <one to three lines>
@@ -250,12 +297,12 @@ Strict rules:
 - Permissions: read-only.
 - You do NOT write the spec in this turn.
 - You ask Socratic questions in categories: inputs, outputs, errors, edge cases, non-functional, permissions, persistence, out of scope.
-- One to three questions per turn. You wait for answers before continuing.
-- You cut off when the remaining questions are implementation details, not behavior decisions.
+- You never invent or assume the user's agreement; mark unsupported assumptions "VERIFY".
+- You stop at behavior decisions; implementation details are not questions.
 
-Expected output: a round of questions. When you consider the brainstorm closed, respond:
+Expected output: one `role-report` with findings and evidence, and the consequential questions still open. When finished, respond:
 
-"READY FOR DRAFT. Summary of the brainstorm: <bullets of decisions made>"
+"DONE. <role-report>"
 ```
 
 Draft:
@@ -263,17 +310,19 @@ Draft:
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `architect` with the following task:
 
-Task: produce the spec draft for "<feature-name>" based on the brainstorm.
+Task: produce the spec draft for "<feature-name>" based on the owner's recoverable dialogue decisions and, only if one was consulted, the consultation summary.
 
 Context:
-1. Brainstorm summary: <paste summary>
+1. Owner dialogue decisions (recoverable from the discovery dialogue): <paste decisions>; consultation summary (only if the architect was consulted): <paste summary or "none">; do not require a brainstorm summary that does not exist
 2. Spec template: <paste the content of assets/spec-template/spec.md>
 3. docs/systemPatterns.md
 
 Strict rules:
 - Four mandatory sections: Functional description, Contract (signature + numbered postconditions), Verifiable invariants, Acceptance criteria.
-- Numbered and verifiable postconditions (a test can determine pass/fail).
+- For each observable promise, its verification per `references/stage-2-specification.md` §"Verification strategy per promise" (property, method, acceptance criterion, expected evidence, limits).
+- Numbered and verifiable postconditions (a test can determine pass/fail, or, for a semantic-only promise, the contextual review can).
 - Measurable acceptance criteria (no vague adjectives).
+- Declare the unit's maximum of correction rounds (positive integer), a concrete difficulty/risk justification and its status (provisional until the approver adopts it), applied independently to the draft, audit and result families (`references/bounded-review-cycles.md`; you declare it, the orchestrator applies and records it).
 - No approval mark: the user adds it later.
 
 Expected output: the spec draft as complete FINAL TEXT (the orchestrator or the user writes `docs/specs/<NNN-feature-id>/spec.md` from that text — Roles contract §5; the canonical mechanism is the "Orchestrator materialization protocol" in `references/re-entry.md`). When you finish:
@@ -416,11 +465,11 @@ Commit: <hash>"
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `implementer` with the following task:
 
-Task: make the freshly written test pass with a simple implementation of the approved behavior. NO speculative features.
+Task: for a promise with pending executable behavior, make the freshly written test pass with a simple implementation of the approved behavior. For a semantic-only promise, implement the approved behavior against the contract and acceptance criterion, without inventing a test (routing: `references/stage-3-tdd.md` §"Routing by verification method"). NO speculative features.
 
 Context:
 1. Approved spec (paste)
-2. The test that has to pass (paste file)
+2. The test that has to pass (paste file) — only for a promise with pending executable behavior; for a semantic-only promise paste the approved acceptance criterion and the sources instead
 3. Module interface / signature (paste)
 4. docs/systemPatterns.md
 
@@ -432,19 +481,21 @@ Strict rules:
 
 Expected output: implementation code + commit "feat: implement <postcondition>". When you finish:
 
-"DONE. Implementation in <file>. Output of the evidence run:
+"DONE. Implementation in <file>. Evidence the change requires:
 
-<paste output with all tests green>
+<executable parts: output of the applicable checks, all green, with exit status. Semantic parts: the produced product and the pertinent structural evidence; fidelity is NOT established by that evidence and is left to the independent contextual review at Stage 4. Mixed: both kinds, each on its own part>
 
 Commit: <hash>"
 ```
 
 #### Fix packet (review re-entry — Stage 4 loop)
 
-The implementer template above is reused to apply review fixes (loop with Stage 3). The orchestrator adds TWO mandatory things to the packet:
+The implementer template above is reused to apply review fixes (loop with Stage 3). The orchestrator adds THREE mandatory things to the packet:
 
 1. **Complete feedback**: the reviewer's findings and the user's context travel pasted in full in the packet (original text, rationale and provenance included). No softening edits — no friendly tone, no cuts, no "summary". The receiver verifies against the original evidence, not your paraphrase.
 2. **A line at the start of the instructions**: *"Apply the `skills/cdad-cycle/references/receiving-feedback.md` protocol before touching code"*.
+
+3. **The bounded-round context** (`references/bounded-review-cycles.md`): the unit, the family (`result`), the cumulative round and its ceiling, the evidence references, the closing verification still required after the fixes, and the stop/escalation status. Apply only the grounded fixes of the packet; do not extend the loop yourself — report the verification you ran and any finding that continues the loop, and the orchestrator decides the next round or the adjudication.
 
 Rationale: the packet re-invokes the protocol with fresh tokens (antidote to dilution in long sessions) and the isolated session arrives without emotional investment. Protocol detail: `references/receiving-feedback.md`.
 
@@ -479,10 +530,10 @@ Commit: <hash>"
 ```
 Find and read the cdad-cycle skill (`skills/cdad-cycle/SKILL.md`) to understand the CDAD cycle and your specific role within it. Then, act as `test-writer` with the following task:
 
-Task: write property tests that verify the spec's invariants with random inputs.
+Task: write property tests for the invariants for which the approved contract selects executable property tests (list them in the context; invariants kept as reviewable restrictions are NOT in scope and get no campaign), using random inputs.
 
 Context:
-1. Approved spec, "Verifiable invariants" section (paste)
+1. Approved spec, the invariants for which the contract selects property tests (paste only those, with their declared verification)
 2. Interface (paste)
 3. Project's property-testing library: <Hypothesis / fast-check / QuickCheck / etc.>
 4. docs/systemPatterns.md
@@ -561,6 +612,14 @@ Strict rules:
   closure condition**; a failure family is fixed as a family (one proportionate
   general solution); optional improvements do not prolong the cycle. Search
   adversarially, report proportionally.
+- **Bounded rounds (`references/bounded-review-cycles.md`):** this review is the
+  assessment of the unit's **result family**; report the family round and
+  ceiling the packet gives you. In a closing re-review, state whether any
+  finding continues the correction loop (that opens the next round) and which
+  required verification you ran or still require; at the maximum, report the
+  remaining findings with their evidence for adjudication. You never authorize
+  an extra round, and "budget exhausted" is never a reason to downgrade a
+  blocker.
 
 Expected output: the review as FINAL TEXT with this structure (the orchestrator materializes `docs/specs/<feat>/review.md` from that text — Roles contract §5; the canonical mechanism is the "Orchestrator materialization protocol" in `references/re-entry.md`):
 
@@ -610,6 +669,8 @@ python3 skills/cdad-cycle/scripts/cdad_packet.py prepare \
   --plan-version <version of the draft> \
   --objective "<atomic review task>"
 ```
+
+The review is the assessment of the unit's **draft family** (`references/bounded-review-cycles.md`): specification and plan share ONE allowance, so give the packet the current round and ceiling from the ordinary records. A focused re-review is the verification of the current round; report whether its findings continue the correction loop (that opens the next round) and, at the maximum, the remaining findings for adjudication. The reviewer never authorizes an extra round.
 
 The **three contract flags are required** (`--contract-kind draft-plan`,
 `--contract-path`, `--plan-version`): without them `prepare` falls back to the
@@ -716,6 +777,36 @@ For the reviewer's packet, the equivalent block:
 - **Atomic task**: one promise per test-writer (R2: the unit of selection is the promise, never the postcondition), one test per implementer, one diff per reviewer. Do NOT group unless the spec marks explicitly orthogonal promises.
 - **Attaching files**: when you can, give exact paths. When the content fits, paste it inline in the packet.
 - **Final line of the packet**: your turn always ends with the packet and the instruction to the user to "come back when the role finishes, with the output". Nothing else.
+- **Self-contained dispatch** (§"Self-contained dispatch"): every handoff, packet or legacy, names the packet CLI and the product root on explicit locator lines, keeps required reads and writes inside the declared scopes, carries what a directory-loaded instruction file would have supplied, and states the context a role running in another directory does not have. The receiver reports a missing or out-of-scope resource and stops; it never searches or substitutes.
+- **Bounded rounds**: every handoff into a correction loop (draft, audit or result family) preserves, from the ordinary records, the unit, the family, the cumulative round and its ceiling, the evidence references, the verification still required and the stop/escalation status (`references/bounded-review-cycles.md`); the receiver reports these and never authorizes an extra round. Re-dispatch, a new packet or execution identity, or a changed digest never resets the count.
+
+### Inventario vivo (013-002 PC-7) — regla para handoffs
+
+La declaración vive en `docs/suite-maintenance.md` `## Inventario vivo`
+(el comando de integridad declarado, inventario y mapa). El
+orquestador la lee en los re-entries de cambios de tests y transmite la regla
+en estos handoffs, por ruta legacy y por paquetes. Si no hay inventario vivo
+declarado, registra `sin inventario vivo declarado` sin bloquear. El
+test-writer entrega el delta de altas (nodeid, capacidad, contrato,
+procedencia) como texto; el orquestador lo materializa al re-entry antes de la
+siguiente transición. Los cambios de orígenes o destinos incorporan además el
+delta del mapa de PC-6; POST-AUDIT devuelve los deltas documentales
+pertinentes bajo la misma separación de responsabilidades. `validate` con rc=0
+bloquea solo en entrada a Review y cierre, medido sobre la revisión que ya
+contiene los deltas materializados y los últimos cambios de tests.
+
+### Vínculos contrato↔test (016-001 PC-6) — regla para handoffs
+
+El hogar canónico es `skills/cdad-cycle/references/contract-test-links.md`
+(formato y uso; esta sección solo la cita). El orquestador transmite la regla
+en estos handoffs, por ruta legacy y por paquetes: ruta del registro, contrato
+(path + sha256), regla de delta (`CURRENT − BASE` del mismo ámbito) y
+comprobación aplicable. El test-writer entrega el delta del registro como
+texto; el orquestador lo materializa al re-entry antes de la siguiente
+transición. En entrada a Review y cierre se exige comprobación sobre los
+deltas y tests actuales; en los re-entries intermedios un resultado no cero se
+registra sin convertirse en gate de RED («tests nuevos no comprobados» sin
+baseline).
 
 ### Inventario vivo (013-002 PC-7) — regla para handoffs
 

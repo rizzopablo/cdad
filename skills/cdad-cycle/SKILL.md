@@ -20,6 +20,7 @@ You do:
 - **Validate the results that come back from the role** (re-entry) and issue the next handoff or close the stage.
 - Apply the Scribe pattern (Memory Bank update drafts; the user approves and the orchestrator commits).
 - Detect and cite anti-patterns.
+- Hold the discovery dialogue with the user, investigate as needed, and consult the architect when consequential uncertainty warrants it (`references/stage-1-discovery.md`, `references/stage-2-specification.md`).
 
 You do NOT:
 - Write tests (that is the test-writer's job).
@@ -106,7 +107,7 @@ feature's acceptance criterion.
   separate, later hardening stage/epic. Mixing both questions in one gate makes
   the easier one to measure (coverage %) devour the time of the harder one to
   reason about (is the contract correct?). Property tests derived from invariants
-  the spec explicitly marks (sub-phase 3.4) do belong to the cycle —
+  the approved contract explicitly selects as executable (sub-phase 3.4) do belong to the cycle —
   what falls outside is generating property tests for coverage's sake, with no
   spec invariant behind them.
 - **RED verifies the requirement, it does not maximize coverage.** Selection and
@@ -117,8 +118,9 @@ feature's acceptance criterion.
   that are hard or impossible to satisfy — time and tokens wasted in GREEN
   without a result. Detail in `references/stage-3-tdd.md`.
 - **A feature's acceptance criterion** is R7
-  (`references/stage-3-tdd.md`): every promise the spec commits is verified by
-  behavior before acceptance — not a coverage percentage and not a count of tests.
+  (`references/stage-3-tdd.md`): every promise the spec commits is verified by its
+  selected method before acceptance (behavior for executable parts, contextual
+  independent review for semantic parts, both for mixed) — not a coverage percentage and not a count of tests.
 - **Mandatory counterpart:** with no exhaustive tests, the precision
   burden moves to the spec (it doesn't disappear). Numbered and
   testable postconditions, maximally clear, before RED opens. Ambiguous spec → tests
@@ -298,7 +300,7 @@ A retry (attempt) must respond to a new hypothesis or new information; an identi
 Stage 1: Discovery          → references/stage-1-discovery.md
    ↓ (gate: terrain mapped)
 Stage 2: Specification      → references/stage-2-specification.md
-   ↓ (gate: draft reviewed — plan-review.md; spec.md approved by the user)
+   ↓ (gate: draft reviewed — plan-review.md, or the owner's registered exemption; spec.md approved by the user)
 Stage 3: Anti-gaming TDD    → references/stage-3-tdd.md
    ├─ 3.0 AUDIT: Test-Writer audits the existing suite
    │  └─ Gate: Test Audit approved by the user
@@ -308,11 +310,11 @@ Stage 3: Anti-gaming TDD    → references/stage-3-tdd.md
    │  └─ Gate: proportional regression green (Test evidence policy)
    ├─ 3.3 REFACTOR: (optional)
    │  └─ Gate: Suite green
-   ├─ 3.4 PROPERTIES: (optional)
+   ├─ 3.4 PROPERTIES: (optional; only invariants with property tests selected by the contract)
    │  └─ Gate: Properties green
    ├─ 3.5 E2E: (optional)
    │  └─ Gate: E2E green
-   ↓ (gate: suite green, every postcondition with a test)
+   ↓ (gate: executable parts green; semantic-only parts produced with contextual review pending at Stage 4; mixed promises carry both families; every postcondition with its selected verification — stage-3 §"Routing by verification method")
 Stage 4: Review two-layer   → references/stage-4-review.md (+ verdict contract: references/verdict-tuple.md)
    ↓ (gate: blocking items resolved)
 Stage 5: Merge + Memory Bank → references/stage-5-merge.md
@@ -346,28 +348,28 @@ See **Roles contract §2** above for the full table with permissions, artifacts 
 - [ ] Measurable acceptance criteria.
 - [ ] Unambiguous user approval mark: final line `Status: Approved by <X> on <date>` or frontmatter with `approved_by` + `approved_at`.
 - [ ] If the spec is complex (multiple components): `plan.md` exists, passed self-review and is approved together with the spec.
-- [ ] `docs/specs/<feature-id>/plan-review.md` exists (the verdict of the draft review).
-- [ ] Its blockers resolved or explicitly dismissed with written reason.
+- [ ] Draft review: `docs/specs/<feature-id>/plan-review.md` exists (the verdict of the draft review), or the owner's exemption is registered in `stage_history` with `exempted_by`, `delegated`, `requested_by` and `reason` (an exemption is not an executed review nor a claim of verified sufficiency).
+- [ ] When the review was performed: its blockers resolved or explicitly dismissed with written reason.
 
 ### Gate 3→4 — TDD → Review
 
 - [ ] Test Audit completed and approved (`test-audit.md` exists with benefit of the doubt resolved, if applicable).
 - [ ] Every modified test has explicit justification in spec.md.
-- [ ] Every postcondition of the spec has at least one test.
+- [ ] Every postcondition of the spec has its selected verification: at least one test for executable parts, contextual independent review at Stage 4 for semantic-only parts; a mixed promise has both (no fabricated test).
 - [ ] Every written test maps to a postcondition (no tests for completeness).
 - [ ] No test depends on internal structure (no mocks over plumbing).
 - [ ] Test↔postcondition mapping audited by a session different from the one that wrote the tests.
-- [ ] Suite green (verified empirically, not assumed).
-- [ ] If the spec marks invariants → property tests green.
+- [ ] Suite green when the feature has executable promises (verified empirically, not assumed).
+- [ ] If the contract selects executable property tests for an invariant → those property tests green; invariants kept as reviewable restrictions go to Stage 4 contextual review, with no fabricated campaign.
 - [ ] If the spec marks E2E criteria → integration/E2E tests green.
-- [ ] Granular commits (RED, GREEN, REFACTOR separated).
+- [ ] Granular commits (RED, GREEN, REFACTOR separated); a semantic-only production has no RED commit.
 
 ### Gate 4→5 — Review → Merge
 
 - [ ] `docs/specs/<feature-id>/review.md` exists.
 - [ ] Blocking items resolved or explicitly dismissed with written reason.
 - [ ] Prioritization validated by the user, or agent-delegated with an explicit request registered in `stage_history` (see the exception in §2.3/Layer 2 — never self-granted, AP-15).
-- [ ] Suite still green after the fixes.
+- [ ] Fixes verified by the checks that apply to each committed promise: the suite stays green for executable parts (evidence policy: `references/stage-3-tdd.md` §"Test evidence policy"); semantic-only parts pass the applicable structural checks and their contextual re-review; mixed promises satisfy both.
 
 ### Gate 5→done
 
@@ -387,6 +389,8 @@ See **Roles contract §2** above for the full table with permissions, artifacts 
 ---
 
 ## Memory Bank — conventions
+
+Conventional `docs/` paths in this skill (`docs/specs/`, `docs/.cdad-state.json`, `docs/cdad-policy.json`, `docs/adr/`, the Memory Bank files) mean the methodology directory that `<skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>` resolves: the registered `methodology_dir`, `docs/` for a legacy project, or `cdad/` for a genuinely new one (`references/bootstrap.md` Step 0). Never migrate or rewrite a layout to match these examples.
 
 ```
 docs/
@@ -539,10 +543,10 @@ If there is NO active epic, the flow is exactly the current one, unmodified.
 |---|---|
 | 1 → 2 (Discovery) | `docs/landscape.md` with real content; zero pending assumptions of the type "I think X exists" |
 | 2 → 3 (Spec) | `spec.md` with the 4 minimum sections + numbered postconditions + unambiguous user approval mark |
-| 3.1 RED | Suite output with RED tests failing with `AssertionError` (not with a compile/import error) |
-| 3.2 GREEN | Evidence per the **Test evidence policy**: Durante el ciclo focused + touched-modules regression green (final summary line included); Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits |
-| 3.3-3.5 | Suite green after each sub-phase; properties/E2E green if the spec marks them |
-| 4 (Review) | `review.md` with findings against the spec; blocking items resolved or dismissed with written reason |
+| 3.1 RED | For promises with pending executable behavior: suite output with RED tests failing with `AssertionError` (not with a compile/import error). A semantic-only promise has no RED: none is fabricated; its evidence is the production against the approved contract plus the contextual independent review of Stage 4 |
+| 3.2 GREEN | For executable parts, evidence per the **Test evidence policy**: Durante el ciclo focused + touched-modules regression green (final summary line included); Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits. Semantic-only parts: product produced, applicable structural checks run, contextual review pending at Stage 4; mixed promises carry both families |
+| 3.3-3.5 | Where the feature has executable promises: suite green after each sub-phase; properties green if the contract selects executable property tests, E2E green if the spec marks them. A semantic-only feature has no suite to turn green; its applicable structural checks still run |
+| 4 (Review) | `review.md` with findings against the spec; blocking items resolved or dismissed with written reason; semantic parts (and the semantic part of mixed promises) carry their contextual independent review, never replaced by a test |
 | 5 (Merge) | Evidence green per the **Test evidence policy** (focused + proportional regression; Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits / gate no ejecutado); Memory Bank with a new entry |
 
 **Evidence rules:**
@@ -550,7 +554,7 @@ If there is NO active epic, the flow is exactly the current one, unmodified.
 1. **The output is the proof.** If your environment doesn't allow execution, ask the user for the exact output (last 20 lines of the run + summary line). Never advance with "I think it passes".
 2. **No evidence, no gate.** A gate closed without the table's evidence is an invented gate: it gets reopened in the next review.
 3. **Evidence gets pasted or cited, not described.** "The suite is green" ≠ "here is the output".
-4. **Coverage ≠ contract.** The acceptance criterion is a postcondition verified by a behavioral test; if a coverage number shows up as an excuse to skip a gate, it is a red flag (see the table below).
+4. **Coverage ≠ contract.** The acceptance criterion is a postcondition verified by the method selected for its promise (a behavioral test for executable behavior, contextual independent review for semantic fidelity, both for mixed); if a coverage number shows up as an excuse to skip a gate, it is a red flag (see the table below).
 5. **Documented debt ≠ hidden debt.** If something can't be verified today, it gets recorded as an explicit deviation in the stage's artifact — never silently omitted.
 
 ## Anti-rationalization table — typical excuses and their refutations
@@ -582,10 +586,10 @@ exactly that: removing intermediate approval ≠ removing verification).
 | Typical excuse | Documented refutation |
 |---|---|
 | "This is small, no spec needed" | Change size does not predict contract risk. A 3-line fix can break an invariant nobody was testing. Minimum spec (numbered postconditions) always. |
-| "I'll add tests later" | The test written after the code verifies what the code DOES, not what the spec ASKS (AP-2). Test first, no way around it. |
+| "I'll add tests later" | For executable behavior, the test written after the code verifies what the code DOES, not what the spec ASKS (AP-2). Test first, no way around it. A semantic-only promise has no test to write first: its verification is the contextual independent review, never skipped. |
 | "The tests pass, I saw it with my own eyes" (without running the suite) | See AP-3: trust is not evidence. Run the suite and paste the output. |
 | "The test was wrong, I adjusted it to pass" | The implementer doesn't touch tests (AP-4). If the test is wrong, it goes back to the test-writer in an isolated session. |
-| "Coverage is already high, no more tests needed" | Coverage ≠ contract. A postcondition without a test is an unverified postcondition, even at 99% coverage. |
+| "Coverage is already high, no more tests needed" | Coverage ≠ contract. A postcondition without its selected verification (a test for executable behavior, contextual independent review for semantic fidelity, both for mixed) is unverified, even at 99% coverage. |
 | "It's faster to do it inline than to delegate" | Session isolation IS the guarantee (test-writer doesn't see `src/`, the reviewer runs read-only in a session separate from the implementer's). Inline = guarantee lost. Delegate or switch modes explicitly with the trade-off flagged. |
 | "The reviewer will say the same, I'll skip it" | Independent review is the only anti-confirmation-bias. If it "says the same", the review confirms it cheap; if not, you just avoided a bug. |
 | "There's no time, we approve and move on" | Human approval fatigue is measurable and worsens over time (scalex.dev: average precision 66.3%, degrades under pressure). Structural barriers exist precisely so quality does not depend on the approver's mood. |

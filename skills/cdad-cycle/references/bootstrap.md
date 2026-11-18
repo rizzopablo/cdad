@@ -1,24 +1,44 @@
 # Bootstrap — Initializing a new project in CDAD
 
-When the project has no Memory Bank and no `docs/specs/`, the user is starting from scratch. This is the first time CDAD is applied to this project.
+Bootstrap applies only when the layout query reports a genuinely new project. This is the first time CDAD is applied to this project.
 
 ## Your goal
 
 Leave the project ready for the **first feature** to enter Stage 1 (Discovery) without friction. This means:
 
-1. The `docs/` structure created with templates filled in.
+1. The methodology directory created with templates filled in (`cdad/` for a new project; see the layout step).
 2. State file initialized.
 3. Operational decisions made (which framework, which tooling, what counts as "green").
 
 ## Steps
 
+### Step 0: resolve the layout first
+
+Run the read-only query from the product root (`<product-root>`, not the session directory), before asking anything or creating files:
+
+```bash
+python3 <skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>
+```
+
+- `source: registered` → use its `methodology_dir`. Never overwrite the locator and never fall back to `docs/`. This is not a bootstrap; continue with the existing layout.
+- `source: legacy` → the project is not new: do not bootstrap, and do not move or rewrite it.
+- Uninitialized → genuinely new, if Step 1 confirms it. Only then run `layout --project-root <product-root> --for-bootstrap`, which proposes `cdad/`.
+- Any other failure → stop and report the CLI's diagnostic to the user. Do not bootstrap over it and do not pick a directory.
+
+The query creates nothing; `layout --help` states its exact contract.
+
 ### Step 1: confirm the user wants to bootstrap
 
 Before creating files, ask:
 
-> *"I didn't detect a Memory Bank in this project. Is this the first time you're applying CDAD here? If so, I offer to create the `docs/` structure with initial templates — you will have to fill in some parts yourself (the ones requiring project knowledge I don't have). Shall we proceed?"*
+> *"I didn't detect CDAD in this project. Is this the first time you're applying CDAD here? If so, I offer to create the methodology directory (`cdad/`) with initial templates — you will have to fill in some parts yourself (the ones requiring project knowledge I don't have). Shall we proceed?"*
 
-If they say no, ask whether the Memory Bank is in another location.
+Also ask whether CDAD already exists elsewhere in the repository. These are two separate conditions, and the bootstrap proposal stands only when **both** are explicitly confirmed:
+
+1. It is confirmed that this is the **first** application of CDAD to this project (the user answers yes to the first question).
+2. It is confirmed that CDAD **does not exist elsewhere** in the repository (the user answers no to the second question).
+
+Stop, without creating anything, when either condition is not confirmed: silence, doubt or "I don't know" on either one, a negative answer to the first question, or an affirmative answer to the second one (CDAD exists elsewhere, or there was a previous installation). Then ask where the existing Memory Bank is, rather than creating a second one.
 
 ### Step 2: collect project context
 
@@ -36,7 +56,7 @@ Do not make a long questionnaire. Three or four concrete questions and get going
 
 ### Step 2b: `stack` detection (automatic, non-blocking)
 
-`docs/.cdad-state.json.stack` is the generic field that activates specialized
+`<methodology_dir>/.cdad-state.json` (the `stack` field; `docs/` only for a legacy project) is the generic field that activates specialized
 role variants (`cdad-<role>-<stack>`) — see `cdad-cycle` §3.1. **CDAD knows
 no stack by name**: detection lives in each specialization skill, not here.
 This is what lets Django, Rails, Odoo, or any other future specialization
@@ -65,12 +85,23 @@ over whatever is installed.
 
 ### Step 3: create the structure
 
-Copy the templates from `assets/memory-bank-templates/` to the project's `docs/`. Fill in what you know, and leave clear `<TODO: ...>` placeholders for what the user must complete.
+Copy the templates from `assets/memory-bank-templates/` to the methodology directory: `cdad/` for a new project, or the registered `methodology_dir` when a locator exists. Fill in what you know, and leave clear `<TODO: ...>` placeholders for what the user must complete. Never overwrite existing metadata, documentation or plans.
 
-Structure to create:
+For a new project, record the placement before anything else is created: write `.cdad/project-layout.json` with exactly this closed schema, under this bootstrap's authorization only (no other role may edit it):
+
+```json
+{
+  "schema_version": 1,
+  "methodology_dir": "cdad"
+}
+```
+
+Then re-run `layout --project-root <product-root>` and confirm `source: registered`. Classify the methodology directory as documentation in the proposed policy, keeping applicable end-user documentation paths as they are. `validate-policy` reports whether the effective policy accepts that placement; an incompatibility blocks operational use until the owner authorizes a policy reconciliation. Bootstrap does not change the policy to make it pass.
+
+Structure to create (the tree is rooted at the methodology directory):
 
 ```
-docs/
+cdad/                     (<methodology_dir>; `docs/` only for a legacy project)
 ├── projectbrief.md       (from assets/memory-bank-templates/projectbrief.md)
 ├── systemPatterns.md     (from assets/memory-bank-templates/systemPatterns.md)
 ├── activeContext.md      (from assets/memory-bank-templates/activeContext.md)
@@ -86,7 +117,7 @@ You create `landscape.md` in the first Stage 1, not here.
 
 ### Step 4: initialize state file
 
-Initial content:
+Create `<methodology_dir>/.cdad-state.json`. Initial content:
 
 ```json
 {
@@ -105,10 +136,10 @@ Initial content:
 
 After creating the structure, communicate:
 
-> *"Done. Memory Bank created in `docs/`, state file initialized. What's left for **you** to complete:*
+> *"Done. Memory Bank created in `cdad/` (the methodology directory), state file initialized. What's left for **you** to complete:*
 >
-> *- `docs/projectbrief.md`: the sections marked TODO.*
-> *- `docs/systemPatterns.md`: the technical conventions you already have (layers, naming, framework patterns).*
+> *- `cdad/projectbrief.md`: the sections marked TODO.*
+> *- `cdad/systemPatterns.md`: the technical conventions you already have (layers, naming, framework patterns).*
 >
 > *When you're ready, tell me what the first feature is and we start with Stage 1 (Discovery)."*
 
@@ -122,6 +153,7 @@ If the user insists on doing it in bootstrap, that's fine — explain that it wi
 
 - **Do not create specs in bootstrap.** Specs are per feature; in bootstrap there is no active feature yet.
 - **Do not create empty ADRs.** ADRs document decisions made; they are not pre-filled speculatively. The `adr/` folder is created; concrete ADRs arise when there are real architectural decisions.
+- **Do not bootstrap over a legacy marker, an ambiguous layout or an existing locator.** Report the layout diagnostic instead; never migrate or repoint.
 - **Do not promise CDAD will be instant.** Bootstrap takes an honest 30-60 minutes, mainly to complete `projectbrief.md` and `systemPatterns.md`. If the user expects 5 minutes, they are underestimating the initial cost — and that cost is what pays for the later performance.
 
 ## After bootstrap

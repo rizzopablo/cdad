@@ -198,7 +198,7 @@ Cada tarea separará AUDIT, mantenimiento autorizado, RED y GREEN en los despach
 
 **Roles:** test-writer para AUDIT/verificadores; implementer para fuentes y documentación.
 
-**Consume:** PC-1, PC-2 y PC-6.
+**Consume:** PC-1, PC-2 y PC-6.  
 **Produce:** entrada compacta coherente, reglas de continuación y preparación íntegra; agentes regenerados.
 
 **Verificación:** checks documentales por conceptos, contraste doctrinal independiente y regresiones:
@@ -216,7 +216,7 @@ Cada tarea separará AUDIT, mantenimiento autorizado, RED y GREEN en los despach
 
 **Roles:** test-writer RED; implementer GREEN, separados.
 
-**Consume:** PC-3 y PC-4.
+**Consume:** PC-3 y PC-4.  
 **Produce:** ayudas suficientes, diagnósticos y ejemplos canónicos de los formatos comprometidos.
 
 **Verificación:** subprocess de `--help` sin configuración de proyecto; positivos y negativos en fixtures válidos; comparación del árbol antes/después de rechazos. Preservar códigos existentes y ejecutar regresiones de preparación, reemplazo y continuidad afectadas.
@@ -229,7 +229,7 @@ Cada tarea separará AUDIT, mantenimiento autorizado, RED y GREEN en los despach
 
 **Roles:** test-writer RED/integración; implementer GREEN, separados.
 
-**Consume:** PC-5 y PC-7.
+**Consume:** PC-5 y PC-7.  
 **Produce:** asset conectado al procedimiento y verificación del recorrido completo hasta la frontera de transporte.
 
 **Verificación:** ampliar `test_005_003_t2_examples_execute.py` o cubrir su delta en el módulo nuevo; ejecutar ejemplos realmente, comprobar negativos y códigos, preservar evidencia y contrastar bytes del render. No simular una aprobación ni invocar un worker real desde tests deterministas.
@@ -242,7 +242,7 @@ Cada tarea separará AUDIT, mantenimiento autorizado, RED y GREEN en los despach
 
 **Roles:** reviewer independiente; orquestador para evidencia y ensayo; scribe para borradores de cierre.
 
-**Consume:** PC-8 y PC-9 y evidencia de las tareas anteriores.
+**Consume:** PC-8 y PC-9 y evidencia de las tareas anteriores.  
 **Produce:** revisión, informe de uso y propuesta de adopción/rollback.
 
 **Verificación:** generación determinista/paridad mediante los tests existentes; `make validate`; regresión proporcional; integridad del inventario mediante `python3 scripts/cdad-suite.py validate`, conforme al momento contractual.

@@ -93,6 +93,7 @@ Once:
 - Evidence green per the hogar canónico Test evidence policy (Durante el ciclo focused + proportional regression; Cierre de feature con completa recomendada; Cierre de epic con completa obligatoria por defecto o dispensa expresa registrada para ese cierre; otherwise suite completa no realizada with motive, selection and limits / gate no ejecutado recorded as valid output, never as green). La aprobación de la política autoriza la corrida ordinaria de cierre de epic (PC-3); un fallo, error o resultado no atribuible impide declarar verde (PC-6); skips/xfail visibles con motivo y efecto, rc=0 no demuestra suficiencia contractual (PC-7); inestables sin reintentar hasta verde, con hipótesis nueva o bloqueo+escalada (PC-8).
 - The four drafts approved by the user and committed by the orchestrator.
 - ADRs (if any) committed.
+- The layout and policy diagnostics recorded during the epic are resolved, or carried into the closure debt. The CLI's own diagnostics decide what they are (`<skill-dir>/scripts/cdad_packet.py layout --help`, `<skill-dir>/scripts/cdad_packet.py validate-policy --help`); see `cdad-cycle/references/bootstrap.md` Step 0.
 
 You merge the epic branch to main (or whatever the project's flow indicates). Strategy according to the project's convention.
 
@@ -103,6 +104,7 @@ You merge the epic branch to main (or whatever the project's flow indicates). St
 - [ ] `docs/activeContext.md` with the epic closure entry.
 - [ ] `docs/progress.md` moved the epic to "done".
 - [ ] New epic ADRs (if any) committed.
+- [ ] Recorded layout ambiguity and policy-compatibility diagnostics are resolved or listed as debt in `closure.md`.
 - [ ] Commit with prefix `docs(memory): close epic <id>` — approved by the user, executed by the orchestrator.
 - [ ] Epic merged.
 

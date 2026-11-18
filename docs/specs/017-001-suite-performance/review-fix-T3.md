@@ -12,7 +12,7 @@ Route C validada (PACKET.md == render canónico, identificación == `render --ro
 - Focal T3 (11 tests, incluye los 2 nuevos): `PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -o addopts= -p no:cacheprovider tests/test_017_001_suite_reconcile.py` → **11 passed in 3.62s**.
 - Focal T1 + focal T2 + regresión proporcional: mismo comando sobre `test_017_001_suite_reconcile.py test_017_001_suite_profile.py test_017_001_suite_operations.py test_008_002_suite_evidence.py test_008_002_suite_selection.py test_008_005_ci_gate.py` → **86 passed in 77.91s**.
 - `python3 scripts/cdad-suite.py validate` → **rc 0, status: ok**.
-- Entry-check real (mapa `<tmp>/017-001-calibration-map.json`, salida `<tmp>/017-001-entrycheck`, fuera de `/tmp/opencode` por el `Permission denied` reportado en review): **rc 0, satisfied=true, seis checks pass, sin diagnósticos** — las ocho selecciones reales siguen pasando con el vínculo nuevo.
+- Entry-check real (mapa `~/clawd/tmp/017-001-calibration-map.json`, salida `~/clawd/tmp/017-001-entrycheck`, fuera de `/tmp/opencode` por el `Permission denied` reportado en review): **rc 0, satisfied=true, seis checks pass, sin diagnósticos** — las ocho selecciones reales siguen pasando con el vínculo nuevo.
 - Control negativo sobre evidencia real sin modificarla (mapa temporal con `C-R` apuntando al intento de `C-E`): **rc 1, satisfied=false**, `selection-coverage` FAIL con `C-R: la seleccion declarada por el intento no coincide con el registro (declarada=['tests/test_007_003…'], registro=['tests/test_007_002…'])`.
 - `git diff --name-status -- tests/`: sin salida (tests intactos). `docs/.cdad-state.json` figuraba modificado antes de mi trabajo (consta en review-T3.md); no lo toqué ni lo commiteé.
 

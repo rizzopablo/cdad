@@ -52,7 +52,7 @@ Do not advance a phase with "I think it passes".
 
 **Why it's bad**: features that seem simple at the start are the ones that most frequently reveal ambiguities during implementation. And "simple" for you may not be simple for the LLM.
 
-**Correction**: accept the **minimum spec variant**: one paragraph of description + one failing test. It is not overkill — it is the minimum that keeps the discipline.
+**Correction**: accept the **minimum spec variant**: one paragraph of description + one failing test (when executable behavior is pending; for semantic-only work, the acceptance criterion and the contextual review that will follow). It is not overkill — it is the minimum that keeps the discipline.
 
 > *"OK, we don't need the six blocks. But one paragraph describing what it does, one concrete assertion, and your approval. Three minutes."*
 
@@ -173,11 +173,11 @@ Load it when you detect signals of any of these patterns. Do not load it prevent
 
 ## AP-19 — Placeholder plan
 
-**Symptom**: a plan for a complex feature with tasks that don't close in their own mini TDD cycle; phrases like "TBD", "TODO", "handle edge cases appropriately", "similar to Task N"; or inconsistent signatures across tasks (task 2 produces `clearLayers`, task 5 consumes `clearFullLayers`). Signal: the plan could not be executed without re-deriving design decisions halfway through.
+**Symptom**: a plan for a complex feature with tasks that don't close their own verifiable result by their declared method (mini TDD cycle for executable behavior, contextual review for semantic fidelity); phrases like "TBD", "TODO", "handle edge cases appropriately", "similar to Task N"; or inconsistent signatures across tasks (task 2 produces `clearLayers`, task 5 consumes `clearFullLayers`). Signal: the plan could not be executed without re-deriving design decisions halfway through.
 
 **Why it's bad**: the ambiguous plan delegates design decisions to the implementer with no contract — it is AP-13 (Garbage Cascade) at task level. The test-writer inherits an interface invented halfway through, and its tests point to a contract nobody approved; inconsistent signatures break the integration between tasks and are discovered in GREEN, the most expensive place to discover them. And a plan containing the speculated implementation reverses TDD: the implementer executes decisions the planner baked in without verifying.
 
-**Correction**: follow "Planning for complex features" in `references/stage-2-specification.md` — task size with its own TDD cycle, observable behavior as contract (3-5 verifiable bullets), the list of forbidden placeholders = plan failure, and a self-review of spec coverage and signature consistency before closing Stage 2.
+**Correction**: follow "Planning for complex features" in `references/stage-2-specification.md` — task size with its own verification closure (TDD cycle where executable behavior is pending), observable behavior as contract (3-5 verifiable bullets), the list of forbidden placeholders = plan failure, and a self-review of spec coverage and signature consistency before closing Stage 2.
 
 ## AP-20 — Review that never closes (variant hunting / blocking inflation)
 

@@ -12,13 +12,13 @@ Feature tests verify **behavioral postconditions (the contract)**, not implement
 
 **Exhaustive coverage, load/perf, and edge cases not derived from the spec do not belong to the feature cycle.** They are the responsibility of a separate, later hardening stage/epic. Mixing both questions in the same gate makes the easier one to measure (coverage %) devour the time of the harder one to reason about (is the contract correct?).
 
-**Property tests are NOT the same question as exhaustive coverage** — when the spec marks explicit invariants (sub-phase 3.4), the property test verifies THAT specific invariant, it does not maximize cases. The contradiction to avoid: reading the sentence above as "there are no property tests in the feature cycle" collides head-on with sub-phase 3.4 below, which does have them with their own gate. What falls outside the cycle is generating property tests for the sake of coverage (with no spec invariant behind them), not the ones the spec explicitly asks for.
+**Property tests are NOT the same question as exhaustive coverage** — when the approved contract selects executable property tests for an explicit invariant (sub-phase 3.4), the property test verifies THAT specific invariant, it does not maximize cases. The contradiction to avoid: reading the sentence above as "there are no property tests in the feature cycle" collides head-on with sub-phase 3.4 below, which does have them with their own gate. What falls outside the cycle is generating property tests for the sake of coverage (with no spec invariant behind them), not the ones the contract explicitly selects. An invariant the contract leaves as a reviewable restriction (semantic verification) is not a demand for property tests: it goes to the contextual independent review at Stage 4.
 
 **RED verifies the requirement, it does not maximize coverage.** Selection and its justification are rule R2 — single editable definition `sources/roles/test-writer.md` (`cdad-shared:convention-rule`): read it there for what to write, how to trace it and what to declare. This reference applies R2 to the stage and never restates its obligations; the application is what follows. What the stage prevents is concrete: facing a postcondition, a battery of unrequested edge cases or a property test with generators the spec never asked for produces tests extremely hard or impossible to satisfy, consuming time and tokens in GREEN iterations without reaching a result, and replaces the spec's "done" criterion with the test-writer's imagination. So every RED test (and every property test) must be able to point to the promise it serves and to the numbered postconditions it protects; if it cannot, it is superfluous — the same "Relevance" rule below.
 
 **"Not a ceiling" (AJ2) is owned by R2, not by this file.** Whether a distinct committed behaviour needs more tests, and what equivalence forbids, are read in the rule's home; a promotion with a recorded reason is read in the gate's home (R4, `sources/roles/orchestrator.md`). This reference neither restates nor narrows either.
 
-**Acceptance criterion of a feature**: every promise the spec commits is verified by behavior before the feature is accepted — not a coverage percentage, and not a count of tests.
+**Acceptance criterion of a feature**: every promise the spec commits is verified by its selected method (executable behavior, contextual independent review, or both — see §"Routing by verification method") before the feature is accepted — not a coverage percentage, and not a count of tests.
 
 **Relevance of tests**: every test written must serve a committed promise and trace to the numbered postconditions it protects. Tests are not written for completeness or for coverage; they are written because they verify a declared objective. If a test serves no promise, it is superfluous — record it in a test↔promise/postcondition traceability audit (see "Relevance audit" below).
 
@@ -29,8 +29,9 @@ Feature tests verify **behavioral postconditions (the contract)**, not implement
 R7 — the single editable home of this counterweight; the consumers cite it and
 never restate it:
 
-- Every promise the spec commits is verified by behavior before the feature is
-  accepted. Reducing redundancy reduces the **number of tests**, never the
+- Every promise the spec commits is verified by its selected method before the
+  feature is accepted (executable behavior, contextual independent review, or
+  both). Reducing redundancy reduces the **number of tests**, never the
   guarantees.
 - One test may verify several postconditions: that is many-to-one traceability,
   not a missing verification.
@@ -134,15 +135,27 @@ Reference: "Position: LLMs Can't Jump" (Zahavy, https://tomzahavy.com/files/llms
 You do NOT write tests, you do NOT implement, you do NOT refactor. You coordinate:
 
 1. Identify which promise is next (the next promise with pending postconditions, or an orthogonal grouping of promises if the spec allows it).
-2. Emit handoff to **test-writer** (RED).
+2. Route each promise by its selected method (§"Routing by verification method"). Only promises with pending executable behavior emit a handoff to **test-writer** (RED).
 3. Validate the red test at re-entry.
-4. Emit handoff to **implementer** (GREEN).
-5. Validate the green suite at re-entry.
+4. Emit handoff to **implementer** (GREEN) — or, for semantic-only promises, the production handoff described in that section.
+5. Validate the green suite at re-entry (executable promises) or the produced product at Stage 4 (semantic-only promises).
 6. Optionally: handoff to **refactorer** if there is evident friction.
-7. Loop until every committed promise is verified.
-8. If the spec marks invariants: handoff to **test-writer in properties mode**.
+7. Loop until every committed promise has its selected verification in place: executable parts verified by green tests, semantic parts produced with their contextual review pending at Stage 4 (§"Loop between promises").
+8. If the approved contract selects executable property tests for some invariants: handoff to **test-writer in properties mode** for those invariants only (invariants kept as reviewable restrictions are not routed here; they go to Stage 4 contextual review).
 9. If the spec marks E2E criteria: handoff to **test-writer in E2E mode**.
 10. Stage closure when all gates pass.
+
+## Routing by verification method (canonical home — PC-3, PC-4)
+
+Each promise carries the method selected in the spec (stage-2 §"Verification strategy per promise"). Route it as follows:
+
+- **Pending executable behavior**: independent test-writer work first (AUDIT / POST-AUDIT where applicable, then RED), then GREEN by the implementer. The RED→GREEN sub-phases below apply to these promises only.
+- **Semantic-only production** (text, documents or configuration whose fidelity is not an executable property): the implementer produces against the approved contract and sources, then the promise receives a contextual independent review at Stage 4. No failing executable test is manufactured to stand in for that review; a RED without real pending behavior is fabricated RED evidence.
+- **Mixed commitments**: both families apply, each to its own part of the promise. Neither substitutes for the other.
+
+Existing distribution or structural checks stay applicable where they are relevant; their presence does not make semantic fidelity an executable property.
+
+**Acceptance is fixed before production.** The acceptance criterion of each promise is approved in Stage 2 and the producer cannot change it. If production shows that a criterion or the contract must change, the affected work stops and returns through the approval procedure of Stage 2; the producer never edits the criterion to fit its output.
 
 ## Sub-phases
 
@@ -150,18 +163,20 @@ You do NOT write tests, you do NOT implement, you do NOT refactor. You coordinat
 |----------|-----|--------|
 | AUDIT / POST-AUDIT | test-writer | Existing suite + approved sustitutos of vigente (recorrido below, per R2) |
 | RED | test-writer | Pending promise (pending behavior) |
-| GREEN | implementer | After a valid RED |
+| GREEN | implementer | After a valid RED (executable promises). Semantic-only production has no RED: it is handed over after approval, per §"Routing by verification method" |
 | REFACTOR | refactorer | Optional, if there is friction |
-| PROPERTIES | test-writer in properties mode | Spec marks invariants |
+| PROPERTIES | test-writer in properties mode | The contract selects executable property tests for an invariant |
 | INTEGRATION/E2E | test-writer in E2E mode | Spec marks E2E criteria |
 
 Sustituto de comportamiento vigente (recorrido POST-AUDIT, por referencia a R2): R2 (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6) owns the dispositions and the sustituto recorrido — physically new Sustituir/Consolidar admitted only in POST-AUDIT as identified in the approved AUDIT, with verde execution plus sensibilidad frente a defecto contractual concreto, originales kept until destination + evidence, mapa PC-5; never to RED for being a new file. Maintenance of vigente needs no GREEN when no implementation changes; pending behavior follows RED → GREEN separately.
+
+**Audit-family rounds (pointer — owner: `references/bounded-review-cycles.md`).** AUDIT assessments and dispositions, approved POST-AUDIT changes and their verification form the **audit family** of the unit, bounded by the unit's declared maximum independently of the draft and result families. Correcting a deficient AUDIT output or a deficient substitution consumes the next audit round; ordinary RED→GREEN work does not, and a unit without audit work has no audit round. At the maximum, finish the verification of the last permitted correction and adjudicate; the substitution safeguards of the recorrido above stay intact (originals kept until destination + evidence; missing sensibilidad blocks, it never justifies deleting protection, and "budget exhausted" never accepts a substitution).
 
 ## Sub-phase 3.1 — RED
 
 Load `references/handoff-prompts.md` section "Test-writer (Stage 3 — RED)".
 
-Before generating the packet, decide which promise to tackle (R2: the unit of
+RED applies only to promises with pending executable behavior (§"Routing by verification method"). Before generating the packet, decide which promise to tackle (R2: the unit of
 selection is the promise it defines, applied here to the sub-phase):
 
 - The next promise of the spec with pending postconditions.
@@ -242,7 +257,7 @@ Conflicts are resolved by the orchestrator, **never by the subagents** — a sub
 
 ## Sub-phase 3.2 — GREEN
 
-Handoff to implementer with: spec, the test that has to pass, interface, systemPatterns.
+Handoff to implementer with: spec, the test that has to pass, interface, systemPatterns. For a semantic-only promise there is no test to hand over: the handoff carries the approved contract, the acceptance criterion and the sources, and the outcome is verified at Stage 4 (§"Routing by verification method").
 
 ### Re-entry
 
@@ -277,7 +292,7 @@ Suite green AT ALL TIMES. If red: AP-11.
 
 ## Sub-phase 3.4 — PROPERTIES
 
-Only if the spec marks verifiable invariants. Does not apply to code with many side effects or UI.
+Only for invariants for which the approved contract selects executable property tests (its per-promise verification strategy); invariants declared as reviewable restrictions do not trigger this sub-phase and no campaign is fabricated for them — they are verified by the contextual independent review at Stage 4. Property tests are usually a poor fit for code with many side effects or UI, but that is guidance for choosing the strategy at contract review, not an exclusion: when the approved contract selects them, this sub-phase and its gate remain required. If the selected verification proves infeasible, stop and return to contract review/approval to change the strategy; never waive it silently.
 
 Handoff to test-writer in properties mode.
 
@@ -306,26 +321,27 @@ If mode B and E2E red: assembly problem. Handoff to implementer.
 
 ## Loop between promises
 
-Each time the GREEN (+ optional REFACTOR) of a promise closes, you decide:
+Each time the GREEN (+ optional REFACTOR) of an executable promise closes, or the production of a semantic-only promise is handed over, you decide:
 
-- Are there promises with pending postconditions? → handoff to test-writer (RED) with the next promise.
-- Are all green and the spec marks invariants? → handoff to properties.
+- Are there promises with pending executable behavior? → handoff to test-writer (RED) with the next such promise.
+- Are there semantic-only promises (or semantic parts of mixed promises) not yet produced? → production handoff to the implementer, with no RED for them (§"Routing by verification method").
+- Are all executable parts green and the contract selects executable property tests for some invariant? → handoff to properties (only for those invariants; reviewable-restriction invariants go to Stage 4 review).
 - Are properties green and the spec marks E2E? → handoff to E2E (mode B) or verify the E2E that was already in place (mode A).
-- Every committed promise verified? → stage closure (R7; the spec's `deferred-hardening` does not replace a pending promise).
+- Every committed promise has its executable parts green and its semantic parts produced? → stage closure (R7; the spec's `deferred-hardening` does not replace a pending promise). The semantic parts stay pending their contextual independent review at Stage 4; this closure does not accept them.
 
 ## 🛑 Exit gate (Stage 3 → Stage 4)
 
 - [ ] Test Audit completed and approved (a `test-audit.md` exists with benefit of the doubt resolved, if applicable).
 - [ ] Every modified test has an explicit justification in spec.md.
-- [ ] Every committed promise of the spec is verified by behavior — a test may verify several postconditions (R7).
+- [ ] Every committed promise of the spec is at its selected method's stage — a test may verify several postconditions (R7). Executable parts are verified by green tests. Semantic-only parts are produced against the approved contract and scheduled for contextual independent review at Stage 4, with no fabricated RED. A mixed promise needs both: neither substitutes for the other. Acceptance is granted only after that Stage 4 review.
 - [ ] Every test written serves a committed promise and traces to its postconditions (no tests "for completeness").
 - [ ] No test depends on internal structure (no mocks over plumbing).
 - [ ] The test↔postcondition mapping audited by a session other than the one that wrote the tests.
 - [ ] The spec's `deferred-hardening` records every deferral decided, with its reason.
-- [ ] Suite green (verified empirically with the run output pasted by the user).
-- [ ] If the spec marks invariants → property tests green.
+- [ ] Suite green when the feature has executable promises (verified empirically with the run output pasted by the user); a feature with only semantic-only promises has no suite to be green, and its applicable structural checks still run.
+- [ ] If the contract selects executable property tests for an invariant → those property tests green (with their reproducible evidence); invariants kept as reviewable restrictions need no property tests and await Stage 4 contextual review.
 - [ ] If the spec marks E2E criteria → E2E tests green.
-- [ ] Granular commits (RED, GREEN, REFACTOR separate).
+- [ ] Granular commits (RED, GREEN, REFACTOR separate); a semantic-only production has no RED commit.
 
 When all OK: update state (`current_stage: review`, `tdd_substage: null`). Announce the transition. Emit handoff to reviewer.
 

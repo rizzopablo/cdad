@@ -2,7 +2,7 @@
 feature_id: 014-001-suite-evidence-defaults
 approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-014-suite-evidence-policy/execution.md)
 approved_at: 2026-11-02
-source: architect draft (sesión <ses-337>), materializado por el orquestador (ADR-003)
+source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 ---
 
 # Borrador de spec: 014-001-suite-evidence-defaults
@@ -197,4 +197,4 @@ Ninguna exclusión difiere una promesa de PC-1–PC-14.
 
 ## Evidencia de la intervención del architect
 
-Sesión `<ses-337>`. Archivos modificados: ninguno. Commit: ninguno. Suite completa: no realizada. `validate-request` y `validate-packet` rc=0; render y route C coinciden. Manifiesto de 24 rutas: `d9d071c07656649bfd9d3be59c7556ff0e9d99b42c0cddaed5fe6f9cd80f8bee`.
+Sesión `<session>`. Archivos modificados: ninguno. Commit: ninguno. Suite completa: no realizada. `validate-request` y `validate-packet` rc=0; render y route C coinciden. Manifiesto de 24 rutas: `d9d071c07656649bfd9d3be59c7556ff0e9d99b42c0cddaed5fe6f9cd80f8bee`.

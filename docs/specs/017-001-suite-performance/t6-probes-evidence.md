@@ -8,14 +8,14 @@ ejecución destructiva acotada queda del lado de la supervisión.
 
 ## Sonda A — descendiente que abandona grupo y sesión
 
-Archivo sonda fuera de `tests/` (bajo `<tmp>/017-001-probes/setsid`),
+Archivo sonda fuera de `tests/` (bajo `~/clawd/tmp/017-001-probes/setsid`),
 pasado por `--nodeids`; lanza `/bin/sleep 120` con `start_new_session=True` y
 termina.
 
 ```
 python3 scripts/cdad-suite.py parallel --workers 1 \
-  --evidence-root <tmp>/017-001-probes/setsid/evidence \
-  --nodeids <tmp>/017-001-probes/setsid/nodeids.txt
+  --evidence-root ~/clawd/tmp/017-001-probes/setsid/evidence \
+  --nodeids ~/clawd/tmp/017-001-probes/setsid/nodeids.txt
 ```
 
 Salida medida:

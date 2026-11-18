@@ -1,0 +1,221 @@
+OWNER INPUT (protected, verbatim): Decision: yes, show the tags next to each note in the plain list by default. Now, if everything else is settled, go ahead and get the draft written and independently reviewed. Do not approve it; I will decide that. 
+
+TEXT: Before I go further I need to check the configuration steps, since the status is still blocked. I'll read the execution reference and the policy template.
+TOOL shell {"command": "cd .opencode/skills/cdad-cycle; ls assets; echo ----; sed -n 1,140p references/project-execution.md", "workdir": "~/clawd/tmp/cand019b"} 
+  => active-packet.schema.json
+active-record.schema.json
+adr-template
+artifact-policy.json
+context-meter.schema.json
+continuity-checkpoint.schema.json
+execution-context.schema.json
+feature-plan-template.md
+guard-event.schema.json
+guard-trace.schema.json
+materialize.schema.json
+memory-bank-templates
+opencode-exec-config.example.json
+orientation-examples.json
+packet-metric.schema.json
+packet-request.schema.json
+rendered-packet.schema.json
+result-bundle.schema.json
+result-descriptor.schema.json
+result-receipt.schema.json
+run-evidence.schema.json
+run-request.schema.json
+spec-template
+state-template.json
+----
+# Project execution bootstrap (v2)
+
+Reference for adopting the durable v2 execution model of `cdad_packet.py prepare`.
+Everything below runs from the **installed product**: the CLI travels with this
+skill (`scripts/cdad_packet.py`), so a consumer project never needs the checkout.
+
+## 1. Policy configuration (owner-owned)
+
+The single editable policy is `docs/cdad-policy.json`:
+
+```json
+{
+  "schema_version": 1,
+  "path_policy": { "...": "classification rules" },
+  "temporary_roots": []
+}
+```
+
+- Exactly these three fields; no models, authority or Bash rules.
+- The CLI never writes it and no role scope may edit it.
+- Optional `path_policy.private_paths` (project-relative exact paths or globs) is
+  the single deliberately obvious barrier, for files no role needs. In OpenCode
+  every entry is denied in `read` for every role, emitted after the allow rules
+  so findLast wins; the `edit` entry is declared as well, but in this version it
+  was not observed to be applied (W-3). In Claude Code the dynamic guard blocks the
+  mediated tools over the path and its whole subtree (Read/Edit/Write/MultiEdit)
+  and a `Grep`/`Glob` whose `path` points at it, plus a `Glob` whose `pattern`
+  reaches into it from a bounded parent path. Without the field the behavior is
+  unchanged; an invalid entry (absolute, with `..`, or empty) fails policy
+  validation (rc≠0), like a root. Declared limitations — it is an obvious
+  barrier, not a sandbox: the OpenCode `read` denial is verified live
+  (t7-live-walk.md §6) while its `edit` entry is not applied in this version
+  (W-3); in Claude Code the guard mediates only implementer and test-writer, so
+  architect, reviewer and scribe rest on the role instruction and the audit
+  (t7-live-walk.md §6); a `Grep` over a PARENT folder can still return private
+  content, glob entries have best-effort semantics (simple paths are
+  recommended), and Bash is not bounded. It replaces neither the role
+  instruction nor the audit.
+- Propose a deterministic, write-free starting point:
+
+  ```sh
+  python3 <skill>/scripts/cdad_packet.py prepare --project-root "$PWD" --propose-policy
+  ```
+
+  The owner reviews the proposal and materializes it byte-for-byte.
+
+> Run every command in this reference from the **project root**: `--input` and
+> `--decision-ref` resolve against the current directory, not against
+> `--project-root` (which is resolved against the current working directory and
+> must be an existing directory).
+
+## 2. Authority (I2)
+
+`prepare` verifies authorization from the project records, never from names or
+defaults:
+
+- **Role-aware contract approval** — the approval is specific to the role's own
+  object and is verified against the contract bytes (the digest is the one
+  `validate_request` already computed):
+  - **architect** — an `epic_history` entry for the active epic with
+    `stage: "epic-plan"` and a non-empty `approved_by` (no hash pin: the epic
+    plan is the epic's live mandate, D2). The architect is enabled by the plan,
+    never by a feature spec.
+    - **Unit contract.** With an active epic, the contract pinned for the
+      architect's unit is the **generated unit projection** of the epic plan,
+      published beside its packet and pinned by its digest; when the unit cannot
+      be located without ambiguity it is the **declared fallback** to the full
+      approved plan (`approved-epic-plan`). The projection, its locator, its pin
+      and its `kind`/`path` are defined in
+      `docs/specs/005-013-unit-contract/spec.md` §2.1-§2.2 (PD-1..PD-5): this
+      reference names that contract, it does not restate it.
+    - **Origin; no re-approval per unit.** The projection records its origin
+      (unit, plan, the plan's sha at generation, the approving `epic_history`
+      `epic-plan` entry and `policy_sha256`). Authorization **remains** that
+      `epic_history` `epic-plan` entry with `approved_by` — the architect is
+      enabled by the epic plan, never by a feature spec — and is **not**
+      re-approved per unit while the projection is unchanged; when the
+      projection changes, the orchestrator decides (spec §2.7, PD-12).
+    - **Leaving the `impeded` verdict.** An `impeded` verdict (authorization
+      withdrawn) is lifted with the **existing** mechanisms: registering an
+      `epic-plan` approval in `epic_history` under the HITL, or restoring the
+      `hitl_delegation`; the next packet takes the new projection as its
+      baseline. Reconciliation of a `dispatched` packet is **not** defined here
+      (005-012). Defined in spec §2.5 (PD-10).
+  - **every other role** — a `stage_history` entry with `feature`,
+    `stage: "specification"`, a non-empty `approved_by` and the mandatory
+    `contract_path` + `contract_sha256` pin (D3). The pin must NAME the contract
+    verified for the role: `contract_path` equals that contract's path
+    (C1/PD-18) and the digest equals `sha256(<contract_path>)`. A foreign or
+    absent path, or editing the spec after approval, invalidates the
+    authorization.
+  - A declared `draft-plan` (reviewer/plan-review) is a first-class,
+    non-approved review object: it carries no approval requirement.
+  A missing, unpinned or drifted record fails with the `approval pending`
+  diagnostic (rc=2, no effects).
+- **Delegation** — with an active epic: `hitl_delegation` present, a `status`
+  field that if present must be `"active"` (its absence does not invalidate), an
+  `epic_id` field that if present must match the active epic (its absence leaves
+  the decision to `scope`), `source` pointing to an existing file, `scope`
+  naming the epic as an exact token (`:` and parentheses also separate tokens),
+  `active_epic` matching and no `revoked_at`.
+- **Standalone** — `active_epic: null`: only the role-aware contract approval
+  is required; the execution is created with `epic_id: null` (no epic is
+  fabricated).
+
+## 3. First preparation (bootstrap)
+
+```sh
+python3 <skill>/scripts/cdad_packet.py prepare \
+    --project-root <root> --role <role> --substage <substage> \
+    --objective "<assignment>"
+```
+
+- Creates `.cdad/executions/<execution-id>/execution.json` (`schema_version: 2`),
+  binds it in `state.execution`, and publishes `.cdad/packets/<id>/`.
+- If any prior context exists (a v1 `.cdad/execution.json` or an active v2),
+  add `--new-execution`; without it the call fails with a diagnostic.
+- A published v1 packet that is still active (`prepared`, or `dispatched`
+  without a durable receipt) has no terminal CLI route: `--new-execution` does
+  not bypass it. `prepare` names that packet, declares the absence of a route
+  and escalates to the owner, with no effect on the tree or the state.
+- v1 contexts are never adopted forward: an explicit `--execution-context` to a
+  v1 document fails with a diagnostic and rewrites nothing.
+
+## 4. Resume
+
+```sh
+python3 <skill>/scripts/cdad_packet.py prepare --project-root <root> \
+    --resume-packet <packet-id>
+```
+
+Re-emits the published packet byte-for-byte. It accepts no ordinary prepare
+option (role, substage, objective, scopes, inputs, …).
+
+## 5. Record a dispatch attempt
+
+```sh
+python3 <skill>/scripts/cdad_packet.py prepare --project-root <root> \
+    --record-dispatch <packet-id> --attempt-id <id> --input docs/attempt.json
+```
+
+TEXT: The reference says the architect is enabled only by an approved epic plan, not by a feature spec. Before I conclude that, I'll confirm it with the CLI's own diagnostics. I'll run the write-free policy proposal and a test architect preparation, then check that nothing was written.
+TOOL shell {"command": "P=.opencode/skills/cdad-cycle/scripts/cdad_packet.py; echo \"== propose-policy\"; python3 $P prepare --project-root \"$PWD\" --propose-policy; echo \"rc=$?\"; echo \"== architect prepare (expected to refuse)\"; python3 $P prepare --project-root \"$PWD\" --role architect --substage discovery --objective \"Discovery for tag feature\"; echo \"rc=$?\"; echo \"== tree after\"; git status --short; ls -la .cdad 2>/dev/null || echo \"no .cdad dir\"", "workdir": "~/clawd/tmp/cand019b"} 
+  => == propose-policy
+{
+  "path_policy": {
+    "documentation_roots": [
+      "docs"
+    ],
+    "implementation_roots": [],
+    "test_roots": [
+      "tests"
+    ]
+  },
+  "schema_version": 1,
+  "temporary_roots": [
+    ".cdad/tmp"
+  ]
+}
+rc=0
+== architect prepare (expected to refuse)
+ERROR: no active feature in state: cannot bootstrap an execution
+rc=2
+== tree after
+no .cdad dir
+
+TEXT: Two of the three checks confirm what I expected. The third is new: the CLI refuses to prepare anything because no feature is open. I'll record your decision and this finding in the project memory, then commit.
+TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n", "newString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n- The plain `notes list` shows each note's tags next to it by default.\n"} 
+  => Edited docs/activeContext.md (1 replacement)
+TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.\n", "newString": "- Spec approver: not named yet. The owner has said they will decide the spec approval.\n\nProcess blockers found on 2026-11-15 (checked with the CLI, nothing written):\n- `prepare` refuses to start any execution: \"no active feature in state\". A feature must be opened first.\n- The architect can only be enabled by an approved epic plan (`epic_history` entry with `stage: epic-plan` and an approver). A feature spec does not enable it. So the architect's discovery and draft need an epic plan that the owner approves.\n- Policy: a write-free proposal exists (`prepare --propose-policy`: docs and tests roots, `.cdad/tmp` as temporary root). The owner has not accepted it, so `docs/cdad-policy.json` is not written.\n"} 
+  => Edited docs/activeContext.md (1 replacement)
+TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): record list-tags decision and process blockers\" && git log --oneline | head -1 && git status --short", "workdir": "~/clawd/tmp/cand019b"} 
+  => 654123e docs(memory): record list-tags decision and process blockers
+
+TEXT: I haven't had the architect write the draft. Not everything is settled, and the CDAD route needs an approval from you first.
+
+**Recorded:** the plain `notes list` shows each note's tags next to it by default (commit `654123e`). The other defaults still stand: inline `#tag` syntax, `unittest`, and matching ANY tag when filtering.
+
+**Why the architect can't start yet**, checked with the CLI, which wrote nothing:
+- **No feature is open.** `prepare` refuses with "no active feature in state: cannot bootstrap an execution".
+- **The architect needs an approved epic plan.** A feature spec does not enable it. So the draft can only come through an epic plan that you approve. Even a single-feature epic would need that approval.
+- **The policy is not accepted.** The CLI proposes a starting policy (docs and tests as roots, `.cdad/tmp` as temporary), but you need to accept it before the file is written.
+- **The spec approver is not registered.** You said you'll decide the approval; I need you to confirm that you are the approver, and under what name the state should record it.
+
+I could hand-write a prompt and call the architect directly, but that would skip the route that records authority, so I won't.
+
+**What I need from you**, in order:
+1. Confirm you're the spec approver, and the name to record.
+2. Accept, change or reject the proposed policy. I can show it to you again if needed.
+3. Decide whether to wrap this feature in a single-feature epic. If yes, I'll draft the epic plan for you to approve. That is the only sanctioned way to get the architect's draft.
+
+Once those are done, the architect drafts the spec, and I send that draft to an independent reviewer. You approve the spec.

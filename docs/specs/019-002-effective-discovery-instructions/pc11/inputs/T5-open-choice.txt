@@ -1,0 +1,1 @@
+Whether the plain list should show each note's tags by default is something I haven't decided; leave it open for now. Are we ready to have the architect write the draft spec?

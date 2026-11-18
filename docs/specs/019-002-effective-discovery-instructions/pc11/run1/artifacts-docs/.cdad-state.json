@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "stack": null,
+  "active_epic": null,
+  "epic_stage": null,
+  "active_feature": "001-note-tags",
+  "current_stage": "specification",
+  "tdd_substage": null,
+  "audit_status": null,
+  "postconditions_status": {},
+  "epic_features": [],
+  "suspended_units": {},
+  "stage_history": [
+    {"stage": "bootstrap", "completed_at": "2026-11-15T20:17:00Z", "note": "Memory Bank initialized; defaults recorded in docs/activeContext.md"},
+    {"stage": "discovery", "completed_at": "2026-11-15T20:40:00Z", "note": "architect discovery materialized in docs/specs/001-note-tags/discovery.md; landscape in docs/landscape.md"},
+    {"stage": "specification", "status": "draft ready for owner approval", "completed_at": null, "note": "spec.md Status: Pending approval; plan-review.md verdict ready; approval pending owner (non-delegable)"}
+  ],
+  "epic_history": [],
+  "approver": "pending: owner to confirm name (see docs/activeContext.md)",
+  "last_updated": "2026-11-15T20:45:00Z",
+  "execution": null,
+  "active_packet": null,
+  "hitl_delegation": null
+}

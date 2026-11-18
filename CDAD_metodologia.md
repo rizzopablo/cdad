@@ -906,9 +906,9 @@ Specification is where a working idea becomes a technical document that can be i
 
 ### 6.2 Step 1: Socratic brainstorm
 
-**How it is done.** You start a session with an architect agent in plan-only mode (no edit permissions). You ask it: *"we are going to design feature X. Ask me the questions you need in order to understand exactly what I want, before proposing a design."*
+**How it is done.** You talk to the orchestrator, which holds the dialogue and consults a read-only architect agent (a report with findings, evidence and the consequential questions still open) when uncertainty or independent technical judgment warrants it. The architect drafts the spec only from the decisions you actually made; partial answers, silence or unaccepted defaults are not consent, and readiness to draft is not approval.
 
-The agent, if well configured, starts asking Socratic questions. Typical questions for our date parser example would be:
+The consultation surfaces Socratic questions. Typical questions for our date parser example would be:
 
 - What happens if the string is `null` or empty? Exception, default, or `None`?  
 - What level of precision is worth preserving? Milliseconds? Microseconds? Nanoseconds?  

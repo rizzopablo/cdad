@@ -4,7 +4,7 @@ Destroy the LLM's assumptions about the system before coding.
 
 ## Your role as orchestrator in this stage
 
-YOU do not do the discovery. You coordinate:
+You are the user's single interlocutor and may read code, run the product and investigate to resolve situations; attribute technical findings that ground a decision (who found them, how). For consequential uncertainty or independent technical judgment, consult the architect (a `role-report`); that does not wait for readiness. Never write or correct product or tests. You coordinate:
 
 1. Detect whether `docs/landscape.md` is missing (initial discovery) or whether the feature requires point-in-time discovery.
 2. If initial discovery: the **user** does it manually (do not delegate to the architect; the user (human or higher-hierarchy autonomous agent) needs to gain first-hand knowledge in order to evaluate later). You guide it with structuring questions and assemble the document from their answers.
@@ -17,7 +17,7 @@ Applies only if `docs/landscape.md` does not exist AND it is the first feature.
 
 ### Your work
 
-Ask the user questions (one to three per turn) so they cover:
+Ask the user questions, as many per turn as are useful in context, so they cover:
 
 - Central entities/models of the system.
 - Hooks or extension points of the framework.
@@ -68,7 +68,7 @@ If it passes: the output goes to the "Technical context" section of the spec in 
 - [ ] For this feature: the user can explain which APIs/hooks it will touch without opening the code.
 - [ ] No assumptions of the form "I think X exists" remain pending.
 
-If all OK: update the state file (`current_stage: specification`), announce the transition, and emit the handoff to the architect in brainstorm mode for Stage 2.
+If all OK: update the state file (`current_stage: specification`) and announce the transition. If consequential uncertainty or needed independent judgment remains, emit the handoff to the architect in brainstorm mode for Stage 2; otherwise, when the recoverable dialogue already establishes readiness, go directly to the architect's spec-writing draft (Stage 2, sub-phase 2.2) with no consultation.
 
 If something is missing: identify specifically what, and go back to the user / the architect.
 
@@ -76,4 +76,4 @@ If something is missing: identify specifically what, and go back to the user / t
 
 - **Jumping to the spec without discovery** → guarantee of inventions in Stage 3.
 - **Exhaustive discovery** mapping the entire project (mode A for each feature) → consumes time without ROI.
-- **You doing the discovery** instead of coordinating it → you lose the architect's independent oracle and, worse, the user loses the opportunity to learn first-hand.
+- **Skipping the architect when independent technical judgment is needed** → you lose the independent oracle; investigating yourself is fine, but record it as attributed evidence.

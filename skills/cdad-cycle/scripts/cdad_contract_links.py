@@ -40,6 +40,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_layout  # noqa: E402
+
 EXIT_OK = 0
 EXIT_INVALID = 1
 EXIT_USAGE = 2
@@ -881,6 +887,29 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
         _emit(payload)
         return EXIT_USAGE
 
+    try:
+        # The conventional specification lookup uses the shared strict
+        # resolution (019-004 §4.2, PC-04/PC-05): a registered layout is
+        # exclusive, an exact legacy marker admits docs/, and ambiguous or
+        # uninitialized placement fails here with a diagnostic, before any
+        # report is produced. It never falls back to docs/ on insufficient
+        # evidence.
+        layout_base = cdad_layout.methodology_base(root)
+    except cdad_layout.AmbiguousLayoutError as exc:
+        # Ambiguous placement: a diagnostic and NO report, not even an empty
+        # universe (019-004 §4.2, PC-04).
+        sys.stderr.write(f"gap-report: {exc}\n")
+        return EXIT_INVALID
+    except cdad_layout.LayoutError as exc:
+        # Invalid locator or uninitialized project: the approved JSON envelope
+        # on stdout (016-002: the CLI produces JSON by stdout).
+        return _early([{
+            "code": "bad_layout", "where": "layout", "message": str(exc),
+        }])
+
+    def _spec_rel(unit: str) -> str:
+        return f"{layout_base}/specs/{unit}/spec.md"
+
     # ---- estado: universo de contratos ----------------------------------
     state_resolved = _gap_resolve(root, args.state)
     if state_resolved is None or not state_resolved.is_file():
@@ -1057,7 +1086,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
             })
             invalid_units.add(unit)
             continue
-        spec_candidate = root / "docs" / "specs" / unit / "spec.md"
+        spec_candidate = root / layout_base / "specs" / unit / "spec.md"
         try:
             spec_resolved = spec_candidate.resolve()
             spec_resolved.relative_to(root)
@@ -1069,7 +1098,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                 "status": "done",
                 "reason": (
                     f"fuera del universo: sin spec en "
-                    f"docs/specs/{unit}/spec.md; estado recuperable"
+                    f"{_spec_rel(unit)}; estado recuperable"
                 ),
             })
             continue
@@ -1081,7 +1110,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                 "status": "done",
                 "reason": (
                     f"fuera del universo: spec ilegible en "
-                    f"docs/specs/{unit}/spec.md; estado recuperable"
+                    f"{_spec_rel(unit)}; estado recuperable"
                 ),
             })
             continue
@@ -1294,7 +1323,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
             invalid_units.add(unit)
             continue
         contract_resolved = _gap_resolve(root, str(cref["path"]))
-        expected_spec = (root / "docs" / "specs" / unit / "spec.md").resolve()
+        expected_spec = (root / layout_base / "specs" / unit / "spec.md").resolve()
         if (contract_resolved is None or not contract_resolved.is_file()
                 or contract_resolved != expected_spec
                 or _sha256_file(contract_resolved)
@@ -1303,7 +1332,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                 "code": "contract_mismatch", "where": where, "unit": unit,
                 "message": (
                     "el contrato del registro no coincide con "
-                    f"docs/specs/{unit}/spec.md"
+                    f"{_spec_rel(unit)}"
                 ),
             })
             invalid_units.add(unit)
@@ -1316,7 +1345,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                 "code": "duplicate_marker", "where": where, "unit": unit,
                 "message": (
                     "marcador duplicado en el contrato "
-                    f"docs/specs/{unit}/spec.md: "
+                    f"{_spec_rel(unit)}: "
                     f"{', '.join(sorted(duplicates))}"
                 ),
             })
@@ -1329,7 +1358,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                 "code": "mixed_index", "where": where, "unit": unit,
                 "message": (
                     "no se mezclan marcadores e índice legacy para "
-                    f"docs/specs/{unit}/spec.md"
+                    f"{_spec_rel(unit)}"
                 ),
             })
             invalid_units.add(unit)
@@ -1391,7 +1420,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
             diagnostics.append({
                 "code": "no_obligations", "where": where, "unit": unit,
                 "message": (
-                    f"el contrato docs/specs/{unit}/spec.md no declara "
+                    f"el contrato {_spec_rel(unit)} no declara "
                     "obligaciones: sin marcadores ni índice legacy; el "
                     "registro presente sin obligaciones es inválido"
                 ),
@@ -1444,7 +1473,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                         "where": link_where, "unit": unit,
                         "message": (
                             f"obligación inexistente {pid}; no resuelve "
-                            f"contra docs/specs/{unit}/spec.md"
+                            f"contra {_spec_rel(unit)}"
                         ),
                     })
             protects = link.get("protects")
@@ -1707,7 +1736,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                             or not isinstance(cref.get("sha256"), str)
                             or not cref["sha256"]
                             or _gap_resolve(root, str(cref["path"]))
-                            != (root / "docs" / "specs" / unit
+                            != (root / layout_base / "specs" / unit
                                 / "spec.md").resolve()
                             or str(cref["sha256"])
                             != universe[unit]["spec"]["sha256"]):
@@ -1716,7 +1745,7 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
                             "where": entry_where, "unit": unit,
                             "message": (
                                 f"el contrato de la exclusión no coincide "
-                                f"con docs/specs/{unit}/spec.md"
+                                f"con {_spec_rel(unit)}"
                             ),
                         })
                         continue

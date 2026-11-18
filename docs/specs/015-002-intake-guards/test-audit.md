@@ -1,6 +1,6 @@
 # test-audit.md — 015-002-intake-guards (AUDIT, TEXTO FINAL)
 
-**Feature:** 015-002-intake-guards · **Subfase:** AUDIT (test-writer, sesión <ses-344>)
+**Feature:** 015-002-intake-guards · **Subfase:** AUDIT (test-writer, sesión <session>)
 **Contrato:** `docs/specs/015-002-intake-guards/spec.md` (sha256 `a8bafbdd…` verificado) · **Packet:** `015-002-intake-guards-test-writer-audit-001` (route C re-despachado: el primer despacho lo armó el orquestador a mano con un sha ajeno y fue rechazado como INVALID PACKET; execution v2 verificada).
 **Método:** solo `tests/` + spec aprobada. Sin leer implementación. Sin editar tests.
 

@@ -10,11 +10,11 @@
 **Comandos principales ejecutados:**
 
 ```sh
-python3 <home>/.agents/skills/cdad-cycle/scripts/cdad_packet.py \
+python3 ~/.agents/skills/cdad-cycle/scripts/cdad_packet.py \
   validate-request --project-root . \
   --request .cdad/packets/016-003-suite-review-tranche-1-architect-draft-001/REQUEST.json
 
-python3 <home>/.agents/skills/cdad-cycle/scripts/cdad_packet.py \
+python3 ~/.agents/skills/cdad-cycle/scripts/cdad_packet.py \
   validate-packet --project-root . \
   --request .cdad/packets/016-003-suite-review-tranche-1-architect-draft-001/REQUEST.json \
   --packet .cdad/packets/016-003-suite-review-tranche-1-architect-draft-001/PACKET.md

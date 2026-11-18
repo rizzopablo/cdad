@@ -202,7 +202,7 @@ count_flat_files() {  # dir pattern -> number of matching files (0 if dir missin
 count_tree_files() {  # dir -> number of files recursively (0 if dir missing)
   local dir="$1"
   if [ -d "$dir" ]; then
-    find "$dir" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' ! -name '*.pyo' 2>/dev/null | wc -l | tr -d ' '
+    find "$dir/" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' ! -name '*.pyo' 2>/dev/null | wc -l | tr -d ' '
   else
     printf '0'
   fi

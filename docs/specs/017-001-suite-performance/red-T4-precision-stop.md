@@ -12,7 +12,7 @@
   - `python3 scripts/cdad_packet.py validate-packet --request …/REQUEST.json --packet …/PACKET.md` → **exit 0**
   - `python3 scripts/cdad_packet.py render --request …/REQUEST.json` → **byte-for-byte identical** to `PACKET.md` (`diff` clean)
   - `python3 scripts/cdad_packet.py render --route C --request …/REQUEST.json` → **identical** to the received identification block
-- Scope respected: read only the 4 declared inputs + read_scope (`docs/specs/017-001-suite-performance`, `tests/`); **no implementation code read** (no read/grep of `scripts/`, `agents/`, etc.). The CLI was exercised only as a black box via synthetic attempts in scratch dirs outside the repo (`<tmp>/cdad-render/probe*`). `git status` confirms the tree is untouched (only pre-existing `M docs/.cdad-state.json`, already noted in review-T4).
+- Scope respected: read only the 4 declared inputs + read_scope (`docs/specs/017-001-suite-performance`, `tests/`); **no implementation code read** (no read/grep of `scripts/`, `agents/`, etc.). The CLI was exercised only as a black box via synthetic attempts in scratch dirs outside the repo (`~/clawd/tmp/cdad-render/probe*`). `git status` confirms the tree is untouched (only pre-existing `M docs/.cdad-state.json`, already noted in review-T4).
 
 ## 2. Pre-RED finding
 

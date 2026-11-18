@@ -6,15 +6,17 @@ Turn a functional idea into an implementable spec with no ambiguity.
 
 You do NOT write the spec. You coordinate:
 
-1. Emit handoff to **architect in brainstorm mode** (Socratic questions).
-2. Validate brainstorm closure at re-entry.
+1. Hold the dialogue with the user yourself; consult the **architect in brainstorm mode** (targeted `role-report`) when consequential uncertainty or independent technical judgment warrants it.
+2. Establish readiness: consequential choices resolved, explicitly excluded or declared blocking (partial answers, silence and unaccepted defaults are not consent). Readiness is not approval.
 3. Emit handoff to **architect in spec-writing mode**.
 4. Validate the spec draft at re-entry.
 5. Dispatch the draft review (`plan-review`) and validate its verdict at re-entry.
 6. Pass the spec to the **user (human or higher-hierarchy autonomous agent) for approval** (by default non-delegable; see the exception in 2.3 if the user explicitly requested delegating it to an agent for this feature).
 7. When the approval arrives (from the user, or agent-delegated under an explicit request), close the stage.
 
-## Sub-phase 2.1 — Socratic brainstorm
+## Sub-phase 2.1 — Socratic brainstorm (only when consulted)
+
+Applies only when consequential uncertainty or independent technical judgment warrants a consultation; otherwise, once readiness is established from the recoverable dialogue, skip to 2.2.
 
 Load `references/handoff-prompts.md` section "Architect (Stage 2 — Socratic brainstorm)". Generate the packet with:
 
@@ -26,13 +28,13 @@ Deliver the packet and end the turn.
 
 ### Re-entry
 
-When the architect closes the brainstorm with a summary of decisions, validate it (see `re-entry.md` section "Architect — brainstorm"). If it passes, emit the handoff for spec writing.
+Validate the consultation report (see `re-entry.md` section "Architect — brainstorm"). When readiness holds, emit the handoff for spec writing with the recoverable decisions actually made.
 
 ## Sub-phase 2.2 — Spec writing
 
 Handoff packet for the architect in spec-writing mode with:
 
-- Brainstorm summary (from the previous re-entry).
+- Brainstorm summary (from the previous re-entry), only if a consultation occurred; otherwise the recoverable decisions actually made in the dialogue.
 - Content of `assets/spec-template/spec.md`.
 - `docs/systemPatterns.md`.
 
@@ -59,9 +61,21 @@ reviewer works in a session separate from the author.
 - **Route the blockers.** Every blocker of the verdict goes back to the
   architect, or is discarded with a written reason by the authority that
   approves.
+- **Sufficiency of verification (PC-2).** The review checks, for every promise,
+  that the promise is correct and that its proposed verification (§"Verification
+  strategy per promise") can sufficiently establish its acceptance. An
+  insufficient or unverifiable commitment returns for correction before the
+  approval.
 - **Focused re-review.** If the correction changed the design, the corrected
-  draft gets a focused re-review: the new bytes are covered, not a new full
-  round.
+  draft gets a focused re-review: the new bytes are covered, a narrower pass than
+  the initial full assessment. It is the verification of the current round, not a
+  free pass: when its findings continue the correction loop, it opens the next
+  round and consumes the next allowance (§"Bounded correction rounds").
+- **Bounded rounds.** Each draft review-and-correction loop is bounded by the
+  maximum the architect declares (§"Bounded correction rounds"); the orchestrator
+  records each round and, at the maximum, finishes the verification of the last
+  permitted correction and adjudicates instead of dispatching a further
+  correction.
 - **Then the approval.** Only when every blocker is closed does the draft go to
   the approval (the sub-phase below). The verdict never approves the draft.
 
@@ -72,6 +86,39 @@ The review is always mandatory; its depth is proportional (the calibration of
 exemption is explicit and registered in the same `stage_history` entry as the
 approval, with the four fields `exempted_by` (the owner who exempts the
 review), `delegated`, `requested_by` (who asked for it) and `reason` (why).
+An exemption is not an executed review, and it is not a claim that the
+verification was checked as sufficient.
+
+## Bounded correction rounds (pointer — owner: `references/bounded-review-cycles.md`)
+
+Every unit specification declares a **maximum of correction rounds** — a positive
+integer with a concrete difficulty/risk justification and its status
+(provisional or adopted). The architect proposes it in the draft; the
+orchestrator applies it independently to the three families (draft, audit,
+result); the competent approver adopts it with the specification. The draft
+review itself is provisionally bounded by the proposed maximum, with specification
+and plan sharing one draft allowance. Round definition, counting identity,
+exhaustion disposition and the fixed note pattern are owned by the canonical
+reference and are never restated here.
+
+## Verification strategy per promise (canonical home — PC-1)
+
+Every observable promise of the spec declares, next to its postconditions:
+
+- its **property** — what is promised, in the user's terms;
+- its **numbered postconditions** (the PC-n it groups);
+- the **selected method** — `executable` (tests), `contextual review` (independent review of the produced product against the approved contract and sources), or `combined` (both families; neither substitutes for the other);
+- the **acceptance criterion** — the observable condition that accepts the promise;
+- the **expected evidence** — the records that will exist (test runs with their output, a review report, and so on);
+- the **verification limits** — what the chosen method cannot establish.
+
+No new schema is required: these fields may be prose or cells of the spec's
+promise table (`assets/spec-template/spec.md`). The method follows what the
+promise is: observable behavior reachable by a test is verified executably;
+the semantic fidelity of a text, document or configuration is verified by
+contextual review. Routing and the handling of each method during production
+are owned by stage-3 §"Routing by verification method"; the closure categories
+of evidence are owned by stage-4 §"Closure evidence categories".
 
 ## Sub-phase 2.3 — Approval (by the user by default; delegable only under an explicit request)
 
@@ -115,7 +162,7 @@ Also register in the state file's `stage_history` an entry with `"approved_by"`,
 
 ## Variants by size
 
-- **Trivial** (point fix): the spec can be one paragraph + one failing test. Still brainstorm + approval, but shorter.
+- **Trivial** (point fix): the spec can be one paragraph + one failing test (for pending executable behavior; semantic-only work declares its acceptance criterion and contextual review instead). Still dialogue (consultation only if warranted) + approval, but shorter.
 - **Medium** (most cases): standard format.
 - **Complex** (multiple components): the architect also produces `plan.md` following the "Planning for complex features" section (below).
 
@@ -131,7 +178,7 @@ Trigger: the spec is complex (multiple components). The architect produces `plan
 
 ### Task size
 
-The task is the smallest unit that closes in its own mini TDD cycle (its own RED→GREEN). Its size is judged by **total cost**, not by a count: the unit is invalid when any of these four verifiable conditions holds, and the criterion reuses — by reference, never re-stated as a score or a number — the «coordination cost» criterion already declared in the planning contract (§5).
+The task is the smallest unit that closes its own verifiable result with the verification method its promise declares: a mini TDD cycle (its own RED→GREEN) for pending executable behavior; production plus an independent contextual review for semantic fidelity; both, each on its own part, for a mixed task. Its size is judged by **total cost**, not by a count: the unit is invalid when any of these four verifiable conditions holds, and the criterion reuses — by reference, never re-stated as a score or a number — the «coordination cost» criterion already declared in the planning contract (§5).
 
 - **(a) Rejectable without its neighbor.** A reviewer could not reject the unit without also rejecting its neighbor: if the refusal necessarily drags the adjacent unit along, the boundary is wrong.
 - **(b) Closes its own verifiable result with its named consumer.** The unit closes its own verifiable result with its named consumer; with no named consumer it is not a unit.
@@ -147,7 +194,7 @@ Each task in the plan declares:
 - **Files**: exact paths, marked Create / Modify / Test.
 - **Consumes / Produces**: the public contract — exact signatures of what this task receives from the previous ones and of what it exposes to the next ones. The implementer of a task only sees its own task; that is why the signatures must be here, and be usable by the test-writer (the contract, not the body).
 - **Validation plan**: the focal tests, the affected regressions, the integration gate and who runs each check — or an observable check instead for a code-less task. The field names and the canonical `plan-tasks` block format live in one place and are only referenced, never copied: `docs/epics/epic-004-single-source-planning/planning-contract-draft.md` §4.1.
-- **TDD steps**: the task's red→green loop, with the test first.
+- **Verification steps**: by the task's declared method. For pending executable behavior: the red→green loop, with the test first. For semantic fidelity: the production against the approved contract and acceptance criterion, with the independent contextual review that follows (no test is manufactured). For a mixed task: both, each on its own part (stage-3 §"Routing by verification method").
 
 ### Progressive detail (canonical rule)
 
@@ -209,11 +256,14 @@ The feature's **minimum acceptance-of-use recipe** — contract / integration / 
 - [ ] Four minimum sections present and not placeholders.
 - [ ] Numbered, verifiable postconditions.
 - [ ] Measurable acceptance criteria.
+- [ ] Each promise declares its verification (property, method, acceptance criterion, expected evidence and limits), and the draft review either checked its sufficiency (PC-1, PC-2) or was exempted by the owner (see the two alternatives below).
 - [ ] Unequivocal user approval mark.
 - [ ] If the spec is complex (multiple components): `plan.md` exists, passed the self-review, and is approved together with the spec.
-- [ ] `docs/specs/<feature>/plan-review.md` exists (the verdict of the draft review) and every blocker in it is resolved or discarded with a written reason.
+- [ ] Draft review, one of two alternatives:
+  - (a) The independent draft review was performed: `docs/specs/<feature>/plan-review.md` exists (its verdict on every promise's sufficiency), and every blocker in it is resolved or discarded with a written reason.
+  - (b) The owner exempted the review, registered in the approval's `stage_history` entry with `exempted_by`, `delegated`, `requested_by` and `reason` (declared above, in the paragraph "The exemption's declared form"). The exemption is not an executed review and is not a claim that the verification was checked as sufficient; it only records that the review was waived.
 
-When all OK: update the state file (`current_stage: tdd`, `tdd_substage: red`, `active_feature: <feat-id>`, register `approved_by` in `stage_history`). Announce the transition. Emit handoff to test-writer (RED) for postcondition 1.
+When all OK: update the state file (`current_stage: tdd`, `active_feature: <feat-id>`, register `approved_by` in `stage_history`). Set `tdd_substage: red` when some promise has pending executable behavior, and route the rest per stage-3 §"Routing by verification method". Announce the transition. Emit handoff to test-writer (RED) for the first promise with pending executable behavior. If no promise has pending executable behavior, there is no RED: route the semantic-only production per stage-3 §"Routing by verification method".
 
 ## If something not contemplated in the spec comes up during implementation
 
@@ -221,6 +271,6 @@ Rule: it is NOT silently added to the code. You go back to Stage 2: update the s
 
 ## Anti-patterns
 
-- **AP-5**: skipping the spec because "it's simple". Minimum: one paragraph + failing test, with approval.
+- **AP-5**: skipping the spec because "it's simple". Minimum: one paragraph + the verification its method requires (a failing test when executable behavior is pending; the acceptance criterion and the independent contextual review for semantic-only work), with approval.
 - **AP-6**: spec approved silently with no explicit mark. Without the mark, you don't advance.
 - **AP-10**: delegating approval to the LLM WITHOUT a previous explicit request from the user for this feature/stage (default: non-delegable). With an explicit request, see "Exception: explicit delegation to an expert agent" above — the exception does not apply on its own initiative (AP-15).

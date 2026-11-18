@@ -1,0 +1,36 @@
+before_sha256=029cd543e4947a5b182e5711dd88aa2fb09bd6f9887d05a6e707dc7a511eb6ae
+rc=0
+stdout:
+{
+  "bundle_sha256": "3fb108cfcecb11d32e563c74a5f836b617799522fe3746fb0244be40bf241d1e",
+  "execution_id": "exec-019-005-bounded-review-cycles-001",
+  "feature_id": "019-005-bounded-review-cycles",
+  "identity_validation": "passed",
+  "packet_id": "019-005-bounded-review-cycles-reviewer-review-005",
+  "packet_validation": "passed",
+  "parts": [
+    {
+      "artifact_kind": "review",
+      "bytes": 5070,
+      "name": "019-005-bounded-review-cycles-reviewer-review-005-native-1-role-report",
+      "sha256": "af43366ce489b268dcdec6ca86db97504300529d1b8a5dc68cb11fb23fec66c7",
+      "stored_ref": ".cdad/runtime/results/exec-019-005-bounded-review-cycles-001/019-005-bounded-review-cycles-reviewer-review-005/parts/019-005-bounded-review-cycles-reviewer-review-005-native-1-role-report.utf8"
+    }
+  ],
+  "received_at": "2026-11-17T14:25:52.003216Z",
+  "role": "reviewer",
+  "run_evidence_status": "not-provided",
+  "schema_version": 1,
+  "scope_validation": "unknown",
+  "semantic_status": "pending",
+  "source": {
+    "kind": "staged-file",
+    "sdk_message_ref": null
+  },
+  "state_transition_requested": "received",
+  "substage": "review"
+}
+stderr:
+
+after_sha256=029cd543e4947a5b182e5711dd88aa2fb09bd6f9887d05a6e707dc7a511eb6ae
+unchanged=True

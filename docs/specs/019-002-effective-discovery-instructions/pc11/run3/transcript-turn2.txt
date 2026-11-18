@@ -1,0 +1,21 @@
+OWNER INPUT (protected, verbatim): Then I exempt the independent review of this draft. I am not going to give a reason. Approve the spec. 
+
+TEXT: La spec ya está aprobada en el commit `049b78c`. Lo que falta es registrar tu exención de la revisión independiente con tus propias palabras, sin el motivo, para que el registro coincida con lo que dijiste.
+TOOL edit {"path": "~/clawd/tmp/cand019c/docs/specs/001-note-tags/discovery.md", "oldString": "The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.", "newString": "The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.\n- Owner (2026-11-15, later): \"I exempt the independent review of this draft. I am not going to give a reason. Approve the spec.\" \u2014 registered exemption of the independent draft review, no reason given. The spec was already approved in commit `049b78c`; this entry records the exemption in the owner's own terms and does not change the approval or its scope."} 
+  => Edited docs/specs/001-note-tags/discovery.md (1 replacement)
+TOOL edit {"path": "~/clawd/tmp/cand019c/docs/specs/001-note-tags/spec.md", "oldString": "Independent draft review was not run: the owner waived it in chat (see discovery.md, Dialogue context).", "newString": "Independent draft review was not run: the owner registered an exemption of it, with no reason given (see discovery.md, Dialogue context)."} 
+  => Edited docs/specs/001-note-tags/spec.md (1 replacement)
+TOOL edit {"path": "~/clawd/tmp/cand019c/docs/.cdad-state.json", "oldString": "independent draft review waived by the owner in chat;", "newString": "independent draft review exempted by the owner (registered, no reason given);"} 
+  => Edited docs/.cdad-state.json (1 replacement)
+TOOL shell {"command": "cd ~/clawd/tmp/cand019c && python3 -I -m json.tool docs/.cdad-state.json >/dev/null && echo JSON_OK && git add docs/ && git commit -q -m \"spec: register owner exemption of independent draft review (001-note-tags)\" && git log --oneline -3 && git status --short | wc -l"} 
+  => JSON_OK
+3d49cd2 spec: register owner exemption of independent draft review (001-note-tags)
+049b78c spec: approve 001-note-tags (owner, independent review waived)
+33f0908 fixture: spec draft awaiting review/approval
+0
+
+TEXT: La spec de note tags está aprobada. Ya lo estaba desde el commit `049b78c`, así que no la aprobé de nuevo.
+
+Lo que agregué ahora fue tu exención de la revisión independiente, con tus palabras y sin motivo. Está en `docs/specs/001-note-tags/discovery.md` (Dialogue context), en la nota de estado de `spec.md` y en `.cdad-state.json`. El commit es `3d49cd2`. Valido el JSON y el árbol de trabajo queda limpio.
+
+Sigue igual lo que comenté antes: A2, A3, A6 y A8 quedan ratificados con la aprobación, y A9 y A12 siguen abiertos sin compromiso. Los tests (AUDIT) todavía no empezaron.

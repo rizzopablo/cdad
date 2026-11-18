@@ -96,6 +96,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_layout  # noqa: E402
+
 TRACE_CONTRACT = "trace-v1"
 PREFLIGHT_CONTRACT = "preflight-v1"
 RECORD_CONTRACT = "record-v1"
@@ -136,9 +142,6 @@ EVENT_KEYS = frozenset({
 # Safe path segment, mirroring 002 `_segment` (cdad_result.py): a durable
 # filename component must never contain a separator or a `..` traversal.
 SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
-
-# Policy file read (never written) by the pre-flight, relative to --project-root.
-POLICY_REL_PATH = "docs/cdad-policy.json"
 
 # Operations that mutate the product. Only these are checked against the role's
 # write_scope; every other tool with a resolvable target is a read and is
@@ -485,7 +488,7 @@ def evaluate_preflight(policy: Any, exec_context: Any, role: str,
                 "denied_by": "policy",
                 "reason": (
                     f"operation {tool!r} on {raw_path!r} matches private_paths "
-                    f"entry {private!r} declared in {POLICY_REL_PATH}; "
+                    f"entry {private!r} declared in {cdad_layout.policy_relpath(root)}; "
                     "refused before execution (read-only pre-flight)"),
             }
 
@@ -723,7 +726,8 @@ def _load_json(path: Path) -> Any:
 
 def _cmd_preflight(args: argparse.Namespace) -> int:
     root = Path(args.project_root)
-    policy_path = root / POLICY_REL_PATH
+    policy_relpath = cdad_layout.policy_relpath(root)
+    policy_path = root / policy_relpath
     exec_path = Path(args.execution_context)
     if not exec_path.is_absolute():
         exec_path = root / exec_path
@@ -933,6 +937,15 @@ def _cmd_budget(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    try:
+        return _main(argv)
+    except cdad_layout.LayoutError as exc:
+        # 019-004 §4.2: an invalid registered layout stops the guard; never a fallback.
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+
+
+def _main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "classify":
         return _cmd_classify(args)

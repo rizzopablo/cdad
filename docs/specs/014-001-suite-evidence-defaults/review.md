@@ -1,6 +1,6 @@
 # review.md — 014-001-suite-evidence-defaults (stage 4)
 
-Reviewer: sesión `<ses-336>`, paquete `014-001-suite-evidence-defaults-reviewer-review-001`
+Reviewer: sesión `<session>`, paquete `014-001-suite-evidence-defaults-reviewer-review-001`
 (route C validada). Materializado por el orquestador (ADR-003).
 
 **Veredicto:** funciona pero no pasa tal cual: 1 bloqueante; resto opcional/deuda.

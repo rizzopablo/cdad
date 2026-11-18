@@ -705,7 +705,12 @@ class TestPd26RoleAxisStaysClosed(ScribeRowCase):
             ("test-writer", "audit"),
             ("implementer", "green"),
             ("reviewer", "review"),
-            ("architect", "brainstorm"),
+            # 019-002 PC-4 (deliberado, recuperación): ("architect",
+            # "brainstorm") se retira de esta lista. Obligación anterior:
+            # `role-report` rechazado en brainstorm. Obligación nueva:
+            # brainstorm admite `role-report` (consulta técnica); lo protege
+            # tests/test_019_002_discovery_delivery.py. Los demás cruces
+            # rol/subfase se conservan.
         )
         for role, substage in cases:
             with self.subTest(role=role, substage=substage):

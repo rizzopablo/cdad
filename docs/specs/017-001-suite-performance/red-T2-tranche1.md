@@ -21,10 +21,10 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m pytest tests/test_017_001_suite_tranche1.py
 
 → `1 failed in 0.09s`, `AssertionError: …la frontera real debe emitir sus dos lookups con comienzo y fin…: []` (`assert 0 == 2`). Falla en aserción de promesa ausente, nunca por ImportError/colección.
 
-Sonda no comprometida sobre el recorrido real C-R (plugin efímero en `<tmp>/cdad-probe/`, fuera de `tests/`, eliminado del reporte pero no del repo — no se commiteó nada fuera de `tests/`):
+Sonda no comprometida sobre el recorrido real C-R (plugin efímero en `~/clawd/tmp/cdad-probe/`, fuera de `tests/`, eliminado del reporte pero no del repo — no se commiteó nada fuera de `tests/`):
 
 ```sh
-CDAD_PROBE_OUT=.../pre.json PYTHONPATH=<tmp>/cdad-probe PYTHONDONTWRITEBYTECODE=1 python3 -m pytest "tests/test_007_002_dispatch_recovery.py::test_reconcile_abandoned_dispatch_is_disposed" -o addopts= -p no:cacheprovider -p obs_probe_plugin -q
+CDAD_PROBE_OUT=.../pre.json PYTHONPATH=~/clawd/tmp/cdad-probe PYTHONDONTWRITEBYTECODE=1 python3 -m pytest "tests/test_007_002_dispatch_recovery.py::test_reconcile_abandoned_dispatch_is_disposed" -o addopts= -p no:cacheprovider -p obs_probe_plugin -q
 ```
 
 → `1 passed in 1.52s`, eventos capturados: **0**. El test contractual pasa sin marcas (neutralidad preexistente) pero no hay nada que calibrar: comportamiento pendiente confirmado también en conftest/007_002.

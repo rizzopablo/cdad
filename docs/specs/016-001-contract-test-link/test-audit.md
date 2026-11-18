@@ -1,6 +1,6 @@
 # test-audit.md — 016-001-contract-test-link (AUDIT, test-writer)
 
-**Sesión:** `<ses-346>` · **Contrato:** `docs/specs/016-001-contract-test-link/spec.md` (sha256 `88b144e5…eca688e`)
+**Sesión:** `<session>` · **Contrato:** `docs/specs/016-001-contract-test-link/spec.md` (sha256 `88b144e5…eca688e`)
 **Método:** contrato aprobado + barrido de `tests/` por nombres de fichero y `def test_`; sin leer implementación; sin modificar tests.
 
 ## 1. Disposiciones (12 líneas, todas Mantener)

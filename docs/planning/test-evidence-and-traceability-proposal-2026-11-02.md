@@ -102,7 +102,7 @@
    close --all`, ADR-039), no un mecanismo nuevo.
 5. La cifra «20 de 63 specs» de §1 viene de una regex débil: no usarla como dato; se pide medirla.
 
-## 3ter. Opinión del architect (2026-11-02, sesión `<ses-329>`, solo lectura, sobre `ad7565d4`)
+## 3ter. Opinión del architect (2026-11-02, sesión `<session>`, solo lectura, sobre `ad7565d4`)
 
 Materializada por el orquestador (ADR-003); resumen fiel, el texto completo queda en la sesión.
 

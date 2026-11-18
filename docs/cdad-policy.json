@@ -20,7 +20,8 @@
       "tests/.sensitive-patterns.local"
     ],
     "documentation_files": [
-      "README.md"
+      "README.md",
+      "CDAD_metodologia.md"
     ]
   },
   "schema_version": 1,

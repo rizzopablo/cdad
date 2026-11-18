@@ -112,6 +112,7 @@ E4: Epic closure                  → references/epic-closure.md
 - [ ] All features in the plan are `done` in `progress.md`.
 - [ ] Each feature has its Memory Bank update committed.
 - [ ] There are no `in progress` or `blocked` features belonging to the epic.
+- [ ] Accepted optional residue is disposed: either the single accumulation unit (see "Bounded review rounds and the accumulation unit") is `done`, or the record states that no residue was admitted.
 
 ### Gate E3 → E4 — Integration → Closure
 
@@ -129,7 +130,23 @@ E4: Epic closure                  → references/epic-closure.md
 
 ---
 
+## Bounded review rounds and the accumulation unit (pointer — owner: `skills/cdad-cycle/references/bounded-review-cycles.md`)
+
+Each feature's specification declares its own maximum of correction rounds per family; this skill adds only the epic-level step. When the loops of the planned units end with **accepted optional residue**:
+
+- Place it in **one ordinary accumulation unit** in the epic plan (`epic-plan-template.md`), queued after the other planned units and **before** integration/closure (Gate Features → E3). It is a normal unit, not a new phase.
+- Each admitted item keeps its originating unit, family, round and finding, the accepted consequence and disposition authority, its resolution criterion and responsible party; merging duplicates preserves every origin.
+- Before the unit opens, approve its bounded membership and contract and have the architect declare its own justified maximum. A later item enters only by explicit amendment of that approved membership, never silently.
+- The accumulation unit follows normal verification and approvals and **never creates another accumulation unit**; its optional residual work may stay as explicitly accepted debt, while an unresolved committed obligation blocks closure or needs a legitimate approved change.
+- If no residue was admitted, record that result (plan or closure) instead of opening an empty unit. Accepted debt never replaces an unmet current promise.
+
+The closure template lists what the accumulation unit absorbed or left as accepted debt.
+
+---
+
 ## Epic file structure
+
+Conventional `docs/epics/` paths in this skill mean the methodology directory resolved by `<skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>` (its `epics/` child): the registered `methodology_dir`, `docs/` for a legacy project, or `cdad/` for a new one. Never migrate a layout to match these examples.
 
 ```
 docs/

@@ -17,8 +17,8 @@ Creé fuera del repositorio un test que lanza `/bin/sleep 120` con `start_new_se
 
 ```text
 python3 scripts/cdad-suite.py parallel --workers 1 \
-  --evidence-root <tmp>/review-017-001-005/a/evidence \
-  --nodeids <tmp>/review-017-001-005/a/nodeids
+  --evidence-root ~/clawd/tmp/review-017-001-005/a/evidence \
+  --nodeids ~/clawd/tmp/review-017-001-005/a/nodeids
 ```
 
 Resultado: **rc 3**, `verdict=discarded`, `orphans_found=1`, `orphans_cleaned=1`, `orphans_remaining=0`. El PID creado por la sonda ya no existía en `/proc` tras la corrida.
@@ -27,7 +27,7 @@ Inspeccioné `scripts/cdad-suite.py`: activa `PR_SET_CHILD_SUBREAPER`, busca des
 
 ### 2. Huella del checkout
 
-No repetí la mutación de `build/`, conforme al encargo. Leí el `parallel.json` crudo de la sonda C en `<tmp>/017-001-probes/fingerprint/evidence/`:
+No repetí la mutación de `build/`, conforme al encargo. Leí el `parallel.json` crudo de la sonda C en `~/clawd/tmp/017-001-probes/fingerprint/evidence/`:
 
 - `verdict`: **rejected: canary detected changes**
 - `checkout_canary.unchanged`: **false**
@@ -43,8 +43,8 @@ Ejecuté una segunda sonda, equivalente a la anterior pero con `/bin/sleep 1.5`:
 
 ```text
 python3 scripts/cdad-suite.py parallel --workers 1 \
-  --evidence-root <tmp>/review-017-001-005/b/evidence \
-  --nodeids <tmp>/review-017-001-005/b/nodeids
+  --evidence-root ~/clawd/tmp/review-017-001-005/b/evidence \
+  --nodeids ~/clawd/tmp/review-017-001-005/b/nodeids
 ```
 
 Resultado: **rc 0**, `verdict=accepted`, `orphans_found=1`, `orphans=0`, `orphans_cleaned=0`, `orphans_remaining=0`. El PID de la sonda ya no existía tras la corrida.
@@ -74,7 +74,7 @@ Ejecuté conjuntamente el oráculo T6, las focales T1–T4 y la regresión propo
 
 ```text
 PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -p no:cacheprovider \
-  --basetemp=<tmp>/review-017-001-005/pytest -q \
+  --basetemp=~/clawd/tmp/review-017-001-005/pytest -q \
   tests/test_017_001_suite_parallel.py \
   tests/test_017_001_suite_profile.py \
   tests/test_017_001_suite_operations.py \

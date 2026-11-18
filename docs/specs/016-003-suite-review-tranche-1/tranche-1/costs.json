@@ -1,7 +1,7 @@
 {
  "activities": [
   {
-   "session": "<ses-349>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata (primera pasada: B1a+B1b)",
    "batch": "audit-002",
@@ -63,7 +63,7 @@
    "duration_s": 254.5
   },
   {
-   "session": "<ses-350>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata (primera pasada: B2a+B2b)",
    "batch": "audit-003",
@@ -117,7 +117,7 @@
    "duration_s": 337.2
   },
   {
-   "session": "<ses-351>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B1a",
@@ -172,7 +172,7 @@
    "duration_s": 442.4
   },
   {
-   "session": "<ses-352>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B1b",
@@ -246,7 +246,7 @@
    "duration_s": 407.1
   },
   {
-   "session": "<ses-353>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B2a",
@@ -305,7 +305,7 @@
    "duration_s": 292.3
   },
   {
-   "session": "<ses-354>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B2b",
@@ -363,7 +363,7 @@
    "duration_s": 415.4
   },
   {
-   "session": "<ses-355>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B3",
@@ -380,7 +380,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -433,7 +433,7 @@
    "duration_s": 516.1
   },
   {
-   "session": "<ses-356>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B4",
@@ -490,7 +490,7 @@
    "duration_s": 412.4
   },
   {
-   "session": "<ses-357>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B5",
@@ -562,7 +562,7 @@
    "duration_s": 438.2
   },
   {
-   "session": "<ses-358>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B6",
@@ -616,7 +616,7 @@
    "duration_s": 455.9
   },
   {
-   "session": "<ses-359>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B7",
@@ -677,7 +677,7 @@
    "duration_s": 448.3
   },
   {
-   "session": "<ses-360>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B8",
@@ -759,7 +759,7 @@
    "duration_s": 580.8
   },
   {
-   "session": "<ses-361>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B9",
@@ -826,7 +826,7 @@
    "duration_s": 460.8
   },
   {
-   "session": "<ses-362>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B10",
@@ -885,7 +885,7 @@
    "duration_s": 448.3
   },
   {
-   "session": "<ses-363>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B11",
@@ -964,7 +964,7 @@
    "duration_s": 430.6
   },
   {
-   "session": "<ses-364>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata",
    "batch": "B12",
@@ -1037,7 +1037,7 @@
    "duration_s": 473.3
   },
   {
-   "session": "<ses-365>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "auditoría barata (reemisión B12b: 010-000)",
    "batch": "audit-018",
@@ -1065,7 +1065,7 @@
    "duration_s": 268.2
   },
   {
-   "session": "<ses-366>",
+   "session": "<session>",
    "role": "reviewer",
    "scope": "revisión semántica independiente del tramo",
    "nodeids": [
@@ -1356,7 +1356,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -1485,7 +1485,7 @@
    "duration_s": 353.6
   },
   {
-   "session": "ses_orquestador_cierre",
+   "session": "<session>_cierre",
    "role": "orchestrator",
    "scope": "cierre del tramo: verificación, costo y decisión",
    "nodeids": [
@@ -1776,7 +1776,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -2066,7 +2066,7 @@
   "commands_s": 41.44,
   "sessions": 22,
   "commands_measured": "31 comandos del bloque de cierre con duración observada; los comandos de los lotes de auditoría no se midieron individualmente y no se computan como cero",
-  "commands_note": "el bloque de cierre (ses_orquestador_cierre) conserva sus comandos y duraciones: es la única fuente de commands_s",
+  "commands_note": "el bloque de cierre (<session>_cierre) conserva sus comandos y duraciones: es la única fuente de commands_s",
   "audit_activities": 17,
   "aggregated_note": "aggregated_s es la unión de intervalos (sin doble conteo); sessions_sum_s es la suma cruda de sesiones"
  },
@@ -2103,7 +2103,7 @@
  },
  "shared_preparation": [
   {
-   "session": "<ses-367>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "corrección de producto: RED del validador legacy",
    "commands": [
@@ -2124,7 +2124,7 @@
    "note": "trabajo de método: no audita nodeids del tramo; se declara aparte para no inflar el costo por test"
   },
   {
-   "session": "<ses-368>",
+   "session": "<session>",
    "role": "test-writer",
    "scope": "corrección de producto: fixture de R-F",
    "commands": [
@@ -2145,7 +2145,7 @@
    "note": "trabajo de método: no audita nodeids del tramo; se declara aparte para no inflar el costo por test"
   },
   {
-   "session": "<ses-369>",
+   "session": "<session>",
    "role": "implementer",
    "scope": "corrección de producto: GREEN del validador legacy",
    "commands": [
@@ -2167,7 +2167,7 @@
    "duration_s_receipt": 615.1,
    "measurement": "intervalo completo de la sesión (primer turno bloqueado + continuación tras el fix de fixture); el recibo de entrega se registró a los 615,1 s",
    "overlap_with": {
-    "session": "<ses-368>",
+    "session": "<session>",
     "scope": "corrección de producto: fixture de R-F",
     "overlap_s": 90.1,
     "note": "la continuación de GREEN-002 corre en paralelo con el fixture RED-003; se declara y no se descuenta de la suma de sesiones: aggregated_s se informa como unión de intervalos"

@@ -137,7 +137,7 @@ Output format:
 
 ## Socratic question frame (Odoo-specific)
 
-In the brainstorm, in addition to inputs/outputs/errors/permissions, ask:
+In the consultation, in addition to inputs/outputs/errors/permissions, surface as open questions for the orchestrator to put to the user (never answering them yourself):
 - Is the requirement covered by **configuration** (rights, views, demo
   data, standard fields) or does it demand **custom**?
 - Is there an **OCA/core** module that already solves it?

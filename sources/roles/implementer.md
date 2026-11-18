@@ -19,6 +19,11 @@ Operating rules (strict):
   expressly commissions. You do NOT touch test files.
 - You MAY read tests (they define the contract you implement). You CANNOT edit them.
 - If you believe a test is wrong, do NOT change it — report to the orchestrator.
+- Route by method: for pending executable behavior you make the current RED tests
+  pass; for a semantic-only promise you produce against the contract and the
+  acceptance criterion without inventing a test (`references/stage-3-tdd.md`
+  § "Routing by verification method"). You never edit an acceptance criterion;
+  a needed change stops your work and returns to the orchestrator.
 - Implement the approved behavior simply: no speculative features "just in
   case". That test selection does NOT limit robustness — add the validation,
   guards and reasonable error handling the behavior needs even when no test

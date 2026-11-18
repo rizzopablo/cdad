@@ -1,0 +1,470 @@
+=== 654123e docs(memory): record list-tags decision and process blockers
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index a1634d4..824a0de 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -11,6 +11,7 @@ Memory Bank initialized from the CDAD templates. No feature is in progress; the
+ Relevant decisions (owner):
+ - A note can carry several tags.
+ - Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.
++- The plain `notes list` shows each note's tags next to it by default.
+ 
+ Defaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):
+ - Tags are written inline in the note text as `#tag`, e.g. `notes add "buy milk #errands #shop"`.
+@@ -22,7 +23,12 @@ Defaults assumed by the orchestrator, NOT yet confirmed by the owner (to be conf
+ Open questions for the owner (not decided):
+ - Confirm the tag syntax above (inline `#tag` vs a separate `--tag` flag on `add`, or both).
+ - Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).
+-- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.
++- Spec approver: not named yet. The owner has said they will decide the spec approval.
++
++Process blockers found on 2026-11-15 (checked with the CLI, nothing written):
++- `prepare` refuses to start any execution: "no active feature in state". A feature must be opened first.
++- The architect can only be enabled by an approved epic plan (`epic_history` entry with `stage: epic-plan` and an approver). A feature spec does not enable it. So the architect's discovery and draft need an epic plan that the owner approves.
++- Policy: a write-free proposal exists (`prepare --propose-policy`: docs and tests roots, `.cdad/tmp` as temporary root). The owner has not accepted it, so `docs/cdad-policy.json` is not written.
+ - Confirm the test runner.
+ - Name the spec approver. Until then the state file has no approver and no spec can be approved.
+ 
+=== 5e8efa9 docs(memory): leave plain list tag display open
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index fd087e9..a1634d4 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -22,6 +22,7 @@ Defaults assumed by the orchestrator, NOT yet confirmed by the owner (to be conf
+ Open questions for the owner (not decided):
+ - Confirm the tag syntax above (inline `#tag` vs a separate `--tag` flag on `add`, or both).
+ - Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).
++- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.
+ - Confirm the test runner.
+ - Name the spec approver. Until then the state file has no approver and no spec can be approved.
+ 
+=== 66a24bf docs(memory): record multi-tag filter matches ANY tag
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index 25debe9..fd087e9 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -10,18 +10,18 @@ Memory Bank initialized from the CDAD templates. No feature is in progress; the
+ 
+ Relevant decisions (owner):
+ - A note can carry several tags.
++- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.
+ 
+ Defaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):
+ - Tags are written inline in the note text as `#tag`, e.g. `notes add "buy milk #errands #shop"`.
+ - Listing by tag: `notes list --tag <name>`. Plain `notes list` keeps showing all notes.
+-- A filter with several tags is NOT decided: the default is one tag per filter.
+ - Tag matching is case-insensitive.
+ - Existing notes (no tags) need no migration; they simply have no tags.
+ - Test runner: `unittest` (stdlib). Alternative: `pytest`.
+ 
+ Open questions for the owner (not decided):
+ - Confirm the tag syntax above (inline `#tag` vs a separate `--tag` flag on `add`, or both).
+-- Confirm the filter form and how several tags in one filter combine (all of them / any of them / single tag only).
++- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).
+ - Confirm the test runner.
+ - Name the spec approver. Until then the state file has no approver and no spec can be approved.
+ 
+diff --git a/docs/progress.md b/docs/progress.md
+index db4eff2..b1b4ef2 100644
+--- a/docs/progress.md
++++ b/docs/progress.md
+@@ -12,7 +12,7 @@ _(none yet)_
+ 
+ ## Queued
+ 
+-- `001-note-tags` — tag notes (a note can carry several tags) and list notes by tag. Open decisions: see `activeContext.md`.
++- `001-note-tags` — tag notes (a note can carry several tags) and list notes by tag. Decided: a note can carry several tags; a filter with several tags shows notes carrying ANY of them. Other open decisions: see `activeContext.md`.
+ 
+ ## Blocked
+ 
+=== 539e432 docs(memory): initialize CDAD Memory Bank
+
+diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
+new file mode 100644
+index 0000000..083ce04
+--- /dev/null
++++ b/docs/.cdad-state.json
+@@ -0,0 +1,22 @@
++{
++  "version": 1,
++  "stack": null,
++  "active_epic": null,
++  "epic_stage": null,
++  "active_feature": null,
++  "current_stage": "idle",
++  "tdd_substage": null,
++  "audit_status": null,
++  "postconditions_status": {},
++  "epic_features": [],
++  "suspended_units": {},
++  "stage_history": [
++    {"stage": "bootstrap", "completed_at": "2026-11-15T20:55:51Z"}
++  ],
++  "epic_history": [],
++  "approver": null,
++  "last_updated": "2026-11-15T20:55:51Z",
++  "execution": null,
++  "active_packet": null,
++  "hitl_delegation": null
++}
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+new file mode 100644
+index 0000000..25debe9
+--- /dev/null
++++ b/docs/activeContext.md
+@@ -0,0 +1,52 @@
++# Active Context
++
++Current state of the project. Each closed feature adds an entry. Most recent entries on top.
++
++---
++
++## 2026-11-15 — Project bootstrap
++
++Memory Bank initialized from the CDAD templates. No feature is in progress; the first feature is queued (`queued` in `progress.md`).
++
++Relevant decisions (owner):
++- A note can carry several tags.
++
++Defaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):
++- Tags are written inline in the note text as `#tag`, e.g. `notes add "buy milk #errands #shop"`.
++- Listing by tag: `notes list --tag <name>`. Plain `notes list` keeps showing all notes.
++- A filter with several tags is NOT decided: the default is one tag per filter.
++- Tag matching is case-insensitive.
++- Existing notes (no tags) need no migration; they simply have no tags.
++- Test runner: `unittest` (stdlib). Alternative: `pytest`.
++
++Open questions for the owner (not decided):
++- Confirm the tag syntax above (inline `#tag` vs a separate `--tag` flag on `add`, or both).
++- Confirm the filter form and how several tags in one filter combine (all of them / any of them / single tag only).
++- Confirm the test runner.
++- Name the spec approver. Until then the state file has no approver and no spec can be approved.
++
++Technical debt detected:
++- No CI and no lint or type checker configured.
++- No tests exist yet (`tests/` is empty).
++- Note ids shift when a note is deleted (existing behaviour, `storage.py`).
++- `notes/cli.py` must be run as `python -m notes.cli`.
++
++Next feature in the queue: `001-note-tags` (tag notes and list notes by tag).
++
++---
++
++## Template for new entries (new ones go on top)
++
++<!--
++## <YYYY-MM-DD> — Feature: <short name>
++
++Closed feature for <one-line description>.
++
++Relevant decisions:
++- <decision 1, with trade-off if applicable>
++
++Technical debt detected:
++- <item 1>
++
++Next feature in the queue: <if you know it>.
++-->
+diff --git a/docs/adr/README.md b/docs/adr/README.md
+new file mode 100644
+index 0000000..256da7c
+--- /dev/null
++++ b/docs/adr/README.md
+@@ -0,0 +1,35 @@
++# Architecture Decision Records (ADR)
++
++The project's architectural decisions. Immutable once accepted.
++
++## When to create an ADR
++
++If within 6 months, someone (you or an agent) could ask **"why did we do X this way?"**, that decision deserves an ADR.
++
++Typical examples:
++
++- Choice of database.
++- Architecture decision (monolith vs services, layering, bounded contexts).
++- Choice of a main library when there were alternatives.
++- Patterns that are deliberately forbidden.
++
++## When NOT to create an ADR
++
++- Local implementation decisions (which algorithm to use inside a function).
++- General project conventions (they go to `systemPatterns.md`).
++- Current state or work in progress (it goes to `activeContext.md`).
++
++## Numbering and format
++
++`ADR-NNN-title-in-kebab-case.md`. Sequential numbering.
++
++Template in `<skill>/assets/adr-template/ADR.md`.
++
++## Possible states
++
++- **Proposed**: under discussion.
++- **Accepted**: approved, in force.
++- **Deprecated**: no longer applies but was not replaced.
++- **Superseded by ADR-NNN**: replaced by another ADR.
++
++Once **Accepted**, an ADR is not modified. If the decision changes, a new ADR is created that `supersede`s the previous one.
+diff --git a/docs/progress.md b/docs/progress.md
+new file mode 100644
+index 0000000..db4eff2
+--- /dev/null
++++ b/docs/progress.md
+@@ -0,0 +1,23 @@
++# Progress
++
++Feature status of the project.
++
++## In progress
++
++_(none)_
++
++## Done
++
++_(none yet)_
++
++## Queued
++
++- `001-note-tags` — tag notes (a note can carry several tags) and list notes by tag. Open decisions: see `activeContext.md`.
++
++## Blocked
++
++_(none)_
++
++---
++
++Last updated: 2026-11-15
+diff --git a/docs/projectbrief.md b/docs/projectbrief.md
+new file mode 100644
+index 0000000..a58b204
+--- /dev/null
++++ b/docs/projectbrief.md
+@@ -0,0 +1,39 @@
++# Project Brief
++
++## Project purpose
++
++`notes-cli` is a tiny command-line tool for keeping short text notes: add a note, list notes, remove a note. The owner is the only user for now.
++
++## Technical stack
++
++- **Language**: Python 3 (3.13 on the development machine); standard library only.
++- **Main framework**: none.
++- **Database**: none. Notes live in a JSON file (`notes.json` by default, or the path in the `NOTES_FILE` environment variable).
++- **Test tooling**: pending (owner to choose between `unittest` and `pytest`). The `tests/` folder exists and is empty.
++- **Lint / type check**: none configured.
++- **CI**: none configured (recorded as debt, see `activeContext.md`).
++
++## Stakeholders and roles
++
++- **Spec approver**: pending. The owner has not yet said who approves specs (see `activeContext.md`).
++- **Tech lead**: not applicable.
++- **Others**: none.
++
++## Known constraints
++
++- Stdlib only, unless the owner decides otherwise.
++- The CLI is run as a module (`python -m notes.cli ...`), because `notes/cli.py` uses a relative import.
++
++## Overall scope
++
++Covered: adding, listing and removing notes; tagging notes (a note can carry several tags); listing notes by tag.
++
++Left out for now: editing note text, search by text, multi-user access, sync, and any UI beyond the terminal.
++
++## External resources
++
++None.
++
++---
++
++Last updated: 2026-11-15
+diff --git a/docs/specs/README.md b/docs/specs/README.md
+new file mode 100644
+index 0000000..f43355a
+--- /dev/null
++++ b/docs/specs/README.md
+@@ -0,0 +1,21 @@
++# Specs
++
++Specs per feature, one folder per feature with format `NNN-feature-id/`.
++
++## Structure per feature
++
++```
++specs/
++└── 001-feature-id/
++    ├── spec.md       ← mandatory, approved before Stage 3
++    ├── review.md     ← created in Stage 4
++    └── plan.md       ← optional, for large features with several phases
++```
++
++## Numbering
++
++Sequential by order of creation. `001-`, `002-`, etc. The suffix is kebab-case.
++
++## Approval
++
++Each `spec.md` carries an unambiguous approval mark at the end or in frontmatter. Without that mark, implementation does not start.
+diff --git a/docs/systemPatterns.md b/docs/systemPatterns.md
+new file mode 100644
+index 0000000..1e68758
+--- /dev/null
++++ b/docs/systemPatterns.md
+@@ -0,0 +1,77 @@
++# System Patterns
++
++Technical conventions, patterns, and structural rules of the project. This file is loaded at the start of every agent session.
++
++## Current decisions
++
++The decisions that govern this project, one row per decision. This section is the
++index of the project's ADRs: it says which ones are in force, and it is the only
++place where that is written down.
++
++The table starts **empty**: a project with no decisions yet has no rows. A row is
++added when a decision is approved; the row of a replaced decision is kept and
++marked obsolete.
++
++| File | State | Summary | Roles | Reference |
++|---|---|---|---|---|
++
++- **File** — the path of the decision's file, relative to the project root (for
++  example `docs/adr/ADR-NNN-<slug>.md`).
++- **State** — `vigente` (in force) or `obsoleto` (replaced; the row is kept, with its
++  replacement, so the history stays in the table).
++- **Summary** — one line: what the decision decides.
++- **Roles** — the roles that must consume the decision (the delegated roles and/or
++  the orchestrator).
++- **Reference** — where the rule that the decision materializes lives (it may point
++  into the installed skill tree).
++
++**Note.**
++
++- The state of a row is declared by whoever maintains the table: it is written in
++  the row itself, never re-derived from the ADR's own text.
++- The rows that are excluded are the decisions that are not in force yet (the
++  `Proposed` ones): they get a row when they are approved, and the list is updated
++  then. The excluded ones are not listed here.
++
++## Layers and boundaries
++
++- `notes/cli.py` — command dispatch (`add`, `rm`, default list). Imports `storage`.
++- `notes/storage.py` — persistence: load and save the JSON list, add, delete, enumerate. Knows nothing about the CLI.
++
++## Code conventions
++
++### Naming
++
++- Functions and modules in `snake_case`.
++- Note ids are list indices. Deleting a note shifts the ids of the notes after it (`storage.py`, `delete`). This is existing behaviour, not a bug to fix silently.
++
++### File organization
++
++- Package `notes/` at the project root; tests in `tests/`.
++
++### Errors and exceptions
++
++No error handling yet. A bad id in `rm` raises the Python exception as it is.
++
++## Framework patterns
++
++Not applicable: no framework.
++
++## Test conventions
++
++- **Framework**: pending (owner to choose `unittest` or `pytest`).
++- **Structure**: `tests/` at the project root.
++- **Fixtures**: pending. Note that storage reads `NOTES_FILE` at import time, so tests should set it before importing `notes.storage` or use a temporary path.
++- **Property tests**: not planned.
++
++## Tooling enforcement
++
++None configured yet.
++
++## Project anti-patterns
++
++- Do not run `python notes/cli.py`: the relative import fails. Use `python -m notes.cli`.
++
++---
++
++Last updated: 2026-11-15
+=== 707e286 initial scratch project
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..8078b42
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++.opencode/
++__pycache__/
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..38b1dfb
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,2 @@
++# notes-cli
++Tiny notes command line tool.
+diff --git a/notes/__init__.py b/notes/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/notes/cli.py b/notes/cli.py
+new file mode 100644
+index 0000000..bb65a69
+--- /dev/null
++++ b/notes/cli.py
+@@ -0,0 +1,15 @@
++import sys
++from . import storage
++
++def main(argv):
++    cmd = argv[0] if argv else "list"
++    if cmd == "add":
++        print(storage.add(" ".join(argv[1:])))
++    elif cmd == "rm":
++        storage.delete(int(argv[1]))
++    else:
++        for i, n in storage.all_notes():
++            print(f"{i}: {n['text']}")
++
++if __name__ == "__main__":
++    main(sys.argv[1:])
+diff --git a/notes/storage.py b/notes/storage.py
+new file mode 100644
+index 0000000..881ec7e
+--- /dev/null
++++ b/notes/storage.py
+@@ -0,0 +1,27 @@
++"""Notes are kept in notes.json as a JSON list; a note's id is its list index."""
++import json, os
++PATH = os.environ.get("NOTES_FILE", "notes.json")
++
++def load():
++    if not os.path.exists(PATH):
++        return []
++    with open(PATH) as f:
++        return json.load(f)
++
++def save(items):
++    with open(PATH, "w") as f:
++        json.dump(items, f)
++
++def add(text):
++    items = load()
++    items.append({"text": text})
++    save(items)
++    return len(items) - 1
++
++def delete(note_id):
++    items = load()
++    del items[note_id]  # later notes shift down by one
++    save(items)
++
++def all_notes():
++    return list(enumerate(load()))

@@ -194,6 +194,13 @@ class ReviewFixCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        # 019-004 (spec §4.2, PC-02/PC-04): este fixture siembra registros
+        # `.cdad/` (despacho, receipt) sin ningún layout admitido; bajo el
+        # contrato nuevo eso es evidencia insuficiente y el layout es AMBIGUO,
+        # no legacy. Los casos de este módulo verifican otra cosa (cierres de
+        # review-t2), así que el fixture declara su layout con EXACTAMENTE un
+        # marcador legacy (`docs/.cdad-state.json`); ninguna aserción cambia.
+        self.write_json(STATE_REL, {})
         self.exec_context = self.write_json("fixture/exec.json",
                                             exec_context_fixture())
 

@@ -6,7 +6,7 @@ Materializado por el orquestador desde `red-T2-markers.md` y
 | nodeid | capacidad | contrato | procedencia |
 |---|---|---|---|
 | `tests/test_017_001_suite_operations.py::test_active_observer_captures_intervals_with_identity_context_and_nesting` | T2-check-1 | operation-markers-v1 (spec §4.2, PC-1 parte, INV-1/INV-8) | RED T2 corregido D1 |
-| `tests/test_017_001_suite_operations.py::test_exceptional_exit_closes_interval_with_error_termination` | T2-check-2 | operation-markers-v1 (PC-1 parte, INV-2) | RED T2 corregido D1 |
+| `tests/test_017_001_suite_operations.py::test_exceptional_exit_clo<session>_with_error_termination` | T2-check-2 | operation-markers-v1 (PC-1 parte, INV-2) | RED T2 corregido D1 |
 | `tests/test_017_001_suite_operations.py::test_without_observer_helper_is_neutral_and_leaves_no_evidence` | T2-check-3 | operation-markers-v1 (PC-1 parte, INV-2) | RED T2 corregido D1 (control) |
 | `tests/test_017_001_suite_operations.py::test_missing_markers_capture_is_diagnosed_as_incomplete_measurement` | T2-check-4 | operation-markers-v1 (PC-1 parte, INV-6/INV-8) | RED T2 corregido D2 |
 

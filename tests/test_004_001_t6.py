@@ -285,7 +285,9 @@ class TestT6PathGuard(T6InstalledFixture):
     def test_t6_cc_path_guard_is_installed_and_coherent_with_cc_contract(self) -> None:
         """T6: staging-driven install deploys the guard; CC agents reference it."""
         self.assert_install_succeeded()
-        guard = find_deployed(self.install_root, "path-guard.sh")
+        guard = find_deployed(
+            self.install_root, "scripts/claude-code-path-guard.sh"
+        )
         self.assertEqual(
             guard.name,
             "path-guard.sh",

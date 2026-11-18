@@ -1,5 +1,7 @@
 # Documentary contracts
 
+Verification of documentary promises follows the methods and routing of stage-2 §"Verification strategy per promise" and stage-3 §"Routing by verification method" (cited, never restated here). Documentary products are normally semantic-only: they are verified by contextual review, not by an executable test invented for them.
+
 Shared norm for the engagements whose product is a document: discovery notes,
 process maps and user stories. The roles cite this file and state their own
 obligation in their own words; no other surface reproduces this wording. It

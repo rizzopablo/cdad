@@ -1,6 +1,6 @@
 # review.md — 015-002-intake-guards (stage 4)
 
-Reviewer: sesión `<ses-342>`, paquete `015-002-intake-guards-reviewer-review-001` (route C
+Reviewer: sesión `<session>`, paquete `015-002-intake-guards-reviewer-review-001` (route C
 validada; render idéntico a PACKET.md). Diff `4e1ba75f..HEAD`; `pytest tests/test_015_002_intake_guards.py` → 9 passed.
 Materializado por el orquestador (ADR-003).
 

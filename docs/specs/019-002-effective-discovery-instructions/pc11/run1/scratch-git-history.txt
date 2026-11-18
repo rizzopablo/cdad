@@ -1,0 +1,1073 @@
+=== ec397d3 docs(spec): 001-note-tags draft with plain-list tags; review rounds 5-7 (ready for owner approval, 0 blocking)
+---
+ docs/activeContext.md                   | 23 +++++------
+ docs/specs/001-note-tags/plan-review.md | 18 +++++++++
+ docs/specs/001-note-tags/spec.md        | 72 ++++++++++++++++++---------------
+ 3 files changed, 68 insertions(+), 45 deletions(-)
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index 768798c..93a6f7a 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -4,31 +4,28 @@ Current state of the project. Most recent entries on top.
+ 
+ ---
+ 
+-## 2026-11-15 — Feature 001-note-tags: spec ready for owner approval
++## 2026-11-15 — Feature 001-note-tags: draft ready for owner decision
+ 
+-Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The draft was written by the architect, reviewed independently (`plan-review.md`, "ready for owner approval", 0 blocking), and revised after the owner's changes below.
++Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The owner has not approved it; approval is the owner's decision.
+ 
+-Owner decisions:
+-- A note can carry several tags. (confirmed)
+-- `list --tag <name>` can be repeated; it shows notes that carry at least one of the names (ANY). (confirmed, spec A10)
++Owner decisions (confirmed):
++- A note can carry several tags.
++- Plain `list` shows each tagged note's tags next to its text (PC-7).
++- `list --tag <name>` can be repeated; it shows notes that carry at least one of the names (ANY, A10).
+ 
+-Open owner decision (not decided; no postcondition commits to it):
+-- Does plain `list` (without `--tag`) show each note's tags next to its text? (spec "Open decision", PC-7 reserved; A11). Tests read tags through `list --tag <name>` until decided.
+-
+-Defaults in the spec (the owner deferred these; silence is not consent). Each needs an answer before approval:
++Defaults in the spec, recommended by the orchestrator and NOT confirmed by the owner (each stays pending until the owner decides):
+ - A2 — `Home` is folded silently to `home` for every name argument (recommended: keep).
+ - A3 — `untag` of a name the note does not carry is a silent success (recommended: keep).
+-- A6 — `tag` and `untag` print nothing on success (owner's choice).
++- A6 — `tag` and `untag` print nothing on success (recommended: keep).
+ - A8 — names with a space or tab, `,`, `[`, `]` or a leading `--` are refused, not normalised. This differs from the earlier default ("no spaces" read as normalisation).
+-- A9 — unknown commands and `--tag` used as a command: keep today's fall-through to `list` at cli.py:10-12, or refuse them.
++- A9 — unknown commands and `--tag` used as a command: keep today's fall-through to `list` at cli.py:10-12, or refuse them (recommended: keep and decide later).
++- A12 — arguments to `list` other than `--tag <name>` pairs (for example `list home`, or `list --tag home errands`). Today `list <anything>` lists everything with exit 0, so a misplaced second `--tag` silently shows every note. The spec reserves this (PC-10(e)) and commits nothing until the owner decides.
+ - Approver name (state field `approver` and the spec's `approved_by` are pending).
+ 
+ Verified facts (run on a scratch notes file, not on user data):
+ - Note numbers shift down after `rm` (`rm 0` makes the old note 1 become 0). Pinned by PC-13; a limit (ids shift) stays in deferred-hardening.
+ - An old-format notes file (`{"text": ...}`) lists correctly and is not modified by `list`. The first `add`, `rm` or `tag` rewrites the whole file in JSON format.
+ 
+-Open reviewer minors (optional wording, not applied): deferred-hardening bullet on whitespace; invariant wording on case (both in plan-review).
+-
+ Technical debt detected:
+ - No tests exist yet.
+ - No CI configured.
+diff --git a/docs/specs/001-note-tags/plan-review.md b/docs/specs/001-note-tags/plan-review.md
+index 2468164..bb1c113 100644
+--- a/docs/specs/001-note-tags/plan-review.md
++++ b/docs/specs/001-note-tags/plan-review.md
+@@ -44,3 +44,21 @@ Verdict: **needs revision** — 1 blocking.
+ 3. [minor, open] Invariant "lowercase" overclaims: non-ASCII case folding is deferred.
+ 
+ Checks passed in round 4: no postcondition or acceptance criterion depends on plain `list` showing tags; all examples hold under both options; no dangling reference to promise D or the old PC-7.
++
++## Round 5 — full independent draft review after the owner's decisions (summarized from the reviewer's FINAL TEXT)
++
++Verdict: needs revision — 1 blocking (`list` with extra arguments unspecified). Architect applied it.
++
++## Round 6 — after PC-10(e) was made reserved (summarized from the reviewer's FINAL TEXT)
++
++Verdict: needs revision — 1 blocking (PC-10(e) read as a commitment while A12 is open). Architect made PC-10(e) reserved, pending A12.
++
++## Round 7 — final check (summarized from the reviewer's FINAL TEXT)
++
++Verdict: **ready for owner approval** — 0 blocking.
++
++Open optional items (not applied):
++1. PC-10 intro lists (e) among "invalid input" although (e) is reserved; it should sit outside the list.
++2. The message rule names `id`, `name` or the missing argument, but `add --tag home` (no text) has no named missing argument; PC-10(c) should name `text`.
++
++Open owner decisions: A12 (extra `list` arguments), A2, A3, A6, A8, A9, approver name.
+diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
+index 7411925..12107f4 100644
+--- a/docs/specs/001-note-tags/spec.md
++++ b/docs/specs/001-note-tags/spec.md
+@@ -17,38 +17,38 @@ This spec opens with the functional description derived from a **user journey**.
+ - **Legitimate starting point**: a notes file with notes added with `add` and listed with `list`, as today. No note has tags.
+ - **First useful result**: the user gives a note one or more tags, and `list --tag <name>` shows only the notes that carry at least one of the given names, with their ids.
+ 
+-The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see the tags of the notes they list by tag, and filter the list by one or more tags (a note is shown if it carries any of them). Notes without tags keep working as before.
++The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see each note's tags next to its text in the plain list, and filter the list by one or more tags (a note is shown if it carries any of them). Notes without tags keep working as before.
+ 
+ ## Acceptance criteria (observable behavior over the journey)
+ 
+-- [ ] From an empty notes file, the user runs `add "buy milk" --tag home --tag errands` and then `list --tag home`, and sees `0: buy milk [home, errands]`.
++- [ ] From an empty notes file, the user runs `add "buy milk" --tag home --tag errands` and then `list`, and sees `0: buy milk [home, errands]`.
+ - [ ] With notes carrying other tags present, `list --tag home --tag errands` shows only the notes that carry `home` or `errands`, each with its id, and a note that carries both appears once.
+-- [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list --tag <name>`.
+-- [ ] If a tag name is invalid (empty, containing a space, tab, `,`, `[` or `]`, or beginning with `--`), or a `--tag` has no name, the command fails with a message naming the value given (or the missing argument), and the notes file is unchanged. The only silent change is case folding: `Home` is stored and matched as `home`.
++- [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list`.
++- [ ] If a tag name is invalid (empty, containing a space, tab, `,`, `[` or `]`, or beginning with `--`), or a `--tag` has no name, the command fails with a message naming the first invalid argument (or the missing argument), and the notes file is unchanged. The only silent change is case folding: `Home` is stored and matched as `home`.
+ - [ ] Notes without tags, and a notes file written before this feature, list exactly as before.
+ 
+ ## Contract (promises, postconditions and invariants)
+ 
+-**Promises (observable, one per user-visible guarantee).** Each postcondition below belongs to exactly one promise, except PC-7, which is reserved and belongs to no promise.
++**Promises (observable, one per user-visible guarantee).** Each postcondition below belongs to exactly one promise.
+ 
+ | Promise | What the user can see | Postconditions |
+ | --- | --- | --- |
+ | A — Tagging a note when it is added | The note I add carries the tags I gave it, and its text is not polluted by the flags | PC-1, PC-2 |
+-| B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in `list --tag <name>` | PC-3, PC-4, PC-5 |
++| B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in the list | PC-3, PC-4, PC-5 |
+ | C — Filtering by tag | `list --tag` shows only the notes that carry at least one of the given tags | PC-6 |
++| D — Seeing tags | Plain `list` shows each note's tags next to its text, in a fixed order | PC-7 |
+ | E — Tag names are checked | A name is stored in one form (lowercase, once per note); invalid input is refused with a message and nothing changes | PC-8, PC-9, PC-10 |
+ | F — Existing notes keep working | Notes without tags, older notes files, and the remaining notes after `rm` keep their text and tags | PC-11, PC-12, PC-13 |
+ 
+-Promise D is retired. How plain `list` displays tags is an open owner decision (see Open decision); PC-7 is reserved for it and commits nothing.
+-
+ **Verification per promise** (all executable: pytest runs `python -m notes.cli` in a subprocess with `NOTES_FILE` set to a temp path per test; no contextual review is needed, since every promise is observable as printed output or file bytes).
+ 
+ | Promise | Property | Method | Acceptance criterion | Expected evidence | Verification limits |
+ | --- | --- | --- | --- | --- | --- |
+ | A | Tags given at add are stored; flags never enter the text | executable | `add` with tags, then `list --tag <name>`, shows the note with exactly those tags and clean text | pytest output for the tests of PC-1 and PC-2 | does not cover terminal rendering beyond the asserted lines |
+-| B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list --tag <name>` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
++| B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
+ | C | The filter returns exactly the notes carrying at least one of the given tags (ANY), in id order, each once | executable | `list --tag` with one or more names prints each note that carries at least one of them, once, in id order; with a note carrying two of the names, it appears once; nothing is printed when no note matches | pytest output for the test of PC-6 | covers the ANY rule only; no all-tags filter is provided |
+-| E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the value given (or the missing argument) and the notes file is unchanged; `Home` is stored and matched as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
++| D | The plain list shows each tagged note's tags next to its text, in the order of PC-3 | executable | The plain list shows `[tags]` next to each tagged note and nothing next to untagged ones | pytest output for the test of PC-7 | does not judge readability |
++| E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the first invalid argument (or the missing argument) and the notes file is unchanged; `Home` is stored and matched as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
+ | F | Untagged output, pre-feature files and remaining notes after `rm` are unchanged or correct | executable | Untagged notes list as before; an old file works; after `rm`, `list --tag <name>` shows each remaining note with its own text and tags under its new id | pytest output for the tests of PC-11 to PC-13 | the pre-feature file is a fixture written by the test |
+ 
+ **Postconditions (numbered and verifiable):**
+@@ -66,16 +66,17 @@ Promise D is retired. How plain `list` displays tags is an open owner decision (
+ 
+    Example: note 0 carries `c`; after `tag 0 a b`, `list --tag c` prints `0: … [c, a, b]`. After `untag 0 a` (PC-4), the note carries `[c, b]`; after `tag 0 a`, `list --tag c` prints `0: … [c, b, a]`.
+ 4. **PC-4 (B):** `untag <id> <name> [<name> ...]` removes each given name from that note and keeps its other tags in their order: after `untag 0 a` on `[c, a, b]`, `list --tag c` prints `0: … [c, b]`. Untagging a name the note does not carry exits with status 0 and changes nothing: the note's tags are the same, as observed through `list --tag` on each of them.
+-5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal.
++5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal. When more than one argument is invalid, the message names the first invalid argument, scanning left to right; for `tag` and `untag`, that is the id whenever the id is invalid.
+ 6. **PC-6 (C):** `list --tag <name> [--tag <name> ...]` prints exactly the notes that carry at least one of the given names, in id order. A note that matches more than one of the names is printed once. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the matched ones. Example: note 0 `buy milk` carries `[home, errands]`; note 1 `write report` carries `[work]`; note 2 `pay rent` carries `[errands]`. Then `list --tag home --tag errands` prints `0: buy milk [home, errands]` and `2: pay rent [errands]`, and does not print note 1. Notes that carry none of the names are not printed. If no note carries any of the names, it prints nothing and exits with status 0.
+-7. **PC-7 — reserved: pending owner decision (see Open decision). It is not verified and commits nothing.**
++7. **PC-7 (D):** Plain `list` prints each tagged note as `<id>: <text> [<tags>]`, with tags in the order of PC-3. An untagged note prints as `<id>: <text>` (PC-11). Example: after `add buy milk --tag home --tag errands`, `list` prints `0: buy milk [home, errands]`.
+ 8. **PC-8 (E):** A name the note already carries is kept once, whether it is repeated in `add` (`--tag home --tag home`) or applied again with `tag`; `list --tag home` shows `[home]`, and the name keeps its position (see PC-3).
+ 9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home`, then `list --tag home`, prints `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`, and then `list --tag home` prints nothing. With two names: after `add a --tag Home` and `add b --tag Work`, `list --tag HOME --tag WORK` prints `0: a [home]` and `1: b [work]`.
+-10. **PC-10 (E):** Invalid input is refused: it exits with non-zero status, prints a message on stderr that names the value given or, when none was given, the missing argument (`id` or `name`), and leaves the notes file byte-identical. Invalid input is:
++10. **PC-10 (E):** Invalid input is refused: it exits with non-zero status, prints a message on stderr that names the first invalid argument (scanning left to right) or, when a value is missing, the missing argument (`id` or `name`), and leaves the notes file byte-identical. Invalid input is:
+     - (a) a tag name that is empty, contains an ASCII space, tab, `,`, `[` or `]`, or begins with `--`, given to `add`, `tag`, `untag` or `list --tag`. Example: `tag 0 --tag` exits with non-zero status, names `--tag` on stderr, and leaves the file unchanged;
+-    - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`; for example, `list --tag home --tag` is refused;
+-    - (c) `add` with tags and no text (for example `add --tag home`); nothing is written, and no note with tags but no text is created;
++    - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`; for example, `list --tag home --tag` is refused. A trailing `--tag` is reported as the missing argument `name`;
++    - (c) `add` with at least one tag and an empty text: the text arguments are absent or are all empty strings (for example `add --tag home`, or `add "" --tag home`); nothing is written, and no note with tags but no text is created;
+     - (d) `tag` or `untag` with no id, or with an id and no name after it. The message names the id given, or, when no id is given, the missing argument `id`; when only the name is missing, it names the missing argument `name`.
++    - (e) reserved: `list` with arguments other than `--tag <name>` pairs. Pending owner decision (A12). It is not verified and commits nothing.
+ 
+     In `tag` or `untag` with several names, if any one of them is invalid, none of them is applied.
+ 11. **PC-11 (F):** A note with no tags prints as `<id>: <text>`, exactly as before this feature. This holds for a note added without `--tag`, and for a note whose tags were all removed: `add x --tag a`, then `untag 0 a`, then `list` prints `0: x`.
+@@ -94,23 +95,19 @@ python -m notes.cli rm <id>          (unchanged)
+ 
+ ### Invariants
+ 
+-- For every note, its tags, when present, are distinct, non-empty, lowercase, contain no ASCII space or tab, no `,`, `[` or `]`, and do not begin with `--` (verified by PC-8, PC-9 and PC-10).
++- For every note, its tags, when present, are distinct, non-empty, lowercase (ASCII letters; non-ASCII case folding is deferred), contain no ASCII space or tab, no `,`, `[` or `]`, and do not begin with `--` (verified by PC-8, PC-9 and PC-10).
+ - For every `add`, an argument that is exactly `--tag` never becomes part of the text: it is either a flag or it is refused. A flag is an argument that is exactly `--tag` (verified by PC-2 and PC-10(b)).
+ - No property tests are selected; these invariants are verified by the named postconditions.
+ 
+-## Open decision (owner)
+-
+-**Question:** when `list` runs without `--tag`, does it show each note's tags next to its text?
+-
+-- **(a) Yes.** Plain `list` prints each tagged note as `<id>: <text> [<tags>]`, the same format as PC-6. Untagged notes print as `<id>: <text>` (PC-11).
+-  - Consequence for the tests: tags can be checked through plain `list` as well as through `list --tag`. A display test would assert the plain line of a tagged note.
+-- **(b) No.** Plain `list` keeps today's output, `<id>: <text>` for every note. Tags appear only in the output of `list --tag` (PC-6).
+-  - Consequence for the tests: every tag assertion reads through `list --tag <name>`. A plain-`list` test is written only for notes without tags (PC-11, PC-12). An extra test checks that plain `list` on tagged notes stays unchanged.
++## Decided by the owner
+ 
+-Until the owner decides, the tests read tags only through `list --tag <name>`, and no test depends on either option. Once decided, PC-7 receives the chosen postcondition and its verification row; the examples in this spec remain valid under either option.
++- **2026-11-15 — Plain `list` shows tags.** Each tagged note shows its tags next to its text (PC-7). Confirmed by the owner.
++- **2026-11-15 — Several tags in `list --tag` are ANY.** A note is shown if it carries at least one of the given names (PC-6, A10). Confirmed by the owner.
+ 
+ ## Stated assumptions
+ 
++The following are the orchestrator's recommended defaults, not confirmed by the owner; each stays pending until the owner decides: A2, A3, A6, A8, A9, A12.
++
+ - **A1 (PC-2, PC-10):** A flag is an argument that is exactly `--tag`. The name is the next argument, taken whole, and a name that begins with `--` is never accepted, in any command (PC-10(a)). The remaining arguments form the text, joined by one space, as today.
+ - **A2 (PC-9):** Case folding is silent and applies to all name arguments. This follows the defaults recorded in `docs/activeContext.md`; the owner has not yet confirmed them. Pending owner.
+ - **A3 (PC-4):** `untag` of a name the note does not carry is a silent success with no change. Pending owner.
+@@ -120,13 +117,14 @@ Until the owner decides, the tests read tags only through `list --tag <name>`, a
+ - **A7:** The on-disk form that the new version writes for tags is not part of this contract. The pre-feature form (`{"text": ...}` entries, read as untagged) is part of it (PC-12).
+ - **A8 (PC-10):** Names containing an ASCII space or tab, `,`, `[` or `]`, or beginning with `--`, are refused, not converted. The `,`, `[` and `]` characters are refused because they would break the list format. This differs from the default recorded in `docs/activeContext.md` ("no spaces", which could be read as normalisation); the owner confirms this reading. Pending owner.
+ - **A9 (no postcondition):** The behaviour of an unknown command, including `--tag` used as a command, is pending. Either the current fall-through is kept, so `python -m notes.cli --tag home` prints every note with exit 0 and is not refused (cli.py:10-12), or unknown commands and `--tag` without `list` are refused with a message and no change. No postcondition commits to either option until the owner decides. Pending owner.
+-- **A10 (PC-6):** When `list` receives several `--tag` names, the filter is ANY: a note is shown if it carries at least one of the names. Confirmed by the owner on 2026-11-15; not pending.
+-- **A11 (no postcondition):** The default display of plain `list` (whether it shows tags next to the text) is an open owner decision (see Open decision), not an assumption the implementation may pick.
++- **A10 (PC-6):** When `list` receives several `--tag` names, the filter is ANY: a note is shown if it carries at least one of the names. Confirmed by the owner on 2026-11-15.
++- **A11 (PC-7):** Closed. The display of plain `list` (tags shown next to the text) is decided by the owner on 2026-11-15; see Decided by the owner.
++- **A12 (PC-10(e), no postcondition):** Pending owner. Today `list <anything>` lists every note with exit 0, because any unrecognised word falls through to listing (cli.py:10-12). PC-10(e) is reserved and commits nothing. If the owner chooses refusal, the rule is: `list` with any argument other than a `--tag <name>` pair is refused, with non-zero exit, the first such argument named on stderr, and nothing written to the notes file. Examples under that rule: `list --tag home errands` names `errands`; `list home` names `home`. If the owner keeps today's behaviour for `list`, PC-10(e) is removed. A9 covers the other commands.
+ 
+ ## deferred-hardening
+ 
+ - **Ids shift on `rm`** (pre-existing, storage.py:23). `tag` and `untag` use these ids, so a tag can land on a different note after a deletion. Reason: pre-existing behaviour, recorded as technical debt in `docs/activeContext.md`, which this feature does not change. Promoted when: the owner asks for stable ids.
+-- **Whitespace and case beyond ASCII.** Only ASCII space and tab are refused; other Unicode whitespace is not checked, and non-ASCII case folding is not verified. Reason: no owner requirement names them. Promoted when: a non-ASCII tag or whitespace case is needed.
++- **Whitespace and case beyond ASCII.** Only the ASCII names in PC-10(a) are checked; other Unicode whitespace is not checked, and non-ASCII case folding is not verified. Reason: no owner requirement names them. Promoted when: a non-ASCII tag or whitespace case is needed.
+ - **Length or count limits** on tags, names per command, or notes. Reason: no requirement. Promoted when: a real need appears.
+ - **Atomic write and concurrent access** (storage.py:11-13). Reason: single local user (projectbrief.md:24). Promoted when: more than one writer exists.
+ 
+@@ -136,17 +134,27 @@ Until the owner decides, the tests read tags only through `list --tag <name>`, a
+ - Editing note text.
+ - Any change to `rm` or to the id scheme.
+ - A `--tag=<name>` form; only the two-word `--tag <name>` form is committed.
+-- How plain `list` displays tags: pending, see Open decision.
+ - The handling of unknown commands and of `--tag` used as a command: pending, see A9.
+-- A bare `add` with no text and no tags keeps today's behaviour.
++- The handling of arguments to `list` other than `--tag <name>` pairs: pending, see A12.
++- An `add` with no tags keeps today's behaviour, including an empty text; PC-10(c) applies only to an `add` with at least one tag.
+ - Migration of `notes.json`; old files work through PC-12 with no migration step.
+ 
+ ## Technical context
+ 
+ - Examined revision `68ba7b3`, working tree. Units: `notes/cli.py` `main` (4-12); `notes/storage.py` `PATH` (3), `load`/`save` (5-13), `add` (15-19), `delete` (21-24), `all_notes` (26-27).
+-- Parsing is manual over `sys.argv` via `main(argv)`. `--tag` must be extracted before `add` joins the text (cli.py:7). `list` collects every `--tag` name from its arguments.
++- Parsing is manual over `sys.argv` via `main(argv)`. `--tag` must be extracted before `add` joins the text (cli.py:7). `list` collects every `--tag` name from its arguments; refusal of its other arguments is pending (A12), not a rule.
+ - Unknown words fall through to listing with status 0 (cli.py:10-12). Tests must assert output or file effect, never exit status alone.
+ - `storage.PATH` is read at import from `NOTES_FILE` (storage.py:3); tests use a subprocess with `NOTES_FILE` set per test (systemPatterns.md:42).
+-- Errors are tracebacks today (systemPatterns.md:31). The refusal convention (non-zero exit, stderr naming the value given or the missing argument, file unchanged) is new and pinned only by observable effects.
++- Errors are tracebacks today (systemPatterns.md:31). The refusal convention (non-zero exit, stderr naming the first invalid argument or the missing argument, file unchanged) is new and pinned only by observable effects.
++
++## open-for-owner
++
++- **A12, extra arguments to `list` (first):** refuse any argument other than a `--tag <name>` pair, with the examples in A12, or keep today's behaviour, where `list <anything>` lists everything with exit 0? Until decided, PC-10(e) commits nothing.
++- **A2, case folding:** confirm that `Home` is folded silently to `home` for every name argument.
++- **A3, untag of an absent name:** silent success with no change, or an error?
++- **A6, silent tag and untag:** confirm that `tag` and `untag` print nothing on success.
++- **A8, refused name characters:** confirm that a name with a space or tab, `,`, `[`, `]`, or a leading `--` is refused rather than converted. This differs from the `docs/activeContext.md` default read as normalisation.
++- **A9, unknown commands and `--tag` as a command:** keep the fall-through (`python -m notes.cli --tag home` prints every note with exit 0), or refuse unknown commands and `--tag` without `list`?
++- **Approver name:** needed to fill `approved_by` and `approved_at`; the open item in `docs/activeContext.md` is still pending.
+ 
+ Status: Pending approval
+=== b680355 docs(spec): 001-note-tags plain-list display left open; review round 4
+---
+ docs/activeContext.md                   |  8 ++--
+ docs/specs/001-note-tags/plan-review.md | 10 +++++
+ docs/specs/001-note-tags/spec.md        | 71 +++++++++++++++++++--------------
+ 3 files changed, 56 insertions(+), 33 deletions(-)
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index bd0f209..768798c 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -6,12 +6,15 @@ Current state of the project. Most recent entries on top.
+ 
+ ## 2026-11-15 — Feature 001-note-tags: spec ready for owner approval
+ 
+-Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The independent draft review (`plan-review.md`) reached "ready for owner approval" with 0 blocking findings; a later re-review after the ANY change found no blocking findings either.
++Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The draft was written by the architect, reviewed independently (`plan-review.md`, "ready for owner approval", 0 blocking), and revised after the owner's changes below.
+ 
+ Owner decisions:
+ - A note can carry several tags. (confirmed)
+ - `list --tag <name>` can be repeated; it shows notes that carry at least one of the names (ANY). (confirmed, spec A10)
+ 
++Open owner decision (not decided; no postcondition commits to it):
++- Does plain `list` (without `--tag`) show each note's tags next to its text? (spec "Open decision", PC-7 reserved; A11). Tests read tags through `list --tag <name>` until decided.
++
+ Defaults in the spec (the owner deferred these; silence is not consent). Each needs an answer before approval:
+ - A2 — `Home` is folded silently to `home` for every name argument (recommended: keep).
+ - A3 — `untag` of a name the note does not carry is a silent success (recommended: keep).
+@@ -20,9 +23,6 @@ Defaults in the spec (the owner deferred these; silence is not consent). Each ne
+ - A9 — unknown commands and `--tag` used as a command: keep today's fall-through to `list` at cli.py:10-12, or refuse them.
+ - Approver name (state field `approver` and the spec's `approved_by` are pending).
+ 
+-Other defaults (not in the spec's assumptions):
+-- `add ... --tag <name>` (repeatable), `tag <id> <names...>`, `untag <id> <names...>`. Plain `list` shows tags.
+-
+ Verified facts (run on a scratch notes file, not on user data):
+ - Note numbers shift down after `rm` (`rm 0` makes the old note 1 become 0). Pinned by PC-13; a limit (ids shift) stays in deferred-hardening.
+ - An old-format notes file (`{"text": ...}`) lists correctly and is not modified by `list`. The first `add`, `rm` or `tag` rewrites the whole file in JSON format.
+diff --git a/docs/specs/001-note-tags/plan-review.md b/docs/specs/001-note-tags/plan-review.md
+index 8279d6b..2468164 100644
+--- a/docs/specs/001-note-tags/plan-review.md
++++ b/docs/specs/001-note-tags/plan-review.md
+@@ -34,3 +34,13 @@ All blocking findings of rounds 1 and 2 are resolved in the current text: rm and
+ 
+ - No decisions table to compare (`docs/adr/` does not exist; systemPatterns.md table empty).
+ - Code behaviour checked by reading only; the CLI and pytest were not run.
++
++## Round 4 — after the owner left plain-list display open (reviewer FINAL TEXT, summarized)
++
++Verdict: **needs revision** — 1 blocking.
++
++1. **[major, BLOCKING] Plain `list` output on tagged notes is not pinned.** PC-7 is reserved and commits nothing, so an implementation that shows tags in plain `list` and one that does not both pass every postcondition. Closure: (preferred) the owner decides the Open decision and the architect writes PC-7 with that output; (alternative) the owner approves with plain `list` explicitly unchanged and A11 restated as a closed rule.
++2. [minor, open] Deferred-hardening "Whitespace and case beyond ASCII" says only ASCII space and tab are refused; PC-10(a) also refuses `,`, `[`, `]` and a leading `--`.
++3. [minor, open] Invariant "lowercase" overclaims: non-ASCII case folding is deferred.
++
++Checks passed in round 4: no postcondition or acceptance criterion depends on plain `list` showing tags; all examples hold under both options; no dangling reference to promise D or the old PC-7.
+diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
+index 3ef920e..7411925 100644
+--- a/docs/specs/001-note-tags/spec.md
++++ b/docs/specs/001-note-tags/spec.md
+@@ -17,60 +17,60 @@ This spec opens with the functional description derived from a **user journey**.
+ - **Legitimate starting point**: a notes file with notes added with `add` and listed with `list`, as today. No note has tags.
+ - **First useful result**: the user gives a note one or more tags, and `list --tag <name>` shows only the notes that carry at least one of the given names, with their ids.
+ 
+-The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see each note's tags in the plain list, and filter the list by one or more tags (a note is shown if it carries any of them). Notes without tags keep working as before.
++The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see the tags of the notes they list by tag, and filter the list by one or more tags (a note is shown if it carries any of them). Notes without tags keep working as before.
+ 
+ ## Acceptance criteria (observable behavior over the journey)
+ 
+ - [ ] From an empty notes file, the user runs `add "buy milk" --tag home --tag errands` and then `list --tag home`, and sees `0: buy milk [home, errands]`.
+ - [ ] With notes carrying other tags present, `list --tag home --tag errands` shows only the notes that carry `home` or `errands`, each with its id, and a note that carries both appears once.
+-- [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list`.
++- [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list --tag <name>`.
+ - [ ] If a tag name is invalid (empty, containing a space, tab, `,`, `[` or `]`, or beginning with `--`), or a `--tag` has no name, the command fails with a message naming the value given (or the missing argument), and the notes file is unchanged. The only silent change is case folding: `Home` is stored and matched as `home`.
+ - [ ] Notes without tags, and a notes file written before this feature, list exactly as before.
+ 
+ ## Contract (promises, postconditions and invariants)
+ 
+-**Promises (observable, one per user-visible guarantee).** Each postcondition below belongs to exactly one promise.
++**Promises (observable, one per user-visible guarantee).** Each postcondition below belongs to exactly one promise, except PC-7, which is reserved and belongs to no promise.
+ 
+ | Promise | What the user can see | Postconditions |
+ | --- | --- | --- |
+ | A — Tagging a note when it is added | The note I add carries the tags I gave it, and its text is not polluted by the flags | PC-1, PC-2 |
+-| B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in `list` | PC-3, PC-4, PC-5 |
++| B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in `list --tag <name>` | PC-3, PC-4, PC-5 |
+ | C — Filtering by tag | `list --tag` shows only the notes that carry at least one of the given tags | PC-6 |
+-| D — Seeing tags | Plain `list` shows each note's tags next to its text, in a fixed order | PC-7 |
+ | E — Tag names are checked | A name is stored in one form (lowercase, once per note); invalid input is refused with a message and nothing changes | PC-8, PC-9, PC-10 |
+ | F — Existing notes keep working | Notes without tags, older notes files, and the remaining notes after `rm` keep their text and tags | PC-11, PC-12, PC-13 |
+ 
++Promise D is retired. How plain `list` displays tags is an open owner decision (see Open decision); PC-7 is reserved for it and commits nothing.
++
+ **Verification per promise** (all executable: pytest runs `python -m notes.cli` in a subprocess with `NOTES_FILE` set to a temp path per test; no contextual review is needed, since every promise is observable as printed output or file bytes).
+ 
+ | Promise | Property | Method | Acceptance criterion | Expected evidence | Verification limits |
+ | --- | --- | --- | --- | --- | --- |
+-| A | Tags given at add are stored; flags never enter the text | executable | `add` with tags, then `list`, shows the note with exactly those tags and clean text | pytest output for the tests of PC-1 and PC-2 | does not cover terminal rendering beyond the asserted lines |
+-| B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
++| A | Tags given at add are stored; flags never enter the text | executable | `add` with tags, then `list --tag <name>`, shows the note with exactly those tags and clean text | pytest output for the tests of PC-1 and PC-2 | does not cover terminal rendering beyond the asserted lines |
++| B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list --tag <name>` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
+ | C | The filter returns exactly the notes carrying at least one of the given tags (ANY), in id order, each once | executable | `list --tag` with one or more names prints each note that carries at least one of them, once, in id order; with a note carrying two of the names, it appears once; nothing is printed when no note matches | pytest output for the test of PC-6 | covers the ANY rule only; no all-tags filter is provided |
+-| D | The plain list shows tags in a fixed format and order | executable | Plain `list` shows `[tags]` in the order described in PC-7 | pytest output for the test of PC-7 | does not judge readability |
+-| E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the value given (or the missing argument) and the notes file is unchanged; `Home` is shown as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
+-| F | Untagged output, pre-feature files and remaining notes after `rm` are unchanged or correct | executable | Untagged notes list as before; an old file works; after `rm`, `list` shows each remaining note with its own text and tags under its new id | pytest output for the tests of PC-11 to PC-13 | the pre-feature file is a fixture written by the test |
++| E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the value given (or the missing argument) and the notes file is unchanged; `Home` is stored and matched as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
++| F | Untagged output, pre-feature files and remaining notes after `rm` are unchanged or correct | executable | Untagged notes list as before; an old file works; after `rm`, `list --tag <name>` shows each remaining note with its own text and tags under its new id | pytest output for the tests of PC-11 to PC-13 | the pre-feature file is a fixture written by the test |
+ 
+ **Postconditions (numbered and verifiable):**
+ 
+-1. **PC-1 (A):** On an empty notes file, `add "buy milk" --tag home --tag errands` exits with status 0 and prints `0`; a following `list` prints `0: buy milk [home, errands]`.
+-2. **PC-2 (A):** Each of the following, run on its own empty notes file, gives the stated result after `list`:
+-   - `add buy --tag home milk` gives `0: buy milk [home]`. `--tag` takes exactly the next argument as the name, and the remaining arguments form the text.
+-   - `add --tag buy milk` gives `0: milk [buy]`.
+-   - `add "a --tag b"` gives `0: a --tag b` with no tags. An argument that merely contains `--tag` is text, not a flag.
+-   - `add "buy home" --tag home` gives `0: buy home [home]`. The word `home` in the text and the tag `home` are independent.
+-3. **PC-3 (B):** `tag <id> <name> [<name> ...]` adds each given name to the note with that id and keeps its existing tags; lines of other notes are unchanged. Example: note 0 carries `c`; after `tag 0 a b`, `list` prints `0: … [c, a, b]`.
+-4. **PC-4 (B):** `untag <id> <name> [<name> ...]` removes each given name from that note and keeps its other tags: after `untag 0 a` on `[c, a, b]`, `list` prints `[c, b]`. Untagging a name the note does not carry exits with status 0 and changes nothing.
+-5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal.
+-6. **PC-6 (C):** `list --tag <name> [--tag <name> ...]` prints exactly the notes that carry at least one of the given names, in id order. A note that matches more than one of the names is printed once. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the matched ones. Example: note 0 `buy milk` carries `[home, errands]`; note 1 `write report` carries `[work]`; note 2 `pay rent` carries `[errands]`. Then `list --tag home --tag errands` prints `0: buy milk [home, errands]` and `2: pay rent [errands]`, and does not print note 1. Notes that carry none of the names are not printed. If no note carries any of the names, it prints nothing and exits with status 0.
+-7. **PC-7 (D):** Plain `list` prints each tagged note as `<id>: <text> [<tag>, <tag>]`. Tags appear in the order in which they were applied to that note:
+-   - names added by `add` or `tag` go after the names already on the note, in the order given;
++1. **PC-1 (A):** On an empty notes file, `add "buy milk" --tag home --tag errands` exits with status 0 and prints `0`; a following `list --tag home` prints `0: buy milk [home, errands]`.
++2. **PC-2 (A):** Each of the following, run on its own empty notes file, gives the stated result:
++   - `add buy --tag home milk`; then `list --tag home` gives `0: buy milk [home]`. `--tag` takes exactly the next argument as the name, and the remaining arguments form the text.
++   - `add --tag buy milk`; then `list --tag buy` gives `0: milk [buy]`.
++   - `add "a --tag b"`; then `list` gives `0: a --tag b`, with no tags. An argument that merely contains `--tag` is text, not a flag.
++   - `add "buy home" --tag home`; then `list --tag home` gives `0: buy home [home]`. The word `home` in the text and the tag `home` are independent.
++3. **PC-3 (B):** `tag <id> <name> [<name> ...]` adds each given name to the note with that id and keeps its existing tags; the tags of other notes are unchanged. Tags appear in `[<tags>]` in the order in which they were applied to the note:
++   - names given to `add --tag` or to `tag` go after the names already on the note, in the order given;
+    - a name already on the note keeps its position when it is applied again;
+-   - a name removed by `untag` and applied again goes to the end.
++   - a name removed by `untag` and applied again goes to the end (see PC-4).
+ 
+-   Example: note 0 carries `[c, a, b]`; `untag 0 a` gives `[c, b]`; `tag 0 a` gives `[c, b, a]`.
+-8. **PC-8 (E):** A name the note already carries is kept once, whether it is repeated in `add` (`--tag home --tag home`) or applied again with `tag`; `list` shows `[home]`, and the name keeps its position (see PC-7).
+-9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home` makes `list` print `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`. With two names: after `add a --tag Home` and `add b --tag Work`, `list --tag HOME --tag WORK` prints `0: a [home]` and `1: b [work]`.
++   Example: note 0 carries `c`; after `tag 0 a b`, `list --tag c` prints `0: … [c, a, b]`. After `untag 0 a` (PC-4), the note carries `[c, b]`; after `tag 0 a`, `list --tag c` prints `0: … [c, b, a]`.
++4. **PC-4 (B):** `untag <id> <name> [<name> ...]` removes each given name from that note and keeps its other tags in their order: after `untag 0 a` on `[c, a, b]`, `list --tag c` prints `0: … [c, b]`. Untagging a name the note does not carry exits with status 0 and changes nothing: the note's tags are the same, as observed through `list --tag` on each of them.
++5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal.
++6. **PC-6 (C):** `list --tag <name> [--tag <name> ...]` prints exactly the notes that carry at least one of the given names, in id order. A note that matches more than one of the names is printed once. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the matched ones. Example: note 0 `buy milk` carries `[home, errands]`; note 1 `write report` carries `[work]`; note 2 `pay rent` carries `[errands]`. Then `list --tag home --tag errands` prints `0: buy milk [home, errands]` and `2: pay rent [errands]`, and does not print note 1. Notes that carry none of the names are not printed. If no note carries any of the names, it prints nothing and exits with status 0.
++7. **PC-7 — reserved: pending owner decision (see Open decision). It is not verified and commits nothing.**
++8. **PC-8 (E):** A name the note already carries is kept once, whether it is repeated in `add` (`--tag home --tag home`) or applied again with `tag`; `list --tag home` shows `[home]`, and the name keeps its position (see PC-3).
++9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home`, then `list --tag home`, prints `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`, and then `list --tag home` prints nothing. With two names: after `add a --tag Home` and `add b --tag Work`, `list --tag HOME --tag WORK` prints `0: a [home]` and `1: b [work]`.
+ 10. **PC-10 (E):** Invalid input is refused: it exits with non-zero status, prints a message on stderr that names the value given or, when none was given, the missing argument (`id` or `name`), and leaves the notes file byte-identical. Invalid input is:
+     - (a) a tag name that is empty, contains an ASCII space, tab, `,`, `[` or `]`, or begins with `--`, given to `add`, `tag`, `untag` or `list --tag`. Example: `tag 0 --tag` exits with non-zero status, names `--tag` on stderr, and leaves the file unchanged;
+     - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`; for example, `list --tag home --tag` is refused;
+@@ -79,8 +79,8 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ 
+     In `tag` or `untag` with several names, if any one of them is invalid, none of them is applied.
+ 11. **PC-11 (F):** A note with no tags prints as `<id>: <text>`, exactly as before this feature. This holds for a note added without `--tag`, and for a note whose tags were all removed: `add x --tag a`, then `untag 0 a`, then `list` prints `0: x`.
+-12. **PC-12 (F):** A notes file written before this feature (entries holding only `text`) is read without error: `list` prints its notes as in PC-11; `list --tag <name>` does not print them; `tag 0 <name>` succeeds and `list` then shows `[<name>]`; `rm <id>` still deletes the note at that id.
+-13. **PC-13 (F):** After `rm <id>`, each remaining note keeps its own text and tags and takes its new id. Example: `add a --tag a`, `add b --tag b`, `rm 0`; then `list` prints `0: b [b]`, and `list --tag a` prints nothing.
++12. **PC-12 (F):** A notes file written before this feature (entries holding only `text`) is read without error: `list` prints its notes as in PC-11; `list --tag <name>` does not print them; `tag 0 <name>` succeeds and `list --tag <name>` then shows `0: … [<name>]`; `rm <id>` still deletes the note at that id.
++13. **PC-13 (F):** After `rm <id>`, each remaining note keeps its own text and tags and takes its new id. Example: `add a --tag a`, `add b --tag b`, `rm 0`; then `list --tag b` prints `0: b [b]`, and `list --tag a` prints nothing.
+ 
+ **Signature (CLI usage; supporting detail for the implementer, never the opening block):**
+ 
+@@ -98,18 +98,30 @@ python -m notes.cli rm <id>          (unchanged)
+ - For every `add`, an argument that is exactly `--tag` never becomes part of the text: it is either a flag or it is refused. A flag is an argument that is exactly `--tag` (verified by PC-2 and PC-10(b)).
+ - No property tests are selected; these invariants are verified by the named postconditions.
+ 
++## Open decision (owner)
++
++**Question:** when `list` runs without `--tag`, does it show each note's tags next to its text?
++
++- **(a) Yes.** Plain `list` prints each tagged note as `<id>: <text> [<tags>]`, the same format as PC-6. Untagged notes print as `<id>: <text>` (PC-11).
++  - Consequence for the tests: tags can be checked through plain `list` as well as through `list --tag`. A display test would assert the plain line of a tagged note.
++- **(b) No.** Plain `list` keeps today's output, `<id>: <text>` for every note. Tags appear only in the output of `list --tag` (PC-6).
++  - Consequence for the tests: every tag assertion reads through `list --tag <name>`. A plain-`list` test is written only for notes without tags (PC-11, PC-12). An extra test checks that plain `list` on tagged notes stays unchanged.
++
++Until the owner decides, the tests read tags only through `list --tag <name>`, and no test depends on either option. Once decided, PC-7 receives the chosen postcondition and its verification row; the examples in this spec remain valid under either option.
++
+ ## Stated assumptions
+ 
+ - **A1 (PC-2, PC-10):** A flag is an argument that is exactly `--tag`. The name is the next argument, taken whole, and a name that begins with `--` is never accepted, in any command (PC-10(a)). The remaining arguments form the text, joined by one space, as today.
+ - **A2 (PC-9):** Case folding is silent and applies to all name arguments. This follows the defaults recorded in `docs/activeContext.md`; the owner has not yet confirmed them. Pending owner.
+ - **A3 (PC-4):** `untag` of a name the note does not carry is a silent success with no change. Pending owner.
+-- **A4 (PC-7):** Tag order is the order of application, as set out in PC-7: a name keeps its position while it stays on the note; a name removed and applied again goes to the end.
++- **A4 (PC-3, PC-8):** Tag order is the order of application, as set out in PC-3: a name keeps its position while it stays on the note; a name removed and applied again goes to the end. `untag` removes names without reordering the others.
+ - **A5 (PC-5, PC-10):** Validation happens before any write, so a refused command leaves the file untouched.
+ - **A6 (PC-3, PC-4):** On success, `tag` and `untag` print nothing; `add` prints the id as today. Pending owner.
+ - **A7:** The on-disk form that the new version writes for tags is not part of this contract. The pre-feature form (`{"text": ...}` entries, read as untagged) is part of it (PC-12).
+ - **A8 (PC-10):** Names containing an ASCII space or tab, `,`, `[` or `]`, or beginning with `--`, are refused, not converted. The `,`, `[` and `]` characters are refused because they would break the list format. This differs from the default recorded in `docs/activeContext.md` ("no spaces", which could be read as normalisation); the owner confirms this reading. Pending owner.
+ - **A9 (no postcondition):** The behaviour of an unknown command, including `--tag` used as a command, is pending. Either the current fall-through is kept, so `python -m notes.cli --tag home` prints every note with exit 0 and is not refused (cli.py:10-12), or unknown commands and `--tag` without `list` are refused with a message and no change. No postcondition commits to either option until the owner decides. Pending owner.
+ - **A10 (PC-6):** When `list` receives several `--tag` names, the filter is ANY: a note is shown if it carries at least one of the names. Confirmed by the owner on 2026-11-15; not pending.
++- **A11 (no postcondition):** The default display of plain `list` (whether it shows tags next to the text) is an open owner decision (see Open decision), not an assumption the implementation may pick.
+ 
+ ## deferred-hardening
+ 
+@@ -124,6 +136,7 @@ python -m notes.cli rm <id>          (unchanged)
+ - Editing note text.
+ - Any change to `rm` or to the id scheme.
+ - A `--tag=<name>` form; only the two-word `--tag <name>` form is committed.
++- How plain `list` displays tags: pending, see Open decision.
+ - The handling of unknown commands and of `--tag` used as a command: pending, see A9.
+ - A bare `add` with no text and no tags keeps today's behaviour.
+ - Migration of `notes.json`; old files work through PC-12 with no migration step.
+=== d164079 docs(spec): 001-note-tags list filter is ANY (owner-confirmed)
+---
+ docs/activeContext.md            | 15 ++++++++++-----
+ docs/specs/001-note-tags/spec.md | 28 ++++++++++++++--------------
+ 2 files changed, 24 insertions(+), 19 deletions(-)
+
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+index bd4a64d..bd0f209 100644
+--- a/docs/activeContext.md
++++ b/docs/activeContext.md
+@@ -6,10 +6,11 @@ Current state of the project. Most recent entries on top.
+ 
+ ## 2026-11-15 — Feature 001-note-tags: spec ready for owner approval
+ 
+-Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The independent draft review (`plan-review.md`) says ready for owner approval with 0 blocking findings.
++Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The independent draft review (`plan-review.md`) reached "ready for owner approval" with 0 blocking findings; a later re-review after the ANY change found no blocking findings either.
+ 
+-Owner decisions so far:
+-- A note can carry several tags.
++Owner decisions:
++- A note can carry several tags. (confirmed)
++- `list --tag <name>` can be repeated; it shows notes that carry at least one of the names (ANY). (confirmed, spec A10)
+ 
+ Defaults in the spec (the owner deferred these; silence is not consent). Each needs an answer before approval:
+ - A2 — `Home` is folded silently to `home` for every name argument (recommended: keep).
+@@ -20,9 +21,13 @@ Defaults in the spec (the owner deferred these; silence is not consent). Each ne
+ - Approver name (state field `approver` and the spec's `approved_by` are pending).
+ 
+ Other defaults (not in the spec's assumptions):
+-- `add ... --tag <name>` (repeatable), `tag <id> <names...>`, `untag <id> <names...>`, `list --tag <name>` filters by one tag. Plain `list` shows tags.
++- `add ... --tag <name>` (repeatable), `tag <id> <names...>`, `untag <id> <names...>`. Plain `list` shows tags.
+ 
+-Open reviewer minors (optional wording, not applied): two wording items in plan-review.md (deferred-hardening bullet on whitespace; invariant wording on case).
++Verified facts (run on a scratch notes file, not on user data):
++- Note numbers shift down after `rm` (`rm 0` makes the old note 1 become 0). Pinned by PC-13; a limit (ids shift) stays in deferred-hardening.
++- An old-format notes file (`{"text": ...}`) lists correctly and is not modified by `list`. The first `add`, `rm` or `tag` rewrites the whole file in JSON format.
++
++Open reviewer minors (optional wording, not applied): deferred-hardening bullet on whitespace; invariant wording on case (both in plan-review).
+ 
+ Technical debt detected:
+ - No tests exist yet.
+diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
+index c249650..3ef920e 100644
+--- a/docs/specs/001-note-tags/spec.md
++++ b/docs/specs/001-note-tags/spec.md
+@@ -13,16 +13,16 @@ This spec opens with the functional description derived from a **user journey**.
+ **User journey**
+ 
+ - **Actor**: the single local user of notes-cli, at the terminal.
+-- **Goal**: tag my notes and then list only the notes that carry a given tag.
++- **Goal**: tag my notes and then list only the notes that carry a given tag, or any of several given tags.
+ - **Legitimate starting point**: a notes file with notes added with `add` and listed with `list`, as today. No note has tags.
+-- **First useful result**: the user gives a note one or more tags, and `list --tag <name>` shows only the notes that carry that tag, with their ids.
++- **First useful result**: the user gives a note one or more tags, and `list --tag <name>` shows only the notes that carry at least one of the given names, with their ids.
+ 
+-The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see each note's tags in the plain list, and filter the list by one tag. Notes without tags keep working as before.
++The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see each note's tags in the plain list, and filter the list by one or more tags (a note is shown if it carries any of them). Notes without tags keep working as before.
+ 
+ ## Acceptance criteria (observable behavior over the journey)
+ 
+ - [ ] From an empty notes file, the user runs `add "buy milk" --tag home --tag errands` and then `list --tag home`, and sees `0: buy milk [home, errands]`.
+-- [ ] With notes carrying other tags present, `list --tag home` shows only the notes that carry `home`, each with its id.
++- [ ] With notes carrying other tags present, `list --tag home --tag errands` shows only the notes that carry `home` or `errands`, each with its id, and a note that carries both appears once.
+ - [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list`.
+ - [ ] If a tag name is invalid (empty, containing a space, tab, `,`, `[` or `]`, or beginning with `--`), or a `--tag` has no name, the command fails with a message naming the value given (or the missing argument), and the notes file is unchanged. The only silent change is case folding: `Home` is stored and matched as `home`.
+ - [ ] Notes without tags, and a notes file written before this feature, list exactly as before.
+@@ -35,7 +35,7 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ | --- | --- | --- |
+ | A — Tagging a note when it is added | The note I add carries the tags I gave it, and its text is not polluted by the flags | PC-1, PC-2 |
+ | B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in `list` | PC-3, PC-4, PC-5 |
+-| C — Filtering by tag | `list --tag` shows only the notes that carry that tag | PC-6 |
++| C — Filtering by tag | `list --tag` shows only the notes that carry at least one of the given tags | PC-6 |
+ | D — Seeing tags | Plain `list` shows each note's tags next to its text, in a fixed order | PC-7 |
+ | E — Tag names are checked | A name is stored in one form (lowercase, once per note); invalid input is refused with a message and nothing changes | PC-8, PC-9, PC-10 |
+ | F — Existing notes keep working | Notes without tags, older notes files, and the remaining notes after `rm` keep their text and tags | PC-11, PC-12, PC-13 |
+@@ -46,7 +46,7 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ | --- | --- | --- | --- | --- | --- |
+ | A | Tags given at add are stored; flags never enter the text | executable | `add` with tags, then `list`, shows the note with exactly those tags and clean text | pytest output for the tests of PC-1 and PC-2 | does not cover terminal rendering beyond the asserted lines |
+ | B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
+-| C | The filter returns exactly the notes carrying the tag, in id order | executable | `list --tag` prints only the matching notes with their ids, and nothing when none match | pytest output for the test of PC-6 | single-tag filter only |
++| C | The filter returns exactly the notes carrying at least one of the given tags (ANY), in id order, each once | executable | `list --tag` with one or more names prints each note that carries at least one of them, once, in id order; with a note carrying two of the names, it appears once; nothing is printed when no note matches | pytest output for the test of PC-6 | covers the ANY rule only; no all-tags filter is provided |
+ | D | The plain list shows tags in a fixed format and order | executable | Plain `list` shows `[tags]` in the order described in PC-7 | pytest output for the test of PC-7 | does not judge readability |
+ | E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the value given (or the missing argument) and the notes file is unchanged; `Home` is shown as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
+ | F | Untagged output, pre-feature files and remaining notes after `rm` are unchanged or correct | executable | Untagged notes list as before; an old file works; after `rm`, `list` shows each remaining note with its own text and tags under its new id | pytest output for the tests of PC-11 to PC-13 | the pre-feature file is a fixture written by the test |
+@@ -62,7 +62,7 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ 3. **PC-3 (B):** `tag <id> <name> [<name> ...]` adds each given name to the note with that id and keeps its existing tags; lines of other notes are unchanged. Example: note 0 carries `c`; after `tag 0 a b`, `list` prints `0: … [c, a, b]`.
+ 4. **PC-4 (B):** `untag <id> <name> [<name> ...]` removes each given name from that note and keeps its other tags: after `untag 0 a` on `[c, a, b]`, `list` prints `[c, b]`. Untagging a name the note does not carry exits with status 0 and changes nothing.
+ 5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal.
+-6. **PC-6 (C):** `list --tag <name>` prints, in id order, exactly the notes that carry `<name>`, including notes that also carry other tags. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the filtered one. Example: `list --tag home` on a note tagged `home, errands` prints `0: buy milk [home, errands]`. Notes without `<name>` are not printed. If no note carries `<name>`, it prints nothing and exits with status 0.
++6. **PC-6 (C):** `list --tag <name> [--tag <name> ...]` prints exactly the notes that carry at least one of the given names, in id order. A note that matches more than one of the names is printed once. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the matched ones. Example: note 0 `buy milk` carries `[home, errands]`; note 1 `write report` carries `[work]`; note 2 `pay rent` carries `[errands]`. Then `list --tag home --tag errands` prints `0: buy milk [home, errands]` and `2: pay rent [errands]`, and does not print note 1. Notes that carry none of the names are not printed. If no note carries any of the names, it prints nothing and exits with status 0.
+ 7. **PC-7 (D):** Plain `list` prints each tagged note as `<id>: <text> [<tag>, <tag>]`. Tags appear in the order in which they were applied to that note:
+    - names added by `add` or `tag` go after the names already on the note, in the order given;
+    - a name already on the note keeps its position when it is applied again;
+@@ -70,10 +70,10 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ 
+    Example: note 0 carries `[c, a, b]`; `untag 0 a` gives `[c, b]`; `tag 0 a` gives `[c, b, a]`.
+ 8. **PC-8 (E):** A name the note already carries is kept once, whether it is repeated in `add` (`--tag home --tag home`) or applied again with `tag`; `list` shows `[home]`, and the name keeps its position (see PC-7).
+-9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home` makes `list` print `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`.
++9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home` makes `list` print `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`. With two names: after `add a --tag Home` and `add b --tag Work`, `list --tag HOME --tag WORK` prints `0: a [home]` and `1: b [work]`.
+ 10. **PC-10 (E):** Invalid input is refused: it exits with non-zero status, prints a message on stderr that names the value given or, when none was given, the missing argument (`id` or `name`), and leaves the notes file byte-identical. Invalid input is:
+     - (a) a tag name that is empty, contains an ASCII space, tab, `,`, `[` or `]`, or begins with `--`, given to `add`, `tag`, `untag` or `list --tag`. Example: `tag 0 --tag` exits with non-zero status, names `--tag` on stderr, and leaves the file unchanged;
+-    - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`;
++    - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`; for example, `list --tag home --tag` is refused;
+     - (c) `add` with tags and no text (for example `add --tag home`); nothing is written, and no note with tags but no text is created;
+     - (d) `tag` or `untag` with no id, or with an id and no name after it. The message names the id given, or, when no id is given, the missing argument `id`; when only the name is missing, it names the missing argument `name`.
+ 
+@@ -88,7 +88,7 @@ The user can give a note several tags when adding it, add or remove tags on an e
+ python -m notes.cli add <text words...> [--tag <name>]...
+ python -m notes.cli tag <id> <name> [<name> ...]
+ python -m notes.cli untag <id> <name> [<name> ...]
+-python -m notes.cli list [--tag <name>]
++python -m notes.cli list [--tag <name>]...
+ python -m notes.cli rm <id>          (unchanged)
+ ```
+ 
+@@ -98,7 +98,7 @@ python -m notes.cli rm <id>          (unchanged)
+ - For every `add`, an argument that is exactly `--tag` never becomes part of the text: it is either a flag or it is refused. A flag is an argument that is exactly `--tag` (verified by PC-2 and PC-10(b)).
+ - No property tests are selected; these invariants are verified by the named postconditions.
+ 
+-## Stated assumptions (pending owner confirmation)
++## Stated assumptions
+ 
+ - **A1 (PC-2, PC-10):** A flag is an argument that is exactly `--tag`. The name is the next argument, taken whole, and a name that begins with `--` is never accepted, in any command (PC-10(a)). The remaining arguments form the text, joined by one space, as today.
+ - **A2 (PC-9):** Case folding is silent and applies to all name arguments. This follows the defaults recorded in `docs/activeContext.md`; the owner has not yet confirmed them. Pending owner.
+@@ -109,17 +109,17 @@ python -m notes.cli rm <id>          (unchanged)
+ - **A7:** The on-disk form that the new version writes for tags is not part of this contract. The pre-feature form (`{"text": ...}` entries, read as untagged) is part of it (PC-12).
+ - **A8 (PC-10):** Names containing an ASCII space or tab, `,`, `[` or `]`, or beginning with `--`, are refused, not converted. The `,`, `[` and `]` characters are refused because they would break the list format. This differs from the default recorded in `docs/activeContext.md` ("no spaces", which could be read as normalisation); the owner confirms this reading. Pending owner.
+ - **A9 (no postcondition):** The behaviour of an unknown command, including `--tag` used as a command, is pending. Either the current fall-through is kept, so `python -m notes.cli --tag home` prints every note with exit 0 and is not refused (cli.py:10-12), or unknown commands and `--tag` without `list` are refused with a message and no change. No postcondition commits to either option until the owner decides. Pending owner.
++- **A10 (PC-6):** When `list` receives several `--tag` names, the filter is ANY: a note is shown if it carries at least one of the names. Confirmed by the owner on 2026-11-15; not pending.
+ 
+ ## deferred-hardening
+ 
+ - **Ids shift on `rm`** (pre-existing, storage.py:23). `tag` and `untag` use these ids, so a tag can land on a different note after a deletion. Reason: pre-existing behaviour, recorded as technical debt in `docs/activeContext.md`, which this feature does not change. Promoted when: the owner asks for stable ids.
+ - **Whitespace and case beyond ASCII.** Only ASCII space and tab are refused; other Unicode whitespace is not checked, and non-ASCII case folding is not verified. Reason: no owner requirement names them. Promoted when: a non-ASCII tag or whitespace case is needed.
+-- **Length or count limits** on tags or notes. Reason: no requirement. Promoted when: a real need appears.
++- **Length or count limits** on tags, names per command, or notes. Reason: no requirement. Promoted when: a real need appears.
+ - **Atomic write and concurrent access** (storage.py:11-13). Reason: single local user (projectbrief.md:24). Promoted when: more than one writer exists.
+ 
+ ## Out of scope
+ 
+-- Filtering by several tags at once (AND/OR).
+ - Renaming or deleting a tag across all notes; listing the tags in use.
+ - Editing note text.
+ - Any change to `rm` or to the id scheme.
+@@ -131,7 +131,7 @@ python -m notes.cli rm <id>          (unchanged)
+ ## Technical context
+ 
+ - Examined revision `68ba7b3`, working tree. Units: `notes/cli.py` `main` (4-12); `notes/storage.py` `PATH` (3), `load`/`save` (5-13), `add` (15-19), `delete` (21-24), `all_notes` (26-27).
+-- Parsing is manual over `sys.argv` via `main(argv)`. `--tag` must be extracted before `add` joins the text (cli.py:7).
++- Parsing is manual over `sys.argv` via `main(argv)`. `--tag` must be extracted before `add` joins the text (cli.py:7). `list` collects every `--tag` name from its arguments.
+ - Unknown words fall through to listing with status 0 (cli.py:10-12). Tests must assert output or file effect, never exit status alone.
+ - `storage.PATH` is read at import from `NOTES_FILE` (storage.py:3); tests use a subprocess with `NOTES_FILE` set per test (systemPatterns.md:42).
+ - Errors are tracebacks today (systemPatterns.md:31). The refusal convention (non-zero exit, stderr naming the value given or the missing argument, file unchanged) is new and pinned only by observable effects.
+=== 11ffbe7 docs(spec): bootstrap Memory Bank and draft spec 001-note-tags (pending owner approval)
+---
+ docs/.cdad-state.json                   |  24 ++++++
+ docs/activeContext.md                   |  34 ++++++++
+ docs/landscape.md                       |  32 ++++++++
+ docs/progress.md                        |  23 ++++++
+ docs/projectbrief.md                    |  37 +++++++++
+ docs/specs/001-note-tags/discovery.md   |  40 +++++++++
+ docs/specs/001-note-tags/plan-review.md |  36 +++++++++
+ docs/specs/001-note-tags/spec.md        | 139 ++++++++++++++++++++++++++++++++
+ docs/systemPatterns.md                  |  55 +++++++++++++
+ 9 files changed, 420 insertions(+)
+
+diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
+new file mode 100644
+index 0000000..f9721ad
+--- /dev/null
++++ b/docs/.cdad-state.json
+@@ -0,0 +1,24 @@
++{
++  "version": 1,
++  "stack": null,
++  "active_epic": null,
++  "epic_stage": null,
++  "active_feature": "001-note-tags",
++  "current_stage": "specification",
++  "tdd_substage": null,
++  "audit_status": null,
++  "postconditions_status": {},
++  "epic_features": [],
++  "suspended_units": {},
++  "stage_history": [
++    {"stage": "bootstrap", "completed_at": "2026-11-15T20:17:00Z", "note": "Memory Bank initialized; defaults recorded in docs/activeContext.md"},
++    {"stage": "discovery", "completed_at": "2026-11-15T20:40:00Z", "note": "architect discovery materialized in docs/specs/001-note-tags/discovery.md; landscape in docs/landscape.md"},
++    {"stage": "specification", "status": "draft ready for owner approval", "completed_at": null, "note": "spec.md Status: Pending approval; plan-review.md verdict ready; approval pending owner (non-delegable)"}
++  ],
++  "epic_history": [],
++  "approver": "pending: owner to confirm name (see docs/activeContext.md)",
++  "last_updated": "2026-11-15T20:45:00Z",
++  "execution": null,
++  "active_packet": null,
++  "hitl_delegation": null
++}
+diff --git a/docs/activeContext.md b/docs/activeContext.md
+new file mode 100644
+index 0000000..bd4a64d
+--- /dev/null
++++ b/docs/activeContext.md
+@@ -0,0 +1,34 @@
++# Active Context
++
++Current state of the project. Most recent entries on top.
++
++---
++
++## 2026-11-15 — Feature 001-note-tags: spec ready for owner approval
++
++Stage: Specification. `docs/specs/001-note-tags/spec.md` is `Status: Pending approval`. The independent draft review (`plan-review.md`) says ready for owner approval with 0 blocking findings.
++
++Owner decisions so far:
++- A note can carry several tags.
++
++Defaults in the spec (the owner deferred these; silence is not consent). Each needs an answer before approval:
++- A2 — `Home` is folded silently to `home` for every name argument (recommended: keep).
++- A3 — `untag` of a name the note does not carry is a silent success (recommended: keep).
++- A6 — `tag` and `untag` print nothing on success (owner's choice).
++- A8 — names with a space or tab, `,`, `[`, `]` or a leading `--` are refused, not normalised. This differs from the earlier default ("no spaces" read as normalisation).
++- A9 — unknown commands and `--tag` used as a command: keep today's fall-through to `list` at cli.py:10-12, or refuse them.
++- Approver name (state field `approver` and the spec's `approved_by` are pending).
++
++Other defaults (not in the spec's assumptions):
++- `add ... --tag <name>` (repeatable), `tag <id> <names...>`, `untag <id> <names...>`, `list --tag <name>` filters by one tag. Plain `list` shows tags.
++
++Open reviewer minors (optional wording, not applied): two wording items in plan-review.md (deferred-hardening bullet on whitespace; invariant wording on case).
++
++Technical debt detected:
++- No tests exist yet.
++- No CI configured.
++- Note ids shift on delete (existing behaviour; not changed by this feature).
++
++## 2026-11-15 — Project bootstrap
++
++Memory Bank initialized (`docs/`). Test runner: pytest. CI: pending.
+diff --git a/docs/landscape.md b/docs/landscape.md
+new file mode 100644
+index 0000000..f107a89
+--- /dev/null
++++ b/docs/landscape.md
+@@ -0,0 +1,32 @@
++# Landscape — notes-cli (discovery for 001-note-tags)
++
++Revision examined: `68ba7b3`, working tree. Verified by reading the files; the CLI and tests were not executed.
++
++## Code units the feature touches
++
++- `notes/cli.py` `main(argv)` (lines 4-12): `add` branch (6-7), `rm` branch (8-9), default listing (10-12). Verified.
++- `notes/storage.py`: `PATH` from `NOTES_FILE` at import (3); `load`/`save` (5-13); `add` (15-19) returns the new index; `delete` (21-24); `all_notes` (26-27). Verified.
++- `notes/__init__.py` is empty; `python -m notes.cli` runs through the `__main__` guard (cli.py:14-15). Verified.
++
++## Conventions that apply
++
++- Standard library only; storage is the only module that touches disk.
++- `snake_case`; plain-word commands.
++- Tests: pytest in `tests/`, `NOTES_FILE` pointed at a temp path per test.
++
++## Gotchas
++
++1. No `list` branch: any unknown word, including `tag` and `untag` today, falls through to listing and exits 0 (cli.py:10-12). Tests must assert output or file effect.
++2. `add` joins every remaining argument into the text (cli.py:7), so `--tag` must be extracted first.
++3. Manual argument parsing; `rm` calls `int(argv[1])` (cli.py:9).
++4. `rm -1` deletes the last note (storage.py:23). `tag`/`untag` must refuse negative ids.
++5. Ids shift on delete (storage.py:23). Pre-existing; tags live inside the note object and move with it.
++6. Errors are tracebacks today (systemPatterns.md:31). The refusal convention in the spec is new.
++7. Whole-file rewrite, not atomic (storage.py:11-13). Pre-existing; refusals must happen before any write.
++8. `add` with no words stores an empty text. Pre-existing, unchanged.
++
++## Doubts (assumptions until confirmed)
++
++- Old `notes.json` entries without a `tags` key read as untagged.
++- Driving `python -m notes.cli` from a subprocess with `NOTES_FILE` set works as described.
++- Python version on this machine: 3.13.5 (checked).
+diff --git a/docs/progress.md b/docs/progress.md
+new file mode 100644
+index 0000000..f49395e
+--- /dev/null
++++ b/docs/progress.md
+@@ -0,0 +1,23 @@
++# Progress
++
++Feature status of the project.
++
++## In progress
++
++- `001-note-tags` — Stage 2 (Specification): spec ready, waiting for owner approval (`docs/specs/001-note-tags/spec.md`). Tests not started; they begin only after approval.
++
++## Done
++
++_(none yet)_
++
++## Queued
++
++_(none)_
++
++## Blocked
++
++- `001-note-tags` approval: waiting for the owner's answers to A2, A3, A6, A8, A9 and the approver name (see `docs/activeContext.md`).
++
++---
++
++Last updated: 2026-11-15
+diff --git a/docs/projectbrief.md b/docs/projectbrief.md
+new file mode 100644
+index 0000000..9701551
+--- /dev/null
++++ b/docs/projectbrief.md
+@@ -0,0 +1,37 @@
++# Project Brief
++
++## Project purpose
++
++`notes-cli` is a tiny command-line tool to keep short text notes in a local JSON file. It lets a single user add, list and delete notes from a terminal.
++
++## Technical stack
++
++- **Language**: Python 3.13
++- **Main framework**: none (standard library only)
++- **Database**: none; notes are stored as a JSON list in the file named by `NOTES_FILE` (default `notes.json`)
++- **Test tooling**: pytest 8.x (available locally; no tests exist yet)
++- **Lint / type check**: none configured
++- **CI**: pending (no CI configured; recorded as technical debt)
++
++## Stakeholders and roles
++
++- **Spec approver**: <TODO: owner name, to confirm in docs/activeContext.md>
++- **Tech lead**: n/a
++- **Others**: n/a
++
++## Known constraints
++
++- Single local user; no concurrency or locking in the storage layer.
++
++## Overall scope
++
++Covers: adding, listing and deleting notes from the command line.
++Left out for now: search, editing, sync, a database, a GUI.
++
++## External resources
++
++- Repository README: `README.md`.
++
++---
++
++Last updated: 2026-11-15
+diff --git a/docs/specs/001-note-tags/discovery.md b/docs/specs/001-note-tags/discovery.md
+new file mode 100644
+index 0000000..d405f7e
+--- /dev/null
++++ b/docs/specs/001-note-tags/discovery.md
+@@ -0,0 +1,40 @@
++# Discovery — 001-note-tags
++
++## Architect report (materialized from the cdad-architect final text, section `## discovery`)
++
++Examined revision `68ba7b3`, working tree (`docs/` untracked). Code and docs read only; the CLI and tests were not executed. Tags: **[verified]** = confirmed by reading file:line; **[assumption]** = reading to be confirmed by the owner or by tests.
++
++**Units this feature touches**
++
++- `notes/cli.py` `main(argv)` (lines 4-12): `add` branch (6-7), `rm` branch (8-9), and the `else` that lists notes (10-12). **[verified]**
++- `notes/storage.py`: `PATH` read from `NOTES_FILE` at import (3); `load`/`save` (5-13); `add` (15-19) returns the new index; `delete` (21-24); `all_notes` (26-27). **[verified]**
++- `notes/__init__.py` is empty; `python -m notes.cli` works through the `__main__` guard (cli.py:14-15). **[verified]**
++
++**Conventions that apply**
++
++- Standard library only; storage is the only module that touches disk (projectbrief.md:10; systemPatterns.md:15). **[verified]**
++- `snake_case`; plain-word commands (systemPatterns.md:22-23). **[verified]**
++- Tests: pytest, in `tests/`, `NOTES_FILE` pointed at a temp path per test (systemPatterns.md:38-43). **[verified]**
++
++**Gotchas**
++
++1. **No `list` branch.** Any unrecognised word, including `tag` and `untag` today, falls through to listing and exits 0 (cli.py:10-12). **[verified]**
++2. **`add` swallows flags.** `add` joins every remaining argument into the text (cli.py:7). **[verified]**
++3. **Manual argument parsing.** No argparse. `rm` calls `int(argv[1])` (cli.py:9). **[verified]**
++4. **Negative ids.** `rm -1` reaches `del items[-1]` (storage.py:23) and deletes the last note. **[verified by reading; not executed]**
++5. **Ids shift on delete.** Pre-existing (storage.py:23). Tags live inside the note object, so they move with it. **[verified]**
++6. **Errors are tracebacks today** (systemPatterns.md:31). The refusal convention is new.
++7. **Whole-file rewrite** (`open(PATH, "w")`, storage.py:11-13), not atomic. Pre-existing. **[verified]**
++8. **`add` with no words** stores an empty text. Pre-existing, unchanged. **[verified by reading]**
++
++**Doubts**
++
++- Old `notes.json` entries have no `tags` key; reading them as untagged is an assumption. **[assumption]**
++- Driving `python -m notes.cli` from a subprocess with `NOTES_FILE` set works as described. **[assumption, not executed]**
++- Owner defaults: "lowercase" versus "invalid input is refused with no silent change". Read as: lowercasing is normalisation of valid input. **[assumption; owner]**
++- Python version: 3.13.5 checked on this machine.
++
++## Dialogue context
++
++- Owner (2026-11-15): "A note can have several tags." — confirmed decision.
++- Owner (2026-11-15): "I'll leave the other questions for later." — the remaining defaults are recorded as pending in `docs/activeContext.md` and in the spec's assumptions A2, A3, A6, A8, A9. Silence is not consent.
+diff --git a/docs/specs/001-note-tags/plan-review.md b/docs/specs/001-note-tags/plan-review.md
+new file mode 100644
+index 0000000..8279d6b
+--- /dev/null
++++ b/docs/specs/001-note-tags/plan-review.md
+@@ -0,0 +1,36 @@
++# Plan review — 001-note-tags (draft review, stage 2)
++
++Reviewer: cdad-reviewer (read-only, separate session from the architect). Object reviewed: `docs/specs/001-note-tags/spec.md`.
++
++## History of rounds
++
++- Round 1: `needs revision before owner approval` — 4 blocking, 3 major, 8 minor. Architect revised all of them.
++- Round 2: `needs revision before owner approval` — 2 new blocking (flag rule for `tag`/`untag`; false invariant on text), 4 minor. Architect revised all of them.
++- Round 3 (final, below): `ready for owner approval`, 0 blocking.
++
++## Final verdict (round 3, FINAL TEXT of the reviewer)
++
++### verdict
++
++**Ready for owner approval.** Open BLOCKING findings: **0**. Two minor wording items remain. The owner decisions are the only open items that affect approval.
++
++### findings
++
++1. **[minor] Deferred-hardening bullet is out of step with the refused set.** Touches: deferred-hardening, "Whitespace and case beyond ASCII". The bullet says "Only ASCII space and tab are refused"; PC-10(a) also refuses `,`, `[`, `]` and a leading `--`. Suggested change: "Only the ASCII names in PC-10(a) are checked; other Unicode whitespace is not checked, and non-ASCII case folding is not verified." — **OPEN (optional, not applied in this round).**
++2. **[minor] Invariant overstates what is verified.** The invariant says every name is "lowercase", verified by PC-8, PC-9, PC-10; non-ASCII case folding is deferred. Suggested change: "lowercase (ASCII letters; non-ASCII case folding is deferred)". — **OPEN (optional, not applied in this round).**
++
++All blocking findings of rounds 1 and 2 are resolved in the current text: rm and tags travel with the note (PC-13); re-tag order (PC-7); case folding for every name argument (PC-9); `--tag` parsing and refused names (PC-2, PC-10, A1); no-tag output after untagging all (PC-11); message content (PC-10); unknown commands kept pending (A9).
++
++### owner decisions still open
++
++1. A2 — silent case folding (recommended: keep).
++2. A3 — `untag` of an absent name is a silent success (recommended: keep).
++3. A6 — `tag` and `untag` print nothing on success (owner's choice).
++4. A8 — refuse names with a space or tab, `,`, `[`, `]` or a leading `--`, instead of normalising (owner confirms; differs from the activeContext default read as normalisation).
++5. A9 — unknown commands and `--tag` used as a command: keep the fall-through at cli.py:10-12, or refuse.
++6. Approver name — needed for `approved_by`.
++
++### abstentions (reviewer)
++
++- No decisions table to compare (`docs/adr/` does not exist; systemPatterns.md table empty).
++- Code behaviour checked by reading only; the CLI and pytest were not run.
+diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
+new file mode 100644
+index 0000000..c249650
+--- /dev/null
++++ b/docs/specs/001-note-tags/spec.md
+@@ -0,0 +1,139 @@
++---
++feature_id: 001-note-tags
++feature_name: Note tags
++created_at: 2026-11-15
++approved_by: <pending>
++approved_at: <pending>
++---
++
++# Spec: Note tags
++
++This spec opens with the functional description derived from a **user journey**.
++
++**User journey**
++
++- **Actor**: the single local user of notes-cli, at the terminal.
++- **Goal**: tag my notes and then list only the notes that carry a given tag.
++- **Legitimate starting point**: a notes file with notes added with `add` and listed with `list`, as today. No note has tags.
++- **First useful result**: the user gives a note one or more tags, and `list --tag <name>` shows only the notes that carry that tag, with their ids.
++
++The user can give a note several tags when adding it, add or remove tags on an existing note by its id, see each note's tags in the plain list, and filter the list by one tag. Notes without tags keep working as before.
++
++## Acceptance criteria (observable behavior over the journey)
++
++- [ ] From an empty notes file, the user runs `add "buy milk" --tag home --tag errands` and then `list --tag home`, and sees `0: buy milk [home, errands]`.
++- [ ] With notes carrying other tags present, `list --tag home` shows only the notes that carry `home`, each with its id.
++- [ ] The user runs `tag` and `untag` on an existing note id and sees the change in `list`.
++- [ ] If a tag name is invalid (empty, containing a space, tab, `,`, `[` or `]`, or beginning with `--`), or a `--tag` has no name, the command fails with a message naming the value given (or the missing argument), and the notes file is unchanged. The only silent change is case folding: `Home` is stored and matched as `home`.
++- [ ] Notes without tags, and a notes file written before this feature, list exactly as before.
++
++## Contract (promises, postconditions and invariants)
++
++**Promises (observable, one per user-visible guarantee).** Each postcondition below belongs to exactly one promise.
++
++| Promise | What the user can see | Postconditions |
++| --- | --- | --- |
++| A — Tagging a note when it is added | The note I add carries the tags I gave it, and its text is not polluted by the flags | PC-1, PC-2 |
++| B — Changing tags of an existing note | Tags I add or remove on a note, by its id, appear in `list` | PC-3, PC-4, PC-5 |
++| C — Filtering by tag | `list --tag` shows only the notes that carry that tag | PC-6 |
++| D — Seeing tags | Plain `list` shows each note's tags next to its text, in a fixed order | PC-7 |
++| E — Tag names are checked | A name is stored in one form (lowercase, once per note); invalid input is refused with a message and nothing changes | PC-8, PC-9, PC-10 |
++| F — Existing notes keep working | Notes without tags, older notes files, and the remaining notes after `rm` keep their text and tags | PC-11, PC-12, PC-13 |
++
++**Verification per promise** (all executable: pytest runs `python -m notes.cli` in a subprocess with `NOTES_FILE` set to a temp path per test; no contextual review is needed, since every promise is observable as printed output or file bytes).
++
++| Promise | Property | Method | Acceptance criterion | Expected evidence | Verification limits |
++| --- | --- | --- | --- | --- | --- |
++| A | Tags given at add are stored; flags never enter the text | executable | `add` with tags, then `list`, shows the note with exactly those tags and clean text | pytest output for the tests of PC-1 and PC-2 | does not cover terminal rendering beyond the asserted lines |
++| B | Tags can be added and removed by id; a bad id changes nothing | executable | After `tag`/`untag` by id, `list` shows the changed tags; a refused id leaves the list and the file as they were | pytest output for the tests of PC-3 to PC-5 | covers only ids shown by `list` at the time of the call |
++| C | The filter returns exactly the notes carrying the tag, in id order | executable | `list --tag` prints only the matching notes with their ids, and nothing when none match | pytest output for the test of PC-6 | single-tag filter only |
++| D | The plain list shows tags in a fixed format and order | executable | Plain `list` shows `[tags]` in the order described in PC-7 | pytest output for the test of PC-7 | does not judge readability |
++| E | Names are stored in one form; invalid input leaves the file byte-identical | executable | A refused command shows a message naming the value given (or the missing argument) and the notes file is unchanged; `Home` is shown as `home` | pytest output for the tests of PC-8 to PC-10 | covers ASCII space and tab, `,`, `[`, `]` and a leading `--`; other Unicode whitespace and non-ASCII case folding are not covered (see deferred-hardening) |
++| F | Untagged output, pre-feature files and remaining notes after `rm` are unchanged or correct | executable | Untagged notes list as before; an old file works; after `rm`, `list` shows each remaining note with its own text and tags under its new id | pytest output for the tests of PC-11 to PC-13 | the pre-feature file is a fixture written by the test |
++
++**Postconditions (numbered and verifiable):**
++
++1. **PC-1 (A):** On an empty notes file, `add "buy milk" --tag home --tag errands` exits with status 0 and prints `0`; a following `list` prints `0: buy milk [home, errands]`.
++2. **PC-2 (A):** Each of the following, run on its own empty notes file, gives the stated result after `list`:
++   - `add buy --tag home milk` gives `0: buy milk [home]`. `--tag` takes exactly the next argument as the name, and the remaining arguments form the text.
++   - `add --tag buy milk` gives `0: milk [buy]`.
++   - `add "a --tag b"` gives `0: a --tag b` with no tags. An argument that merely contains `--tag` is text, not a flag.
++   - `add "buy home" --tag home` gives `0: buy home [home]`. The word `home` in the text and the tag `home` are independent.
++3. **PC-3 (B):** `tag <id> <name> [<name> ...]` adds each given name to the note with that id and keeps its existing tags; lines of other notes are unchanged. Example: note 0 carries `c`; after `tag 0 a b`, `list` prints `0: … [c, a, b]`.
++4. **PC-4 (B):** `untag <id> <name> [<name> ...]` removes each given name from that note and keeps its other tags: after `untag 0 a` on `[c, a, b]`, `list` prints `[c, b]`. Untagging a name the note does not carry exits with status 0 and changes nothing.
++5. **PC-5 (B):** An id is accepted only in the form `list` prints it: decimal digits, no sign, no leading zero, and a value less than the number of notes. For `tag` or `untag`, any other id (negative, equal to or above the number of notes, not an integer, or written in another form) exits with non-zero status, prints a message on stderr naming the id as given, and leaves the notes file byte-identical. If the notes file does not exist, it still does not exist after the refusal.
++6. **PC-6 (C):** `list --tag <name>` prints, in id order, exactly the notes that carry `<name>`, including notes that also carry other tags. Each line is `<id>: <text> [<tags>]`, where `[<tags>]` is all the note's tags, not only the filtered one. Example: `list --tag home` on a note tagged `home, errands` prints `0: buy milk [home, errands]`. Notes without `<name>` are not printed. If no note carries `<name>`, it prints nothing and exits with status 0.
++7. **PC-7 (D):** Plain `list` prints each tagged note as `<id>: <text> [<tag>, <tag>]`. Tags appear in the order in which they were applied to that note:
++   - names added by `add` or `tag` go after the names already on the note, in the order given;
++   - a name already on the note keeps its position when it is applied again;
++   - a name removed by `untag` and applied again goes to the end.
++
++   Example: note 0 carries `[c, a, b]`; `untag 0 a` gives `[c, b]`; `tag 0 a` gives `[c, b, a]`.
++8. **PC-8 (E):** A name the note already carries is kept once, whether it is repeated in `add` (`--tag home --tag home`) or applied again with `tag`; `list` shows `[home]`, and the name keeps its position (see PC-7).
++9. **PC-9 (E):** Case folding applies to every name argument of `add --tag`, `tag`, `untag` and `list --tag`: each name is stored and matched in lowercase, silently. Examples: `add x --tag Home` makes `list` print `0: x [home]`; `list --tag HOME` shows that note; `untag 0 HOME` on a note with `[home]` removes `home`.
++10. **PC-10 (E):** Invalid input is refused: it exits with non-zero status, prints a message on stderr that names the value given or, when none was given, the missing argument (`id` or `name`), and leaves the notes file byte-identical. Invalid input is:
++    - (a) a tag name that is empty, contains an ASCII space, tab, `,`, `[` or `]`, or begins with `--`, given to `add`, `tag`, `untag` or `list --tag`. Example: `tag 0 --tag` exits with non-zero status, names `--tag` on stderr, and leaves the file unchanged;
++    - (b) `--tag` with no name after it (at the end of the arguments), given to `add` or `list`;
++    - (c) `add` with tags and no text (for example `add --tag home`); nothing is written, and no note with tags but no text is created;
++    - (d) `tag` or `untag` with no id, or with an id and no name after it. The message names the id given, or, when no id is given, the missing argument `id`; when only the name is missing, it names the missing argument `name`.
++
++    In `tag` or `untag` with several names, if any one of them is invalid, none of them is applied.
++11. **PC-11 (F):** A note with no tags prints as `<id>: <text>`, exactly as before this feature. This holds for a note added without `--tag`, and for a note whose tags were all removed: `add x --tag a`, then `untag 0 a`, then `list` prints `0: x`.
++12. **PC-12 (F):** A notes file written before this feature (entries holding only `text`) is read without error: `list` prints its notes as in PC-11; `list --tag <name>` does not print them; `tag 0 <name>` succeeds and `list` then shows `[<name>]`; `rm <id>` still deletes the note at that id.
++13. **PC-13 (F):** After `rm <id>`, each remaining note keeps its own text and tags and takes its new id. Example: `add a --tag a`, `add b --tag b`, `rm 0`; then `list` prints `0: b [b]`, and `list --tag a` prints nothing.
++
++**Signature (CLI usage; supporting detail for the implementer, never the opening block):**
++
++```
++python -m notes.cli add <text words...> [--tag <name>]...
++python -m notes.cli tag <id> <name> [<name> ...]
++python -m notes.cli untag <id> <name> [<name> ...]
++python -m notes.cli list [--tag <name>]
++python -m notes.cli rm <id>          (unchanged)
++```
++
++### Invariants
++
++- For every note, its tags, when present, are distinct, non-empty, lowercase, contain no ASCII space or tab, no `,`, `[` or `]`, and do not begin with `--` (verified by PC-8, PC-9 and PC-10).
++- For every `add`, an argument that is exactly `--tag` never becomes part of the text: it is either a flag or it is refused. A flag is an argument that is exactly `--tag` (verified by PC-2 and PC-10(b)).
++- No property tests are selected; these invariants are verified by the named postconditions.
++
++## Stated assumptions (pending owner confirmation)
++
++- **A1 (PC-2, PC-10):** A flag is an argument that is exactly `--tag`. The name is the next argument, taken whole, and a name that begins with `--` is never accepted, in any command (PC-10(a)). The remaining arguments form the text, joined by one space, as today.
++- **A2 (PC-9):** Case folding is silent and applies to all name arguments. This follows the defaults recorded in `docs/activeContext.md`; the owner has not yet confirmed them. Pending owner.
++- **A3 (PC-4):** `untag` of a name the note does not carry is a silent success with no change. Pending owner.
++- **A4 (PC-7):** Tag order is the order of application, as set out in PC-7: a name keeps its position while it stays on the note; a name removed and applied again goes to the end.
++- **A5 (PC-5, PC-10):** Validation happens before any write, so a refused command leaves the file untouched.
++- **A6 (PC-3, PC-4):** On success, `tag` and `untag` print nothing; `add` prints the id as today. Pending owner.
++- **A7:** The on-disk form that the new version writes for tags is not part of this contract. The pre-feature form (`{"text": ...}` entries, read as untagged) is part of it (PC-12).
++- **A8 (PC-10):** Names containing an ASCII space or tab, `,`, `[` or `]`, or beginning with `--`, are refused, not converted. The `,`, `[` and `]` characters are refused because they would break the list format. This differs from the default recorded in `docs/activeContext.md` ("no spaces", which could be read as normalisation); the owner confirms this reading. Pending owner.
++- **A9 (no postcondition):** The behaviour of an unknown command, including `--tag` used as a command, is pending. Either the current fall-through is kept, so `python -m notes.cli --tag home` prints every note with exit 0 and is not refused (cli.py:10-12), or unknown commands and `--tag` without `list` are refused with a message and no change. No postcondition commits to either option until the owner decides. Pending owner.
++
++## deferred-hardening
++
++- **Ids shift on `rm`** (pre-existing, storage.py:23). `tag` and `untag` use these ids, so a tag can land on a different note after a deletion. Reason: pre-existing behaviour, recorded as technical debt in `docs/activeContext.md`, which this feature does not change. Promoted when: the owner asks for stable ids.
++- **Whitespace and case beyond ASCII.** Only ASCII space and tab are refused; other Unicode whitespace is not checked, and non-ASCII case folding is not verified. Reason: no owner requirement names them. Promoted when: a non-ASCII tag or whitespace case is needed.
++- **Length or count limits** on tags or notes. Reason: no requirement. Promoted when: a real need appears.
++- **Atomic write and concurrent access** (storage.py:11-13). Reason: single local user (projectbrief.md:24). Promoted when: more than one writer exists.
++
++## Out of scope
++
++- Filtering by several tags at once (AND/OR).
++- Renaming or deleting a tag across all notes; listing the tags in use.
++- Editing note text.
++- Any change to `rm` or to the id scheme.
++- A `--tag=<name>` form; only the two-word `--tag <name>` form is committed.
++- The handling of unknown commands and of `--tag` used as a command: pending, see A9.
++- A bare `add` with no text and no tags keeps today's behaviour.
++- Migration of `notes.json`; old files work through PC-12 with no migration step.
++
++## Technical context
++
++- Examined revision `68ba7b3`, working tree. Units: `notes/cli.py` `main` (4-12); `notes/storage.py` `PATH` (3), `load`/`save` (5-13), `add` (15-19), `delete` (21-24), `all_notes` (26-27).
++- Parsing is manual over `sys.argv` via `main(argv)`. `--tag` must be extracted before `add` joins the text (cli.py:7).
++- Unknown words fall through to listing with status 0 (cli.py:10-12). Tests must assert output or file effect, never exit status alone.
++- `storage.PATH` is read at import from `NOTES_FILE` (storage.py:3); tests use a subprocess with `NOTES_FILE` set per test (systemPatterns.md:42).
++- Errors are tracebacks today (systemPatterns.md:31). The refusal convention (non-zero exit, stderr naming the value given or the missing argument, file unchanged) is new and pinned only by observable effects.
++
++Status: Pending approval
+diff --git a/docs/systemPatterns.md b/docs/systemPatterns.md
+new file mode 100644
+index 0000000..5d7bb9a
+--- /dev/null
++++ b/docs/systemPatterns.md
+@@ -0,0 +1,55 @@
++# System Patterns
++
++Technical conventions of the project. Loaded at the start of agent sessions.
++
++## Current decisions
++
++The table starts empty. A row is added when a decision is approved.
++
++| File | State | Summary | Roles | Reference |
++|---|---|---|---|---|
++
++## Layers and boundaries
++
++- `notes/cli.py` — argument parsing and printing; calls `storage`.
++- `notes/storage.py` — reads and writes the JSON file; the only module that touches disk.
++- The CLI entry point is `python -m notes.cli <command>`.
++
++## Code conventions
++
++### Naming
++
++- Functions and variables in `snake_case`.
++- Commands are plain words (`add`, `rm`, `list`).
++
++### File organization
++
++- Package code under `notes/`; tests under `tests/`.
++
++### Errors and exceptions
++
++- Current behaviour: no typed exceptions; invalid input surfaces as Python exceptions.
++
++## Storage format
++
++- A JSON list of objects. Each note is `{"text": "<string>"}`.
++- A note's id is its index in the list. Deleting a note shifts the ids of later notes down by one.
++
++## Test conventions
++
++- **Framework**: pytest
++- **Structure**: `tests/` at the project root
++- **Fixtures**: point `NOTES_FILE` at a temporary path per test
++- **Property tests**: none
++
++## Tooling enforcement
++
++None configured yet.
++
++## Project anti-patterns
++
++- None documented yet.
++
++---
++
++Last updated: 2026-11-15

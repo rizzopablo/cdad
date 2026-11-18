@@ -94,6 +94,12 @@ if str(_SCRIPT_DIR) not in sys.path:
 import cdad_packet  # noqa: E402
 import cdad_lifecycle  # noqa: E402
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cdad_layout  # noqa: E402
+
 CHECKPOINT_CONTRACT = "continuity-checkpoint-v1"
 RECORD_CONTRACT = "active-record-v1"
 RECONCILE_CONTRACT = "reconcile-v1"
@@ -141,11 +147,9 @@ PACKETS_TREE = (".cdad", "packets")
 REQUEST_NAME = "REQUEST.json"
 
 # Policy file read (never written) to classify references for `--role` (P5).
-POLICY_REL_PATH = "docs/cdad-policy.json"
 
 # State file READ (never written, D3) as the authority source when the real
 # execution context (001) carries no `hitl_delegation` (D4/review-t4-ru1).
-STATE_REL_PATH = "docs/.cdad-state.json"
 
 # Roles that legitimately see implementation material; every other role gets the
 # implementation-scoped references filtered out (fail-closed, P5).
@@ -162,6 +166,57 @@ _FILENAME_SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 
 class ContinuityError(Exception):
     """A designed, deterministic failure: rc!=0 with a named diagnostic."""
+
+
+NO_ADMITTED_LAYOUT = "(no admitted layout)"
+
+
+# Commands whose layout placement must be admitted before they act (PC-04).
+# Every continuity command that resolves the same state is checked, so an
+# ambiguous placement is never selected by one command and refused by another.
+LAYOUT_CHECKED_COMMANDS = frozenset({
+    "begin", "checkpoint", "checkpoint-receipt", "reanchor", "reconcile",
+    "resume", "trigger",
+})
+
+
+def _optional_base(root: Path) -> str | None:
+    """019-004 §4.2 for continuity's OPTIONAL reads of the project state and policy.
+
+    Continuity works without a project state (standalone checkpoints, no
+    delegation, no disposition): an uninitialized project returns None. An
+    invalid registered locator and an ambiguous placement (insufficient
+    initialization evidence) are errors; neither is treated as absence and
+    neither selects docs/.
+    """
+    try:
+        return cdad_layout.optional_methodology_base(root)
+    except cdad_layout.LayoutError as exc:
+        raise ContinuityError(str(exc)) from exc
+
+
+def _state_path(root: Path) -> Path | None:
+    """The selected project state file, or None when no admitted layout selects one."""
+    base = _optional_base(root)
+    return None if base is None else root / base / ".cdad-state.json"
+
+
+def _state_rel(root: Path) -> str:
+    """The project state path for diagnostics (never used for reading)."""
+    base = _optional_base(root)
+    return f"{NO_ADMITTED_LAYOUT}/.cdad-state.json" if base is None else f"{base}/.cdad-state.json"
+
+
+def _policy_path(root: Path) -> Path | None:
+    """The selected project policy file, or None when no admitted layout selects one."""
+    base = _optional_base(root)
+    return None if base is None else root / base / "cdad-policy.json"
+
+
+def _policy_rel(root: Path) -> str:
+    """The project policy path for diagnostics (never used for reading)."""
+    base = _optional_base(root)
+    return f"{NO_ADMITTED_LAYOUT}/cdad-policy.json" if base is None else f"{base}/cdad-policy.json"
 
 
 # ------------------------------------------------------------------ JSON I/O
@@ -286,10 +341,10 @@ def _materialization_dir(root: Path, execution_id: str, packet_id: str) -> Path:
 
 def _state_delegation(root: Path) -> dict[str, Any]:
     """D4: when the context carries no `hitl_delegation`, the authority is read
-    from `docs/.cdad-state.json` — structured fields ONLY (prose is never
+    from the selected project state — structured fields ONLY (prose is never
     parsed). A missing/unreadable state yields no delegation (`unknown`)."""
-    path = root / STATE_REL_PATH
-    if not path.is_file():
+    path = _state_path(root)
+    if path is None or not path.is_file():
         return {}
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -1203,10 +1258,10 @@ def _published_request(root: Path, packet_id: str) -> dict[str, Any]:
 
 def _active_packet(root: Path, packet_id: str) -> None:
     """§2.1: the active packet must correspond to the request being checked."""
-    path = root / STATE_REL_PATH
-    if not path.is_file():
+    path = _state_path(root)
+    if path is None or not path.is_file():
         raise ContinuityError(
-            f"no active packet: the project state {STATE_REL_PATH} is missing "
+            f"no active packet: the project state {_state_rel(root)} is missing "
             f"(continuidad)")
     state = _read_json(path, "project state")
     active = state.get("active_packet") if isinstance(state, dict) else None
@@ -1821,7 +1876,10 @@ def close_durable_receipt(project_root: Path, receipt_path: Path, attempt: Any,
 
 
 def _load_policy(root: Path) -> dict[str, Any]:
-    document = _read_json(root / POLICY_REL_PATH, "policy")
+    policy_path = _policy_path(root)
+    if policy_path is None:
+        raise ContinuityError(f"the project policy is missing: {_policy_rel(root)} (continuidad)")
+    document = _read_json(policy_path, "policy")
     if not isinstance(document, dict):
         raise ContinuityError("policy must be a JSON object")
     return document
@@ -1832,11 +1890,12 @@ def _require_policy_for_role(root: Path, role: str | None) -> dict[str, Any]:
     would fail open and leak implementation material. Fail closed instead."""
     if role is None:
         return {}
-    policy_path = root / POLICY_REL_PATH
-    if not policy_path.is_file():
+    policy_path = _policy_path(root)
+    if policy_path is None or not policy_path.is_file():
         raise ContinuityError(
-            f"--role {role!r} requires the project policy {POLICY_REL_PATH} "
-            f"(missing at {policy_path}); refusing to classify references "
+            f"--role {role!r} requires the project policy {_policy_rel(root)} "
+            f"(missing at {policy_path if policy_path is not None else _policy_rel(root)}); "
+            "refusing to classify references "
             "fail-open (R-B2)")
     return _load_policy(root)
 
@@ -2400,8 +2459,8 @@ def _require_reanchor_effect_free(root: Path, execution_id: str,
     unreadable dispatch record, a missing/discordant identity (also when the
     named packet has no published request in the examined scope), any result
     file, a materialization record and a disposition all block the operation."""
-    state_path = root / STATE_REL_PATH
-    state = _read_json(state_path, "project state") if state_path.is_file() else {}
+    state_path = _state_path(root)
+    state = _read_json(state_path, "project state") if state_path is not None and state_path.is_file() else {}
     active = state.get("active_packet") if isinstance(state, dict) else None
     if not isinstance(active, dict) or active.get("id") != packet_id \
             or active.get("status") != "prepared":
@@ -2503,26 +2562,26 @@ def _disposition_state(root: Path) -> tuple[Any, list[str]]:
     cannot be read or decoded is reported as a cause, so absence is never
     disguised as illegibility nor the other way round (review-001 B2: a
     `UnicodeDecodeError` is an unreadable source, not an abort)."""
-    path = root / STATE_REL_PATH
-    if not path.is_file():
+    path = _state_path(root)
+    if path is None or not path.is_file():
         return None, []
     try:
         raw = path.read_text(encoding="utf-8")
     except OSError as exc:
         return None, [
-            f"the project state {STATE_REL_PATH} cannot be read "
+            f"the project state {_state_rel(root)} cannot be read "
             f"({exc.strerror or exc}): the disposition cannot be verified"]
     except UnicodeError:
         # review-001 B2: undecodable bytes are an ILLEGIBLE source, not an
         # abort — the envelope is preserved and the cause is reported.
         return None, [
-            f"the project state {STATE_REL_PATH} is not decodable as UTF-8: "
+            f"the project state {_state_rel(root)} is not decodable as UTF-8: "
             f"the disposition cannot be verified (no reliable signal)"]
     try:
         document = json.loads(raw)
     except ValueError:
         return None, [
-            f"the project state {STATE_REL_PATH} is not valid JSON: the "
+            f"the project state {_state_rel(root)} is not valid JSON: the "
             f"disposition cannot be verified (no reliable signal)"]
     return document, []
 
@@ -3140,9 +3199,9 @@ def _accredited_unit(root: Path, context_path: Path | None,
     if state is not None:
         state_facts: Any = state
     else:
-        state_path = root / STATE_REL_PATH
+        state_path = _state_path(root)
         state_facts = None
-        if state_path.exists():
+        if state_path is not None and state_path.exists():
             state_facts = cdad_packet._load_json(state_path, "project state")
         elif context_path is not None and _managed_context_without_state(
                 root, context_path, context, identity):
@@ -3213,6 +3272,10 @@ def _require_unit_operable(root: Path, context_path: Path,
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
+        if args.command in LAYOUT_CHECKED_COMMANDS:
+            # 019-004 §4.2 / PC-04: ambiguous placement fails closed BEFORE any
+            # identity check or write; an uninitialized project still proceeds.
+            _optional_base(Path(args.project_root).resolve())
         if args.command in {"begin", "checkpoint", "checkpoint-receipt", "reanchor"}:
             root = Path(args.project_root).resolve()
             context_path = _resolve(root, args.execution_context)

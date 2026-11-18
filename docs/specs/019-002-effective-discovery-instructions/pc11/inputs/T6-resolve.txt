@@ -1,0 +1,1 @@
+Decision: yes, show the tags next to each note in the plain list by default. Now, if everything else is settled, go ahead and get the draft written and independently reviewed. Do not approve it; I will decide that.

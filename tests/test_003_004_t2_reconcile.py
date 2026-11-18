@@ -54,6 +54,17 @@ son plantillas de datos (marcadores `@EXECUTION_ID@`/`@PACKET_ID@` y los
 digests se recalculan sobre los bytes sembrados) — ningún incidente
 real, ninguna escritura en este repo.
 
+Actualización 019-004 (T2 RED 005, PC-04/§4.2): estos fixtures no escribían
+NINGÚN marcador ni locator, pero siembran registros `.cdad/` (begin,
+despacho, receipt), evidencia insuficiente que el contrato aprobado
+diagnostica como layout ambiguo para begin/checkpoint/reconcile. Por eso
+el fixture es genuinamente ambiguo; para conservar TODAS las expectativas
+de la matriz, `setUp` siembra el marcador legacy exacto
+`docs/.cdad-state.json`. Único cambio de aserción: P8 ya no exige que ese
+archivo no exista, sino que sus bytes sigan idénticos (el CLI no escribe
+el state). La ambigüedad sin marcador se prueba en
+`tests/test_019_004_continuity_gap_ambiguity.py`.
+
 RED hoy (probes observables del CLI actual, 2026-10-07): `reconcile` no
 existe (invalid choice) y `resume --role` sin política acepta rc=0; cada
 aserción fracasa por comportamiento ausente (AssertionError con el ele-
@@ -171,6 +182,9 @@ class MatrixCase(unittest.TestCase):
         self.root.mkdir(parents=True, exist_ok=True)
         self.exec_context = self.write_json("fixture/exec.json",
                                             exec_context_fixture())
+        # 019-004 (T2 RED 005): marcador legacy exacto que admite el layout.
+        self.write_json(STATE_REL, {"schema_version": 1})
+        self.marker_bytes = (self.root / STATE_REL).read_bytes()
 
     # -- escritura de fixtures ---------------------------------------------
 
@@ -707,10 +721,12 @@ class TestP8EscenarioContinuoLegitimo(MatrixCase):
         # Reconstrucción intermedia (resume, stdin cerrado, sin preguntar).
         proc = self.run_resume()
         self.write_envelope(proc, "resume")
-        self.assertFalse(
-            (self.root / STATE_REL).exists(),
+        self.assertEqual(
+            (self.root / STATE_REL).read_bytes(), self.marker_bytes,
             msg="P8/invariante 1: ni el CLI toca docs/.cdad-state.json — "
-                "el orquestador es su único escritor")
+                "el orquestador es su único escritor (019-004: el archivo "
+                "es ahora el marcador legacy sembrado; sus bytes siguen "
+                "idénticos)")
         receipts_after = [
             p for p in (self.root / RESULTS_DIR_REL).rglob("receipt.json")]
         self.assertEqual(

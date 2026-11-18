@@ -1,0 +1,8 @@
+**Report — test-writer RED for 019-001**
+
+- **Modified files:** `tests/test_019_001_discovery_dialogue_contract.py` — **removed** (128 lines deleted). It was the invalid RED from `fc029f67`: it failed only because the product directory does not exist (path/setup failure dressed as `AssertionError`), and its bag-of-words oracle could pass while role assignments or prohibitions were wrong.
+- **No replacement RED claimed.** The product under verification is a documentary artifact (`operating-design/`), not yet produced and not readable as an oracle source. A truthful behavioral verifier that distinguishes a concrete incorrect role assignment from a correct one would require inventing a document schema/interface or reading the produced product, which violates the documentary contract and phase isolation. Per the packet objective, I report this explicitly rather than claiming a valid RED.
+- **Exact command:** `python3 -m pytest -q tests/test_019_001_discovery_dialogue_contract.py` (before removal) → `1 failed` with `AssertionError: …el directorio del producto documental no existe…`.
+- **Commit:** `309d8e8d` — `test(019-001): remove invalid RED (path/setup failure, bag-of-words oracle)`.
+- **Inventory delta:** removed the single nodeid `tests/test_019_001_discovery_dialogue_contract.py::TestPromiseA::test_promise_a_role_assignment_and_activation_boundaries`; no substitution/consolidation applied; all other tests untouched (`Mantener` per audit).
+- **Provenance:** approved contract `spec.md` (sha256 `80d26ba7…0539`), `red-selection.md` (Promise A), `test-audit.md` (no existing protection for PC-1/PC-2). Implementation code was not read.

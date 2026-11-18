@@ -221,13 +221,44 @@ def pick_staged_entry(staging_manifest: dict, prefix: str = "agents/opencode/") 
     return entries[0]
 
 
-def find_deployed(install_root: Path, filename: str) -> Path:
-    matches = [p for p in install_root.rglob(filename) if p.is_file()]
-    assert matches, (
-        f"T5 contract: the installer did not deploy {filename} anywhere under "
-        "the install root"
+def find_deployed(
+    install_root: Path,
+    source_rel: str,
+    destination_prefix: str | None = None,
+) -> Path:
+    """The deployed file the installer registered for the staged origin `source_rel`.
+
+    019-007 PC-1/PC-2: selection goes through the destinations recorded in
+    .cdad-install-manifest.json whose `source` equals `source_rel` exactly,
+    never through a basename match or filesystem enumeration order.
+    `destination_prefix` (install-root-relative) narrows an origin that is
+    legitimately deployed to several runtimes. An absent, missing-on-disk or
+    still ambiguous selection fails explicitly; there is no basename fallback.
+    """
+    manifest_path = install_root / INSTALL_MANIFEST_NAME
+    assert manifest_path.is_file(), (
+        f"T5 contract: no {INSTALL_MANIFEST_NAME} at the install root; cannot "
+        f"select the deployed artifact of {source_rel}"
     )
-    return matches[0]
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    destinations = deployed_paths_for_source(manifest, source_rel)
+    if destination_prefix is not None:
+        destinations = [d for d in destinations if d.startswith(destination_prefix)]
+    assert destinations, (
+        f"T5 contract: the install manifest registers no destination for staged "
+        f"origin {source_rel}"
+        + (f" under {destination_prefix}" if destination_prefix else "")
+    )
+    assert len(destinations) == 1, (
+        f"T5 contract: staged origin {source_rel} is registered at several "
+        f"destinations {destinations}; narrow the selection with destination_prefix"
+    )
+    deployed = install_root / destinations[0]
+    assert deployed.is_file(), (
+        f"T5 contract: the manifest registers {destinations[0]} for {source_rel} "
+        "but no such file exists in the install root"
+    )
+    return deployed
 
 
 def load_install_manifest(install_root: Path) -> dict:
@@ -341,7 +372,7 @@ class TestReview5InstalledDrift(unittest.TestCase):
             first = run_installer(staging_product(), root, "--basic")
             self.assertEqual(first.returncode, 0, first.stderr or first.stdout)
 
-            installed = find_deployed(root, "cdad-architect.md")
+            installed = find_deployed(root, "agents/opencode/cdad-architect.md")
             modified = installed.read_bytes() + b"\n<!-- local edit post-install -->\n"
             installed.write_bytes(modified)
             name = installed.name
@@ -387,8 +418,10 @@ class TestReview5SkillGuardConflicts(unittest.TestCase):
             first = run_installer(staging_product(), root, "--basic")
             self.assertEqual(first.returncode, 0, first.stderr or first.stdout)
 
-            skill = find_deployed(root, "SKILL.md")
-            guard = find_deployed(root, "path-guard.sh")
+            skill = find_deployed(
+                root, "skills/cdad-cycle/SKILL.md", ".config/opencode/skills/"
+            )
+            guard = find_deployed(root, "scripts/claude-code-path-guard.sh")
             skill_mod = skill.read_bytes() + b"\n<!-- local skill edit must survive -->\n"
             skill.write_bytes(skill_mod)
             guard_mod = guard.read_bytes() + b"\n# local guard edit must survive\n"
@@ -742,7 +775,7 @@ class TestReview5UninstallModified(unittest.TestCase):
             first = run_installer(staging_product(), root, "--basic")
             self.assertEqual(first.returncode, 0, first.stderr or first.stdout)
 
-            installed = find_deployed(root, "cdad-architect.md")
+            installed = find_deployed(root, "agents/opencode/cdad-architect.md")
             modified = installed.read_bytes() + b"\n<!-- local edit pre-uninstall -->\n"
             installed.write_bytes(modified)
             rel = str(installed.relative_to(root))
@@ -773,6 +806,84 @@ class TestReview5UninstallModified(unittest.TestCase):
                 "review-5 E (PD-7/D4): the preserved local modification must "
                 "keep exactly the user's bytes",
             )
+
+
+class TestDeployedSelectorUsesRegisteredSource(unittest.TestCase):
+    """019-007 PC-1/PC-2: `find_deployed` resolves by manifest source, not basename.
+
+    Synthetic install roots (no installer run): two homonymous deployed files
+    with different bytes, each registered for a different staged origin.
+    """
+
+    OC_SRC = "agents/opencode/cdad-homonym.md"
+    CC_SRC = "agents/claude-code/cdad-homonym.md"
+    OC_DEST = ".config/opencode/agents/cdad-homonym.md"
+    CC_DEST = ".claude/agents/cdad-homonym.md"
+
+    def _root(self, artifacts: dict, files: dict) -> Path:
+        tmp = tempfile.TemporaryDirectory(prefix="cdad-019007-sel-")
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        for rel, data in files.items():
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / rel).write_bytes(data)
+        (root / INSTALL_MANIFEST_NAME).write_text(
+            json.dumps({"artifacts": {
+                dest: {"sha256": "0" * 64, "source": src}
+                for dest, src in artifacts.items()
+            }}),
+            encoding="utf-8",
+        )
+        return root
+
+    def _homonym_root(self) -> Path:
+        return self._root(
+            {self.OC_DEST: self.OC_SRC, self.CC_DEST: self.CC_SRC},
+            {self.OC_DEST: b"opencode variant\n", self.CC_DEST: b"claude variant\n"},
+        )
+
+    def test_homonymous_variants_resolve_by_exact_source(self) -> None:
+        """PC-1: each staged origin yields ITS destination and bytes whatever
+        the enumeration order (both origins are asserted, so a first-match by
+        basename fails one of them). Without this, the user's install checks
+        could compare the wrong runtime's bytes and pass or fail by chance."""
+        root = self._homonym_root()
+        self.assertEqual(
+            find_deployed(root, self.OC_SRC), root / self.OC_DEST)
+        self.assertEqual(
+            find_deployed(root, self.CC_SRC), root / self.CC_DEST)
+        self.assertEqual(
+            find_deployed(root, self.OC_SRC).read_bytes(), b"opencode variant\n")
+        self.assertEqual(
+            find_deployed(root, self.CC_SRC).read_bytes(), b"claude variant\n")
+
+    def test_selection_not_resolvable_fails_explicitly(self) -> None:
+        """PC-2: unregistered origin, a registered destination missing on disk
+        and a missing manifest are explicit failures, never a basename
+        fallback to the homonymous file that does exist."""
+        root = self._homonym_root()
+        with self.assertRaises(AssertionError):
+            find_deployed(root, "agents/other/cdad-homonym.md")
+        (root / self.CC_DEST).unlink()
+        with self.assertRaises(AssertionError):
+            find_deployed(root, self.CC_SRC)
+        (root / INSTALL_MANIFEST_NAME).unlink()
+        with self.assertRaises(AssertionError):
+            find_deployed(root, self.OC_SRC)
+
+    def test_ambiguous_selection_fails_unless_narrowed_by_prefix(self) -> None:
+        """PC-2: one origin registered at several destinations is ambiguous and
+        fails; a destination prefix resolves it to the single registered file."""
+        src = "skills/cdad-x/SKILL.md"
+        dests = [".claude/skills/cdad-x/SKILL.md", ".config/opencode/skills/cdad-x/SKILL.md"]
+        root = self._root(
+            {d: src for d in dests}, {d: b"skill\n" for d in dests})
+        with self.assertRaises(AssertionError):
+            find_deployed(root, src)
+        self.assertEqual(
+            find_deployed(root, src, ".config/opencode/skills/"),
+            root / dests[1],
+        )
 
 
 if __name__ == "__main__":

@@ -107,7 +107,8 @@ Delegation in Claude Code — the native mechanism, not the CLI adapter:
   no mix with an inline body (A+C is rejected even when the inline coincides)
   and a divergent inline is never rescued by switching to C. Invent no route,
   marker or fallback and delete none: a rejection is reported, never repaired by
-  changing the route.
+  changing the route. A transport may add inert preamble or trailing text around
+  that stdout; the receiver's `intake` admits it, and that text grants no authority.
 - **Intra-runtime prohibition.** The CLI adapter (`cdad_delegate*.py` /
   `cli-delegation`) MUST NOT dispatch inside the same runtime
   (intra-runtime): it is only for another runtime or one without native

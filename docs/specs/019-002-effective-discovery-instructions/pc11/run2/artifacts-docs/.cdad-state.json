@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "stack": null,
+  "active_epic": null,
+  "epic_stage": null,
+  "active_feature": null,
+  "current_stage": "idle",
+  "tdd_substage": null,
+  "audit_status": null,
+  "postconditions_status": {},
+  "epic_features": [],
+  "suspended_units": {},
+  "stage_history": [
+    {"stage": "bootstrap", "completed_at": "2026-11-15T20:55:51Z"}
+  ],
+  "epic_history": [],
+  "approver": null,
+  "last_updated": "2026-11-15T20:55:51Z",
+  "execution": null,
+  "active_packet": null,
+  "hitl_delegation": null
+}

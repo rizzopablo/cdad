@@ -1,5 +1,7 @@
 # Re-entry — validating a finished role's output
 
+> **Layout (019-004).** Every `docs/` path in this document is the conventional location inside the methodology directory that `<skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>` resolves (registered `methodology_dir`, `docs/` for a legacy project, `cdad/` for a new one). Use the query's resolved `state` and `policy` paths; an ambiguous or uninitialized layout is the CLI's diagnostic to report.
+
 When the user comes back to the orchestrator's chat with a role's result (typical format: *"Done, here's the commit / diff / file"*), apply the validations of the corresponding role before advancing.
 
 ## General re-entry protocol
@@ -214,6 +216,24 @@ Replanning a unit preserves its objective, its dependencies and the reasons that
 
 ---
 
+## Recording bounded rounds (pointer — owner: `references/bounded-review-cycles.md`)
+
+At re-entry of each assessment, correction, verification or adjudication of a bounded loop (draft, audit or result family), register the summary in the existing note of the ordinary transition (`register-transition --note`), using the fixed pattern of the canonical reference §4:
+
+```text
+review-round unit=<id>; family=<draft|audit|result>; round=<n>/<ceiling>; event=<assessment|correction|verification|adjudication>; outcome=<brief outcome>; evidence=<recoverable references>; next=<action or stop>; authority=<actor and authority reference>
+```
+
+Reconciliation with the retry rules above:
+
+- Before the next dispatch, reconcile the unit+family history from the existing notes and the artifacts they reference; keep no separate total.
+- A repeated receipt or registration of the same event is the same event: it consumes nothing, and changing `--note` does not amend an event already registered (a repeated transition may keep its existing note by idempotency; record new evidence with its own legitimate event).
+- Only an assessment that opens a new ordinal consumes a round; correction and verification notes carrying that ordinal do not.
+- An identical retry with no new information triggers the strategy review above; the allowance never overrides that trigger, and it never grants a fresh round.
+- Unavailable or ambiguous history blocks the decision that depends on it; never invent prior consumption to repair it.
+
+---
+
 ## Validations by role
 
 ### Architect — per-feature discovery
@@ -225,17 +245,18 @@ Check:
 
 If it fails: ask the user to go back to the architect with the specific missing item.
 
-If it passes: add the output to the spec in the "Technical context" section (in the draft that goes to Stage 2). Advance to the Socratic brainstorm.
+If it passes: add the output to the spec in the "Technical context" section (in the draft that goes to Stage 2). Advance to the Socratic brainstorm only if consequential uncertainty or independent judgment still calls for a consultation; otherwise go to spec writing.
 
 ### Architect — brainstorm
 
 Check:
-- [ ] There are explicit decisions in the key categories (inputs, outputs, errors, edge cases, out of scope).
-- [ ] The user made the decisions, not the architect (the architect asked).
+- [ ] The report is a `role-report` with findings, evidence and open consequential questions; assumptions are marked VERIFY.
+- [ ] Decisions recorded for the draft were made by the user (recoverable provenance); the architect's proposals stay proposals.
+- [ ] Consequential choices are resolved, explicitly excluded or declared blocking.
 
-If it fails (e.g. a category left untouched): new turn from the architect with the missing questions.
+If it fails: continue the dialogue with the user or consult the architect again on the open item.
 
-If it passes: handoff to the architect in spec-writing mode.
+If it passes: handoff to the architect in spec-writing mode with the decisions actually made. Readiness is not approval.
 
 ### Architect — spec draft
 
@@ -244,11 +265,13 @@ Check:
 - [ ] Four mandatory sections: Functional description, Contract (signature + numbered postconditions), Verifiable invariants, Acceptance criteria.
 - [ ] Numbered, verifiable postconditions.
 - [ ] Measurable criteria.
+- [ ] Every observable promise declares its verification (property, selected method, acceptance criterion, expected evidence and limits), per `stage-2-specification.md` §"Verification strategy per promise".
 - [ ] No approval mark (correct: it gets approved later).
+- [ ] The draft declares its maximum of correction rounds, a concrete difficulty/risk justification and the provisional/adopted status (`stage-2-specification.md` §"Bounded correction rounds").
 
 If it fails: handoff back to the architect with the missing section.
 
-If it passes: pass the spec to the user (human or higher-hierarchy autonomous agent) for approval. **You do NOT approve it**. Tell them:
+If it passes: the draft goes through the existing independent review or the owner's registered exemption (see "Reviewer — draft review verdict" below) before approval; a draft corrected after review re-enters through that same route. Then pass the spec to the user (human or higher-hierarchy autonomous agent) for approval. **You do NOT approve it**. Tell them:
 
 > *"Spec is at `docs/specs/<NNN>/spec.md`. Before moving to Stage 3: review it and add the approval mark at the end (`Status: Approved by <you> on <date>`) or in frontmatter (`approved_by` + `approved_at`). When it's approved, let me know."*
 
@@ -260,32 +283,53 @@ approved bytes). The pin is mandatory: editing the spec afterwards invalidates
 the authorization, so `prepare` fails for the construction roles with the
 `approval pending` diagnostic. (The architect is authorized separately, by the
 `epic_history` entry `stage: "epic-plan"` approved by the owner; it is not a
-spec approval and carries no hash pin.) Then emit handoff to test-writer (RED)
-for postcondition 1.
+spec approval and carries no hash pin.) Then route the promises by their selected
+method (`stage-3-tdd.md` §"Routing by verification method"): emit handoff to
+test-writer (RED) only for the first promise with pending executable behavior.
 
 ### Reviewer — draft review verdict (`plan-review`)
 
 Check:
 - [ ] The verdict names the object it reviewed and that object's digest.
 - [ ] The verdict is materialized as `docs/specs/<feature>/plan-review.md`.
+- [ ] The verdict checks the sufficiency of every promise's verification (`stage-2-specification.md` §"Verification strategy per promise"); an insufficient or unverifiable commitment is a blocker.
 - [ ] Every blocker of the verdict is resolved in the draft, or discarded with a written reason by the authority that approves.
 - [ ] If the correction changed the design, the focused re-review was dispatched and received.
+- [ ] The round is registered (§"Recording bounded rounds", family `draft`; specification and plan share one allowance). A re-review whose findings continue the loop opens the next round.
 
-If it fails: handoff back to the architect with the blockers; then dispatch the focused re-review over the corrected draft.
+If it fails and the draft-family maximum has not been reached: handoff back to the architect with the blockers; then dispatch the focused re-review over the corrected draft. If the maximum is reached: finish the verification of the last permitted correction, then adjudicate every remaining finding per `bounded-review-cycles.md` §3 instead of dispatching a further correction.
 
 If it passes: the draft goes to the approval. The verdict never approves it.
 
-**The exemption.** The owner may exempt the draft review. The exemption is explicit and registered in the same `stage_history` entry as the approval, with the four fields `exempted_by`, `delegated`, `requested_by` and `reason`. Without a declared exemption, the review is mandatory.
+**The exemption.** The owner may exempt the draft review. The exemption is explicit and registered in the same `stage_history` entry as the approval, with the four fields `exempted_by`, `delegated`, `requested_by` and `reason`. An exemption is not an executed review, and it is not a claim that the verification was checked as sufficient. Without a declared exemption, the review is mandatory.
 
 ### Compatibility between product revisions (declared, not corrected)
 
-The digests of the instruction sources are part of the package's identity, so a
-package published with one revision of the instruction sources is not receivable
-after they change: the package is rejected on receipt because it no longer
-matches the canonical render. That rejection is noisy and recoverable, not a
-defect — the CLI does not distinguish the cause and this procedure does not
-change it. The two exits are: finish it under the revision it was published
-with, or prepare a new one under the revision now in force.
+The digests of the instruction sources are part of the package's identity, but
+what they are checked against depends on how the request was published:
+
+- **Frozen request** (it carries `instruction_sources`: the bytes of its three
+  canonical sources, with their digests). The render is rebuilt from those frozen
+  bytes and the live files are not read. A change in the live sources does not
+  affect it: `validate-request`, `validate-packet` and `render` still pass.
+- **Historical request** (no `instruction_sources`, published before the field
+  existed). The render is built from the live sources, and their digests are part
+  of the identification. After a change in any of them the render no longer matches
+  the packet, and the package is rejected on receipt: `validate-packet` exits 2 with
+  `packet differs from canonical rendering`. `validate-request` alone does not
+  detect it, because it does not compare the packet bytes. That message does not
+  name the source that changed; find it by comparing the packet's digests with the
+  live files.
+
+A package that passes these checks is structurally intact: its bytes are the ones
+its request declares. That is not semantic currency. Whether the instructions it
+carries are the revision in force now is an operator decision, which the CLI does
+not make. Validating a package approves nothing about its content, as for any
+receipt (see the evidence table above). The decision uses the existing controls,
+and the two exits are: finish the package under the revision it was published
+with, or prepare a new one under the revision now in force. For a rejected
+historical package, the first exit needs the sources of that revision to be live
+again, because the render reads them.
 
 ### Test-writer — RED
 
@@ -312,11 +356,13 @@ Check (R2 owns the recorrido: `sources/roles/test-writer.md`, `cdad-shared:conve
 
 If sensitivity is missing or unaccredited: verdict Mantener possible; do not accept the substitution — record the block and keep the originals.
 
+Bounded audit rounds (audit family; owner: `bounded-review-cycles.md`): register the AUDIT/POST-AUDIT round (§"Recording bounded rounds", family `audit`). A correction of a deficient audit output or substitution consumes the next audit round; at the audit maximum, finish the verification of the last permitted correction and adjudicate. These safeguards still hold at exhaustion: originals stay until destination + evidence, missing sensibilidad stays a block, and "budget exhausted" never accepts a substitution.
+
 ### Implementer — GREEN
 
 Check:
 - [ ] The user pasted the evidence the change requires — focused tests plus the modules it touches — per the **Test evidence policy** (`stage-3-tdd.md` §"Test evidence policy"); Durante el ciclo focal + proporcional, Cierre de feature con completa recomendada, Cierre de epic con completa obligatoria por defecto o dispensa expresa; otherwise suite completa no realizada with motive and limits.
-- [ ] The regression is green, including previous tests.
+- [ ] The regression is green, including previous tests (for executable promises). A semantic-only promise has no test to be green; it is checked at Stage 4 (`stage-3-tdd.md` §"Routing by verification method").
 - [ ] A commit with the `feat:` prefix exists.
 - [ ] The implementer did NOT modify `tests/` (check with `git diff --stat <base>..HEAD -- tests/` if you have access, or by asking the user).
 
@@ -330,7 +376,7 @@ If it passes: update `postconditions_status: { "<N>": "green" }`. Ask the user:
 
 > *"Postcondition <N> green. Do you want a REFACTOR now (if you see evident friction) or do we move to the next postcondition / sub-phase?"*
 
-Depending on the answer: handoff to refactorer, or handoff to test-writer for postcondition N+1, or (if all postconditions are green) handoff to the properties / E2E sub-phase if the spec asks for it.
+Depending on the answer: handoff to refactorer, or handoff to test-writer for postcondition N+1, or (if all postconditions are green) handoff to the properties sub-phase if the contract selects executable property tests for an invariant, or to E2E if the spec asks for it.
 
 ### Refactorer
 
@@ -383,7 +429,8 @@ If it passes: pass the report to the user to validate the prioritization.
 
 When the user comes back with their prioritization:
 - Record the decisions in the review.md (notes with the reason for each dismissal).
-- If there are blockings to apply: handoff to implementer with the list of fixes.
+- Register the review as a result-family round (§"Recording bounded rounds"). If the result-family maximum has been reached, adjudicate the remaining findings per `bounded-review-cycles.md` §3 before any further fix is dispatched.
+- If there are blockings to apply: handoff to implementer with the list of fixes (and the current family, round/ceiling and required closing verification).
 - If all blockings are resolved / dismissed: update the state file → `current_stage: merge` and emit handoff to scribe.
 
 ### Scribe

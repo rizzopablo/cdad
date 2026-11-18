@@ -60,7 +60,7 @@ When the user comes back saying *"Feature `<id>` done"* or equivalent:
 ### Validations
 
 1. **Verify in `progress.md`** that the feature appears under "Done".
-2. **Verify in the state file** that `current_stage` is `done` and `active_feature` is null or changed.
+2. **Verify in the state file** that the closed feature rests as `current_stage: idle` with `active_feature: null` (a `done`/`null` state is incoherent for opening the next unit: diagnose it first) or that `active_feature` changed.
 3. **Verify in `activeContext.md`** that there is a recent entry with the feature closed.
 
 If something is missing:

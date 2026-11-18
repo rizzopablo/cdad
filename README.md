@@ -86,10 +86,9 @@ not the role sources directly. It deploys owned copies into runtime directories
 under HOME: `.config/opencode/`, `.claude/` and `.agents/skills/`; it does not install
 into a public `agents/` or `skills/` directory at the install root.
 
-For a separate adoption root, set `CDAD_INSTALL_ROOT` to an **existing absolute
-directory**, outside the source tree, for each install/check operation. Then follow
-[project adoption](skills/cdad-cycle/references/runtime-adoption.md) to activate
-that root for OpenCode, Claude Code or Codex. Codex activation exposes skills;
+To install into a separate adoption root, outside the source tree, and activate
+it for OpenCode, Claude Code or Codex, follow
+[project adoption](skills/cdad-cycle/references/runtime-adoption.md). Codex activation exposes skills;
 it is not a claim that all runtimes have identical agent or transport support.
 `CDAD_SKILL_EXTRA_DIRS` adds colon-separated skill destinations for other
 environments; it does not configure their runtime integration.
@@ -116,13 +115,20 @@ configuration locations, destination adapters, execution modes, migration and
 `capabilities` verification before dispatch. Use the runtime's own supported
 configuration for permissions; do not copy configuration syntax between versions.
 
+## Guided start
+
+One brief instruction is enough to start a project from rest, up to the first
+useful delegation: CDAD composes the existing primitives for you. The short
+procedure is in
+[project start](skills/cdad-cycle/references/project-start.md).
+
 ## Operating an adopted project
 
 This section is for the human supervising work and the agent carrying it out.
 `<skill-dir>` means the actual directory reported when `cdad-cycle` is loaded,
 not an assumed machine path. Each CLI and subcommand provides `--help`.
 
-- **Orient and continue:** start with `cdad_packet.py status`; it reports the
+- **Orient and continue:** start with `<skill-dir>/scripts/cdad_packet.py status`; it reports the
   situation and next operation, not authorization. `open-unit` opens eligible
   queued work; continuity checkpoints, `reconcile` and resume preserve the
   execution boundary. See [orientation](skills/cdad-cycle/references/orientation.md)

@@ -11,7 +11,7 @@
   - `python3 scripts/cdad_packet.py validate-request --request .cdad/packets/…/REQUEST.json` → **exit 0**
   - `python3 scripts/cdad_packet.py validate-packet --request …/REQUEST.json --packet …/PACKET.md` → **exit 0**
   - `python3 scripts/cdad_packet.py render --request …/REQUEST.json` → **byte-for-byte identical** to `PACKET.md` (`diff` clean)
-- Scope respected: read only the 5 declared inputs + read_scope (`docs/specs/017-001-suite-performance`, `tests/`); **no implementation code read** (no read/grep of `scripts/`, `agents/`, etc.). The CLI was exercised only as a black box via synthetic attempts in scratch dirs outside the repo (`<tmp>/cdad-probe-020/`), the same oracle mechanism the existing tests use. `git status` confirms the only other modification is the orchestrator's pre-existing `M docs/.cdad-state.json` (packet rotation 019→020, not committed by me).
+- Scope respected: read only the 5 declared inputs + read_scope (`docs/specs/017-001-suite-performance`, `tests/`); **no implementation code read** (no read/grep of `scripts/`, `agents/`, etc.). The CLI was exercised only as a black box via synthetic attempts in scratch dirs outside the repo (`~/clawd/tmp/cdad-probe-020/`), the same oracle mechanism the existing tests use. `git status` confirms the only other modification is the orchestrator's pre-existing `M docs/.cdad-state.json` (packet rotation 019→020, not committed by me).
 - No full cycle/spec skill loaded; packet is the execution contract.
 
 ## 2. Pre-RED finding (contribution)

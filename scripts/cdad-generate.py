@@ -505,7 +505,7 @@ def cc_frontmatter(role: str, stack: str, name: str, description: str) -> str:
 
 ROLE_META = {
     "architect": {
-        "description": "CDAD architect — stages 1 (Discovery) and 2 (Spec). Read-only. Socratic brainstorm + spec draft (+ plan draft for complex features).",
+        "description": "CDAD architect — stages 1 (Discovery) and 2 (Spec). Read-only. Targeted technical consultation + spec draft from recorded decisions (+ plan draft for complex features).",
         "stage": "You operate in stage 1 (Discovery) and stage 2 (Specification).",
     },
     "test-writer": {
@@ -854,12 +854,20 @@ def build(stack_arg: str, runtime: str) -> dict[str, bytes]:
         effective_stack = "generic"
     else:  # auto → resolve from the declared state binding
         effective_stack = "generic"
-        state_path = ROOT / "docs" / ".cdad-state.json"
+        # 019-004 §4.2: the binding lives at the selected methodology layout, the
+        # same resolver the lifecycle uses; an invalid registered layout fails loud.
+        sys.path.insert(0, str(ROOT / "skills" / "cdad-cycle" / "scripts"))
+        import cdad_layout  # noqa: E402
+        try:
+            state_rel = cdad_layout.state_relpath(ROOT)
+        except cdad_layout.LayoutError as exc:
+            fail(f"invalid methodology layout for --stack auto: {exc}")
+        state_path = ROOT / state_rel
         if state_path.is_file():
             try:
                 state = json.loads(state_path.read_text(encoding="utf-8"))
             except (OSError, ValueError) as exc:
-                fail(f"cannot read docs/.cdad-state.json for --stack auto: {exc}")
+                fail(f"cannot read {state_rel} for --stack auto: {exc}")
             if state.get("stack") == "odoo":
                 effective_stack = "odoo"
 

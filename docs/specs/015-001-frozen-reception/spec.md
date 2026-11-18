@@ -2,11 +2,11 @@
 feature_id: 015-001-frozen-reception
 approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-015-dispatch-reception/execution.md)
 approved_at: 2026-11-02
-source: architect draft (sesión <ses-340>), materializado por el orquestador (ADR-003)
+source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban D1 (instruction_sources con snapshot base64, schema_version 1 ampliado) y D2 (históricos sin el campo conservan validación estricta; no se repara GREEN-002 ni paquetes históricos divergentes)
 ---
 
-# Borrador de spec — 015-001-frozen-reception (architect, sesión <ses-340>)
+# Borrador de spec — 015-001-frozen-reception (architect, sesión <session>)
 
 **Estado:** aprobada (2026-11-02, HITL delegada; D1 y D2 aprobados expresamente).
 

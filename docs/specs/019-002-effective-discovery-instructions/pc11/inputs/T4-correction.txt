@@ -1,0 +1,1 @@
+Correction to what I said before: when I list by several tags I want notes that have ANY of the tags, not all of them. Please make sure what you hand over reflects that.

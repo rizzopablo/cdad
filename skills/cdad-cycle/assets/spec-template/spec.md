@@ -29,6 +29,15 @@ From a legitimate starting point, the actor pursues a goal and obtains a first u
 - [ ] <Main-path behavior: the observable outcome 2 of the journey>.
 - [ ] <Recovery behavior: if <observable failure case> happens, the actor observes <observable recovery outcome> instead of a silent failure>.
 
+## Review allowance for this unit
+
+<Owner and rules: `skills/cdad-cycle/references/bounded-review-cycles.md`. Declared by the architect, applied by the orchestrator, adopted by the competent approver.>
+
+- **Proposed maximum:** <positive integer> rounds per family (draft, audit, result; each family has its own allowance and unused rounds do not transfer).
+- **Justification:** <concrete difficulty/risk: uncertainty, coupling, correction difficulty, consequence of error — not a bare "high risk" label>.
+- **Status:** <provisional (proposed in the draft; bounds the draft review) | adopted by <approver> on <YYYY-MM-DD>>.
+- **Counting identity:** unit + family, regardless of packet, execution, route or digest; a closing check that continues the loop consumes the next round.
+
 ## Contract (promises, postconditions and invariants)
 
 **Promises (observable, one per user-visible guarantee):** group the numbered
@@ -42,6 +51,12 @@ the postconditions they need (R1 — `sources/roles/architect.md`).
 | --- | --- | --- |
 | A — <promise> | <observable result the user perceives> | PC-1, PC-2 |
 | B — <promise> | <observable result the user perceives> | PC-3 |
+
+**Verification per promise** (definition and routing: `skills/cdad-cycle/references/stage-2-specification.md` §"Verification strategy per promise"; the review checks its sufficiency before approval):
+
+| Promise | Property | Method (executable / contextual review / combined) | Acceptance criterion | Expected evidence | Verification limits |
+| --- | --- | --- | --- | --- | --- |
+| A — <promise> | <what is promised, in the user's terms> | <method> | <observable condition that accepts it> | <records that will exist> | <what the method cannot establish> |
 
 **Postconditions (numbered and verifiable; each belongs to exactly one promise above):**
 

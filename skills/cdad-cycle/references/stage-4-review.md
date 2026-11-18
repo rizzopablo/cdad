@@ -71,6 +71,30 @@ reference it and never copy it.
    one of them is a finding, weighed by its real effect under the contract
    (see "Review calibration" above).
 
+## Closure evidence categories (canonical home — PC-5)
+
+Every promise is closed under one of these categories, and the report states which one applies:
+
+- **Supported within declared limits** — the selected method produced its expected evidence and the acceptance criterion holds, up to the verification limits the spec declares.
+- **Failed** — the acceptance criterion does not hold.
+- **Missing** — required evidence for a committed promise does not exist.
+- **Contradictory** — evidence points in incompatible directions; it is not reconciled by choosing the favourable part.
+- **Unable to verify** — the method cannot establish the criterion, or the run was not executed.
+
+Missing required evidence or an unmet commitment prevents accreditation. Declaring a limitation does not turn it into success: a limit is recorded next to the category, never used to upgrade it.
+
+No method proves beyond its reach:
+
+- byte equality does not establish semantic fidelity;
+- a favourable contextual review does not replace the runtime observations a promise commits to;
+- observed success does not establish behaviour that was not examined.
+
+Evidence is reused across postconditions where it establishes the same property; no new test and no separate delivery exercise is required per postcondition.
+
+## Semantic-only and mixed promises at review
+
+For a promise routed as semantic-only or as the contextual part of a mixed commitment (stage-3 §"Routing by verification method"), the reviewer checks the produced product in context against the approved contract, its acceptance criterion and the relevant sources. That contextual review is the verification of the promise; it is not a substitute for an executable test the promise does not have, and it does not turn a failed executable part into a pass.
+
 ## Your role as orchestrator
 
 You do NOT do the review. You coordinate:
@@ -152,7 +176,7 @@ If you detect bias (user wanting to close quickly, systematically marking blocki
 
 When the prioritization produces fixes, the orchestrator TRANSMITS the **full** feedback of the reviewer and of the user in the handoff packet: the findings travel attached exactly as they were written (with their rationale and provenance), **with no editing that softens** — paraphrasing in a friendly tone, trimming the evidence, or "summarizing" the finding softens exactly the signal the receiver needs in order to verify. The user's feedback (the context that motivated the prioritization) travels in the same packet.
 
-The packet instructs the receiver to apply `references/receiving-feedback.md` **before touching code**: the sequence read it fully without reacting → restate the requirement → verify against the real code → implement one fix at a time (blockings → simple → complex, suite green after each). If the receiver issues technical push-back with evidence, the reviewer reconsiders it (`verdict-tuple.md`); persistent disagreement → the user mediates. The fix session arrives fresh — that is the structural advantage of the cycle: the packet re-invokes the protocol with fresh tokens and the receiver arrives without emotional investment.
+The packet instructs the receiver to apply `references/receiving-feedback.md` **before touching code**: the sequence read it fully without reacting → restate the requirement → verify against the real code → implement one fix at a time (blockings → simple → complex), rerunning after each the checks that apply to the commitment it touches (loop step 3). If the receiver issues technical push-back with evidence, the reviewer reconsiders it (`verdict-tuple.md`); persistent disagreement → the user mediates. The fix session arrives fresh — that is the structural advantage of the cycle: the packet re-invokes the protocol with fresh tokens and the receiver arrives without emotional investment.
 
 ## Evidence reuse (the reviewer's budget of 0 runs)
 
@@ -179,15 +203,18 @@ If there are blockings to apply (or accepted optionals):
 
 1. Note the prioritized list of fixes.
 2. Emit handoff to implementer with the list.
-3. The suite must stay green after every fix. If a fix requires a behavior change, that means the **spec needs updating** → back to Stage 2.
-4. After the fixes: ideally another pass by the reviewer, scoped by the Review calibration (rule 4) — it verifies the agreed findings and the regressions introduced, and reopens the closure only with new evidence of a material breach or a relevant risk. In small features with mechanical fixes, you can skip it (the user's call).
+3. After every fix, rerun the checks that apply to the commitments it touches. Executable parts: the suite stays green, under the evidence policy (`stage-3-tdd.md` §"Test evidence policy"). Semantic-only parts: there is no suite for them; the applicable structural checks run, and the corrected product returns to contextual review. Mixed promises: both sets apply and neither replaces the other (routing: `stage-3-tdd.md` §"Routing by verification method"). If a fix requires a behavior change, that means the **spec needs updating** → back to Stage 2.
+4. After the fixes: ideally another pass by the reviewer, scoped by the Review calibration (rule 4) — it verifies the agreed findings and the regressions introduced, and reopens the closure only with new evidence of a material breach or a relevant risk. In small features with mechanical fixes, you can skip it (the user's call). That skip never covers a corrected semantic-only or mixed contextual part: its contextual re-review is the only verification that correction receives (§"Semantic-only and mixed promises at review").
+5. **Bounded rounds (pointer — owner: `references/bounded-review-cycles.md`).** The review, its dispositions, the fixes and this closing pass are one **result-family round**, bounded by the unit's declared maximum. If the closing pass finds unresolved or new findings that continue the loop, it opens the next round and consumes the next allowance; at the maximum, still complete the verification of the last permitted fix, then adjudicate every remaining finding (supported dismissal, accepted optional residue, or blocked/replan) instead of dispatching another fix. Further fixes after that need the recorded unmet-promise adjudication with a finite ceiling. This does not redefine the Review calibration; "budget exhausted" never dismisses a blocker. Register the round in the existing records with the fixed note pattern (`re-entry.md` §"Recording bounded rounds").
 
 ## 🛑 Exit gate (Stage 4 → Stage 5)
 
 - [ ] `docs/specs/<feat>/review.md` exists.
 - [ ] Blockings resolved or explicitly dismissed with a written reason.
 - [ ] Prioritization validated by the user, or agent-delegated with an explicit request registered in `stage_history` (see the exception in §2.3/Layer 2 — never self-granted, AP-15).
-- [ ] Suite still green after the fixes.
+- [ ] Fixes verified by the checks that apply to each committed promise: the suite stays green for executable parts (evidence policy: `stage-3-tdd.md` §"Test evidence policy"); semantic-only parts pass the applicable structural checks and their contextual re-review; mixed promises satisfy both.
+- [ ] Every committed promise has a closure category from §"Closure evidence categories"; no promise is accredited as missing, failed, contradictory or unverifiable evidence.
+- [ ] If the result-family maximum was reached: the last permitted fix was verified and every remaining finding carries its exhaustion disposition (`references/bounded-review-cycles.md` §3); an unmet committed promise or missing required verification is not closed by that disposition.
 
 When all OK: update state (`current_stage: merge`). Announce the transition. Emit handoff to scribe (Stage 5).
 

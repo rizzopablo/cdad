@@ -243,3 +243,55 @@ identificar y contrastar un contrato real; no se acredita por
 - Procedencia: instrumentación A-3 review-fix 2 declarada en su docstring.
 - Estado: deuda visible, separada de asignaciones estructurales
   pendientes y de acreditación semántica.
+### Base temporal de la suite y corridas interrumpidas
+
+`/tmp` en este equipo es un tmpfs de 10 GB. Cada sesión de pytest crea
+`cdad-test-session-*` y `cdad-test-home-*` allí, con copias del producto por
+test (hasta ~2.4 GB por corrida). Una corrida interrumpida sin su finalizador
+deja la raíz completa.
+
+El 2026-11-17 la suite de cierre del epic 019 falló con 357 errores de setup,
+todos `OSError: [Errno 28] No space left on device`, porque `/tmp` acumulaba
+5.9 GB de raíces de corridas anteriores. Los cuatro módulos afectados pasaron
+en aislamiento (`17 passed`), así que el resultado fue de entorno, no de
+producto. Diagnóstico: `.cdad/orchestration/epic-019/final-suite-epic/diagnosis.md`.
+
+Para corridas completas, el proyecto ya expone una opción de operador
+(`tests/product_staging.py:44`): apuntar la base temporal a otro disco.
+
+```sh
+CDAD_TEST_TMP_BASE=/var/tmp/cdad-suite python3 -m pytest -q tests
+```
+
+La base debe quedar **fuera de cualquier worktree de git** y sin un
+`version.txt` en sus ancestros: dos tests usan la ausencia de marcadores en el
+tempdir como precondición (`.cdad/orchestration/epic-019/final-suite-epic-2/diagnosis.md`).
+Antes de una corrida completa conviene verificar espacio y limpiar raíces
+`cdad-test-*` huérfanas. No es una garantía del producto: es higiene de
+ejecución.
+
+### Inestabilidades conocidas de la suite completa
+
+Dos fallos observados en corridas completas del 2026-11-17, ambos verdes en
+aislamiento y ajenos al producto:
+
+- **Selección ambigua en `test_install_ownership.py`.** `find_deployed()`
+  devuelve el primer `rglob` del nombre, y `install.sh --basic` despliega el
+  mismo nombre a `.claude/agents/` y a `.config/opencode/agents/` con bytes
+  distintos (18275 y 18606 en la comprobación). El orden de `rglob` no es
+  contractual, así que el test puede comparar la variante equivocada. Pasó en
+  tres corridas completas y falló en dos consecutivas, con el test y su clase
+  verdes en aislamiento: es reproducible en la suite y depende del entorno que
+  ésta crea. El manifest de instalación ya mapea cada destino, así que el
+  arreglo pertenece al mantenimiento de la suite (seleccionar por destino, no
+  por primer nombre) y toca las dos copias del helper. Evidencia:
+  `.cdad/orchestration/epic-019/final-suite-epic-4/diagnosis.md` y
+  `.../final-suite-epic-5/diagnosis.md`.
+- **Ventana temporal de PD-11 en `test_006_001_t2_wait_recovery.py`.** Con cota
+  de 2 s el adaptador reserva 1 s, descuenta la gracia (0.2 s) y deja al cliente
+  el resto tras la preparación: ~0.20 s en la medición del fallo. El fake debe
+  arrancar Python y escribir su store en esa ventana; con carga ambiente
+  (load ≈5) el trabajo medido va de 72 a 164 ms en 30 muestras, y un pico cruza
+  la ventana. Falla intermitente bajo carga; el arreglo exige una decisión de
+  diseño (ventana del cliente o presupuesto del preflight), no un retoque.
+  Evidencia: `.cdad/orchestration/epic-019/final-suite-epic-3/diagnosis.md`.

@@ -1,0 +1,23 @@
+OWNER INPUT (protected, verbatim): Correction to what I said before: when I list by several tags I want notes that have ANY of the tags, not all of them. Please make sure what you hand over reflects that. 
+
+TEXT: I'll record that in the project memory so the spec, when it's written, starts from it. Then I'll commit.
+TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "Relevant decisions (owner):\n- A note can carry several tags.\n\nDefaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):\n- Tags are written inline in the note text as `#tag`, e.g. `notes add \"buy milk #errands #shop\"`.\n- Listing by tag: `notes list --tag <name>`. Plain `notes list` keeps showing all notes.\n- A filter with several tags is NOT decided: the default is one tag per filter.\n- Tag matching is case-insensitive.", "newString": "Relevant decisions (owner):\n- A note can carry several tags.\n- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n\nDefaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):\n- Tags are written inline in the note text as `#tag`, e.g. `notes add \"buy milk #errands #shop\"`.\n- Listing by tag: `notes list --tag <name>`. Plain `notes list` keeps showing all notes.\n- Tag matching is case-insensitive."} 
+  => Edited docs/activeContext.md (1 replacement)
+TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Confirm the filter form and how several tags in one filter combine (all of them / any of them / single tag only).\n", "newString": "- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).\n"} 
+  => Edited docs/activeContext.md (1 replacement)
+TOOL edit {"path": "~/clawd/tmp/cand019b/docs/progress.md", "oldString": "Open decisions: see `activeContext.md`.", "newString": "Decided: a note can carry several tags; a filter with several tags shows notes carrying ANY of them. Other open decisions: see `activeContext.md`."} 
+  => Edited docs/progress.md (1 replacement)
+TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): record multi-tag filter matches ANY tag\" && git log --oneline | head -2 && git status --short && grep -n \"ANY\\|any of\\|single tag\\|one tag\" docs/*.md", "workdir": "~/clawd/tmp/cand019b"} 
+  => 66a24bf docs(memory): record multi-tag filter matches ANY tag
+539e432 docs(memory): initialize CDAD Memory Bank
+docs/activeContext.md:13:- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.
+docs/activeContext.md:24:- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).
+docs/progress.md:15:- `001-note-tags` — tag notes (a note can carry several tags) and list notes by tag. Decided: a note can carry several tags; a filter with several tags shows notes carrying ANY of them. Other open decisions: see `activeContext.md`.
+
+TEXT: Noted: listing with several tags will show notes that carry **any** of them, not only those carrying all of them.
+
+I've recorded this in the project memory (commit `66a24bf`):
+- `docs/activeContext.md` now lists it as a confirmed decision. The "single tag per filter" default is gone, and the open question about combining tags is reduced to confirming the `--tag <name>` form.
+- `docs/progress.md` states the decision on the queued feature `001-note-tags`.
+
+The spec will be written against this rule. The other items are still open: the tag syntax (defaulted to inline `#tag`), the test runner (defaulted to `unittest`), and the spec approver, which is still needed before the project can leave `diagnosis`.

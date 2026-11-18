@@ -35,7 +35,7 @@ Single `_sink` → `_sinks` list: `attach` appends (no duplicates), `detach(sink
 | `pytest tests/test_017_001_suite_operations.py -q` (15:20:39Z) | **9 passed in 10.87s** (8 existing + P7; wall 11.6s) |
 | `pytest tests/test_017_001_suite_profile.py -q` (15:20:53Z) | **17 passed in 22.04s** (T1 focal intact; wall 22.8s) |
 | `pytest tests/test_017_001_suite_tranche1.py tests/test_017_001_suite_tranche2.py -q` | **2 passed in 1.21s** (other helper consumers) |
-| `close` C-P-cold **old helper** (sensitivity control): `python3 scripts/cdad-suite.py close --evidence-root <tmp>/017-001-red013/evidence-prefix --nodeids …/nodeids-cp-cold.txt` (15:21:38Z) | rc=0, profile `complete` but **2 ops only** (`isolation.seed` ×2), **zero `product.*`** — defect reproduced |
+| `close` C-P-cold **old helper** (sensitivity control): `python3 scripts/cdad-suite.py close --evidence-root ~/clawd/tmp/017-001-red013/evidence-prefix --nodeids …/nodeids-cp-cold.txt` (15:21:38Z) | rc=0, profile `complete` but **2 ops only** (`isolation.seed` ×2), **zero `product.*`** — defect reproduced |
 | `close` C-P-cold **fixed helper**: same cmd → `evidence/attempt-20261107T152125851372Z-629874-279bcc55` (15:21:25Z, 2.8s wall) | rc=0, pytest 1 passed, profile `complete`, no diagnosis, **6 ops**: `product.lookup cold` (parent of copy+generate), `product.copy cold`, `product.generate cold`, `product.lookup cached` (root), +2 `isolation.seed`; scope_ref = repo `operation-scope.json` (draft); `pytest_wall_s=1.75` |
 
 Per the full-suite policy (focal cycle + proportional regression): complete suite **not run** — executed selection (9 ops + 17 T1 + 2 tranche + 2 focal close runs) with the limits stated here.

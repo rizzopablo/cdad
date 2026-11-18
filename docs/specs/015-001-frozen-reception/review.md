@@ -1,6 +1,6 @@
 # review.md — 015-001-frozen-reception (stage 4, reviewer)
 
-**Sesión:** `<ses-339>` · **Packet:** `015-001-frozen-reception-reviewer-review-001` (route C re-despachado tras rechazo válido del primer despacho: el orquestador había armado el bloque a mano con un `packet_id` ajeno; el reviewer lo rechazó como INVALID PACKET y en el re-despacho verificó byte-identidad con el render canónico).
+**Sesión:** `<session>` · **Packet:** `015-001-frozen-reception-reviewer-review-001` (route C re-despachado tras rechazo válido del primer despacho: el orquestador había armado el bloque a mano con un `packet_id` ajeno; el reviewer lo rechazó como INVALID PACKET y en el re-despacho verificó byte-identidad con el render canónico).
 **Contrato:** spec sha256 `f0493229…fb63ce` verificado · **Diff:** `8c3c5625..c2183ee0` · **Modelo de la sesión:** deepseek-v4.1-flash vía opencode-go (observación).
 Materializado por el orquestador (ADR-003).
 

@@ -58,6 +58,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cdad_packet  # noqa: E402
 import cdad_continuity  # noqa: E402
+import cdad_layout  # noqa: E402
 import cdad_lifecycle  # noqa: E402
 
 
@@ -70,7 +71,8 @@ RESULTS_RELPATH = RUNTIME_RELPATH / "results"
 MATERIALIZE_RELPATH = RUNTIME_RELPATH / "materializations"
 INBOX_RELPATH = Path(".cdad") / "inbox"
 EXECUTIONS_RELPATH = Path(".cdad") / "executions"
-STATE_RELPATH = Path("docs") / ".cdad-state.json"
+# 019-004 §4.2: the state lives at the selected methodology base (`docs/` when no
+# locator exists). Consumers resolve it through `_state_path`, never a literal.
 # The ONE name of the durable receipt inside the result directory of an
 # (execution, packet); `durable_receipt_path` is its ONE location rule.
 RECEIPT_NAME = "receipt.json"
@@ -633,13 +635,14 @@ def _close_durable_receipt(project_root: Path, args: argparse.Namespace,
 
 
 def receive(args: argparse.Namespace, project_root: Path) -> bytes:
+    _check_layout(project_root)
     # The late mode is a declared flag of THIS operation (PD-13/D-5): the receipt
     # machine is shared; only the vigency precondition is inverted.
     late = bool(getattr(args, "late", False))
     descriptor_path = _cwd_path(args.descriptor)
     descriptor = _load_json(descriptor_path, "result descriptor")
     _validate_descriptor(descriptor)
-    state = _load_json(project_root / STATE_RELPATH, "project state")
+    state = _load_json(_state_path(project_root), "project state")
     source = _validate_source(descriptor)
     attempt = _continuity_attempt(args)
     _require_continuity_attempt(project_root, descriptor, attempt)
@@ -799,6 +802,29 @@ def validate_receipt(args: argparse.Namespace,
 # --------------------------------------------------------------- materialize
 
 
+def _methodology_base(project_root: Path) -> str:
+    """019-004 §4.2: the selected methodology base; an invalid locator is an error."""
+    try:
+        return cdad_layout.methodology_base(project_root)
+    except cdad_layout.LayoutError as exc:
+        raise ResultError(str(exc)) from exc
+
+
+def _state_path(project_root: Path) -> Path:
+    return project_root / _methodology_base(project_root) / ".cdad-state.json"
+
+
+def _check_layout(project_root: Path) -> None:
+    """019-004 §4.4: before materialization, a registered layout must be compatible
+    with the effective policy; the policy is never rewritten here."""
+    try:
+        registered = cdad_layout.registered_methodology_dir(project_root)
+        if registered is not None:
+            cdad_packet.check_layout_compatibility(project_root, registered)
+    except (cdad_layout.LayoutError, cdad_packet.PolicyError) as exc:
+        raise ResultError(str(exc)) from exc
+
+
 def _artifact_policy() -> dict[str, str]:
     """Load the closed artifact_kind -> allowed root/exact target table (§7)."""
     document = _load_json(ASSETS_DIR / ARTIFACT_POLICY_NAME, "artifact policy")
@@ -814,13 +840,21 @@ def _artifact_policy() -> dict[str, str]:
     return kinds
 
 
-def _allowed_target(kind: str, feature_id: str) -> str:
-    """The single allowed root/exact target for an artifact_kind (closed table)."""
+def _allowed_target(kind: str, feature_id: str, methodology_base: str) -> str:
+    """The single allowed root/exact target for an artifact_kind (closed table).
+
+    The closed table names methodology destinations under `docs/`; that prefix
+    is the methodology base, so a registered layout rebases it without changing
+    the table, the kinds, or the role/substage permissions (§7).
+    """
     kinds = _artifact_policy()
     if kind not in kinds:
         raise ResultError(
             f"artifact_kind {kind!r} is not in the closed materialization policy")
-    return kinds[kind].replace(FEATURE_PLACEHOLDER, feature_id)
+    target = kinds[kind].replace(FEATURE_PLACEHOLDER, feature_id)
+    if target == "docs" or target.startswith("docs/"):
+        target = methodology_base + target[len("docs"):]
+    return target
 
 
 def _allowed_kinds(role: str, substage: str) -> frozenset[str]:
@@ -835,6 +869,10 @@ def _allowed_kinds(role: str, substage: str) -> frozenset[str]:
         # delegation interface arrives as a single `role-report` part; admit it
         # in the architect's discovery/draft subphases without relaxing the role
         # axis (a role-named kind of another role stays rejected).
+        # Brainstorm (019-002 PC-4) admits exactly `role-report`: the draft
+        # kinds do not belong to a discovery dialogue.
+        if substage == "brainstorm":
+            return frozenset({"role-report"})
         if substage in {"discovery", "draft"}:
             return drafts | {"role-report"}
         return drafts
@@ -1003,8 +1041,9 @@ def _apply_copy(copy: dict[str, Any], journal: dict[str, dict[str, str]],
 
 
 def materialize(args: argparse.Namespace, project_root: Path) -> None:
+    _check_layout(project_root)
     receipt = _load_json(_cwd_path(args.receipt), "durable receipt")
-    state = _load_json(project_root / STATE_RELPATH, "project state")
+    state = _load_json(_state_path(project_root), "project state")
     cdad_packet._suspended_unit_for(state, receipt.get("feature_id"))
     authorization_path = _cwd_path(args.authorization)
     authorization_bytes = _read_bytes(authorization_path, "materialize authorization")
@@ -1044,7 +1083,7 @@ def materialize(args: argparse.Namespace, project_root: Path) -> None:
     # it blocks new receptions. Reading the state is allowed (§9 forbids writing
     # it); reuse the public validator's delegation/vigency block so the exact
     # same contract is applied.
-    state = _load_json(project_root / STATE_RELPATH, "project state")
+    state = _load_json(_state_path(project_root), "project state")
     cdad_packet.validate_state(execution_document, state, project_root)
 
     final_dir = _final_dir(project_root, execution_id, packet_id)
@@ -1074,7 +1113,7 @@ def materialize(args: argparse.Namespace, project_root: Path) -> None:
                 f"artifact_kind {kind!r} is not permitted for role {role!r}/"
                 f"substage {substage!r}: a kind of another role fails in the "
                 f"closed §7 table")
-        allowed = _allowed_target(kind, feature_id)
+        allowed = _allowed_target(kind, feature_id, _methodology_base(project_root))
         allowed_path = _project_path(project_root, allowed,
                                      f"artifact policy path for kind {kind!r}")
         target = _project_path(project_root, copy["target"],
@@ -1083,6 +1122,13 @@ def materialize(args: argparse.Namespace, project_root: Path) -> None:
             raise ResultError(
                 f"target {copy['target']!r} is outside the allowed root for "
                 f"artifact_kind {kind!r} ({allowed!r}) in the closed policy")
+        # 019-004 §4.4 / PC-06: the concrete destination, not only its parent
+        # methodology directory, must be classified as documentation and must
+        # not be declared private by the effective policy.
+        try:
+            cdad_packet.check_materialization_destination(project_root, copy["target"])
+        except cdad_packet.PolicyError as exc:
+            raise ResultError(str(exc)) from exc
         stored = final_dir / "parts" / f"{name}.utf8"
         source = _read_bytes(stored, f"stored part {name!r}")
         planned.append({
@@ -1355,7 +1401,7 @@ def _load_run_request(path: Path, project_root: Path) -> dict[str, Any]:
 def _load_run_binding(args: argparse.Namespace, project_root: Path
                       ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Validate execution/packet/request and bind them to the run request."""
-    state = _load_json(project_root / STATE_RELPATH, "project state")
+    state = _load_json(_state_path(project_root), "project state")
     execution_document = _load_json(_cwd_path(args.execution_context),
                                     "execution context")
     request = _load_json(_cwd_path(args.request), "packet request")

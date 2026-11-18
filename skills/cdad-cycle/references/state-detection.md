@@ -2,6 +2,8 @@
 
 Logic to determine which stage of the CDAD cycle the project and the active feature are in.
 
+> **Layout (019-004).** Every `docs/` path in this document is the conventional location inside the methodology directory that `<skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>` resolves (registered `methodology_dir`, `docs/` for a legacy project, `cdad/` for a new one). Run that query first and use its `state` and `policy` paths. An uninitialized or ambiguous layout is the CLI's diagnostic to report; do not infer a layout from these paths.
+
 > **Canonical owner (PD-13, 005-006).** This document is the canonical owner of
 > the feature/Memory-Bank recognition (Steps 1-2 and "Memory Bank detection"
 > below). The epic-stage vocabulary is owned by
@@ -62,9 +64,9 @@ Apply the following checks in order:
 | `docs/projectbrief.md` and `docs/activeContext.md` do not exist | **bootstrap** (load `references/bootstrap.md`) |
 | Memory Bank exists but `docs/specs/` is empty or does not exist | **discovery** (next feature about to start) |
 | `docs/specs/<feat>/spec.md` exists but **without an approval mark** | **specification** (in writing/brainstorm) |
-| `docs/specs/<feat>/spec.md` approved, but `tests/` has no tests for this feature | **tdd**, sub-phase **red** (test-writer hasn't written yet) |
+| `docs/specs/<feat>/spec.md` approved, but `tests/` has no tests for a promise with pending executable behavior | **tdd**, sub-phase **red** (test-writer hasn't written yet); a semantic-only promise has no RED: route per stage-3 §"Routing by verification method" |
 | Tests for the feature exist but fail (real RED) | **tdd**, sub-phase **red→green** (ready for implementer) |
-| Tests pass (GREEN), but property tests are missing if the spec asked for them | **tdd**, sub-phase **properties** |
+| Tests pass (GREEN), but property tests are missing for an invariant whose property tests the contract selected (reviewable-restriction invariants do not count) | **tdd**, sub-phase **properties** |
 | Tests + property tests green, but E2E is missing if the spec asked for it | **tdd**, sub-phase **integration** |
 | Whole suite green, but `docs/specs/<feat>/review.md` does not exist | **review** |
 | `review.md` exists with unresolved blockings (later commits don't address them) | **review** (loop with stage 3) |

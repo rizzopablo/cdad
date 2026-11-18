@@ -1,6 +1,6 @@
 # test-audit.md — 015-001-frozen-reception (AUDIT, TEXTO FINAL)
 
-**Feature:** 015-001-frozen-reception · **Subfase:** AUDIT (test-writer, sesión <ses-341>)
+**Feature:** 015-001-frozen-reception · **Subfase:** AUDIT (test-writer, sesión <session>)
 **Contrato:** `docs/specs/015-001-frozen-reception/spec.md` (sha256 `f0493229…fb63ce` verificado) · **Packet:** `015-001-frozen-reception-test-writer-audit-001` (route C, execution v2 verificada)
 **Método:** lectura de spec aprobada + barrido de verificadores de prepare/record-dispatch/render/receive e integridad; validate-request/packet rc=0; render byte-idéntico (7237 bytes); route C idéntica; regresión proporcional de `test_role_packet_review_regressions.py` (8 passed) y `test_role_packet_render.py` (17 passed). Sin lectura de implementación. Sin edición de tests.
 

@@ -1,0 +1,3 @@
+# PC-11 run2 (producer record, no verdict). FAILED by producer observation, preserved.
+Same inputs (digests in ../inputs/MANIFEST.sha256, committed before execution at 8ca4a81c), fresh empty scratch `cand019b`, candidate repo commit 9a6e841f (hashes in ../effective-*-cand019b.sha256), model openai/gpt-6.1-terra via --model (quota). Transcripts now include the owner input verbatim and untruncated tool outputs.
+Observed by producer: orchestrator stayed in bootstrap, ran the product on scratch data to settle T3 assumptions (no architect consultation), never reached draft/review. Reviewer evaluation not requested for this run (superseded by a fixed rerun).

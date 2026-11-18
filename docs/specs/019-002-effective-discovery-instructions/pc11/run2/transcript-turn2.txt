@@ -1,0 +1,357 @@
+OWNER INPUT (protected, verbatim): A note can have several tags. I'll leave the other questions for later. 
+
+TEXT: Got it: a note can carry several tags. I'll take the recommended defaults for the other questions and note them as assumptions you can change later. Next I'll read the bootstrap templates and the state template.
+TOOL shell {"command": "cd ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/assets && ls -R memory-bank-templates && cat state-template.json && echo ---- && cat memory-bank-templates/projectbrief.md && echo ---- && cat memory-bank-templates/systemPatterns.md && echo ---- && cat memory-bank-templates/activeContext.md && echo ---- && cat memory-bank-templates/progress.md", "workdir": "~/clawd/tmp/cand019b"} 
+  => memory-bank-templates:
+activeContext.md
+adr-README.md
+progress.md
+projectbrief.md
+specs-README.md
+systemPatterns.md
+{
+  "version": 1,
+  "stack": null,
+  "active_epic": null,
+  "epic_stage": null,
+  "active_feature": null,
+  "current_stage": "discovery",
+  "tdd_substage": null,
+  "audit_status": null,
+  "postconditions_status": {},
+  "epic_features": [],
+  "suspended_units": {},
+  "stage_history": [],
+  "epic_history": [],
+  "approver": "<TODO: name of the spec approver>",
+  "last_updated": "<YYYY-MM-DDTHH:MM:SSZ>",
+  "execution": null,
+  "active_packet": null,
+  "hitl_delegation": null
+}
+----
+# Project Brief
+
+## Project purpose
+
+<TODO: One to three lines about what this project is, for whom, and what problem it solves.>
+
+## Technical stack
+
+- **Language**: <TODO: Python 3.11, TypeScript 5.x, etc.>
+- **Main framework**: <TODO: Django, Odoo, Rails, FastAPI, etc.>
+- **Database**: <TODO if applicable>
+- **Test tooling**: <TODO: pytest, jest, rspec>
+- **Lint / type check**: <TODO: ruff + mypy, eslint + tsc, etc.>
+- **CI**: <TODO: GitHub Actions, GitLab CI, etc., or "pending">
+
+## Stakeholders and roles
+
+- **Spec approver**: <TODO: name>
+- **Tech lead**: <TODO if applicable>
+- **Others**: <TODO>
+
+## Known constraints
+
+<TODO: any relevant non-technical constraint: regulations, compatibility, hard deadlines, etc.>
+
+## Overall scope
+
+<TODO: what the project covers and what is deliberately left out.>
+
+## External resources
+
+<TODO: links to the framework's official documentation, related repos, tickets, etc.>
+
+---
+
+Last updated: <YYYY-MM-DD>
+----
+# System Patterns
+
+Technical conventions, patterns, and structural rules of the project. This file is loaded at the start of every agent session.
+
+## Current decisions
+
+The decisions that govern this project, one row per decision. This section is the
+index of the project's ADRs: it says which ones are in force, and it is the only
+place where that is written down.
+
+The table starts **empty**: a project with no decisions yet has no rows. A row is
+added when a decision is approved; the row of a replaced decision is kept and
+marked obsolete.
+
+| File | State | Summary | Roles | Reference |
+|---|---|---|---|---|
+
+- **File** — the path of the decision's file, relative to the project root (for
+  example `docs/adr/ADR-NNN-<slug>.md`).
+- **State** — `vigente` (in force) or `obsoleto` (replaced; the row is kept, with its
+  replacement, so the history stays in the table).
+- **Summary** — one line: what the decision decides.
+- **Roles** — the roles that must consume the decision (the delegated roles and/or
+  the orchestrator).
+- **Reference** — where the rule that the decision materializes lives (it may point
+  into the installed skill tree).
+
+**Note.**
+
+- The state of a row is declared by whoever maintains the table: it is written in
+  the row itself, never re-derived from the ADR's own text.
+- The rows that are excluded are the decisions that are not in force yet (the
+  `Proposed` ones): they get a row when they are approved, and the list is updated
+  then. The excluded ones are not listed here.
+
+## Layers and boundaries
+
+<TODO: describe the project's architectural layers and what imports what. Example:
+
+- `domain/` — pure business logic, does not import from adapters/ or framework/
+- `adapters/` — integrations with external systems
+- `framework/` — framework wiring, imports from domain and adapters
+- `presentation/` — controllers/views, imports from framework
+>
+
+## Code conventions
+
+### Naming
+
+<TODO>
+
+### File organization
+
+<TODO>
+
+### Errors and exceptions
+
+<TODO: typed exceptions? result types? what gets logged?>
+
+## Framework patterns
+
+<TODO: how the main framework's extension mechanism is used — inheritance, hooks, signals, plugins. Which patterns are preferred and which are avoided.>
+
+## Test conventions
+
+- **Framework**: <TODO>
+- **Structure**: <TODO: unit tests in X, integration in Y, E2E in Z>
+- **Fixtures**: <TODO: how they are built, which pattern is used>
+- **Property tests**: <TODO if applicable: library used, where they go>
+
+## Tooling enforcement
+
+<TODO: linters, type checkers, import-linter, pre-commit hooks. What runs in CI.>
+
+## Project anti-patterns
+
+<TODO: things this project historically avoids for good reasons. Document the reason.>
+
+---
+
+Last updated: <YYYY-MM-DD>
+----
+# Active Context
+
+Current state of the project. Each closed feature adds an entry. Most recent entries on top.
+
+---
+
+<!-- Template for new entries (new ones go on top):
+
+## <YYYY-MM-DD> — Feature: <short name>
+
+Closed feature for <one-line description>.
+
+Relevant decisions:
+- <decision 1, with trade-off if applicable>
+
+Technical debt detected:
+- <item 1>
+
+Next feature in the queue: <if you know it>.
+
+-->
+
+## <YYYY-MM-DD> — Project bootstrap
+
+Memory Bank initialized. Ready to start the first feature.
+
+Pending manual completion:
+- `projectbrief.md`: sections marked TODO.
+- `systemPatterns.md`: existing technical conventions.
+----
+# Progress
+
+Feature status of the project.
+
+## In progress
+
+<!-- features currently in some stage of the CDAD cycle -->
+
+_(none)_
+
+## Done
+
+<!-- closed features (merged + Memory Bank updated) -->
+
+_(none yet)_
+
+## Queued
+
+<!-- features identified but not started yet -->
+
+_(none)_
+
+## Blocked
+
+<!-- features that depend on something external -->
+
+_(none)_
+
+---
+
+Last updated: <YYYY-MM-DD>
+
+TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/stage-1-discovery.md"} 
+  => Read file ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/stage-1-discovery.md, lines 1-79
+1: # Stage 1 — Discovery
+2: 
+3: Destroy the LLM's assumptions about the system before coding.
+4: 
+5: ## Your role as orchestrator in this stage
+6: 
+7: YOU do not do the discovery. You coordinate:
+8: 
+9: 1. Detect whether `docs/landscape.md` is missing (initial discovery) or whether the feature requires point-in-time discovery.
+10: 2. If initial discovery: the **user** does it manually (do not delegate to the architect; the user (human or higher-hierarchy autonomous agent) needs to gain first-hand knowledge in order to evaluate later). You guide it with structuring questions and assemble the document from their answers.
+11: 3. If per-feature discovery: emit the handoff packet to the **architect** (read-only) who maps the relevant APIs/hooks/modules.
+12: 4. Validate the result at re-entry.
+13: 
+14: ## Mode A — Initial discovery
+15: 
+16: Applies only if `docs/landscape.md` does not exist AND it is the first feature.
+17: 
+18: ### Your work
+19: 
+20: Ask the user questions (one to three per turn) so they cover:
+21: 
+22: - Central entities/models of the system.
+23: - Hooks or extension points of the framework.
+24: - Naming, organization, and layering conventions.
+25: - Differences between the version in use and the documented one.
+26: - Recommended / discouraged patterns.
+27: 
+28: Structure the answers into `docs/landscape.md` with clear sections. You deliver a draft; the user edits and confirms it.
+29: 
+30: **You do not emit a handoff to any role here.** This mode is you + user (human or agent owning the process) directly.
+31: 
+32: ### Typical structure
+33: 
+34: ```markdown
+35: # Landscape — <project>
+36: 
+37: ## System context
+38: ## Central entities and models
+39: ## Extension points
+40: ## Project conventions
+41: ## Differences from official documentation
+42: ## What we do NOT use
+43: ```
+44: 
+45: ## Mode B — Per-feature discovery
+46: 
+47: The usual mode before each feature.
+48: 
+49: ### Your work
+50: 
+51: 1. Ask the user which parts of the system the feature touches (modules, models, endpoints, layers).
+52: 2. Load `references/handoff-prompts.md` section "Architect (Stage 1 — Per-feature discovery)".
+53: 3. Generate the handoff packet with:
+54:    - The preliminary functional description (one sentence).
+55:    - The list of relevant files the user gave you.
+56:    - The content of `docs/landscape.md`, `docs/projectbrief.md`, `docs/systemPatterns.md`.
+57: 4. **Deliver the packet and end the turn.**
+58: 
+59: ### Re-entry
+60: 
+61: When the user comes back with the architect's output, load `references/re-entry.md` section "Architect — per-feature discovery" and validate.
+62: 
+63: If it passes: the orchestrator materializes the report UNALTERED in its own section of `docs/specs/<feature>/discovery.md` (the file with its **Dialogue context** section must exist before any architect dispatch or spec draft: gate in `stage-2-specification.md` §2.1; create it first with that section alone if needed). The draft's "Technical context" section is a later copy made in Stage 2; dialogue is never recorded there. `current_decisions` carries governing project decisions only, never proposals, open questions or feature-level answers.
+64: 
+65: ## 🛑 Exit gate (Stage 1 → Stage 2)
+66: 
+67: - [ ] If first feature: `docs/landscape.md` with real content (no placeholders).
+68: - [ ] For this feature: the user can explain which APIs/hooks it will touch without opening the code.
+69: - [ ] No assumptions of the form "I think X exists" remain pending.
+70: 
+71: If all OK: update the state file (`current_stage: specification`), announce the transition, and emit the handoff to the architect in brainstorm mode for Stage 2.
+72: 
+73: If something is missing: identify specifically what, and go back to the user / the architect.
+74: 
+75: ## Anti-patterns
+76: 
+77: - **Jumping to the spec without discovery** → guarantee of inventions in Stage 3.
+78: - **Exhaustive discovery** mapping the entire project (mode A for each feature) → consumes time without ROI.
+79: - **You doing the discovery** instead of coordinating it → you lose the architect's independent oracle and, worse, the user loses the opportunity to learn first-hand.
+TEXT: The defaults I'll take for the open questions are inline `#tags`, a `--tag` filter, single-tag filtering, `unittest` and case-insensitive matching. Since you left those for later, I'll record them as pending in the project memory, not as decisions. Next I'll create the Memory Bank from the templates.
+TOOL shell {"command": "set -e; T=.opencode/skills/cdad-cycle/assets; mkdir -p docs/adr docs/specs; cp $T/memory-bank-templates/projectbrief.md $T/memory-bank-templates/systemPatterns.md $T/memory-bank-templates/activeContext.md $T/memory-bank-templates/progress.md docs/; cp $T/memory-bank-templates/adr-README.md docs/adr/README.md; cp $T/memory-bank-templates/specs-README.md docs/specs/README.md; cp $T/state-template.json docs/.cdad-state.json; date -u +%Y-%m-%dT%H:%M:%SZ; ls -R docs; python3 --version; git config user.name; git config user.email", "workdir": "~/clawd/tmp/cand019b"} 
+  => 2026-11-15T20:55:51Z
+docs:
+activeContext.md
+adr
+progress.md
+projectbrief.md
+specs
+systemPatterns.md
+
+docs/adr:
+README.md
+
+docs/specs:
+README.md
+Python 3.13.5
+Ofap Saas
+<owner-email>
+
+TEXT: Templates are in place. Now I'll fill in the project brief with what the code shows, leaving open questions marked as pending.
+TOOL write {"path": "~/clawd/tmp/cand019b/docs/projectbrief.md", "content": "# Project Brief\n\n## Project purpose\n\n`notes-cli` is a tiny command-line tool for keeping short text notes: add a note, list notes, remove a note. The owner is the only user for now.\n\n## Technical stack\n\n- **Language**: Python 3 (3.13 on the development machine); standard library only.\n- **Main framework**: none.\n- **Database**: none. Notes live in a JSON file (`notes.json` by default, or the path in the `NOTES_FILE` environment variable).\n- **Test tooling**: pending (owner to choose between `unittest` and `pytest`). The `tests/` folder exists and is empty.\n- **Lint / type check**: none configured.\n- **CI**: none configured (recorded as debt, see `activeContext.md`).\n\n## Stakeholders and roles\n\n- **Spec approver**: pending. The owner has not yet said who approves specs (see `activeContext.md`).\n- **Tech lead**: not applicable.\n- **Others**: none.\n\n## Known constraints\n\n- Stdlib only, unless the owner decides otherwise.\n- The CLI is run as a module (`python -m notes.cli ...`), because `notes/cli.py` uses a relative import.\n\n## Overall scope\n\nCovered: adding, listing and removing notes; tagging notes (a note can carry several tags); listing notes by tag.\n\nLeft out for now: editing note text, search by text, multi-user access, sync, and any UI beyond the terminal.\n\n## External resources\n\nNone.\n\n---\n\nLast updated: 2026-11-15\n"} 
+  => Wrote file successfully: docs/projectbrief.md
+TOOL write {"path": "~/clawd/tmp/cand019b/docs/systemPatterns.md", "content": "# System Patterns\n\nTechnical conventions, patterns, and structural rules of the project. This file is loaded at the start of every agent session.\n\n## Current decisions\n\nThe decisions that govern this project, one row per decision. This section is the\nindex of the project's ADRs: it says which ones are in force, and it is the only\nplace where that is written down.\n\nThe table starts **empty**: a project with no decisions yet has no rows. A row is\nadded when a decision is approved; the row of a replaced decision is kept and\nmarked obsolete.\n\n| File | State | Summary | Roles | Reference |\n|---|---|---|---|---|\n\n- **File** \u2014 the path of the decision's file, relative to the project root (for\n  example `docs/adr/ADR-NNN-<slug>.md`).\n- **State** \u2014 `vigente` (in force) or `obsoleto` (replaced; the row is kept, with its\n  replacement, so the history stays in the table).\n- **Summary** \u2014 one line: what the decision decides.\n- **Roles** \u2014 the roles that must consume the decision (the delegated roles and/or\n  the orchestrator).\n- **Reference** \u2014 where the rule that the decision materializes lives (it may point\n  into the installed skill tree).\n\n**Note.**\n\n- The state of a row is declared by whoever maintains the table: it is written in\n  the row itself, never re-derived from the ADR's own text.\n- The rows that are excluded are the decisions that are not in force yet (the\n  `Proposed` ones): they get a row when they are approved, and the list is updated\n  then. The excluded ones are not listed here.\n\n## Layers and boundaries\n\n- `notes/cli.py` \u2014 command dispatch (`add`, `rm`, default list). Imports `storage`.\n- `notes/storage.py` \u2014 persistence: load and save the JSON list, add, delete, enumerate. Knows nothing about the CLI.\n\n## Code conventions\n\n### Naming\n\n- Functions and modules in `snake_case`.\n- Note ids are list indices. Deleting a note shifts the ids of the notes after it (`storage.py`, `delete`). This is existing behaviour, not a bug to fix silently.\n\n### File organization\n\n- Package `notes/` at the project root; tests in `tests/`.\n\n### Errors and exceptions\n\nNo error handling yet. A bad id in `rm` raises the Python exception as it is.\n\n## Framework patterns\n\nNot applicable: no framework.\n\n## Test conventions\n\n- **Framework**: pending (owner to choose `unittest` or `pytest`).\n- **Structure**: `tests/` at the project root.\n- **Fixtures**: pending. Note that storage reads `NOTES_FILE` at import time, so tests should set it before importing `notes.storage` or use a temporary path.\n- **Property tests**: not planned.\n\n## Tooling enforcement\n\nNone configured yet.\n\n## Project anti-patterns\n\n- Do not run `python notes/cli.py`: the relative import fails. Use `python -m notes.cli`.\n\n---\n\nLast updated: 2026-11-15\n"} 
+  => Wrote file successfully: docs/systemPatterns.md
+TOOL write {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "content": "# Active Context\n\nCurrent state of the project. Each closed feature adds an entry. Most recent entries on top.\n\n---\n\n## 2026-11-15 \u2014 Project bootstrap\n\nMemory Bank initialized from the CDAD templates. No feature is in progress; the first feature is queued (`queued` in `progress.md`).\n\nRelevant decisions (owner):\n- A note can carry several tags.\n\nDefaults assumed by the orchestrator, NOT yet confirmed by the owner (to be confirmed before the spec is written; any one of them can be changed):\n- Tags are written inline in the note text as `#tag`, e.g. `notes add \"buy milk #errands #shop\"`.\n- Listing by tag: `notes list --tag <name>`. Plain `notes list` keeps showing all notes.\n- A filter with several tags is NOT decided: the default is one tag per filter.\n- Tag matching is case-insensitive.\n- Existing notes (no tags) need no migration; they simply have no tags.\n- Test runner: `unittest` (stdlib). Alternative: `pytest`.\n\nOpen questions for the owner (not decided):\n- Confirm the tag syntax above (inline `#tag` vs a separate `--tag` flag on `add`, or both).\n- Confirm the filter form and how several tags in one filter combine (all of them / any of them / single tag only).\n- Confirm the test runner.\n- Name the spec approver. Until then the state file has no approver and no spec can be approved.\n\nTechnical debt detected:\n- No CI and no lint or type checker configured.\n- No tests exist yet (`tests/` is empty).\n- Note ids shift when a note is deleted (existing behaviour, `storage.py`).\n- `notes/cli.py` must be run as `python -m notes.cli`.\n\nNext feature in the queue: `001-note-tags` (tag notes and list notes by tag).\n\n---\n\n## Template for new entries (new ones go on top)\n\n<!--\n## <YYYY-MM-DD> \u2014 Feature: <short name>\n\nClosed feature for <one-line description>.\n\nRelevant decisions:\n- <decision 1, with trade-off if applicable>\n\nTechnical debt detected:\n- <item 1>\n\nNext feature in the queue: <if you know it>.\n-->\n"} 
+  => Wrote file successfully: docs/activeContext.md
+TOOL write {"path": "~/clawd/tmp/cand019b/docs/progress.md", "content": "# Progress\n\nFeature status of the project.\n\n## In progress\n\n_(none)_\n\n## Done\n\n_(none yet)_\n\n## Queued\n\n- `001-note-tags` \u2014 tag notes (a note can carry several tags) and list notes by tag. Open decisions: see `activeContext.md`.\n\n## Blocked\n\n_(none)_\n\n---\n\nLast updated: 2026-11-15\n"} 
+  => Wrote file successfully: docs/progress.md
+TEXT: Now the state file. Nothing is open yet, so the stage is `idle` with no feature, and the approver stays empty until you name one.
+TOOL write {"path": "~/clawd/tmp/cand019b/docs/.cdad-state.json", "content": "{\n  \"version\": 1,\n  \"stack\": null,\n  \"active_epic\": null,\n  \"epic_stage\": null,\n  \"active_feature\": null,\n  \"current_stage\": \"idle\",\n  \"tdd_substage\": null,\n  \"audit_status\": null,\n  \"postconditions_status\": {},\n  \"epic_features\": [],\n  \"suspended_units\": {},\n  \"stage_history\": [\n    {\"stage\": \"bootstrap\", \"completed_at\": \"2026-11-15T20:55:51Z\"}\n  ],\n  \"epic_history\": [],\n  \"approver\": null,\n  \"last_updated\": \"2026-11-15T20:55:51Z\",\n  \"execution\": null,\n  \"active_packet\": null,\n  \"hitl_delegation\": null\n}\n"} 
+  => Wrote file successfully: docs/.cdad-state.json
+TEXT: Next I'll check that the state file parses, re-read the project status, and commit the Memory Bank as the bootstrap step.
+TOOL shell {"command": "set -e; python3 -m json.tool docs/.cdad-state.json >/dev/null && echo \"state json ok\"; python3 .opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root \"$PWD\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(\"entry:\",d[\"entry\"],\"| situation:\",d[\"situation\"]); print(\"unknowns:\"); [print(\" -\",u) for u in d[\"unknowns\"]]'; git add docs && git commit -q -m \"docs(memory): initialize CDAD Memory Bank\" && git log --oneline | head -3 && git status --short", "workdir": "~/clawd/tmp/cand019b"} 
+  => state json ok
+entry: diagnosis | situation: diagnosis
+unknowns:
+ - project policy not found: docs/cdad-policy.json (configuration incomplete)
+ - version not verified: absence of a version marker or of derived agents (verdict NO-PROJECT-AGENTS, rc 4); absence, not incoherence
+539e432 docs(memory): initialize CDAD Memory Bank
+707e286 initial scratch project
+
+TEXT: Bootstrap is done and committed (`539e432 docs(memory): initialize CDAD Memory Bank`). The CDAD cycle for tagging is not open yet, because the project status still reports `diagnosis`. It needs two things from you before I can continue.
+
+**What exists now** in `docs/`:
+- `projectbrief.md`, `systemPatterns.md`, `activeContext.md`, `progress.md`, plus the `adr/` and `specs/` folders.
+- `.cdad-state.json` at stage `idle`, with no feature open and no approver.
+- The first feature is queued as `001-note-tags`.
+
+**Decided by you:** a note can carry several tags.
+
+**My defaults, not yet confirmed.** They are written in `activeContext.md` as assumptions and do not bind the spec:
+- Tags are written inline in the text, e.g. `notes add "buy milk #errands #shop"`.
+- Listing by tag is `notes list --tag <name>`.
+- A filter with several tags defaults to one tag only.
+- Matching ignores case.
+- Test runner: `unittest`.
+
+**Blocking, so I can't go further:**
+1. **Spec approver.** Nobody can approve the spec until you name one. Without an approver the project stays in `diagnosis`. I did not write the policy file (`docs/cdad-policy.json`), because it needs your decision on approval and on private paths.
+2. **Confirm or change the defaults above**, especially the tag syntax and how several tags in one filter combine. These go into the spec.
+
+Once you answer, the next steps are: write the policy, register `001-note-tags` as the first feature, have the architect map the code and draft the spec, and bring you the spec for approval before any tests or code. I haven't yet verified how to register a feature in a project that has no epic. I'll check that when we continue.

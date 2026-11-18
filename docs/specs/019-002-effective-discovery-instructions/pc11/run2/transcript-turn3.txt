@@ -1,0 +1,43 @@
+OWNER INPUT (protected, verbatim): One more thing: I'm assuming that a note's number stays the same after other notes are deleted, and that my existing notes file keeps working untouched. I haven't checked either; please do not take them as facts. 
+
+TEXT: I'll test both assumptions against the current code, using a scratch notes file outside the repo so no real data is touched.
+TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"buy milk\"}, {\"text\": \"call bob\"}, {\"text\": \"write report\"}]' > \"$NOTES_FILE\"; cp \"$NOTES_FILE\" \"$D/before.json\"; echo \"== list before\"; python3 -m notes.cli list; echo \"== rm 0\"; python3 -m notes.cli rm 0; echo \"== list after rm 0\"; python3 -m notes.cli list; echo \"== file after\"; cat \"$NOTES_FILE\"; echo; echo \"== add\"; python3 -m notes.cli add \"new one\"; python3 -m notes.cli list; echo \"== rc of old-format read ok\"; python3 -c 'import json,sys; print(json.load(open(sys.argv[1])))' \"$NOTES_FILE\"; echo \"dir=$D\"", "workdir": "~/clawd/tmp/cand019b"} 
+  => == list before
+0: buy milk
+1: call bob
+2: write report
+== rm 0
+== list after rm 0
+0: call bob
+1: write report
+== file after
+[{"text": "call bob"}, {"text": "write report"}]
+== add
+2
+0: call bob
+1: write report
+2: new one
+== rc of old-format read ok
+[{'text': 'call bob'}, {'text': 'write report'}, {'text': 'new one'}]
+dir=/tmp/tmp.j5Q2Hfb37d
+
+TEXT: The first assumption is wrong: note numbers shift after a delete. I'll also check whether the file's bytes change on a read and on a write with non-ASCII text, since that affects "untouched".
+TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"caf\u00e9 \u00f1\"}]' > \"$NOTES_FILE\"; md5sum \"$NOTES_FILE\"; python3 -m notes.cli list >/dev/null; md5sum \"$NOTES_FILE\"; echo \"== after add (rewrites file)\"; python3 -m notes.cli add \"x\" >/dev/null; cat \"$NOTES_FILE\"; echo; echo \"dir=$D\"", "workdir": "~/clawd/tmp/cand019b"} 
+  => 2d81d860d46d4ac2b95d88ba8d38818d  /tmp/tmp.9hdk7KS3hl/notes.json
+2d81d860d46d4ac2b95d88ba8d38818d  /tmp/tmp.9hdk7KS3hl/notes.json
+== after add (rewrites file)
+[{"text": "caf\u00e9 \u00f1"}, {"text": "x"}]
+dir=/tmp/tmp.9hdk7KS3hl
+
+TEXT: Both assumptions are now checked. One was wrong.
+
+**1. Note numbers do not stay the same after a delete (wrong).** Note numbers are list positions. I tested with three notes and deleted note 0: "call bob" became 0 and "write report" became 1. Any tag stored against a number would then point at the wrong note, so tags should live inside the note itself, not keyed by number. The code comment in `storage.py` says the same thing, and `activeContext.md` already lists it as existing behaviour.
+
+**2. Your existing notes file still loads (verified), but it is not left byte-for-byte untouched.**
+- Reading is safe. Listing does not write the file, and the old format `[{"text": ...}]` loads and lists correctly. I checked the file's checksum before and after a list: unchanged.
+- Writing rewrites the whole file. `add` and `rm` re-save everything. For plain ASCII notes the output is identical. For non-ASCII text the bytes change: `café ñ` is saved as `caf\u00e9 \u00f1`. It is the same JSON and reads back the same, but the file looks different.
+- Tagging will rewrite the file too, so it will show the same escaped form after the first change.
+
+The test used a scratch file in `/tmp`; your real `notes.json` was not touched, and the repo has no notes file of its own. I also haven't implemented tags yet, so "existing notes need no migration" is still a prediction until the tag feature exists and is tested.
+
+If you need the file to stay byte-identical, that changes the save code (for example `ensure_ascii=False`), and it's your call; I haven't changed anything.

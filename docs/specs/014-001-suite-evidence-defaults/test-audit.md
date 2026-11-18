@@ -1,6 +1,6 @@
 # test-audit.md — 014-001-suite-evidence-defaults (AUDIT, TEXTO FINAL)
 
-**Feature:** 014-001-suite-evidence-defaults · **Subfase:** AUDIT (test-writer, sesión `<ses-338>`)
+**Feature:** 014-001-suite-evidence-defaults · **Subfase:** AUDIT (test-writer, sesión `<session>`)
 **Contrato:** `docs/specs/014-001-suite-evidence-defaults/spec.md` (sha256 `6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0` verificado) · **Packet:** `014-001-suite-evidence-defaults-test-writer-audit-001` (route C)
 **Método:** lectura de spec aprobada + los dos rangos ordenados + barridos focales en `tests/` (`autorización expresa|suite completa`, `una vez por GREEN|gate de cierre|closure gate|al cierre de la feature|SOLO con autoriz`). Sin lectura de implementación. Sin edición de tests.
 

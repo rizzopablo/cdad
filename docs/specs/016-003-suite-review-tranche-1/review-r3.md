@@ -10,14 +10,14 @@
 ## Estado de los cierres
 
 ### B1 — `commands_s` huérfano · **cerrado**
-- Existe la actividad `cierre del tramo: verificación, costo y decisión` (`ses_orquestador_cierre`), con **31 comandos**, todos con `duration_s`, que suman **41,44 s** exactos = `totals.commands_s`.
+- Existe la actividad `cierre del tramo: verificación, costo y decisión` (`<session>_cierre`), con **31 comandos**, todos con `duration_s`, que suman **41,44 s** exactos = `totals.commands_s`.
 - `totals.commands_note` dice que ese bloque es la única fuente; `commands_measured` repite 31 y aclara que los comandos de los lotes no se midieron y **no se computan como cero**.
 - La actividad fantasma de «selección congelada y materialización» ya no existe (grep sin resultados en `costs.json`, `report.md` y `decision.md`).
 - `report.md` §4 y `decision.md` reescribieron las cifras: 17 actividades de auditoría, revisión, cierre y preparación separados. Sin residuos de «14 actividades», «891,2», «8.326,6» ni «1.244,8» (grep vacío).
 
 ### B2 — GREEN-002 · **cerrado**
 - `duration_s` 1.040,2 s = `ended` (01:19:31) − `started` (01:02:11), y el `ended` coincide con el **último mensaje de la sesión** en `session_v2` (01:19:31,97). `duration_s_receipt` 615,1 se conserva con su explicación (`measurement`): recibo de entrega frente a intervalo completo.
-- **Solapamiento declarado y real:** `overlap_with` apunta a `<ses-368>` (fixture de R-F) con 90,1 s; la sesión del fixture (01:12:39–01:14:09) cae íntegra dentro de GREEN (01:02:11–01:19:31) → intersección exacta **90,1 s**.
+- **Solapamiento declarado y real:** `overlap_with` apunta a `<session>…` (fixture de R-F) con 90,1 s; la sesión del fixture (01:12:39–01:14:09) cae íntegra dentro de GREEN (01:02:11–01:19:31) → intersección exacta **90,1 s**.
 - **`aggregated_s` es unión, no suma:** recalculé la unión de los 22 intervalos desde los timestamps → **8.692,5 s**, idéntico al declarado; `sessions_sum_s` 8.782,3 = suma cruda; 8.782,3 − 90,1 = 8.692,2… y la unión medida da 8.692,5 por los bordes de intervalo. La afirmación «la unión evita el doble conteo» se verifica.
 - **Totales derivados correctos:** preparación 174,3 + 90,1 + 1.040,2 = **1.304,6** ✔; `fixed_s` 1.304,6 + 353,6 + 42,3 = **1.700,5** ✔; proyección 28.286,1 + 1.700,5 = **29.986,6 s ≈ 8,3 h** ✔.
 - `elapsed_s` 9.643,7 = intervalo 00:43:45 → 03:24:29 ✔ (no cambia al extender GREEN, porque el máximo sigue siendo la revisión).
@@ -48,7 +48,7 @@ La primera aserción ya no es `assert_concepts(`: cita el par exigido `variante 
 
 ### N2 — el id de sesión del cierre no resuelve en el runtime · **FYI**
 - **Verdict: OPTIONAL · Bucket: h**
-- `cierre del tramo` usa `"session": "ses_orquestador_cierre"`, que no existe en `session_v2` (consulta directa: sin fila). Los tokens se declaran «no disponibles», lo que PC-7 admite expresamente (distingue ausencia de cero), y los comandos son reconstruibles. Pero «22 sesiones» cuenta un rótulo, no una sesión verificable.
+- `cierre del tramo` usa `"session": "<session>_cierre"`, que no existe en `session_v2` (consulta directa: sin fila). Los tokens se declaran «no disponibles», lo que PC-7 admite expresamente (distingue ausencia de cero), y los comandos son reconstruibles. Pero «22 sesiones» cuenta un rótulo, no una sesión verificable.
 - **Cierre opcional:** renombrar al id real de la sesión del orquestador o declarar explícitamente que es un rótulo sin id de runtime.
 
 ### N3 — seis filas citan texto que solo existe en otro test del módulo · **Optional/Consider**
@@ -93,7 +93,7 @@ Sin escrituras ni commits: `review-r3.md` no se materializó en el repo.
 - **Si las seis filas de N3 comprometen la promesa que declaran:** requeriría lectura semántica fila por fila; el control mecánico no lo decide y no lo declaro.
 - **Si S1, S2 y S3 son redundancias reales:** no lo declaro; falta la evidencia experimental que cada una describe y el trámite es del dueño.
 - **Si el umbral del 30 % de `decision.md` se mide contra auditoría sola o contra el costo fijo:** la cifra «7,9 h de auditoría» está bien usada para auditoría; la lectura del umbral es decisión del dueño.
-- **Si el rótulo `ses_orquestador_cierre` debe llevar el id real:** N2 no cambia ningún total; lo dejo como observación.
+- **Si el rótulo `<session>_cierre` debe llevar el id real:** N2 no cambia ningún total; lo dejo como observación.
 ```
 
 Con esto queda cerrada la re-revisión: los seis cierres verifican contra los archivos y la aritmética cierra; solo N1 (tres bloques, no cuatro) pide una corrección de texto antes de que el cierre de la feature se apoye en `report.md` y `decision.md`.

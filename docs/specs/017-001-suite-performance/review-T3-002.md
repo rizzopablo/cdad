@@ -35,11 +35,11 @@ selection-coverage= {'name': 'selection-coverage', 'passed': True, 'reasons': []
   → `11 passed in 3.83s`. Inspeccioné los dos tests nuevos: cubren el intercambio de selecciones y ambos lados de la resolución de 1 s; no cubren la selección ausente.
 - **Validación:** `python3 scripts/cdad-suite.py validate` → rc 0, `status: ok`.
 - **Mapa real correcto:**  
-  `python3 scripts/cdad-suite.py entry-check --attempts <tmp>/017-001-calibration-map.json --out <tmp>/017-001-review-independent/good`  
+  `python3 scripts/cdad-suite.py entry-check --attempts ~/clawd/tmp/017-001-calibration-map.json --out ~/clawd/tmp/017-001-review-independent/good`  
   → rc 0, `satisfied=true`, seis checks aprobados.
 - **Control negativo real:** generé una copia temporal del mapa cambiando solo C-R para que apuntara al intento C-E y ejecuté el mismo comando con esa copia. → rc 1, `satisfied=false`; `selection-coverage` nombró C-R y ambas selecciones discrepantes.
 - **Ámbito del fix:** `git diff --name-status ee72f372^ ee72f372` muestra únicamente `scripts/cdad-suite.py`; el diff equivalente limitado a `tests/` no produce salida. El commit de los tests nuevos es `0e604efc`; el fix es `ee72f372`. Revisión examinada: `b062b4044dc8e732b1ae6e417f83e8a2fe78a8e7`.
-- **Archivos modificados por esta revisión:** ninguno en el repositorio. Se crearon exclusivamente mapas, copias de evidencia y salidas temporales bajo `<tmp>/017-001-review-independent/`. `docs/.cdad-state.json` ya figuraba modificado.
+- **Archivos modificados por esta revisión:** ninguno en el repositorio. Se crearon exclusivamente mapas, copias de evidencia y salidas temporales bajo `~/clawd/tmp/017-001-review-independent/`. `docs/.cdad-state.json` ya figuraba modificado.
 
 ## Abstentions
 

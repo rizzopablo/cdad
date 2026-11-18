@@ -40,6 +40,12 @@
 
 <If genuinely there is nothing to retrospect on in any section: "No relevant findings.">
 
+## Accumulation unit and accepted residue
+
+<Owner: `skills/cdad-cycle/references/bounded-review-cycles.md` §5. State the outcome of the single accumulation unit: absorbed items, items left as explicitly accepted debt with their origin (unit, family, round, finding), consequence, authority and resolution criterion. If no residue was admitted, write "No residue admitted." An unresolved committed obligation is not debt: it blocks this closure.>
+
+- <item — origin; disposition; authority>
+
 ## Technical debt carried forward
 
 <Short list: things it was decided not to do in this epic and why. Useful for future epics or standalone features.>

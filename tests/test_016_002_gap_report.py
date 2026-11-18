@@ -69,7 +69,18 @@ def run_validate(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 def make_project() -> Path:
-    return Path(tempfile.mkdtemp(prefix="cdad-016-002-"))
+    """Proyecto temporal con layout legacy declarado.
+
+    019-004 (spec §4.2, PC-02/PC-04): un proyecto con solo ``docs/specs`` es
+    AMBIGUO bajo el contrato nuevo y ``gap-report`` lo rechaza. Estos tests
+    verifican el universo/vínculos de 016-002, no la resolución de layout,
+    así que el fixture declara su layout con EXACTAMENTE un marcador legacy
+    (``docs/.cdad-state.json``). Ninguna aserción cambia.
+    """
+    root = Path(tempfile.mkdtemp(prefix="cdad-016-002-"))
+    (root / "docs").mkdir()
+    (root / "docs" / ".cdad-state.json").write_text("{}\n", encoding="utf-8")
+    return root
 
 
 def make_unit(root: Path, unit: str, markers: list[tuple[str, str]]) -> tuple[str, str]:

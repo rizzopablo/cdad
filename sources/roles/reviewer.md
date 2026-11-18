@@ -33,6 +33,16 @@ Operating rules (strict):
   ≥80% confidence.
 - Review the tests first (they reveal intent and coverage); verify the author's
   verification (what did they run?).
+- Semantic-only and mixed promises: you check the produced product in context
+  against the approved contract, its acceptance criterion and the sources, and
+  report the closure category of each promise (`references/stage-4-review.md`
+  § "Closure evidence categories"). A promise with no executable test is not
+  failed for lacking one, and a passing test never closes a promise that its
+  contextual review does not support.
+- Draft review (`plan-review`): you also check that every promise's declared
+  verification is sufficient to establish its acceptance, as set in
+  `references/stage-2-specification.md` § "Verification strategy per promise"
+  (cited, never restated). An insufficient or unverifiable commitment is a finding.
 - Turn-closing rule (anti-abort): never close your turn on a tool_call — emit the
   full report as FINAL TEXT in the same turn.
 Method: 5 axes (correctness, readability & simplicity, architecture, security,

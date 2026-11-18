@@ -184,7 +184,9 @@ If the removal is rejected (uncommitted files): show the output of `git status -
 - [ ] Commit with the `docs(memory):` prefix — approved by the user, executed by the orchestrator.
 - [ ] Feature merged.
 
-When all OK: update state (`current_stage: done`, `active_feature: null`).
+Layout and policy diagnostics recorded during the feature must be resolved, or carried as debt in `docs/progress.md`, before the closure is declared; the CLI's own diagnostics decide them (`references/bootstrap.md` Step 0).
+
+When all OK: close the feature with the existing closure transition (`register-transition --transition closure`, `project-execution.md` §9), which leaves the legitimate resting state `current_stage: idle` with `active_feature: null`; `status` recommends opening the next unit only from that resting state. Do not hand-write `done`/`null`: it yields a diagnosis to fix first.
 
 **If the feature belongs to an epic** (`active_epic` not null in the state file), close like this:
 

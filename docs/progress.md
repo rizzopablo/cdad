@@ -4,28 +4,67 @@ Estado de features del proyecto.
 
 ## In progress
 
-**Nada activo.** El último epic cerrado es `epic-017-suite-performance` (**2026-11-08**, **1/1**:
-`017-001-suite-performance`): suite instrumentada con base reproducible y lote paralelo medido — serial
-4459 s → paralela **2593.15 s** con 2 workers (**−41.84 %** de pared) y equivalencia exacta por nodeid
-(2059 vs 2059, 0 diferencias; 2054 passed + 5 skipped en ambos regímenes), sobre la revisión `bf0e7483`.
-No publicado ni desplegado: publicar y desplegar siguen reservados al dueño. Detalle:
+**Ninguna feature abierta. Ningún epic activo.** `epic-019-discovery-dialogue` **cerró el 2026-11-17** con **6/6** unidades (`019-001`, `019-003`, `019-002`, `019-004`, `019-005`, `019-007`), detalle en `## Done` y en `docs/epics/epic-019-discovery-dialogue/closure.md`. `019-006` **nunca se abrió**: su id quedó retirado cuando el dueño decidió que el despacho autocontenido se absorbiera en `019-005`. Estado en reposo declarado sobre la evidencia del cierre: suite completa **exit 0 — 2201 passed, 5 skipped, 0 failed, 5215.49 s** sobre `56e667ee` (`.cdad/orchestration/epic-019/final-suite-epic-6/`). **Lo que queda no es ciclo**: publicar (reservado al dueño), la decisión sobre una unidad de acumulación (no admitida en este epic) y la ventana de PD-11 o su presupuesto (`docs/suite-maintenance.md`). El despliegue se realizó dos veces el 2026-11-17 (`019-004` y `019-005`) y **no se publicó**.
+
+## Done
+- **018-001-orchestrator-start** (2026-11-13, epic 018 — **orden 1/1**; **cerrada, no publicada ni
+  desplegada**) — entrada compacta del orquestador, ayudas CLI accionables, ejemplos conectados al
+  procedimiento, patrón de captura de evidencia. **Producto:** `sources/roles/orchestrator.md` con
+  entrada por `status` (legacy solo sin contrato); `cdad_packet.py` y `cdad_continuity.py` con ayuda
+  de formatos; `orientation.md` con recorrido de captura completo; `orientation-examples.json` con
+  `_procedures`. **Tests:** `tests/test_orchestrator_startup_usability.py` (6 pasan). **Revisión:**
+  independiente sin bloqueantes. **Deferred-hardening:** control automático de lecturas, benchmarks
+  estadísticos, ayudas exhaustivas, rediseño de historial, transporte externo completo.
+
+- **epic-019-discovery-dialogue** (cerrado **2026-11-17**, **6/6**; **desplegado localmente dos veces con autorización del dueño; no publicado**) — el epic del **diálogo de discovery efectivo y las instrucciones que los agentes pueden aplicar**: un solo interlocutor sin fingir conversación del arquitecto, verificación elegida por promesa, despacho autocontenido, layout por proyecto con intake único y rondas de revisión acotadas. **Unidades:** `019-001` (diseño operativo documental, R1–R12, PC-1..PC-12, `review-004` sin bloqueos), `019-003` (estrategia de verificación por promesa; `review-009` sin bloqueos tras nueve rondas y ocho correcciones), `019-002` (activación en instrucciones y consumidores; suite **2069 passed, 5 skipped, 0 failed**, 4534.18 s sobre `65d0ba62`), `019-004` (layout por proyecto + `cdad_packet.py intake` para rutas A y C; suite **2195 passed, 5 skipped, 0 failed**, 5063 s sobre `64ff624d`), `019-005` (rondas acotadas, agotamiento dispuesto, un unit de acumulación, despacho autocontenido) y `019-007` (selector de suite por `source` del manifiesto). **Gate:** **2201 passed, 5 skipped, 0 failed en 5215.49 s (1:26:55)**, `exit 0`, raíz del repositorio, `CDAD_TEST_TMP_BASE=/var/tmp/cdad-suite-epic2`, sin trabajo concurrente (`56e667ee`). Las cuatro corridas anteriores del gate se conservan con diagnóstico y no se presentan como regresiones del producto (`final-suite-epic-2` por base temporal y cwd; `-3` por la ventana sensible a carga de PD-11; `-4`/`-5` por el selector ambiguo que corrigió `019-007`). **No hay suite E2E cross-feature separada:** la superficie compartida paquete/intake la ejercitan la suite completa y la trayectoria registrada de `019-005`. **Sin unidad de acumulación admitida** (los hallazgos de la ronda 5 de `019-005` fueron suplidos por adjudicación 002, no aceptados como residuo). **Deuda que se lleva:** enforcement automático y parseo de notas diferidos, resolución de acumulación fuera de alcance, ventana de PD-11 sensible a carga, captura nativa no verificada y paráfrasis no detectable, `deferred-hardening` de las seis specs conservados en cada `closure.md`. **No publicado.** Detalle: `docs/epics/epic-019-discovery-dialogue/closure.md`.
+
+- **019-007-suite-selector-maintenance** (2026-11-17, epic 019; **cerrada, cambio solo de tests**) — el `find_deployed()` de la suite devolvía la **primera** coincidencia de `rglob(filename)`, mientras `install.sh` despliega el mismo nombre de agente a `.claude/agents/` y `.config/opencode/agents/` con bytes distintos: el test comparaba a veces la variante equivocada y bloqueó dos veces el gate del epic. Ahora ambas copias del helper seleccionan por el `source` exacto registrado en `.cdad-install-manifest.json`, exigen un destino (o un prefijo de runtime declarado) y verifican existencia, **sin fallback por basename**; cada llamador pasa su origen staged. Commits: `b08d1ad8` (tres archivos de tests, +257/−22). Contrato `3ba4f69f…d14`, plan `d2e54daf…6c`. **Verificación:** clase **4 passed** (42.55 s) y tres módulos **32 passed** (299.28 s); sensibilidad **3 fallos** con el selector anterior; revisión independiente **1/2 sin bloqueantes** (6 focales passed, con abstenciones declaradas); gate del epic **2201 passed, 5 skipped, 0 failed** (5215.49 s, `56e667ee`). **Rondas:** draft 1/2 y resultado 1/2, sin correcciones; **sin residuo admitido**. **Límites:** el fallo original dependía del orden de enumeración y no se reprodujo antes del cambio (se ejercita con fixture de homónimos); el mutante no fue reproducido por el revisor; captura nativa no verificada; un verde no prueba ausencia universal de regresiones. Cierre: `docs/specs/019-007-suite-selector-maintenance/closure.md`. Sin artefacto desplegable.
+
+- **019-005-bounded-review-cycles** (2026-11-17, epic 019; **cerrada; desplegada en local el 2026-11-17; no publicada**) — las correcciones se detienen en un **techo conocido y persistente** sin que "presupuesto agotado" se convierta en éxito. **Producto:** una ronda = evaluación + disposición + un lote correctivo (si hace falta) + verificación aplicable; tres familias con allowance propia (draft, audit, result) bajo un máximo por unidad que propone el architect y adopta el aprobador con la spec; consumo perteneciente a unidad+familia que sobrevive re-despacho, cambio de digest, substage renombrado, retry idéntico y reemplazo de execution; agotamiento con disposición por hallazgo (origen, promesa, evidencia, consecuencia, clasificación, criterio/destino, autoridad) y continuación solo por adjudicación registrada con techo finito y ordinal arrastrado; nota fija dentro del `--note` existente (sin ledger nuevo); **un solo** unit de acumulación no recursivo; y despacho autocontenido (Promise E). Casa canónica: `skills/cdad-cycle/references/bounded-review-cycles.md`. Contrato `spec.md` sha256 `8caa1e1a…9203` con enmienda 001. **Rondas:** review de resultado consumió 3 y dos adjudicaciones autorizaron 4 y 5 con techo finito; adjudicación 002 calificó la ronda 5 como evidencia y suplió ambos artefactos sin abrir otra ronda. **Verificación observada:** traza de receptor completada, recepción idéntica con recibo byte-idéntico (`029cd543…eb6ae`, `2026-11-17T14:25:52.003216Z`), y dos casos de Promise E (receptor que se detuvo por localizador faltante; recurso fuera de scope reportado, incluido el primer intento con permiso denegado). **Deuda:** enforcement automático, parseo de notas en prosa, normalización retrospectiva y medición cross-model diferidos; la traza es un escenario declarado y no ejercita el CLI. Despliegue: `--check` PASS, 410 grupos, 22 registros de modelo sin cambios (`docs/specs/019-005-bounded-review-cycles/deployment.md`). Cierre: `docs/specs/019-005-bounded-review-cycles/closure.md`. **No publicada.**
+
+- **019-004-project-layout-and-dispatch-intake** (2026-11-17, epic 019 — orden **4/5**; **cerrada con suite completa**) — layout por proyecto (existentes sin cambios, nuevos en `cdad/`), declaraciones por raíz de repositorio, un solo comando de intake (`cdad_packet.py intake`) validando Ruta A (igualdad completa del cuerpo) y Ruta C (identificación + REQUEST/PACKET contra render canonical; exige contexto v2), y la enmienda que convirtió la evidencia de ambigüedad en lista cerrada. Producto: resolución read-only del layout en `cdad_continuity.py`/`cdad_packet.py`, guards y materialización layout-aware, bootstrap/intake alineados en `sources/` y `skills/`, 20 agentes regenerados por el generador. Verificación: `tests/test_019_004_layout.py` (7), `test_019_004_lifecycle_layout.py` (19), `test_019_004_received_intake.py` (21), `test_019_004_installed_intake.py` (HOME aislado), tests de ambigüedad/enumeración; suite completa **2195 passed, 5 skipped, 0 failed** (5063 s, `.cdad/orchestration/epic-019/final-suite-019-004/`). Desplegada localmente el 2026-11-17 (backup `~/clawd/archive/cdad-deploy-019-004-20261117-094730`; `--check` PASS, 379 grupos; 22 registros de modelo sin cambios). Límites declarados: journey fresh-role post-reubicación no demostrado, procedencia Route C histórica ausente (wrappers sintéticos), captura nativa no verificada, paráfrasis arbitraria no detectable, reconciliación del índice ADR opcional. Cierre: `docs/specs/019-004-project-layout-and-dispatch-intake/closure.md`. Commits `c99b57b4`, `847e3c9d`, `3a9d3b30`, `71e3d694`, `aad01db5`. No publicada.
+
+
+Historical note retained below (predates epic 018; not the current state):
+El último epic cerrado es `epic-017-suite-performance` (**2026-11-08**, **1/1**:
+`017-001-suite-performance`): suite instrumentada con base reproducible y lote paralelo medido —
+serial 4459 s → paralela **2593.15 s** con 2 workers (**−41.84 %** de pared) y equivalencia exacta
+por nodeid (2059 vs 2059, 0 diferencias; 2054 passed + 5 skipped en ambos regímenes), sobre la
+revisión `bf0e7483`. No publicado ni desplegado. Detalle:
 `docs/epics/epic-017-suite-performance/closure.md`.
 
 Antes: `epic-016-traceability-and-suite-review` **cerrado el 2026-11-04** con las 3/3 features
-(`016-001-contract-test-link`, `016-002-gap-report`, `016-003-suite-review-tranche-1`) y **suite completa verde
-atribuible** por `scripts/cdad-ci-gate.py` (commit `4c543721`, base `116ef8cf`, 1 989 passed, 0 failed, 5 skipped).
-Los tramos 2–5 de la revisión de la suite no forman parte de ese epic; el tramo 2 está autorizado por
+(`016-001-contract-test-link`, `016-002-gap-report`, `016-003-suite-review-tranche-1`) y **suite
+completa verde atribuible** por `scripts/cdad-ci-gate.py` (commit `4c543721`, base `116ef8cf`,
+1 989 passed, 0 failed, 5 skipped). Los tramos 2–5 de la revisión de la suite no forman parte de
+ese epic; el tramo 2 está autorizado por
 `docs/specs/016-003-suite-review-tranche-1/tranche-1/decision.md`. Detalle:
 `docs/epics/epic-016-traceability-and-suite-review/closure.md`.
 
 ## Despliegue
+
+- **019-003 desplegado en local el 2026-11-15, con autorización expresa del dueño** (publicar y
+  desplegar están fuera del mandato delegado del epic 019; el dueño lo autorizó para esta feature).
+  Origen: árbol local `1dc2e382`. `make staging` (12 archivos por runtime) y luego `./install.sh`:
+  `Verify: PASS — 11 cdad agents present after install`, **340 archivos propios y 44 conflictos
+  preservados** — los overlays `model:` del usuario y las copias locales de skills no se
+  adoptaron (`PRESERVED — an overlay does not authorize adopting foreign bytes`), así que los
+  modelos configurados siguen intactos. Observado en el borrador de cierre: los 17 archivos de
+  `skills/` tocados por 019-003 están byte-idénticos en el árbol instalado y los agentes `cdad-*`
+  de ambos runtimes llevan las obligaciones nuevas. **`./install.sh --check` sale rc=1**: el
+  run de verificación (15:07) ya no reporta drift ni faltantes de agentes, solo drift del grupo de
+  skills (rutas symlinkeadas de los runtimes y el árbol `.agents`); **la comprobación no está
+  verde y no se declara verde**, y su causa exacta no quedó aislada. Consecuencia honesta: la
+  instalación sirve el producto, pero el chequeo oficial sigue siendo un fallo abierto. Logs:
+  `.cdad/orchestration/epic-019/local-deploy-{staging,dry-run,install,check,verified-check}.log`.
+  Publicación: **no realizada**.
 
 - **Al día con la publicación `cbeab5f0` (epic 016, 2026-11-04).** Instalado desde el árbol local
 `b015f7b0` y publicado como un commit squash sobre `origin/main` (`666c37b8..cbeab5f0`, fast-forward,
 exactamente 1 commit desde la base capturada; 98 archivos, +50 643/−5 326). El instalador dejó **11/11
 agentes** y el árbol canónico de skills **byte-idéntico al repo** (incluye `cdad_contract_links.py`,
 `cdad_suite_review.py` y las referencias nuevas); respaldo previo en
-`<workspace>/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check` y `scripts/validate-subagents.sh`
+`~/clawd/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check` y `scripts/validate-subagents.sh`
 (F011) salen **rc=1** por los 16 caminos de skills que son symlinks a `~/.agents/skills` (artefacto del
 entorno, no drift de contenido); `make validate` **182 PASS / 1 FAIL** por el mismo F011 preexistente, y ese
 ejercicio no se declara gate verde. Publicación saneada: rutas locales e ids de sesión —incluidos los
@@ -53,7 +92,7 @@ local y el publicado son los marcadores de saneamiento (ids de sesión y rutas l
   entradas de `__pycache__` (012). Tres conflictos del overlay `model:` (`cdad-test-writer`,
   `cdad-test-writer-odoo`, `cdad-scribe-odoo`) eran **solo cosméticos** —OpenCode reformateó el
   `description` del frontmatter— y se resolvieron conservando el valor del usuario; respaldo en
-  `<workspace>/archive/install-conflicts-20261101/`.
+  `~/clawd/archive/install-conflicts-20261101/`.
 
 - **Por detrás de `main` local desde 013-001 (2026-11-02).** El producto de
   `013-001-criterion-coherence` (`ef56a39d..4adc1e46`) **no está en el árbol instalado**:
@@ -94,6 +133,73 @@ local y el publicado son los marcadores de saneamiento (ids de sesión y rutas l
   decisión del dueño**; el instalador no se ejecutó en este cierre.
 
 ## Done
+
+- **019-003-contract-verification-strategy** (2026-11-15, epic 019 — orden **2/3**; **cerrada y
+  desplegada en local con autorización expresa del dueño; no publicada**) — cada promesa declara
+  su método de verificación **antes** de producir, y el ciclo enruta y cierra por ese método.
+  **Producto:** `stage-2-specification.md` §"Verification strategy per promise" (propiedad, PCs,
+  método `executable`/`contextual review`/`combined`, criterio de aceptación, evidencia esperada,
+  límites; sin esquema nuevo) con la suficiencia en la revisión del borrador (PC-2: la exención
+  registrada no es revisión ejecutada); plantilla de spec con la fila por promesa;
+  `stage-3-tdd.md` §"Routing by verification method" (PC-3) y aceptación fijada antes de producir
+  (PC-4); `stage-4-review.md` §"Closure evidence categories" (PC-5: dentro de límites declarados,
+  fallida, faltante, contradictoria, no verificable — una limitación nunca asciende de categoría) y
+  §"Semantic-only and mixed promises at review". Consumidores condicionados: `re-entry`,
+  `handoff-prompts`, `state-detection`, `anti-patterns` (AP-5), `documentary-contracts`,
+  `SKILL.md` del ciclo, `cdad-spec-and-test`, los cinco `sources/roles` afectados y los agentes
+  generados de ambos runtimes. **Verificación:** nueve rondas independientes y ocho de corrección;
+  `review-009` **sin bloqueos** (PC-1..PC-6; los dos hallazgos de `review-008` atendidos).
+  Audit: verificadores examinados **conservados, sin tests nuevos** (protección adyacente, no
+  oráculo semántico). Selección ejecutada: `pytest -q tests/test_cdad_generate.py
+  tests/test_010_001_documentary_contracts.py tests/test_role_packet_render.py` → **38 passed,
+  rc=0** (`c8fff61b`); `scripts/cdad-suite.py validate` → `status ok` (2068 nodeids, 248 módulos,
+  31 entradas de mapa); distribución: **69 comparaciones, cero diferencias** (comparación propia
+  del revisor contra la instalación aislada registrada). **Suite completa no realizada**
+  (motivo: cambio acotado de instrucciones con sus superficies cubiertas por esos tres archivos;
+  selección y límites arriba). **Límites declarados:** el revisor **no** acredita los 38 como
+  corrida propia verde (su repetición terminó en timeout 143) y la igualdad de bytes no demuestra
+  fidelidad semántica ni cumplimiento de agentes reales. **Despliegue local:** autorizado
+  expresamente por el dueño (fuera del mandato delegado del epic); `install.sh` con
+  `Verify: PASS — 11 cdad agents`, **44 conflictos iniciales resueltos posteriormente por instrucción expresa del dueño** (overlays `model:` del usuario y
+  copias locales de skills); `install.sh --check` **sigue rc=1** por drift del grupo de skills —
+  **no verde, no declarado verde**. **Deuda:** comprobación oficial aún sin resolver;
+  `tests.log` sintetizado (sin salida completa de pytest) y sin verde reproducido; nota de
+  exclusión del índice de ADR en `systemPatterns` desactualizada (ADR-037/038/039 también
+  `Proposed`; FYI opcional de `review-009`, sin defecto material); `deferred-hardening` del spec
+  conservado con su disposición en el `closure.md` (benchmark universal de conducta, oráculo
+  semántico automatizado, limpieza y regresión exhaustiva), sin aplazar PC-1..PC-6. **Cierra
+  deuda de 019-001:** la exención de revisión del borrador ya está en `stage-2-specification.md`
+  y en el gate 2→3. **Siguiente:** `019-002-effective-discovery-instructions` (reanudar).
+
+- **019-001-discovery-dialogue-contract** (2026-11-15, epic 019 — **orden 1/2**; **cerrada, no
+  publicada ni desplegada**) — diseño operativo del diálogo de discovery entregado como
+  **propuesta documental, no activación**: quién conversa, investiga, registra, desafía, redacta,
+  evalúa readiness y aprueba, y qué debe preservar cada traspaso. **Producto:**
+  `docs/specs/019-001-discovery-dialogue-contract/operating-design/` (`roles-and-dialogue`,
+  `handoff-fidelity`, `readiness-and-approval`, `lightweight-paths`, `activation-map` R1–R12,
+  `activation-handoff-019-002`, `acceptance-protocol-019-002`, `examples` B-01–B-26,
+  `verification`, `README`). **Contrato:** `spec.md` sha256 `1e50141c…4853`, D1–D5 y
+  PC-1..PC-12; checklist protegida derivada del contrato antes de producir el producto
+  (`review-checklist.md`, sha256 `41161a34…a83f`). **Verificación:** por decisión directa del
+  dueño, en una unidad puramente documental la **revisión semántica independiente ES la
+  verificación** (sin RED/GREEN, sin test-writer); cuatro rondas —`review-001` 4 bloqueos,
+  `review-002` 2, `review-003` 2, `review-004` **sin bloqueos** sobre `08e67baa`—. Selección
+  ejecutada: `pytest tests/test_010_001… test_010_002… test_010_003…` → **48 passed**
+  (controles documentales adyacentes, no oráculos de 019) y `python3 scripts/cdad-suite.py
+  validate` → **rc=0** tras registrar el módulo de 018-001 (`86e64a29`; antes rc=1 con 1 módulo
+  y 6 nodeids sin inventariar). **Suite completa no realizada** (unidad documental; la política
+  la reserva para cierre de feature/epic). **Aceptación:** `acceptance-record.md`, bajo la
+  delegación del epic, dentro del epic; deja registrado que la construcción precedió a la
+  aceptación de D1–D5 (defecto del orquestador) y que una regla no pedida de delegación a nivel
+  de epic fue rechazada por la revisión y retirada (`b0b7c8d9`). **Deuda:** nit de la tabla de
+  eventos (`readiness-and-approval.md:35-45`); `stage-2-specification.md:47-50` omite la
+  exención de revisión del borrador que admite `:71-74`; ADR-040 faltaba en el índice de
+  `systemPatterns`; idle/done + coherencia de estado a 019-002; PC-11 (recorrido real) es
+  protocolo, no observación. **`deferred-hardening`** del spec conservados con su disposición en
+  el `closure.md` que materialice el orquestador (certificación cross-runtime exhaustiva,
+  benchmarks de latencia/costo, prevención en runtime de lecturas/escrituras, limpieza no
+  relacionada y rediseño amplio), sin aplazar PC-1..PC-12. **Siguiente:**
+  `019-002-effective-discovery-instructions`.
 - **018-001-orchestrator-start** (2026-11-13, epic 018 — **orden 1/1**; **cerrada, no publicada ni
   desplegada**) — entrada compacta del orquestador, ayudas CLI accionables, ejemplos conectados al
   procedimiento, patrón de captura de evidencia. **Producto:** `sources/roles/orchestrator.md` con
@@ -143,7 +249,7 @@ local y el publicado son los marcadores de saneamiento (ids de sesión y rutas l
   `kind: review` admitidos con motivo y referencia. 11 verificadores, **11 passed**; review con 2 bloqueantes corregidos
   y verificados. Suite completa de la feature no realizada. Detalle: `docs/specs/016-001-contract-test-link/closure.md`.
 
-- **016-003-suite-review-tranche-1** (2026-11-04, epic 016 — **orden 3/3**; **cerrada, no publicada ni desplegada**) — **el primer tramo del 20 % de la suite quedó revisado con control estructural y revisión semántica independiente**: selección congelada y reproducible (revisión `120fa8b9`, **398 de 1 988 nodeids**, 36 módulos y 25 unidades de contrato), **398 filas auditadas** una por nodeid (**398 `Mantener`**, **0 candidatos**, 12 filas con incertidumbre declarada), costo medido en 22 sesiones y decisión autorizada de continuar el tramo 2 con cambios explícitos de método. **Validador con resolución legacy** (`--registry` por `contract.path`+`sha256`), nacida de un defecto real detectado a mitad del tramo —no resolvía las obligaciones de los contratos sin marcadores, 35 de 36 módulos—: RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`. **Vínculos:** 25 unidades afectadas con registro validado y **26 registros del proyecto, todos rc 0**; el registro de la propia unidad valida con `--baseline` contra la colección viva (1 994 nodeids) y vincula los seis verificadores R-A..R-F a PC-1..PC-10. **Gate:** `cdad_suite_review.py validate` sobre el tramo real → `ok`, 398 filas, 0 candidatos, 0 errores; `cdad_contract_links.py validate` 26/26 rc 0; `pytest tests/test_016_003_suite_review_tranche_1.py` **6 passed** y **22 passed** con 016-001/016-002; `python3 scripts/cdad-suite.py validate` `ok` (1 994 nodeids, 238 módulos, 31 entradas). **Costo:** 17 actividades de auditoría, 31 comandos medidos y 3 bloques de preparación compartida; **7 081,8 s** de auditoría (17,79 s por test), **8 692,5 s** por unión de intervalos (suma cruda 8 782,3 s, solapamiento de 90,1 s declarado), **9 643,7 s** de reloj, **2 716 861 / 702 509** tokens de entrada/salida y **92 903 503** de lectura de caché; proyección del resto (1 590 nodeids) **29 986,6 s ≈ 8,3 h** como cota alta. **Review:** tres pasadas —`review.md` rechazado (H1 bloqueante, H2 mayor, H3–H5 menores) y `review-r2.md` rechazado (B1/B2 sobre el costo)— hasta `review-r3.md` **aprobado con observaciones**, con los seis cierres verificados contra los archivos y la aritmética al decimal. **Commits:** RED `39d54116`, GREEN `a2321a66`/`7568db1f`; defecto del validador RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`; lotes `4a8cce87`, `b5cc2467`, `9cf0d6c9`, `3e283a39`, `70ce4865`+`45f99492`, `82264fcc`, `56faf334`, `310cb2ed`, `ab39889f`, `3dddebd5`, `04240f5f`, `5771cace`, `f92aaca1`; cierre del tramo `77717c1e`; fixes de la revisión `0b6046a9`, `6bdbb854`, `afbb4c2e`, `8805eaff`; POST-AUDIT `94c86e80`. **Deuda:** cero candidatos no acredita redundancia y deja el costo experimental sin calibrar (S1/S2/S3 registradas sin experimento); N3 (seis filas con citas que viven en un test hermano), N2 (`ses_orquestador_cierre` sin id de sesión, tokens «no disponibles»), O2 (si la lectura de caché entra en la noción de costo del dueño), proyección lineal sin descontar los cambios de método, tramo no aleatorio por construcción, **suite completa de la feature no realizada** y **siete `deferred-hardening`** conservados en `docs/specs/016-003-suite-review-tranche-1/closure.md`. **No publicada ni desplegada.**
+- **016-003-suite-review-tranche-1** (2026-11-04, epic 016 — **orden 3/3**; **cerrada, no publicada ni desplegada**) — **el primer tramo del 20 % de la suite quedó revisado con control estructural y revisión semántica independiente**: selección congelada y reproducible (revisión `120fa8b9`, **398 de 1 988 nodeids**, 36 módulos y 25 unidades de contrato), **398 filas auditadas** una por nodeid (**398 `Mantener`**, **0 candidatos**, 12 filas con incertidumbre declarada), costo medido en 22 sesiones y decisión autorizada de continuar el tramo 2 con cambios explícitos de método. **Validador con resolución legacy** (`--registry` por `contract.path`+`sha256`), nacida de un defecto real detectado a mitad del tramo —no resolvía las obligaciones de los contratos sin marcadores, 35 de 36 módulos—: RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`. **Vínculos:** 25 unidades afectadas con registro validado y **26 registros del proyecto, todos rc 0**; el registro de la propia unidad valida con `--baseline` contra la colección viva (1 994 nodeids) y vincula los seis verificadores R-A..R-F a PC-1..PC-10. **Gate:** `cdad_suite_review.py validate` sobre el tramo real → `ok`, 398 filas, 0 candidatos, 0 errores; `cdad_contract_links.py validate` 26/26 rc 0; `pytest tests/test_016_003_suite_review_tranche_1.py` **6 passed** y **22 passed** con 016-001/016-002; `python3 scripts/cdad-suite.py validate` `ok` (1 994 nodeids, 238 módulos, 31 entradas). **Costo:** 17 actividades de auditoría, 31 comandos medidos y 3 bloques de preparación compartida; **7 081,8 s** de auditoría (17,79 s por test), **8 692,5 s** por unión de intervalos (suma cruda 8 782,3 s, solapamiento de 90,1 s declarado), **9 643,7 s** de reloj, **2 716 861 / 702 509** tokens de entrada/salida y **92 903 503** de lectura de caché; proyección del resto (1 590 nodeids) **29 986,6 s ≈ 8,3 h** como cota alta. **Review:** tres pasadas —`review.md` rechazado (H1 bloqueante, H2 mayor, H3–H5 menores) y `review-r2.md` rechazado (B1/B2 sobre el costo)— hasta `review-r3.md` **aprobado con observaciones**, con los seis cierres verificados contra los archivos y la aritmética al decimal. **Commits:** RED `39d54116`, GREEN `a2321a66`/`7568db1f`; defecto del validador RED `37af51dc`, fixture `34e628f4`, GREEN `81c6d0fd`; lotes `4a8cce87`, `b5cc2467`, `9cf0d6c9`, `3e283a39`, `70ce4865`+`45f99492`, `82264fcc`, `56faf334`, `310cb2ed`, `ab39889f`, `3dddebd5`, `04240f5f`, `5771cace`, `f92aaca1`; cierre del tramo `77717c1e`; fixes de la revisión `0b6046a9`, `6bdbb854`, `afbb4c2e`, `8805eaff`; POST-AUDIT `94c86e80`. **Deuda:** cero candidatos no acredita redundancia y deja el costo experimental sin calibrar (S1/S2/S3 registradas sin experimento); N3 (seis filas con citas que viven en un test hermano), N2 (`<session>_cierre` sin id de sesión, tokens «no disponibles»), O2 (si la lectura de caché entra en la noción de costo del dueño), proyección lineal sin descontar los cambios de método, tramo no aleatorio por construcción, **suite completa de la feature no realizada** y **siete `deferred-hardening`** conservados en `docs/specs/016-003-suite-review-tranche-1/closure.md`. **No publicada ni desplegada.**
 
 
 - **013-003-redundancy-pilot** (2026-11-02, epic 013 — **orden 3/4**; **cerrada, no publicada ni

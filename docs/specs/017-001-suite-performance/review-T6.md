@@ -64,7 +64,7 @@ Por separado, `parallelism.md:118–120` identifica la diferencia entre trabajo 
 - En `HEAD 9ed567ceb88d0716099909240e1c24ffb9d2198e`, ejecuté la focal T6 y los siete archivos focales T1/T2/T3 y regresiones indicados:
   `python3 -m pytest tests/test_017_001_suite_parallel.py tests/test_017_001_suite_profile.py tests/test_017_001_suite_operations.py tests/test_017_001_suite_tranche1.py tests/test_017_001_suite_tranche2.py tests/test_017_001_suite_reconcile.py tests/test_017_001_suite_external.py tests/test_008_002_suite_evidence.py -q` → **54 passed en 90,82 s**.
 - `python3 scripts/cdad-suite.py validate` → **rc=0**, `status: ok`.
-- Reejecuté `parallel --workers 2` y `close` con los dos nodeids de tranche1 y tranche2 usados por el oráculo. Ambos devolvieron **rc=0**, con **2 passed, 0 failed, 0 skipped**. El paralelo informó pared total **2,432 s**, trabajo **0,020 s**, solapamiento **0,118 s** y canario sin delta. Evidencia temporal: `<tmp>/review-t6-xebE44/`.
+- Reejecuté `parallel --workers 2` y `close` con los dos nodeids de tranche1 y tranche2 usados por el oráculo. Ambos devolvieron **rc=0**, con **2 passed, 0 failed, 0 skipped**. El paralelo informó pared total **2,432 s**, trabajo **0,020 s**, solapamiento **0,118 s** y canario sin delta. Evidencia temporal: `~/clawd/tmp/review-t6-xebE44/`.
 - El diff de `scripts/cdad-suite.py` desde el padre de `10dfae99` muestra el subcomando paralelo como adición; no observé cambios al cuerpo de `close`.
 - No modifiqué archivos del producto ni hice commit. Al inicio y al final, `git status --short` mostró `M docs/.cdad-state.json`, preexistente para esta revisión.
 

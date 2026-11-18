@@ -1,0 +1,772 @@
+OWNER INPUT (protected, verbatim): I own a small command-line notes tool (the project in this directory). I want to be able to tag my notes and then list only the notes that carry a given tag. Please start a CDAD feature for this and guide me through it. Ask me what you need; I decide the behaviour. 
+
+TEXT: I'll start by looking at the project directory to see what state it's in.
+TOOL shell {"command": "pwd && ls -la && git -C . status --short | head -20 && git log --oneline | head -5 && ls -la docs 2>/dev/null", "workdir": "~/clawd/tmp/cand019b"} 
+  => ~/clawd/tmp/cand019b
+total 68
+drwxrwxr-x  6 ofap ofap   8 Nov 15 17:54 .
+drwxrwxr-x 64 ofap ofap 306 Nov 15 17:54 ..
+drwxrwxr-x  8 ofap ofap  13 Nov 15 17:54 .git
+-rw-rw-r--  1 ofap ofap  24 Nov 15 17:54 .gitignore
+drwxrwxr-x  2 ofap ofap   5 Nov 15 17:54 notes
+drwxrwxr-x  4 ofap ofap   4 Nov 15 17:54 .opencode
+-rw-rw-r--  1 ofap ofap  42 Nov 15 17:54 README.md
+drwxrwxr-x  2 ofap ofap   2 Nov 15 17:54 tests
+707e286 initial scratch project
+
+TOOL shell {"command": "cat README.md .gitignore; echo ---; ls -la notes tests .opencode; echo ---; find .opencode -maxdepth 3 | head -50; echo ---; for f in $(git ls-files); do echo \"== $f\"; done", "workdir": "~/clawd/tmp/cand019b"} 
+  => # notes-cli
+Tiny notes command line tool.
+.opencode/
+__pycache__/
+---
+notes:
+total 19
+drwxrwxr-x 2 ofap ofap   5 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap   8 Nov 15 17:54 ..
+-rw-rw-r-- 1 ofap ofap 356 Nov 15 17:54 cli.py
+-rw-rw-r-- 1 ofap ofap   0 Nov 15 17:54 __init__.py
+-rw-rw-r-- 1 ofap ofap 619 Nov 15 17:54 storage.py
+
+.opencode:
+total 18
+drwxrwxr-x 4 ofap ofap 4 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap 8 Nov 15 17:54 ..
+drwxrwxr-x 2 ofap ofap 8 Nov 15 17:54 agents
+drwxrwxr-x 4 ofap ofap 4 Nov 15 17:54 skills
+
+tests:
+total 9
+drwxrwxr-x 2 ofap ofap 2 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap 8 Nov 15 17:54 ..
+---
+.opencode
+.opencode/skills
+.opencode/skills/cdad-cycle
+.opencode/skills/cdad-cycle/assets
+.opencode/skills/cdad-cycle/references
+.opencode/skills/cdad-cycle/scripts
+.opencode/skills/cdad-cycle/SKILL.md
+.opencode/skills/cdad-cycle/packets
+.opencode/skills/cdad-spec-and-test
+.opencode/skills/cdad-spec-and-test/SKILL.md
+.opencode/agents
+.opencode/agents/cdad-implementer.md
+.opencode/agents/cdad-architect.md
+.opencode/agents/cdad-reviewer.md
+.opencode/agents/cdad-scribe.md
+.opencode/agents/cdad-orchestrator.md
+.opencode/agents/cdad-test-writer.md
+---
+== .gitignore
+== README.md
+== notes/__init__.py
+== notes/cli.py
+== notes/storage.py
+
+TOOL read {"path": "~/clawd/tmp/cand019b/notes/cli.py"} 
+  => Read file ~/clawd/tmp/cand019b/notes/cli.py, lines 1-15
+1: import sys
+2: from . import storage
+3: 
+4: def main(argv):
+5:     cmd = argv[0] if argv else "list"
+6:     if cmd == "add":
+7:         print(storage.add(" ".join(argv[1:])))
+8:     elif cmd == "rm":
+9:         storage.delete(int(argv[1]))
+10:     else:
+11:         for i, n in storage.all_notes():
+12:             print(f"{i}: {n['text']}")
+13: 
+14: if __name__ == "__main__":
+15:     main(sys.argv[1:])
+TOOL read {"path": "~/clawd/tmp/cand019b/notes/storage.py"} 
+  => Read file ~/clawd/tmp/cand019b/notes/storage.py, lines 1-27
+1: """Notes are kept in notes.json as a JSON list; a note's id is its list index."""
+2: import json, os
+3: PATH = os.environ.get("NOTES_FILE", "notes.json")
+4: 
+5: def load():
+6:     if not os.path.exists(PATH):
+7:         return []
+8:     with open(PATH) as f:
+9:         return json.load(f)
+10: 
+11: def save(items):
+12:     with open(PATH, "w") as f:
+13:         json.dump(items, f)
+14: 
+15: def add(text):
+16:     items = load()
+17:     items.append({"text": text})
+18:     save(items)
+19:     return len(items) - 1
+20: 
+21: def delete(note_id):
+22:     items = load()
+23:     del items[note_id]  # later notes shift down by one
+24:     save(items)
+25: 
+26: def all_notes():
+27:     return list(enumerate(load()))
+TOOL shell {"command": "ls -la .opencode/skills/cdad-cycle/scripts .opencode/skills/cdad-cycle/references | head -60; ls -la .opencode/skills/cdad-cycle/packets | head", "workdir": "~/clawd/tmp/cand019b"} 
+  => .opencode/skills/cdad-cycle/references:
+total 319
+drwxrwxr-x 2 ofap ofap    29 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap     7 Nov 15 17:54 ..
+-rw-rw-r-- 1 ofap ofap 17394 Nov 15 17:54 anti-patterns.md
+-rw-rw-r-- 1 ofap ofap  6041 Nov 15 17:54 bootstrap.md
+-rw-rw-r-- 1 ofap ofap  6228 Nov 15 17:54 capabilities.md
+-rw-rw-r-- 1 ofap ofap 30997 Nov 15 17:54 cli-delegation.md
+-rw-rw-r-- 1 ofap ofap 24416 Nov 15 17:54 context-meter.md
+-rw-rw-r-- 1 ofap ofap 14411 Nov 15 17:54 continuity.md
+-rw-rw-r-- 1 ofap ofap 12670 Nov 15 17:54 contract-test-links.md
+-rw-rw-r-- 1 ofap ofap  1139 Nov 15 17:54 design-principles.md
+-rw-rw-r-- 1 ofap ofap  9859 Nov 15 17:54 documentary-contracts.md
+-rw-rw-r-- 1 ofap ofap 43261 Nov 15 17:54 handoff-prompts.md
+-rw-rw-r-- 1 ofap ofap 13668 Nov 15 17:54 orientation.md
+-rw-rw-r-- 1 ofap ofap  4029 Nov 15 17:54 progress-guards.md
+-rw-rw-r-- 1 ofap ofap 20140 Nov 15 17:54 project-execution.md
+-rw-rw-r-- 1 ofap ofap 14074 Nov 15 17:54 project-start.md
+-rw-rw-r-- 1 ofap ofap 11384 Nov 15 17:54 receiving-feedback.md
+-rw-rw-r-- 1 ofap ofap 36589 Nov 15 17:54 re-entry.md
+-rw-rw-r-- 1 ofap ofap  4325 Nov 15 17:54 runtime-adoption.md
+-rw-rw-r-- 1 ofap ofap  3872 Nov 15 17:54 stage-1-discovery.md
+-rw-rw-r-- 1 ofap ofap 24370 Nov 15 17:54 stage-2-specification.md
+-rw-rw-r-- 1 ofap ofap 31614 Nov 15 17:54 stage-3-tdd.md
+-rw-rw-r-- 1 ofap ofap 16943 Nov 15 17:54 stage-4-review.md
+-rw-rw-r-- 1 ofap ofap 12135 Nov 15 17:54 stage-5-merge.md
+-rw-rw-r-- 1 ofap ofap  9231 Nov 15 17:54 stage-debugging.md
+-rw-rw-r-- 1 ofap ofap  7356 Nov 15 17:54 state-detection.md
+-rw-rw-r-- 1 ofap ofap  9792 Nov 15 17:54 sub-agent-strategies.md
+-rw-rw-r-- 1 ofap ofap  4448 Nov 15 17:54 suite-review.md
+-rw-rw-r-- 1 ofap ofap  5840 Nov 15 17:54 verdict-tuple.md
+
+.opencode/skills/cdad-cycle/scripts:
+total 647
+drwxrwxr-x 2 ofap ofap     14 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap      7 Nov 15 17:54 ..
+-rw-rw-r-- 1 ofap ofap  82318 Nov 15 17:54 cdad_context_meter.py
+-rw-rw-r-- 1 ofap ofap 154038 Nov 15 17:54 cdad_continuity.py
+-rwxrwxr-x 1 ofap ofap  79185 Nov 15 17:54 cdad_contract_links.py
+-rw-rw-r-- 1 ofap ofap 161292 Nov 15 17:54 cdad_delegate_opencode.py
+-rw-rw-r-- 1 ofap ofap  29960 Nov 15 17:54 cdad_delegate.py
+-rw-rw-r-- 1 ofap ofap  62294 Nov 15 17:54 cdad_dispatch.py
+-rw-rw-r-- 1 ofap ofap  38829 Nov 15 17:54 cdad_guard.py
+-rw-rw-r-- 1 ofap ofap  24122 Nov 15 17:54 cdad_lifecycle.py
+-rw-rw-r-- 1 ofap ofap 568399 Nov 15 17:54 cdad_packet.py
+-rw-rw-r-- 1 ofap ofap  81497 Nov 15 17:54 cdad_result.py
+-rw-rw-r-- 1 ofap ofap  63665 Nov 15 17:54 cdad_suite_review.py
+-rw-rw-r-- 1 ofap ofap  10992 Nov 15 17:54 cdad-version-check.py
+total 31
+drwxrwxr-x 4 ofap ofap    5 Nov 15 17:54 .
+drwxrwxr-x 6 ofap ofap    7 Nov 15 17:54 ..
+-rw-rw-r-- 1 ofap ofap 1682 Nov 15 17:54 common.md
+drwxrwxr-x 2 ofap ofap    7 Nov 15 17:54 roles
+drwxrwxr-x 2 ofap ofap   16 Nov 15 17:54 substages
+
+TEXT: The project has no `docs/` folder and no CDAD state file, so this is a fresh start rather than a resume. I'll load the cdad-cycle methodology and its start-up procedure.
+TOOL skill {"id": "cdad-cycle"} 
+  => <skill_content name="cdad-cycle">
+# Skill: cdad-cycle
+
+# CDAD Cycle Orchestrator
+
+Skill for coordinating the CDAD cycle of a feature while keeping structural discipline at every stage.
+
+## Absolute rule — what you do and what you do NOT do
+
+**You are the orchestrator. Your job is exclusively orchestration.**
+
+You do:
+- Detect the current stage (state file + file structure).
+- Validate gates between stages.
+- Update `docs/.cdad-state.json`.
+- Create/update the Memory Bank at bootstrap.
+- **Generate handoff packets** with the prompt ready to start a role in a new chat.
+- **Validate the results that come back from the role** (re-entry) and issue the next handoff or close the stage.
+- Apply the Scribe pattern (Memory Bank update drafts; the user approves and the orchestrator commits).
+- Detect and cite anti-patterns.
+
+You do NOT:
+- Write tests (that is the test-writer's job).
+- Write implementation code (implementer).
+- Refactor (refactorer).
+- Review the full diff (reviewer).
+- Approve specs, prioritize review, or APPROVE the Memory Bank (non-delegable user: a human or a higher-hierarchy autonomous agent). The git —including committing the Memory Bank after approval— is executed by the orchestrator.
+
+**If the user asks you to do a role's work** ("write me the test", "implement this"), you have two options:
+
+1. If it is clear that you have to act as that role (they said it in the initial prompt: *"act as test-writer for X"*), you stop being the orchestrator and switch to role mode. Load `references/handoff-prompts.md` to see the strict rules of the role you will apply to yourself.
+2. If the user is in orchestrator mode and slipped in a role request, you gently remind them: *"In this chat you are the orchestrator. I hand you the handoff packet and you start the role in a new chat (recommended), or you ask me explicitly and I apply the role's rules here."*
+
+---
+
+## Roles contract — what the orchestrator keeps in view
+
+The orchestrator decides which role runs, how, and with which limits. These are the
+elements you must have loaded **always** to run the cycle
+correctly, **regardless of the harness** (native sub-agents, permission
+globs, per-runtime dispatch routing). The harness, when it exists, amplifies
+guarantees (session isolation, a different model per role); when it doesn't,
+you enforce the limits behaviorally with this table in view. The
+`references/` are deepening material, not a condition for understanding what's here.
+
+### User — the process owner
+
+**User** = whoever approves and decides at the strategic level: a **human** or a
+**higher-hierarchy autonomous agent** that owns the process and orchestrates this
+cycle (e.g. from an external orchestrating process). Strategic decisions —approving the spec,
+prioritizing review, approving the Memory Bank, approving the epic plan— belong to the
+**user**, never to this cycle's orchestrator. When the user is an
+agent, the same criteria as a human apply: non-negotiable severity
+matrix and, in doubt, escalate all the same — don't lower the severity for being
+an agent.
+
+### 1. Cycle map
+
+Five stages: Discovery → Specification → Anti-gaming TDD → Review
+two-layer → Merge + Memory Bank. Mandatory gates between each one (see
+the "Gates" section). Per-stage detail in `references/stage-N-*.md`.
+
+### 2. Contract of each role
+
+| Role | Stage | Does | May read | May edit | MUST NOT touch | Artifact |
+|-----|-------|------|------------|--------------|-----------------|-----------|
+| architect | 1, 2 | technical mapping + targeted technical consultation + spec draft | everything | nothing | does not approve spec (user) | `docs/specs/<id>/spec.md` (draft) |
+| test-writer (AUDIT / POST-AUDIT) | 3.0 (AUDIT, POST-AUDIT) | audits existing suite, registers test↔postcondition mapping | `tests/`, spec, systemPatterns | `tests/**` | does not see new implementation code | `test-audit.md` (materialized by the orchestrator) |
+| test-writer (RED/props/E2E) | 3.1, 3.4, 3.5 | tests that verify the contract, fail initially | spec, interface, systemPatterns | `tests/**` | **Does NOT see `src/` or implementation code** | tests in `tests/` |
+| implementer | 3.2 | simple implementation of the approved behaviour with reasonable robustness | spec, tests, interface | implementation product (code, or a documentary deliverable the engagement expressly commissions) | **NOT `tests/**`** | diff/commits |
+| refactorer | 3.3 | cleans code keeping the suite green (runs as cdad-implementer REFACTOR sub-mode) | full suite | implementation code | **NOT `tests/**`**, suite always green | diff |
+| reviewer | 4 | report of findings against the spec | everything (read-only) | nothing | touches neither code nor tests | `review.md` |
+| scribe | 5 | Memory Bank update draft | spec, diff, review, Memory Bank | nothing (draft) | does not commit (non-delegable user: human or higher-hierarchy autonomous agent) | `memory-bank.md` (draft) |
+
+**Models.** The model of each role is the one configured in the runtime: this
+skill names no model and fixes none. CDAD does not choose it; external
+delegation takes the model from the delegation configuration (per destination
+and role). How the model is declared belongs to the `delegation` section of the
+orchestrator of each runtime, not to this skill.
+
+**Anti-bias invariants (non-negotiable):** the reviewer is read-only and runs
+in a session separate from the implementer's. The test-writer never sees
+implementation code (if you are looking at `src/` as test-writer, you are in
+the wrong role). The test↔postcondition mapping is audited by a session
+different from the one that wrote the tests.
+
+### 3. Test convention — what kind of tests get written
+
+This is the incorporated improvement of the framework's test convention. It governs all of Stage 3 and the
+feature's acceptance criterion.
+
+- **Feature tests verify behavioral postconditions (the
+  contract), NOT implementation details.** The *how* of the implementation is
+  decided by the implementer in GREEN; the *what* must hold is defined by the test.
+- **Forbidden:** tests that depend on internal structure — middleware call
+  order, internal function names, mocks over plumbing. A mock
+  over an internal detail freezes the implementation before it exists.
+- **Allowed:** tests that verify the observable contract — what an
+  external consumer of the system (another process, another service, the user)
+  would perceive if it changed. Internal coordination events between modules that
+  never leave the system are plumbing disguised as contract.
+- **Exhaustive coverage, load/perf and edge cases not derived from the spec do
+  NOT belong to the feature cycle.** They are the responsibility of a
+  separate, later hardening stage/epic. Mixing both questions in one gate makes
+  the easier one to measure (coverage %) devour the time of the harder one to
+  reason about (is the contract correct?). Property tests derived from invariants
+  the approved contract explicitly selects as executable (sub-phase 3.4) do belong to the cycle —
+  what falls outside is generating property tests for coverage's sake, with no
+  spec invariant behind them.
+- **RED verifies the requirement, it does not maximize coverage.** Selection and
+  relevance are R2 (`sources/roles/test-writer.md`,
+  `cdad-shared:convention-rule`): a test (and each property test) that cannot
+  point to the promise it serves and to the postconditions it protects is
+  superfluous. A test-writer that over-specifies beyond the spec produces tests
+  that are hard or impossible to satisfy — time and tokens wasted in GREEN
+  without a result. Detail in `references/stage-3-tdd.md`.
+- **A feature's acceptance criterion** is R7
+  (`references/stage-3-tdd.md`): every promise the spec commits is verified by its
+  selected method before acceptance (behavior for executable parts, contextual
+  independent review for semantic parts, both for mixed) — not a coverage percentage and not a count of tests.
+- **Mandatory counterpart:** with no exhaustive tests, the precision
+  burden moves to the spec (it doesn't disappear). Numbered and
+  testable postconditions, maximally clear, before RED opens. Ambiguous spec → tests
+  ambiguous → incorrect implementation that still passes the suite (AP-13
+  Garbage Cascade).
+- **Sustituto de comportamiento vigente (recorrido POST-AUDIT, por referencia a R2):** R2 (`sources/roles/test-writer.md`, `cdad-shared:convention-rule`, puntos 5-6) owns the maintenance dispositions and the sustituto recorrido — Sustituir/Consolidar of vigente identified in the approved AUDIT, with verde execution plus sensibilidad frente a defecto contractual concreto, originales kept until evidence, mapa PC-5; never to RED for being a new file. RED is only for pending behavior.
+
+Detail and relevance audit in `references/stage-3-tdd.md`.
+
+### 3.1 — Activation by stack: specialized variants
+
+The `stack` field of `docs/.cdad-state.json` selects role variants by domain. With `stack: odoo`, the orchestrator delegates each role to its specialized `cdad-{architect,test-writer,implementer,reviewer,scribe}-odoo` variant
+(permission profiles, models and Odoo skills per role). Mechanism detail, triggers and mapping table in `references/sub-agent-strategies.md` (not duplicated here). The derivation is the one the canonical producer applies
+and consumers do not re-implement: a `stack` that is absent, `null` or empty derives the generic `cdad-<role>`; any non-empty stack derives `cdad-<role>-<stack>`, a suffix by domain. «Any other value» never means the
+generic agent. The dispatch uses the `agent` of the validated request, and a required variant that is not published stops the dispatch: it is a procedural duty of the orchestrator (verify publication and stop) and it is
+never substituted silently. The mechanical rejection before launching the role work belongs to the external adapter; no new mechanical guard is claimed for the
+native path.
+
+### 4. Delegation decision rule (single, explicit)
+
+> **Delegation principle.** Handing a prepared packet to a role session in
+> ANOTHER CLI (coordinator → worker, between CLIs) is authorized external delegation;
+> it is not recursion of sub-agent sessions inside the same runtime. A delegation
+> does not expand authority or scope, and the worker does not write the state
+> (`docs/.cdad-state.json`). A separate session or CLI is not a sandbox: it does
+> not attest isolation nor another model family.
+
+> ⚠️ **SPAWN GUARD (anti-loop):** if you are running as a SUBAGENT
+> (runtime=subagent, e.g.: spawned by an external orchestrator cycle), **you
+> cannot spawn sub-subagents — the spawn from a subagent is FORBIDDEN.** It is a
+> runtime design limitation (anti-recursion): NEVER try it — the runtime rejects
+> it and retrying 2000+ times in a loop burns tokens and blocks the scheduler
+> (incident Aug 05 2026 — cdad-architect FEAT-003 <project>, 2153 attempts,
+> orchestrator cycle stalled 2h). If you need to delegate from a subagent →
+> return control to the orchestrator with a handoff packet (rule 2) and let IT
+> decide the spawn.
+
+For each role task, decide the mechanism in this order:
+
+1. **Native mechanism first.** If your environment exposes the `cdad-*` roles through its own sub-agent dispatch, use it: **the mechanism is the one the orchestrator agent of your runtime declares** in its `delegation` section (dispatch tool, role→sub-agent mapping, packet pass). Pass full context (rule 6). **Preferred: real separate session + per-role model routing.**
+2. **No native mechanism, and the user wants to run the role in a new chat?** → generate a handoff packet (`references/handoff-prompts.md`): real separation via a separate session, manual.
+3. **Neither native dispatch nor a new chat (forced single-session):** → act as the role inline applying the table's contract to yourself, with strict discipline. **Weaker assurance**: you cannot un-know what you already read in previous turns; tell the user.
+
+Never mix: if you started as orchestrator, don't write tests "becau
+TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md"} 
+  => Read file ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md, lines 1-248
+1: # Project start — from rest to the first useful delegation
+2: 
+3: Short procedure for when a **brief instruction** must start a project from rest
+4: (no prepared execution yet). It is a single short reading that **composes, by
+5: reference — never by copying —** the primitives that already exist:
+6: 
+7: - `state-detection.md` — feature/Memory-Bank recognition (Steps 1-2).
+8: - `project-execution.md` — prepared-execution path, policy and authority.
+9: - `continuity.md` — the optional continuity CLI.
+10: - `bootstrap.md` — Memory Bank initialization.
+11: - `cdad-epic/references/state-detection.md` — epic-stage recognition.
+12: 
+13: This procedure does not redefine any of them (INV-1): it only says in which order
+14: to use them and how to chain them to a first commission. If an execution is
+15: already active, this is not the entry point — that path resumes an active
+16: execution.
+17: 
+18: ## 1. Recognize the root
+19: 
+20: The session directory is a **hint, not a norm**: the project may be a **nested**
+21: repository inside a **container** (parent) directory, so the open directory must
+22: not rule the recognition. Find the root **without imposing a layout** — no
+23: particular directory structure is required — and **without a global search**: use
+24: the nearest enclosing repository as the anchor instead of a massive filesystem
+25: walk.
+26: 
+27: ## 2. Classify the state
+28: 
+29: Distinguish three cases **using the primitives by reference** (never repeating the
+30: algorithm, which belongs to `state-detection.md` and `project-execution.md`):
+31: 
+32: - **new** — no Memory Bank yet. Follow `state-detection.md` §Step 2 and `bootstrap.md`.
+33: - **partially initialized** — a Memory Bank with `active_epic`/`active_feature`
+34:   whose feature/epic records are incomplete. Follow `project-execution.md` §1-§3.
+35: - **incomplete configuration** — state present but the policy
+36:   (`docs/cdad-policy.json`) or the authority missing. Follow `project-execution.md`.
+37: 
+38: ## 3. Preserve what exists
+39: 
+40: Never overwrite or clobber **existing** documentation, plans, conventions or
+41: naming: **preserve the project's own conventions and naming** — keep its
+42: existing epics, features and identifiers intact. CDAD's own naming convention
+43: is `<epic-num>-<feat-num>-<slug>`; use it only when the project does not
+44: already have a convention of its own (for example, a project may use its own
+45: scheme such as `E001`/`F001-001`). The anti-patterns live in `bootstrap.md`;
+46: the no-clobber rule of the first preparation lives in `project-execution.md`.
+47: 
+48: ## 4. Record restrictions in their canonical place
+49: 
+50: Create only what is missing; if the place already exists, record or point to it —
+51: never overwrite. Each discovered restriction goes to its canonical place:
+52: 
+53: | Restriction | Canonical place | How it is obtained |
+54: |---|---|---|
+55: | `stack` | `state.stack` | auto-detected by the `*-architect` convention (`bootstrap.md` §2b); ambiguity → ask or record the doubt |
+56: | privacidad (privacy) | `docs/cdad-policy.json` → `path_policy.private_paths` | reserved edit (`project-execution.md`): infer and **propose**, never write without the user's decision |
+57: | entorno de pruebas (test environment) | `test_roots` of the policy + the commands the project declares | the methodology defines the evidence (INV-6, `systemPatterns.md`) |
+58: | límites operativos (operational limits) | `temporary_roots` of the policy + ADR-011 | `project-execution.md` |
+59: | autoridad (authority) | `state.hitl_delegation`/`approver` + `docs/epics/<epic>/execution.md` | the **user** decides (non-delegable) |
+60: | organización/convenciones (organization/conventions) | Memory Bank `projectbrief.md`/`systemPatterns.md` | bootstrap asks the minimum |
+61: 
+62: ## 5. Inferable vs user decision
+63: 
+64: Mark each restriction **inferable** (auto-detectable with objective evidence) or a
+65: **decision of the user**:
+66: 
+67: - `stack` is **automatic** (`bootstrap.md` §2b) — do not ask.
+68: - privacidad and autoridad are a **decision of the user** (non-delegable).
+69: 
+70: Ask only the second kind, and keep it bounded: **three or four concrete questions**
+71: at most (`bootstrap.md`). Without a user present, **record the doubt** in
+72: `docs/activeContext.md` instead of asking — never invent an answer.
+73: 
+74: ## 6. Chain to the first commission
+75: 
+76: Recognition is not the end. The start **chains** recognition → registering the
+77: restrictions → preparing the **first commission**, using the prepared-execution
+78: path (`project-execution.md`). The terminal state is a **prepared and dispatchable**
+79: package — a **first useful delegation** — not merely having recognized the project.
+80: 
+81: **Domain of this recipe (precondition).** It applies to a project that already has
+82: an **active epic and a registered feature** (`state.active_epic` +
+83: `state.active_feature`, with the feature listed in `epic_features`) and the
+84: contract the role needs already approved (`project-execution.md` §2). A **truly
+85: empty** project does not satisfy this yet: first register the feature and sync
+86: `epic_features` with the approved plan (route to `cdad-epic`, PD-12) and obtain
+87: the plan approval (PD-1) — those steps belong to the coordinator/owner, not to
+88: this recipe. Once the precondition holds, the sequence below is concrete and
+89: runnable from the project root (`<skill-dir>` is the directory of the loaded
+90: `cdad-cycle` skill, as the runtime reports it when the skill is loaded):
+91: 
+92: ```sh
+93: # 1. open the new execution and prepare the first packet. Add --new-execution
+94: #    when prior context exists (a v1 context or an active v2); omit it on a
+95: #    truly empty project.
+96: #    A published v1 packet still active: no terminal CLI route; escalate to the owner (project-execution.md §3).
+97: python3 <skill-dir>/scripts/cdad_packet.py prepare --project-root "$PWD" \
+98:     --role architect --substage discovery --objective "<first commission>" \
+99:     --new-execution
+100: 
+101: # 2. bind the ids prepare produced; they live under `.cdad/`:
+102: #      execution context: .cdad/executions/<EXEC_ID>/execution.json
+103: #      published packet:  .cdad/packets/<PACKET_ID>/{REQUEST.json,PACKET.md}
+104: #    (prepare prints the PACKET.md on stdout; its front matter carries both ids)
+105: EXEC_ID=<execution-id>      # e.g. exec-<feature-id>-001
+106: PACKET_ID=<packet-id>       # e.g. <feature-id>-architect-discovery-001
+107: 
+108: # 3. validate the binding, the request and the packet before dispatching.
+109: #    --packet consumes a physical PATH to PACKET.md, never a bare packet id.
+110: python3 <skill-dir>/scripts/cdad_packet.py validate-state --project-root "$PWD" \
+111:     --execution-context ".cdad/executions/$EXEC_ID/execution.json"
+112: python3 <skill-dir>/scripts/cdad_packet.py validate-request --project-root "$PWD" \
+113:     --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
+114:     --request ".cdad/packets/$PACKET_ID/REQUEST.json"
+115: python3 <skill-dir>/scripts/cdad_packet.py validate-packet --project-root "$PWD" \
+116:     --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
+117:     --request ".cdad/packets/$PACKET_ID/REQUEST.json" \
+118:     --packet ".cdad/packets/$PACKET_ID/PACKET.md"
+119: 
+120: # 4. freeze the write-ahead checkpoint before dispatching (UPDATE.json is the
+121: #    continuity update you author: goal/decisions/uncertainties/next_action)
+122: python3 <skill-dir>/scripts/cdad_continuity.py begin --project-root "$PWD" \
+123:     --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
+124:     --update UPDATE.json --json
+125: 
+126: # 5. record the dispatch attempt (docs/attempt.json per project-execution.md §5)
+127: python3 <skill-dir>/scripts/cdad_packet.py prepare --project-root "$PWD" \
+128:     --record-dispatch "$PACKET_ID" --attempt-id ATTEMPT_ID --input docs/attempt.json
+129: ```
+130: 
+131: When the role returns, receive its FINAL TEXT with the re-entry CLI
+132: (`<skill-dir>/scripts/cdad_result.py receive`), validate the receipt and register
+133: the state transition (`re-entry.md`).
+134: 
+135: ### 6.1 Opening the next queued unit — the `open-unit` operation
+136: 
+137: When the project **rests** with a `queued` feature in `epic_features`, opening
+138: the next unit is a state operation of the CLI, never a hand edit of
+139: `docs/.cdad-state.json`:
+140: 
+141: ```sh
+142: python3 <skill-dir>/scripts/cdad_packet.py open-unit --project-root "$PWD"
+143: ```
+144: 
+145: It opens the **first** `queued` entry of `epic_features` (or `--feature <ID>`
+146: when that entry exists and is `queued`), and atomically writes `active_feature`,
+147: the entry's `in-progress`+`opened_at` and `current_stage=discovery`. It
+148: **refuses** (without writing) when a unit is already open or when a declared
+149: `depends_on` dependency is not `done`; when the entry declares no dependencies
+150: it says so explicitly (the plan order is the authority). **First `queued`
+151: means the first *eligible* one (015-002 D3):** `queued` units that belong to
+152: an epic with a registered closure (`epic-closure` in `epic_history`,
+153: membership by structural row in `docs/epics/<epic>/plan.md`) are skipped —
+154: they stay `queued`, never `done` — and the opening names them; `--feature`
+155: of such a unit is refused naming the unit and its closed epic (the flag does
+156: not evade the closure); with no eligible unit the operation reports it
+157: (`no hay candidata elegible`) and writes nothing. The rule lives in the
+158: spec (`PD-7`), the executable invocation in the asset
+159: `assets/orientation-examples.json` and its operating row in `orientation.md` —
+160: this section **references** them and does not repeat the procedure.
+161: 
+162: ## 7. Resume is only for an active execution
+163: 
+164: Do not confuse "start the next unit / start from rest" with resuming an active
+165: execution. **Without an active execution, do not run `resume`** — `resume` is for
+166: an active execution (005-003). Starting from rest is this procedure.
+167: 
+168: ## 8. Blocked configuration: actionable diagnosis
+169: 
+170: When a non-inferable input is missing (a missing policy, an authority without a
+171: pin), stop closed, name **what is missing** and **how to continue**, reusing the
+172: existing markers (`approval pending`, `state incoherent`) by reference — never
+173: re-implementing them. The procedure **never fabricates authority**, never invents
+174: an approval, and **never changes the active version silently**: it changes no
+175: version, and it never publishes an invalid package.
+176: 
+177: ## 9. Drift between the approved plan and `epic_features`
+178: 
+179: When the project already has an active epic, recognition also checks for **drift**
+180: between the approved plan (`docs/epics/<id>/plan.md`) and `epic_features` in the
+181: state: the list may be **out of sync** with the plan — a **mismatch**. If so,
+182: **name what is missing or leftover**: list the **missing** feature entries the plan
+183: has but `epic_features` lacks, and the **leftover** (extra) entries `epic_features`
+184: has but the plan no longer contains.
+185: 
+186: Do **not** invent features to close the gap, and do **not** block silently: the
+187: procedure **routes the synchronization to `cdad-epic`** (back to the epic
+188: coordinator, PD-12) instead of patching the state locally from `cdad-cycle`. It
+189: reports the drift with the named gap and continues — never fabricating features,
+190: never waiting in silence for a resolution.
+191: 
+192: ## 10. One version check
+193: 
+194: Before trusting a session, run **one** command to learn whether the **project**,
+195: the **agents** and the **CLI** are the same version:
+196: `python3 <skill-dir>/scripts/cdad-version-check.py --
+TEXT: The project-start procedure says a truly empty project needs bootstrap first. I'll run the read-only status view and read the bootstrap reference.
+TOOL shell {"command": "python3 ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root ~/clawd/tmp/cand019b; echo \"rc=$?\"", "workdir": "~/clawd/tmp/cand019b"} 
+  => {
+  "authority": {
+    "approval": {
+      "authority_ref": null,
+      "contract_sha256": null
+    },
+    "approval_reference": {
+      "contract": null,
+      "object": null,
+      "reason": "no applicable active packet: state.active_packet does not identify an unambiguous prepared or dispatched packet (§2.1), so the applicable approval cannot be established",
+      "record": null,
+      "role": null,
+      "status": "desconocida"
+    },
+    "approver": null,
+    "hitl_delegation": {
+      "source": null,
+      "status": null
+    }
+  },
+  "entry": "diagnosis",
+  "epic": {
+    "active_epic": null,
+    "epic_stage": null
+  },
+  "execution": null,
+  "feature": {
+    "active_feature": null,
+    "current_stage": null,
+    "tdd_substage": null
+  },
+  "next": {
+    "operation": {
+      "procedure": "references/project-start.md",
+      "script": null,
+      "source": "docs/.cdad-state.json",
+      "verb": "diagnose"
+    },
+    "route": "diagnosis: complete the configuration (project-start.md §8)",
+    "source": "docs/cdad-policy.json / authority pin"
+  },
+  "packet": null,
+  "project": {
+    "markers": {
+      "feature": false,
+      "plan": false,
+      "policy": false,
+      "state": false
+    },
+    "root": "cand019b"
+  },
+  "situation": "diagnosis",
+  "suspended_units": [],
+  "unit_contract": {
+    "changed_parts": [],
+    "live": null,
+    "mode": "fallback",
+    "reason": "no active feature to project a unit contract",
+    "registered": null,
+    "unit": null,
+    "verdict": null
+  },
+  "unknowns": [
+    "project state not found: docs/.cdad-state.json",
+    "project policy not found: docs/cdad-policy.json (configuration incomplete)",
+    "version not verified: absence of a version marker or of derived agents (verdict NO-PROJECT-AGENTS, rc 4); absence, not incoherence"
+  ],
+  "version": {
+    "cause": "version not verified: absence of a version marker or of derived agents (verdict NO-PROJECT-AGENTS, rc 4); absence, not incoherence",
+    "verdict": "NO-PROJECT-AGENTS",
+    "verified": false
+  }
+}
+rc=0
+
+TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md"} 
+  => Read file ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md, lines 1-129
+1: # Bootstrap — Initializing a new project in CDAD
+2: 
+3: When the project has no Memory Bank and no `docs/specs/`, the user is starting from scratch. This is the first time CDAD is applied to this project.
+4: 
+5: ## Your goal
+6: 
+7: Leave the project ready for the **first feature** to enter Stage 1 (Discovery) without friction. This means:
+8: 
+9: 1. The `docs/` structure created with templates filled in.
+10: 2. State file initialized.
+11: 3. Operational decisions made (which framework, which tooling, what counts as "green").
+12: 
+13: ## Steps
+14: 
+15: ### Step 1: confirm the user wants to bootstrap
+16: 
+17: Before creating files, ask:
+18: 
+19: > *"I didn't detect a Memory Bank in this project. Is this the first time you're applying CDAD here? If so, I offer to create the `docs/` structure with initial templates — you will have to fill in some parts yourself (the ones requiring project knowledge I don't have). Shall we proceed?"*
+20: 
+21: If they say no, ask whether the Memory Bank is in another location.
+22: 
+23: ### Step 2: collect project context
+24: 
+25: Ask these questions (one per turn, or grouped if the user is expeditive):
+26: 
+27: 1. **Project name and purpose** — for `projectbrief.md`.
+28: 2. **Main language and framework** — for `systemPatterns.md`. See Step 2b
+29:    (below) for `stack` detection — do not rely on this question alone: in
+30:    unattended bootstrap (no human present) nobody answers it.
+31: 3. **Are there existing tests? With which tool?** (pytest, jest, rspec, etc.).
+32: 4. **Is CI configured?** If not, mention it as debt to be addressed soon.
+33: 5. **Who approves specs?** Usually the user, but confirm it to register the name in the state.
+34: 
+35: Do not make a long questionnaire. Three or four concrete questions and get going.
+36: 
+37: ### Step 2b: `stack` detection (automatic, non-blocking)
+38: 
+39: `docs/.cdad-state.json.stack` is the generic field that activates specialized
+40: role variants (`cdad-<role>-<stack>`) — see `cdad-cycle` §3.1. **CDAD knows
+41: no stack by name**: detection lives in each specialization skill, not here.
+42: This is what lets Django, Rails, Odoo, or any other future specialization
+43: join without touching the core.
+44: 
+45: Convention: a specialization for `<stack>` is distributed as a skill
+46: `<stack>-architect`, and **that same skill declares how to detect itself** — typically
+47: a short section like "Automatic detection" with objective repo markers (a
+48: characteristic file, a dependency, etc.).
+49: 
+50: Procedure:
+51: 
+52: 1. List the installed skills that follow the `*-architect` pattern (with a dash,
+53:    distinct from `cdad-architect`).
+54: 2. For each candidate, load its automatic-detection section (if it has one)
+55:    and evaluate it against the repo.
+56: 3. **A single candidate with clear, objective evidence** → set
+57:    `stack: <name>` in the state file, **without asking**. It is automatic on
+58:    purpose: in unattended bootstrap there is nobody to ask.
+59: 4. **Ambiguity (zero or more than one candidate)** → if a user is present,
+60:    ask them; if not, leave `stack` absent (generic agents) and record it in
+61:    `activeContext.md` as something to confirm when a human returns.
+62: 
+63: You don't need to know in advance which stacks exist: it is self-discovery
+64: over whatever is installed.
+65: 
+66: ### Step 3: create the structure
+67: 
+68: Copy the templates from `assets/memory-bank-templates/` to the project's `docs/`. Fill in what you know, and leave clear `<TODO: ...>` placeholders for what the user must complete.
+69: 
+70: Structure to create:
+71: 
+72: ```
+73: docs/
+74: ├── projectbrief.md       (from assets/memory-bank-templates/projectbrief.md)
+75: ├── systemPatterns.md     (from assets/memory-bank-templates/systemPatterns.md)
+76: ├── activeContext.md      (from assets/memory-bank-templates/activeContext.md)
+77: ├── progress.md           (from assets/memory-bank-templates/progress.md)
+78: ├── adr/
+79: │   └── README.md         (brief guide on how to create ADRs)
+80: ├── specs/
+81: │   └── README.md         (brief guide on spec structure)
+82: └── .cdad-state.json      (from assets/state-template.json)
+83: ```
+84: 
+85: You create `landscape.md` in the first Stage 1, not here.
+86: 
+87: ### Step 4: initialize state file
+88: 
+89: Initial content:
+90: 
+91: ```json
+92: {
+93:   "version": 1,
+94:   "active_feature": null,
+95:   "current_stage": "discovery",
+96:   "stage_history": [],
+97:   "tdd_substage": null,
+98:   "postconditions_status": {},
+99:   "approver": "<the name the user told you>",
+100:   "last_updated": "<ISO timestamp>"
+101: }
+102: ```
+103: 
+104: ### Step 5: offer the next step
+105: 
+106: After creating the structure, communicate:
+107: 
+108: > *"Done. Memory Bank created in `docs/`, state file initialized. What's left for **you** to complete:*
+109: >
+110: > *- `docs/projectbrief.md`: the sections marked TODO.*
+111: > *- `docs/systemPatterns.md`: the technical conventions you already have (layers, naming, framework patterns).*
+112: >
+113: > *When you're ready, tell me what the first feature is and we start with Stage 1 (Discovery)."*
+114: 
+115: ## About `landscape.md`
+116: 
+117: `docs/landscape.md` is the document of **initial system discovery** — what the AI agent learns about the APIs, hooks, and conventions of the framework it is going to work with. It is NOT created in bootstrap; it is created in the first Stage 1 when the user starts the first feature, because only then is it known which parts of the system are worth mapping.
+118: 
+119: If the user insists on doing it in bootstrap, that's fine — explain that it will remain a static input of the project and that it gets updated at every Stage 1 when new things are discovered.
+120: 
+121: ## Anti-patterns to avoid in bootstrap
+122: 
+123: - **Do not create specs in bootstrap.** Specs are per feature; in bootstrap there is no active feature yet.
+124: - **Do not create empty ADRs.** ADRs document decisions made; they are not pre-filled speculatively. The `adr/` folder is created; concrete ADRs arise when there are real architectural decisions.
+125: - **Do not promise CDAD will be instant.** Bootstrap takes an honest 30-60 minutes, mainly to complete `projectbrief.md` and `systemPatterns.md`. If the user expects 5 minutes, they are underestimating the initial cost — and that cost is what pays for the later performance.
+126: 
+127: ## After bootstrap
+128: 
+129: Load `references/stage-1-discovery.md` and start the first feature.
+TEXT: The status view returns `entry: diagnosis` because there is no `docs/` folder, no state file and no policy. That means this is a fresh project, so the bootstrap path applies. Bootstrap needs a few answers from you before I can create anything, and the tag behaviour is yours to decide.
+TOOL question {"questions": [{"question": "How should a tag get attached to a note? (Tags are stored in the note text or in a separate field.)", "header": "Tag syntax", "options": [{"label": "Inline #tags (Recommended)", "description": "notes add \"buy milk #errands\". Tags are read from the text; no storage change, existing notes work as they are."}, {"label": "Separate --tag flag", "description": "notes add --tag errands \"buy milk\" (repeatable). Tags are stored in their own field next to the text."}, {"label": "Both", "description": "Accept #tags in the text and --tag flags; more code and two ways to do the same thing."}]}, {"question": "How should the list-by-tag command look?", "header": "Filter form", "options": [{"label": "list --tag <name> (Recommended)", "description": "notes list --tag errands. Plain `notes list` keeps showing all notes."}, {"label": "Positional tag", "description": "notes list errands. Shorter, but a typo of a subcommand would be read as a tag."}]}, {"question": "If a filter is given more than one tag, what should match?", "header": "Several tags", "options": [{"label": "Single tag only (Recommended)", "description": "Simplest: one tag per filter. Multiple tags can be added later."}, {"label": "Note has all of them", "description": "notes list --tag a --tag b shows only notes carrying both a and b."}, {"label": "Note has any of them", "description": "Shows notes carrying a or b."}]}, {"question": "The tests/ folder is empty and there is no CI. Which test runner should the feature use?", "header": "Test runner", "options": [{"label": "unittest (stdlib) (Recommended)", "description": "No new dependency; works with python -m unittest."}, {"label": "pytest", "description": "Nicer output and fixtures; adds a dev dependency."}]}, {"question": "Who approves the spec and the review priorities? (CDAD requires an explicit approver.)", "header": "Spec approver", "options": [{"label": "Me, the owner (Recommended)", "description": "You approve; I execute the git steps and write the approval mark."}, {"label": "Another person", "description": "Tell me who, in the next message."}]}]} 
+  => 
+TEXT: I started the CDAD feature, but I stopped before creating anything, because I need your decisions first. This run cannot show you a question form, so I'm asking here.
+
+**Where the project stands:** `notes/` has a small CLI (`add`, `rm`, list) that stores notes in `notes.json`. There is no `docs/` folder, no CDAD state file and no policy, and `tests/` is empty. CDAD therefore starts from bootstrap: create the project memory, then write the spec for tagging, which you approve before any tests or code.
+
+**Questions** (my recommendation is first in each):
+
+1. **How are tags attached?**
+   - a. Inline `#tags` in the text, e.g. `notes add "buy milk #errands"`. No storage change, and existing notes keep working. (Recommended)
+   - b. A separate `--tag errands` flag, stored as its own field.
+   - c. Both.
+
+2. **How is the filter written?**
+   - a. `notes list --tag errands`. Plain `notes list` still shows everything. (Recommended)
+   - b. A positional word, `notes list errands`.
+
+3. **What happens when several tags are given?**
+   - a. One tag only for now. (Recommended)
+   - b. The note must carry all of them.
+   - c. The note must carry any of them.
+
+4. **Which test runner?** `unittest` from the standard library, with no new dependency (recommended), or `pytest`.
+
+5. **Who approves the spec?** I'd register you, the owner, as approver. Tell me if it's someone else.
+
+**Assumptions I'll use unless you say otherwise:** tag matching is case-insensitive; existing notes count as untagged and need no migration; and I won't change the existing id behaviour (ids are list positions, so `rm` shifts them).
+
+**Something I noticed, not changed:** `notes/cli.py` uses a relative import, so it has to be run as `python -m notes.cli`, not `python notes/cli.py`. Also `notes.json` is looked up in the current directory unless `NOTES_FILE` is set. I'll leave both alone unless you want them fixed.
+
+Reply with your choices, for example "1a, 2a, 3a, unittest, me", and I'll write the bootstrap memory, the discovery notes and the first spec draft for your review.

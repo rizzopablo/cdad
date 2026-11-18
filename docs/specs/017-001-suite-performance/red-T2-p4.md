@@ -37,7 +37,7 @@ No temporal thresholds used as oracle (presencia/identidad/diagnóstico + rc con
 ## Delta de inventario vivo (texto, para materializar por el orquestador)
 - Cambio propuesto con disposición **Extender** (no materializada en inventario por este rol): `tests/test_017_001_suite_operations.py` —
   - `::test_active_observer_captures_intervals_with_identity_context_and_nesting` | capacidad T2-check-1 | contrato operation-markers-v1 (spec §4.2, PC-1 parte operaciones, INV-1/INV-8) | RED T2 corregido D1, sin cambios en este paquete (Mantener).
-  - `::test_exceptional_exit_closes_interval_with_error_termination` | T2-check-2 | operation-markers-v1 (PC-1 parte, INV-2) | RED T2 corregido D1, sin cambios (Mantener).
+  - `::test_exceptional_exit_clo<session>_with_error_termination` | T2-check-2 | operation-markers-v1 (PC-1 parte, INV-2) | RED T2 corregido D1, sin cambios (Mantener).
   - `::test_without_observer_helper_is_neutral_and_leaves_no_evidence` | T2-check-3 | operation-markers-v1 (PC-1 parte, INV-2) | control verde, sin cambios (Mantener).
   - `::test_missing_markers_capture_is_diagnosed_as_incomplete_measurement` | T2-check-4 | operation-markers-v1 (PC-1 parte, INV-6/INV-8 + §4.4 ejercitado-vs-capturado) | RED T2 corregido D2-rev (Extender: alcance sintético explícito vía `--operation-scope`; (A) incomplete+diagnosis sobre recorrido ejercitado con captura cero; (B) complete con marcas).
 - Soporte (no verificador, sin cambios): `tests/suite_operation_markers.py`.

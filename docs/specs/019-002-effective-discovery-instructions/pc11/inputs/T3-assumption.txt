@@ -1,0 +1,1 @@
+One more thing: I'm assuming that a note's number stays the same after other notes are deleted, and that my existing notes file keeps working untouched. I haven't checked either; please do not take them as facts.

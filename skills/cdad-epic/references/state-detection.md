@@ -2,6 +2,8 @@
 
 Logic to detect which epic stage the project is in.
 
+> **Layout (019-004).** Every `docs/` path in this document is the conventional location inside the methodology directory that `<skill-dir>/scripts/cdad_packet.py layout --project-root <product-root>` resolves (registered `methodology_dir`, `docs/` for a legacy project, `cdad/` for a new one). Run that query first and use its `state` and `policy` paths. An uninitialized or ambiguous layout is the CLI's diagnostic to report; do not infer a layout from these paths.
+
 ## Algorithm
 
 Apply it in order, stop at the first condition that matches.

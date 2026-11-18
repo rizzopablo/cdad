@@ -93,6 +93,7 @@ import cdad_delegate  # noqa: E402
 import cdad_result  # noqa: E402
 import cdad_continuity  # noqa: E402
 import cdad_packet  # noqa: E402
+import cdad_layout  # noqa: E402
 
 # §2.6: the document, its version and the map of one section per runtime id.
 RUNTIMES_CONFIG_NAME = "runtimes.json"
@@ -189,6 +190,25 @@ RETIRED_OPTION = "--exec-config"
 
 class DispatchError(RuntimeError):
     """Fail-closed diagnostic of the dispatch entry."""
+
+
+def _check_registered_layout(root: Path) -> None:
+    """019-004 §4.4: before a dispatch effect, a registered layout must be compatible
+    with the effective policy (diagnostic only; nothing is repaired here)."""
+    try:
+        registered = cdad_layout.registered_methodology_dir(root)
+        if registered is not None:
+            cdad_packet.check_layout_compatibility(root, registered)
+    except (cdad_layout.LayoutError, cdad_packet.PolicyError) as exc:
+        raise DispatchError(str(exc)) from exc
+
+
+def _project_state_path(root: Path) -> Path:
+    """019-004 §4.2: the project state of the selected methodology layout."""
+    try:
+        return root / cdad_layout.state_relpath(root)
+    except cdad_layout.LayoutError as exc:
+        raise DispatchError(str(exc)) from exc
 
 
 # ------------------------------------------------------------- configuration
@@ -1159,7 +1179,7 @@ def record(runtime: str, project_root: str | None, packet: str | None,
 
 
 def _reject_suspended_request(root: Path, request: dict[str, Any]) -> None:
-    state = _load_json(root / "docs" / ".cdad-state.json", "project state")
+    state = _load_json(_project_state_path(root), "project state")
     execution_id = request.get("execution_id")
     feature_id = None
     if isinstance(execution_id, str):
@@ -1339,6 +1359,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "surface, not a dispatch (007-003)")
             return capabilities(args.runtime, args.project_root,
                                 as_json=args.json)
+        if args.verb in ("dispatch", "record") and args.project_root:
+            _check_registered_layout(Path(args.project_root).resolve())
         if args.verb == "record":
             return record(args.runtime, args.project_root, args.packet,
                           args.attempt_id, native_result=args.native_result,

@@ -41,8 +41,8 @@ Apply it IN FULL before touching code, for each round of feedback:
    said it, it must be true".
 4. **Implement one fix at a time with verification.** Order: blocking items (break
    functionality, security) → simple ones (typos, imports) → complex ones
-   (refactors, logic). Suite green after each one — consistent with the
-   fix loop of `stage-4-review.md`. Never batch without verifying in between.
+   (refactors, logic). After each one, re-run the checks that apply to the commitment it touches — loop step 3 of
+   `stage-4-review.md`: the suite green for executable parts, the applicable structural checks for semantic-only parts. Never batch without verifying in between.
 
 ## Forbidden responses and their factual replacements
 

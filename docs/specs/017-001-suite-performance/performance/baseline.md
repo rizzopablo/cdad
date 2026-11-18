@@ -5,7 +5,7 @@
   (copia de solo lectura para revisión: `.cdad/tmp/017-001-baseline-attempt`)
 - Revisión: `7426438bdbace78d55f3ea97f1a74e2d000a7310` (árbol limpio, `dirty=0`)
 - Selección: `--all` — 2034 nodeids
-- Comando: `python3 scripts/cdad-suite.py close --all --evidence-root <repo-parent>/evidence/017-001-baseline2`
+- Comando: `python3 scripts/cdad-suite.py close --all --evidence-root ~/clawd/projects/cdad/evidence/017-001-baseline2`
 - Canary de configuración: 0 líneas de diferencia antes/después
 
 ## Resultado

@@ -21,8 +21,16 @@ A spec is not a 50-page document. It is:
 context: Brief — what we are doing and why
 resolution: What problem it solves / what need it covers
 postcondition: How I know this is done (single sentence)
-verification: Checklist, one test per line
+verification:                  # one entry per promise (rule 2)
+  - property: what is promised, in the user's terms
+    method: executable | contextual review | combined
+    acceptance: the observable condition that accepts the promise
+    evidence: the records that will exist (test output, review report)
+    limits: what this method cannot establish
+    checks: one test per line for the executable part (none for semantic-only)
 ```
+
+The examples below show only the `checks` of each promise; the other fields are required for every promise.
 
 ### Example — Development instance setup:
 
@@ -54,28 +62,29 @@ verification:
 ## Spec Rules
 
 1. **Mandatory postcondition.** If you cannot write in one line what "done" means, you do not understand the task well.
-2. **Tests before code.** The verification is written BEFORE Build. If afterwards the tests pass, you are done.
+2. **Verify before building, review before producing.** Each promise declares its property, method, acceptance criterion, expected evidence and limits, set BEFORE Build. Before the 1→2 transition, the draft's verification strategy gets the independent sufficiency review of `skills/cdad-cycle/references/stage-2-specification.md` §"Draft review sub-phase" (PC-2: the reviewer checks that each promise's verification can establish its acceptance; its depth is proportional), or the owner's exemption, registered in the approval's `stage_history` entry with `exempted_by`, `delegated`, `requested_by` and `reason` (`skills/cdad-cycle/references/stage-2-specification.md` §"The exemption's declared form"; the approval itself is §"Sub-phase 2.3 — Approval"). An exemption is not a review and does not claim sufficiency. Without one of the two, production does not start. Executable promises are verified by their tests; semantic-only promises by an independent contextual review of the result; mixed promises by both, each for its own part, neither substituting for the other. Passing tests alone do not close a promise's semantic part, and no test is invented for a semantic-only promise (routing: `skills/cdad-cycle/references/stage-3-tdd.md` §"Routing by verification method").
 3. **Tests are not just pytest.** It accepts:
    - `curl ... | grep ...` (integration)
    - `python3 -c "..."` (inline unittest)
    - File checks (`test -f`, `test -d`)
    - Manual steps with expected result (for UI)
-4. **If a test fails, the task is not done.** Period. No excuses.
+4. **If a test fails, or a blocking review finding stands, the task is not done.** Period. No excuses.
 
 ## How to close the cycle
 
 ```
-[Build]  →  [Verify: run tests]
+[Build]  →  [Verify, each promise by its method]
                  ↓
-           Do all pass?
+   executable checks pass?              (executable and mixed promises)
+   independent contextual review done?  (semantic-only and mixed promises)
             /        \
           Yes         No
          /            \
-    [Merge]       [Fix → Build again]
+    [Merge]       [Fix → Build again, within the bounded rounds]
 ```
 
-If after Verify all tests pass → Merge (commit, wiki, skill, whatever applies).
-If any fails → go back to Build, do not move forward.
+If after Verify every promise has its closure evidence (executable checks passing for its executable part, and an independent contextual review for its semantic part) → Merge (commit, wiki, skill, whatever applies).
+If any fails → go back to Build, do not move forward — but not without limit: every correction loop (draft review, test audit, result review) is bounded by the maximum of rounds the spec declares, applied per family and kept across re-dispatches. A closing check that continues the loop consumes the next round; at the maximum, finish the verification of the last permitted fix, then adjudicate each remaining finding (supported dismissal, accepted optional residue, or blocked/replan). "Budget exhausted" never turns a missing verification or an unmet promise into success; accepted residue goes to the epic's single accumulation unit, or to `debt.md` without an epic. Absent audit work implies no audit round. Rules and the note pattern: `skills/cdad-cycle/references/bounded-review-cycles.md`.
 
 ## Tests that are NOT useful
 
@@ -99,6 +108,6 @@ If any fails → go back to Build, do not move forward.
 | Gate | Action |
 |------|--------|
 | 0→1 (Discovery→Spec) | Write spec.yaml with postcondition + verification |
-| 1→2 (Spec→TDD) | Write tests (automated or checklist) |
-| 2→3 (TDD→Review) | Run tests against the build |
-| 3→4 (Review→Merge) | All applicable tests pass per the cycle's evidence policy → merge |
+| 1→2 (Spec→TDD) | Before it: each promise's property, method, acceptance, evidence and limits declared, and the sufficiency review done or exempted (rule 2). Then write tests (automated or checklist) for the executable parts of promises; semantic-only promises get no test |
+| 2→3 (TDD→Review) | Run the executable checks against the build; semantic-only parts go to independent contextual review |
+| 3→4 (Review→Merge) | Every promise has its closure evidence (executable checks passing for executable parts, independent contextual review for semantic-only and mixed parts), per the cycle's evidence policy → merge |

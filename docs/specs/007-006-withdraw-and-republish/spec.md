@@ -1,4 +1,4 @@
-<!-- materializado de cdad-architect <ses-334> (excepción de arranque, sin recibo) -->
+<!-- materializado de cdad-architect <session> (excepción de arranque, sin recibo) -->
 # 007-006 — Withdraw de paquetes preparados y republicación independiente
 
 **Estado:** aprobada por el orquestador (HITL delegada; alcance aprobado por el dueño el 2026-10-25) tras review APTO CON AJUSTES; ajustes AJ1–AJ4 aplicados al final del documento.
@@ -150,7 +150,7 @@ Tests estables mediante CLI en subprocesos, sin mocks de funciones internas:
 | PC-08 | `test_republish_agents_repairs_project_drift_without_cycle_changes` | Con paquete activo, publica derivados/manifiesto actualizados; estado, paquetes, política y continuidad permanecen idénticos; el verificador deja de informar DRIFT de proyecto cuando las otras patas ya son coherentes. |
 | PC-09 | `test_republish_agents_inherits_installed_model_and_is_idempotent` | Modelo instalado personalizado se conserva literalmente; ausencia de modelo permanece ausente; segunda ejecución no reescribe archivos. |
 | PC-10 | `test_republish_agents_preserves_existing_derivation_guards` | Fuente/política/contexto inválidos y modificación local protegida producen rechazo sin publicación parcial; archivos ajenos se conservan y sólo se retiran nombres administrados obsoletos. |
-| PC-11 | `test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution` | Conserva forma y `packet-prepared/validate-packet`; sólo DRIFT exclusivo de proyecto ofrece `republish-agents`. Tras retiro no propone despachar el paquete. |
+| PC-11 | `test_status_preserves_prepared_situation_and_expo<session>_drift_resolution` | Conserva forma y `packet-prepared/validate-packet`; sólo DRIFT exclusivo de proyecto ofrece `republish-agents`. Tras retiro no propone despachar el paquete. |
 | PC-12 | `test_packet_105_prepared_begin_and_project_drift_recovery` | Fixture `F001-003-test-writer-red-105`, preparado + `begin` + DRIFT: republicar funciona sin retirar; retirar funciona con DRIFT; tras ambas operaciones, cadena trazable y nuevo `prepare` exitoso. |
 | PC-13 | `test_withdraw_publication_failure_preserves_state_and_continuity` | Fallo de escritura provocado mediante condición real del filesystem devuelve error y conserva conjuntamente estado y cabeza anteriores. |
 

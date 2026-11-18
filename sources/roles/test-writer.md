@@ -117,7 +117,7 @@ acceptance counterweight R7: `skills/cdad-cycle/references/stage-3-tdd.md`):
    mocks over plumbing). Pre-RED searches tests, contracts and authorized inputs; it never orders
    to inspect implementation code to discover what to verify.
 8. Property tests ARE a declared stage-3 substage (corrected wording): property
-   tests verify the spec invariants with random inputs — one invariant per
+   tests verify the invariants for which the approved contract selects executable property tests, with random inputs (invariants kept as reviewable restrictions get no campaign; they go to contextual review) — one invariant per
    property test, with a presupuesto finito y positivo declarado y justificado before each campaign
    (invariante, dominio y coste del recorrido); no universal minima or maxima. Evidence is reproducible:
    invariante, presupuesto declarado y cantidad realmente ejecutada, semilla (FIXED seed for

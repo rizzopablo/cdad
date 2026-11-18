@@ -61,7 +61,7 @@ del contrato protege cada test** y **revisar la suite completa por tramos** sin 
   `tranche-1/experiments/suspicions.json`, sin promoverlas ni descartarlas). La ausencia de candidatos no acredita
   redundancia universal ni autoriza poda.
 - **N3:** seis filas del tramo citan fragmentos que viven en un test hermano que no ejecutan (declaradas con sus
-  nodeids en `report.md` §2). **N2:** el bloque de cierre usa el rótulo `ses_orquestador_cierre` sin id de sesión
+  nodeids en `report.md` §2). **N2:** el bloque de cierre usa el rótulo `<session>_cierre` sin id de sesión
   del runtime; sus tokens se declaran «no disponibles», no cero. **O2:** falta decidir si la lectura de caché
   (92,9 M tokens) entra en la noción de costo que el dueño quiere gobernar.
 - **Proyección lineal y por cota alta:** no descuenta el ahorro esperado de los cambios de método del tramo 2.

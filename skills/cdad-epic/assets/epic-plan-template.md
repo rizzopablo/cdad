@@ -41,6 +41,14 @@ approved_at: <pending>
 | 2 | <epic-num>-002-<slug> | <description> | 001 | No |
 | 3 | <epic-num>-003-<slug> | <description> | 002 | No |
 
+### Accumulation unit (single, non-recursive)
+
+<Rules: `skills/cdad-cycle/references/bounded-review-cycles.md` §5. One ordinary unit for accepted optional residue, queued after the planned units above and before integration/closure. Add the row to the table above only when residue was admitted; otherwise write "No residue admitted." Never create a second accumulation unit.>
+
+- **Membership (approved before the unit opens):** <item → originating unit, family, round, finding; accepted consequence and disposition authority; resolution criterion; responsible party>.
+- **Contract and own maximum:** <bounded contract; architect-justified maximum of rounds>.
+- **Amendments:** <new members after approval require an explicit amendment recorded in "Plan changes".>
+
 ## Cross-feature contracts
 
 <If applicable: interfaces shared between features. Keep minimal, signatures only.>

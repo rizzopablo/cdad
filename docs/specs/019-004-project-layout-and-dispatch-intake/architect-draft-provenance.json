@@ -1,0 +1,10 @@
+{
+  "version": "draft-002",
+  "source_session": "<session>",
+  "source_report": "019-004-project-layout-and-dispatch-intake-architect-draft-002.md",
+  "source_sha256": "7d58c74146ec1e0565ae660183a25172ca3dae4a1e7138fe48daec7019dbaf66",
+  "source_bytes": 51123,
+  "transformation": "Sections extracted verbatim including their own H1 lines.",
+  "spec_sha256": "29f7c39bf3972d8783503f5e9978635362b07f351428474cc68ad26399b21be1",
+  "plan_sha256": "321a005f2aa0d27ea6100342b20637c509a4c47a753ab251241c8f55ce063833"
+}

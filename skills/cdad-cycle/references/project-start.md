@@ -24,6 +24,16 @@ particular directory structure is required — and **without a global search**: 
 the nearest enclosing repository as the anchor instead of a massive filesystem
 walk.
 
+Once the root is known, pass it explicitly as `--project-root` to every
+packet, layout and intake command. Declarations inside the project (locator,
+state, policy, packet and execution paths) resolve against that product root,
+which can differ from the session directory; never substitute the session
+directory. For a nested root, the coordinator stays where it is and relocates a
+fresh child per role unit as shown in `sub-agent-strategies.md`, section "Native
+child when the project root is nested"; do not create a top-level runner. The
+command examples further down use `"$PWD"`, which assumes the shell is already at
+the product root; in a nested layout, substitute the product root instead.
+
 ## 2. Classify the state
 
 Distinguish three cases **using the primitives by reference** (never repeating the

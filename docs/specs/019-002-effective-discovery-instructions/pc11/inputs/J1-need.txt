@@ -1,0 +1,1 @@
+I own a small command-line notes tool (the project in this directory). I want to be able to tag my notes and then list only the notes that carry a given tag. Please start a CDAD feature for this and guide me through it. Ask me what you need; I decide the behaviour.

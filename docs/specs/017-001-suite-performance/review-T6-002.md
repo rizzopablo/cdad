@@ -39,7 +39,7 @@ En `scripts/cdad-suite.py:1597–1625`, `live_pids_with_marker()` cuenta únicam
 
 - **Intake:** Route C validada; `validate-packet` terminó sin diagnóstico y el render de identificación coincide. El contexto de ejecución es v2.
 - **Comandos principales:** `git status --short`, inspección del diff y de los JSON de evidencia; reproducción Python de `_is_descendant_of()` y `live_pids_with_marker()`.
-- **Ejecución iniciada, resultado no disponible:** `python3 -m pytest -p no:cacheprovider --basetemp=<tmp>/review-t6-015/pytest` sobre el oráculo T6 y las focales T1/T2/T3/T4; después de esa ejecución quedó encolado `python3 scripts/cdad-suite.py validate`. No atribuyo un resultado a ninguno.
+- **Ejecución iniciada, resultado no disponible:** `python3 -m pytest -p no:cacheprovider --basetemp=~/clawd/tmp/review-t6-015/pytest` sobre el oráculo T6 y las focales T1/T2/T3/T4; después de esa ejecución quedó encolado `python3 scripts/cdad-suite.py validate`. No atribuyo un resultado a ninguno.
 - **Estado Git observado:** `HEAD ebd5f1f5`; `M docs/.cdad-state.json` preexistente. No hice commit ni edité archivos del producto.
 
 ## Abstentions

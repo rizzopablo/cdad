@@ -2,7 +2,7 @@
 feature_id: 016-002-gap-report
 approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-016-traceability-and-suite-review/execution.md)
 approved_at: 2026-11-03
-source: architect draft (sesión <ses-347>), materializado por el orquestador (ADR-003)
+source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban el subcomando gap-report, el universo tomado del estado con cierre registrado, las exclusiones justificadas como priorización (no verificadores) y el informe JSON reproducible por stdout
 ---
 

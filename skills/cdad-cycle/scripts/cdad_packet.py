@@ -26,6 +26,14 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_lifecycle  # noqa: E402
+from cdad_layout import (  # noqa: E402
+    LOCATOR_RELPATH as LAYOUT_LOCATOR_RELPATH,
+    AmbiguousLayoutError,
+    LayoutError,
+    methodology_base,
+    registered_methodology_dir,
+    resolve_layout,
+)
 
 
 class PolicyError(ValueError):
@@ -220,7 +228,6 @@ APPROVAL_SUSTITUIDA = "sustituida"
 APPROVAL_CONTRATO_CAMBIADO = "contrato cambiado"
 APPROVAL_NO_REQUERIDA = "no requerida"
 APPROVAL_DESCONOCIDA = "desconocida"
-STATE_RELPATH_TEXT = "docs/.cdad-state.json"
 # D5 (005-001 T3): the resting value between features. `current_stage == IDLE_STAGE`
 # is valid iff `active_feature` is null; single editable definition of the
 # invariant lives in skills/cdad-cycle/references/state-detection.md:27-30.
@@ -240,7 +247,6 @@ PATH_POLICY_OPTIONAL_LISTS = {"implementation_files", "documentation_files", "te
 # non-empty); absent means no behavior change (compatibility).
 PATH_POLICY_PRIVATE = "private_paths"
 PATH_POLICY_KNOWN = PATH_POLICY_LISTS | PATH_POLICY_OPTIONAL_LISTS | {PATH_POLICY_PRIVATE}
-POLICY_RELPATH = Path("docs") / "cdad-policy.json"
 POLICY_KEYS = {"schema_version", "path_policy", "temporary_roots"}
 # Observable class per mechanical classification token; single vocabulary
 # shared by the classifier and the conflict diagnostics.
@@ -432,7 +438,7 @@ def classify_path_observable(raw_path: str, path_policy: dict[str, Any], project
     """
     canonical_root = _canonical_project_root(project_root)
     candidate = _project_path(canonical_root, raw_path, "path")
-    policy_path = _project_path(canonical_root, POLICY_RELPATH.as_posix(), "policy path")
+    policy_path = _project_path(canonical_root, _policy_relpath(canonical_root), "policy path")
     if candidate == policy_path:
         return "policy"
     relative = candidate.relative_to(canonical_root).as_posix()
@@ -809,9 +815,9 @@ def _resume_digest_checks(project_root: Path, state: dict[str, Any]) -> dict[str
             path = _project_path(project_root, relpath, "suspension reference")
             if path.is_file():
                 checks[relpath] = hashlib.sha256(path.read_bytes()).hexdigest()
-        policy = project_root / POLICY_RELPATH
+        policy = _policy_location(project_root)
         if policy.is_file():
-            checks[POLICY_RELPATH.as_posix()] = hashlib.sha256(policy.read_bytes()).hexdigest()
+            checks[_policy_relpath(project_root)] = hashlib.sha256(policy.read_bytes()).hexdigest()
         if isinstance(packet, dict) and packet.get("id"):
             receipt = (project_root / ".cdad/runtime/results" / binding["id"] /
                        packet["id"] / "receipt.json")
@@ -910,7 +916,7 @@ def suspend_unit(args: argparse.Namespace, project_root: Path) -> str:
         raise PolicyError("suspend-unit requires a non-empty --reason")
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         if state.get("active_feature") != feature_id:
             raise PolicyError(f"unit {feature_id!r} is not the active unit")
@@ -1082,7 +1088,7 @@ def resume_unit(args: argparse.Namespace, project_root: Path) -> str:
         raise PolicyError(f"cannot resume unit {feature_id!r}: project lock is busy")
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         if not _validate_idle_coherence(state):
             raise PolicyError(f"cannot resume {feature_id!r}: another unit is active")
@@ -1355,6 +1361,16 @@ def _validate_v2_state(execution_document: dict[str, Any], state: dict[str, Any]
     for field in V2_BINDING_FIELDS:
         if binding.get(field) != execution[field]:
             raise PolicyError(f"execution binding mismatch: {field}")
+    # 019-004 §4.5.3: the policy recorded by the execution must be the one of the
+    # selected layout; a conflict fails closed and never searches another location.
+    recorded_policy = execution_document["policy"]["path"]
+    selected_policy = _policy_relpath(project_root)
+    if recorded_policy != selected_policy:
+        raise PolicyError(
+            f"execution policy.path {recorded_policy!r} does not match the selected layout's "
+            f"policy {selected_policy!r}; the execution is bound to another policy location "
+            "and continuation fails closed"
+        )
     _validate_active_packet(state.get("active_packet"))
     # F1 + B1: one current-vigency validation for every consumer, plus the
     # authority-derived binding check (authority_ref is the verified source).
@@ -1453,7 +1469,7 @@ def _validate_scope(scope: Any, *, role: str, write: bool, contract_dir: str,
             if not any(_path_is_within(candidate, root) for root in declared):
                 raise PolicyError(
                     f"temporary scope selector {selector!r} is not inside any "
-                    f"temporary_roots declared by {POLICY_RELPATH.as_posix()}: "
+                    f"temporary_roots declared by {_policy_relpath(project_root)}: "
                     f"declared temporary_roots={list(temporary_roots or [])!r} "
                     f"(the owner declares that list; PD-15)")
         elif scope_class != classified:
@@ -2313,7 +2329,7 @@ def verify_published_packet(project_root: Path, packet_id: Any, *,
     execution_document = _load_execution_context(
         project_root, request.get("execution_id"))
     if state is None:
-        state = _load_json(project_root / "docs" / ".cdad-state.json",
+        state = _load_json(_state_path(project_root),
                            "project state")
     validate_request(request, execution_document, state, project_root)
     submitted = _canonical_block(
@@ -2530,13 +2546,32 @@ def _cwd_path(raw: str) -> Path:
     return path if path.is_absolute() else Path.cwd() / path
 
 
+def _proposed_documentation_roots(project_root: Path) -> list[str]:
+    """019-004 §4.4: a proposed policy classifies the selected methodology base as
+    documentation while retaining the end-user `docs/` documentation root."""
+    roots = ["docs"] if (project_root / "docs").is_dir() else []
+    # A proposal is read-only and selects nothing. It uses the bootstrap-aware
+    # resolution (a fresh project proposes cdad/). An ambiguous placement adds
+    # no base root: the proposal does not decide the layout (§4.2). An invalid
+    # registered locator still fails.
+    try:
+        base = resolve_layout(project_root, for_bootstrap=True)["methodology_dir"]
+    except AmbiguousLayoutError:
+        base = None
+    except LayoutError as exc:
+        raise PolicyError(str(exc)) from exc
+    if base is not None and base != "docs":
+        roots.append(base)
+    return roots
+
+
 def propose_policy(project_root: Path) -> str:
     """Deterministic, read-only policy proposal derived from the detected layout."""
     path_policy: dict[str, list[str]] = {
         "test_roots": ["tests"] if (project_root / "tests").is_dir() else [],
         "implementation_roots": [name for name in LAYOUT_IMPL_ROOTS
                                  if (project_root / name).is_dir()],
-        "documentation_roots": ["docs"] if (project_root / "docs").is_dir() else [],
+        "documentation_roots": _proposed_documentation_roots(project_root),
     }
     if (project_root / "install.sh").is_file():
         path_policy["implementation_files"] = ["install.sh"]
@@ -2553,9 +2588,31 @@ def propose_policy(project_root: Path) -> str:
     return json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
+def _methodology_base(project_root: Path) -> str:
+    """019-004 §4.2: the selected methodology base (historical docs/ when no
+    locator exists). An invalid registered locator is a policy error, never a
+    silent fallback to docs/."""
+    try:
+        return methodology_base(project_root)
+    except LayoutError as exc:
+        raise PolicyError(str(exc)) from exc
+
+
+def _state_relpath(project_root: Path) -> str:
+    return f"{_methodology_base(project_root)}/.cdad-state.json"
+
+
+def _state_path(project_root: Path) -> Path:
+    return project_root / _methodology_base(project_root) / ".cdad-state.json"
+
+
+def _policy_relpath(project_root: Path) -> str:
+    return f"{_methodology_base(project_root)}/cdad-policy.json"
+
+
 def _policy_location(project_root: Path) -> Path:
-    """Resolve docs/cdad-policy.json inside the project (never an escaping symlink)."""
-    return _project_path(project_root, POLICY_RELPATH.as_posix(), "policy path")
+    """Resolve the methodology policy inside the project (never an escaping symlink)."""
+    return _project_path(project_root, _policy_relpath(project_root), "policy path")
 
 
 def _policy_present(project_root: Path) -> bool:
@@ -2565,15 +2622,72 @@ def _policy_present(project_root: Path) -> bool:
     if path.exists():
         if not path.is_file():
             raise PolicyError(
-                f"policy location is invalid: {POLICY_RELPATH.as_posix()} exists but is "
+                f"policy location is invalid: {_policy_relpath(project_root)} exists but is "
                 f"not a regular file"
             )
         return True
     return False
 
 
+def check_layout_compatibility(project_root: Path, methodology_dir: str) -> None:
+    """019-004 §4.4 / PC-06: before operational effects, a REGISTERED methodology
+    layout must be classified as documentation by the effective policy.
+
+    Incompatibility is reported with an actionable diagnostic and never repaired:
+    the accepted policy is not rewritten, no other layout is selected and no
+    permission is widened. Legacy projects (no locator) never reach this check.
+    """
+    path_policy, _, _ = _load_policy(project_root)
+    policy_rel = f"{methodology_dir}/cdad-policy.json"
+    for destination in (methodology_dir, f"{methodology_dir}/specs", f"{methodology_dir}/epics"):
+        classified = classify_path(destination, path_policy, project_root)
+        if classified == "docs" and not _is_private_path(destination, path_policy):
+            continue
+        if _is_private_path(destination, path_policy):
+            cause = "declared private"
+        elif classified is None:
+            cause = "unclassified"
+        else:
+            cause = f"classified as {classified!r}"
+        raise PolicyError(
+            f"methodology destination {destination!r} is {cause} by the effective policy "
+            f"{policy_rel!r}: the selected layout is incompatible with that policy. Request "
+            "owner-authorized policy reconciliation before retrying; the accepted policy is not "
+            "rewritten, no other layout is selected and no permission is widened"
+        )
+
+
+def check_materialization_destination(project_root: Path, destination: str) -> None:
+    """019-004 §4.4 steps 3-4 / PC-06: classify one CONCRETE materialization
+    destination with the effective policy, before any write.
+
+    The parent methodology directory is not enough: a descendant can be declared
+    private, or classified as tests or implementation. The rejection names the
+    destination, leaves every file untouched and never rewrites the policy.
+    """
+    path_policy, _, _ = _load_policy(project_root)
+    root = _canonical_project_root(project_root)
+    target = _project_path(root, destination, "materialization destination")
+    relative = target.relative_to(root).as_posix()
+    policy_rel = _policy_relpath(project_root)
+    if _is_private_path(relative, path_policy):
+        raise PolicyError(
+            f"materialization destination {destination!r} is declared private by the effective "
+            f"policy {policy_rel!r}: the artifact is not written. Choose a destination the policy "
+            "classifies as documentation; the policy is not rewritten and no permission is widened"
+        )
+    classified = classify_path(destination, path_policy, root)
+    if classified != "docs":
+        cause = "unclassified" if classified is None else f"classified as {classified!r}"
+        raise PolicyError(
+            f"materialization destination {destination!r} is {cause} by the effective policy "
+            f"{policy_rel!r}: the artifact is not written. Choose a destination the policy "
+            "classifies as documentation; the policy is not rewritten and no permission is widened"
+        )
+
+
 def _load_policy(project_root: Path) -> tuple[dict[str, Any], str, str]:
-    """Load docs/cdad-policy.json: return (path_policy, exact file sha256, snapshot).
+    """Load the methodology policy: return (path_policy, exact file sha256, snapshot).
 
     The snapshot is the base64 of the exact bytes the digest covers, so a
     consumer can verify the recorded revision against the file content (PD-5).
@@ -2679,7 +2793,7 @@ def _current_policy_bytes_and_sha(project_root: Path) -> tuple[bytes, str]:
     """Read docs/cdad-policy.json once: (exact bytes, sha256) (PD-5)."""
     path = _policy_location(project_root)
     if not path.is_file():
-        raise PolicyError(f"project policy not found: {POLICY_RELPATH.as_posix()}")
+        raise PolicyError(f"project policy not found: {_policy_relpath(project_root)}")
     raw = _read_bytes(path, "project policy")
     return raw, hashlib.sha256(raw).hexdigest()
 
@@ -3155,7 +3269,7 @@ def _bootstrap_v2_execution(args: argparse.Namespace, project_root: Path,
         "execution": execution,
         "path_policy": path_policy,
         "policy": {
-            "path": POLICY_RELPATH.as_posix(),
+            "path": _policy_relpath(project_root),
             "schema_version": 1,
             "sha256": policy_sha256,
             "snapshot": policy_snapshot,
@@ -3290,7 +3404,7 @@ def _require_preparation_configuration(project_root: Path) -> None:
     against the SELECTED execution (`_validate_v2_state`); on this path there is
     no such context, so they are neither guessed nor fabricated.
     """
-    location = POLICY_RELPATH.as_posix()
+    location = _policy_relpath(project_root)
     path = _policy_location(project_root)
     if not path.exists():
         raise PolicyError(
@@ -3487,7 +3601,7 @@ def _resume_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     if not request_path.is_file() or not packet_path.is_file():
         raise PolicyError(f"packet not found for --resume-packet: {packet_id}")
     request = _load_json(request_path, "packet request")
-    state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+    state = _load_json(_state_path(project_root), "project state")
     execution_document = _load_execution_context(project_root, request.get("execution_id"))
     _ensure_policy_reconciled(project_root, execution_document)
     actual = _read_bytes(packet_path, "packet")
@@ -3823,7 +3937,7 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     packet_dir = out_dir / packet_id
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         active = state.get("active_packet")
         if not isinstance(active, dict) or active.get("id") != packet_id:
@@ -4110,7 +4224,7 @@ def reconcile_policy(args: argparse.Namespace, project_root: Path) -> None:
         # and hash together; an invalid policy is rejected before any write.
         path = _policy_location(project_root)
         if not path.is_file():
-            raise PolicyError(f"project policy not found: {POLICY_RELPATH.as_posix()}")
+            raise PolicyError(f"project policy not found: {_policy_relpath(project_root)}")
         raw = _read_bytes(path, "project policy")
         current = hashlib.sha256(raw).hexdigest()
         if sha != current:
@@ -4120,7 +4234,7 @@ def reconcile_policy(args: argparse.Namespace, project_root: Path) -> None:
         if digest != sha:
             raise PolicyError(
                 f"accepted revision {sha} does not match the policy digest {digest}")
-        state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+        state = _load_json(_state_path(project_root), "project state")
         active = state.get("active_packet")
         if isinstance(active, dict) and active.get("status") in ACTIVE_PACKET_STATUSES:
             raise PolicyError(
@@ -4142,7 +4256,7 @@ def reconcile_policy(args: argparse.Namespace, project_root: Path) -> None:
             "execution": new_execution,
             "path_policy": path_policy,
             "policy": {
-                "path": POLICY_RELPATH.as_posix(),
+                "path": _policy_relpath(project_root),
                 "schema_version": 1,
                 "sha256": digest,
                 "snapshot": snapshot,
@@ -4155,7 +4269,7 @@ def reconcile_policy(args: argparse.Namespace, project_root: Path) -> None:
         _validate_v2_state(new_document, new_state, project_root)
 
         context_path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         _publish_owned_atomically([
             (context_path, _serialize_document(new_document, sorted_keys=True)),
             (state_path, _serialize_document(new_state)),
@@ -4506,7 +4620,7 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
     observation_path = _cwd_path(args.input[0])
 
     with _ProjectLock(project_root):
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         execution_document, execution_id = _resolve_active_execution(project_root, state)
         if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
@@ -4880,7 +4994,8 @@ _IMPLEMENTER_TEST_GLOBS = [
 
 
 def _derived_maps(role: str | None, path_policy: dict[str, Any],
-                  temporary_roots: list[str] | None = None
+                  temporary_roots: list[str] | None = None, *,
+                  policy_relpath: str,
                   ) -> dict[str, list[tuple[str, str]]]:
     """Permission maps (findLast order) for one derived agent (I9/PD-7).
 
@@ -4901,8 +5016,10 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
     barrier is `read` (and `edit`). Claude Code keeps its path-guard mediation
     for Grep/Glob (PD-8/C2), which is a different runtime.
     """
-    policy_pattern = POLICY_RELPATH.as_posix()
+    policy_pattern = policy_relpath
     derived_pattern = f"{DERIVED_RELPATH.as_posix()}/**"
+    # 019-004 §4.5: the locator is protected control metadata: no role edits it.
+    locator_pattern = LAYOUT_LOCATOR_RELPATH.as_posix()
     # P-1 (004-002): declared private paths are denied in read AND edit for
     # EVERY role, emitted AFTER the role's allow rules so findLast gives the
     # private barrier precedence (obvious, minimal; absent = no change).
@@ -4937,7 +5054,7 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + [(pattern, "allow") for pattern in _test_patterns(path_policy)]
                 + [(pattern, "allow") for pattern in colocated]
                 + temporary
-                + [(policy_pattern, "deny"), (derived_pattern, "deny")]
+                + [(policy_pattern, "deny"), (derived_pattern, "deny"), (locator_pattern, "deny")]
                 + private)
         return {"read": read, "edit": edit}
     if role == "implementer":
@@ -4958,7 +5075,7 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + implementation_allows
                 + [(pattern, "deny") for pattern in _IMPLEMENTER_TEST_GLOBS]
                 + [(pattern, "deny") for pattern in denied]
-                + [(policy_pattern, "deny"), (derived_pattern, "deny")]
+                + [(policy_pattern, "deny"), (derived_pattern, "deny"), (locator_pattern, "deny")]
                 + private)
         maps: dict[str, list[tuple[str, str]]] = {"edit": edit}
         if private:
@@ -4966,7 +5083,7 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
         return maps
     if role == "orchestrator":
         edit = ([("*", "allow"), (policy_pattern, "deny"),
-                 (derived_pattern, "deny")] + private)
+                 (derived_pattern, "deny"), (locator_pattern, "deny")] + private)
         maps = {"edit": edit}
         if private:
             maps["read"] = list(private)
@@ -5349,7 +5466,8 @@ def _build_derived_payloads(project_root: Path,
     temporary_roots = _accepted_temporary_roots(execution_document, project_root)
     expected = {
         name: _rewrite_derived_agent(
-            origin, _derived_maps(_derived_role(name), path_policy, temporary_roots))
+            origin, _derived_maps(_derived_role(name), path_policy, temporary_roots,
+                                  policy_relpath=_policy_relpath(project_root)))
         for name, origin in sources.items()
     }
     # The project owner's `model:` wins over the installed one (009-001 rule
@@ -6448,7 +6566,7 @@ def validate_unit_contract(args: argparse.Namespace, project_root: Path) -> str:
     it writes its durable, idempotent impact record; it never writes the state
     (the orchestrator records the reconciliation in `stage_history.note`).
     """
-    state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+    state = _load_json(_state_path(project_root), "project state")
     feature_id = state.get("active_feature")
     epic_id = state.get("active_epic")
     if (not isinstance(feature_id, str) or not feature_id
@@ -6501,7 +6619,7 @@ def _publish_generation(
     despachable packet, and an error leaves the previous generation intact
     (INV-1/INV-3/INV-5).
     """
-    state_path = project_root / "docs" / ".cdad-state.json"
+    state_path = _state_path(project_root)
     _ensure_policy_reconciled(project_root, execution_document)
     # PD-16 (§2.9/INV-3): a declared temporary must be ignored by Git, verified
     # read-only before anything is staged. Fails closed, naming both exits.
@@ -6753,7 +6871,7 @@ def _require_current_agent(request: dict[str, Any], state: dict[str, Any],
 
 
 def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
-    state_path = project_root / "docs" / ".cdad-state.json"
+    state_path = _state_path(project_root)
     if state_path.is_file():
         _suspended_unit_for(_load_json(state_path, "project state"),
                             getattr(args, "feature", None) or
@@ -6779,7 +6897,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         # Recover from an interrupted publication before reading state: drop the
         # transaction-owned files left under .cdad/.txn, never a foreign entry.
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
 
         # §4.1 row 3 (PC-07b): on the new/ordinary preparation paths, and with
@@ -7301,7 +7419,7 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
     """
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         # Precondition: the resting coherence the CLI already imposes. A unit
         # already open (or an incoherent state) fails closed, naming the record.
@@ -8115,7 +8233,7 @@ def withdraw_transition(args: argparse.Namespace, project_root: Path) -> str:
             f"state incoherent: --transition {WITHDRAW_TRANSITION} requires --packet "
             f"<packet-id>: the retirement cites the active packet it retires "
             f"(007-006 §Retirar)")
-    state_path = project_root / "docs" / ".cdad-state.json"
+    state_path = _state_path(project_root)
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
         state = _load_json(state_path, "project state")
@@ -8203,7 +8321,7 @@ def republish_agents(args: argparse.Namespace, project_root: Path) -> str:
     permissions, never a model, and the CLI never chooses one."""
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state = _load_json(project_root / "docs" / ".cdad-state.json",
+        state = _load_json(_state_path(project_root),
                            "project state")
         # AJ1: the derived agents derive from the ACTIVE binding; a suspended
         # unit is never selected implicitly, and a suspension has no binding.
@@ -8566,7 +8684,7 @@ def _authority_note(state: dict[str, Any], source: str | None) -> str:
 
 
 def register_transition(args: argparse.Namespace, project_root: Path) -> str:
-    state_path = project_root / "docs" / ".cdad-state.json"
+    state_path = _state_path(project_root)
     if state_path.is_file():
         current_state = _load_json(state_path, "project state")
         target_feature = getattr(args, "feature", None) or current_state.get("active_feature")
@@ -8649,7 +8767,7 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
 
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
-        state_path = project_root / "docs" / ".cdad-state.json"
+        state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
         execution_document, execution_id = _resolve_active_execution(project_root, state)
         if execution_document.get("schema_version") != V2_SCHEMA_VERSION:
@@ -9766,7 +9884,7 @@ def _declared_contract_block(
     return {"path": path, "declared_sha256": declared, "observed_sha256": observed}
 
 
-def _approval_record(index: int, entry: dict[str, Any]) -> dict[str, Any]:
+def _approval_record(index: int, entry: dict[str, Any], *, state_rel: str) -> dict[str, Any]:
     """A resolvable locator for the SELECTED record (never a fabricated one).
 
     Spec §2.3 «Localizadores y determinismo»: the locator is the 0-based
@@ -9777,7 +9895,7 @@ def _approval_record(index: int, entry: dict[str, Any]) -> dict[str, Any]:
     """
     key = entry.get("transition_key")
     return {
-        "path": STATE_RELPATH_TEXT,
+        "path": state_rel,
         "index": index,
         "transition_key": key if isinstance(key, str) else None,
         "approved_by": entry.get("approved_by"),
@@ -9900,7 +10018,7 @@ def _architect_approval_reference(
                              f"active epic {epic_id!r} (stage 'epic-plan' with a "
                              f"non-empty approved_by); the plan pin does not apply"))
     index, mandate = found
-    record = _approval_record(index, mandate)
+    record = _approval_record(index, mandate, state_rel=_state_relpath(project_root))
     if block["observed_sha256"] != block["declared_sha256"]:
         # A3: the mandate exists but the request's contract bytes drifted.
         return reference(role=role, obj="epic-plan",
@@ -9943,7 +10061,7 @@ def _feature_spec_approval_reference(
         # only when its selection is already proven WITHOUT those bytes (pin and
         # supersession are readable); otherwise it is null.
         chosen = pinned or current or records
-        record = _approval_record(*chosen[0]) if chosen else None
+        record = _approval_record(*chosen[0], state_rel=_state_relpath(project_root)) if chosen else None
         reason = (
             "approval unknown: the current bytes of the declared contract are "
             "unreadable, so absence and vigency cannot be asserted")
@@ -9960,7 +10078,7 @@ def _feature_spec_approval_reference(
         # S3: every approval record was superseded; keep the FIRST one.
         index, entry = records[0]
         return reference(role=role, obj="feature-spec", status=APPROVAL_SUSTITUIDA,
-                         record=_approval_record(index, entry),
+                         record=_approval_record(index, entry, state_rel=_state_relpath(project_root)),
                          contract=block, reason=(
                              "approval superseded: every approval record for the "
                              "feature was replaced by a later entry"))
@@ -9969,12 +10087,12 @@ def _feature_spec_approval_reference(
         index, entry = current[0]
         return reference(role=role, obj="feature-spec",
                          status=APPROVAL_CONTRATO_CAMBIADO,
-                         record=_approval_record(index, entry),
+                         record=_approval_record(index, entry, state_rel=_state_relpath(project_root)),
                          contract=block, reason=(
                              "the contract changed: no approval record names the "
                              "request's contract path and declared digest"))
     index, entry = pinned[0]
-    record = _approval_record(index, entry)
+    record = _approval_record(index, entry, state_rel=_state_relpath(project_root))
     if block["observed_sha256"] != block["declared_sha256"]:
         # S5: the pin matches but the CURRENT bytes changed.
         return reference(role=role, obj="feature-spec",
@@ -10001,7 +10119,7 @@ def _situation_projection(
     causes: list[str] = []
     if state_error:
         situation = SITUATION_DIAGNOSIS
-        source = STATE_RELPATH_TEXT
+        source = _state_relpath(project_root)
     elif entry == ENTRY_DIAGNOSIS:
         situation = SITUATION_DIAGNOSIS
         source = next_block["source"]
@@ -10061,7 +10179,7 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
     unknowns: list[str] = []
 
     state, state_error = _read_optional_document(
-        project_root, "docs/.cdad-state.json", "project state")
+        project_root, _state_relpath(project_root), "project state")
     if state_error:
         unknowns.append(state_error)
         state = {}
@@ -10073,10 +10191,10 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         state_error = state_error or f"suspended_units incoherent: {exc}"
         unknowns.append(state_error)
 
-    policy_present = (project_root / POLICY_RELPATH).is_file()
+    policy_present = (_policy_location(project_root)).is_file()
     if not policy_present:
         unknowns.append(
-            f"project policy not found: {POLICY_RELPATH.as_posix()} "
+            f"project policy not found: {_policy_relpath(project_root)} "
             "(configuration incomplete)")
 
     epic = {"active_epic": state.get("active_epic"), "epic_stage": state.get("epic_stage")}
@@ -10146,6 +10264,17 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         state=state, project_root=project_root, packet=packet,
         policy_present=policy_present)
     next_block = _next_route(entry, packet)
+    if entry == ENTRY_NEXT_UNIT and not state_error:
+        # 019-002 PC-5: apply the same resting-coherence criterion as
+        # `open-unit` before recommending it; an incoherent state gets an
+        # actionable diagnosis (read-only: nothing is repaired here).
+        try:
+            _validate_idle_coherence(state)
+        except PolicyError as exc:
+            entry = ENTRY_DIAGNOSIS
+            next_block = {"route": f"diagnosis: {exc}",
+                          "source": _state_relpath(project_root)}
+            unknowns.append(str(exc))
 
     # 007-001: the additive operational projection (spec §2.1–§2.3). Read-only:
     # it reuses `_active_execution`, `_pending_work`, `state.active_packet` and
@@ -10191,7 +10320,7 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
         "project": {
             "root": project_root.name,
             "markers": {
-                "state": (project_root / "docs" / ".cdad-state.json").is_file(),
+                "state": (_state_path(project_root)).is_file(),
                 "policy": policy_present,
                 "feature": bool(feature["active_feature"]),
                 "plan": _plan_marker(project_root, state),
@@ -10255,6 +10384,11 @@ def build_parser() -> argparse.ArgumentParser:
     validate_policy.add_argument("--project-root")
     validate_policy.add_argument("--classify", action="append", default=[], metavar="PATH",
                                  help="print the I1 class of a project-relative path")
+    layout = commands.add_parser(
+        "layout", help="read-only project-layout placement (019-004 §4.3); never creates anything")
+    layout.add_argument("--project-root", required=True)
+    layout.add_argument("--for-bootstrap", action="store_true",
+                        help="propose the new default cdad/ when no layout is recognized; caller confirms absence elsewhere")
     for name in ("render", "validate-request", "validate-packet"):
         command = commands.add_parser(name)
         command.add_argument("--project-root")
@@ -10274,6 +10408,22 @@ def build_parser() -> argparse.ArgumentParser:
                      "the published packet instead of the full packet")
         if name == "validate-packet":
             command.add_argument("--packet", required=True)
+    intake = commands.add_parser(
+        "intake",
+        help="validate ONE received A/C dispatch, read-only (019-004 §6)",
+        description=(
+            "Validate the received dispatch exactly as supplied: Route A (marker block) "
+            "or Route C (declaration + identification). --received is a transport file "
+            "relative to the invocation directory (or absolute), or - for stdin. Paths "
+            "declared inside the dispatch are relative to --project-root. Success prints "
+            "one JSON object; failure exits 2 with the cause on stderr. Nothing is written."))
+    intake.add_argument("--project-root", required=True)
+    intake.add_argument(
+        "--received", required=True, metavar="FILE|-",
+        help="the received message: a file (invocation-relative or absolute) or - for stdin")
+    intake.add_argument(
+        "--execution-context",
+        help="explicit execution context (invocation-relative), with the same rules as render")
     prep = commands.add_parser("prepare", help="write request, packet and state binding; print the packet")
     prep.add_argument("--project-root")
     prep.add_argument("--execution-context")
@@ -10722,9 +10872,11 @@ def _route_c_execution_context(project_root: Path, request: dict[str, Any],
     return execution_document
 
 
-def route_c_identification(project_root: Path, request_argument: str,
-                           explicit_context: str | None) -> bytes:
-    """§4.2: emit the route C identification of a verified published packet.
+def _route_c_identification_document(project_root: Path, request_argument: str,
+                                     explicit_context: str | None) -> dict[str, Any]:
+    """§4.2: the route C identification of a verified published packet, as the
+    canonical object. Shared by `render --route C` (bytes) and `intake` (the
+    exact comparison of a received identification).
 
     The order is the contract's (points 1-7): published request location,
     canonical v2 context, validation of the request, verification of the
@@ -10738,7 +10890,7 @@ def route_c_identification(project_root: Path, request_argument: str,
         project_root, Path(request_argument), request)
     execution_document = _route_c_execution_context(
         project_root, request, explicit_context)
-    state = _load_json(project_root / "docs" / ".cdad-state.json",
+    state = _load_json(_state_path(project_root),
                        "project state")
     validate_request(request, execution_document, state, project_root)
     packet_id = request["packet_id"]
@@ -10760,17 +10912,430 @@ def route_c_identification(project_root: Path, request_argument: str,
         "packet": (PACKETS_TREE / packet_id / PACKET_MD_NAME).as_posix(),
         "contract": request["contract"],
     }
+    return identification
+
+
+def route_c_identification(project_root: Path, request_argument: str,
+                           explicit_context: str | None) -> bytes:
+    """§4.2: the route C identification as published bytes (`render --route C`)."""
+    identification = _route_c_identification_document(
+        project_root, request_argument, explicit_context)
     payload = json.dumps(identification, ensure_ascii=False, sort_keys=True)
     return f"{ROUTE_C_DECLARATION}\n\n```json\n{payload}\n```\n".encode("utf-8")
+
+
+# ---------------------------------------------------------------- 019-004 T3
+# §6 received-dispatch intake: a READ-ONLY structural admission of ONE received
+# message. It composes the existing validators; it never publishes, transitions,
+# records a receipt or registers anything, and it never echoes the dispatch body
+# in a diagnostic. Route selection comes from the supplied input only.
+INTAKE_SCHEMA_VERSION = 1
+INTAKE_VALIDATION = "structural-dispatch"
+ROUTE_C_FIELDS = frozenset({
+    "contract", "execution_context", "execution_id",
+    "packet", "packet_id", "project_root", "request",
+})
+# The two distinctive identifiers of a published packet. A JSON object carrying
+# either one is a candidate identification (spec §6.4, decision 2026-11-17). An
+# object carrying neither is inert wrapper content, whatever other keys it uses;
+# a candidate carrying only one of them is partial and is rejected as ambiguous.
+ROUTE_C_CANDIDATE_KEYS = frozenset({"packet_id", "execution_id"})
+# Every section heading the published packet can emit (render_packet and its
+# sections, including the conditional `## Current decisions`), plus the renderer's
+# instruction-block delimiters. A line that is exactly one of them is a packet
+# fragment; a heading or delimiter mentioned inside a sentence is not, and neither
+# is an unrelated heading or HTML comment.
+ROUTE_C_BODY_HEADINGS = frozenset({
+    "# CDAD task", "## Objective", "## Contract", "## Current decisions",
+    "## Task validation plan", "## Applicable contract", "## Inputs", "## Read scope",
+    "## Write scope", "## Invariants", "## Expected output", "## Evidence required",
+    "<!-- cdad-instructions:start -->", "<!-- cdad-instructions:end -->",
+})
+# A wrapper line repeating a published body line is a fragment only from this
+# length on, so short coincidences and ordinary prose stay inert (decisions
+# 2026-11-17).
+ROUTE_C_VERBATIM_MIN = 24
+RESEND_ORIGINAL = (
+    "Send the original received message unmodified; do not rebuild it from render "
+    "output, the published PACKET.md or a summary")
+LEGACY_NOT_DISPATCH = (
+    "legacy consultation; not a CDAD dispatch: the received input carries no packet "
+    "claim (no CDAD marker block and no Route C declaration), so it accredits no "
+    "commission and nothing was validated. A commission arrives as a Route A marker "
+    "block, or as the Route C declaration with its identification")
+
+
+def _intake_input_bytes(raw: str) -> bytes:
+    """§6.1: the one received message, from an invocation-relative transport file
+    or from stdin. Nothing else is read, and the transport path is never resolved
+    against the product root."""
+    if raw == "-":
+        data = sys.stdin.buffer.read()
+        origin = "stdin"
+    else:
+        data = _read_bytes(_cwd_path(raw), "received input")
+        origin = raw
+    if not data:
+        raise PolicyError(
+            f"the received input from {origin} is empty: there is no dispatch to "
+            "validate. Pass the received message itself, as a file or on stdin")
+    return data
+
+
+def _intake_text(data: bytes) -> str:
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise PolicyError(
+            "the received input is not UTF-8 text (first invalid byte at offset "
+            f"{exc.start}): a dispatch is a text message. Pass the message exactly as "
+            "it was received, encoded as UTF-8") from exc
+
+
+def _intake_route(lines: list[str]) -> str:
+    """§6.2: one route from the supplied lines, or the legacy diagnostic.
+
+    Lines are compared exactly (line endings aside), so a text that merely
+    mentions the marker or the declaration makes no claim.
+    """
+    begins = sum(1 for line in lines if line == PACKET_BEGIN_MARKER)
+    ends = sum(1 for line in lines if line == PACKET_END_MARKER)
+    declarations = sum(1 for line in lines if line == ROUTE_C_DECLARATION)
+    if not (begins or ends or declarations):
+        raise PolicyError(LEGACY_NOT_DISPATCH)
+    if declarations and (begins or ends):
+        raise PolicyError(
+            "mixed routes: the input carries a Route A marker block and a Route C "
+            "declaration, and a received dispatch selects exactly one route; none is "
+            "chosen. Send one route only: the marker block alone (Route A), or the "
+            "declaration with its identification alone (Route C)")
+    return "C" if declarations else "A"
+
+
+def _no_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise PolicyError(
+                f"a JSON object repeats the key {key!r}; a duplicate key is ambiguous "
+                f"and is rejected. {RESEND_ORIGINAL}")
+        result[key] = value
+    return result
+
+
+def _intake_json_object(payload: str, label: str, correction: str) -> dict[str, Any]:
+    try:
+        value = json.loads(payload, object_pairs_hook=_no_duplicate_keys)
+    except PolicyError:
+        raise
+    except ValueError as exc:
+        raise PolicyError(f"the {label} is not valid JSON. {correction}") from exc
+    if not isinstance(value, dict):
+        raise PolicyError(f"the {label} must be one JSON object. {correction}")
+    return value
+
+
+def _canonical_json(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, ensure_ascii=False)
+
+
+def _intake_route_a(project_root: Path, data: bytes,
+                    explicit_context: str | None) -> dict[str, Any]:
+    """§6.3: the ONE marker block, its validated request, and exact equality with
+    the complete canonical rendering. A preamble before the marker is inert;
+    nothing after the block is trimmed or normalised away."""
+    raw_lines = data.decode("utf-8").splitlines(keepends=True)
+    begins = [index for index, line in enumerate(raw_lines)
+              if line.rstrip("\r\n") == PACKET_BEGIN_MARKER]
+    ends = [index for index, line in enumerate(raw_lines)
+            if line.rstrip("\r\n") == PACKET_END_MARKER]
+    if len(begins) != 1:
+        raise PolicyError(
+            f"the received input carries {len(begins)} opening markers, and a Route A "
+            "dispatch needs exactly one marker block. Send only that dispatch, not a "
+            f"transcript. {RESEND_ORIGINAL}")
+    if len(ends) != 1:
+        raise PolicyError(
+            f"the marker block is closed by {len(ends)} closing markers; it needs "
+            f"exactly one. {RESEND_ORIGINAL}")
+    if ends[0] <= begins[0]:
+        raise PolicyError(
+            f"the closing marker comes before the opening marker. {RESEND_ORIGINAL}")
+    block = "".join(raw_lines[begins[0]:]).encode("utf-8")
+    header_lines = block.decode("utf-8").splitlines()
+    if len(header_lines) < 2:
+        raise PolicyError(
+            "the marker block has no JSON header line after its opening marker. "
+            f"{RESEND_ORIGINAL}")
+    header = _intake_json_object(
+        header_lines[1], "Route A header",
+        f"The header line after the opening marker must be the packet's JSON header. {RESEND_ORIGINAL}")
+    packet_id = header.get("packet_id")
+    if not _safe_packet_component(packet_id):
+        raise PolicyError(
+            "the Route A header names no safe packet_id, so no published request can "
+            f"be identified. {RESEND_ORIGINAL}")
+    request_path = project_root / PACKETS_TREE / packet_id / "REQUEST.json"
+    if not request_path.is_file():
+        raise PolicyError(
+            f"the dispatch names packet {packet_id!r}, which has no published request "
+            f"under .cdad/packets/{packet_id}/. Either the packet was not published by "
+            "`prepare`, or the wrong dispatch was received. Use the dispatch of a "
+            "published packet; no other packet is searched")
+    request = _load_json(request_path, "packet request")
+    execution_document = _resolve_request_execution_context(
+        project_root, request, explicit_context)
+    state = _load_json(_state_path(project_root), "project state")
+    validate_request(request, execution_document, state, project_root)
+    rendered = render_packet(request, execution_document, project_root).encode("utf-8")
+    if block != rendered:
+        raise PolicyError(
+            "the received Route A dispatch differs from the complete canonical "
+            "rendering of the packet it names. An altered objective, instruction, "
+            "scope or evidence line, appended text, or changed line endings are never "
+            f"accepted or normalised into a match. {RESEND_ORIGINAL}")
+    return request
+
+
+def _intake_fragment_guard(lines: list[str]) -> None:
+    """§6.4: a packet body fragment beside the identification is never inert.
+
+    A line that is exactly a canonical section heading of the published packet
+    is rejected wherever it sits, before or after the declaration. Prose that
+    mentions a heading inside a sentence, and unrelated headings, pass.
+    """
+    for index, line in enumerate(lines):
+        heading = line.strip()
+        if heading in ROUTE_C_BODY_HEADINGS:
+            raise PolicyError(
+                f"the Route C input carries a fragment of the published packet body "
+                f"(the section heading {heading!r} on line {index + 1}). A Route C "
+                "message is the declaration and its identification, with inert wrapper "
+                "text only; packet body text is never admitted beside it, before or "
+                f"after. {RESEND_ORIGINAL}")
+
+
+def _intake_json_fences(lines: list[str]) -> list[tuple[int, int | None]]:
+    """Every ```json fence as (opening index, closing index), the closing being
+    None when the fence never closes."""
+    fences: list[tuple[int, int | None]] = []
+    index = 0
+    while index < len(lines):
+        if lines[index] == "```json":
+            closing = index + 1
+            while closing < len(lines) and lines[closing] != "```":
+                closing += 1
+            fences.append((index, closing if closing < len(lines) else None))
+            index = closing + 1
+        else:
+            index += 1
+    return fences
+
+
+def _intake_candidate_scan(lines: list[str], identification_at: int,
+                           identification_closing: int) -> None:
+    """§6.4: a JSON object carrying `packet_id` or `execution_id` is a candidate
+    identification in ANY delivery form: any ```json-like fence (any info-string case,
+    trailing space or none) or raw JSON in wrapper text, at any depth. The declared
+    identification block is skipped by its line range; text that does not parse as
+    a JSON object, or an object carrying neither identifier, is prose or ordinary
+    content and stays inert. The first candidate found is enough to reject: a second
+    one is never chosen, and a single partial one is ambiguous, never completed."""
+    blanked = [
+        "" if identification_at <= index <= identification_closing else line
+        for index, line in enumerate(lines)
+    ]
+    text = "\n".join(blanked)
+    decoder = json.JSONDecoder()
+    for position, char in enumerate(text):
+        if char != "{":
+            continue
+        try:
+            value, _ = decoder.raw_decode(text, position)
+        except ValueError:
+            continue
+        if ROUTE_C_CANDIDATE_KEYS.intersection(value):
+            raise PolicyError(
+                "the Route C input carries more than one identification block, and a "
+                "candidate is never chosen among several. Keep only the one received "
+                f"dispatch. {RESEND_ORIGINAL}")
+
+
+def _intake_other_candidates(lines: list[str], identification_at: int,
+                             identification_closing: int) -> None:
+    """§6.4: only candidate identifications count. Every other ```json fence must
+    parse and close: a fence that never closes or does not hold a complete JSON value
+    cannot be classified, so it is rejected. Then the candidate scan decides, in any
+    delivery form, whether a second identification is present."""
+    for opening, closing in _intake_json_fences(lines):
+        if opening == identification_at:
+            continue
+        if closing is None:
+            raise PolicyError(
+                "the Route C input carries a json fence that never closes, so it cannot be "
+                "classified as inert wrapper text or as a second identification; none is "
+                f"chosen. Keep only the one received dispatch. {RESEND_ORIGINAL}")
+        payload = "\n".join(lines[opening + 1:closing])
+        try:
+            json.loads(payload)
+        except ValueError as exc:
+            raise PolicyError(
+                "the Route C input carries a json fence that is not a complete JSON value, "
+                "so it cannot be classified as inert wrapper text or as a second "
+                f"identification; none is chosen. Keep only the one received dispatch. "
+                f"{RESEND_ORIGINAL}") from exc
+    _intake_candidate_scan(lines, identification_at, identification_closing)
+
+
+def _intake_verbatim_guard(project_root: Path, packet_id: str, lines: list[str],
+                           block_start: int, block_end: int) -> None:
+    """§6.4 (decisions 2026-11-17): a wrapper line copied verbatim from the
+    published packet body is a packet fragment, whatever its position.
+
+    Only lines of the published PACKET.md after its closing marker count as the
+    body, so the marker and the JSON header never serve as evidence. A wrapper
+    line is compared as a whole line after stripping, and only when it has at
+    least ROUTE_C_VERBATIM_MIN characters; substrings and short lines stay inert.
+    The declaration and identification block (lines block_start..block_end,
+    inclusive) are the accredited identification and are never compared.
+    The diagnostic names the line number only, never its content.
+    """
+    packet_path = project_root / PACKETS_TREE / packet_id / PACKET_MD_NAME
+    packet_lines = [line.rstrip("\r\n") for line in
+                    _read_bytes(packet_path, "published packet").decode("utf-8").splitlines()]
+    ends = [index for index, line in enumerate(packet_lines) if line == PACKET_END_MARKER]
+    if len(ends) != 1:
+        raise PolicyError(
+            f"the published packet {packet_id!r} does not carry exactly one closing "
+            "marker, so its body cannot be identified for the Route C fragment check. "
+            "Run `prepare` again for the packet")
+    body = {line.strip() for line in packet_lines[ends[0] + 1:] if line.strip()}
+    for index, line in enumerate(lines):
+        if block_start <= index <= block_end:
+            continue
+        stripped = line.strip()
+        if len(stripped) < ROUTE_C_VERBATIM_MIN or stripped not in body:
+            continue
+        raise PolicyError(
+            f"the Route C input carries a fragment of the published packet body: line "
+            f"{index + 1} repeats a line of the packet body verbatim. A line copied from "
+            "the packet is a packet fragment, and it is never admitted beside the "
+            "identification, before or after it. " + RESEND_ORIGINAL)
+
+
+def _intake_route_c(project_root: Path, lines: list[str],
+                    explicit_context: str | None) -> dict[str, Any]:
+    """§6.4: exactly one declaration, one identification block, inert wrappers
+    around them, and an exact comparison with the canonical identification of
+    the packet the identification names."""
+    _intake_fragment_guard(lines)
+    declarations = [index for index, line in enumerate(lines)
+                    if line == ROUTE_C_DECLARATION]
+    if len(declarations) != 1:
+        raise PolicyError(
+            f"the Route C input declares {len(declarations)} times, and exactly one "
+            f"declaration is admitted. {RESEND_ORIGINAL}")
+    cursor = declarations[0] + 1
+    while cursor < len(lines) and not lines[cursor].strip():
+        cursor += 1
+    if cursor >= len(lines) or lines[cursor] != "```json":
+        raise PolicyError(
+            "the Route C declaration is not followed by its json identification block. "
+            f"{RESEND_ORIGINAL}")
+    closing = cursor + 1
+    while closing < len(lines) and lines[closing] != "```":
+        closing += 1
+    if closing >= len(lines):
+        raise PolicyError(
+            f"the Route C identification block is not closed by a fence. {RESEND_ORIGINAL}")
+    _intake_other_candidates(lines, cursor, closing)
+    submitted = _intake_json_object(
+        "\n".join(lines[cursor + 1:closing]), "Route C identification",
+        "The identification must be the single JSON object the runtime received for "
+        f"the published packet. {RESEND_ORIGINAL}")
+    if set(submitted) != ROUTE_C_FIELDS:
+        raise PolicyError(
+            "the Route C identification does not carry exactly the canonical fields: "
+            "some are missing or unknown. Pass the identification as received, without "
+            "edits")
+    packet_id = submitted["packet_id"]
+    if not _safe_packet_component(packet_id):
+        raise PolicyError(
+            "the Route C identification names no safe packet_id. Pass the identification "
+            "as received, without edits")
+    canonical = _route_c_identification_document(
+        project_root,
+        str(project_root / PACKETS_TREE / packet_id / "REQUEST.json"),
+        explicit_context)
+    divergent = sorted(
+        field for field in ROUTE_C_FIELDS
+        if _canonical_json(submitted[field]) != _canonical_json(canonical[field]))
+    if divergent:
+        raise PolicyError(
+            "the Route C identification does not match the canonical identification of "
+            "the packet it names. Values are compared exactly and never normalised; "
+            f"these differ: {', '.join(divergent)}. The received identification names "
+            "another or an altered packet. Use it as received, and do not edit it to "
+            "match the packet")
+    _intake_verbatim_guard(project_root, packet_id, lines, declarations[0], closing)
+    return canonical
+
+
+def intake_dispatch(args: argparse.Namespace, project_root: Path) -> dict[str, Any]:
+    """§6.5: the structural result of ONE received dispatch, or a PolicyError.
+
+    Read-only by construction: no lock, no transition, no publication, no
+    receipt, no materialization and no registration.
+    """
+    data = _intake_input_bytes(args.received)
+    lines = [line.rstrip("\r\n") for line in _intake_text(data).splitlines()]
+    route = _intake_route(lines)
+    if route == "A":
+        request = _intake_route_a(project_root, data, args.execution_context)
+        packet_id, execution_id = request["packet_id"], request["execution_id"]
+    else:
+        identification = _intake_route_c(project_root, lines, args.execution_context)
+        packet_id = identification["packet_id"]
+        execution_id = identification["execution_id"]
+    return {
+        "schema_version": INTAKE_SCHEMA_VERSION,
+        "validation": INTAKE_VALIDATION,
+        "route": route,
+        "packet_id": packet_id,
+        "execution_id": execution_id,
+        "project_root": str(project_root),
+        "methodology_dir": _methodology_base(project_root),
+    }
+
+
+def _layout_command(args: argparse.Namespace) -> int:
+    try:
+        placement = resolve_layout(args.project_root, for_bootstrap=args.for_bootstrap)
+    except LayoutError as exc:
+        print(f"layout: {exc}", file=sys.stderr)
+        return 1
+    sys.stdout.write(json.dumps(placement) + "\n")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     try:
         args = build_parser().parse_args(argv)
+        if args.command == "layout":
+            return _layout_command(args)
         if args.project_root is None:
             project_root = Path.cwd().resolve()
         else:
             project_root = _absolute_existing_directory(args.project_root, "--project-root")
+        # 019-004 §4.2/§4.4: a registered layout is validated, and its policy
+        # compatibility is checked, before any command can act on it. Legacy
+        # projects (no locator) take no part in this check.
+        registered = registered_methodology_dir(project_root)
+        # The policy proposal is read-only and exists precisely for a layout whose
+        # policy is not written yet, so it skips the compatibility preflight.
+        proposing = args.command == "prepare" and getattr(args, "propose_policy", False)
+        if registered is not None and not proposing:
+            check_layout_compatibility(project_root, registered)
         if args.command == "status":
             sys.stdout.buffer.write(status_view(args, project_root))
             return 0
@@ -10778,13 +11343,13 @@ def main(argv: list[str] | None = None) -> int:
             sys.stdout.write(validate_unit_contract(args, project_root))
             return 0
         if args.command == "validate-policy":
-            policy_path = _project_path(project_root, POLICY_RELPATH.as_posix(), "policy path")
+            policy_path = _project_path(project_root, _policy_relpath(project_root), "policy path")
             policy_document = _load_json(policy_path, "project policy")
             path_policy = _validate_policy_document(policy_document, project_root)
             for raw in args.classify:
                 print(f"{raw}\t{classify_path_observable(raw, path_policy, project_root, policy_document['temporary_roots'])}")
             if not args.classify:
-                print(f"VALID: policy {POLICY_RELPATH.as_posix()}")
+                print(f"VALID: policy {_policy_relpath(project_root)}")
             return 0
         if args.command == "open-unit":
             sys.stdout.write(open_unit(args, project_root))
@@ -10835,12 +11400,23 @@ def main(argv: list[str] | None = None) -> int:
                     "--attempt-id is only valid with --record-dispatch")
             sys.stdout.buffer.write(prepare(args, project_root))
             return 0
+        if args.command == "intake":
+            try:
+                document = intake_dispatch(args, project_root)
+            except StateConflict as exc:
+                raise PolicyError(str(exc)) from exc
+            except (KeyError, TypeError, IndexError) as exc:
+                raise PolicyError(
+                    "the dispatch or the project documents it names are malformed "
+                    f"({exc.__class__.__name__}); nothing was accredited (§6.5)") from exc
+            sys.stdout.write(json.dumps(document) + "\n")
+            return 0
         if args.command == "validate-metric":
-            state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+            state = _load_json(_state_path(project_root), "project state")
             validate_metric(_load_json(Path(args.record), "metric record"), state)
             return 0
         if args.command == "validate-state":
-            state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+            state = _load_json(_state_path(project_root), "project state")
             registry = _validate_suspended_registry(state)
             if args.execution_context and registry:
                 candidate = _load_json(_cwd_path(args.execution_context), "execution context")
@@ -10880,7 +11456,7 @@ def main(argv: list[str] | None = None) -> int:
             # locator is never silently overridden by the argument.
             execution_document = _resolve_request_execution_context(
                 project_root, request, args.execution_context)
-            state = _load_json(project_root / "docs" / ".cdad-state.json", "project state")
+            state = _load_json(_state_path(project_root), "project state")
             validate_request(request, execution_document, state, project_root)
             rendered = render_packet(request, execution_document, project_root)
             if args.command == "render":
@@ -10894,7 +11470,7 @@ def main(argv: list[str] | None = None) -> int:
     except StateConflict as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
-    except PolicyError as exc:
+    except (PolicyError, LayoutError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

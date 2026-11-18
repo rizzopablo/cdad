@@ -41,6 +41,68 @@ Different model per sub-agent with the `model: provider/model-id` key.
 
 Invocation: through the runtime's native dispatch mechanism, declared in the `delegation` section of its generated orchestrator agent.
 
+#### Native child when the project root is nested
+
+The coordinator may stay in a parent directory while the actual CDAD project
+root is a nested directory of **any name**, for example `src/` or `cdad/`.
+In an OpenCode environment that explicitly exposes session relocation, bootstrap
+a **fresh child for each role unit**, move it, then deliver that unit's packet.
+There is no top-level runner and the coordinator's directory does not change.
+Native `functions.subagent` has no directory parameter.
+
+Illustrative pseudocode (tool names and availability are environment-specific):
+
+```javascript
+const child = await functions.subagent({
+  agent: validatedRequest.agent,
+  description: "Initialize isolated role session",
+  prompt: "Initialization only. Do not read files, load contracts or implementation, or perform role work. Return idle and wait for relocation."
+});
+const childSessionId = child.sessionID;
+// Wait for the runtime's child-idle notification before relocating.
+```
+
+Then, in `execute`, use the explicit runtime capability:
+
+```javascript
+await tools.opencode.session_move({
+  sessionID: childSessionId,
+  directory: absoluteProjectRoot
+});
+```
+
+Here `absoluteProjectRoot` is the absolute CDAD root, not its parent. After a
+successful move, continue the **same** child for this unit only:
+
+```javascript
+await functions.subagent({
+  agent: validatedRequest.agent,
+  sessionID: childSessionId,
+  description: "Deliver canonical role packet",
+  prompt: exactCanonicalRender
+});
+```
+
+`exactCanonicalRender` is the unchanged canonical Route A or Route C stdout
+owned by [handoff-prompts.md](handoff-prompts.md#prepared-packet-contract):
+never append a renderer path, instructions or another packet body. Bootstrap
+and preparation are **not role dispatch**. The existing `begin` →
+`verify-begin` → native packet delivery → record/receive protocol remains
+unchanged; its owners are [continuity.md](continuity.md),
+the runtime orchestrator's delegation section,
+[cli-delegation.md](cli-delegation.md) and
+[receiving-feedback.md](receiving-feedback.md). In particular, verify the
+current begin immediately before packet delivery, not merely before bootstrap.
+Do not reuse this child for a later role unit.
+
+Relocation is not a universal runtime facility or a sandbox guarantee. If it is
+unavailable or fails, stop this example's flow rather than deliver the packet
+in the wrong directory. Scope checks may verify allowed contract/test access
+without reading implementation; they need not touch protected files.
+In one observed environment, isolated permission probes after relocation
+allowed a test edit and denied an implementation read. That is bounded evidence
+for that environment, not a blanket isolation guarantee.
+
 ### Claude Code
 
 **Native support via sub-agents** (since ADR-008, 2026-08-13). Define it in `.claude/agents/<name>.md` with Claude Code frontmatter (NOT OpenCode — the syntaxes are different).

@@ -49,7 +49,7 @@
     {
       "id": "PC-11",
       "promise": "orientación-conservada",
-      "locator": "test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+      "locator": "test_status_preserves_prepared_situation_and_expo<session>_drift_resolution"
     },
     {
       "id": "PC-12",
@@ -300,14 +300,14 @@
       ],
       "verifier": {
         "kind": "test",
-        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+        "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution"
       },
       "protects": "Se conserva `packet-prepared/validate-packet`; sólo el DRIFT exclusivo de `project` ofrece `republish-agents`; tras retirar no se propone despacho.",
       "evidence": [
         {
           "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
           "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
-          "locator": "test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
+          "locator": "test_status_preserves_prepared_situation_and_expo<session>_drift_resolution"
         }
       ],
       "limits": "Estructural; ejecución, pertinencia y sensibilidad quedan para verificación independiente y cierre."

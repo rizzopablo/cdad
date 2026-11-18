@@ -1,0 +1,27 @@
+SESSION <session>
+TEXT: I'll check both assumptions against the code and by running the CLI on a scratch notes file, not on your repo's data.
+TOOL shell {"command": "set -e\ncd ~/clawd/tmp/cand019\nT=$(mktemp -d)\nexport NOTES_FILE=\"$T/notes.json\"\necho \"== A: add 3 notes, delete note 0, list\"\npython3 -m notes.cli add first >/dev/null\npython3 -m notes.cli add second >/dev/null\npython3 -m notes.cli add third >/dev/null\npython3 -m notes.cli rm 0\npython3 -m notes.cli\necho \"== A: file after rm\"; cat \"$NOTES_FILE\"; echo\necho \"== B: old-format file, list only\"\nprintf '[{\"text\": \"old one\"}, {\"text\": \"old two\"}]' > \"$NOTES_FILE\"\nmd5sum \"$NOTES_FILE\" | tee \"$T/before.md5\"\npython3 -m notes.cli\nmd5sum -c \"$T/before.md5\"\necho \"== B: after one add (file rewritten?)\"\npython3 -m notes.cli add new >/dev/null\ncat \"$NOTES_FILE\"; echo\necho \"== B: rm of old note\"\npython3 -m notes.cli rm 0; cat \"$NOTES_FILE\"; echo\nrm -rf \"$T\"\necho \"== code check\"; sed -n 21,24p notes/storage.py; sed -n 9,12p notes/cli.py\ngit status --short notes/", "workdir": "~/clawd/tmp/cand019"} => == A: add 3 notes, delete note 0, list 0: second 1: third == A: file after rm [{"text": "second"}, {"text": "third"}] == B: old-format file, list only bb0abb4a9e328817767bed30320a0c20  /tmp/tmp.GItWTtdrb0/notes.json 0: old one 1: old two /tmp/tmp.GItWTtdrb0/notes.json: OK == B: after one add (file rewritten?) [{"text": "old one"}, {"text": "old two"}, {"text": "new"}] == B: rm of old note [{"text": "old two"}, {"text": "new"}] == code check def delete(note_id):     items = load()     del items[note_id]  # later notes shift down by one     save(items)         storage.delete(int(argv[1]))     else:         for i, n in storage.all_notes():             print(f"{i}: {n['text']}") ?? notes/__pycache__/ 
+TOOL shell {"command": "cd ~/clawd/tmp/cand019 && rm -rf notes/__pycache__ && git status --short", "workdir": "~/clawd/tmp/cand019"} =>  M .opencode/skills/cdad-cycle/scripts/__pycache__/cdad_lifecycle.cpython-313.pyc 
+TEXT: Neither assumption holds as you stated it. I checked both by running the CLI on a scratch notes file in a temp folder, not on your data.
+
+**1. Note numbers do not stay the same after a delete. They shift down.**
+
+I added `first`, `second` and `third`, then ran `rm 0`. The list afterwards was:
+
+```
+0: second
+1: third
+```
+
+The cause is in `notes/storage.py:23`: `del items[note_id]`. A note's number is its position in the list, so every later note moves down one. Tags travel with their note, but the number you type changes. If you list, delete, and then tag by the old number, you tag a different note. This is an existing behaviour, and the spec already records it as a limit (deferred-hardening, and PC-13 pins the new numbering). It is now a real choice for you, not a footnote: keep the shifting numbers, or make numbers stable (a bigger change to the storage format).
+
+**2. Your existing notes file keeps working, but it is rewritten on the first change.**
+
+- Reading: I wrote a file with two old-style notes (`{"text": ...}`) and ran `list`. It printed both notes, and the file's checksum was the same before and after. Reading does not change the file.
+- Changing: the first `add` or `rm` rewrites the whole file with Python's JSON format. In my test the bytes came out identical, because I had written the file in that same format. A file you formatted by hand would be reformatted on the first change. The notes' content stays the same, and no `tags` key is added until a note is tagged.
+
+**What I did not change**
+
+The spec is still the approved-pending draft. PC-13 already covers the renumbering, and PC-12 covers the old file reading correctly. A postcondition saying that `list` never rewrites the file is not in the spec yet. If you want that guarantee, I can ask the architect to add it before you approve.
+
+I also removed a `__pycache__` folder my test run created in `notes/`. The working tree has no other changes from me.

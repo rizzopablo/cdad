@@ -2,11 +2,11 @@
 feature_id: 015-002-intake-guards
 approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-015-dispatch-reception/execution.md)
 approved_at: 2026-11-02
-source: architect draft (sesión <ses-343>), materializado por el orquestador (ADR-003)
+source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban D1 (diagnósticos por formato), D2 (guía, PC-06 intacto) y D3 (elegibilidad por pertenencia documentada)
 ---
 
-# Borrador de spec: 015-002-intake-guards (architect, sesión <ses-343>)
+# Borrador de spec: 015-002-intake-guards (architect, sesión <session>)
 
 **Estado:** aprobada (2026-11-02, HITL delegada; D1+D2+D3 aprobados). **Base:** `4e1ba75f5263094cb0d3159d6b91142a67ad8a9b`.
 
