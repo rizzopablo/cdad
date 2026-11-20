@@ -190,9 +190,9 @@ def staging_product() -> Path:
     Devuelve el checkout real si ya tiene build/staging/manifest.json; si no,
     una copia temporal con staging generado por `make staging` (el fixture
     nunca escribe en el checkout real)."""
-    from tests.product_staging import product_root
+    from tests.install_harness import minimal_product_root
 
-    return product_root()
+    return minimal_product_root()
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as exc:
@@ -329,27 +329,13 @@ class SandboxFixture(unittest.TestCase):
         )
         cls._tmp = tempfile.TemporaryDirectory(prefix="cdad-t5b-sandbox-")
         base = Path(cls._tmp.name)
-        cls.sandbox = base / "sandbox"
-        shutil.copytree(
-            REPO_ROOT,
-            cls.sandbox,
-            symlinks=True,
-            ignore=shutil.ignore_patterns(".pytest_cache", "__pycache__"),
-        )
-        cls.pristine_staging = base / "pristine-staging"
-        if (cls.sandbox / "build" / "staging" / "manifest.json").is_file():
-            shutil.copytree(cls.sandbox / "build" / "staging", cls.pristine_staging)
-        else:
-            # Portabilidad (review-t1/T6): un checkout limpio no trae
-            # build/staging; el fixture lo genera en la COPIA (nunca en el
-            # checkout real) y el sandbox lo obtiene de esa copia.
-            from tests.product_staging import product_root
+        # Minimal product (shared harness): these cases assert per-file
+        # decisions over a MUTABLE staging, not the whole product tree.
+        from tests.install_harness import fresh_product
 
-            shutil.copytree(
-                product_root() / "build" / "staging",
-                cls.sandbox / "build" / "staging",
-            )
-            shutil.copytree(cls.sandbox / "build" / "staging", cls.pristine_staging)
+        cls.sandbox = fresh_product(base)
+        cls.pristine_staging = base / "pristine-staging"
+        shutil.copytree(cls.sandbox / "build" / "staging", cls.pristine_staging)
 
     @classmethod
     def tearDownClass(cls) -> None:

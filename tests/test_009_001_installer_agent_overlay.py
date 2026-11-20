@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 from tests.install_backup_oracle import backups_holding, snapshot_tree
+from tests.install_harness import fresh_product
 from tests.suite_operation_markers import operation
 
 
@@ -51,17 +52,28 @@ class AgentOverlayContract(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.tmp = tempfile.TemporaryDirectory(prefix="cdad-009-overlay-")
         cls.base = Path(cls.tmp.name)
-        cls.repo = cls.base / "product"
-        shutil.copytree(REPO, cls.repo, symlinks=True,
-                        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
-        staging = cls.repo / "build/staging"
-        if not (staging / "manifest.json").is_file():
-            from tests.product_staging import product_root
-            shutil.copytree(product_root() / "build/staging", staging)
+        # Minimal product (install.sh + scripts + 2 staged agents + skill stubs):
+        # every promise here is about one agent's overlay, not the whole tree.
+        cls.repo = fresh_product(cls.base)
 
     @classmethod
     def tearDownClass(cls) -> None:
         cls.tmp.cleanup()
+
+    @classmethod
+    def full_repo(cls) -> Path:
+        """Whole-product copy, built lazily: only the validator promise (PC-5)
+        depends on the full tree (it needs the repo's agents/ to be coherent)."""
+        if getattr(cls, "_full_repo", None) is None:
+            full = cls.base / "full-product"
+            shutil.copytree(REPO, full, symlinks=True,
+                            ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+            staging = full / "build/staging"
+            if not (staging / "manifest.json").is_file():
+                from tests.product_staging import product_root
+                shutil.copytree(product_root() / "build/staging", staging)
+            cls._full_repo = full
+        return cls._full_repo
 
     def setUp(self) -> None:
         self.root_tmp = tempfile.TemporaryDirectory(prefix="cdad-009-root-")
@@ -192,20 +204,23 @@ class AgentOverlayContract(unittest.TestCase):
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
 
     def test_pc5_validator_rejects_installable_model_but_accepts_installed_overlay(self) -> None:
-        self.install().check_returncode()
+        # The validator cross-checks the install against the WHOLE product, so
+        # this promise installs the full tree (the one case that needs it).
+        run(self.full_repo(), self.root).check_returncode()
         _, _, name = self.staged_agent()
         target = self.installed_agent(name)
         target.write_bytes(target.read_bytes().replace(b"---\n", b"---\nmodel: user/chosen-model\n", 1))
         # Installable repository text may not distribute a model; restore every
         # modified byte before exercising the valid installed-user-overlay leg.
-        staged, _, _ = self.staged_agent()
+        full = self.full_repo()
+        staged = full / "build/staging" / self.staged_agent()[2]
         original = staged.read_bytes()
         staged.write_bytes(original.replace(b"---\n", b"---\nmodel: user/chosen-model\n", 1))
-        rejected = run_validator(self.repo, self.root)
+        rejected = run_validator(full, self.root)
         staged.write_bytes(original)
         self.assertNotEqual(rejected.returncode, 0,
                             "PC-5: validator must reject model declarations in installable text")
-        accepted = run_validator(self.repo, self.root)
+        accepted = run_validator(full, self.root)
         accepted_output = accepted.stdout + accepted.stderr
         # Other installable-text drift (for example, an unrelated agent) must
         # not make this assertion blame the valid user-owned installed overlay.

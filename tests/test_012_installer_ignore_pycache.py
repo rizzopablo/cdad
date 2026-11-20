@@ -51,6 +51,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.install_harness import fresh_product
 from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -154,24 +155,12 @@ class InstallerIgnorePycacheSandbox(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls._tmp = tempfile.TemporaryDirectory(prefix="cdad-012-sandbox-")
         base = Path(cls._tmp.name)
-        cls.pristine = base / "pristine"
-        cls.cached = base / "cached"
-        for dest in (cls.pristine, cls.cached):
-            shutil.copytree(
-                REPO_ROOT,
-                dest,
-                symlinks=True,
-                ignore=shutil.ignore_patterns(
-                    ".git", ".pytest_cache", "__pycache__"
-                ),
-            )
-            if not (dest / "build" / "staging" / "manifest.json").is_file():
-                from tests.product_staging import product_root
-
-                shutil.copytree(
-                    product_root() / "build" / "staging",
-                    dest / "build" / "staging",
-                )
+        # Minimal product: the promise is about which source shapes the skill
+        # installer registers, not about the whole tree.
+        for name in ("pristine", "cached"):
+            (base / name).mkdir()
+        cls.pristine = fresh_product(base / "pristine")
+        cls.cached = fresh_product(base / "cached")
         cls.planted = plant_cache(cls.cached)
         assert len(cls.planted) >= 3, (
             "012 fixture: cache planting produced no files; the RED setup "

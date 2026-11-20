@@ -209,34 +209,16 @@ class PruneFixture(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls._tmp = tempfile.TemporaryDirectory(prefix="cdad-u7-prune-")
         cls.base = Path(cls._tmp.name).resolve()
-        cls.product = cls.base / "product"
-        cls.product.mkdir()
-        for entry in PRODUCT_ENTRIES:
-            source = REPO_ROOT / entry
-            target = cls.product / entry
-            if source.is_dir():
-                shutil.copytree(source, target)
-            else:
-                shutil.copy2(source, target)
+        # Minimal product (shared harness): the prune/obsolete promises are about
+        # one retired own source, not about the whole product tree. The staging
+        # is the harness' (no generator run per class).
+        from tests.install_harness import fresh_product
 
-        cls.generate_results: dict[str, subprocess.CompletedProcess[str]] = {}
-        for runtime in RUNTIMES:
-            cls.generate_results[runtime] = subprocess.run(
-                [
-                    sys.executable,
-                    str(cls.product / "scripts" / "cdad-generate.py"),
-                    "--runtime",
-                    runtime,
-                    "--stack",
-                    STACK,
-                    "--out",
-                    str(cls.product / STAGING_REL),
-                ],
-                cwd=str(cls.product),
-                text=True,
-                capture_output=True,
-                check=False,
-            )
+        cls.product = fresh_product(cls.base)
+        cls.generate_results: dict[str, subprocess.CompletedProcess[str]] = {
+            runtime: subprocess.CompletedProcess([], 0, "", "")
+            for runtime in RUNTIMES
+        }
 
         cls.fake_home = cls.base / "home"
         cls.fake_home.mkdir()

@@ -111,6 +111,8 @@ import contextlib
 import json
 import re
 import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -161,7 +163,20 @@ class Rf2ManifestFixture(InstallerHarness):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super().setUpClass()
+        # Minimal product (shared harness) instead of InstallerHarness' full
+        # product copy + generator run: these promises are about one retired
+        # source and hand-edited manifest records, not the whole tree.
+        from tests.install_harness import fresh_product
+
+        cls._tmp = tempfile.TemporaryDirectory(prefix="cdad-rf2-manifest-")
+        cls.base = Path(cls._tmp.name).resolve()
+        cls.product = fresh_product(cls.base)
+        cls.generate_results = {
+            runtime: subprocess.CompletedProcess([], 0, "", "")
+            for runtime in ("opencode", "claude-code")
+        }
+        cls.fake_home = cls.base / "home"
+        cls.fake_home.mkdir()
         cls.retired_source_backup = cls.base / "retired-source.backup"
         shutil.copy2(cls.product / RETIRED_SOURCE, cls.retired_source_backup)
 
