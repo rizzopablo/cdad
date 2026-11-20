@@ -1,7 +1,7 @@
 OWNER INPUT (protected, verbatim): One more thing: I'm assuming that a note's number stays the same after other notes are deleted, and that my existing notes file keeps working untouched. I haven't checked either; please do not take them as facts. 
 
 TEXT: I'll test both assumptions against the current code, using a scratch notes file outside the repo so no real data is touched.
-TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"buy milk\"}, {\"text\": \"call bob\"}, {\"text\": \"write report\"}]' > \"$NOTES_FILE\"; cp \"$NOTES_FILE\" \"$D/before.json\"; echo \"== list before\"; python3 -m notes.cli list; echo \"== rm 0\"; python3 -m notes.cli rm 0; echo \"== list after rm 0\"; python3 -m notes.cli list; echo \"== file after\"; cat \"$NOTES_FILE\"; echo; echo \"== add\"; python3 -m notes.cli add \"new one\"; python3 -m notes.cli list; echo \"== rc of old-format read ok\"; python3 -c 'import json,sys; print(json.load(open(sys.argv[1])))' \"$NOTES_FILE\"; echo \"dir=$D\"", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"buy milk\"}, {\"text\": \"call bob\"}, {\"text\": \"write report\"}]' > \"$NOTES_FILE\"; cp \"$NOTES_FILE\" \"$D/before.json\"; echo \"== list before\"; python3 -m notes.cli list; echo \"== rm 0\"; python3 -m notes.cli rm 0; echo \"== list after rm 0\"; python3 -m notes.cli list; echo \"== file after\"; cat \"$NOTES_FILE\"; echo; echo \"== add\"; python3 -m notes.cli add \"new one\"; python3 -m notes.cli list; echo \"== rc of old-format read ok\"; python3 -c 'import json,sys; print(json.load(open(sys.argv[1])))' \"$NOTES_FILE\"; echo \"dir=$D\"", "workdir": "~/<workspace>/tmp/cand019b"} 
   => == list before
 0: buy milk
 1: call bob
@@ -22,7 +22,7 @@ TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.jso
 dir=/tmp/tmp.j5Q2Hfb37d
 
 TEXT: The first assumption is wrong: note numbers shift after a delete. I'll also check whether the file's bytes change on a read and on a write with non-ASCII text, since that affects "untouched".
-TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"caf\u00e9 \u00f1\"}]' > \"$NOTES_FILE\"; md5sum \"$NOTES_FILE\"; python3 -m notes.cli list >/dev/null; md5sum \"$NOTES_FILE\"; echo \"== after add (rewrites file)\"; python3 -m notes.cli add \"x\" >/dev/null; cat \"$NOTES_FILE\"; echo; echo \"dir=$D\"", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "set -e; D=$(mktemp -d); export NOTES_FILE=\"$D/notes.json\"; printf '%s' '[{\"text\": \"caf\u00e9 \u00f1\"}]' > \"$NOTES_FILE\"; md5sum \"$NOTES_FILE\"; python3 -m notes.cli list >/dev/null; md5sum \"$NOTES_FILE\"; echo \"== after add (rewrites file)\"; python3 -m notes.cli add \"x\" >/dev/null; cat \"$NOTES_FILE\"; echo; echo \"dir=$D\"", "workdir": "~/<workspace>/tmp/cand019b"} 
   => 2d81d860d46d4ac2b95d88ba8d38818d  /tmp/tmp.9hdk7KS3hl/notes.json
 2d81d860d46d4ac2b95d88ba8d38818d  /tmp/tmp.9hdk7KS3hl/notes.json
 == after add (rewrites file)

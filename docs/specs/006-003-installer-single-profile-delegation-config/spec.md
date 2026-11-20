@@ -149,11 +149,11 @@ Ruta: `$XDG_CONFIG_HOME/cdad/delegation.json`, o `<INSTALL_ROOT>/.config/cdad/de
 - **A-3 (archivos de config = datos del usuario).** `delegation.json` y `opencode-server.env.example` se crean solo si no existen y **no** se registran en el manifiesto de ownership: ni `--uninstall` ni el retiro de PD-6 los borran nunca. PD-2d se lee así: segunda instalación → bytes idénticos y aviso de que ya existe; no es CONFLICT.
 - **A-4 (unidad única para el `.env.example`).** La creación de los dos archivos de config la hace U4; U6 no toca `install.sh`.
 
-Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 2026-10-18
+Status: Approved by orquestador Claude (HITL delegada por <owner>, epic-006) on 2026-10-18
 
 ## 9. Enmienda A-5 del dueño (2026-10-18): se retira la verificación de familia
 
-**Decisión de Pablo:** «solo era necesario que para la delegación externa el modelo sea configurable en variables de un archivo de config cdad; para la delegación dentro de cada entorno se configura en el entorno, en la config de cada agente según lo que el runtime permita; y quitar de los skills el requerimiento al orquestador de despachar controlando diferente familia/modelo».
+**Decisión de <owner>:** «solo era necesario que para la delegación externa el modelo sea configurable en variables de un archivo de config cdad; para la delegación dentro de cada entorno se configura en el entorno, en la config de cada agente según lo que el runtime permita; y quitar de los skills el requerimiento al orquestador de despachar controlando diferente familia/modelo».
 
 - **Se retiran** PD-4a..e, D4, §2.4 y el script `cdad_model_family.py` (no se construye). El punto 4 de la enmienda 002 del epic queda retirado por el dueño.
 - **INV-5 se reemplaza:** ningún texto instalable exige al orquestador ni a ningún rol elegir, controlar, verificar ni declarar la familia o el modelo del reviewer respecto del implementer. El modelo de cada rol es el que configura el runtime (o `delegation.json` en la delegación externa).
@@ -161,4 +161,4 @@ Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 20
 - **Se conservan:** la observación I8 (`model_configured`, `model_reported`), que solo registra lo ocurrido; y los demás invariantes anti-sesgo (el test-writer no ve implementación, el implementer no edita tests, el reviewer es read-only y de sesión separada).
 - **Plan:** la U5 original se reemplaza por U5' (retiro del requisito de familia): RED que retira `tests/test_006_003_u5_model_family.py` declarándolo y reformula los oráculos que exigen el requisito, y GREEN que retira los textos. El GREEN `-005` quedó abandonado sin cambios.
 
-Status: enmienda A-5 approved by Pablo on 2026-10-18
+Status: enmienda A-5 approved by <owner> on 2026-10-18

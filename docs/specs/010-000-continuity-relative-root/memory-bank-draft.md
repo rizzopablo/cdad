@@ -67,7 +67,7 @@ campos portables (referencias, cuerpo durable, digests) conservan el texto relat
   escrituras; nuevas plataformas/rendimiento/fuzzing de rutas; refactor de todos los consumidores de rutas.
   Las sondas del reviewer no convierten estos pendientes en garantías.
 - Review sin bloqueantes con **6 opcionales** (O1–O6) y **2 abstenciones**; disposición propuesta en
-  `closure-evidence.md`, **pendiente de decisión de Pablo**, sin elevarlas a requisitos.
+  `closure-evidence.md`, **pendiente de decisión de <owner>**, sin elevarlas a requisitos.
 - **Gates abiertos, declarados como tales:** suite completa en curso (log sin resumen ni `rc`);
   `validate-subagents` en `rc=1` por drift de copias **globales** (`.claude`, `.agents`, `.config/opencode`,
   incluidos dos `.pyc`), no por la fuente ni por la instalación aislada.
@@ -121,7 +121,7 @@ mecanismo. No publicar ni cambiar modelos por cuenta propia.
 
 ## Sección 3 — ADR
 
-**Sugerido: sí**, como **ADR-040 — Proposed**, con `Confidence: Media-baja`. Motivo: el cambio fija una invariante transversal (una sola raíz canónica en los bordes, texto portable intacto) que todos los consumidores de rutas futuros deben respetar, y el propio review mostró que **no está impuesta uniformemente** (O5). No se materializa sin ratificación de Pablo; alternativa legítima y más conservadora: **no ADR**, por considerarlo aplicación directa de ADR-038 (admisión en cada frontera invocable). Si el usuario prefiere esa lectura, la entry de `activeContext` sigue valiendo sin ADR.
+**Sugerido: sí**, como **ADR-040 — Proposed**, con `Confidence: Media-baja`. Motivo: el cambio fija una invariante transversal (una sola raíz canónica en los bordes, texto portable intacto) que todos los consumidores de rutas futuros deben respetar, y el propio review mostró que **no está impuesta uniformemente** (O5). No se materializa sin ratificación de <owner>; alternativa legítima y más conservadora: **no ADR**, por considerarlo aplicación directa de ADR-038 (admisión en cada frontera invocable). Si el usuario prefiere esa lectura, la entry de `activeContext` sigue valiendo sin ADR.
 
 ```markdown
 # ADR-040: Una sola raíz canónica en los bordes; la evidencia portable conserva su texto relativo
@@ -198,7 +198,7 @@ Normalizar una variable local del CLI no lo corregía.
 
 ## Anexo B — Disposiciones pendientes de decisión del usuario (no son requisitos)
 
-| Ítem | Naturaleza | Disposición **propuesta** (sin efecto hasta que Pablo decida) |
+| Ítem | Naturaleza | Disposición **propuesta** (sin efecto hasta que <owner> decida) |
 |---|---|---|
 | DH-1 containment resuelto de `update.references` | deuda de **seguridad** de la spec | unidad/ADR separada; no ampliar este fix |
 | DH-2 TOCTOU de symlinks y concurrencia | deuda de la spec | diferida; se conserva la comprobación sobre el FS examinado |

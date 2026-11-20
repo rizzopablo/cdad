@@ -97,6 +97,8 @@ Mapeo test → postcondición:
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -261,8 +263,9 @@ class RenderProject:
                 "implementation_roots": ["src", "lib"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }
+        write_declaration(root)
         (root / POLICY_FILE).write_text(
             json.dumps(policy, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -368,7 +371,7 @@ class RenderProject:
 
     def write_request_variant(self, name: str, request: dict) -> Path:
         """Una variante del request (para el render) en la raíz temporal."""
-        path = self.root / ".cdad" / "tmp" / name
+        path = self.root / ".cdad-execution" / "tmp" / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(request, ensure_ascii=False), encoding="utf-8")
         return path
@@ -404,7 +407,7 @@ class RenderCase(unittest.TestCase):
         return result
 
     def packet_dir(self, project: RenderProject) -> Path:
-        base = project.root / ".cdad" / "packets"
+        base = project.root / ".cdad-execution" / "packets"
         packets = sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []
         self.assertEqual(
             len(packets), 1, f"se esperaba un paquete publicado: {packets}"
@@ -422,7 +425,7 @@ class RenderCase(unittest.TestCase):
         return json.loads(path.read_text(encoding="utf-8"))
 
     def execution_context(self, project: RenderProject) -> Path:
-        docs = sorted((project.root / ".cdad" / "executions").glob("*/execution.json"))
+        docs = sorted((project.root / ".cdad-execution" / "executions").glob("*/execution.json"))
         self.assertTrue(docs, "fixture: no hay contexto de ejecución v2 publicado")
         return docs[0]
 

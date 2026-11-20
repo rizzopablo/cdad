@@ -1,6 +1,6 @@
 ---
 feature_id: 015-001-frozen-reception
-approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-015-dispatch-reception/execution.md)
+approved_by: <owner> (HITL delegada al orquestador, docs/epics/epic-015-dispatch-reception/execution.md)
 approved_at: 2026-11-02
 source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban D1 (instruction_sources con snapshot base64, schema_version 1 ampliado) y D2 (históricos sin el campo conservan validación estricta; no se repara GREEN-002 ni paquetes históricos divergentes)

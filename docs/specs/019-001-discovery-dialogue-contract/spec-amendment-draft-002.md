@@ -1,6 +1,6 @@
 ## Borrador de enmienda — no aprobado
 
-La decisión directa de Pablo autoriza esta excepción para 019-001; no modifica la metodología general ni el TDD de 019-002 (`execution.md:16–28`). Propongo únicamente estos tres reemplazos en `docs/specs/019-001-discovery-dialogue-contract/spec.md`.
+La decisión directa de <owner> autoriza esta excepción para 019-001; no modifica la metodología general ni el TDD de 019-002 (`execution.md:16–28`). Propongo únicamente estos tres reemplazos en `docs/specs/019-001-discovery-dialogue-contract/spec.md`.
 
 ### 1. Reemplazar el contenido de “Documentary product and protected inputs” (`46–54`)
 

@@ -9,7 +9,7 @@ sus tareas sin alterar su digest.
 
 - Gate de Specification registrado el 2026-11-07 (`transition_key`
   `d4c7eadc5f9f6b1a1cf514105a7b9e4a467aca50fe3ad05b85ffbcc78071d0ae`).
-- Aprobado por Pablo mediante la delegación HITL del 2026-11-07 («eres el dueño
+- Aprobado por <owner> mediante la delegación HITL del 2026-11-07 («eres el dueño
   del proceso»); el orquestador ejerció la aprobación en su nombre.
 - Spec fijada: `docs/specs/017-001-suite-performance/spec.md`, SHA-256
   `472bab0c942268956484d55edec8d24934105dab29a2c86effdcbf82e192672e`

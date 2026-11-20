@@ -1,6 +1,6 @@
 # Discovery — project layout and dispatch intake
 
-Status: scope approved by Pablo on 2026-11-16; specification not drafted or
+Status: scope approved by <owner> on 2026-11-16; specification not drafted or
 approved. Planned next cycle of epic-019-discovery-dialogue, after closure of
 019-002. This note opens discovery only, not an execution or implementation.
 
@@ -36,11 +36,11 @@ records before this amendment:
 
 ## Owner clarification — existing projects (2026-11-16)
 
-Pablo explicitly confirmed that existing projects must not be moved or changed:
+<owner> explicitly confirmed that existing projects must not be moved or changed:
 the orchestrator must use the directories registered in project metadata.
 `cdad/` replaces `docs/` only as the default for new projects. No automatic
 migration is commissioned. Continue development under the existing epic mandate.
-Pablo also confirmed that the methodology directory is a per-project configured
+<owner> also confirmed that the methodology directory is a per-project configured
 value, not a global fixed constant, resolved relative to the product repository
 root. Existing metadata compatibility and any absence of a registered value must
 be determined from the actual product.

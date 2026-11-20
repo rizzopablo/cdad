@@ -2,7 +2,7 @@
 
 Fuente: `review-second-look.md` (Codex gpt-6-astra, review-015).
 
-**Decisión del dueño (Pablo):** se registran como deuda y se continúa hasta un
+**Decisión del dueño (<owner>):** se registran como deuda y se continúa hasta un
 MVP; con estos defectos, el camino feliz sigue siendo viable. Prioridades de
 la evaluación del orquestador:
 

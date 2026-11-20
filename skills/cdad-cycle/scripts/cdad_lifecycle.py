@@ -285,7 +285,7 @@ def resolve_execution_identity(*, declared: Any = None, flat: Any = None,
     `declared` is the nested `execution.id`, `flat` the compatibility
     `execution_id` of the using fixture/context and `located` the identity
     implied by the canonical location of the document
-    (`.cdad/executions/<id>/execution.json`). Contradiction or absence of the
+    (`<operational_dir>/executions/<id>/execution.json`). Contradiction or absence of the
     necessary evidence fails closed BEFORE any effect."""
     present = [item for item in (_present("execution.id", declared),
                                  _present("execution_id", flat)) if item]
@@ -308,7 +308,7 @@ def resolve_execution_identity(*, declared: Any = None, flat: Any = None,
             IDENTITY,
             f"identity contradiction: the context declares the execution "
             f"{identity!r} but its canonical record is the one of "
-            f"{located_id!r} (.cdad/executions/{located_id}/execution.json): a "
+            f"{located_id!r} (<operational_dir>/executions/{located_id}/execution.json): a "
             f"copy of one execution cannot claim another identity (§4.2)")
     return Decision(facts={"execution_id": identity})
 

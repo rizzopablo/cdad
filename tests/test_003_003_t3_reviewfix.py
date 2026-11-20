@@ -13,7 +13,7 @@ Contract:
 
 Mapa focal ↔ postcondición (cada test mapea a UN punto del review):
 
-- F1 → invariante 1/D4 (escritura SOLO bajo `.cdad/executions/<id>/guards/`):
+- F1 → invariante 1/D4 (escritura SOLO bajo `.cdad-execution/executions/<id>/guards/`):
   `execution_id` inseguro (`../x`, o absoluto) se RECHAZA (rc≠0,
   diagnóstico stderr, sin salida parcial) y NO escribe nada — ni dentro
   ni fuera de la raíz.
@@ -74,7 +74,7 @@ GUARD_TIMEOUT_S = 120
 EXEC_ID = "exec-003-003-t3-reviewfix-001"
 PACKET_ID = "003-003-progress-guards-implementer-reviewfix-001"
 
-RESULTS_DIR_REL = f".cdad/runtime/results/{EXEC_ID}/{PACKET_ID}"
+RESULTS_DIR_REL = f".cdad-execution/runtime/results/{EXEC_ID}/{PACKET_ID}"
 
 
 # ---------------------------------------------------------------- fixtures
@@ -263,7 +263,7 @@ class ReviewFixProjectCase(unittest.TestCase):
 
     def seed_002_results_layout(self) -> None:
         """Layout real de publicación de 002 bajo
-        `.cdad/runtime/results/<exec>/<packet>/`: `parts/<name>.utf8`,
+        `.cdad-execution/runtime/results/<exec>/<packet>/`: `parts/<name>.utf8`,
         `bundle.json`, `receipt.json` (invariante 5: se REUTILIZA)."""
         res = self.root / RESULTS_DIR_REL
         (res / "parts").mkdir(parents=True, exist_ok=True)

@@ -2,7 +2,7 @@
 feature_id: 001-note-tags
 feature_name: Note tags
 created_at: 2026-11-15
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-15T20:55:47Z
 ---
 
@@ -157,4 +157,4 @@ The following are the orchestrator's recommended defaults, not confirmed by the 
 - **A9, unknown commands and `--tag` as a command:** keep the fall-through (`python -m notes.cli --tag home` prints every note with exit 0), or refuse unknown commands and `--tag` without `list`?
 - **Approver name:** needed to fill `approved_by` and `approved_at`; the open item in `docs/activeContext.md` is still pending.
 
-Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner Pablo personally requested an exemption of it, with the reason that he read the whole draft and the feature is a tiny local tool (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
+Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner <owner> personally requested an exemption of it, with the reason that he read the whole draft and the feature is a tiny local tool (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).

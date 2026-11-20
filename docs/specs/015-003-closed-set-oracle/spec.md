@@ -1,6 +1,6 @@
 ---
 feature_id: 015-003-closed-set-oracle
-approved_by: Pablo (HITL delegada, docs/epics/epic-015-dispatch-reception/execution.md)
+approved_by: <owner> (HITL delegada, docs/epics/epic-015-dispatch-reception/execution.md)
 approved_at: 2026-11-03
 source: redactada por el orquestador (corrección mínima de un oráculo, ADR-003); sin sesión de architect
 ---

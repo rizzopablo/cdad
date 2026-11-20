@@ -1,6 +1,6 @@
 ---
 feature_id: 014-002-pd10-window-drift
-approved_by: Pablo (HITL delegada, docs/epics/epic-014-suite-evidence-policy/execution.md)
+approved_by: <owner> (HITL delegada, docs/epics/epic-014-suite-evidence-policy/execution.md)
 approved_at: 2026-11-02
 source: redactada por el orquestador por ser una corrección mínima de un oráculo (ADR-003); sin sesión de architect
 ---

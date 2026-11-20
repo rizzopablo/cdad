@@ -5,7 +5,7 @@ Contract (oráculo — nada se deriva de la implementación):
 - ``docs/specs/006-002-delegation-by-layer/spec.md`` §2 **PD-5(a)(b)(c)**,
   §3 **INV-3** (el paquete y el recibo son independientes del transporte: el
   mismo `receive` termina toda ruta) e **INV-4** (`/tmp` no es canal; el recibo
-  va a `.cdad/inbox`), §4 **D-4** (la equivalencia de transporte vive en
+  va a `.cdad-execution/inbox`), §4 **D-4** (la equivalencia de transporte vive en
   `re-entry.md`, enlazada desde §4 y desde cada sección `delegation`).
 - ``docs/specs/006-002-delegation-by-layer/plan.md`` ficha **U5** (archivos:
   la nueva subsección de ``references/re-entry.md`` + los enlaces desde §4 y
@@ -17,7 +17,7 @@ Contract (oráculo — nada se deriva de la implementación):
 PD-5 — «The native receipt is linked». La equivalencia de transporte que el
 contrato exige: con delegación nativa el rol devuelve su **FINAL TEXT** en la
 sesión del **orquestador**; el orquestador escenifica los **bytes exactos** bajo
-``.cdad/inbox`` con su descriptor (``RESULT.json``), **sin retipear, resumir ni
+``.cdad-execution/inbox`` con su descriptor (``RESULT.json``), **sin retipear, resumir ni
 regenerar**; corre ``receive → validate-receipt → materialize → transición``;
 recibir **no aprueba nada** (``semantic_status: pending``); y la MISMA ruta vale
 para el handoff a chat nuevo y para el adaptador CLI.
@@ -33,7 +33,7 @@ salen del spec y del plan; el CLI se ejecuta (comportamiento), no se lee.
 
 Marcadores = conceptos con alternativas de idioma (patrón ``require_any`` de
 ``tests/test_005_010_t3_references.py``/u2), no frases literales, con tres
-excepciones normativas que el contrato fija como NOMBRES: ``.cdad/inbox`` (ruta
+excepciones normativas que el contrato fija como NOMBRES: ``.cdad-execution/inbox`` (ruta
 del inbox, INV-4), ``semantic_status`` (campo del recibo, PD-5/003-002) y
 ``staged-file`` (el único ``source.kind`` aceptado, PD-5(c)). La forma de la
 prosa la verifica el review de stage 4.
@@ -200,13 +200,13 @@ NATIVE_CONCEPT = (
       "sesion del orquestador", "sesión del orquestador")),
 )
 
-# (2) escenificación de los BYTES EXACTOS bajo `.cdad/inbox` con su descriptor.
+# (2) escenificación de los BYTES EXACTOS bajo `.cdad-execution/inbox` con su descriptor.
 STAGING_CONCEPT = (
     ("bytes exactos (sin transformación)",
      ("exact bytes", "byte-identical", "byte for byte", "same bytes",
       "bytes exactos", "byte a byte", "verbatim", "unaltered", "sin alterar",
       "idénticos bytes", "identicos bytes", "identical bytes")),
-    ("inbox fijo `.cdad/inbox` (INV-4)", (".cdad/inbox",)),
+    ("inbox fijo `.cdad-execution/inbox` (INV-4)", (".cdad-execution/inbox",)),
     ("descriptor del resultado",
      ("descriptor", "result.json", "RESULT.json")),
 )
@@ -243,7 +243,7 @@ class TestPd5aTransportEquivalence(unittest.TestCase):
     def test_pd5a_reentry_declares_the_transport_equivalence_route(self) -> None:
         """PD-5(a): ``re-entry.md`` declara la equivalencia de transporte: el
         despacho nativo devuelve el FINAL TEXT en la sesión del orquestador;
-        el orquestador escenifica los BYTES EXACTOS bajo ``.cdad/inbox`` con su
+        el orquestador escenifica los BYTES EXACTOS bajo ``.cdad-execution/inbox`` con su
         descriptor y corre ``receive → validate-receipt → materialize →
         transición``."""
         self.assertTrue(

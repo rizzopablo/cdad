@@ -1,13 +1,13 @@
 # ADR-033: Los modelos se resuelven por configuración — sin perfiles en el instalador, fuente única en la delegación externa y sin verificación de familia
 
-- **Status**: Accepted (aprobado por Pablo el 2026-10-18)
+- **Status**: Accepted (aprobado por <owner> el 2026-10-18)
 - **Date**: 2026-10-18
-- **Deciders**: Pablo (dueño: fijó el principio de **modelos por configuración**, **retiró la verificación de
+- **Deciders**: <owner> (dueño: fijó el principio de **modelos por configuración**, **retiró la verificación de
   familia** —A-5— y aprobó las enmiendas 002/005 del plan del epic) + orquestador Claude (HITL delegada de
   epic-006: aprobó spec y plan con A-1..A-4, aprobó **A-6**, condujo la review y la suite de cierre) + architect
   (spec/plan) + scribe (borrador; **no aprueba**)
 - **Confidence**: Media
-- **Aprobación**: Pablo, 2026-10-18 (patrón Scribe; ADR-003/ADR-011). **Evidencia disponible para la decisión:** contrato
+- **Aprobación**: <owner>, 2026-10-18 (patrón Scribe; ADR-003/ADR-011). **Evidencia disponible para la decisión:** contrato
   `docs/specs/006-003-installer-single-profile-delegation-config/spec.md` (sha256 `c25ebf0e…`; PD-1..PD-8,
   INV-1..INV-7, D1..D8; §8 A-1..A-4, §9 A-5) y `plan.md` (A-6); RED→GREEN por unidad (U1 `d5b2ae0`→`afcd14f` +
   testfix `bb674b4`; U2 `f2c3540`→`44f1561`; U3 `54c6ac6`→`2b1b597`; U4 `5b91387`→`df90b41`; U5' `0629ae0`

@@ -77,7 +77,7 @@ incompatibles.
 
 1. **Firma de autoridad:** el usuario, en `execution.md`, y alcanza con eso;
    no agregaría otra aprobación para la activación misma. Es decisión de
-   Pablo, no mía.
+   <owner>, no mía.
 2. **Esquema de `hitl_delegation`:** conservarlo, sin extenderlo en 004-001.
    De acuerdo.
 3. **Layout público:** sacarlo del default y decidir el flag recién después
@@ -96,7 +96,7 @@ incompatibles.
 ## Conclusión
 
 Con la corrección requerida resuelta y las tres observaciones incorporadas,
-esto está listo para que Pablo apruebe y se active 004 según §6.
+esto está listo para que <owner> apruebe y se active 004 según §6.
 
 ---
 

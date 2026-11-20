@@ -2,7 +2,7 @@
 feature_id: 003-005-claude-code-packets
 feature_name: Paquetes utilizables en Claude Code (port + prepare)
 created_at: 2026-09-18
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-09-18
 ---
 

@@ -22,7 +22,7 @@ No alternate model was selected: configured models remain user-owned.
   the separate provenance fields required by the installed stage-2 instructions.
   Recovery was independently reviewed and explicitly reapproved: the new gate
   `95739fe789ff1600747f63ff903c83ea8eab8de211f33ffba08f09503ff66c18` pins the
-  corrected status labels with `delegated: true` and `requested_by: Pablo`,
+  corrected status labels with `delegated: true` and `requested_by: <owner>`,
   without an exemption. `approval-recovery-decision.md` and
   `approval-recovery-review.md` preserve the rationale and limits.
 - The T1 implementer packet `...implementer-green-001/REQUEST.json` declares
@@ -105,7 +105,7 @@ the full epic suite. No exemption from epic-suite evidence has been granted.
 
 The PD-10 intake failure was corrected in `deda7786` by marking the
 `re-entry.md` reference with `<skill-dir>` and regenerating affected agents.
-`test_pd10_intake_wiring_u<session>_cli` and the eight declared
+`test_pd10_intake_wiring_uses_installed_cli` and the eight declared
 regressions passed. The four README failures remain a separate pre-existing
 debt from `3b62d552`, not from 019-002; they are tracked in
 `regression-audit.md`.

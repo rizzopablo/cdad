@@ -31,13 +31,13 @@ Full-selection scope contrast inside `reconcile` (spec §4.4/PC-5, RED `red-T4-a
 
 ## 4. Real base attempt reconcile (new out dir, outside `/tmp/opencode`)
 
-- Command: `python3 scripts/cdad-suite.py reconcile --attempt ~/clawd/projects/cdad/evidence/017-001-baseline2/attempt-20261107T171212569537Z-1474770-69bdbdcf --out ~/clawd/tmp/017-001-T4-green/reconcile-base --register docs/specs/017-001-suite-performance/performance/operation-scope.json` → **rc 0** (`status=complete, diagnostics=none`).
+- Command: `python3 scripts/cdad-suite.py reconcile --attempt ~/<workspace>/projects/cdad/evidence/017-001-baseline2/attempt-20261107T171212569537Z-1474770-69bdbdcf --out ~/<workspace>/tmp/017-001-T4-green/reconcile-base --register docs/specs/017-001-suite-performance/performance/operation-scope.json` → **rc 0** (`status=complete, diagnostics=none`).
 - `coverage.status`: **all-selection** (selection `all`).
 - Missing operations: **none** (`missing: []`) — every `expected_in_full_run=true` op has ≥1 observed occurrence.
 - Unexercised (false + reason, no missing diagnostic): **product.copy** and **product.generate**, both `cold-branch-requires-manifest-less-source; base-checkout-has-build/staging/manifest.json`.
 - `without_entry: []`, `blocked: False`, `measurement: complete`, `diagnostics: []`, payload `status: complete`.
 - Note: `wait.*` (false, `declared-unknown`) live in the `desconocida` family and stay outside the committed-scope contrast per the T2 criterion — they remain unknown/remainder, not reclassified as unexercised.
-- Out dir `~/clawd/tmp/017-001-T4-green/reconcile-base` (new, outside `/tmp/opencode`); the attempt dir is intact (read-only reconcile).
+- Out dir `~/<workspace>/tmp/017-001-T4-green/reconcile-base` (new, outside `/tmp/opencode`); the attempt dir is intact (read-only reconcile).
 
 ## 5. Limits and role
 

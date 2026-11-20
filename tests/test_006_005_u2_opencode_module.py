@@ -464,7 +464,7 @@ class U2ModuleCase(unittest.TestCase):
         state = read_state(root)
         packet_id = state["active_packet"]["id"]
         execution_id = state["execution"]["id"]
-        packet_dir = root / ".cdad" / "packets" / packet_id
+        packet_dir = root / ".cdad-execution" / "packets" / packet_id
         return {
             "root": root,
             "role": role,
@@ -473,7 +473,7 @@ class U2ModuleCase(unittest.TestCase):
             "execution_id": execution_id,
             "request_path": packet_dir / "REQUEST.json",
             "packet_path": packet_dir / "PACKET.md",
-            "execution_path": (root / ".cdad" / "executions" / execution_id
+            "execution_path": (root / ".cdad-execution" / "executions" / execution_id
                                / "execution.json"),
             "request": read_json(packet_dir / "REQUEST.json"),
         }
@@ -697,7 +697,7 @@ class U2ModuleCase(unittest.TestCase):
     # -- durable delivery and materialization ----------------------------
 
     def receipt_path(self, ctx: dict) -> Path:
-        return (ctx["root"] / ".cdad" / "runtime" / "results"
+        return (ctx["root"] / ".cdad-execution" / "runtime" / "results"
                 / ctx["execution_id"] / ctx["packet_id"] / "receipt.json")
 
     def receipt_doc(self, ctx: dict) -> dict:
@@ -713,7 +713,7 @@ class U2ModuleCase(unittest.TestCase):
         """`materialize` with the durable receipt (003-002/§7 surface)."""
         receipt = self.receipt_path(ctx)
         self.assertTrue(receipt.is_file(), "%s: no durable receipt" % label)
-        authorization = write_json(ctx["root"] / ".cdad" / "inbox" / "AUTH.json", {
+        authorization = write_json(ctx["root"] / ".cdad-execution" / "inbox" / "AUTH.json", {
             "schema_version": 1,
             "execution_id": ctx["execution_id"],
             "packet_id": ctx["packet_id"],
@@ -770,7 +770,7 @@ class U2ModuleCase(unittest.TestCase):
     # -- ledger ----------------------------------------------------------
 
     def dispatch_records(self, ctx: dict) -> dict:
-        directory = (ctx["root"] / ".cdad" / "executions"
+        directory = (ctx["root"] / ".cdad-execution" / "executions"
                      / ctx["execution_id"] / "dispatches")
         if not directory.is_dir():
             return {}

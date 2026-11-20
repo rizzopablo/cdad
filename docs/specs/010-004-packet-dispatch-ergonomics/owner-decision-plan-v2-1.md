@@ -1,6 +1,6 @@
 # Decisión owner V2-1: plantilla POST-AUDIT mono-subfase
 
-2026-10-30 (UTC, reloj del entorno verificado antes de registrar). Autor: **Pablo**. Fuente: instrucción explícita del owner, transmitida por el orquestador supervisor a esta sesión subagente: «Corregir plantilla en el plan», que corresponde a la **opción (a) recomendada** de `approval-pending-plan-v2.md` §V2-1. La misma instrucción aprueba el plan v2 en el digest `2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685`.
+2026-10-30 (UTC, reloj del entorno verificado antes de registrar). Autor: **<owner>**. Fuente: instrucción explícita del owner, transmitida por el orquestador supervisor a esta sesión subagente: «Corregir plantilla en el plan», que corresponde a la **opción (a) recomendada** de `approval-pending-plan-v2.md` §V2-1. La misma instrucción aprueba el plan v2 en el digest `2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685`.
 
 Esta decisión resuelve el OPTIONAL V2-1 de `implementation-plan-review-v2.md` (0 BLOCKING, 1 OPTIONAL) y acompaña —por referencia— a la aprobación del plan v2. **No edita `plan.md`**: el pin del plan permanece íntegro y la enmienda viaja como decisión del owner, igual que la aprobación de la spec viajó por referencia sobre su digest.
 
@@ -22,7 +22,7 @@ Hoy la plantilla `skills/cdad-cycle/packets/substages/test-writer-post-audit.md`
 - **No cambia las promesas de la spec**: `spec.md` conserva su pin `fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64`; no se edita.
 - **No toca `plan.md`**: conserva su pin `2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685`; no se edita ni se re-revisa el plan completo.
 - **No añade subfases por invocación**: no autoriza despachar POST-AUDIT + RED juntos; al contrario, el objetivo es que POST-AUDIT sea una subfase única y RED siga en su propio dispatch.
-- **No relaja gates**: el AUDIT sigue exigiendo aprobación de Pablo o mandato explícito verificado; RED sigue exigiendo fallo por `AssertionError`; no hay autoaprobación.
+- **No relaja gates**: el AUDIT sigue exigiendo aprobación de <owner> o mandato explícito verificado; RED sigue exigiendo fallo por `AssertionError`; no hay autoaprobación.
 - **No amplía el producto** más allá de la plantilla post-audit y su generación; no autoriza implementación nueva en T2/T4 fuera de ese ajuste.
 - **No reabre** N-4/N-5/N-6, la tensión plan/observations ni la spec histórica `004-002`; la sustitución PD-12 se traza sin modificar esa spec.
 - **No permite parchear bytes** de paquetes ya emitidos; la corrección se hace en la fuente y se publica por el cauce normal.

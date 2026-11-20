@@ -40,7 +40,7 @@ GREEN/reviewer):
       }
 
 - El head inmutable se persiste en
-  `.cdad/executions/<execution_id>/continuity/head.json` (contenido = el
+  `.cdad-execution/executions/<execution_id>/continuity/head.json` (contenido = el
   documento del checkpoint); es el artefacto que `resume` verifica.
 - `--update` viaja D11: claves `goal`, `decisions` (cada una con
   `rationale`), `uncertainties`, `next_action` y `references` (lista de
@@ -54,7 +54,7 @@ Este archivo (T1 checkpoint) cubre:
   mismo digest), cadena `seq`/`prev_checkpoint_sha256` y `references[]`
   con digest del contenido.
 - Invariante 1: `begin`/`checkpoint` escriben SÓLO bajo
-  `.cdad/executions/<id>/continuity/**` (nunca `docs/.cdad-state.json`).
+  `.cdad-execution/executions/<id>/continuity/**` (nunca `docs/.cdad-state.json`).
 - Criterio 3 (faceta asignada: SÓLO el no-op idéntico): `begin` con
   cuerpo canónico idéntico al head → no-op rc 0, sin artefacto nuevo.
 - P7 / criterio 8: exceder `--max-bytes` falla cerrado sin truncar
@@ -76,6 +76,8 @@ el test no importa el módulo del CLI.
 """
 
 from __future__ import annotations
+
+from _layout_support import DECLARATION_REL, write_declaration
 
 import hashlib
 import json
@@ -103,7 +105,7 @@ CLI_TIMEOUT_S = 120
 # Cap por defecto declarado en la spec (P7).
 DEFAULT_MAX_BYTES = 16 * 1024
 
-CONTINUITY_DIR_REL = f".cdad/executions/{EXEC_ID}/continuity"
+CONTINUITY_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 STATE_REL = "docs/.cdad-state.json"
 
@@ -161,6 +163,7 @@ class ContinuityProjectCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
         self.exec_context = self.write_json("fixture/exec.json",
                                             exec_context_fixture())
 
@@ -237,7 +240,7 @@ class ContinuityProjectCase(unittest.TestCase):
         self.assertFalse(
             (self.root / STATE_REL).exists(),
             msg="P1/Invariante 1: el CLI nunca escribe docs/.cdad-state.json")
-        fixture_prefixes = ("fixture/",)
+        fixture_prefixes = ("fixture/", DECLARATION_REL)
         foreign = [
             str(p.relative_to(self.root)) for p in self.root.rglob("*")
             if p.is_file()
@@ -281,6 +284,7 @@ class TestP1RoundTripDeterminista(ContinuityProjectCase):
                                        check=False))
             self.root = Path(fresh_tmp) / "proj"
             self.root.mkdir(parents=True, exist_ok=True)
+            write_declaration(self.root)
             self.exec_context = self.write_json(
                 "fixture/exec.json", exec_context_fixture())
             update = self.write_update(update_fixture())

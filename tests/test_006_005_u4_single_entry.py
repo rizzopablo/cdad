@@ -8,7 +8,7 @@ Contrato (oráculo — nada se deriva de la implementación):
   **PD-20** y la tabla normativa **§5 D-6** (cinco filas con su condición y su
   acción única), **V-4** (la etiqueta «## Delegation (adapter)» con contenido
   nativo se corrige en U4), **V-6** (la condición stale de
-  ``.cdad/execution.json`` en el mandato se corrige en U4), **§2.1** (la regla
+  ``.cdad-execution/execution.json`` en el mandato se corrige en U4), **§2.1** (la regla
   de transporte y la superficie ``cdad_dispatch.py --project-root R --packet
   <id> --runtime X``), **§2.5** (la credencial la resuelve e inyecta el módulo,
   sólo en el entorno del proceso cliente), **§2.6.1** (el borde de adopción:
@@ -46,7 +46,7 @@ Mapa test → postcondición (un test por hecho observable de PD-20):
         ausencia de condiciones solapadas; la decisión se conduce desde
         ``status.entry``/``next``).
   2 ``test_pd20_stale_execution_json_condition_is_gone``
-        PD-20 / V-6 (el mandato no usa ``.cdad/execution.json`` como condición
+        PD-20 / V-6 (el mandato no usa ``.cdad-execution/execution.json`` como condición
         de entrada; fuente y generado).
   3 ``test_pd20_transport_rule_is_declared``
         PD-20 / §2.1 / D-9 (mismo runtime ⇒ herramienta nativa + ``record``;
@@ -90,7 +90,7 @@ Regla A-1 — declaración expresa de NO reemplazo: se verificó por barrido de 
 ``tests/test_opencode_read_map_and_steps.py``,
 ``tests/test_005_004_t2_installer_claims.py``,
 ``tests/test_role_packet_render.py``) que NINGUNO fija como contenido exigido
-las cuatro entradas solapadas, la condición ``.cdad/execution.json``, la
+las cuatro entradas solapadas, la condición ``.cdad-execution/execution.json``, la
 etiqueta «## Delegation (adapter)» ni el camino del orquestador por
 ``cdad_delegate.py --exec-config``: no hay test acoplado que reemplazar en este
 RED. Se declara además el borde adyacente observado: ``test_005_006_t2_intake``
@@ -398,10 +398,10 @@ class TestPd20FiveD6Rows(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Test 2 — PD-20 / V-6: la condición stale de `.cdad/execution.json` no existe
+# Test 2 — PD-20 / V-6: la condición stale de `.cdad-execution/execution.json` no existe
 # ---------------------------------------------------------------------------
 
-STALE_PATH = ".cdad/execution.json"
+STALE_PATH = ".cdad-execution/execution.json"
 # Vocabulario de condición/entrada: si la ruta aparece con él, se está usando
 # como condición de la vista. Una referencia histórica o de contexto no lo usa.
 CONDITION_TOKEN_RE = re.compile(
@@ -417,7 +417,7 @@ STALE_NEGATION_RE = re.compile(
 
 
 class TestPd20NoStaleExecutionJsonCondition(unittest.TestCase):
-    """PD-20/V-6: la condición `.cdad/execution.json` del mandato viejo no
+    """PD-20/V-6: la condición `.cdad-execution/execution.json` del mandato viejo no
     sobrevive como entrada — ni en la fuente ni en el generado."""
 
     def stale_offenders(self, text: str, label: str) -> list[str]:

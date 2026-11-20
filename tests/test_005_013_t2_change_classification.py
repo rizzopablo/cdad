@@ -274,13 +274,13 @@ class T2Fixture(Fixture):
         return self.packet_dir(packet_id) / JOURNAL_NAME
 
     def impact_files(self) -> list[Path]:
-        return sorted(self.root.glob(f".cdad/packets/*/{JOURNAL_NAME}"))
+        return sorted(self.root.glob(f".cdad-execution/packets/*/{JOURNAL_NAME}"))
 
     def baseline_projection_digest(self, packet_id: str | None = None) -> str:
         return sha256_bytes(self.unit_contract_path(packet_id).read_bytes())
 
     def packets_with_projection(self) -> list[str]:
-        base = self.root / ".cdad" / "packets"
+        base = self.root / ".cdad-execution" / "packets"
         if not base.is_dir():
             return []
         return sorted(
@@ -750,7 +750,7 @@ def test_pd7_no_registered_projection_yields_current(fx: T2Fixture) -> None:
     """
     fx.prepare_ok()
     fx.clear_active_packet()
-    shutil.rmtree(fx.root / ".cdad" / "packets")
+    shutil.rmtree(fx.root / ".cdad-execution" / "packets")
     assert fx.packets_with_projection() == [], (
         "precondición (fixture): no debe haber paquetes con proyección")
 

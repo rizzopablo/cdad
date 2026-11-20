@@ -2,7 +2,7 @@
 
 **Epic:** `epic-013-test-criterion` — orden 1/4. **Cerrada:** 2026-11-02.
 **Contrato:** `docs/specs/013-001-criterion-coherence/spec.md`, sha256
-`79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00`, aprobado por Pablo
+`79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00`, aprobado por <owner>
 (HITL delegada, `docs/epics/epic-013-test-criterion/execution.md`) el 2026-11-02.
 **Estado:** cerrada en el repositorio; **no publicada ni desplegada**.
 

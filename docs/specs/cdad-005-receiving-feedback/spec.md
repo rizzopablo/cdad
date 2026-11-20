@@ -1,9 +1,9 @@
 # cdad-005: Protocolo de recepción de feedback (anti-sicofantía)
 
-> Estado: APROBADO — Status: Approved by Pablo on 2026-09-02
+> Estado: APROBADO — Status: Approved by <owner> on 2026-09-02
 > Fecha: 2026-09-02 · Origen: investigación superpowers-gaps tema 1
 > (docs/epics/research-tema1-receiving-feedback/research.md). Decisión de
-> forma: cycle standalone (aprobado por Pablo 02 Sep 2026).
+> forma: cycle standalone (aprobado por <owner> 02 Sep 2026).
 
 ## Descripción funcional
 

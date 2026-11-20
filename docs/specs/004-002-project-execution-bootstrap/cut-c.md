@@ -37,7 +37,7 @@ dueño. Instalación aislada para el corte y T7 (decisión del dueño en
   `f3474f36ef68122480488fe0c5bf2a852263f51b7067b760dfd3783f6a0ec216`;
   `validate-policy` → VALID.
 - Autoridad verificable (I2): `stage_history` con la spec de 004-002
-  aprobada por Pablo y `hitl_delegation` vigente para el epic 004.
+  aprobada por <owner> y `hitl_delegation` vigente para el epic 004.
 - Producto instalado de forma aislada desde `9891e0c`
   (código igual a `28324af`): `install.sh --basic` → Verify PASS, 11
   agentes; CLI instalado sha256 `c249cc5c432f0b46ec1f1fd98aff30a1e972a99f69f62ab4de56f11946fab765`,

@@ -147,6 +147,7 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_delegate  # noqa: E402
+import cdad_layout  # noqa: E402
 import cdad_result  # noqa: E402
 
 DESTINATION_ID = "opencode"
@@ -274,7 +275,6 @@ STORE_MODEL_COLUMN = "model"
 # adapter's OWN process group and the prior attempt check.
 IDLE_MESSAGE_TYPE = "idle"            # the durable `idle` message (PD-7)
 IDLE_ERROR_MESSAGE_LIMIT = 200        # PD-7: error.message bounded to 200 chars
-DISPATCHES_RELPATH = Path(".cdad") / "executions"
 # §2.5 (D-3): the effective grace is bounded by the reserve-relative fraction.
 TERMINATE_GRACE_FRACTION = 0.25
 # §2.5 (D-3) latency guarantee (PD-11): the share of the internal budget that
@@ -329,6 +329,14 @@ COMPLETION_MARGIN_SECONDS = 0.8
 # preflight window on short cotas and refused legitimate dispatches).
 MIN_CLIENT_WAIT_SECONDS = 0.1
 MIN_CLIENT_WAIT_SHARE = 0.2
+
+
+def _operational_relpath(project_root: Path, *parts: str) -> str:
+    """020-001: repository-relative operational path of the project."""
+    try:
+        return "/".join((cdad_layout.operational_dir(project_root), *parts))
+    except cdad_layout.LayoutError as exc:
+        raise AdapterError(str(exc)) from exc
 
 
 class AdapterError(RuntimeError):
@@ -1062,7 +1070,9 @@ def _prior_attempt_check(store_path: Path, project_root: Path,
     if not isinstance(execution_id, str):
         return {"blocking_session": None, "unaffirmable_session": None,
                 "reads": 0}
-    base = project_root / DISPATCHES_RELPATH / execution_id / "dispatches"
+    base = (project_root
+            / _operational_relpath(project_root, "executions", execution_id)
+            / "dispatches")
     if not base.is_dir():
         return {"blocking_session": None, "unaffirmable_session": None,
                 "reads": 0}
@@ -2014,7 +2024,8 @@ def _register_dispatch(project_root: Path, packet_id: str, request: dict[str, An
     execution_id = _as_text(request.get("execution_id"))
     if execution_id is None:
         raise AdapterError(f"packet {packet_id!r} request has no execution_id")
-    observation_dir = project_root / ".cdad" / "executions" / execution_id
+    observation_dir = (project_root
+                       / _operational_relpath(project_root, "executions", execution_id))
     observation_dir.mkdir(parents=True, exist_ok=True)
     observation_path = observation_dir / f".{attempt_id}.observation.json"
     payload = (json.dumps(observation, ensure_ascii=False, sort_keys=True, indent=2)
@@ -2090,13 +2101,16 @@ def _run_receive(project_root: Path, execution_id: str, packet_id: str,
             "complete skill co-located with the adapter); the delivery cannot "
             "be persisted and no coordinator working directory is used as a "
             "fallback")
-    packet_dir = project_root / ".cdad" / "packets" / packet_id
+    packet_dir = (project_root
+                  / _operational_relpath(project_root, "packets", packet_id))
     try:
         proc = subprocess.run(
             [sys.executable, str(scripts_dir / RESULT_CLI_NAME), "receive",
              "--project-root", str(project_root),
-             "--execution-context", str(project_root / ".cdad" / "executions"
-                                       / execution_id / "execution.json"),
+             "--execution-context", str(
+                 project_root
+                 / _operational_relpath(project_root, "executions", execution_id,
+                                        "execution.json")),
              "--packet", str(packet_dir / "PACKET.md"),
              "--request", str(packet_dir / "REQUEST.json"),
              "--descriptor", str(descriptor_path),
@@ -2155,7 +2169,7 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
     _register_dispatch(project_root, packet_id, request, attempt_id, observation,
                        continuity_attempt)
 
-    inbox = project_root / ".cdad" / "inbox"
+    inbox = project_root / _operational_relpath(project_root, "inbox")
     inbox.mkdir(parents=True, exist_ok=True)
     part_name = f"{attempt_id}-{FINAL_TEXT_PART}"
     staged = inbox / f"{part_name}.md"
@@ -2177,11 +2191,11 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         "parts": [{
             "name": part_name,
             "artifact_kind": artifact_kind,
-            "staged_path": f"{cdad_result.INBOX_RELPATH.as_posix()}/{part_name}.md",
+            "staged_path": f"{cdad_result.inbox_relpath(project_root)}/{part_name}.md",
         }],
         "run_evidence_ref": None,
     }
-    descriptor_path = (project_root / ".cdad" / "runtime"
+    descriptor_path = (project_root / _operational_relpath(project_root, "runtime")
                        / f".{attempt_id}.result.json")
     descriptor_path.parent.mkdir(parents=True, exist_ok=True)
     descriptor_path.write_text(
@@ -2195,7 +2209,7 @@ def _persist_delivery(project_root: Path, packet_id: str, request: dict[str, Any
         staged.unlink(missing_ok=True)
         descriptor_path.unlink(missing_ok=True)
 
-    return str(project_root / cdad_result.RESULTS_RELPATH / execution_id
+    return str(project_root / cdad_result.results_relpath(project_root) / execution_id
                / packet_id / RECEIPT_NAME)
 
 
@@ -2668,7 +2682,8 @@ def delegate(args: argparse.Namespace) -> dict[str, Any]:
     terminate_grace_seconds = float(wait_dict.get(
         "terminate_grace_seconds", DEFAULT_WAIT_VALUES["terminate_grace_seconds"]))
 
-    packet_dir = project_root / ".cdad" / "packets" / args.packet_id
+    packet_dir = (project_root
+                  / _operational_relpath(project_root, "packets", args.packet_id))
     request = _load_json(packet_dir / "REQUEST.json", "packet request")
     role = _as_text(request.get("role"))
     if role is None:

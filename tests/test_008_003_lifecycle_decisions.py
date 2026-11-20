@@ -383,7 +383,7 @@ def test_pc01_contradictory_identity_is_rejected_without_effects(
         assert_rejected_without_effects(
             fx, proc, before,
             "PC-01 (contexto vs registro de ejecución)", IDENTITY_CAUSE)
-        assert not (fx.root / ".cdad/executions" / FOREIGN_EXECUTION).exists(), (
+        assert not (fx.root / ".cdad-execution/executions" / FOREIGN_EXECUTION).exists(), (
             "PC-01: la ejecución ajena no debe recibir continuidad")
 
     def context_and_registry_features_disagree() -> None:
@@ -491,7 +491,7 @@ def test_pc02_suspension_follows_the_accredited_owner(tmp_path: Path) -> None:
         packet_id = (state.get("active_packet") or {}).get("id")
         assert execution_id and packet_id, (
             f"fixture PC-02: ejecución y paquete de B: {state!r}")
-        b_context = (fx.root / ".cdad" / "executions" / execution_id
+        b_context = (fx.root / ".cdad-execution" / "executions" / execution_id
                      / "execution.json")
         assert b_context.is_file(), (
             f"fixture PC-02: contexto de B publicado: {b_context}")
@@ -537,7 +537,7 @@ def test_pc03_authority_is_one_criterion_across_consumers(tmp_path: Path) -> Non
         proc = bare.prepare()
         assert_rejected_without_effects(
             bare, proc, before, "PC-03 (revocada/P prepare)", AUTHORITY_CAUSE)
-        assert not (bare.root / ".cdad/packets").exists(), (
+        assert not (bare.root / ".cdad-execution/packets").exists(), (
             "PC-03: la autoridad revocada no publica paquete")
 
     def revoked_blocks_result() -> None:

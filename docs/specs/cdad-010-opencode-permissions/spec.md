@@ -4,7 +4,7 @@
 > y hallazgo de delegación rota (delegate timeout, findings del workspace
 > 2026-09-08). Estado: APPROVED.
 
-Status: Approved by Pablo on 2026-09-12
+Status: Approved by <owner> on 2026-09-12
 
 ## Descripción funcional
 
@@ -39,7 +39,7 @@ autocontenidos con catch-all explícito y orden findLast-correcto, (iii) cero
 `X*`/`rtk X*` (política formalizada en ADR-009), (v) install.sh deriva las
 allowlists del stack detectado, (vi) actualización del mapa de delegación.
 
-**Decisiones de scope tomadas por el usuario (Pablo, 2026-09-12):**
+**Decisiones de scope tomadas por el usuario (<owner>, 2026-09-12):**
 - Las 5 variantes `-odoo` entran en scope (misma falla de clasificación y
   allowlists hardcodeadas) → total **10 agentes** (5 base + 5 odoo). El
   orquestador queda fuera por diseño (mode: all, permission: allow, nunca
@@ -55,7 +55,7 @@ allowlists del stack detectado, (vi) actualización del mapa de delegación.
 literal), y ninguna otra clave de permisos con catch-all deny cambia su
 clasificación.
 
-> **Enmienda 2026-09-13 (post-probe, aprobada por Pablo en la priorización de
+> **Enmienda 2026-09-13 (post-probe, aprobada por <owner> en la priorización de
 > Capa 2 — review.md H1):** la palanca se implementa ANIDADA como
 > `permission.write: ask` (clave `write` dentro del bloque `permission:` del
 > frontmatter), NO top-level. Motivo empírico: el KNOWN_KEYS del clasificador

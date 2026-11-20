@@ -19,7 +19,7 @@ Diff: 5 archivos, 23 inserciones, 17 eliminaciones. Nada fuera de `operating-des
   - Sin relación con los dos puntos: `handoff-fidelity.md:68` y `activation-map.md:57`, «exists only after drafting». Hablan de cuándo existe la sección Technical context.
   - `roles:76` («never writes the product») describe al arquitecto, no al orquestador.
 - `validate-state`: VALID, rc=0.
-- Pruebas enfocadas: no hay RED/GREEN automatizado para esta unidad. Pablo lo decidió en `execution.md` ("verification of purely documentary products", 2026-11-15); la revisión semántica independiente es la verificación.
+- Pruebas enfocadas: no hay RED/GREEN automatizado para esta unidad. <owner> lo decidió en `execution.md` ("verification of purely documentary products", 2026-11-15); la revisión semántica independiente es la verificación.
 - Proporcional: `pytest tests/test_010_001… test_010_002… test_010_003…` → **48 passed** (49.28 s). Son controles documentales adyacentes; no son oráculos de 019.
 - Suite completa: **no ejecutada**. No aplica a un cambio documental de una unidad; la política la reserva para cierre de feature o epic.
 

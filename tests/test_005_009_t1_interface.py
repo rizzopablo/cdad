@@ -121,10 +121,10 @@ FORBIDDEN_ACTIVE_STATUSES = {"completed", "failed"}
 # Perfijos del árbol del proyecto que la invocación exitosa puede tocar
 # (mismo ledger + entrega durable), PD-2: TODO lo demás es «otro state».
 TOUCHED_ALLOWED_PREFIXES = (
-    ".cdad/executions/",
-    ".cdad/runtime/",
-    ".cdad/results/",
-    ".cdad/.lock",
+    ".cdad-execution/executions/",
+    ".cdad-execution/runtime/",
+    ".cdad-execution/results/",
+    ".cdad-execution/.lock",
 )
 STATE_FILE_REL = "docs/.cdad-state.json"
 
@@ -159,7 +159,7 @@ def state_normalized(state: dict) -> dict:
 
 
 def dispatch_dir(root: Path, eid: str) -> Path:
-    return root / ".cdad" / "executions" / eid / "dispatches"
+    return root / ".cdad-execution" / "executions" / eid / "dispatches"
 
 
 def dispatch_records(root: Path, eid: str) -> dict[str, Path]:
@@ -802,7 +802,7 @@ class TestPd2ByteIdenticalTransportAndSingleLedger(DelegateCase):
             self) -> None:
         """PD-2 (INV-1/INV-3): el paquete que llega al adaptador es el
         PACKET.md publicado, byte a byte; el registro vive en
-        .cdad/executions/<id>/dispatches/<attempt>.json (mismo ledger); el
+        .cdad-execution/executions/<id>/dispatches/<attempt>.json (mismo ledger); el
         state no cambia más allá de la transición del mecanismo reutilizado;
         sin ficheros de state nuevos ni segundo paquete; el paquete no se
         re-publica."""
@@ -841,7 +841,7 @@ class TestPd2ByteIdenticalTransportAndSingleLedger(DelegateCase):
         # Mismo ledger I8: intento declarado ↔ fichero del ledger.
         record_path = self.assert_single_record_per_dispatch(out, records_before)
         expected_prefix = (
-            f".cdad/executions/{self.execution_id}/dispatches/")
+            f".cdad-execution/executions/{self.execution_id}/dispatches/")
         self.assertTrue(
             record_path.relative_to(self.root).as_posix()
             .startswith(expected_prefix),
@@ -913,7 +913,7 @@ class TestPd3ExplicitProjectAndClosedI8Shape(DelegateCase):
             data["packet_id"], self.packet_id,
             msg="packet_id del registro no es el del paquete")
         request = json.loads(
-            (self.root / ".cdad" / "packets" / self.packet_id
+            (self.root / ".cdad-execution" / "packets" / self.packet_id
              / "REQUEST.json").read_text(encoding="utf-8"))
         self.assertEqual(
             data["role"], request["role"],
@@ -955,7 +955,7 @@ class TestPd3ExplicitProjectAndClosedI8Shape(DelegateCase):
             msg="el cwd ajeno del coordinador recibió escrituras (el "
                 "proyecto no es explícito/independiente, PD-3)")
         self.assertFalse(
-            (foreign / ".cdad" / "executions").is_dir(),
+            (foreign / ".cdad-execution" / "executions").is_dir(),
             msg="el registro de despacho quedó en el cwd del coordinador en "
                 "lugar del proyecto (--project-root)")
 

@@ -10,7 +10,7 @@
 - **No blocking regression came from the seven hunks.** New finding N-4 is a real overstatement, but it is OPTIONAL because I could not show that the case is reachable.
 - **Earlier closures are kept:** N-1, B-1, B-2, O-1 to O-5, O-A, O-B, I-4 and I-5. I did not re-examine them except where a hunk touched the same text.
 - **`owner-decision-v2-new-assignments.md` was not reopened.**
-- **§2.1 stays pending for Pablo.** This review does not resolve it.
+- **§2.1 stays pending for <owner>.** This review does not resolve it.
 
 ## Intake (route C)
 

@@ -53,7 +53,7 @@ Commits principales: RED `39d54116`, GREEN `a2321a66`/`7568db1f`; defecto del va
   decidir si entra en la noción de costo que el dueño quiere gobernar.
 - **N3 del review:** seis filas citan fragmentos que viven en un test hermano que no ejecutan (declaradas con sus
   nodeids en el informe §2). Sustituirlos por aserciones propias requiere otra pasada de auditoría.
-- **N2:** el bloque de cierre usa el rótulo `<session>_cierre`, sin id de sesión del runtime; sus tokens se
+- **N2:** el bloque de cierre usa el rótulo `ses_orquestador_cierre`, sin id de sesión del runtime; sus tokens se
   declaran «no disponibles», no cero.
 - **S1/S2/S3:** sospechas registradas sin experimento; el costo experimental por candidato sigue sin calibrar.
 - La proyección es lineal y por cota alta: no descuenta el ahorro esperado de los cambios de método del tramo 2.

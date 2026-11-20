@@ -33,7 +33,7 @@ The entry verbs (U1b):
 
   * **`dispatch` (external path).** Resolves the runtime and its section,
     *derives* the internal configuration of the module as a transient file under
-    `.cdad/` (removed when the call ends, never carrying a model or a credential
+    the operational directory (removed when the call ends, never carrying a model or a credential
     value) and hands the transport to the ONE implementation that already owns
     it — the common interface `cdad_delegate.delegate`, which transports the
     published `PACKET.md` byte-identical to the runtime module. The module
@@ -50,7 +50,7 @@ The entry verbs (U1b):
     the coordinator was started from) is not evaluable — it neither proves nor
     contradicts — and a foreign directory is a contradiction. It then registers
     the attempt through the existing command (`prepare --record-dispatch`) and,
-    when it received the final text, stages it **byte-exact** under `.cdad/inbox`
+    when it received the final text, stages it **byte-exact** under the operational inbox
     with its `RESULT.json` descriptor, declaring the artifact kind derived from
     the packet's role and subphase (§2.8/PD-23). It never runs `receive`: the
     receipt belongs to the re-entry protocol (§2.1).
@@ -66,7 +66,7 @@ there is no byte-exact native result (the store is then the only evidence of the
 association). The core is not a second writer: it never writes
 `docs/.cdad-state.json`, never writes the store, and touches the ledger only
 through the existing command (PD-2/INV-5); every other write stays under
-`.cdad/`.
+the operational directory.
 """
 
 from __future__ import annotations
@@ -129,19 +129,19 @@ FORBIDDEN_SECTION_KEYS = {
                               f".{CREDENTIAL_ENV_FILE_KEY} (ADR-033 point 6)"),
 }
 
-# PD-1 of 005-009: the packet is published under `.cdad/packets/<id>/`.
-PACKETS_RELPATH = Path(".cdad") / "packets"
+# PD-1 of 005-009: the packet is published under `<operational_dir>/packets/<id>/`.
+PACKETS_SUBDIR = "packets"
 PACKET_MD_NAME = "PACKET.md"
 REQUEST_NAME = "REQUEST.json"
 
 # §2.1: the staging surface of the native path (the step the re-entry protocol
-# consumes: `.cdad/inbox/RESULT.json` plus the staged parts it points at).
-INBOX_RELPATH = Path(".cdad") / "inbox"
+# consumes: `<operational_dir>/inbox/RESULT.json` plus the staged parts it points at).
+INBOX_SUBDIR = "inbox"
 DESCRIPTOR_NAME = "RESULT.json"
 # The single part the common delivery produces today (§2.8): one role report.
 DELIVERY_PART_NAME = "role-report"
 # The transient directory of the derived internal configuration (§2.6).
-RUNTIME_RELPATH = Path(".cdad") / "runtime"
+RUNTIME_SUBDIR = "runtime"
 
 # §2.1/§2.4: the closed observation schema and the library that validates it.
 OBSERVATION_KEYS = (
@@ -323,11 +323,23 @@ def _section_of(document: Any, runtime: str) -> Any:
     return runtimes.get(runtime) if isinstance(runtimes, dict) else None
 
 
+def _operational_dir(root: Path) -> str:
+    """020-001 PC-1: the declared operational directory, or a DispatchError."""
+    try:
+        return cdad_layout.operational_dir(root)
+    except cdad_layout.LayoutError as exc:
+        raise DispatchError(str(exc)) from exc
+
+
+def _operational_path(root: Path, *parts: str) -> Path:
+    return root.joinpath(_operational_dir(root), *parts)
+
+
 def _internal_config_path(root: Path, runtime: str) -> Path:
     """§2.6: the transient file the module reads, inside the already
-    git-ignored coordination space (`.cdad/`), unique per invocation."""
-    return (root / RUNTIME_RELPATH
-            / f".internal-{runtime}-{os.getpid()}.json")
+    git-ignored coordination space of the project, unique per invocation."""
+    return _operational_path(root, RUNTIME_SUBDIR,
+                             f".internal-{runtime}-{os.getpid()}.json")
 
 
 def derived_internal_config(root: Path, runtime: str,
@@ -339,7 +351,7 @@ def derived_internal_config(root: Path, runtime: str,
     the value of `--runtime` and is never resolved from a project document. The
     caller removes the file when the call ends.
     """
-    directory = root / RUNTIME_RELPATH
+    directory = _operational_path(root, RUNTIME_SUBDIR)
     directory.mkdir(parents=True, exist_ok=True)
     path = _internal_config_path(root, runtime)
     document = {key: section[key] for key in SECTION_KEYS if key in section}
@@ -505,7 +517,7 @@ def _project_root(raw: str | None) -> Path:
 
 
 def _packet_dir(root: Path, packet: str) -> Path:
-    return root / PACKETS_RELPATH / packet
+    return _operational_path(root, PACKETS_SUBDIR, packet)
 
 
 def _known_packet(root: Path, packet: str, verb: str) -> tuple[Path, Path]:
@@ -988,7 +1000,7 @@ def _register_attempt(root: Path, packet: str, request: dict[str, Any],
         raise DispatchError(
             f"cannot register the attempt: {cdad_delegate.PACKET_CLI_NAME} is not "
             f"next to this entry")
-    stage = root / ".cdad" / "executions" / execution_id
+    stage = _operational_path(root, "executions", execution_id)
     stage.mkdir(parents=True, exist_ok=True)
     observation_path = stage / f".{attempt_id}.observation.json"
     payload = (json.dumps(observation, ensure_ascii=False, sort_keys=True,
@@ -1038,7 +1050,7 @@ def derive_artifact_kind(role: Any, substage: Any) -> str:
 
 def stage_delivery(root: Path, request: dict[str, Any], packet: str,
                    attempt_id: str, kind: str, payload: bytes) -> Path:
-    """§2.1/PD-3: stage the byte-exact part under `.cdad/inbox` and write the
+    """§2.1/PD-3: stage the byte-exact part under the operational inbox and write the
     `RESULT.json` descriptor the re-entry protocol consumes, declaring the kind
     derived from role and subphase. Nothing here approves anything."""
     execution_id = _as_text(request.get("execution_id"))
@@ -1046,7 +1058,7 @@ def stage_delivery(root: Path, request: dict[str, Any], packet: str,
     if execution_id is None or feature_id is None:
         raise DispatchError(
             f"packet {packet!r} request lacks execution_id/feature_id")
-    inbox = root / INBOX_RELPATH
+    inbox = _operational_path(root, INBOX_SUBDIR)
     inbox.mkdir(parents=True, exist_ok=True)
     part_name = f"{attempt_id}-{DELIVERY_PART_NAME}"
     staged = inbox / f"{part_name}.md"
@@ -1060,7 +1072,7 @@ def stage_delivery(root: Path, request: dict[str, Any], packet: str,
         "parts": [{
             "name": part_name,
             "artifact_kind": kind,
-            "staged_path": f"{INBOX_RELPATH.as_posix()}/{part_name}.md",
+            "staged_path": f"{'/'.join((_operational_dir(root), INBOX_SUBDIR))}/{part_name}.md",
         }],
         "run_evidence_ref": None,
     }
@@ -1183,7 +1195,8 @@ def _reject_suspended_request(root: Path, request: dict[str, Any]) -> None:
     execution_id = request.get("execution_id")
     feature_id = None
     if isinstance(execution_id, str):
-        context = root / ".cdad" / "executions" / execution_id / "execution.json"
+        context = _operational_path(root, "executions", execution_id,
+                                    "execution.json")
         context_doc = _load_json(context, "execution context")
         feature_id = context_doc.get("execution", {}).get("feature_id")
     cdad_packet._suspended_unit_for(state, feature_id)

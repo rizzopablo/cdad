@@ -52,19 +52,27 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 # root (a subdirectory). Without the variable pwd is kept (legacy behavior).
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# 019-004 §4.2: the policy follows the selected methodology layout, resolved by
-# the shared resolver installed beside the packet CLI. A registered locator that
-# cannot be resolved, or whose policy is missing, blocks: never a docs/ fallback.
-LOCATOR="$PROJECT_ROOT/.cdad/project-layout.json"
-LAYOUT_CLI="$(dirname "${CDAD_PACKET_CLI:-$HOME/.claude/skills/cdad-cycle/scripts/cdad_packet.py}")/cdad_layout.py"
+# 019-004 §4.2 / 020-001: the policy follows the selected methodology layout,
+# resolved by the INSTALLED packet CLI (its `layout` subcommand is the single
+# resolution surface; nothing relative to the consumer project is assumed). The
+# declaration lives at the fixed path `cdad/project-layout.json`; a registered
+# declaration that cannot be resolved, or whose policy is missing, blocks:
+# never a docs/ fallback.
+DECLARATION="$PROJECT_ROOT/cdad/project-layout.json"
+PACKET_CLI="${CDAD_PACKET_CLI:-$HOME/.claude/skills/cdad-cycle/scripts/cdad_packet.py}"
 LAYOUT_PY="${CDAD_PYTHON:-python3}"
-if [[ -e "$LOCATOR" || -L "$LOCATOR" ]]; then
-  if [[ ! -f "$LAYOUT_CLI" ]]; then
-    echo "CDAD path-guard: registered methodology layout but the resolver was not found ($LAYOUT_CLI); blocking without fallback" >&2
+if [[ -e "$DECLARATION" || -L "$DECLARATION" ]]; then
+  if [[ ! -f "$PACKET_CLI" ]]; then
+    echo "CDAD path-guard: registered methodology layout but the packet CLI was not found ($PACKET_CLI); blocking without fallback" >&2
     exit 2
   fi
-  if ! METHOD_BASE="$("$LAYOUT_PY" "$LAYOUT_CLI" base --project-root "$PROJECT_ROOT")"; then
+  if ! LAYOUT_JSON="$("$LAYOUT_PY" "$PACKET_CLI" layout --project-root "$PROJECT_ROOT")"; then
     echo "CDAD path-guard: invalid registered methodology layout (see the resolver diagnostic above); blocking without fallback" >&2
+    exit 2
+  fi
+  METHOD_BASE="$(printf '%s' "$LAYOUT_JSON" | jq -r '.methodology_dir // empty')"
+  if [[ -z "$METHOD_BASE" ]]; then
+    echo "CDAD path-guard: the layout resolution produced no methodology directory; blocking without fallback" >&2
     exit 2
   fi
 else
@@ -72,7 +80,7 @@ else
 fi
 POLICY_FILE="$PROJECT_ROOT/$METHOD_BASE/cdad-policy.json"
 
-if [[ -e "$LOCATOR" || -L "$LOCATOR" ]] && [[ ! -f "$POLICY_FILE" ]]; then
+if [[ -e "$DECLARATION" || -L "$DECLARATION" ]] && [[ ! -f "$POLICY_FILE" ]]; then
   echo "CDAD path-guard: registered methodology layout has no policy ($METHOD_BASE/cdad-policy.json); blocking without fallback" >&2
   exit 2
 fi
@@ -198,7 +206,7 @@ if [[ -f "$POLICY_FILE" ]]; then
     # derived agents (derivatives and manifest) — the exclusion of the policy
     # prevails over any class-based permission.
     if [[ "$IS_EDIT_TOOL" == "1" ]]; then
-      if [[ "$CLASS" == "policy" || "$REL_PATH" == ".opencode/agents/"* || "$REL_PATH" == ".cdad/project-layout.json" ]]; then
+      if [[ "$CLASS" == "policy" || "$REL_PATH" == ".opencode/agents/"* || "$REL_PATH" == "cdad/project-layout.json" || "$REL_PATH" == ".cdad/project-layout.json" ]]; then
         echo "CDAD path-guard: no role edits the policy or the published derived agents ($REL_PATH); blocking (PD-7)" >&2
         exit 2
       fi

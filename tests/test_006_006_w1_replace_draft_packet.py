@@ -39,7 +39,7 @@ subproceso; el código de implementación NUNCA se lee):
 
 El sub-modo `--replace-packet` admite **argv puro** (ninguna opción de otro
 sub-modo: `--out-dir` y `--execution-context` se rechazan), y por eso la
-fixture usa el directorio POR DEFECTO (`.cdad/packets`) y deja el contexto
+fixture usa el directorio POR DEFECTO (`.cdad-execution/packets`) y deja el contexto
 de ejecución en su ruta canónica: es la forma en que el orquestador invoca
 el reemplazo.
 
@@ -125,6 +125,8 @@ Mapeo test → postcondición:
 """
 
 from __future__ import annotations
+
+from _layout_support import write_declaration
 
 import hashlib
 import json
@@ -237,11 +239,11 @@ def read_state(root: Path) -> dict:
 
 
 def packet_dir(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id
+    return root / ".cdad-execution" / "packets" / packet_id
 
 
 def packet_ids(root: Path) -> list[str]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return []
     return sorted(d.name for d in base.iterdir() if d.is_dir())
@@ -257,7 +259,7 @@ def request_of(root: Path, packet_id: str) -> dict:
 
 def execution_context_path(root: Path) -> Path:
     execution = read_state(root)["execution"]
-    return root / ".cdad" / "executions" / execution["id"] / "execution.json"
+    return root / ".cdad-execution" / "executions" / execution["id"] / "execution.json"
 
 
 def _without_digests(contract: dict) -> dict:
@@ -302,6 +304,7 @@ class W1Case(unittest.TestCase):
         root = Path(self._tmp.name) / f"proj-{self._projects}"
         for rel in ("tests", "src", "lib", "docs"):
             (root / rel).mkdir(parents=True, exist_ok=True)
+        write_declaration(root)
         (root / POLICY_FILE).write_text(
             json.dumps(
                 {
@@ -311,7 +314,7 @@ class W1Case(unittest.TestCase):
                         "implementation_roots": ["src", "lib"],
                         "documentation_roots": ["docs"],
                     },
-                    "temporary_roots": [".cdad/tmp"],
+                    "temporary_roots": [".cdad-execution/tmp"],
                 },
                 indent=2,
                 sort_keys=True,

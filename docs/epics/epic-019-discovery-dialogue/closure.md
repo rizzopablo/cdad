@@ -1,7 +1,7 @@
 # Epic epic-019-discovery-dialogue — Cierre
 
 **Cerrado:** 2026-11-17 · **6/6 features** · **desplegado en local dos veces el 2026-11-17; no publicado** (reservado al dueño).
-**Duración:** 2026-11-15 (plan aprobado por Pablo) → 2026-11-17 (3 días).
+**Duración:** 2026-11-15 (plan aprobado por <owner>) → 2026-11-17 (3 días).
 **Revisión de cierre (gate del epic):** `56e667eed0dad16b9ce6cd393394b97256a72afa`.
 
 ## Resumen
@@ -45,7 +45,7 @@ Las cuatro corridas previas se conservan y **no se presentan como regresiones de
 
 **Integración entre features.** **No existe una suite E2E cross-feature separada, y no se declara una que no exista.** Las unidades comparten la superficie de paquete/intake: la suite completa la ejercita mediante los tests de intake y de paquete de `019-004`, y la trayectoria registrada de `019-005` documenta su uso real. El epic no necesitó un artefacto de integración propio.
 
-**Despliegue.** Se realizó dos veces el 2026-11-17 con autorización expresa del dueño, en ambos casos **independiente del cierre** (la evidencia de aceptación es la del repositorio y del HOME aislado, no la de la copia instalada): `019-004` —respaldo `~/clawd/archive/cdad-deploy-019-004-20261117-094730`, `install.sh --check` **PASS** con 379 grupos— y `019-005` —respaldo `…-cdad-deploy-019-005-20261117-120956`, `--check` **PASS** con 410 grupos—. En ambos: 11 agentes CDAD presentes, verificación PASS y **los 22 registros de modelo sin cambios**. Registros: `docs/specs/019-004-…/deployment.md`, `docs/specs/019-005-…/deployment.md`. **Publicación no realizada.**
+**Despliegue.** Se realizó dos veces el 2026-11-17 con autorización expresa del dueño, en ambos casos **independiente del cierre** (la evidencia de aceptación es la del repositorio y del HOME aislado, no la de la copia instalada): `019-004` —respaldo `~/<workspace>/archive/cdad-deploy-019-004-20261117-094730`, `install.sh --check` **PASS** con 379 grupos— y `019-005` —respaldo `…-cdad-deploy-019-005-20261117-120956`, `--check` **PASS** con 410 grupos—. En ambos: 11 agentes CDAD presentes, verificación PASS y **los 22 registros de modelo sin cambios**. Registros: `docs/specs/019-004-…/deployment.md`, `docs/specs/019-005-…/deployment.md`. **Publicación no realizada.**
 
 ## Decisiones y patrones
 

@@ -479,4 +479,4 @@ AC-7 corresponde a la recepción.
 
 Aprobado junto con la spec v2 (spec §15), bajo la HITL delegada de epic-006.
 
-Status: Approved by Claude orchestrator (HITL delegated by Pablo for epic-006) on 2026-10-16
+Status: Approved by Claude orchestrator (HITL delegated by <owner> for epic-006) on 2026-10-16

@@ -59,6 +59,8 @@ Mapeo test -> postcondición (una promesa observable por test, R2):
 """
 from __future__ import annotations
 
+from _layout_support import OPERATIONAL_DIR
+
 import hashlib
 import json
 import os
@@ -118,7 +120,7 @@ class IntakeCase(unittest.TestCase):
         root = base / name
         root.mkdir()
         project = PrepareProject(root)
-        packets_dir = root / ".cdad" / "packets"
+        packets_dir = root / OPERATIONAL_DIR / "packets"
         result = run_prepare(
             CLI, *project.args(objective=SENTINEL, out_dir=packets_dir)
         )

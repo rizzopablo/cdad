@@ -1,6 +1,6 @@
 # Closure — 019-001 discovery dialogue contract
 
-Date: 2026-11-15. Closed by the CDAD orchestrator under Pablo's delegation for epic 019.
+Date: 2026-11-15. Closed by the CDAD orchestrator under <owner>'s delegation for epic 019.
 Documentary unit: the product is a reviewed proposal, not an activation. Not published, not deployed.
 
 - Verification: independent semantic review (review-004: no blockers, PC-1..PC-12 satisfied as proposals), per the owner decision in the epic execution.md.

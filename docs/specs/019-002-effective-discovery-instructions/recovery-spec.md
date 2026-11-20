@@ -1,7 +1,7 @@
 ## recovery-spec
 
 **Feature:** `019-002-effective-discovery-instructions`  
-**Status:** Approved under Pablo's explicit HITL delegation for epic 019. Approval and review dispositions: `recovery-approval.md`.
+**Status:** Approved under <owner>'s explicit HITL delegation for epic 019. Approval and review dispositions: `recovery-approval.md`.
 
 ### Purpose and baseline
 

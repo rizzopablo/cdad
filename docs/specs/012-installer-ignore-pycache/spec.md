@@ -1,6 +1,6 @@
 # 012 — El instalador no registra `__pycache__` como artefacto propio
 
-**Estado:** Approved by Pablo on 2026-11-01.
+**Estado:** Approved by <owner> on 2026-11-01.
 
 ## 1. Descripcion
 
@@ -38,4 +38,4 @@ Reportado por un agente tras un install: 3 `.pyc` registrados como propios, lueg
 - Suite completa no corrida.
 - Limpieza retroactiva de manifiestos ya instalados fuera de un `install` normal: no se implementa; la poda ocurre al reinstalar (PC-4).
 
-Status: Approved by Pablo on 2026-11-01.
+Status: Approved by <owner> on 2026-11-01.

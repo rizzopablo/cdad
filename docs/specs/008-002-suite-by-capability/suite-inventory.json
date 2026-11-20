@@ -5656,6 +5656,15 @@
      "capability": "orientation-planning",
      "contract": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
      "scope": "module"
+    },
+    {
+     "capability": "orientation-planning",
+     "contract": "docs/specs/020-001-versioned-layout-local-execution/spec.md",
+     "scope": "nodeids",
+     "nodeids": [
+      "tests/test_019_004_lifecycle_layout.py::test_unmigrated_project_is_refused_with_migration_guidance_before_any_write",
+      "tests/test_019_004_lifecycle_layout.py::test_manual_handoff_then_new_execution_preserves_progress_and_history"
+     ]
     }
    ],
    "confidence": "alta",
@@ -5676,7 +5685,7 @@
    ],
    "provenance": "019-004 T2 RED, independent test-writer b0a759ed; PC-05 to PC-09",
    "rationale": "Selected methodology layout governs lifecycle, materialization destinations, execution-bound continuation and policy compatibility; legacy projects unchanged; root-resolving locator rejected.",
-   "static_test_nodeids": 15,
+   "static_test_nodeids": 17,
    "targets": []
   },
   {
@@ -5791,6 +5800,27 @@
    "provenance": "019-004 T4 installed-use evidence, independent test-writer 3a9d3b30",
    "rationale": "Isolated-HOME installation exposes intake and layout; installed CLI accepts a controlled Route C identification and rejects an altered one without touching the project tree or the real HOME.",
    "static_test_nodeids": 1,
+   "targets": []
+  },
+  {
+   "assignments": [
+    {
+     "capability": "orientation-planning",
+     "contract": "docs/specs/020-001-versioned-layout-local-execution/spec.md",
+     "scope": "module"
+    }
+   ],
+   "confidence": "alta",
+   "decision": "mantener",
+   "helper_dependencies": [],
+   "kind": "helper",
+   "path": "tests/_layout_support.py",
+   "product_surfaces": [
+    "skills/cdad-cycle/scripts/cdad_layout.py"
+   ],
+   "provenance": "020-001 RED test helper 6df7b7de; declaration constant and builder",
+   "rationale": "Single declared operational-dir constant and schema-2 declaration writer for test fixtures.",
+   "static_test_nodeids": 0,
    "targets": []
   }
  ],

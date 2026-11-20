@@ -675,7 +675,7 @@ def _sandbox_root() -> Path:
         sandbox,
         symlinks=True,
         ignore=shutil.ignore_patterns(
-            ".git", ".cdad", "build", "logs", ".pytest_cache", "__pycache__"
+            ".git", ".cdad", ".cdad-execution", "build", "logs", ".pytest_cache", "__pycache__"
         ),
     )
     return sandbox

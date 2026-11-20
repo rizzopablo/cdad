@@ -15,7 +15,7 @@ NUEVO bajo T3:
   - I5: gancho inerte `CDAD_TEST_FAIL_AT=<punto>` con puntos
     `reserved-id`, `context-written`, `packet-written`, `before-state`,
     `after-state` (termina con código 97, sin limpieza ni paquete impreso);
-    `fcntl.flock` sobre `.cdad/.lock` como escritor único; lock no huérfano.
+    `fcntl.flock` sobre `.cdad-execution/.lock` como escritor único; lock no huérfano.
   - I6: `prepare --reconcile-policy <sha256> --decision-ref <ruta>`.
 
 Fixtures: mismos proyectos sintéticos que T2.GREEN (política válida de tres
@@ -66,7 +66,7 @@ FAIL_AT_POINTS = (
     "after-state",
 )
 FAIL_AT_RC = 97
-FOREIGN_FILE = ".cdad/ajeno.txt"
+FOREIGN_FILE = ".cdad-execution/ajeno.txt"
 
 
 # ---------------------------------------------------------------- helpers
@@ -231,12 +231,12 @@ class DurableProjectCase(unittest.TestCase):
 
     def add_foreign_artifacts(self, root: Path) -> dict[str, bytes]:
         """PD-11: archivos ajenos dentro de .cdad que deben sobrevivir."""
-        cdad = root / ".cdad"
+        cdad = root / ".cdad-execution"
         cdad.mkdir(exist_ok=True)
         (cdad / "keep").mkdir(exist_ok=True)
         foreign = {
             FOREIGN_FILE: b"recurso ajeno que prepare no debe borrar\n",
-            ".cdad/keep/aux.bin": bytes(range(256)),
+            ".cdad-execution/keep/aux.bin": bytes(range(256)),
         }
         for rel, data in foreign.items():
             (root / rel).write_bytes(data)
@@ -624,11 +624,11 @@ class TestPd11InterruptAndRecover(DurableProjectCase):
 
 
 class TestPd11ConcurrencyAndLock(DurableProjectCase):
-    """PD-11 / I5: exclusión mediante `.cdad/.lock` y ciclo de vida del lock."""
+    """PD-11 / I5: exclusión mediante `.cdad-execution/.lock` y ciclo de vida del lock."""
 
     def setUp(self) -> None:
         super().setUp()
-        self.cdad = self.root / ".cdad"
+        self.cdad = self.root / ".cdad-execution"
         self.cdad.mkdir(exist_ok=True)
         self.foreign = self.add_foreign_artifacts(self.root)
 
@@ -650,7 +650,7 @@ class TestPd11ConcurrencyAndLock(DurableProjectCase):
         return proc, ready, release
 
     def test_pd11_concurrent_prepare_denied_without_writes_then_works(self) -> None:
-        """PD-11/I5: con `.cdad/.lock` tomado por otro proceso, un prepare
+        """PD-11/I5: con `.cdad-execution/.lock` tomado por otro proceso, un prepare
         concurrente da rc≠0 inmediato con diagnóstico de ocupación y sin
         escrituras; soltado el lock, funciona."""
         holder, _ready, release = self.spawn_holder()
@@ -660,7 +660,7 @@ class TestPd11ConcurrencyAndLock(DurableProjectCase):
         out = proc.stdout + proc.stderr
         self.assertNotEqual(
             proc.returncode, 0,
-            msg="prepare procedió pese a que otro proceso ocupa .cdad/.lock")
+            msg="prepare procedió pese a que otro proceso ocupa .cdad-execution/.lock")
         self.assertFalse(
             proc.stdout.startswith(PACKET_BEGIN),
             msg="prepare bloqueado imprimió un paquete")

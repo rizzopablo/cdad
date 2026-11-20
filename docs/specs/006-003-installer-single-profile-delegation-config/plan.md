@@ -77,7 +77,7 @@ R1 (tests acoplados → A-1), R2 (recetas `--basic` → PD-1b), R3 (exec-configs
 
 ---
 
-Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 2026-10-18
+Status: Approved by orquestador Claude (HITL delegada por <owner>, epic-006) on 2026-10-18
 
 ## Enmienda A-6 del plan (orquestador, HITL delegada, 2026-10-18)
 

@@ -178,7 +178,7 @@ Anomalías concretas a corregir:
 
 ### Rutas personales en `docs/epics/epic-005-real-operation/` (a sacar del repo; originales al registro local)
 
-`grep -rn -E "/home/|/Users/|~/\.|\$HOME|ofap|/tmp/|\.cache/cdad|\.config/opencode"`:
+`grep -rn -E "/home/|/Users/|~/\.|\$HOME|<owner>|/tmp/|\.cache/cdad|\.config/opencode"`:
 
 - `handoff-opencode-2.md:8` — `<repo>` (ruta absoluta del repo).
 - `handoff-opencode-2.md:14` — `$HOME/.cache/cdad-adopted-ce09ed0/.config/opencode/agents` (raíz adoptada de la instalación).
@@ -224,9 +224,9 @@ Anomalías concretas a corregir:
 - `grep -n "replace.packet|_validate_corrections|def _|source_dir|CDAD_OPENCODE_AGENTS_DIR|activation|..." skills/cdad-cycle/scripts/cdad_packet.py`.
 - `grep -n "is_file()" skills/cdad-cycle/scripts/cdad_packet.py` → único chequeo de inputs en :1858.
 - `grep -rn -i "suite|regres|focal" skills/cdad-cycle/packets/ skills/cdad-cycle/references/*.md skills/cdad-cycle/SKILL.md`.
-- `grep -rn -E "/home/|/Users/|~/\.|\$HOME|ofap|/tmp/|\.cache/cdad|\.config/opencode" docs/epics/epic-005-real-operation/`.
+- `grep -rn -E "/home/|/Users/|~/\.|\$HOME|<owner>|/tmp/|\.cache/cdad|\.config/opencode" docs/epics/epic-005-real-operation/`.
 - `grep -n "activation" skills/cdad-cycle/scripts/cdad_packet.py` → sin resultados.
-- `find . -name "activation.json"` → sin resultados en el repo; ejemplos en `/tmp/cdad-t5-sandbox-*` y `/tmp/pytest-of-ofap/...`.
+- `find . -name "activation.json"` → sin resultados en el repo; ejemplos en `/tmp/cdad-t5-sandbox-*` y `/tmp/pytest-of-<owner>/...`.
 - `python3 -c "json.load('.opencode/agents/.cdad-derived.json')"` → `source_dir: <home>/.config/opencode/agents`.
 - `python3 -c "json.load('docs/.cdad-state.json')"` → estado actual (activo epic-005 / 005-005 discovery).
 - `git status --porcelain` → sólo `docs/.cdad-state.json` (ajeno a este rol; **no edité el repo**). `git rev-parse --short HEAD` → `f148304`.

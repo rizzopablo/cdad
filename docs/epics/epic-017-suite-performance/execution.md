@@ -36,7 +36,7 @@ Cita literal:
 > pensando en el uso real del sistema por el usuario final. Continúa orquestando
 > proactivamente hasta completar las correcciones pendientes y el epic completo.»
 
-Alcance: el orquestador decide en nombre de Pablo dentro de epic-017, incluidas la
+Alcance: el orquestador decide en nombre de <owner> dentro de epic-017, incluidas la
 aprobación del contrato de la feature, la priorización del review y la aprobación
 del Memory Bank. Publicar y desplegar siguen reservados al dueño: el mandato no los
 menciona y el plan los reserva. No habilita autoaprobaciones contrarias a la

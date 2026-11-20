@@ -9,6 +9,7 @@ logs/
 tests/.sensitive-patterns.local
 __pycache__/
 .cdad/
+/.cdad-execution/
 build/
 .opencode/
 /.claude/

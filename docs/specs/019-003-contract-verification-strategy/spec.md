@@ -1,6 +1,6 @@
 # Specification: Contract verification strategy
 
-**Status: Approved by the CDAD orchestrator under Pablo’s delegated HITL for epic 019.**
+**Status: Approved by the CDAD orchestrator under <owner>’s delegated HITL for epic 019.**
 
 Materialized without semantic changes from replacement draft 004, independently
 reviewed in `../019-002-effective-discovery-instructions/verification-strategy-review-004.md`.

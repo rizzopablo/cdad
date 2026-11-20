@@ -1,6 +1,6 @@
 ---
 feature_id: 016-001-contract-test-link
-approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-016-traceability-and-suite-review/execution.md)
+approved_by: <owner> (HITL delegada al orquestador, docs/epics/epic-016-traceability-and-suite-review/execution.md)
 approved_at: 2026-11-03
 source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban el registro por unidad con marcadores optativos en contratos nuevos, el índice legacy por demanda, la colección independiente del runner y el verificador kind=review sin dispensar la promesa

@@ -14,7 +14,7 @@ no service, no agent. Run it by hand, and only when it fits.
 
 | Command | What it needs | Applies | Does not apply |
 |---|---|---|---|
-| `begin` | execution context + `--update` (goal/decisions/uncertainties/next_action + optional `budget`) | Any environment — write-ahead before dispatching, writes only under `.cdad/executions/<id>/continuity/**` | — |
+| `begin` | execution context + `--update` (goal/decisions/uncertainties/next_action + optional `budget`) | Any environment — write-ahead before dispatching, writes only under `.cdad-execution/executions/<id>/continuity/**` | — |
 | `checkpoint` | execution context + `--update` | Any environment — append a new link to the chain | — |
 | `reconcile` | execution context + `--packet` | Any orchestrator that retries or resumes after a dispatch — reads 002 receipts/journal, does not repeat an effect | If the receipt is unreadable the result is `unknown` (never fabricated success/failure) |
 | `resume` | execution context (+ optional `--role`, `--max-bytes`) | Any new session that must rebuild goal, decisions-with-rationale, authority, next action | Without a checkpoint it renders an empty `no-checkpoint` projection (rc 0); with `--role` it needs `docs/cdad-policy.json` |

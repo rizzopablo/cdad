@@ -8,10 +8,10 @@ Contract:
   SOLO si `active_feature` no es nulo y `execution.feature_id` coincide con él;
   el bloque `execution` que queda tras cerrar una feature es historia; con
   `active_feature` nulo y `active_packet` ausente los directorios de
-  `.cdad/packets/` son historia y la vista emite `next-unit`; un directorio
+  `.cdad-execution/packets/` son historia y la vista emite `next-unit`; un directorio
   cuenta como trabajo pendiente SOLO si su `REQUEST.json` pertenece a la
   ejecución activa y NO tiene recibo en
-  `.cdad/runtime/results/<execution_id>/<packet_id>/`.
+  `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`.
 - docs/specs/005-003-orientation-reduction/review-claude-spec-2026-10-12.md
   § «F2 compromete el uso previsto»: el defecto reproducido — reposo con
   historia → `entry: continuity-reconcile` apuntando a la ejecución cerrada.
@@ -44,7 +44,7 @@ Mapeo test → postcondición/borde (PD-2 F2):
          pendiente se atiende: `entry=continuity-reconcile`).
   test_pd2_f2_receipted_dir_of_active_execution_not_pending
       -> PD-2 F2 (regresión: el MISMO directorio con recibo en
-         `.cdad/runtime/results/<execution_id>/<packet_id>/` NO cuenta como
+         `.cdad-execution/runtime/results/<execution_id>/<packet_id>/` NO cuenta como
          pendiente: la proyección es indistinguible de la del mismo proyecto
          sin directorios de paquete).
 
@@ -91,10 +91,10 @@ PACKET_RECEIVED_ID = "004-002-project-execution-bootstrap-red-901"
 
 def _packet_dir(root: Path, packet_id: str, *, execution_id: str,
                 feature_id: str, receipt: bool) -> None:
-    """Directorio de paquete sintético `.cdad/packets/<id>/` (forma real
+    """Directorio de paquete sintético `.cdad-execution/packets/<id>/` (forma real
     observada del artefacto publicado por `prepare`) + recibo opcional en
-    `.cdad/runtime/results/<execution_id>/<packet_id>/receipt.json`."""
-    d = root / ".cdad" / "packets" / packet_id
+    `.cdad-execution/runtime/results/<execution_id>/<packet_id>/receipt.json`."""
+    d = root / ".cdad-execution" / "packets" / packet_id
     d.mkdir(parents=True, exist_ok=True)
     request = {
         "schema_version": 1,
@@ -111,7 +111,7 @@ def _packet_dir(root: Path, packet_id: str, *, execution_id: str,
         encoding="utf-8",
     )
     if receipt:
-        results = (root / ".cdad" / "runtime" / "results" / execution_id
+        results = (root / ".cdad-execution" / "runtime" / "results" / execution_id
                    / packet_id)
         results.mkdir(parents=True, exist_ok=True)
         (results / "receipt.json").write_text(
@@ -269,7 +269,7 @@ def test_pd2_f2_pending_dir_of_active_execution_without_receipt_reconciles(
 def test_pd2_f2_receipted_dir_of_active_execution_not_pending(
         tmp_path: Path) -> None:
     """PD-2 F2 (regresión): el MISMO directorio de paquete de la ejecución
-    activa CON recibo en `.cdad/runtime/results/<execution_id>/<packet_id>/`
+    activa CON recibo en `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`
     NO cuenta como pendiente: la proyección es indistinguible de la del mismo
     proyecto SIN directorios de paquete (el `entry`/`next`/`packet` no se ven
     afectados por el directorio con recibo)."""
@@ -294,7 +294,7 @@ def test_pd2_f2_receipted_dir_of_active_execution_not_pending(
     ]
     assert not affected, (
         "PD-2/F2 violada: el directorio de paquete CON recibo "
-        f"(.cdad/runtime/results/{CLOSED_EXECUTION_ID}/{PACKET_STUCK_ID}/) "
+        f"(.cdad-execution/runtime/results/{CLOSED_EXECUTION_ID}/{PACKET_STUCK_ID}/) "
         "cuenta como pendiente — las claves de la proyección que el trabajo "
         f"pendiente podría mover difieren del baseline sin directorios: "
         f"{affected}; con recibo: {_summary(doc_with)}; sin directorios: "

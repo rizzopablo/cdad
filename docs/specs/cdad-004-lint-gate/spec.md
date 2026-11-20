@@ -1,7 +1,7 @@
 # cdad-004: Gate de lint pre-commit-vauxoo en el contrato Odoo
 
-> Estado: APROBADO — Status: Approved by Pablo Manuel Rizzo on 2026-09-02
-> Fecha: 2026-09-02 · Origen: análisis de mejora propuesto por Pablo (02 Sep 2026).
+> Estado: APROBADO — Status: Approved by <owner> on 2026-09-02
+> Fecha: 2026-09-02 · Origen: análisis de mejora propuesto por <owner> (02 Sep 2026).
 > Evidencia de discovery: verificación empírica en sesión (PyPI, uvx, --help,
 > hooks del .jinja fuente, ubicaciones actuales).
 

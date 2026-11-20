@@ -1197,8 +1197,8 @@ class AdapterCase(DelegateCase):
 
     def results_base(self) -> Path:
         """Ubicación canónica de la entrega durable (discovery §2.4):
-        .cdad/runtime/results/<exec>/<packet>/."""
-        return (self.root / ".cdad" / "runtime" / "results"
+        .cdad-execution/runtime/results/<exec>/<packet>/."""
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     def receipt_doc(self) -> dict:

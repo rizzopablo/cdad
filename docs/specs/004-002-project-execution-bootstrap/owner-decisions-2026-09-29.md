@@ -1,6 +1,6 @@
 # Decisiones del dueño — 004-002 (2026-09-29)
 
-Decididas por Pablo en la sesión de orquestación (Claude), sobre
+Decididas por <owner> en la sesión de orquestación (Claude), sobre
 `architect-draft-001.md` y `spec-gate-claude-001.md`.
 
 | # | Decisión | Resolución |

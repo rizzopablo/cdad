@@ -220,7 +220,7 @@ grep -rl "packets/roles\|packets\" / \"roles\"" tests/*.py
 grep -rl "install\.sh" tests/*.py
 grep -rl "doctrine" tests/*.py
 grep -rl "documentary-contracts" skills sources agents
-grep -rl "Pablo" skills sources agents | wc -l
+grep -rl "<owner>" skills sources agents | wc -l
 grep -nE "[0-9a-f]{64}" tests/{test_cdad_generate,test_role_packet_render,test_role_packet_consumers,test_install_ownership,test_install_review5_regressions,test_006_004_u3_principle_single_source}.py
 python3 - <<'PY'   # medición de tamaños de los 14 bloques estáticos y de los 5 bloques de rol
 ...
@@ -241,7 +241,7 @@ sha256 c15be0a5be249ec696f6e7837aec4d0b651099b3834c9f0be553d979e2394411  (render
 execution.json: "schema_version": 2
 tests/test_010_001*: No such file or directory
 grep documentary-contracts en skills|sources|agents: (vacío)
-grep "Pablo" en skills|sources|agents: 0 archivos en cada raíz
+grep "<owner>" en skills|sources|agents: 0 archivos en cada raíz
 literales sha256 en los 6 módulos de regresión de T4: ninguno
 peor bloque estático: 3397 bytes (reviewer/plan-review); techo 12000; holgura 8603
 bloques de rol: 5; subfases: 14

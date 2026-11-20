@@ -17,7 +17,7 @@ Superficie observable bajo prueba (§2 del contrato; nada de plomería:
 
 Destino final declarado (§5):
 
-    PROJECT_ROOT/.cdad/runtime/results/<execution_id>/<packet_id>/
+    PROJECT_ROOT/.cdad-execution/runtime/results/<execution_id>/<packet_id>/
       ├── parts/<name>.utf8
       ├── bundle.json
       └── receipt.json
@@ -25,7 +25,7 @@ Destino final declarado (§5):
 Fixtures offline: proyecto sintético v2 (política válida, state con
 aprobación de contrato en stage_history y delegación HITL activa); paquete
 test-writer/red publicado por `prepare` y observado como dispatched
-(--record-dispatch, I8); staged parts bajo `.cdad/inbox`. Los proyectos son
+(--record-dispatch, I8); staged parts bajo `.cdad-execution/inbox`. Los proyectos son
 tempdirs; ninguna escritura en este repo.
 
 RED hoy: `scripts/cdad_result.py` no existe; cada aserción positiva fracasa
@@ -34,6 +34,8 @@ misma prima `scripts/cdad_result.py no existe aún`), no por ImportError.
 """
 
 from __future__ import annotations
+
+from _layout_support import write_declaration
 
 import hashlib
 import json
@@ -67,7 +69,7 @@ SUBSTAGE = "red"
 ATTEMPT_ID = "attempt-t1-red-001"
 
 # staged parts del fixture (§3: cada part es un archivo regular UTF-8 no vacío
-# bajo el inbox fijo `.cdad/inbox`; artifact-kind por tabla del rol).
+# bajo el inbox fijo `.cdad-execution/inbox`; artifact-kind por tabla del rol).
 STAGED_PARTS: dict[str, bytes] = {
     "role-report": (
         b"# Role report (fixture T1 RED)\n"
@@ -88,8 +90,8 @@ BASELINE_REF = "orchestrator-prepared-reference"
 BASELINE_SHA256 = "0" * 64
 IN_SCOPE_CHANGE = "tests/role_report_fixture.py"
 OUT_OF_SCOPE_CHANGE = "src/leaked_implementation.py"
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
-MANIFEST_PATH = ".cdad/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
 
 # Tamaño límite del bundle (§3): la suma de bytes de todas las parts de un
 # packet no supera 1 MiB.
@@ -156,14 +158,14 @@ def fixture_state_document() -> dict:
         "stage_history": [{
             "feature": FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-05T00:00:00Z",
             # 005-001 T1 (D3): forma pineada — CONTRACT_BYTES es lo que
             # build_project escribe en CONTRACT_FILE (migración mecánica).
             "contract_path": CONTRACT_FILE,
             "contract_sha256": hashlib.sha256(CONTRACT_BYTES).hexdigest(),
         }],
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-10-05T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -178,6 +180,7 @@ def build_project(root: Path) -> Path:
     (root / "src").mkdir(exist_ok=True)
     (root / "docs").mkdir(exist_ok=True)
     # Política válida de tres campos (soportada por el runtime v2).
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps({
             "schema_version": 1,
@@ -186,7 +189,7 @@ def build_project(root: Path) -> Path:
                 "implementation_roots": ["src", "lib"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
     (root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -219,7 +222,7 @@ class EstablishedProjectCase(unittest.TestCase):
     # -- oráculos de salida ------------------------------------------------
 
     def final_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     def receipt_path(self) -> Path:
@@ -246,10 +249,10 @@ class EstablishedProjectCase(unittest.TestCase):
 
     def write_staged_parts(self, root: Path | None = None,
                            parts: dict[str, bytes] | None = None) -> dict[str, bytes]:
-        """Escribe los parts staged bajo `.cdad/inbox` del project root."""
+        """Escribe los parts staged bajo `.cdad-execution/inbox` del project root."""
         root = root if root is not None else self.root
         parts = parts if parts is not None else dict(STAGED_PARTS)
-        inbox = root / ".cdad" / "inbox"
+        inbox = root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in parts.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -288,7 +291,7 @@ class EstablishedProjectCase(unittest.TestCase):
     def build_descriptor(self, *, parts: dict[str, bytes],
                          observed: dict | None) -> dict:
         """RESULT.json canónico (§3) — source.kind staged-file."""
-        inbox_rel = ".cdad/inbox"
+        inbox_rel = ".cdad-execution/inbox"
         return {
             "schema_version": 1,
             "execution_id": self.execution_id,
@@ -330,13 +333,13 @@ class EstablishedProjectCase(unittest.TestCase):
                 "el contexto v2 de 001")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): el contexto v2 debe existir en "
-                ".cdad/executions")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+                ".cdad-execution/executions")
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):
@@ -375,10 +378,10 @@ class EstablishedProjectCase(unittest.TestCase):
                 "dispatched (status I8)")
 
     def staged_report_data(self) -> bytes:
-        return (self.root / ".cdad" / "inbox" / "role-report.md").read_bytes()
+        return (self.root / ".cdad-execution" / "inbox" / "role-report.md").read_bytes()
 
     def staged_notes_data(self) -> bytes:
-        return (self.root / ".cdad" / "inbox" / "role-notes.md").read_bytes()
+        return (self.root / ".cdad-execution" / "inbox" / "role-notes.md").read_bytes()
 
     def receive_args(self, descriptor: Path) -> list[str]:
         """Argv canónico de `receive` (§2)."""
@@ -403,7 +406,7 @@ class TestP1ExactReceivedBytes(EstablishedProjectCase):
 
     def test_p1_receive_persists_identical_bytes_and_binds_identity(self) -> None:
         """P1: receive persiste cada part con bytes idénticos bajo
-        `.cdad/runtime/results/<execution_id>/<packet_id>/parts/<name>.utf8`,
+        `.cdad-execution/runtime/results/<execution_id>/<packet_id>/parts/<name>.utf8`,
         liga execution/packet/feature/role/substage en el recibo mecánico y
         devuelve un receipt cuyos digests y longitudes corresponden al
         payload (stdout == bytes del receipt.json canónico)."""
@@ -489,7 +492,7 @@ class TestP1ExactReceivedBytes(EstablishedProjectCase):
             changed, msg="P1: receive debe persistir algo en el store")
         for rel in changed:
             self.assertTrue(
-                rel.startswith(".cdad/runtime/"),
+                rel.startswith(".cdad-execution/runtime/"),
                 msg=f"P1: receive escribió fuera del store operacional "
                     f"(§9): {rel}")
 
@@ -701,8 +704,8 @@ class TestP3MechanicalReceipt(EstablishedProjectCase):
             self.execution_context_path.read_bytes(), context_before,
             msg="P3: receive no debe modificar el contexto de ejecución v2")
         # Receive no materializa artefactos de rol: única escritura del
-        # árbol bajo `.cdad/runtime/` (§9 propiedad del estado). El paquete
-        # publicado bajo `.cdad/packets/` no cambia.
+        # árbol bajo `.cdad-execution/runtime/` (§9 propiedad del estado). El paquete
+        # publicado bajo `.cdad-execution/packets/` no cambia.
         tree_after = tree_snapshot(self.root)
         changed = sorted(
             rel for rel, data in tree_after.items()
@@ -711,7 +714,7 @@ class TestP3MechanicalReceipt(EstablishedProjectCase):
             changed, msg="P3: receive debe de persistir el recibo en el store")
         for rel in changed:
             self.assertTrue(
-                rel.startswith(".cdad/runtime/"),
+                rel.startswith(".cdad-execution/runtime/"),
                 msg=f"P3: receive no debe escribir fuera del store "
                     f"operacional (§9): {rel}")
         # El paquete publicado no cambia (receive no lo reescribe).

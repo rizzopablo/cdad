@@ -1,6 +1,6 @@
 # Cierre local de 010-000-continuity-relative-root
 
-Pablo aprobó el cierre y Memory Bank: «cierra 000 y continúa con los siguientes».
+<owner> aprobó el cierre y Memory Bank: «cierra 000 y continúa con los siguientes».
 Se aplica sin ADR nuevo y conservando deuda. El pedido posterior «y push a 000»
 no autoriza instalar globalmente ni publicar trabajo ajeno acumulado.
 

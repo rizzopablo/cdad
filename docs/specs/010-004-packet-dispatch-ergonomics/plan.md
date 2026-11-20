@@ -1,6 +1,6 @@
 # Plan de implementación — 010-004: ergonomía del despacho
 
-**Estado:** borrador para revisión independiente y aprobación separada de Pablo.  
+**Estado:** borrador para revisión independiente y aprobación separada de <owner>.  
 **Contrato:** `spec.md`, SHA-256 `fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64`. No modifica la spec ni reabre Discovery.
 
 ## Steps
@@ -31,7 +31,7 @@ Solo T1 constituye la siguiente tanda detallada. T2–T6 conservan `detail: plan
 | **T3 / T2** — RED → GREEN separados | Contexto y validación de T2 → `render --route C` conforme a §4.2; lo consume el orquestador para despachar. | Promesa A: PC-01–02 y diagnósticos PC-09. Verificar identificación determinista, binding publicado, rechazo v1 y paquete íntegro; asignar aquí PC-08a como regresión existente (canónico, cuerpo alterado, CRLF y fronteras de preámbulo), sin fabricar RED. Mantener render completo predeterminado y controles positivos. |
 | **T4 / T3** — RED pertinente → GREEN separados | Interfaces verificadas → fuentes coherentes y agentes regenerados; los consumen ambos runtimes y T5. | PC-03, PC-07b, PC-08b, PC-09 documental, PC-10–12. Checks mecánicos pertinentes antes de GREEN; revisión semántica independiente posterior. `make agents` genera los derivados; no se parchean manualmente. |
 | **T5 / T4** — subfases separadas | Producto generado y pruebas protegidas → evidencia de invariantes y recorrido instalado; la consume T6. | PROPERTIES e INTEGRATION/E2E en encargos distintos. Generadores solo para invariantes verificables, sembrados y acotados; reutilizar cobertura suficiente. Consumidor aislado: preparar v2 → emitir C → resolver y validar contexto. La auditoría de relevancia corresponde obligatoriamente a T6, no a POST-AUDIT. |
-| **T6 / T5** — revisión y cierre separados | Evidencia completa → revisión, aceptación y actualización aprobada del Memory Bank; consumidor: Pablo. | Revisión independiente contra todas las promesas y límites, incluida obligatoriamente la auditoría test↔promesa/PC por el reviewer de Stage 4, en sesión distinta de quien escribió los tests (`stage-3-tdd.md:45-47,270`); correcciones por el rol competente. El responsable del cierre ejecuta la suite completa conforme al paquete y registra evidencia. Scribe devuelve borrador; aprobación y materialización siguen separadas. |
+| **T6 / T5** — revisión y cierre separados | Evidencia completa → revisión, aceptación y actualización aprobada del Memory Bank; consumidor: <owner>. | Revisión independiente contra todas las promesas y límites, incluida obligatoriamente la auditoría test↔promesa/PC por el reviewer de Stage 4, en sesión distinta de quien escribió los tests (`stage-3-tdd.md:45-47,270`); correcciones por el rol competente. El responsable del cierre ejecuta la suite completa conforme al paquete y registra evidencia. Scribe devuelve borrador; aprobación y materialización siguen separadas. |
 
 Las pruebas focales y regresiones se ejecutan con selección proporcional, no con una suite completa por despacho. Cada resultado registra comando, salida, revisión del árbol y efectos observados. Un fallo de fixture o importación no acredita RED.
 
@@ -52,7 +52,7 @@ El informe debe:
 3. Separar **PC-08a, regresión existente**, de **PC-08b, instrucciones nuevas revisables**. Reutilizar controles de cuerpo alterado y CRLF; no fabricar un RED para una garantía ya verde. Las referencias iniciales son `test_role_packet_render.py:350` y `test_role_packet_review_regressions.py:468`.
 4. Declarar selección focal, regresiones, controles positivos, comandos y límites de evidencia para la siguiente tanda.
 
-**Gate:** el orquestador comprueba trazabilidad y registra la consecuencia de usuario exigida por R4 para cada prueba seleccionada (`sources/roles/orchestrator.md:274-281`). Antes de POST-AUDIT exige aprobación de Pablo del AUDIT o un mandato explícito vigente que autorice aprobar ese informe, verificado y citado. La delegación operativa de `execution.md:25-33` y un precedente no bastan: no hay autoaprobación; sin autoridad inequívoca se solicita decisión a Pablo (`packets/substages/test-writer-audit.md:1`). No hay cuota por PC ni variantes equivalentes obligatorias; tampoco se difiere una promesa comprometida.
+**Gate:** el orquestador comprueba trazabilidad y registra la consecuencia de usuario exigida por R4 para cada prueba seleccionada (`sources/roles/orchestrator.md:274-281`). Antes de POST-AUDIT exige aprobación de <owner> del AUDIT o un mandato explícito vigente que autorice aprobar ese informe, verificado y citado. La delegación operativa de `execution.md:25-33` y un precedente no bastan: no hay autoaprobación; sin autoridad inequívoca se solicita decisión a <owner> (`packets/substages/test-writer-audit.md:1`). No hay cuota por PC ni variantes equivalentes obligatorias; tampoco se difiere una promesa comprometida.
 
 ## Superficies previstas
 
@@ -96,8 +96,8 @@ Se mantienen las exclusiones de `spec.md:513-524`: no se añaden benchmarks, neg
         "PC-08a existente separada de PC-08b y ambiguedades funcionales escaladas"
       ],
       "regressions": [],
-      "integration_gate": "Orquestador valida trazabilidad y R4; Pablo aprueba el AUDIT o se verifica mandato explicito vigente para aprobarlo antes de POST-AUDIT",
-      "owner": "test-writer AUDIT read-only; orquestador materializa y valida; Pablo aprueba salvo mandato explicito verificado"
+      "integration_gate": "Orquestador valida trazabilidad y R4; <owner> aprueba el AUDIT o se verifica mandato explicito vigente para aprobarlo antes de POST-AUDIT",
+      "owner": "test-writer AUDIT read-only; orquestador materializa y valida; <owner> aprueba salvo mandato explicito verificado"
     },
     {
       "id": "T2",
@@ -141,7 +141,7 @@ Se mantienen las exclusiones de `spec.md:513-524`: no se añaden benchmarks, neg
       "objective": "Completar revision independiente, suite de cierre, aceptacion y Memory Bank sin presuponer aprobaciones",
       "depends_on": ["T5"],
       "uncertainty": "Hallazgos de revision y evidencia final del arbol",
-      "owner": "reviewer Stage 4 audita obligatoriamente relevancia en sesion distinta del autor de tests; responsable del cierre; scribe; orquestador; Pablo, cada uno en su cometido",
+      "owner": "reviewer Stage 4 audita obligatoriamente relevancia en sesion distinta del autor de tests; responsable del cierre; scribe; orquestador; <owner>, cada uno en su cometido",
       "resolves_when": "Evidencia T1 a T5 completa y paquetes separados de revision y cierre preparados conforme a gates"
     }
   ]

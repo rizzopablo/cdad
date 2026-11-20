@@ -12,8 +12,8 @@ runtime vivo). Los tests observan SOLO artefactos durables:
   - el argv/registro del binario falso (`<fake>/calls.jsonl`);
   - la base SQLite del fixture (campo `sessions_db` de la config);
   - el registro I8 del intento del worker
-    (`.cdad/executions/<id>/dispatches/<attempt>.json`, esquema cerrado);
-  - el recibo durable (`.cdad/runtime/results/<exec>/<packet>/receipt.json`);
+    (`.cdad-execution/executions/<id>/dispatches/<attempt>.json`, esquema cerrado);
+  - el recibo durable (`.cdad-execution/runtime/results/<exec>/<packet>/receipt.json`);
   - el envelope {attempt, session, termination, delivery_ref, diagnosis}.
 
 Variantes NUEVAS del doble (fixture tests/test_005_009_t2_opencode_

@@ -1,7 +1,7 @@
 # Decisión del proceso: precedencia de diagnósticos de configuración sobre el rechazo de contexto v1
 
 **Fecha:** 2026-10-30 (UTC).
-**Autoridad:** mandato HITL vigente (`docs/epics/epic-010-documentary-specialization/execution.md`); decisión del owner Pablo, transmitida por el orquestador supervisor a esta sesión subagente.
+**Autoridad:** mandato HITL vigente (`docs/epics/epic-010-documentary-specialization/execution.md`); decisión del owner <owner>, transmitida por el orquestador supervisor a esta sesión subagente.
 **Unidad:** `010-004-packet-dispatch-ergonomics`, T2 (GREEN entregado en `a273042e`, attempt19).
 **Naturaleza:** decisión de proceso que gobierna la corrección del caso C3. **No edita** `spec.md` (pin `fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64`), **no edita** `plan.md` (pin `2ae8ada32b164e5a5f72b5d791b7bb82dbb072f34b862885109d2c6026db6685`) y **no cambia tests ni producto por sí misma**.
 

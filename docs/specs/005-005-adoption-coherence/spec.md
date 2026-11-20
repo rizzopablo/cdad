@@ -241,7 +241,7 @@ buckets) es idéntico.
 (`$HOME/.cache/cdad-adopted-ce09ed0/...`); son **convención genérica de runtime** y pueden
 permanecer `handoff-opencode.md:63` y `execution.md:21` (`~/.claude`, `~/.agents`,
 `~/.config/opencode` como HOME reservado al dueño). Verificable:
-`grep -rn -E "/home/|/Users/|ofap|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/`
+`grep -rn -E "/home/|/Users/|<owner>|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/`
 no encuentra rutas personales. **VERIFY (dueño):** confirmar si `handoff-opencode.md:63` y
 `execution.md:21` también deben retirarse (el encargo los enumera; el criterio los conserva).
 

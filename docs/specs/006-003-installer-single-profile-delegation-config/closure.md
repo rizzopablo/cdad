@@ -1,6 +1,6 @@
 # Cierre de 006-003-installer-single-profile-delegation-config
 
-**Feature:** 006-003-installer-single-profile-delegation-config · **Epic:** `epic-006-opencode-concurrency` (tercera feature) · **Cerrada:** 2026-10-18 · **Contrato:** `spec.md` con §8 (A-1..A-4) y §9 (A-5, del dueño) · **Plan:** `plan.md` con A-6 · **Aprobación:** orquestador Claude bajo la HITL delegada del epic-006; A-5, Memory Bank, ADR-033 y despliegue aprobados por Pablo.
+**Feature:** 006-003-installer-single-profile-delegation-config · **Epic:** `epic-006-opencode-concurrency` (tercera feature) · **Cerrada:** 2026-10-18 · **Contrato:** `spec.md` con §8 (A-1..A-4) y §9 (A-5, del dueño) · **Plan:** `plan.md` con A-6 · **Aprobación:** orquestador Claude bajo la HITL delegada del epic-006; A-5, Memory Bank, ADR-033 y despliegue aprobados por <owner>.
 
 ## 1. Qué entrega
 

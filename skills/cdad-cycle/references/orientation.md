@@ -77,7 +77,7 @@ extracts. Execute the command inside an explicit condition so `set -e` does not
 abort before the code is captured:
 
 ```sh
-out=.cdad/inbox/cli.stdout err=.cdad/inbox/cli.stderr
+out=.cdad-execution/inbox/cli.stdout err=.cdad-execution/inbox/cli.stderr
 python3 "<skill-dir>/scripts/cdad_packet.py" status --project-root ROOT >"$out" 2>"$err"; rc=$?
 # then show extracts from "$out"/"$err" — never the exit of head/tail
 ```
@@ -91,7 +91,7 @@ that strips trailing newlines, and do not mix metadata into the render.
 |---|---|---|---|---|---|
 | Validate the state/execution binding | `<skill-dir>/scripts/cdad_packet.py validate-state --project-root ROOT` | Before/after a dispatch | — | resolves the active execution without `--execution-context` | read-only: reports the binding, writes nothing |
 | Validate a request/packet | `<skill-dir>/scripts/cdad_packet.py validate-request` / `validate-packet` | Before dispatch / on receipt | `--execution-context`, `--request` (`--packet` for the latter) | — | read-only: fails closed naming the violated field |
-| Prepare a packet | `<skill-dir>/scripts/cdad_packet.py prepare --project-root ROOT --role R --substage S --objective TEXT` | To dispatch a role task | `--role`, `--substage`, `--objective` | bootstraps a v2 execution implicitly | writes the execution context and the packet under `.cdad/`; prints the packet on stdout |
+| Prepare a packet | `<skill-dir>/scripts/cdad_packet.py prepare --project-root ROOT --role R --substage S --objective TEXT` | To dispatch a role task | `--role`, `--substage`, `--objective` | bootstraps a v2 execution implicitly | writes the execution context and the packet under the declared operational directory (`.cdad-execution/` by default); prints the packet on stdout |
 | Record a dispatch attempt | `<skill-dir>/scripts/cdad_packet.py prepare --record-dispatch PACKET_ID --input docs/attempt.json` | After dispatching | `--record-dispatch`, `--input` | — | moves the active packet to `dispatched` |
 | Continuity write-ahead | `<skill-dir>/scripts/cdad_continuity.py begin --project-root ROOT --execution-context EXEC.json --update UPDATE.json` | Before dispatching, to freeze the checkpoint | `--execution-context`, `--update` | `--max-bytes` default 16 KiB | freezes the write-ahead checkpoint; fails closed above the byte limit without truncating |
 | Open the next unit | `<skill-dir>/scripts/cdad_packet.py open-unit --project-root ROOT [--feature ID]` | At rest, to open the next `queued` unit (PD-7) | `--project-root` (relative or absolute, resolved against the cwd) | opens the **first** `queued` of `epic_features` | writes `active_feature`, the entry `in-progress`+`opened_at` and `current_stage=discovery` atomically under the lock; refuses a unit already open or a declared dependency not `done` |
@@ -164,6 +164,11 @@ skills (the "medidor no instalado" case). That is declared **ausencia** (version
 not verified), **distinta** de `DRIFT`, which is **incoherencia** — an absent
 meter is **never** `DRIFT`. While the meter is not installed, measure with the
 repository artifact **read-only**; deploying it is the owner's and out of scope.
+
+**Methodology-version change.** After an observed methodology-version change (the
+recorded `source_version` differs from the installed one), read
+`<skill-dir>/references/layout-migration.md` and prepare a fresh assignment before
+dispatch. An unmigrated project gets that guide's CLI refusal first.
 
 Republicar by the legitimate path (`prepare` and its derivatives) and verify
 afterwards; do not duplicate manifest/marker inspections without a new

@@ -218,7 +218,7 @@ PLAN_FIXTURE = (
 EPIC_PLAN_APPROVAL_FIXTURE = {
     "epic": EPIC_FIXTURE,
     "stage": "epic-plan",
-    "approved_by": "Pablo",
+    "approved_by": "<owner>",
     "approved_at": "2026-10-19T00:00:00Z",
     "plan_path": "docs/epics/%s/plan.md" % EPIC_FIXTURE,
 }
@@ -737,7 +737,7 @@ class U1bEntryCase(unittest.TestCase):
 
     def record_doc(self, stem: str, ctx: dict | None = None) -> dict:
         ctx = ctx or self.project
-        base = (ctx["root"] / ".cdad" / "executions" / ctx["execution_id"]
+        base = (ctx["root"] / ".cdad-execution" / "executions" / ctx["execution_id"]
                 / "dispatches")
         path = base / (stem + ".json")
         self.assertTrue(
@@ -758,7 +758,7 @@ class U1bEntryCase(unittest.TestCase):
 
     def descriptor(self, ctx: dict | None = None) -> dict:
         ctx = ctx or self.project
-        path = ctx["root"] / ".cdad" / "inbox" / "RESULT.json"
+        path = ctx["root"] / ".cdad-execution" / "inbox" / "RESULT.json"
         self.assertTrue(
             path.is_file(),
             msg="PD-3: el descriptor RESULT.json de la escenificación no "
@@ -767,7 +767,7 @@ class U1bEntryCase(unittest.TestCase):
 
     def receipt_dir(self, ctx: dict | None = None) -> Path:
         ctx = ctx or self.project
-        return (ctx["root"] / ".cdad" / "runtime" / "results"
+        return (ctx["root"] / ".cdad-execution" / "runtime" / "results"
                 / ctx["execution_id"] / ctx["packet_id"])
 
     def receive(self, ctx: dict, descriptor: Path) -> dict:
@@ -777,12 +777,12 @@ class U1bEntryCase(unittest.TestCase):
         proc = subprocess.run(
             [sys.executable, str(RESULT_CLI), "receive",
              "--project-root", str(root),
-             "--execution-context", str(root / ".cdad" / "executions"
+             "--execution-context", str(root / ".cdad-execution" / "executions"
                                           / ctx["execution_id"]
                                           / "execution.json"),
-             "--packet", str(root / ".cdad" / "packets" / ctx["packet_id"]
+             "--packet", str(root / ".cdad-execution" / "packets" / ctx["packet_id"]
                              / "PACKET.md"),
-             "--request", str(root / ".cdad" / "packets" / ctx["packet_id"]
+             "--request", str(root / ".cdad-execution" / "packets" / ctx["packet_id"]
                               / "REQUEST.json"),
              "--descriptor", str(descriptor)],
             capture_output=True, text=True, cwd=str(REPO_ROOT))
@@ -810,7 +810,7 @@ class U1bEntryCase(unittest.TestCase):
 
     def request_path(self, ctx: dict | None = None) -> Path:
         ctx = ctx or self.project
-        return (ctx["root"] / ".cdad" / "packets" / ctx["packet_id"]
+        return (ctx["root"] / ".cdad-execution" / "packets" / ctx["packet_id"]
                 / "REQUEST.json")
 
     def request_doc(self, ctx: dict | None = None) -> dict:
@@ -838,7 +838,7 @@ class U1bEntryCase(unittest.TestCase):
         path.write_text(
             json.dumps(request, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")
-        execution = (ctx["root"] / ".cdad" / "executions"
+        execution = (ctx["root"] / ".cdad-execution" / "executions"
                      / ctx["execution_id"] / "execution.json")
         rendered = subprocess.run(
             [sys.executable, str(PACKET_CLI), "render",
@@ -850,7 +850,7 @@ class U1bEntryCase(unittest.TestCase):
             rendered.returncode, 0,
             msg="precondición (fixture): el request histórico debe renderizar "
                 "canónicamente: " + tail(self.output(rendered)))
-        (ctx["root"] / ".cdad" / "packets" / ctx["packet_id"]
+        (ctx["root"] / ".cdad-execution" / "packets" / ctx["packet_id"]
          / "PACKET.md").write_text(rendered.stdout, encoding="utf-8")
 
 
@@ -929,7 +929,7 @@ class TestPd2NucleusIsNotASecondWriter(U1bEntryCase):
             {rel for rel in set(tree_before) | set(tree_after)
              if tree_before.get(rel) != tree_after.get(rel)})
         unexpected = [rel for rel in changed
-                      if not rel.startswith(".cdad/") and rel != STATE_FILE_REL]
+                      if not rel.startswith(".cdad-execution/") and rel != STATE_FILE_REL]
         self.assertEqual(
             unexpected, [],
             msg="PD-2/INV-10: el núcleo escribió fuera de `.cdad/` (fuera de "
@@ -969,12 +969,12 @@ class TestPd3NativeResultIsStagedByteExact(U1bEntryCase):
         self.envelope(proc, "PD-3")
 
         root = self.project["root"]
-        inbox = root / ".cdad" / "inbox"
+        inbox = root / ".cdad-execution" / "inbox"
         staged = [path for path in sorted(inbox.rglob("*"))
                   if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
         self.assertTrue(
             staged,
-            msg="PD-3: ninguna parte escenificada bajo `.cdad/inbox` conserva "
+            msg="PD-3: ninguna parte escenificada bajo `.cdad-execution/inbox` conserva "
                 "los bytes EXACTOS de la entrada (sha256 esperado %s): %r"
                 % (sha256_bytes(NATIVE_PAYLOAD),
                    [path.name for path in sorted(inbox.rglob("*"))
@@ -1029,15 +1029,15 @@ class TestPd4WithoutFinalTextThereIsNoDelivery(U1bEntryCase):
             self) -> None:
         """PD-4: `record` without `--native-result` registers the attempt
         (one) and the envelope declares it, but stages nothing under
-        `.cdad/inbox`, writes no descriptor and leaves no receipt (nothing
+        `.cdad-execution/inbox`, writes no descriptor and leaves no receipt (nothing
         fabricates a delivery)."""
         self.write_store(
             ["id TEXT PRIMARY KEY", "agent TEXT"],
             [{"id": NATIVE_SESSION, "agent": "cdad-test-writer"}])
         root = self.project["root"]
-        inbox_before = snapshot_under(root / ".cdad" / "inbox")
+        inbox_before = snapshot_under(root / ".cdad-execution" / "inbox")
         self.assertFalse(
-            (root / ".cdad" / "inbox" / "RESULT.json").is_file(),
+            (root / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
             msg="precondición (fixture): el descriptor existe antes del caso")
         before = self.records()
 
@@ -1054,13 +1054,13 @@ class TestPd4WithoutFinalTextThereIsNoDelivery(U1bEntryCase):
                 "se registra aunque no haya entrega): %r"
                 % sorted(set(self.records()) - set(before)))
         self.assertFalse(
-            (root / ".cdad" / "inbox" / "RESULT.json").is_file(),
+            (root / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
             msg="PD-4/INV-1: sin texto final se escribió un descriptor "
                 "RESULT.json (no hay entrega que declarar)")
         self.assertEqual(
-            snapshot_diff(inbox_before, snapshot_under(root / ".cdad" / "inbox")),
+            snapshot_diff(inbox_before, snapshot_under(root / ".cdad-execution" / "inbox")),
             [],
-            msg="PD-4: sin texto final se escenificó algo bajo `.cdad/inbox` "
+            msg="PD-4: sin texto final se escenificó algo bajo `.cdad-execution/inbox` "
                 "(nunca se fabrica una entrega)")
         receipt = self.receipt_dir() / "receipt.json"
         self.assertFalse(
@@ -1354,7 +1354,7 @@ class TestPd5E1NativeProjectKeyU63(U1bEntryCase):
             descriptor.get("packet_id"), self.project["packet_id"],
             msg="PD-5/E1 (U6-3): el descriptor no liga el paquete despachado")
         staged = [path for path in sorted(
-            (root / ".cdad" / "inbox").rglob("*"))
+            (root / ".cdad-execution" / "inbox").rglob("*"))
             if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
         self.assertTrue(
             staged,
@@ -1419,7 +1419,7 @@ class TestPd5E1NativeProjectKeyU63(U1bEntryCase):
             msg="PD-6: la procedencia declarada de `session` está vacía")
         root = self.project["root"]
         staged = [path for path in sorted(
-            (root / ".cdad" / "inbox").rglob("*"))
+            (root / ".cdad-execution" / "inbox").rglob("*"))
             if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
         self.assertTrue(
             staged,
@@ -1540,7 +1540,7 @@ class TestPd6UnverifiableIdentityKeepsNoSession(U1bEntryCase):
             msg="PD-6: la procedencia declarada de `session` está vacía")
 
         root = self.project["root"]
-        staged = [path for path in sorted((root / ".cdad" / "inbox").rglob("*"))
+        staged = [path for path in sorted((root / ".cdad-execution" / "inbox").rglob("*"))
                   if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
         self.assertTrue(
             staged,

@@ -1,6 +1,6 @@
 ---
 feature_id: 016-003-suite-review-tranche-1
-approved_by: Pablo (HITL delegada al orquestador, docs/epics/epic-016-traceability-and-suite-review/execution.md)
+approved_by: <owner> (HITL delegada al orquestador, docs/epics/epic-016-traceability-and-suite-review/execution.md)
 approved_at: 2026-11-03
 source: architect draft (sesión <session>), materializado por el orquestador (ADR-003)
 decision: se aprueban el selector reproducible con antigüedad por módulo, el tramo congelado de 398 nodeids sobre 1988, la auditoría con evidencia por fila, los experimentos acotados a candidatos, el costo medido por actividad y la decisión explícita de continuación; sin poda en esta feature

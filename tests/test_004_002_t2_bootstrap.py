@@ -14,7 +14,7 @@ proyectos son fixtures sintéticos en tempdirs):
 
 NUEVO `prepare` bajo T2 (contrato v2): `--new-execution`, `--resume-packet
 <id>`, `validate-state` sin `--execution-context`, contexto v2 en
-`.cdad/executions/<id>/execution.json` (`schema_version: 2`) y rechazo de
+`.cdad-execution/executions/<id>/execution.json` (`schema_version: 2`) y rechazo de
 contextos v1 sin flag explícito. Opciones que NO deben existir:
 `--migrate-execution` (PD-10).
 
@@ -40,6 +40,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from _layout_support import (  # noqa: F401  (re-exported to the builders)
+    DECLARATION_REL, OPERATIONAL_DIR, write_declaration,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "cdad_packet.py"
@@ -103,7 +107,7 @@ def write_policy(root: Path) -> None:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [f"{OPERATIONAL_DIR}/tmp"],
     }
     (root / POLICY_FILE).write_text(
         json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -137,7 +141,7 @@ def state_document(
         stage_history.append({
             "feature": FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-09-29T00:00:00Z",
             # 005-001 T1 (D3): forma pineada — sha256 de los bytes que
             # write_contract() escribe en CONTRACT_FILE (migración mecánica).
@@ -177,7 +181,7 @@ def state_document(
         "audit_status": "approved",
         "postconditions_status": {},
         "stage_history": stage_history,
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-09-29T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -195,9 +199,16 @@ def read_state(root: Path) -> dict:
     return json.loads((root / STATE_FILE).read_text(encoding="utf-8"))
 
 
-def build_project(root: Path, **state_kwargs) -> Path:
-    """Proyecto sintético válido (política + state I2 + contrato + autoridad)."""
+def build_project(root: Path, *, declared: bool = True, **state_kwargs) -> Path:
+    """Proyecto sintético válido (política + state I2 + contrato + autoridad).
+
+    020-001: con `declared=True` (por defecto) escribe también la declaración
+    schema 2 en `cdad/project-layout.json` (metodología `docs`, directorio
+    operacional `OPERATIONAL_DIR`). `declared=False` construye el proyecto sin
+    declaración (p. ej. para casos de proyecto no migrado)."""
     root.mkdir(parents=True, exist_ok=True)
+    if declared:
+        write_declaration(root)
     (root / "tests").mkdir(exist_ok=True)
     (root / "src").mkdir(exist_ok=True)
     write_policy(root)
@@ -236,15 +247,15 @@ class ProjectTestCase(unittest.TestCase):
 
 
 def packets_dir(root: Path) -> Path:
-    return root / ".cdad" / "packets"
+    return root / OPERATIONAL_DIR / "packets"
 
 
 def executions_dir(root: Path) -> Path:
-    return root / ".cdad" / "executions"
+    return root / OPERATIONAL_DIR / "executions"
 
 
 def v2_execution_docs(root: Path) -> dict[str, dict]:
-    """Los contextos v2 publicados bajo .cdad/executions (orclé de contenido)."""
+    """Los contextos v2 publicados bajo .cdad-execution/executions (orclé de contenido)."""
     docs: dict[str, dict] = {}
     base = executions_dir(root)
     if not base.is_dir():
@@ -284,7 +295,7 @@ class TestPd3BootstrapAuthorized(ProjectTestCase):
 
     def test_pd3_implicit_bootstrap_creates_v2_context_binding_and_packet(self) -> None:
         """PD-3/I3: sin ningún contexto previo, `prepare` (sin
-        --execution-context) crea .cdad/executions/<id>/execution.json con
+        --execution-context) crea .cdad-execution/executions/<id>/execution.json con
         schema_version 2, feature, epic, scope, authority_ref y hash de la
         política vigente; state.execution referencia esa ejecución; publica el
         paquete; validate-state sin --execution-context da VALID con ese id."""
@@ -614,7 +625,7 @@ class TestPd10ForwardAdoption(ProjectTestCase):
         super().setUp()
 
     def write_v1_context(self) -> bytes:
-        """Contexto v1 sintético en .cdad/execution.json (cimento de I3/I4)."""
+        """Contexto v1 sintético en .cdad-execution/execution.json (cimento de I3/I4)."""
         doc = {
             "schema_version": 1,
             "execution": {
@@ -639,7 +650,7 @@ class TestPd10ForwardAdoption(ProjectTestCase):
                 "colocated_test_prefixes": ["test_"],
             },
         }
-        cdad = self.root / ".cdad"
+        cdad = self.root / OPERATIONAL_DIR
         cdad.mkdir(exist_ok=True)
         v1 = cdad / "execution.json"
         v1.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n",
@@ -647,7 +658,7 @@ class TestPd10ForwardAdoption(ProjectTestCase):
         return v1.read_bytes()
 
     def test_pd10_v1_present_without_flag_fails_demanding_new_execution(self) -> None:
-        """PD-10/I3: con .cdad/execution.json v1 presente y sin
+        """PD-10/I3: con .cdad-execution/execution.json v1 presente y sin
         --execution-context, prepare falla con diagnóstico que pide
         --new-execution y NO modifica el v1 (bytes idénticos)."""
         v1_bytes = self.write_v1_context()
@@ -661,7 +672,7 @@ class TestPd10ForwardAdoption(ProjectTestCase):
             out, r"--new-execution",
             msg=f"el diagnóstico no pide --new-execution: {out!r}")
         self.assertEqual(
-            (self.root / ".cdad" / "execution.json").read_bytes(), v1_bytes,
+            (self.root / OPERATIONAL_DIR / "execution.json").read_bytes(), v1_bytes,
             msg="el contexto v1 fue modificado")
 
     def test_pd10_new_execution_flag_creates_v2_leaving_v1_intact(self) -> None:
@@ -685,7 +696,7 @@ class TestPd10ForwardAdoption(ProjectTestCase):
             execution_id, "exec-legacy-v1",
             msg="--new-execution reutilizó el id del contexto v1")
         self.assertEqual(
-            (self.root / ".cdad" / "execution.json").read_bytes(), v1_bytes,
+            (self.root / OPERATIONAL_DIR / "execution.json").read_bytes(), v1_bytes,
             msg="--new-execution modificó el v1")
         state = read_state(self.root)
         self.assertEqual(

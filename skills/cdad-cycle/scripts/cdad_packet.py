@@ -27,10 +27,12 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cdad_lifecycle  # noqa: E402
 from cdad_layout import (  # noqa: E402
-    LOCATOR_RELPATH as LAYOUT_LOCATOR_RELPATH,
+    DECLARATION_RELPATH as LAYOUT_DECLARATION_RELPATH,
+    LEGACY_LOCATOR_RELPATH as LEGACY_LAYOUT_LOCATOR_RELPATH,
     AmbiguousLayoutError,
     LayoutError,
     methodology_base,
+    operational_dir as declared_operational_dir,
     registered_methodology_dir,
     resolve_layout,
 )
@@ -142,13 +144,15 @@ V2_DOCUMENT_KEYS = {"schema_version", "execution", "path_policy", "policy", "pol
 V2_POLICY_KEYS = {"path", "schema_version", "sha256", "snapshot"}
 V2_POLICY_HISTORY_KEYS = {"sha256", "snapshot"}
 DEFAULT_MODEL_POLICY = "ordinary"
-EXECUTIONS_DIR = Path(".cdad") / "executions"
-FLAT_EXECUTION_RELPATH = Path(".cdad") / "execution.json"
+# 020-001: operational record names. Every access goes through the DECLARED
+# operational directory (`cdad_layout.operational_dir`), never a fixed prefix.
+EXECUTIONS_DIRNAME = "executions"
+FLAT_EXECUTION_NAME = "execution.json"
 # PD-11/I5: single writer per project, and inert interruption/synchronisation
-# hooks. `.cdad/.lock` is a PERMANENT rendezvous file: only the flock and the
-# descriptor are released, never the file (F1).
-LOCK_RELPATH = Path(".cdad") / ".lock"
-TXN_DIRNAME = Path(".cdad") / ".txn"
+# hooks. `<operational_dir>/.lock` is a PERMANENT rendezvous file: only the
+# flock and the descriptor are released, never the file (F1).
+LOCK_NAME = ".lock"
+TXN_DIRNAME = ".txn"
 # I9: project-local OpenCode agents derived from the installed sources + the
 # project policy. Published under .opencode/agents/ with a hash manifest.
 DERIVED_AGENTS_ENV = "CDAD_OPENCODE_AGENTS_DIR"
@@ -163,7 +167,7 @@ DERIVED_STAGE_DIRNAME = "derived"
 # adopted installation the project runs against; the runtime lays the OpenCode
 # agents out at `<adopted_root>/.config/opencode/agents` and the installer
 # records the origin version/commit in `version.txt` at the installation root.
-ACTIVATION_REGISTRY_REL = Path(".cdad") / "activation.json"
+ACTIVATION_REGISTRY_NAME = "activation.json"
 OPENCODE_AGENTS_SUBDIR = (".config", "opencode", "agents")
 INSTALL_VERSION_MARKER = "version.txt"
 DERIVED_MAP_KEYS = ("read", "grep", "glob", "edit")
@@ -259,11 +263,11 @@ CLASS_BY_TOKEN = {
 LAYOUT_IMPL_ROOTS = (
     "src", "lib", "app", "agents", "skills", "scripts", "sources", "build", "addons",
 )
-# D-5 (006-005 U3, C2): the PROPOSED temporary root — a subdirectory, disjoint
-# from the subtrees the CLI writes (`inbox/`, `packets/`, `executions/`,
-# `runtime/`), never `.cdad/` itself. The owner accepts it; the proposal never
-# touches a project's accepted policy (INV-7).
-DEFAULT_TEMPORARY_ROOT = ".cdad/tmp"
+# D-5 (006-005 U3, C2): the PROPOSED temporary root — a subdirectory of the
+# declared operational directory, disjoint from the subtrees the CLI writes
+# (`inbox/`, `packets/`, `executions/`, `runtime/`). The owner accepts it; the
+# proposal never touches a project's accepted policy (INV-7).
+PROPOSED_TEMPORARY_SUBDIR = "tmp"
 
 
 def _object(value: Any, label: str) -> dict[str, Any]:
@@ -652,7 +656,7 @@ def _reject_active_v1_packet(project_root: Path, state: dict[str, Any]) -> None:
     packet_id = active.get("id")
     if not _safe_packet_component(packet_id):
         return
-    request_path = project_root / PACKETS_TREE / packet_id / "REQUEST.json"
+    request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
     if not request_path.is_file():
         # Not a published packet: the half-written binding keeps its own reading.
         return
@@ -670,7 +674,7 @@ def _reject_active_v1_packet(project_root: Path, state: dict[str, Any]) -> None:
     execution_id = request.get("execution_id")
     if (isinstance(execution_id, str) and ".." not in execution_id
             and FLAT_NAME.fullmatch(execution_id) is not None):
-        context_path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+        context_path = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "execution.json"
         if context_path.is_file() and _load_json(
                 context_path, "execution context").get("schema_version") == V2_SCHEMA_VERSION:
             # A generation published before the locator field existed keeps its
@@ -798,13 +802,15 @@ def _resume_digest_checks(project_root: Path, state: dict[str, Any]) -> dict[str
     checks: dict[str, str] = {}
     binding = state.get("execution")
     if isinstance(binding, dict) and isinstance(binding.get("id"), str):
-        rel = f"{EXECUTIONS_DIR.as_posix()}/{binding['id']}/execution.json"
+        rel = _operational_relpath(project_root, EXECUTIONS_DIRNAME, binding["id"], "execution.json")
         paths = [rel]
         packet = state.get("active_packet")
         request_doc = None
         if isinstance(packet, dict) and packet.get("id"):
-            request_rel = f".cdad/packets/{packet['id']}/REQUEST.json"
-            paths.extend((request_rel, f".cdad/packets/{packet['id']}/PACKET.md"))
+            request_rel = _operational_relpath(
+                project_root, PACKETS_DIRNAME, packet["id"], "REQUEST.json")
+            paths.extend((request_rel, _operational_relpath(
+                project_root, PACKETS_DIRNAME, packet["id"], "PACKET.md")))
             request_path = project_root / request_rel
             if request_path.is_file():
                 request_doc = _load_json(request_path, "suspended packet request")
@@ -819,11 +825,11 @@ def _resume_digest_checks(project_root: Path, state: dict[str, Any]) -> dict[str
         if policy.is_file():
             checks[_policy_relpath(project_root)] = hashlib.sha256(policy.read_bytes()).hexdigest()
         if isinstance(packet, dict) and packet.get("id"):
-            receipt = (project_root / ".cdad/runtime/results" / binding["id"] /
-                       packet["id"] / "receipt.json")
+            receipt = (_operational_root(project_root) / "runtime" / "results"
+                       / binding["id"] / packet["id"] / "receipt.json")
             if receipt.is_file():
                 checks[receipt.relative_to(project_root).as_posix()] = hashlib.sha256(receipt.read_bytes()).hexdigest()
-        continuity_dir = project_root / EXECUTIONS_DIR / binding["id"] / "continuity"
+        continuity_dir = _operational_root(project_root) / EXECUTIONS_DIRNAME / binding["id"] / "continuity"
         head_path = continuity_dir / "head.json"
         if head_path.is_file():
             head = _load_json(head_path, "continuity head")
@@ -851,7 +857,8 @@ def _verify_suspend_pins(project_root: Path, state: dict[str, Any]) -> None:
         raise PolicyError("cannot suspend: execution binding is missing")
 
     if isinstance(packet, dict):
-        request_rel = f".cdad/packets/{packet['id']}/REQUEST.json"
+        request_rel = _operational_relpath(
+            project_root, PACKETS_DIRNAME, packet["id"], "REQUEST.json")
         request_path = _project_path(project_root, request_rel, "suspended packet request")
         if not request_path.is_file():
             raise PolicyError(f"cannot suspend: pinned request is missing: {request_rel}")
@@ -877,7 +884,7 @@ def _verify_suspend_pins(project_root: Path, state: dict[str, Any]) -> None:
     binding_id = binding.get("id")
     if not isinstance(binding_id, str) or not binding_id:
         raise PolicyError("cannot suspend: execution binding has invalid identity")
-    continuity_dir = project_root / EXECUTIONS_DIR / binding_id / "continuity"
+    continuity_dir = _operational_root(project_root) / EXECUTIONS_DIRNAME / binding_id / "continuity"
     head_path = continuity_dir / "head.json"
     if not head_path.is_file():
         return
@@ -973,7 +980,7 @@ def _has_dispatch_evidence(project_root: Path, state: dict[str, Any]) -> bool:
     execution_id = execution.get("id") if isinstance(execution, dict) else None
     if not execution_id:
         return True
-    path = project_root / EXECUTIONS_DIR / execution_id / "dispatches"
+    path = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "dispatches"
     return path.exists() and any(path.iterdir())
 
 
@@ -987,7 +994,7 @@ def _require_suspend_safe_boundary(project_root: Path, state: dict[str, Any],
         raise PolicyError(f"unit {feature_id!r} has no verifiable execution identity")
     packet = state.get("active_packet")
     active_packet_id = packet.get("id") if isinstance(packet, dict) else None
-    dispatch_dir = project_root / EXECUTIONS_DIR / execution_id / "dispatches"
+    dispatch_dir = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "dispatches"
     dispatches: list[dict[str, Any]] = []
     if dispatch_dir.exists():
         if not dispatch_dir.is_dir():
@@ -1004,7 +1011,7 @@ def _require_suspend_safe_boundary(project_root: Path, state: dict[str, Any],
     packet_ids = {doc["packet_id"] for doc in dispatches}
     if isinstance(active_packet_id, str):
         packet_ids.add(active_packet_id)
-    result_root = project_root / ".cdad" / "runtime" / "results" / execution_id
+    result_root = _operational_root(project_root) / "runtime" / "results" / execution_id
     if result_root.exists():
         if not result_root.is_dir():
             raise PolicyError(f"unit {feature_id!r} result source is inconclusive: {result_root}")
@@ -1019,7 +1026,7 @@ def _require_suspend_safe_boundary(project_root: Path, state: dict[str, Any],
             raise PolicyError(f"unit {feature_id!r} result receipt is inconclusive or discordant: {receipt_path}")
         if result_dir.is_dir() and any(p.is_file() for p in result_dir.rglob("*")) and not receipt_valid:
             raise PolicyError(f"unit {feature_id!r} has staged/result effects without a resolving receipt: {result_dir}")
-        materialization_dir = project_root / ".cdad" / "runtime" / "materializations" / execution_id / packet_id
+        materialization_dir = _operational_root(project_root) / "runtime" / "materializations" / execution_id / packet_id
         if materialization_dir.is_dir() and any(materialization_dir.glob("*.json")) and not receipt_valid:
             raise PolicyError(f"unit {feature_id!r} has unresolved materialization: {materialization_dir}")
         if any(doc["packet_id"] == packet_id for doc in dispatches) and not receipt_valid:
@@ -1033,7 +1040,7 @@ def _require_suspend_safe_boundary(project_root: Path, state: dict[str, Any],
             if disposition is None:
                 raise PolicyError(f"unit {feature_id!r} has unresolved dispatched packet {packet_id}; receive or dispose it first")
 
-    inbox = project_root / ".cdad" / "inbox"
+    inbox = _operational_root(project_root) / "inbox"
     if inbox.is_dir():
         for descriptor_path in sorted(inbox.rglob("RESULT.json")):
             try:
@@ -1051,7 +1058,8 @@ def _is_durable_receipt(project_root: Path, execution_id: str,
     try:
         import cdad_result
         receipt = cdad_result._load_durable_receipt(
-            project_root / cdad_result.RESULTS_RELPATH / execution_id / packet_id)
+            _operational_root(project_root) / "runtime" / "results"
+            / execution_id / packet_id)
     except (OSError, ValueError, cdad_result.ResultError):
         return False
     return bool(receipt and receipt.get("execution_id") == execution_id
@@ -1069,7 +1077,8 @@ def _has_durable_receipt(project_root: Path, state: dict[str, Any]) -> bool:
         return False
     try:
         import cdad_result
-        final_dir = project_root / cdad_result.RESULTS_RELPATH / execution_id / packet_id
+        final_dir = (_operational_root(project_root) / "runtime" / "results"
+                    / execution_id / packet_id)
         receipt = cdad_result._load_durable_receipt(final_dir)
     except (OSError, ValueError, cdad_result.ResultError):
         return False
@@ -1084,7 +1093,7 @@ def resume_unit(args: argparse.Namespace, project_root: Path) -> str:
         raise PolicyError("resume-unit requires explicit --feature ID")
     # Accept the historical public lock marker as a busy signal as well as the
     # current flock rendezvous file; never mutate while either is held.
-    if (project_root / ".cdad" / "project.lock").exists():
+    if (_operational_root(project_root) / "project.lock").exists():
         raise PolicyError(f"cannot resume unit {feature_id!r}: project lock is busy")
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
@@ -1118,7 +1127,7 @@ def resume_unit(args: argparse.Namespace, project_root: Path) -> str:
         updated["epic_features"] = features
         context_ref = record.get("unit_state", {}).get("execution")
         if isinstance(context_ref, dict) and context_ref.get("id"):
-            context_path = project_root / EXECUTIONS_DIR / context_ref["id"] / "execution.json"
+            context_path = _operational_root(project_root) / EXECUTIONS_DIRNAME / context_ref["id"] / "execution.json"
             if context_path.is_file():
                 execution_document = _load_json(context_path, "suspended execution context")
                 _validate_v2_state(execution_document, updated, project_root)
@@ -1151,8 +1160,8 @@ def _continuity_checkpoint_update(project_root: Path, state: dict[str, Any],
     if not isinstance(binding, dict) or not binding.get("id"):
         return None
     execution_id = binding["id"]
-    context = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
-    head = project_root / EXECUTIONS_DIR / execution_id / "continuity" / "head.json"
+    context = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "execution.json"
+    head = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "continuity" / "head.json"
     # Continuity files live beneath the execution's continuity store; if no head
     # exists, neither a suspension nor a retirement invents one.
     if not head.is_file():
@@ -1209,7 +1218,7 @@ def _continuity_unit_checkpoint(project_root: Path, state: dict[str, Any],
         # The head is another packet's: its bytes are conserved as they are.
         return None
     binding = state["execution"]
-    head = (project_root / EXECUTIONS_DIR / binding["id"] / "continuity"
+    head = (_operational_root(project_root) / EXECUTIONS_DIRNAME / binding["id"] / "continuity"
             / "head.json")
     with tempfile.TemporaryDirectory(prefix="cdad-suspend-") as temp:
         update_path = Path(temp) / "update.json"
@@ -1654,17 +1663,18 @@ def _parse_current_decisions(raw_values: list[str]) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------- 010-004 T2
 # PC-04/PC-05/PC-06/PC-07 (§4.1): the execution context the request DECLARES.
 # The locator is a project-relative string whose domain is EXACTLY
-# `.cdad/executions/<execution_id>/execution.json`, so the packet names the
+# `<operational_dir>/executions/<execution_id>/execution.json`, so the packet names the
 # context it was prepared from and the role resolves it instead of inferring
 # it. A copy in another location is never admitted as its source, and no
 # rejection probes a second location or mutates the tree (INV-11).
 REQUEST_LOCATOR_FIELD = "execution_context"
-REQUEST_LOCATOR_CANONICAL_FORM = ".cdad/executions/<execution_id>/execution.json"
+REQUEST_LOCATOR_CANONICAL_FORM = "<operational_dir>/executions/<execution_id>/execution.json"
 
 
-def _canonical_execution_locator(execution_id: str) -> str:
-    """The ONE admitted locator of a v2 context (010-004 §4.1)."""
-    return (EXECUTIONS_DIR / execution_id / "execution.json").as_posix()
+def _canonical_execution_locator(project_root: Path, execution_id: str) -> str:
+    """The ONE admitted locator of a v2 context (010-004 §4.1, 020-001)."""
+    return _operational_relpath(
+        project_root, EXECUTIONS_DIRNAME, execution_id, FLAT_EXECUTION_NAME)
 
 
 def _request_locator_path(project_root: Path, raw: Any, execution_id: str) -> Path:
@@ -1684,11 +1694,11 @@ def _request_locator_path(project_root: Path, raw: Any, execution_id: str) -> Pa
     declared = Path(raw)
     if declared.is_absolute() or any(part in {"", ".", ".."} for part in declared.parts):
         raise PolicyError(domain_cause)
-    parts = declared.parts
-    if (len(parts) != 4 or parts[0] != EXECUTIONS_DIR.parts[0]
-            or parts[1] != EXECUTIONS_DIR.parts[1] or parts[3] != "execution.json"):
+    expected_parent = Path(_operational_dir(project_root)) / EXECUTIONS_DIRNAME
+    if (declared.parent.parent != expected_parent
+            or declared.name != FLAT_EXECUTION_NAME):
         raise PolicyError(domain_cause)
-    component = parts[2]
+    component = declared.parent.name
     if FLAT_NAME.fullmatch(component) is None or ".." in component:
         raise PolicyError(domain_cause)
     if component != execution_id:
@@ -1696,7 +1706,7 @@ def _request_locator_path(project_root: Path, raw: Any, execution_id: str) -> Pa
             f"request.{REQUEST_LOCATOR_FIELD} names execution {component!r} while "
             f"request.execution_id is {execution_id!r}: the locator must point at the "
             f"request's own execution "
-            f"({_canonical_execution_locator(execution_id)!r})")
+            f"({_canonical_execution_locator(project_root, execution_id)!r})")
     return _project_path(project_root, raw, f"request.{REQUEST_LOCATOR_FIELD}")
 
 
@@ -2052,7 +2062,8 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
             accepted_pairs = (
                 (EPIC_PLAN_KIND, f"docs/epics/{epic_id}/plan.md"),
                 (UNIT_CONTRACT_KIND,
-                 f".cdad/packets/{document['packet_id']}/{UNIT_PROJECTION_NAME}"),
+                 _operational_relpath(
+                    project_root, PACKETS_DIRNAME, document["packet_id"], UNIT_PROJECTION_NAME)),
             )
             if (contract["kind"], contract.get("path")) not in accepted_pairs:
                 raise PolicyError("contract kind/path does not match role and execution")
@@ -2233,7 +2244,7 @@ def render_packet(request: dict[str, Any], execution_document: dict[str, Any],
 PACKET_BEGIN_MARKER = "---cdad-packet-json"
 PACKET_END_MARKER = "---end-cdad-packet-json"
 PACKET_MD_NAME = "PACKET.md"
-PACKETS_TREE = Path(".cdad") / "packets"
+PACKETS_DIRNAME = "packets"
 
 
 def _canonical_block(packet_id: str, packet_bytes: bytes) -> bytes:
@@ -2306,7 +2317,7 @@ def verify_published_packet(project_root: Path, packet_id: Any, *,
             f"the packet id must be a flat name ([A-Za-z0-9._-], no path), got "
             f"{packet_id!r}")
     project_root = _canonical_project_root(project_root)
-    out_dir = project_root / PACKETS_TREE
+    out_dir = _operational_root(project_root) / PACKETS_DIRNAME
     packet_dir = out_dir / packet_id
     try:
         packet_dir.resolve().relative_to(out_dir.resolve())
@@ -2579,9 +2590,10 @@ def propose_policy(project_root: Path) -> str:
         "schema_version": 1,
         "path_policy": path_policy,
         # D-5 (006-005 U3, C1/C2): the default temporary root is a PROPOSAL for
-        # the owner (`.cdad/tmp`, a subdirectory disjoint from the CLI's own
-        # subtrees); the accepted policy of a project is never touched here.
-        "temporary_roots": [DEFAULT_TEMPORARY_ROOT],
+        # the owner (a `tmp` subdirectory of the declared operational directory
+        # disjoint from the CLI's own subtrees); the accepted policy of a project is never touched
+        # here.
+        "temporary_roots": [f"{_operational_dir(project_root)}/{PROPOSED_TEMPORARY_SUBDIR}"],
     }
     # A proposal that its own validator would reject is not emitted.
     _validate_policy_document(document, project_root)
@@ -2596,6 +2608,30 @@ def _methodology_base(project_root: Path) -> str:
         return methodology_base(project_root)
     except LayoutError as exc:
         raise PolicyError(str(exc)) from exc
+
+
+def _operational_dir(project_root: Path) -> str:
+    """020-001 PC-1: the DECLARED repository-relative operational directory.
+
+    The single accessor every operational consumer derives from: the schema-2
+    declaration value, else the default `.cdad-execution`. An unmigrated project
+    raises with the migration guide before any operational write, and an invalid
+    declaration is a policy error — never a silent legacy fallback.
+    """
+    try:
+        return declared_operational_dir(project_root)
+    except LayoutError as exc:
+        raise PolicyError(str(exc)) from exc
+
+
+def _operational_root(project_root: Path) -> Path:
+    """Absolute declared operational directory of the project."""
+    return project_root / _operational_dir(project_root)
+
+
+def _operational_relpath(project_root: Path, *parts: str) -> str:
+    """Repository-relative identity of a path under the operational directory."""
+    return "/".join((_operational_dir(project_root), *parts))
 
 
 def _state_relpath(project_root: Path) -> str:
@@ -2744,7 +2780,7 @@ def _pause_point(point: str) -> None:
 TXN_OWNED_FILES = ("execution.json", "REQUEST.json", "PACKET.md", "state.json")
 # A-4: a transaction-owned staging directory is identified by this manifest,
 # so recovery only ever touches directories created by this mechanism and
-# never a foreign directory that happens to sit under .cdad/.txn.
+# never a foreign directory that happens to sit under <operational_dir>/.txn.
 TXN_MANIFEST = ".cdad-txn"
 
 
@@ -2762,11 +2798,11 @@ def _remove_owned_files(directory: Path) -> None:
 
 def cleanup_stale_transactions(project_root: Path) -> None:
     """Recover from an interrupted publication: remove the transaction-owned
-    FILES left under .cdad/.txn. Only directories carrying OUR manifest are
+    FILES left under <operational_dir>/.txn. Only directories carrying OUR manifest are
     touched, and only their own files are removed (the directory itself is
     kept as the journal entry); a foreign directory — and every file inside
     it — always survives (A-4, invariant 7)."""
-    base = project_root / TXN_DIRNAME
+    base = _operational_root(project_root) / TXN_DIRNAME
     if not base.is_dir():
         return
     for stage_dir in sorted(base.iterdir()):
@@ -2817,18 +2853,19 @@ def _ensure_policy_reconciled(project_root: Path, execution_document: dict[str, 
 
 
 class _ProjectLock:
-    """Single-writer lock per project: fcntl.flock on .cdad/.lock (I5/PD-11).
+    """Single-writer lock per project: fcntl.flock on <operational_dir>/.lock (I5/PD-11).
 
     Held during resolution, identity reservation and publication. A second
     writer is rejected immediately (LOCK_NB) with a busy diagnostic. The lock
     is released by the OS if the process dies, so it is never orphaned.
 
     I5c/I5d (T3 review-fix):
-    - Success: `.cdad/.lock` is a PERMANENT rendezvous handle; on exit only the
+    - Success: `<operational_dir>/.lock` is a PERMANENT rendezvous handle; on exit
       flock and the descriptor are released, never the file (F1).
     - Failure AFTER a verified acquisition: if THIS invocation created
-      `.cdad/.lock` (and `.cdad`), they are removed as the last step, still
-      while holding the flock and after the caller's rollback (PD-3).
+      `<operational_dir>/.lock` (and its directory), they are removed as the
+      last step, still while holding the flock and after the caller's rollback
+      (PD-3).
     - The acquisition-failure path NEVER removes the file: a process that did
       not obtain the flock of that inode must not touch the holder's lock
       (A-1). It only closes its descriptor.
@@ -2839,7 +2876,9 @@ class _ProjectLock:
       path counts as busy and never acquires (I5c, A-3)."""
 
     def __init__(self, project_root: Path) -> None:
-        self._path = project_root / LOCK_RELPATH
+        self._dir = _operational_dir(project_root)
+        self._relpath = f"{self._dir}/{LOCK_NAME}"
+        self._path = project_root / self._relpath
         self._fd: int | None = None
         self._acquired = False
         self._created_dir = False
@@ -2851,7 +2890,8 @@ class _ProjectLock:
             try:
                 parent.mkdir(parents=True)
             except OSError as exc:
-                raise PolicyError(f"cannot create .cdad for the project lock: {exc}") from exc
+                raise PolicyError(
+                    f"cannot create {self._dir} for the project lock: {exc}") from exc
             self._created_dir = True
         # I5d: decide FIRST whether the rendezvous file must be created, then
         # take the optional pause point, which sits after that decision and
@@ -2882,7 +2922,7 @@ class _ProjectLock:
             if not self._path.exists() or os.stat(self._path).st_ino != held:
                 self._close_fd()
                 raise PolicyError(
-                    f"another process holds the project lock: {LOCK_RELPATH.as_posix()} is "
+                    f"another process holds the project lock: {self._relpath} is "
                     f"busy (bloqueo ocupado, lock in use): the lock inode was replaced"
                 )
             self._acquired = True
@@ -2894,7 +2934,7 @@ class _ProjectLock:
         except OSError as exc:
             self._close_fd()
             raise PolicyError(
-                f"another process holds the project lock: {LOCK_RELPATH.as_posix()} is "
+                f"another process holds the project lock: {self._relpath} is "
                 f"busy (bloqueo ocupado, lock in use): {exc}"
             ) from exc
         return self
@@ -3227,7 +3267,7 @@ def _validate_v2_vigency(state: dict[str, Any], project_root: Path, feature_id: 
 
 
 def _next_execution_id(project_root: Path, feature_id: str) -> str:
-    base = project_root / EXECUTIONS_DIR
+    base = _operational_root(project_root) / EXECUTIONS_DIRNAME
     number = 1
     while (base / f"exec-{feature_id}-{number:03d}").exists():
         number += 1
@@ -3291,11 +3331,11 @@ def _find_prior_context(project_root: Path, state: dict[str, Any]
     candidates: list[Path] = []
     binding = state.get("execution")
     if isinstance(binding, dict) and isinstance(binding.get("id"), str) and binding["id"]:
-        candidates.append(project_root / EXECUTIONS_DIR / binding["id"] / "execution.json")
-    flat = project_root / FLAT_EXECUTION_RELPATH
+        candidates.append(_operational_root(project_root) / EXECUTIONS_DIRNAME / binding["id"] / "execution.json")
+    flat = _operational_root(project_root) / FLAT_EXECUTION_NAME
     if flat.is_file():
         candidates.append(flat)
-    base = project_root / EXECUTIONS_DIR
+    base = _operational_root(project_root) / EXECUTIONS_DIRNAME
     if base.is_dir():
         candidates.extend(sorted(base.glob("*/execution.json")))
     for path in candidates:
@@ -3313,7 +3353,7 @@ def _packet_cites_execution(project_root: Path, execution_id: str) -> bool:
     A published packet records the execution it belongs to in its REQUEST.json
     (`execution_id`) — the canonical record the CLI re-reads on resume and
     dispatch. Read-only."""
-    base = project_root / ".cdad" / "packets"
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     if not base.is_dir():
         return False
     for request_path in sorted(base.glob("*/REQUEST.json")):
@@ -3343,7 +3383,7 @@ def _open_unused_context(project_root: Path, state: dict[str, Any]) -> str | Non
     if (not isinstance(execution_id, str) or FLAT_NAME.fullmatch(execution_id) is None
             or ".." in execution_id):
         return None
-    context_path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+    context_path = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "execution.json"
     if not context_path.is_file():
         return None
     try:
@@ -3367,12 +3407,12 @@ def _require_canonical_selected_context(project_root: Path, path: Path,
                                         execution_id: str) -> None:
     """A new preparation selects the context at its CANONICAL location (PC-04).
 
-    `.cdad/executions/<execution_id>/execution.json` is the only admitted
+    `<operational_dir>/executions/<execution_id>/execution.json` is the only admitted
     location: a byte-identical copy elsewhere is not a locator, and the context
     is never copied, converted or relocated to make it pass (§4.1/INV-08).
     """
     canonical = _project_path(
-        project_root, _canonical_execution_locator(execution_id),
+        project_root, _canonical_execution_locator(project_root, execution_id),
         "execution context locator")
     try:
         selected = Path(path).resolve(strict=False)
@@ -3381,7 +3421,7 @@ def _require_canonical_selected_context(project_root: Path, path: Path,
     if selected != canonical:
         raise PolicyError(
             "a new preparation requires the execution context at its canonical "
-            f"location ({_canonical_execution_locator(execution_id)}), but the selected "
+            f"location ({_canonical_execution_locator(project_root, execution_id)}), but the selected "
             f"context is {path} — a copy in another location is not an admitted "
             "locator and is never copied, converted or relocated to make it pass. Pass "
             "the canonical context, or start the new v2 execution with "
@@ -3466,7 +3506,7 @@ def _select_execution(args: argparse.Namespace, project_root: Path,
         # another route, is outside this scope (D-5).
         open_execution = _open_unused_context(project_root, state)
         if open_execution is not None:
-            relative = (EXECUTIONS_DIR / open_execution / "execution.json").as_posix()
+            relative = _canonical_execution_locator(project_root, open_execution)
             raise PolicyError(
                 f"state incoherent: the execution context {relative} of feature "
                 f"{state.get('active_feature')!r} is already open and unused (no packet "
@@ -3493,7 +3533,7 @@ def _select_execution(args: argparse.Namespace, project_root: Path,
     _require_preparation_configuration(project_root)
     raise PolicyError(
         "an existing v1 execution context is present at "
-        f"{FLAT_EXECUTION_RELPATH.as_posix()}: a new preparation uses execution v2 "
+        f"{_operational_relpath(project_root, FLAT_EXECUTION_NAME)}: a new preparation uses execution v2 "
         "only, so the v1 context is not adopted, converted or rewritten. Start the "
         "new v2 execution with `prepare --new-execution` (bootstrap); historical v1 "
         "packets keep being recognized and validated through their explicit route "
@@ -3506,10 +3546,11 @@ def _load_execution_context(project_root: Path, execution_id: Any) -> dict[str, 
     if (not isinstance(execution_id, str) or not execution_id
             or FLAT_NAME.fullmatch(execution_id) is None or ".." in execution_id):
         raise PolicyError("execution_id must be a flat name ([A-Za-z0-9._-], no '..')")
-    path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+    path = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "execution.json"
     if not path.is_file():
         raise PolicyError(
-            f"execution context not found: .cdad/executions/{execution_id}/execution.json"
+            f"execution context not found: "
+            f"{_canonical_execution_locator(project_root, execution_id)}"
         )
     return _load_json(path, "execution context")
 
@@ -3590,7 +3631,7 @@ def _resume_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     packet_id = args.resume_packet
     if not isinstance(packet_id, str) or FLAT_NAME.fullmatch(packet_id) is None or ".." in packet_id:
         raise PolicyError(f"--resume-packet requires a flat packet id, got {packet_id!r}")
-    out_dir = project_root / ".cdad" / "packets"
+    out_dir = _operational_root(project_root) / PACKETS_DIRNAME
     packet_dir = out_dir / packet_id
     try:
         packet_dir.resolve().relative_to(out_dir.resolve())
@@ -3779,7 +3820,7 @@ def _declared_successor_cause(project_root: Path, signal: dict[str, Any], *,
     and none of them assigns another identifier or touches the declared one."""
     declared = signal["replaced_by"]
     defective_key = signal["record"]["transition_key"]
-    successor_dir = project_root / ".cdad" / "packets" / declared
+    successor_dir = _operational_root(project_root) / PACKETS_DIRNAME / declared
     coherent = False
     if successor_dir.is_dir():
         try:
@@ -3803,7 +3844,8 @@ def _declared_successor_cause(project_root: Path, signal: dict[str, Any], *,
         return (
             f"state incoherent: the successor {declared!r} declared by the "
             f"disposition of packet {packet_id!r} exists but its request is "
-            f"unreadable or incoherent (.cdad/packets/{declared}/REQUEST.json "
+            f"unreadable or incoherent "
+            f"({_operational_relpath(project_root, PACKETS_DIRNAME, declared, 'REQUEST.json')} "
             f"does not identify that packet in this execution and feature); the "
             f"inconsistency is reported and no alternative packet is created "
             f"(007-002 §2.4.2)"
@@ -3885,7 +3927,7 @@ def _recovery_eligibility(*, project_root: Path, state: dict[str, Any],
     if _packet_has_receipt(project_root, execution_id, packet_id):
         raise PolicyError(
             f"evidence missing: packet {packet_id!r} already has a durable "
-            f"receipt directory at {RESULTS_RELDIR.as_posix()}/{execution_id}/"
+            f"receipt directory at {_operational_relpath(project_root, RESULTS_RELDIRNAME)}/{execution_id}/"
             f"{packet_id}/, so it is outside this recovery: only a dispatch that "
             f"was never received is resolved by a disposition (007-002 §2.3.8)"
         )
@@ -3933,7 +3975,7 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
     packet_id = args.replace_packet
     if not isinstance(packet_id, str) or FLAT_NAME.fullmatch(packet_id) is None or ".." in packet_id:
         raise PolicyError(f"--replace-packet requires a flat packet id, got {packet_id!r}")
-    out_dir = project_root / ".cdad" / "packets"
+    out_dir = _operational_root(project_root) / PACKETS_DIRNAME
     packet_dir = out_dir / packet_id
     with _ProjectLock(project_root):
         cleanup_stale_transactions(project_root)
@@ -4121,7 +4163,7 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
         # document from that exact canonical location, so the declaration is the
         # truth of the selected context, not a guess; the predecessor's bytes are
         # never rewritten.
-        new_request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(execution["id"])
+        new_request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(project_root, execution["id"])
         # PD-1 (005-005): the complete resulting assignment — conserved and
         # corrected fields alike — passes the same validations as an ordinary
         # prepare, with a diagnostic naming the field, the reason and the
@@ -4268,7 +4310,7 @@ def reconcile_policy(args: argparse.Namespace, project_root: Path) -> None:
         new_state["execution"] = {field: new_execution[field] for field in V2_BINDING_FIELDS}
         _validate_v2_state(new_document, new_state, project_root)
 
-        context_path = project_root / EXECUTIONS_DIR / execution_id / "execution.json"
+        context_path = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "execution.json"
         state_path = _state_path(project_root)
         _publish_owned_atomically([
             (context_path, _serialize_document(new_document, sorted_keys=True)),
@@ -4369,10 +4411,10 @@ def _atomic_write_bytes(path: Path, payload: bytes) -> None:
 
 
 def _load_packet_request(project_root: Path, packet_id: str) -> dict[str, Any]:
-    """Load the canonical request of a published packet, confined to .cdad/packets."""
+    """Load the canonical request of a published packet, confined to the packets store."""
     if not isinstance(packet_id, str) or FLAT_NAME.fullmatch(packet_id) is None or ".." in packet_id:
         raise PolicyError(f"--record-dispatch requires a flat packet id, got {packet_id!r}")
-    out_dir = project_root / ".cdad" / "packets"
+    out_dir = _operational_root(project_root) / PACKETS_DIRNAME
     packet_dir = out_dir / packet_id
     try:
         packet_dir.resolve().relative_to(out_dir.resolve())
@@ -4574,7 +4616,7 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
 
     Reads the attempt document from --input, takes execution_id, packet_id, role
     and substage from the published packet, and stores the record under
-    .cdad/executions/<execution-id>/dispatches/<attempt-id>.json. The attempt
+    <operational_dir>/executions/<execution-id>/dispatches/<attempt-id>.json. The attempt
     record and the state binding are published in ONE transaction (B-1), under
     the T3 lock and atomic-write discipline. Repeating an identical record is
     idempotent (same bytes) and completes any pending prepared -> dispatched
@@ -4644,7 +4686,7 @@ def _record_dispatch(args: argparse.Namespace, project_root: Path) -> None:
         # write-ahead finalization of an intent already started (N2) are NOT new
         # intents, and an admitted historical request without `agent` declares
         # nothing to contrast and is never given one here (P-3).
-        dispatch_path = (project_root / EXECUTIONS_DIR / execution_id
+        dispatch_path = (_operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id
                          / DISPATCHES_DIRNAME / f"{attempt_id}.json")
         stored_payload = (_read_bytes(dispatch_path, "dispatch record")
                           if dispatch_path.is_file() else None)
@@ -4794,7 +4836,7 @@ def _derived_role(name: str) -> str | None:
 
 def _activation_registry(project_root: Path) -> dict[str, Any] | None:
     """The project activation registry (PD-12), or None when absent/invalid."""
-    path = project_root / ACTIVATION_REGISTRY_REL
+    path = _operational_root(project_root) / ACTIVATION_REGISTRY_NAME
     if not path.is_file():
         return None
     try:
@@ -4830,7 +4872,7 @@ def _derived_source_dir(project_root: Path) -> Path:
     """Resolve the origin of the installed OpenCode agents (PD-12/INV-7).
 
     Order: (1) the explicit `CDAD_OPENCODE_AGENTS_DIR`; (2) the installation
-    registered in the project activation registry (`.cdad/activation.json`);
+    registered in the project activation registry (`<operational_dir>/activation.json`);
     (3) the runtime global default (the HOME in effect at call time).
     """
     raw = os.environ.get(DERIVED_AGENTS_ENV)
@@ -4890,12 +4932,11 @@ def _previous_derived_source(derived_dir: Path) -> str | None:
 
 
 def _warn_origin_contradiction(*, source_dir: Path, registered: Path | None,
-                               previous: str | None) -> None:
+                               previous: str | None, registry_rel: str) -> None:
     """Diagnose an origin that changed against the registry or the previous
     manifest (PD-13/INV-7): says which origin would be used and how to resolve
     it, and names the registry and every version in play. Never silent.
     """
-    registry_rel = ACTIVATION_REGISTRY_REL.as_posix()
     changed_registry = registered is not None and str(registered) != str(source_dir)
     changed_previous = previous is not None and previous != str(source_dir)
     if not (changed_registry or changed_previous):
@@ -5019,7 +5060,8 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
     policy_pattern = policy_relpath
     derived_pattern = f"{DERIVED_RELPATH.as_posix()}/**"
     # 019-004 §4.5: the locator is protected control metadata: no role edits it.
-    locator_pattern = LAYOUT_LOCATOR_RELPATH.as_posix()
+    locator_pattern = LAYOUT_DECLARATION_RELPATH.as_posix()
+    legacy_locator_pattern = LEGACY_LAYOUT_LOCATOR_RELPATH.as_posix()
     # P-1 (004-002): declared private paths are denied in read AND edit for
     # EVERY role, emitted AFTER the role's allow rules so findLast gives the
     # private barrier precedence (obvious, minimal; absent = no change).
@@ -5054,7 +5096,8 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + [(pattern, "allow") for pattern in _test_patterns(path_policy)]
                 + [(pattern, "allow") for pattern in colocated]
                 + temporary
-                + [(policy_pattern, "deny"), (derived_pattern, "deny"), (locator_pattern, "deny")]
+                + [(policy_pattern, "deny"), (derived_pattern, "deny"),
+                   (locator_pattern, "deny"), (legacy_locator_pattern, "deny")]
                 + private)
         return {"read": read, "edit": edit}
     if role == "implementer":
@@ -5075,7 +5118,8 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
                 + implementation_allows
                 + [(pattern, "deny") for pattern in _IMPLEMENTER_TEST_GLOBS]
                 + [(pattern, "deny") for pattern in denied]
-                + [(policy_pattern, "deny"), (derived_pattern, "deny"), (locator_pattern, "deny")]
+                + [(policy_pattern, "deny"), (derived_pattern, "deny"),
+                   (locator_pattern, "deny"), (legacy_locator_pattern, "deny")]
                 + private)
         maps: dict[str, list[tuple[str, str]]] = {"edit": edit}
         if private:
@@ -5083,7 +5127,8 @@ def _derived_maps(role: str | None, path_policy: dict[str, Any],
         return maps
     if role == "orchestrator":
         edit = ([("*", "allow"), (policy_pattern, "deny"),
-                 (derived_pattern, "deny"), (locator_pattern, "deny")] + private)
+                 (derived_pattern, "deny"), (locator_pattern, "deny"),
+                 (legacy_locator_pattern, "deny")] + private)
         maps = {"edit": edit}
         if private:
             maps["read"] = list(private)
@@ -5457,6 +5502,7 @@ def _build_derived_payloads(project_root: Path,
         source_dir=source_dir,
         registered=_registered_agents_dir(project_root),
         previous=_previous_derived_source(derived_dir),
+        registry_rel=_operational_relpath(project_root, ACTIVATION_REGISTRY_NAME),
     )
     sources = _load_derived_sources(source_dir)
     if sources is None:
@@ -6177,7 +6223,7 @@ def _execution_policy_sha256(state: dict[str, Any], project_root: Path) -> str |
     if (not isinstance(binding, dict) or not isinstance(binding.get("id"), str)
             or not binding["id"]):
         return None
-    path = project_root / EXECUTIONS_DIR / binding["id"] / "execution.json"
+    path = _operational_root(project_root) / EXECUTIONS_DIRNAME / binding["id"] / "execution.json"
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -6313,7 +6359,7 @@ def _baseline_projection(state: dict[str, Any], project_root: Path,
     carrying a registered projection there is NO baseline and the verdict is
     `current`.
     """
-    base = project_root / ".cdad" / "packets"
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     best: tuple[float, str] | None = None
     if base.is_dir():
         for entry in base.iterdir():
@@ -6587,7 +6633,7 @@ def validate_unit_contract(args: argparse.Namespace, project_root: Path) -> str:
             raise PolicyError(
                 "impact verdict without a declared baseline packet: nothing to record")
         _write_impact_record(
-            project_root / ".cdad" / "packets" / packet_id,
+            _operational_root(project_root) / PACKETS_DIRNAME / packet_id,
             {
                 "reason": block.get("reason") or "unit contract changed (PD-9)",
                 "contract_sha256_old": registered.get("sha256"),
@@ -6652,10 +6698,10 @@ def _publish_generation(
         raise PolicyError(f"cannot serialize prepared packet: {exc}") from exc
 
     packet_dir = out_dir / packet_id
-    context_dir = project_root / EXECUTIONS_DIR / execution["id"] if write_context else None
+    context_dir = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution["id"] if write_context else None
     state_tmp = state_path.with_name(state_path.name + ".tmp")
 
-    stage_dir = project_root / TXN_DIRNAME / packet_id
+    stage_dir = _operational_root(project_root) / TXN_DIRNAME / packet_id
     stage_created = not stage_dir.exists()
     created_dirs: list[Path] = []
     if stage_created:
@@ -6777,7 +6823,7 @@ def _publish_generation(
             except OSError:
                 pass
             try:
-                (project_root / TXN_DIRNAME).rmdir()
+                (_operational_root(project_root) / TXN_DIRNAME).rmdir()
             except OSError:
                 pass
         _remove_empty_dirs(created_dirs)
@@ -6895,7 +6941,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
     # never overwrites a published packet.
     with _ProjectLock(project_root):
         # Recover from an interrupted publication before reading state: drop the
-        # transaction-owned files left under .cdad/.txn, never a foreign entry.
+        # transaction-owned files left under <operational_dir>/.txn, never a foreign entry.
         cleanup_stale_transactions(project_root)
         state_path = _state_path(project_root)
         state = _load_json(state_path, "project state")
@@ -6916,7 +6962,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                 # packet-written point), discard that half-written reading and
                 # prepare a coherent generation. A published pending packet still
                 # blocks replacement (PD-4).
-                pending_dir = project_root / ".cdad" / "packets" / active["id"]
+                pending_dir = _operational_root(project_root) / PACKETS_DIRNAME / active["id"]
                 if pending_dir.is_dir():
                     published = any(
                         DOC.is_file() for DOC in (pending_dir / "REQUEST.json", pending_dir / "PACKET.md"))
@@ -7043,7 +7089,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                 raise
             _check_plan_tasks(declared_tasks)
             _check_plan_validation_plan(declared_tasks, validation_strategy)
-        out_dir = _cwd_path(args.out_dir) if args.out_dir else project_root / ".cdad" / "packets"
+        out_dir = _cwd_path(args.out_dir) if args.out_dir else _operational_root(project_root) / PACKETS_DIRNAME
         packet_id = _next_packet_id(out_dir, f"{execution['feature_id']}-{role}-{substage}")
         # 005-013 T1 (PD-1..PD-5): the architect's contract is a projection of the
         # unit located STRUCTURALLY in the epic plan, published ONCE with this
@@ -7075,8 +7121,8 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
                     anchors=anchors,
                 )
                 contract_kind = UNIT_CONTRACT_KIND
-                contract_path = (Path(".cdad") / "packets" / packet_id
-                                 / UNIT_PROJECTION_NAME).as_posix()
+                contract_path = _operational_relpath(
+                    project_root, PACKETS_DIRNAME, packet_id, UNIT_PROJECTION_NAME)
                 digest = hashlib.sha256(projection_bytes).hexdigest()
                 contract_object["kind"] = contract_kind
                 contract_object["path"] = contract_path
@@ -7133,7 +7179,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         # the v2 context it was prepared from, in the request and (through it) in
         # the canonical header. `_select_execution` guarantees that context is v2
         # and lives at that exact location, so the declaration is never a guess.
-        request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(execution["id"])
+        request[REQUEST_LOCATOR_FIELD] = _canonical_execution_locator(project_root, execution["id"])
         # PD-10/INV-4: the declared plan task is an ADDITIVE optional field; when
         # absent the request and the packet are byte-identical to today's render.
         if args.plan_task:
@@ -7470,7 +7516,7 @@ def open_unit(args: argparse.Namespace, project_root: Path) -> str:
         # before anything is written, so `validate-state` is green afterwards.
         _validate_v2_state(execution_document, new_state, project_root)
 
-        context_path = (project_root / EXECUTIONS_DIR / execution["id"]
+        context_path = (_operational_root(project_root) / EXECUTIONS_DIRNAME / execution["id"]
                         / "execution.json")
         context_path.parent.mkdir(parents=True, exist_ok=True)
         _publish_owned_atomically([
@@ -7532,7 +7578,7 @@ POSTCONDITION_OUTCOMES = ("red", "green")
 # resting value `idle` included; `done` is the closure result, not a stage of
 # the cycle — closure lands on `idle`).
 VALID_CURRENT_STAGES = {"discovery", "specification", "tdd", "review", "merge", "idle"}
-RESULTS_RELDIR = Path(".cdad") / "runtime" / "results"
+RESULTS_RELDIRNAME = "runtime/results"
 RECEIPT_FILENAME = "receipt.json"
 
 
@@ -7990,7 +8036,7 @@ def _packet_owner_unit(state: dict[str, Any], project_root: Path | None,
             return feature_id
     if project_root is None:
         return None
-    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
     if not request_path.is_file():
         return None
     try:
@@ -8077,8 +8123,9 @@ def _require_withdrawable_packet(project_root: Path, state: dict[str, Any],
             f"state incoherent: the active packet {packet_id!r} is {status!r}, not "
             f"'prepared'; only a prepared packet — never a dispatched, completed or "
             f"failed one — can be withdrawn (007-006 §Rechazos)")
-    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
-    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    request_rel = _operational_relpath(
+        project_root, PACKETS_DIRNAME, packet_id, "REQUEST.json")
+    request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
     if not request_path.is_file():
         raise PolicyError(
             f"state incoherent: the active packet {packet_id!r} has no published request at "
@@ -8133,7 +8180,7 @@ def _withdraw_continuity_plan(project_root: Path, state: dict[str, Any], *,
     packet"). Returns the writes (body first, head last) or None when nothing
     must be appended."""
     import cdad_continuity
-    head_path = (project_root / EXECUTIONS_DIR / execution_id / "continuity"
+    head_path = (_operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / "continuity"
                  / "head.json")
     if not head_path.is_file():
         return None  # no head: continuity is never fabricated (decision 4)
@@ -8344,7 +8391,8 @@ def republish_agents(args: argparse.Namespace, project_root: Path) -> str:
             raise PolicyError(
                 "republish-agents refused: there is no installed OpenCode agents source to "
                 "derive from "
-                f"({DERIVED_AGENTS_ENV}, the activation registry {ACTIVATION_REGISTRY_REL.as_posix()} "
+                f"({DERIVED_AGENTS_ENV}, the activation registry "
+                f"{_operational_relpath(project_root, ACTIVATION_REGISTRY_NAME)} "
                 f"or the default {_default_derived_source()}); the operation never claims a "
                 "republication it did not publish (007-006 §Republicar)")
         derived_dir, payloads, manifest_bytes, retired = derived_spec
@@ -8422,7 +8470,7 @@ def _durable_receipt(project_root: Path, execution_id: str, packet_id: str,
     """PD-20 for the cited packet's durable receipt: verify an asserted digest
     against the current bytes of `receipt.json`, or derive it. Returns
     `(digest or None when the receipt is absent, project-relative receipt path)`."""
-    relative = (RESULTS_RELDIR / execution_id / packet_id / RECEIPT_FILENAME).as_posix()
+    relative = _operational_relpath(project_root, RESULTS_RELDIRNAME, execution_id, packet_id, RECEIPT_FILENAME)
     path = project_root / relative
     if not path.is_file():
         if asserted is not None:
@@ -8444,7 +8492,7 @@ def _durable_receipt(project_root: Path, execution_id: str, packet_id: str,
 def _packet_is_dispatched(project_root: Path, execution_id: str, packet_id: str) -> bool:
     """Whether the cited packet has a dispatch record in the active execution —
     the derived notion of «dispatched» the closure also uses (PD-8(a))."""
-    base = project_root / EXECUTIONS_DIR / execution_id / DISPATCHES_DIRNAME
+    base = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / DISPATCHES_DIRNAME
     if not base.is_dir():
         return False
     try:
@@ -8468,7 +8516,7 @@ def _dispatched_packet_ids(project_root: Path, execution_id: str) -> list[str]:
 
     Repeated dispatches of the SAME packet (two attempts of one packet) count
     ONCE: the required deliveries are the packets, not the attempts."""
-    base = project_root / EXECUTIONS_DIR / execution_id / DISPATCHES_DIRNAME
+    base = _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id / DISPATCHES_DIRNAME
     if not base.is_dir():
         return []
     try:
@@ -8585,7 +8633,7 @@ def _feature_execution_id(project_root: Path, state: dict[str, Any],
         if isinstance(bound, str) and bound:
             return bound
     candidates: list[str] = []
-    base = project_root / EXECUTIONS_DIR
+    base = _operational_root(project_root) / EXECUTIONS_DIRNAME
     if base.is_dir():
         for path in sorted(base.glob("*/execution.json")):
             try:
@@ -8830,11 +8878,12 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                 raise PolicyError(
                     "state incoherent: --postcondition <n> and --outcome <red|green> are "
                     "declared together (they are the recorded postcondition outcome)")
-            request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+            request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
             if not _packet_request_belongs_to_execution(request_path, execution_id):
                 raise PolicyError(
                     f"evidence missing: the cited packet {packet_id} does not belong to the "
-                    f"active execution {execution_id} (no .cdad/packets/{packet_id}/REQUEST.json "
+                    f"active execution {execution_id} (no "
+                    f"{_operational_relpath(project_root, PACKETS_DIRNAME, packet_id, 'REQUEST.json')} "
                     f"of this execution); cite a packet of the active execution")
             receipt_sha256, receipt_ref = _durable_receipt(
                 project_root, execution_id, packet_id, args.receipt)
@@ -8861,11 +8910,12 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                 raise PolicyError(
                     "state incoherent: --transition disposition requires --packet <packet-id>: "
                     "the dispatch being dispositioned must be cited (PD-21)")
-            request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+            request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
             if not _packet_request_belongs_to_execution(request_path, execution_id):
                 raise PolicyError(
                     f"state incoherent: packet {packet_id} does not belong to the active "
-                    f"execution {execution_id} (no .cdad/packets/{packet_id}/REQUEST.json of "
+                    f"execution {execution_id} (no "
+                    f"{_operational_relpath(project_root, PACKETS_DIRNAME, packet_id, 'REQUEST.json')} of "
                     f"this execution), so there is no dispatch of this feature to disposition "
                     f"(PD-21/PD-12(iv))")
             if not _packet_is_dispatched(project_root, execution_id, packet_id):
@@ -8878,7 +8928,7 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                 raise PolicyError(
                     f"state incoherent: packet {packet_id} already has a durable "
                     f"{RECEIPT_FILENAME} under "
-                    f"{RESULTS_RELDIR.as_posix()}/{execution_id}/{packet_id}/, so the evidence "
+                    f"{_operational_relpath(project_root, RESULTS_RELDIRNAME)}/{execution_id}/{packet_id}/, so the evidence "
                     f"contradicts the disposition; receive the delivery by the normal route "
                     f"instead of dispositioning it (PD-21/PD-12(iv))")
             status = _feature_status(state, feature_id)
@@ -8908,12 +8958,13 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                     f"delivery for; the late route is ONLY for an already closed feature — "
                     f"receive with the feature open and the packet dispatched is the normal "
                     f"route (PD-13)")
-            request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+            request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
             if not _packet_request_belongs_to_execution(request_path, execution_id):
                 raise PolicyError(
                     f"state incoherent: packet {packet_id} does not belong to the execution "
                     f"{execution_id} of the closed feature {feature_id!r} (no "
-                    f".cdad/packets/{packet_id}/REQUEST.json of this execution); the late "
+                    f"{_operational_relpath(project_root, PACKETS_DIRNAME, packet_id, 'REQUEST.json')} "
+                    f"of this execution); the late "
                     f"delivery cites a packet of its execution (PD-13)")
             receipt_sha256, receipt_ref = _durable_receipt(
                 project_root, execution_id, packet_id, args.receipt)
@@ -9017,7 +9068,7 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
                 raise PolicyError(
                     f"evidence missing: packet {pending} of the active execution {execution_id} "
                     f"has a dispatch record and no durable receipt at "
-                    f"{RESULTS_RELDIR.as_posix()}/{execution_id}/{pending}/{RECEIPT_FILENAME}, "
+                    f"{_operational_relpath(project_root, RESULTS_RELDIRNAME)}/{execution_id}/{pending}/{RECEIPT_FILENAME}, "
                     f"so the closure of feature {feature_id!r} cannot be registered before every "
                     f"required delivery is resolved. Two legitimate exits: (i) receive the "
                     f"delivery by the normal route (`cdad_result.py receive` then "
@@ -9556,7 +9607,7 @@ def _packet_request_belongs_to_execution(request_path: Path,
 def _packet_has_receipt(project_root: Path, execution_id: str,
                        packet_id: str) -> bool:
     """Whether the packet already has a receipt under the runtime results root."""
-    return (project_root / ".cdad" / "runtime" / "results" / execution_id / packet_id
+    return (_operational_root(project_root) / "runtime" / "results" / execution_id / packet_id
             ).is_dir()
 
 
@@ -9575,7 +9626,7 @@ def _pending_work(state: dict[str, Any], project_root: Path,
     execution_id = execution.get("id") if isinstance(execution, dict) else None
     if not isinstance(execution_id, str) or not execution_id:
         return False
-    base = project_root / ".cdad" / "packets"
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     if not base.is_dir():
         return False
     try:
@@ -9637,7 +9688,7 @@ def _next_route(entry: str, packet: dict[str, Any] | None) -> dict[str, str]:
 
 
 def _safe_packet_component(packet_id: Any) -> bool:
-    """Whether the id locates `.cdad/packets/<id>/REQUEST.json` safely (§2.1)."""
+    """Whether the id locates `<operational_dir>/packets/<id>/REQUEST.json` safely (§2.1)."""
     return (isinstance(packet_id, str)
             and FLAT_NAME.fullmatch(packet_id) is not None
             and packet_id not in {".", ".."})
@@ -9646,18 +9697,20 @@ def _safe_packet_component(packet_id: Any) -> bool:
 def _request_confinement_cause(project_root: Path, packet_id: str) -> str | None:
     """The membership cause when the request path leaves the packets tree.
 
-    Spec §2.1 requirement 3: the id locates `.cdad/packets/<id>/REQUEST.json`
+    Spec §2.1 requirement 3: the id locates `<operational_dir>/packets/<id>/REQUEST.json`
     SAFELY inside the packets directory only while the RESOLVED path (symlinks
     followed) stays in that tree. The check runs BEFORE opening the file, so an
     escaping link is never read as an unambiguous packet.
     """
-    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
-    base = project_root / ".cdad" / "packets"
+    request_rel = _operational_relpath(
+        project_root, PACKETS_DIRNAME, packet_id, "REQUEST.json")
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     try:
         resolved_base = base.resolve()
     except (OSError, RuntimeError) as exc:
         return (
-            f"packet membership unresolved: the packets directory .cdad/packets "
+            f"packet membership unresolved: the packets directory "
+            f"{_operational_relpath(project_root, PACKETS_DIRNAME)} "
             f"cannot be resolved safely ({exc.__class__.__name__}); membership "
             f"cannot be established")
     try:
@@ -9709,11 +9762,13 @@ def _resolved_active_packet(
     if not _safe_packet_component(packet_id):
         resolution["cause"] = (
             f"packet membership inconsistent: state.active_packet carries no "
-            f"safely locatable id ({packet_id!r}), so .cdad/packets/<id>/REQUEST.json "
+            f"safely locatable id ({packet_id!r}), so "
+            f"{_operational_relpath(project_root, PACKETS_DIRNAME)}/<id>/REQUEST.json "
             f"cannot be resolved (packet identity invalid)")
         return resolution
-    request_rel = f".cdad/packets/{packet_id}/REQUEST.json"
-    request_path = project_root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    request_rel = _operational_relpath(
+        project_root, PACKETS_DIRNAME, packet_id, "REQUEST.json")
+    request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
     confinement = _request_confinement_cause(project_root, packet_id)
     if confinement is not None:
         resolution["cause"] = confinement
@@ -9783,7 +9838,7 @@ def _unresolved_pending_cause(state: dict[str, Any], project_root: Path) -> str:
     criterion: pending packet directories of the active execution with no
     `state.active_packet` selecting one of them (§2.1/§2.4)."""
     directories: list[str] = []
-    base = project_root / ".cdad" / "packets"
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     execution = _active_execution(state)
     execution_id = execution.get("id") if isinstance(execution, dict) else None
     if base.is_dir() and isinstance(execution_id, str) and execution_id:
@@ -9802,7 +9857,8 @@ def _unresolved_pending_cause(state: dict[str, Any], project_root: Path) -> str:
         listed = f"{listed} and {len(directories) - 3} more"
     return (
         f"pending packet directories without state.active_packet: unresolved work "
-        f"under .cdad/packets ({listed}); no unambiguous prepared or dispatched "
+        f"under {_operational_relpath(project_root, PACKETS_DIRNAME)} ({listed}); "
+        f"no unambiguous prepared or dispatched "
         f"packet selects the next dispatch")
 
 
@@ -9819,7 +9875,7 @@ def _pending_candidate_causes(state: dict[str, Any], project_root: Path) -> list
     execution_id = execution.get("id") if isinstance(execution, dict) else None
     if not isinstance(execution_id, str) or not execution_id:
         return causes
-    base = project_root / ".cdad" / "packets"
+    base = _operational_root(project_root) / PACKETS_DIRNAME
     if not base.is_dir():
         return causes
     try:
@@ -9841,7 +9897,7 @@ def _pending_candidate_causes(state: dict[str, Any], project_root: Path) -> list
         if condition is not None:
             causes.append(
                 f"pending candidate {entry.name!r}: the request "
-                f".cdad/packets/{entry.name}/REQUEST.json is unreadable — "
+                f"{_operational_relpath(project_root, PACKETS_DIRNAME, entry.name, 'REQUEST.json')} is unreadable — "
                 f"{condition}; its membership of the active execution "
                 f"{execution_id!r} cannot be proven")
     return causes
@@ -10130,11 +10186,13 @@ def _situation_projection(
         source = "docs/.cdad-state.json:active_packet.status"
     elif resolution["cause"]:
         situation = SITUATION_PENDING_UNRESOLVED
-        source = "docs/.cdad-state.json:active_packet / .cdad/packets"
+        source = ("docs/.cdad-state.json:active_packet / "
+                  + _operational_relpath(project_root, "packets"))
         causes.append(resolution["cause"])
     elif pending_work:
         situation = SITUATION_PENDING_UNRESOLVED
-        source = "docs/.cdad-state.json:active_packet / .cdad/packets"
+        source = ("docs/.cdad-state.json:active_packet / "
+                  + _operational_relpath(project_root, "packets"))
         causes.append(_unresolved_pending_cause(state, project_root))
     elif _active_execution(state) is not None:
         situation = SITUATION_EXECUTION_ACTIVE
@@ -10209,7 +10267,7 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
     if isinstance(binding, dict) and isinstance(binding.get("id"), str) and binding["id"]:
         document, error = _read_optional_document(
             project_root,
-            f"{EXECUTIONS_DIR.as_posix()}/{binding['id']}/execution.json",
+            _operational_relpath(project_root, EXECUTIONS_DIRNAME, binding["id"], "execution.json"),
             "execution context")
         if error:
             unknowns.append(error)
@@ -10754,7 +10812,8 @@ def _resolve_request_execution_context(project_root: Path, request: dict[str, An
                 "execution context not provided: the request declares no "
                 f"request.{REQUEST_LOCATOR_FIELD} (a historical request) and "
                 "--execution-context was not given. Pass the canonical v2 context "
-                "explicitly (--execution-context .cdad/executions/<execution_id>/"
+                "explicitly (--execution-context "
+                "<operational_dir>/executions/<execution_id>/"
                 "execution.json), or use a packet whose request declares its locator"
             )
         return _load_json(_cwd_path(explicit), "execution context")
@@ -10807,10 +10866,11 @@ def _route_c_published_request(project_root: Path, submitted: Path,
     if not _safe_packet_component(packet_id):
         raise PolicyError(
             "route C requires the request published by `prepare` at "
-            ".cdad/packets/<packet_id>/REQUEST.json: the submitted request "
-            "declares no safe packet_id, so it cannot name the published request "
-            "the identification must designate")
-    expected_rel = (PACKETS_TREE / packet_id / "REQUEST.json").as_posix()
+            f"{_operational_relpath(project_root, PACKETS_DIRNAME)}/<packet_id>/REQUEST.json: "
+            "the submitted request declares no safe packet_id, so it cannot name "
+            "the published request the identification must designate")
+    expected_rel = _operational_relpath(
+        project_root, PACKETS_DIRNAME, packet_id, "REQUEST.json")
     expected = _project_path(project_root, expected_rel, "published request")
     try:
         candidate = Path(submitted).resolve(strict=False)
@@ -10842,7 +10902,7 @@ def _route_c_execution_context(project_root: Path, request: dict[str, Any],
         raise PolicyError(
             "route C requires a request whose execution_id is a flat name "
             "([A-Za-z0-9._-], no '..')")
-    canonical_rel = _canonical_execution_locator(execution_id)
+    canonical_rel = _canonical_execution_locator(project_root, execution_id)
     execution_document = _resolve_request_execution_context(
         project_root, request, explicit)
     schema_version = execution_document.get("schema_version")
@@ -10907,9 +10967,10 @@ def _route_c_identification_document(project_root: Path, request_argument: str,
         "project_root": str(project_root),
         "packet_id": packet_id,
         "execution_id": execution_id,
-        "execution_context": _canonical_execution_locator(execution_id),
+        "execution_context": _canonical_execution_locator(project_root, execution_id),
         "request": request_rel,
-        "packet": (PACKETS_TREE / packet_id / PACKET_MD_NAME).as_posix(),
+        "packet": _operational_relpath(
+            project_root, PACKETS_DIRNAME, packet_id, PACKET_MD_NAME),
         "contract": request["contract"],
     }
     return identification
@@ -11075,11 +11136,12 @@ def _intake_route_a(project_root: Path, data: bytes,
         raise PolicyError(
             "the Route A header names no safe packet_id, so no published request can "
             f"be identified. {RESEND_ORIGINAL}")
-    request_path = project_root / PACKETS_TREE / packet_id / "REQUEST.json"
+    request_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"
     if not request_path.is_file():
         raise PolicyError(
             f"the dispatch names packet {packet_id!r}, which has no published request "
-            f"under .cdad/packets/{packet_id}/. Either the packet was not published by "
+            f"under {_operational_relpath(project_root, PACKETS_DIRNAME)}/{packet_id}/. "
+            f"Either the packet was not published by "
             "`prepare`, or the wrong dispatch was received. Use the dispatch of a "
             "published packet; no other packet is searched")
     request = _load_json(request_path, "packet request")
@@ -11200,7 +11262,7 @@ def _intake_verbatim_guard(project_root: Path, packet_id: str, lines: list[str],
     inclusive) are the accredited identification and are never compared.
     The diagnostic names the line number only, never its content.
     """
-    packet_path = project_root / PACKETS_TREE / packet_id / PACKET_MD_NAME
+    packet_path = _operational_root(project_root) / PACKETS_DIRNAME / packet_id / PACKET_MD_NAME
     packet_lines = [line.rstrip("\r\n") for line in
                     _read_bytes(packet_path, "published packet").decode("utf-8").splitlines()]
     ends = [index for index, line in enumerate(packet_lines) if line == PACKET_END_MARKER]
@@ -11265,7 +11327,7 @@ def _intake_route_c(project_root: Path, lines: list[str],
             "as received, without edits")
     canonical = _route_c_identification_document(
         project_root,
-        str(project_root / PACKETS_TREE / packet_id / "REQUEST.json"),
+        str(_operational_root(project_root) / PACKETS_DIRNAME / packet_id / "REQUEST.json"),
         explicit_context)
     divergent = sorted(
         field for field in ROUTE_C_FIELDS
@@ -11318,6 +11380,17 @@ def _layout_command(args: argparse.Namespace) -> int:
     return 0
 
 
+#: Commands that only report (no write, no dispatch, no lock). They skip the
+#: registered-layout compatibility preflight so they can diagnose a layout whose
+#: policy is missing or incompatible. `validate-state` is deliberately absent:
+#: PC-06 (019-004) requires it to refuse an incompatible registered layout.
+#: Any command that writes or dispatches is deliberately absent too.
+READ_ONLY_REPORT_COMMANDS = frozenset({
+    "status", "validate-policy", "validate-unit-contract",
+    "validate-metric", "render", "validate-request", "validate-packet",
+})
+
+
 def main(argv: list[str] | None = None) -> int:
     try:
         args = build_parser().parse_args(argv)
@@ -11334,7 +11407,10 @@ def main(argv: list[str] | None = None) -> int:
         # The policy proposal is read-only and exists precisely for a layout whose
         # policy is not written yet, so it skips the compatibility preflight.
         proposing = args.command == "prepare" and getattr(args, "propose_policy", False)
-        if registered is not None and not proposing:
+        # Pure read-only reports diagnose an incompatible or unreadable policy
+        # instead of refusing: the preflight guards operational effects only.
+        reporting = args.command in READ_ONLY_REPORT_COMMANDS
+        if registered is not None and not (proposing or reporting):
             check_layout_compatibility(project_root, registered)
         if args.command == "status":
             sys.stdout.buffer.write(status_view(args, project_root))

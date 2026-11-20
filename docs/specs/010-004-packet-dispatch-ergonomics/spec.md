@@ -1,6 +1,6 @@
 # SPEC draft — 010-004: ergonomía del despacho de paquetes
 
-**Estado:** borrador v3, revisado conforme a `owner-decision-v2-new-assignments.md`; pendiente de revisión y aprobación explícita de Pablo.
+**Estado:** borrador v3, revisado conforme a `owner-decision-v2-new-assignments.md`; pendiente de revisión y aprobación explícita de <owner>.
 **Base:** Discovery y plan-review de esta unidad.  
 **Autoridad:** plan aprobado de `epic-010-documentary-specialization` y UNIT-CONTRACT del encargo. Este borrador no modifica ninguno de ellos.
 
@@ -508,7 +508,7 @@ Base técnica verificada: `cdad_packet.py:295-310,1182-1233,1582-1788,1795-1993,
 
 N-1 queda atendido en esta propuesta, no aprobado por el architect. La pregunta histórica de `orchestration-review-v2-decision-pending.md` se conserva y se referencia como resuelta por `owner-decision-v2-new-assignments.md`; no se borra ni reescribe su registro.
 
-I-4, I-5, el incidente y las revisiones anteriores se conservan. La tensión de §2.1 sigue pendiente de decisión explícita de Pablo. Este borrador no autoriza implementación.
+I-4, I-5, el incidente y las revisiones anteriores se conservan. La tensión de §2.1 sigue pendiente de decisión explícita de <owner>. Este borrador no autoriza implementación.
 
 ## 10. deferred-hardening
 
@@ -523,7 +523,7 @@ I-4, I-5, el incidente y las revisiones anteriores se conservan. La tensión de 
 
 Ninguna exclusión aplaza una promesa comprometida.
 
-## 11. Decisión pendiente de Pablo
+## 11. Decisión pendiente de <owner>
 
 Quedan pendientes la aprobación estratégica de §2.1 y la aprobación explícita de esta spec corregida, tras la revisión correspondiente.
 
@@ -571,8 +571,8 @@ La comparación acredita el paquete publicado, no una exportación independiente
 
 ## Registro de aprobación (metadatos posteriores al borrador)
 
-Pablo aprobó explícitamente el borrador exacto SHA-256 `054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008` con «aprobado, adelante», tras abrir esta especificación. Registro: 2026-10-30. Incluye §2.1 (C emitida por renderer preferente para nuevos despachos nativos, sin prometer conexión mecánica), encargos nuevos v2 y reentrada histórica sin migración automática. Los textos de aprobación pendiente anteriores se conservan como historia del borrador y quedan superados únicamente por este registro. No se modifica contenido funcional.
+<owner> aprobó explícitamente el borrador exacto SHA-256 `054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008` con «aprobado, adelante», tras abrir esta especificación. Registro: 2026-10-30. Incluye §2.1 (C emitida por renderer preferente para nuevos despachos nativos, sin prometer conexión mecánica), encargos nuevos v2 y reentrada histórica sin migración automática. Los textos de aprobación pendiente anteriores se conservan como historia del borrador y quedan superados únicamente por este registro. No se modifica contenido funcional.
 
 N-4, N-5 y N-6 siguen OPTIONAL abiertos/postergados conforme a `plan-review.md`; no se declaran resueltos ni se introduce precedencia o interpretación legacy nueva. Si el AUDIT evidencia afectación funcional de N-4/N-5 se consulta al owner, sin elegir silenciosamente un contrato incompatible. La aprobación no sustituye los demás gates.
 
-Status: Approved by Pablo on 2026-10-30
+Status: Approved by <owner> on 2026-10-30

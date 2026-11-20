@@ -5,7 +5,7 @@
 Contract:
 - docs/specs/003-006-runtime-adoption/spec.md:
     §2.1 cableado del ciclo; §2.3 `receive` en el flujo (staging del FINAL
-    TEXT bajo `.cdad/inbox` con `RESULT.json`, ejecución de `receive`,
+    TEXT bajo `.cdad-execution/inbox` con `RESULT.json`, ejecución de `receive`,
     validación del receipt, transición ÚNICA de state; `receive` NO aprueba —
     `semantic_status` = `pending`, el state lo escribe solo el orquestador,
     I5); §2.4 continuidad en el ciclo.
@@ -210,7 +210,7 @@ class T3OrchestratorBodyWiring(unittest.TestCase):
 
     def test_p1_receive_names_staging_of_final_text(self):
         """P1/§2.3: cada cuerpo asocia `receive` con el STAGING del FINAL
-        TEXT bajo `.cdad/inbox` (stageo) antes de ejecutarlo."""
+        TEXT bajo `.cdad-execution/inbox` (stageo) antes de ejecutarlo."""
         for rel, text in self.texts.items():
             with self.subTest(archivo=rel):
                 hits = wired(text, "receive",
@@ -529,7 +529,7 @@ class T3RealCLICase(unittest.TestCase):
         return self.case.run_receive(self.descriptor)
 
     def run_reconcile(self) -> subprocess.CompletedProcess:
-        ctx = self.root / ".cdad/executions" / self.case.execution_id / (
+        ctx = self.root / ".cdad-execution/executions" / self.case.execution_id / (
             "execution.json")
         argv = [sys.executable, str(CONTINUITY_SCRIPT), "reconcile",
                 "--project-root", str(self.root),
@@ -561,7 +561,7 @@ class TestP7ReceiveStagesFinalTextAndReceipts(T3RealCLICase):
             proc.returncode, 0,
             msg=f"P7/§2.3: receive del paquete staging debe terminar rc=0; "
                 f"got rc={proc.returncode} stdout={out!r} stderr={err!r}")
-        receipt_path = (self.root / ".cdad/runtime/results"
+        receipt_path = (self.root / ".cdad-execution/runtime/results"
                         / self.case.execution_id / self.case.packet_id
                         / "receipt.json")
         receipt = json.loads(out)
@@ -587,7 +587,7 @@ class TestP7ReceiveStagesFinalTextAndReceipts(T3RealCLICase):
             msg="P7 (precondición del retry): el receive inicial debe "
                 f"terminar rc=0; got {first.returncode} "
                 f"stderr={first.stderr.decode()!r}")
-        receipt_before = (self.root / ".cdad/runtime/results"
+        receipt_before = (self.root / ".cdad-execution/runtime/results"
                           / self.case.execution_id / self.case.packet_id
                           / "receipt.json").read_bytes()
         second = self.run_receive()
@@ -595,7 +595,7 @@ class TestP7ReceiveStagesFinalTextAndReceipts(T3RealCLICase):
             second.returncode, 0,
             msg=f"P7: el retry idéntico converge rc=0; got "
                 f"{second.returncode} stderr={second.stderr.decode()!r}")
-        receipt_after = (self.root / ".cdad/runtime/results"
+        receipt_after = (self.root / ".cdad-execution/runtime/results"
                          / self.case.execution_id / self.case.packet_id
                          / "receipt.json").read_bytes()
         self.assertEqual(

@@ -132,7 +132,7 @@ class PacketFixture:
             self.state["epic_history"] = [{
                 "epic": EPIC_ID,
                 "stage": "epic-plan",
-                "approved_by": "Pablo",
+                "approved_by": "<owner>",
             }]
         self.request_path = root / "REQUEST.json"
         self.packet_path = root / "PACKET.md"

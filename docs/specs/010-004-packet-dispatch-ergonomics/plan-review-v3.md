@@ -9,7 +9,7 @@
 - **N-1 is closed.** The owner's rule that everything new is v2 and C is v2-only is applied correctly.
 - **The two blockers are new.** Both come from applying that rule to old projects, and both close with text only, with no new mechanism.
 - **Earlier closures hold:** B-1, B-2, O-1 to O-5, O-A and O-B stay closed, and I-4 and I-5 are preserved.
-- **§2.1 stays pending for Pablo.** This review does not resolve it.
+- **§2.1 stays pending for <owner>.** This review does not resolve it.
 
 ## Intake (route C)
 

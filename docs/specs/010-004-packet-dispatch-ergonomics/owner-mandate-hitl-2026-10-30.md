@@ -2,13 +2,13 @@
 
 Registro durable del mandato explícito del dueño del proceso para esta unidad y el
 resto de `epic-010-documentary-specialization`. Autoridad superior: el plan del
-epic `docs/epics/epic-010-documentary-specialization/plan.md` (aprobado por Pablo,
+epic `docs/epics/epic-010-documentary-specialization/plan.md` (aprobado por <owner>,
 2026-10-29) y su mandato de orquestación
 `docs/epics/epic-010-documentary-specialization/execution.md` (2026-10-29).
 Este documento **no** reemplaza esos contratos: registra la delegación HITL que el
 dueño acaba de ampliar por instrucción literal.
 
-- **Otorga:** Pablo, dueño del proceso y aprobador del epic-010.
+- **Otorga:** <owner>, dueño del proceso y aprobador del epic-010.
 - **Registra:** orquestador CDAD (sesión subagente autorizada por el orquestador
   supervisor del epic).
 - **Fecha de registro:** 2026-10-30 (UTC `2026-10-30T16:03:59Z`, reloj del
@@ -25,7 +25,7 @@ proactivamente hasta completar las correcciones pendientes y el epic completo.»
 
 ## Qué autoriza
 
-1. **Aprobar en nombre de Pablo los gates operativos del ciclo** de esta unidad
+1. **Aprobar en nombre de <owner> los gates operativos del ciclo** de esta unidad
    (`010-004-packet-dispatch-ergonomics`), empezando por el AUDIT T1 y siguiendo
    con los que el plan aprobado exija: POST-AUDIT, RED, GREEN, refactor,
    properties, E2E, revisión y cierre. Cada aprobación se registra con su

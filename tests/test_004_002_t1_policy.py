@@ -18,6 +18,8 @@ la postcondición, no la mecánica del CLI.
 """
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -99,6 +101,7 @@ def write_policy(root: Path, *, schema_version=1, path_policy=None,
     if extra:
         doc.update(extra)
     (root / "docs").mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return doc
@@ -366,14 +369,14 @@ class TestPd2Classification(ProjectCase):
             "implementation_files": ["install.sh"],
             "documentation_roots": ["docs"],
             "documentation_files": ["docs/systemPatterns.md"],
-        }, temporary_roots=[".cdad/tmp"])
+        }, temporary_roots=[".cdad-execution/tmp"])
         self._classify_expect({
             "scripts/foo.py": "implementation",
             "install.sh": "implementation",
             "docs/systemPatterns.md": "documentation",
             "tests/test_x.py": "test",
             "README": "unclassified",  # ruta sin clasificación necesaria
-            ".cdad/tmp/work.json": "temporary",
+            ".cdad-execution/tmp/work.json": "temporary",
         })
 
     def test_pd2_conventional_src_layout_classification(self) -> None:

@@ -29,6 +29,8 @@ suministrada; no es procedencia nativa de entrega (§9).
 """
 from __future__ import annotations
 
+from _layout_support import OPERATIONAL_DIR
+
 import json
 import os
 import pwd
@@ -145,7 +147,7 @@ class InstalledConsumerIntake(unittest.TestCase):
             root = base / "consumer"
             root.mkdir()
             project = PrepareProject(root)
-            packets_dir = root / ".cdad" / "packets"
+            packets_dir = root / OPERATIONAL_DIR / "packets"
             prep = run_prepare(
                 self.cli,
                 *project.args(objective="installed-consumer controlled dispatch",

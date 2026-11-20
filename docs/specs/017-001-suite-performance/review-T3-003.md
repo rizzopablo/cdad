@@ -8,7 +8,7 @@ Revisión examinada: `80475a371bc383c63bca452758d32fc526e095b2`. Route C: `valid
 
 Para los controles reales copié `attempt.json` y `profile.json` del intento C-R a directorios independientes. En una copia eliminé `selection`; en otra lo reemplacé por `999`. Los hashes de ambos archivos originales permanecieron iguales antes y después.
 
-Ejecuté `python3 scripts/cdad-suite.py entry-check --attempts <mapa> --out <salida>` para cada caso, con mapas y salidas bajo `~/clawd/tmp/017-001-review-T3-003-independent/`:
+Ejecuté `python3 scripts/cdad-suite.py entry-check --attempts <mapa> --out <salida>` para cada caso, con mapas y salidas bajo `~/<workspace>/tmp/017-001-review-T3-003-independent/`:
 
 | Caso | rc | satisfied | selection-coverage |
 |---|---:|---|---|

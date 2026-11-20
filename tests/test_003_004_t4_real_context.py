@@ -38,7 +38,7 @@ Tests (uno por caso de la decisión, cada uno mapeado):
    → P8/criterio 9 + D4: `begin` con la forma real de 001 y un state
    con delegación activa POR EVENTOS (prosa en `expires`, sin
    `expires_on`) termina rc 0, crea el head bajo
-   `.cdad/executions/<execution.id>/continuity/` y NUNCA escribe el
+   `.cdad-execution/executions/<execution.id>/continuity/` y NUNCA escribe el
    state (D3).
 2. `test_ru1_active_resume_reporta_autoridad_active_desde_state`
    → P2/D4: `resume` reconstruye la autoridad desde el STATE (el
@@ -71,6 +71,8 @@ no importa el módulo del CLI.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -96,7 +98,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-EXEC_DIR_REL = f".cdad/executions/{EXEC_ID}"
+EXEC_DIR_REL = f".cdad-execution/executions/{EXEC_ID}"
 CONTINUITY_DIR_REL = f"{EXEC_DIR_REL}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 STATE_REL = "docs/.cdad-state.json"
@@ -205,6 +207,7 @@ class RealContextCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
 
     # -- construcción del proyecto fixture -----------------------------
 
@@ -330,7 +333,7 @@ class TestRU1FormaRealActiva(RealContextCase):
         001 (identidad en `execution.id`, sin `execution_id` plano, sin
         `hitl_delegation`) y un state con delegación activa POR EVENTOS
         termina rc 0, crea el head bajo
-        `.cdad/executions/<execution.id>/continuity/` y el state queda
+        `.cdad-execution/executions/<execution.id>/continuity/` y el state queda
         BYTE-A-BYTE intacto (el CLI nunca lo escribe, D3)."""
         self.build_real_project()
         before = self.snapshot()

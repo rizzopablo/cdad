@@ -143,7 +143,7 @@ def policy_doc(layout: str) -> dict:
         },
     }[layout]
     return {"schema_version": 1, "path_policy": path_policy,
-            "temporary_roots": [".cdad/tmp"]}
+            "temporary_roots": [".cdad-execution/tmp"]}
 
 
 LAYOUT_FILES = {
@@ -831,6 +831,9 @@ class TestPd8I10CcGuard(LayoutProject):
         """PD-8/I10: sin política se conserva el comportamiento legacy
         (caso de humo): src/ denegado al test-writer, tests permitidos y el
         implementer no toca tests co-ubicados."""
+        # Proyecto legacy: sin declaración de layout (020-001) y sin política.
+        shutil.rmtree(self.root)
+        build_project(self.root, declared=False)
         self.apply_layout("conventional")
         (self.root / POLICY_FILE).unlink()
         cases = (

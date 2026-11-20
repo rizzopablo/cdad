@@ -1,15 +1,23 @@
-"""Read-only project-layout resolution (019-004 §4).
+"""Read-only project-layout resolution (019-004 §4, amended by 020-001).
 
-Resolves where the CDAD methodology artifacts live in a product repository.
+Resolves where the CDAD methodology artifacts live in a product repository, and
+which repository-relative directory holds the project's OPERATIONAL records.
 Placement only: a successful resolution never validates state, policy or
 execution, never creates anything, and never grants permissions.
 
-Precedence (§4.2):
-1. A valid locator ``.cdad/project-layout.json`` is exclusive.
+Precedence (§4.2, 020-001 §Declaration):
+1. A valid declaration ``cdad/project-layout.json`` (schema 2:
+   ``schema_version``, ``methodology_dir``, ``operational_dir``) is exclusive.
 2. Otherwise an exact legacy marker (``docs/.cdad-state.json`` or
-   ``docs/cdad-policy.json``) selects ``docs/`` without writing a locator.
+   ``docs/cdad-policy.json``) selects ``docs/`` without writing a declaration.
 3. Otherwise insufficient-but-present initialization evidence is ambiguous.
 4. Otherwise, only with an explicit bootstrap request, propose ``cdad/``.
+
+An UNMIGRATED project is refused before any operational write (020-001 PC-2):
+the old locator ``.cdad/project-layout.json`` is still present, or the
+declaration lacks ``operational_dir`` (schema 1), or a populated legacy
+``.cdad/`` root remains. The rejection names the canonical migration guide and
+never writes, converts or falls back silently.
 """
 
 from __future__ import annotations
@@ -19,21 +27,21 @@ import os
 from pathlib import Path
 from typing import Any
 
-LOCATOR_RELPATH = Path(".cdad") / "project-layout.json"
-OPERATIONAL_DIR = Path(".cdad")
-LOCATOR_FIELDS = frozenset({"schema_version", "methodology_dir"})
-LOCATOR_VERSION = 1
+# 020-001: fixed declaration path for every project, whatever its methodology
+# placement, so discovery needs no prior knowledge of the methodology directory.
+DECLARATION_RELPATH = Path("cdad") / "project-layout.json"
+DECLARATION_FIELDS = frozenset({"schema_version", "methodology_dir", "operational_dir"})
+DECLARATION_VERSION = 2
+DEFAULT_OPERATIONAL_DIR = ".cdad-execution"
+# The 019-004 locator and the operational root it registered: historical
+# placements. They are MIGRATION signals here, never a registration source.
+LEGACY_LOCATOR_RELPATH = Path(".cdad") / "project-layout.json"
+LEGACY_OPERATIONAL_DIR = Path(".cdad")
+MIGRATION_GUIDE_RELPATH = "skills/cdad-cycle/references/layout-migration.md"
 LEGACY_DIR = "docs"
 LEGACY_MARKERS = (Path("docs") / ".cdad-state.json", Path("docs") / "cdad-policy.json")
 BOOTSTRAP_DIR = "cdad"
 MEMORY_BANK_FILES = ("projectbrief.md", "systemPatterns.md", "activeContext.md", "progress.md", "landscape.md")
-CONTINUITY_STORE = "continuity"
-GUARD_STORE = "guards"
-# Operational record stores under an execution directory: written by the
-# continuity and guard layers, never initialization evidence (decisions 019-004).
-OPERATIONAL_RECORD_STORES = frozenset({CONTINUITY_STORE, GUARD_STORE})
-# Named locations whose direct entries are initialization evidence (spec-amendment-001).
-NAMED_ENTRY_LOCATIONS = (".cdad/packets", ".cdad/inbox", ".cdad/runtime/results", ".cdad/publication")
 
 
 class LayoutError(ValueError):
@@ -44,11 +52,16 @@ class AmbiguousLayoutError(LayoutError):
     """Initialization evidence is present without an admitted layout (§4.2, item 3)."""
 
 
+class MigrationRequiredError(LayoutError):
+    """The project still uses the legacy operational layout (020-001 PC-2)."""
+
+
 def resolve_layout(project_root: str | os.PathLike[str], *, for_bootstrap: bool = False) -> dict[str, Any]:
     root = _canonical_root(project_root)
-    locator = root / LOCATOR_RELPATH
-    if os.path.lexists(locator):
-        methodology_dir = _read_locator(root, locator)
+    _reject_unmigrated(root)
+    declaration = root / DECLARATION_RELPATH
+    if os.path.lexists(declaration):
+        methodology_dir, _ = _read_declaration(root, declaration)
         return _result(root, "registered", methodology_dir)
     if any(os.path.lexists(root / marker) for marker in LEGACY_MARKERS):
         return _result(root, "legacy", LEGACY_DIR)
@@ -66,36 +79,56 @@ def resolve_layout(project_root: str | os.PathLike[str], *, for_bootstrap: bool 
 def registered_methodology_dir(project_root: str | os.PathLike[str]) -> str | None:
     """Return the validated methodology directory of a REGISTERED layout, or None.
 
-    None means no locator exists (legacy/uninitialized/ambiguous placement is
-    decided by ``resolve_layout``). An invalid locator raises ``LayoutError``
-    and never falls back to ``docs/`` (§4.2).
+    None means no declaration exists (legacy/uninitialized/ambiguous placement is
+    decided by ``resolve_layout``). An invalid declaration raises ``LayoutError``
+    and never falls back to ``docs/`` (§4.2); an unmigrated project raises
+    ``MigrationRequiredError`` (020-001 PC-2).
     """
     root = _canonical_root(project_root)
-    locator = root / LOCATOR_RELPATH
-    if not os.path.lexists(locator):
+    _reject_unmigrated(root)
+    declaration = root / DECLARATION_RELPATH
+    if not os.path.lexists(declaration):
         return None
-    return _read_locator(root, locator)
+    return _read_declaration(root, declaration)[0]
 
 
 def methodology_base(project_root: str | os.PathLike[str]) -> str:
     """The repository-relative methodology base used by operational consumers.
 
     This is the single resolution shared by every operational consumer (019-004
-    §4.2): a registered locator is exclusive, an exact legacy marker selects
-    ``docs/``, and anything else raises ``LayoutError`` (ambiguous or
+    §4.2): a registered declaration is exclusive, an exact legacy marker selects
+    ``docs/``, and anything else raises ``LayoutError`` (ambiguous, unmigrated or
     uninitialized). It never returns ``docs/`` on insufficient evidence.
     """
     return resolve_layout(project_root)["methodology_dir"]
 
 
+def operational_dir(project_root: str | os.PathLike[str]) -> str:
+    """The repository-relative OPERATIONAL directory (020-001 PC-1).
+
+    One shared accessor for every operational consumer: the declared
+    ``operational_dir`` when a schema-2 declaration exists, else the default
+    ``.cdad-execution`` (a legacy project that never wrote operational records,
+    or a genuinely new project). An unmigrated project raises
+    ``MigrationRequiredError`` before any write; an invalid declaration raises
+    ``LayoutError`` and never falls back.
+    """
+    root = _canonical_root(project_root)
+    _reject_unmigrated(root)
+    declaration = root / DECLARATION_RELPATH
+    if os.path.lexists(declaration):
+        return _read_declaration(root, declaration)[1]
+    return DEFAULT_OPERATIONAL_DIR
+
+
 def optional_methodology_base(project_root: str | os.PathLike[str]) -> str | None:
     """The base for OPTIONAL reads (a project state or policy that may be absent).
 
-    A registered layout is exclusive and an invalid locator still raises. An
+    A registered layout is exclusive and an invalid declaration still raises. An
     exact legacy marker selects ``docs/``. Insufficient initialization evidence
     is ambiguous and raises ``AmbiguousLayoutError`` (§4.2, item 3): it is never
     treated as absence and never selects ``docs/``. Only a genuinely
-    uninitialized project (no locator, marker or evidence) returns None.
+    uninitialized project (no declaration, marker or evidence) returns None.
     """
     registered = registered_methodology_dir(project_root)
     if registered is not None:
@@ -138,30 +171,99 @@ def _result(root: Path, source: str, methodology_dir: str) -> dict[str, Any]:
     }
 
 
-def _read_locator(root: Path, locator: Path) -> str:
+def _unmigrated_cause(root: Path) -> str | None:
+    """020-001 §Declaration: why the project still uses the legacy operational layout.
+
+    The three signals are fixed and cheap, in this order: the old locator, a
+    declaration without ``operational_dir`` (schema 1), and a populated legacy
+    ``.cdad/`` root (any file or symlink beneath it; an empty directory subtree
+    is not populated).
+    """
+    if os.path.lexists(root / LEGACY_LOCATOR_RELPATH):
+        return f"the old locator {LEGACY_LOCATOR_RELPATH.as_posix()} is still present"
+    declaration = root / DECLARATION_RELPATH
+    if os.path.lexists(declaration):
+        document = _try_read_object(declaration)
+        if isinstance(document, dict) and "operational_dir" not in document:
+            return "the layout declaration has no operational_dir (schema 1)"
+    legacy_entry = _legacy_entry(root)
+    if legacy_entry is not None:
+        return f"the legacy operational root {LEGACY_OPERATIONAL_DIR.as_posix()}/ still has entries ({legacy_entry})"
+    return None
+
+
+def _reject_unmigrated(root: Path) -> None:
+    cause = _unmigrated_cause(root)
+    if cause is None:
+        return
+    raise MigrationRequiredError(
+        f"project not migrated: {cause}. The legacy {LEGACY_OPERATIONAL_DIR.as_posix()}/ "
+        "operational directory must be migrated before any operational write: move it to "
+        "the declared operational directory, update the declaration and ignore the "
+        f"destination. Follow the canonical guide {MIGRATION_GUIDE_RELPATH}"
+    )
+
+
+def _legacy_entry(root: Path) -> str | None:
+    """One entry beneath the legacy ``.cdad/`` root, or None when it is empty/absent.
+
+    Files and symlinks count, at any depth; an empty directory subtree does not
+    (a leftover ``.cdad/packets/`` from a cleanup is not a legacy store).
+    """
+    legacy = root / LEGACY_OPERATIONAL_DIR
+    if not os.path.lexists(legacy):
+        return None
+    if not legacy.is_dir():
+        return LEGACY_OPERATIONAL_DIR.as_posix()
+    for current, dirnames, filenames in os.walk(legacy, followlinks=False):
+        dirnames.sort()
+        for name in sorted(filenames):
+            return (Path(current) / name).relative_to(root).as_posix()
+        for name in dirnames:
+            entry = Path(current) / name
+            if entry.is_symlink():
+                return entry.relative_to(root).as_posix()
+    return None
+
+
+def _try_read_object(path: Path) -> Any:
     try:
-        text = locator.read_bytes().decode("utf-8")
+        return json.loads(path.read_bytes().decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+
+
+def _read_declaration(root: Path, declaration: Path) -> tuple[str, str]:
+    try:
+        text = declaration.read_bytes().decode("utf-8")
     except (OSError, UnicodeDecodeError) as exc:
-        raise LayoutError(f"cannot read locator {LOCATOR_RELPATH.as_posix()}: {exc}") from exc
+        raise LayoutError(
+            f"cannot read declaration {DECLARATION_RELPATH.as_posix()}: {exc}") from exc
     try:
         document = json.loads(text, object_pairs_hook=_reject_duplicate_keys)
     except ValueError as exc:
-        raise LayoutError(f"malformed locator {LOCATOR_RELPATH.as_posix()}: {exc}") from exc
-    if not isinstance(document, dict):
-        raise LayoutError("locator must be a JSON object")
-    if set(document) != LOCATOR_FIELDS:
         raise LayoutError(
-            f"locator fields must be exactly {sorted(LOCATOR_FIELDS)}; found {sorted(document)}"
+            f"malformed declaration {DECLARATION_RELPATH.as_posix()}: {exc}") from exc
+    if not isinstance(document, dict):
+        raise LayoutError("declaration must be a JSON object")
+    if set(document) != DECLARATION_FIELDS:
+        raise LayoutError(
+            f"declaration fields must be exactly {sorted(DECLARATION_FIELDS)}; "
+            f"found {sorted(document)}"
         )
     version = document["schema_version"]
-    if type(version) is not int or version != LOCATOR_VERSION:
-        raise LayoutError(f"unsupported locator schema_version: {version!r}")
+    if type(version) is not int or version != DECLARATION_VERSION:
+        raise LayoutError(f"unsupported declaration schema_version: {version!r}")
     methodology_dir = document["methodology_dir"]
+    operational_dir = document["operational_dir"]
     if not isinstance(methodology_dir, str):
-        raise LayoutError("locator methodology_dir must be a string")
-    _check_relative_path(methodology_dir)
-    _check_target(root, methodology_dir)
-    return methodology_dir
+        raise LayoutError("declaration methodology_dir must be a string")
+    if not isinstance(operational_dir, str):
+        raise LayoutError("declaration operational_dir must be a string")
+    _check_relative_path(methodology_dir, "methodology_dir")
+    _check_relative_path(operational_dir, "operational_dir")
+    _check_targets(root, methodology_dir, operational_dir)
+    return methodology_dir, operational_dir
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -173,33 +275,49 @@ def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def _check_relative_path(methodology_dir: str) -> None:
-    if not methodology_dir:
-        raise LayoutError("locator methodology_dir must be non-empty")
-    if "\\" in methodology_dir or "\x00" in methodology_dir:
-        raise LayoutError(f"locator methodology_dir must not contain backslashes or NUL: {methodology_dir!r}")
-    if methodology_dir.startswith("/"):
-        raise LayoutError(f"locator methodology_dir must be repository-relative, not absolute: {methodology_dir!r}")
-    parts = methodology_dir.split("/")
+def _check_relative_path(value: str, label: str) -> None:
+    if not value:
+        raise LayoutError(f"declaration {label} must be non-empty")
+    if "\\" in value or "\x00" in value:
+        raise LayoutError(f"declaration {label} must not contain backslashes or NUL: {value!r}")
+    if value.startswith("/"):
+        raise LayoutError(f"declaration {label} must be repository-relative, not absolute: {value!r}")
+    parts = value.split("/")
     if any(part in ("", ".", "..") for part in parts):
         raise LayoutError(
-            f"locator methodology_dir must be normalized (no empty, '.' or '..' components): {methodology_dir!r}"
+            f"declaration {label} must be normalized (no empty, '.' or '..' components): {value!r}"
         )
-    if parts[0] == OPERATIONAL_DIR.name:
-        raise LayoutError(f"locator methodology_dir must not be or live beneath {OPERATIONAL_DIR.as_posix()}/")
+    if parts[0] == LEGACY_OPERATIONAL_DIR.name:
+        raise LayoutError(
+            f"declaration {label} must not be or live beneath "
+            f"{LEGACY_OPERATIONAL_DIR.as_posix()}/: {value!r}"
+        )
 
 
-def _check_target(root: Path, methodology_dir: str) -> None:
-    target = Path(os.path.realpath(root / methodology_dir))
-    operational = Path(os.path.realpath(root / OPERATIONAL_DIR))
-    if not target.is_relative_to(root):
-        raise LayoutError(f"locator methodology_dir escapes the repository root through a symlink: {methodology_dir!r}")
-    if target == root:
-        raise LayoutError(f"locator methodology_dir must not resolve to the repository root: {methodology_dir!r}")
-    if target == operational or target.is_relative_to(operational):
-        raise LayoutError(f"locator methodology_dir must not be or live beneath {OPERATIONAL_DIR.as_posix()}/: {methodology_dir!r}")
-    if os.path.lexists(target) and not target.is_dir():
-        raise LayoutError(f"locator methodology_dir exists and is not a directory: {methodology_dir!r}")
+def _check_targets(root: Path, methodology_dir: str, operational_dir: str) -> None:
+    methodology = Path(os.path.realpath(root / methodology_dir))
+    operational = Path(os.path.realpath(root / operational_dir))
+    for value, target, label in ((methodology_dir, methodology, "methodology_dir"),
+                                 (operational_dir, operational, "operational_dir")):
+        if not target.is_relative_to(root):
+            raise LayoutError(
+                f"declaration {label} escapes the repository root through a symlink: "
+                f"{value!r}")
+        if target == root:
+            raise LayoutError(
+                f"declaration {label} must not resolve to the repository root: {value!r}")
+        if os.path.lexists(target) and not target.is_dir():
+            raise LayoutError(
+                f"declaration {label} exists and is not a directory: {value!r}")
+    if methodology == operational or methodology.is_relative_to(operational):
+        raise LayoutError(
+            f"declaration methodology_dir must not be or live beneath the operational "
+            f"directory: {methodology_dir!r}")
+    if operational.is_relative_to(methodology):
+        raise LayoutError(
+            f"declaration operational_dir must not be or live beneath the methodology "
+            f"directory: {operational_dir!r}")
+
 
 
 def _ambiguous(evidence: list[str]) -> AmbiguousLayoutError:
@@ -212,57 +330,19 @@ def _ambiguous(evidence: list[str]) -> AmbiguousLayoutError:
 def _ambiguity_evidence(root: Path) -> list[str]:
     """Insufficient-but-present initialization evidence (§4.2, item 3).
 
-    The closed list (spec-amendment-001) is checked by fixed location only,
-    never by recursive discovery:
+    The closed list (spec-amendment-001, 020-001) is checked by fixed location
+    only, never by recursive discovery:
 
-    - Memory Bank files under ``docs/``, ``docs/specs``, ``docs/epics`` and
-      an unregistered ``cdad/``.
-    - Any direct entry under ``.cdad/packets`` (an empty directory is not
-      evidence).
-    - Any execution record under ``.cdad/executions/<id>/`` other than the
-      continuity and guard stores (one level deep).
-    - Any entry under ``.cdad/inbox``, ``.cdad/runtime/results`` and
-      ``.cdad/publication``.
+    - Memory Bank files under ``docs/``, ``docs/specs`` and ``docs/epics``.
+    - An unregistered ``cdad/`` directory.
 
-    Anything under ``.cdad/`` that the list does not name (the locator,
-    orchestration scratch, other operational files) is never examined.
+    A populated legacy ``.cdad/`` root is NOT ambiguity: it is an unmigrated
+    project and is rejected earlier with the migration guide (020-001 PC-2).
     """
     found = [f"docs/{name}" for name in MEMORY_BANK_FILES if os.path.lexists(root / LEGACY_DIR / name)]
     found += [rel for rel in ("docs/specs", "docs/epics") if os.path.lexists(root / rel)]
-    found += _execution_record_evidence(root)
-    for rel in NAMED_ENTRY_LOCATIONS:
-        found += _named_location_evidence(root, rel)
     if os.path.lexists(root / BOOTSTRAP_DIR):
         found.append(f"{BOOTSTRAP_DIR}/")
-    return found
-
-
-def _named_location_evidence(root: Path, rel: str) -> list[str]:
-    """Evidence from one named location: any direct entry, or a non-directory.
-
-    An empty directory is not evidence (the runtime may pre-create it). A path
-    that exists but is not a directory (file or dangling symlink) fails closed,
-    as the executions branch does.
-    """
-    location = root / rel
-    if not os.path.lexists(location):
-        return []
-    if not location.is_dir():
-        return [rel]
-    return [f"{rel}/{entry.name}" for entry in sorted(location.iterdir())]
-
-
-def _execution_record_evidence(root: Path) -> list[str]:
-    executions = root / OPERATIONAL_DIR / "executions"
-    if not executions.is_dir():
-        return [f"{OPERATIONAL_DIR.as_posix()}/executions"] if os.path.lexists(executions) else []
-    found = []
-    for entry in sorted(executions.iterdir()):
-        rel = f"{OPERATIONAL_DIR.as_posix()}/executions/{entry.name}"
-        if not entry.is_dir():
-            found.append(rel)
-        elif any(child.name not in OPERATIONAL_RECORD_STORES for child in entry.iterdir()):
-            found.append(rel)
     return found
 
 

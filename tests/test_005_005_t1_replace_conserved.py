@@ -81,6 +81,8 @@ Ninguna escritura en este repo y ninguna lectura de implementación.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import shutil
@@ -103,7 +105,7 @@ SPEC_FILE = f"docs/specs/{FEATURE_ID}/spec.md"
 SPEC_BYTES = b"# Spec fixture (005-005 T1)\n"
 SPEC_DRIFT_BYTES = SPEC_BYTES + b"# linea editada despues de aprobar\n"
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 REASON = "contrato editado despues de preparar el paquete (005-005 T1)"
 
 ROLE, SUBSTAGE = "test-writer", "red"
@@ -185,11 +187,11 @@ def active_packet_id(root: Path) -> str:
 
 
 def packet_dir(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id
+    return root / ".cdad-execution" / "packets" / packet_id
 
 
 def packet_ids(root: Path) -> list[str]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     return sorted(d.name for d in base.iterdir() if d.is_dir()) if base.is_dir() else []
 
 
@@ -248,6 +250,7 @@ def build_project(root: Path) -> Path:
             f"fixture: --propose-policy debe producir una política válida: "
             f"{proposal.stderr!r}")
     policy = json.loads(proposal.stdout)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps(policy, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     spec = root / SPEC_FILE

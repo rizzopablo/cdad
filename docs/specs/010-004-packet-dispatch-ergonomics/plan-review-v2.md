@@ -9,7 +9,7 @@
 - **B-1 and B-2 are closed.** O-1 to O-5 are also handled correctly.
 - **New blocking finding (N-1):** a contradiction between v1 contexts and route C, which v2 itself introduced. It has a single closing condition.
 - **No unjustified expansions.**
-- **I-4 and I-5 are preserved.** The tension between the plan and the observations stays pending for Pablo.
+- **I-4 and I-5 are preserved.** The tension between the plan and the observations stays pending for <owner>.
 
 ## Intake (route C)
 
@@ -98,7 +98,7 @@ The test-writer cannot write one deterministic test for PC-01 with v1. Without a
   - The symlink rule and the general path rule are deferred in §10 (`:410`).
 - **Historical compatibility:** an absent field adds nothing to the header (`:158`). This can be implemented with the existing pattern of optional keys (`cdad_packet.py:1609`), and nothing is migrated (`:81`, INV-08).
 - **I-4 and I-5:** §2.2 and §2.3 (`:35-48`), PC-11 (`:341`) and §4.7 are consistent with `observations-packet-dispatch.md:67-90`. C does not rescue the altered inline dispatch.
-- **Plan and observations tension:** §2.1 (`:21-33`) states it and leaves it for approval. Its citations to `plan.md` (the change on 2026-10-29) and `observations:36-46` are correct. **This decision is pending for Pablo, and this review does not resolve it.**
+- **Plan and observations tension:** §2.1 (`:21-33`) states it and leaves it for approval. Its citations to `plan.md` (the change on 2026-10-29) and `observations:36-46` are correct. **This decision is pending for <owner>, and this review does not resolve it.**
 - **Closure criteria from the observations** (`observations:38-44`) are all covered:
   - The declared context is accepted (PC-05).
   - A foreign context is rejected, naming the expected one (PC-06, PC-09).

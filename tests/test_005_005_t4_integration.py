@@ -64,6 +64,8 @@ Mapa test → postcondición:
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import atexit
 import hashlib
 import json
@@ -106,7 +108,7 @@ SPEC_REL = f"docs/specs/{FEATURE_ID}/spec.md"
 SPEC_BYTES = b"# Spec fixture (005-005 T4 RED)\n"
 SPEC_DRIFT_BYTES = SPEC_BYTES + b"# linea editada despues de aprobar\n"
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 REASON = "contrato editado despues de preparar el paquete (005-005 T4)"
 ROLE, SUBSTAGE = "test-writer", "red"
 CONSERVED_INPUT = "tests/conserved_input.md"
@@ -293,7 +295,16 @@ class T4Case(unittest.TestCase):
             msg=f"precondición (fixture): --propose-policy debe producir "
                 f"una política válida: {self.out(proposal)!r}")
         (root / POLICY_FILE).parent.mkdir(parents=True, exist_ok=True)
-        (root / POLICY_FILE).write_text(proposal.stdout, encoding="utf-8")
+        write_declaration(root)
+        policy = json.loads(proposal.stdout)
+        # 020-001: el directorio de metodología declarado (`docs`) debe quedar
+        # clasificado como documentación por la política.
+        roots = policy["path_policy"].setdefault("documentation_roots", [])
+        if "docs" not in roots:
+            roots.append("docs")
+        (root / POLICY_FILE).write_text(
+            json.dumps(policy, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8")
         spec = root / SPEC_REL
         spec.parent.mkdir(parents=True, exist_ok=True)
         spec.write_bytes(SPEC_BYTES)
@@ -365,7 +376,7 @@ class T4Case(unittest.TestCase):
 
     def observe_dispatch(self, root: Path, packet_id: str
                          ) -> subprocess.CompletedProcess:
-        obs_path = root / ".cdad" / "inbox" / "observation-t4.json"
+        obs_path = root / ".cdad-execution" / "inbox" / "observation-t4.json"
         obs_path.parent.mkdir(parents=True, exist_ok=True)
         obs_path.write_text(
             json.dumps(OBSERVATION, indent=2, sort_keys=True) + "\n",
@@ -384,10 +395,10 @@ class T4Case(unittest.TestCase):
         return self.read_state(root).get("active_packet") or {}
 
     def packet_dir(self, root: Path, packet_id: str) -> Path:
-        return root / ".cdad" / "packets" / packet_id
+        return root / ".cdad-execution" / "packets" / packet_id
 
     def packet_ids(self, root: Path) -> list[str]:
-        base = root / ".cdad" / "packets"
+        base = root / ".cdad-execution" / "packets"
         if not base.is_dir():
             return []
         return sorted(p.name for p in base.iterdir() if p.is_dir())

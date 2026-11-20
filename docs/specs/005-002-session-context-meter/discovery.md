@@ -3,7 +3,7 @@
 **Rol:** architect (etapa 1, discovery). **Solo lectura.** No se modificó el repo
 (`git status` del repo anidado sin cambios; ver §12).
 **Contrato:** `docs/epics/epic-005-real-operation/plan.md` (fila 4, `plan.md:36`),
-aprobado por Pablo (`plan.md:6-7`). Este documento **no** propone el contrato: eso
+aprobado por <owner> (`plan.md:6-7`). Este documento **no** propone el contrato: eso
 es la subetapa *draft*.
 **Nota de layout (verificada):** el repo de desarrollo es un repo Git **anidado**;
 su raíz es `<repo>` (`git rev-parse --show-toplevel`).

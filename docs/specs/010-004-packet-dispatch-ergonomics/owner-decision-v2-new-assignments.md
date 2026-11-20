@@ -1,6 +1,6 @@
 # Decisión owner: encargos nuevos v2; v1 para retomar lo viejo
 
-2026-10-30. Fuente: instrucción explícita de Pablo, transmitida por el orquestador supervisor a esta sesión: «V1 solo debe conocerlo cdad para retomar un proyecto viejo, pero todo lo nuevo va sobre v2».
+2026-10-30. Fuente: instrucción explícita de <owner>, transmitida por el orquestador supervisor a esta sesión: «V1 solo debe conocerlo cdad para retomar un proyecto viejo, pero todo lo nuevo va sobre v2».
 
 Resuelve la elección N-1 de `plan-review.md` v2 y la pregunta de `orchestration-review-v2-decision-pending.md`: C será v2-only. Todo encargo NUEVO y toda preparación nueva serán v2, también al continuar un proyecto viejo. No es aprobación de la spec completa, de implementación ni de la tensión plan/observations de §2.1. Etapa specification; spec no aprobada. No autoriza migración automática, eliminación de soporte de reentrada ni reescritura/renombrado/destrucción del legado v1.
 

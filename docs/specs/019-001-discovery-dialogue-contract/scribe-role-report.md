@@ -105,7 +105,7 @@ Publicar y desplegar siguen fuera del mandato delegado.
 ```markdown
 ## In progress
 
-**Active epic: `epic-019-discovery-dialogue` — plan approved by Pablo, 2026-11-15.**
+**Active epic: `epic-019-discovery-dialogue` — plan approved by <owner>, 2026-11-15.**
 `019-001-discovery-dialogue-contract` **cerrada el 2026-11-15** (unidad documental, aceptada
 bajo la delegación del epic; detalle en `## Done`). Queda
 `019-002-effective-discovery-instructions` (orden 2/2, depende de 019-001 aceptada): activación

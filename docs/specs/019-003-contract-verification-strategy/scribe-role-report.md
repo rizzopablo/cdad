@@ -133,7 +133,7 @@ Publishing remains reserved to the owner.
 ```markdown
 ## In progress
 
-**Active epic: `epic-019-discovery-dialogue` — plan approved by Pablo, 2026-11-15.**
+**Active epic: `epic-019-discovery-dialogue` — plan approved by <owner>, 2026-11-15.**
 `019-001-discovery-dialogue-contract` and `019-003-contract-verification-strategy` **cerradas el
 2026-11-15** (detalle en `## Done`). Queda `019-002-effective-discovery-instructions` (orden
 **3/3**, suspendida y **a reanudar**: depende de 019-001 y 019-003, ambas cerradas): activación

@@ -166,7 +166,7 @@ PASS: F010 (M7): skills/feature-handoff.md is a short stub (≤10 lines) or was 
 PASS: F010 (M7): skills/epic-planning.md is a short stub (≤10 lines) or was removed
 PASS: F010 (M8): verdict-tuple.md without a reference to 'my arXiv pipeline' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'my arXiv pipeline')
 PASS: F010 (M8): verdict-tuple.md without a reference to 'fb-012' (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'fb-012')
-PASS: F010 (M8): verdict-tuple.md without the owner's proper name (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'Approved by Pablo')
+PASS: F010 (M8): verdict-tuple.md without the owner's proper name (skills/cdad-cycle/references/verdict-tuple.md does NOT contain 'Approved by <owner>')
 
 ############################################
 # F001 — honest profiles note + §2 block drift (B7)

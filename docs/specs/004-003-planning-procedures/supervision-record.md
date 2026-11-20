@@ -304,7 +304,7 @@ _(ninguno)_
   `plan.md` (T1–T7) materializados desde `architect-draft-001.md` con D1–D7
   aplicadas; `owner-decisions-2026-10-05.md` registra la aprobación del dueño.
   Estado avanzado: `stage_history` + `current_stage` = `specification`,
-  `approved_by` = Pablo.
+  `approved_by` = <owner>.
 - **Verificación proporcional (ADR-011):** 6 citas de carga del borrador
   confirmadas contra el código — `cdad_packet.py:50` (2 contract-kinds),
   `:700-704`/`:869-882` (`_contract_for`), `:1220-1231`

@@ -31,7 +31,7 @@
     "execution_context": {
       "type": "string",
       "minLength": 1,
-      "description": "Project-relative canonical location of the v2 execution context the packet was prepared from: `.cdad/executions/<execution_id>/execution.json` (010-004 §4.1). Optional for historical requests; a new publication declares it, and then `agent` is mandatory."
+      "description": "Project-relative canonical location of the v2 execution context the packet was prepared from: `.cdad-execution/executions/<execution_id>/execution.json` (010-004 §4.1). Optional for historical requests; a new publication declares it, and then `agent` is mandatory."
     },
     "current_decisions": {
       "type": "array",

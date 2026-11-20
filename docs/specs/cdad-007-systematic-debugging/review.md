@@ -1,7 +1,7 @@
 # cdad-007-systematic-debugging — Review (Etapa 4)
 
 > **Caveat de aislamiento (registrado):** review INLINE por el orquestador
-> (runtime `delegate` roto). HITL delegado por Pablo. Checks mecánicos
+> (runtime `delegate` roto). HITL delegado por <owner>. Checks mecánicos
 > re-corrídos por el orquestador post-GREEN.
 
 ## Layer 1 — Verificación contra spec

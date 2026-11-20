@@ -179,7 +179,7 @@ post-batería; árbol del repo limpio (git status sin cambios).
 #### Fase 3 — loop de fixes de Etapa 4 (2026-09-13)
 
 Review Capa 1 (`review.md`): 4 bloqueantes (H1-H4), 4 opcionales (H5-H8),
-veredicto RECHAZADO, bucket h 4/4. Capa 2 (Pablo): política de enforcement +
+veredicto RECHAZADO, bucket h 4/4. Capa 2 (<owner>): política de enforcement +
 priorización (transcripta en review.md). Fixes ejecutados:
 
 - **H1 (desviación registrada):** el commit `5f9f4d2` mezcló el fix de la

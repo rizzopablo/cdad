@@ -42,6 +42,8 @@ ninguna lectura de implementación.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import re
@@ -67,7 +69,7 @@ SPEC_DRIFT_BYTES = SPEC_BYTES + b"# linea editada tras la aprobacion\n"
 SPEC_SHA256 = hashlib.sha256(SPEC_BYTES).hexdigest()
 SPEC_DRIFT_SHA256 = hashlib.sha256(SPEC_DRIFT_BYTES).hexdigest()
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 MARKER = "approval pending"
 CONSTRUCTION_ROLES = (
     ("test-writer", "red"),
@@ -106,6 +108,7 @@ def tree_snapshot(root: Path) -> dict[str, bytes | None]:
 
 def write_policy(root: Path) -> None:
     (root / "docs").mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -113,7 +116,7 @@ def write_policy(root: Path) -> None:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -219,7 +222,7 @@ def make_project(**kwargs) -> Path:
 
 
 def v2_execution_ids(root: Path) -> dict[str, dict]:
-    base = root / ".cdad" / "executions"
+    base = root / ".cdad-execution" / "executions"
     if not base.is_dir():
         return {}
     return {path.parent.name: json.loads(path.read_text(encoding="utf-8"))
@@ -227,7 +230,7 @@ def v2_execution_ids(root: Path) -> dict[str, dict]:
 
 
 def published_packets(root: Path) -> dict[str, bytes]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return {}
     return {path.parent.name: path.read_bytes()

@@ -91,7 +91,7 @@ _SEND = 'if _direct():\n    sys.stdout.write(json.dumps(envelope, sort_keys=True
 
 def _side_effects(fx) -> tuple:
     """Observable acceptance effects: attempts ledger, staging, receipts."""
-    results = fx.root / ".cdad/runtime/results"
+    results = fx.root / ".cdad-execution/runtime/results"
     receipts = sorted(str(p) for p in results.rglob("*") if p.is_file()) if results.is_dir() else []
     return (fx.dispatch_files(), fx.inbox_files(), receipts)
 
@@ -143,7 +143,7 @@ def test_007_004_record_payload_is_staged_not_received(tmp_path: Path) -> None:
     if not ref.is_absolute():
         ref = fx.root / ref
     assert ref.is_file(), "PC-01: staged reference must identify an existing descriptor"
-    assert any(p.read_bytes() == payload for p in (fx.root / ".cdad/inbox").rglob("*") if p.is_file()), \
+    assert any(p.read_bytes() == payload for p in (fx.root / ".cdad-execution/inbox").rglob("*") if p.is_file()), \
         "PC-01: payload bytes must be preserved in staging"
     assert not fx.receipt_path().exists(), "PC-01: record must not create a durable receipt"
 
@@ -154,7 +154,7 @@ def test_007_004_record_without_payload_has_no_delivery(tmp_path: Path) -> None:
     envelope = _envelope(stage.record(fx), "PC-02")
     assert envelope.get("termination") == "unknown", "PC-02: no-payload record is unknown"
     _delivery(envelope, "PC-02", "none")
-    assert not (fx.root / ".cdad/inbox/RESULT.json").exists(), "PC-02: no descriptor may be staged"
+    assert not (fx.root / ".cdad-execution/inbox/RESULT.json").exists(), "PC-02: no descriptor may be staged"
 
 
 def test_007_004_record_contradiction_blocks_without_effects(tmp_path: Path) -> None:
@@ -328,7 +328,7 @@ def test_007_004_delegate_rejects_invalid_delivery_combinations(
 def test_007_004_external_route_rejects_staged_delivery(tmp_path: Path) -> None:
     """PC-09: external arrivals reject completed/staged even though record may emit it."""
     fx, stage = _external(tmp_path)
-    staged = fx.root / ".cdad/inbox/RESULT.json"
+    staged = fx.root / ".cdad-execution/inbox/RESULT.json"
     _adapter_emits(stage, {"attempt": "attempt-fixture-007-003", "session": "ses-fixture-007-003",
                            "termination": "completed", "delivery": "staged",
                            "delivery_ref": str(staged), "diagnosis": None})
@@ -376,7 +376,7 @@ def test_007_004_legacy_external_requires_valid_receipt(tmp_path: Path, ref_kind
     fx = _received_project(tmp_path / "main")
     stage = _Stage(tmp_path / "main")
     refs = {"linked-receipt": lambda: fx.receipt_path(),
-            "descriptor": lambda: fx.root / ".cdad/inbox/RESULT.json",
+            "descriptor": lambda: fx.root / ".cdad-execution/inbox/RESULT.json",
             "plain-text": lambda: _plain(fx.root),
             "foreign-receipt": lambda: _received_project(tmp_path / "other").receipt_path()}
     ref = refs[ref_kind]()

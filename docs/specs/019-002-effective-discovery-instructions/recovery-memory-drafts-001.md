@@ -122,7 +122,7 @@ reservados al dueño.
 ```markdown
 ## In progress
 
-**Active epic: `epic-019-discovery-dialogue` — plan approved by Pablo, 2026-11-15.**
+**Active epic: `epic-019-discovery-dialogue` — plan approved by <owner>, 2026-11-15.**
 `019-001-discovery-dialogue-contract` y `019-003-contract-verification-strategy` **cerradas el
 2026-11-15** (detalle en `## Done`). `019-002-effective-discovery-instructions` (orden **3/3**, la
 última) tiene **implementación y revisión independiente aceptadas** bajo la HITL delegada del epic,

@@ -11,7 +11,7 @@
 
 **F1 — BLOCKING — Missing prerequisite dependency on ADR-021 amendment materialization**
 - Verdict: BLOCKING | Bucket: h
-- Location: `plan.md` T1 block, `depends_on: []`; `diseno-aprobado.md` §"Precedencia de entrada" ("Antes de T1 se requiere aprobación específica y materialización de la enmienda a ADR-021; no se difiere al cierre"); epic `plan.md` ("la enmienda de ADR-021 ya fue aprobada por Pablo y registrada en `0c83f2dd`").
+- Location: `plan.md` T1 block, `depends_on: []`; `diseno-aprobado.md` §"Precedencia de entrada" ("Antes de T1 se requiere aprobación específica y materialización de la enmienda a ADR-021; no se difiere al cierre"); epic `plan.md` ("la enmienda de ADR-021 ya fue aprobada por <owner> y registrada en `0c83f2dd`").
 - Rationale: The approved design explicitly gates T1 on the specific approval and materialization of the ADR-021 amendment before T1, not deferred to closure. The draft plan declares T1 with empty `depends_on`, so the plan as written would allow T1 to start without that gate. Either the dependency must be declared (on the materialization commit `0c83f2dd`/the amendment artifact) or the plan must state why it is already satisfied. As written, the gate is invisible to the execution machinery.
 
 **F2 — BLOCKING — Synthetic acceptance case (R1–R5, sensitivity R3) not mapped to a verifiable task**

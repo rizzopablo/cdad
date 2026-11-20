@@ -1,6 +1,6 @@
 # Owner decision — orchestrator scope (2026-11-15)
 
-Pablo (owner), verbatim: "no puedes prohibirle al orquestador tantas cosas, es el agente
+<owner> (owner), verbatim: "no puedes prohibirle al orquestador tantas cosas, es el agente
 con el que yo hablo y necesito que pueda resolver situaciones. cada agentes tiene su rol y
 el orquestador es el encargado de hacer que cada uno realice su parte. lo que no debe hacer
 nunca el orquestador es escribir los tests y el producto (codigo o lo que sea) pero no se le

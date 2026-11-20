@@ -18,7 +18,7 @@ spec aprobada de
 | Campo | Valor |
 |---|---|
 | delegated_to | GLM (orquestador y construcción del epic 004) |
-| requested_by | usuario (Pablo) |
+| requested_by | usuario (<owner>) |
 | requested_at | 2026-09-24 |
 | scope | epic-004-single-source-planning: alcance del epic, specs, decisiones dentro de contratos aprobados, priorización de reviews, aprobaciones de Memory Bank y gates para sus tres features e integración |
 | expires | cierre, cancelación o revocación del epic |
@@ -43,7 +43,7 @@ spec aprobada de
    [spec.md](../../specs/004-001-canonical-runtime-artifacts/spec.md) —
    instrucción del usuario en sesión ("Adelante, toma en cuenta estas
    observaciones de claude y continúa") tras conocer la conclusión del
-   dictamen ("listo para que Pablo apruebe y se active 004 según §6").
+   dictamen ("listo para que <owner> apruebe y se active 004 según §6").
 5. **Procedimiento de activación**: §6 del informe del architect
    (corrección-004-001-architect-2026-09-24.md), con snapshot de suspensión de
    epic 003 y un único write del state.

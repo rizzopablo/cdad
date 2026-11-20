@@ -1,6 +1,6 @@
 # 010-001 — Contratos documentales compartidos
 
-**Estado:** borrador para aprobación de Pablo.  
+**Estado:** borrador para aprobación de <owner>.  
 **Épica:** `epic-010-documentary-specialization`.  
 **Dependencias:** `010-000`, `010-004`.
 
@@ -198,7 +198,7 @@ La modificación del contrato del implementer sustituye la restricción exclusiv
 6. Los bloques estáticos cumplen el techo vigente, sin elevarlo para acomodar este cambio.
 7. Las pruebas focalizadas y regresiones pertinentes pasan. La suite completa se ejecuta una vez por quien cierre la tarea, conforme a la política vigente.
 8. La revisión independiente informa hallazgos y abstenciones; las discrepancias que impidan cumplir el contrato se resuelven antes de solicitar aceptación.
-9. Pablo aprueba explícitamente spec y plan antes de implementación, y decide la aceptación funcional al cierre.
+9. <owner> aprueba explícitamente spec y plan antes de implementación, y decide la aceptación funcional al cierre.
 
 Las pruebas se agrupan por promesa observable. No se exige una prueba por postcondición ni una cuota de variantes equivalentes.
 
@@ -246,6 +246,6 @@ Las pruebas se agrupan por promesa observable. No se exige una prueba por postco
 
 ## 9. Aprobación
 
-Aprobada por Pablo el 2026-10-31 mediante el mandato HITL del 2026-10-30 delegado al orquestador (`docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md` §3), que cubre las aprobaciones de spec y plan de las features del epic-010 mientras implementen la descomposición y el alcance ya aprobados en `docs/epics/epic-010-documentary-specialization/plan.md`. Registro de la decisión, revisión independiente y observaciones no bloqueantes: `docs/specs/010-001-documentary-contracts/owner-approval-2026-10-31.md`.
+Aprobada por <owner> el 2026-10-31 mediante el mandato HITL del 2026-10-30 delegado al orquestador (`docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md` §3), que cubre las aprobaciones de spec y plan de las features del epic-010 mientras implementen la descomposición y el alcance ya aprobados en `docs/epics/epic-010-documentary-specialization/plan.md`. Registro de la decisión, revisión independiente y observaciones no bloqueantes: `docs/specs/010-001-documentary-contracts/owner-approval-2026-10-31.md`.
 
-Status: Approved by Pablo on 2026-10-31
+Status: Approved by <owner> on 2026-10-31

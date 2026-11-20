@@ -1,6 +1,6 @@
 # Specification: CDAD discovery dialogue operating design
 
-**Status: Approved by the CDAD orchestrator under Pablo's delegated HITL on 2026-11-15; amended 2026-11-15 under the owner decision (review is the verification), after independent review.**
+**Status: Approved by the CDAD orchestrator under <owner>'s delegated HITL on 2026-11-15; amended 2026-11-15 under the owner decision (review is the verification), after independent review.**
 
 ## Functional description
 
@@ -294,4 +294,4 @@ The observed exercise and executable corrections assigned to 019-002 are separat
 
 OpenSpec installation; new UI or communication service; automatic approval; weakening test/review separation; global deployment; unrelated documentation cleanup; executable correction in 019-001.
 
-**Status: Approved (amended 2026-11-15, owner decision) by the CDAD orchestrator under Pablo's delegated HITL.**
+**Status: Approved (amended 2026-11-15, owner decision) by the CDAD orchestrator under <owner>'s delegated HITL.**

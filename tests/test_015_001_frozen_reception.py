@@ -160,7 +160,7 @@ def _make_distribution(base: Path) -> Path:
         dist,
         symlinks=True,
         ignore=shutil.ignore_patterns(
-            ".git", ".cdad", ".pytest_cache", "__pycache__", "build",
+            ".git", ".cdad", ".cdad-execution", ".pytest_cache", "__pycache__", "build",
             ".ruff_cache", "*.pyc", "*.pyo",
         ),
     )

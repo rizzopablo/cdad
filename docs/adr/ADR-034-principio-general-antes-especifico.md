@@ -2,7 +2,7 @@
 
 - **Status**: Accepted (aprobado el 2026-10-20 por el orquestador Claude bajo la HITL delegada del epic-006, con veto del dueño; borrador del architect en `docs/specs/006-004-active-decisions-table/adr-034-draft.md`, revisado en `plan-review-001..004`)
 - **Date**: 2026-10-20
-- **Deciders**: Pablo (dueño: fijó el principio de general antes que específico en la enmienda 005 del plan del epic, 2026-10-18) + orquestador Claude (HITL delegada de epic-006: aprueba el ADR) + architect (redacción; **no aprueba**)
+- **Deciders**: <owner> (dueño: fijó el principio de general antes que específico en la enmienda 005 del plan del epic, 2026-10-18) + orquestador Claude (HITL delegada de epic-006: aprueba el ADR) + architect (redacción; **no aprueba**)
 - **Confidence**: Alta
 - **Aprobación**: *pendiente* — el owner puede vetarla. **Evidencia disponible para la decisión:** contrato `docs/epics/epic-006-opencode-concurrency/plan.md` §12 (enmienda 005, sha256 `d6da11db…9809`) y §10 (enmienda 003); `docs/specs/006-004-active-decisions-table/discovery.md` §4.1-4.3; `docs/specs/006-004-active-decisions-table/spec.md` §2.6 y DEC-9/DEC-10; `plan.md` §3 U3.
 - **Fases (declaradas, tres actos distintos):** (1) este documento es el **borrador** que entrega el architect, con estado `Proposed`; (2) su **aprobación** es un acto **posterior y separado** de la autoridad vigente, cuya evidencia se registra; (3) sólo después lo materializa el orquestador en `docs/adr/`, y **el materializado lleva el estado aprobado**. La fila de la tabla que lo nombra no se declara `vigente` antes de (2). Una comprobación posterior reconoce la aprobación separada: **no** exige que este documento siga `Proposed`.

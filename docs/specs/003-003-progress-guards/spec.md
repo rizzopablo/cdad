@@ -3,7 +3,7 @@ feature_id: 003-003-progress-guards
 feature_name: Guards de progreso y recuperación acotada
 created_at: 2026-10-06
 status: approved
-approved_by: Pablo (HITL delegada al orquestador Claude)
+approved_by: <owner> (HITL delegada al orquestador Claude)
 approved_at: 2026-10-06
 ---
 

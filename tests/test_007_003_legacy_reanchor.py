@@ -106,7 +106,7 @@ def _write_approval(project: _Project, dry: dict, *, execution_id: str | None = 
         f"reanchor_execution_id: \"{execution_id or dry['execution_id']}\"\n"
         f"reanchor_head_sha256: \"{head_sha256 or dry['head_sha256']}\"\n"
         f"reanchor_inventory_sha256: \"{inventory_sha256 or dry['pre_anchor_inventory_sha256']}\"\n"
-        "approved_by: \"Pablo\"\n"
+        "approved_by: \"<owner>\"\n"
         "approved_at: \"2026-10-25\"\n"
         f"---\n\nAutorizo expresamente el reanclaje: {reason}.\n",
         encoding="utf-8")
@@ -593,7 +593,7 @@ def test_reanchor_pc_r5_rejects_inconclusive_dispatch_signal(tmp_path: Path) -> 
     old_head, _, _ = _ready_legacy(project)
     # A complete JSON object without packet identity is still inconclusive,
     # not a canonical dispatch and not evidence that no dispatch happened.
-    dispatch_dir = (project.root / ".cdad" / "executions" / project.execution_id
+    dispatch_dir = (project.root / ".cdad-execution" / "executions" / project.execution_id
                     / "dispatches")
     dispatch_dir.mkdir(parents=True, exist_ok=True)
     (dispatch_dir / "partial.json").write_text("{}", encoding="utf-8")

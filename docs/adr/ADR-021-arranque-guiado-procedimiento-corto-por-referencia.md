@@ -103,7 +103,7 @@ runtime informa al cargarla. La decisión y su verificación están en
 
 ### Enmienda de entrada compacta aprobada por el dueño (2026-11-12)
 
-Pablo aprueba la siguiente precisión a la decisión 3, conservando los demás
+<owner> aprueba la siguiente precisión a la decisión 3, conservando los demás
 principios y controles de esta ADR. En una sesión de orquestador generado cuyo
 contrato está presente, con proyecto reconocido y procedencia efectiva de
 `<skill-dir>` ya conocida, la orientación inicial consulta la vista compacta

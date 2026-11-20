@@ -28,7 +28,7 @@ Cadena del control, de la superficie al registro:
 
 **La circularidad:** el contrato del architect es el **plan del epic**, pero el gate I2 le exige una entrada `stage: "specification"` (justo la spec que el architect va a redactar). El defecto no es el registro en sí, sino que el control es **agnóstico del rol**.
 
-**Entrada rectificada (estado actual):** `docs/.cdad-state.json:1399-1407` — `{feature: 005-001-idle-and-v7-bootstrap, stage: "discovery-authorization", authorized_by: "Pablo", rectified_at, evidence: plan.md}`; `active_packet` ya es `null` (`:1494`). Como no tiene `stage: "specification"` ni `approved_by`, **hoy no habilita nada**; `dispatch-ledger.md:18` documenta `validate-state → rc=2 (I2)`.
+**Entrada rectificada (estado actual):** `docs/.cdad-state.json:1399-1407` — `{feature: 005-001-idle-and-v7-bootstrap, stage: "discovery-authorization", authorized_by: "<owner>", rectified_at, evidence: plan.md}`; `active_packet` ya es `null` (`:1494`). Como no tiene `stage: "specification"` ni `approved_by`, **hoy no habilita nada**; `dispatch-ledger.md:18` documenta `validate-state → rc=2 (I2)`.
 
 ## 1.2 El contrato del paquete ya está "pineado"; la **aprobación** no
 

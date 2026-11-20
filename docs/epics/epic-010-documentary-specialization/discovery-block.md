@@ -4,7 +4,7 @@ Fecha: 2026-10-29.
 
 ## Estado y evidencia
 
-- Plan aprobado por Pablo y registrado en git: `644d5fe`.
+- Plan aprobado por <owner> y registrado en git: `644d5fe`.
 - Unidad abierta: `010-001-documentary-contracts`.
 - Contexto creado por `open-unit`: `exec-010-001-documentary-contracts-001`.
 - Paquete preparado: `010-001-documentary-contracts-architect-discovery-001`.

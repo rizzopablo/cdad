@@ -6,7 +6,7 @@ Fecha: 2026-10-08. Rama: `codex/epic-005-real-operation`. Sin push automático.
 
 ## Antes de empezar
 
-1. Leé [plan.md](plan.md). Solo avanzás si su estado dice «Aprobado por Pablo»
+1. Leé [plan.md](plan.md). Solo avanzás si su estado dice «Aprobado por <owner>»
    y existe [execution.md](execution.md) con la delegación. Si falta alguno,
    detenete e informá.
 2. Versión vigente: v7 `ce09ed0` (ver `docs/runtime-adopted-version.md`). Las

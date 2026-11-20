@@ -65,5 +65,5 @@ Logs del reviewer: `/tmp/cdad-t4-review-yux00z4n/{focused,install,check}.log`.
 
 Conservar el trabajo válido; corregir B1/B2 antes de cerrar el aterrizaje A.
 Materializado por el orquestador (GLM) desde el reporte final del reviewer
-(ADR-003). El usuario (Pablo) transmitió el informe y avaló la corrección
+(ADR-003). El usuario (<owner>) transmitió el informe y avaló la corrección
 acotada en la misma sesión.

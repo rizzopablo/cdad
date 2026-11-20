@@ -419,4 +419,4 @@ Derivado de las fichas de §3 (archivos, RED, regresiones y A-1) para que el CLI
 
 Erratas de letra aceptadas en la aprobación (`plan-review-004.md`, opcionales sin efecto en contrato): **O-6**, el recorrido de U6/PD-22 usa un paquete distinto por cada entrega (tres despachos con entrega más el de repetición de E4), nunca dos recepciones del mismo paquete; donde dice «dos paquetes», rige ese invariante. **O-7**, el caso `--exec-config` en `argv` sobre `migrate` del oráculo de PD-9 lo declara el RED de U1a. N-1 (base medida) sin efecto.
 
-Status: Approved by orquestador Claude (HITL delegada por Pablo, epic-006) on 2026-10-18; enmienda PD-19 y las decisiones de runtime, modelo y credencial approved by Pablo on 2026-10-18 (`execution.md`, «Decisiones del owner sobre los gates de 006-005»).
+Status: Approved by orquestador Claude (HITL delegada por <owner>, epic-006) on 2026-10-18; enmienda PD-19 y las decisiones de runtime, modelo y credencial approved by <owner> on 2026-10-18 (`execution.md`, «Decisiones del owner sobre los gates de 006-005»).

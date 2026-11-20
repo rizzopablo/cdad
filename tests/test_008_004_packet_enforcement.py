@@ -56,7 +56,7 @@ universal:
   vacío). Límite declarado: el staging transitorio no es observable tras el
   hecho; se verifica la ausencia de residuos y de observación.
 - `begin` con `REQUEST.json` ausente y PACKET.md publicado: rechazo sin
-  efectos; control legacy (proyecto sin `.cdad/packets`, forma 003-007 T1)
+  efectos; control legacy (proyecto sin `.cdad-execution/packets`, forma 003-007 T1)
   acepta `begin` y persiste la cabecera de continuidad.
 
 Estado al RED (verificado por ejecución; ver el reporte del commit):
@@ -135,7 +135,7 @@ def _write(root, rel: str, data: bytes) -> None:
 
 def _packet_md(fx):
     """PACKET.md publicado del paquete activo (ambos constructores)."""
-    path = fx.root / ".cdad" / "packets" / fx.packet_id / "PACKET.md"
+    path = fx.root / ".cdad-execution" / "packets" / fx.packet_id / "PACKET.md"
     assert path.is_file(), f"precondición (fixture): PACKET.md publicado en {path}"
     return path
 
@@ -148,7 +148,7 @@ def _objective_of(md) -> str:
 def _assert_write_scope_cubre_tests(fx) -> None:
     """Precondición: el paquete test-writer publicado cubre `tests/`."""
     request = json.loads(
-        (fx.root / ".cdad" / "packets" / fx.packet_id / "REQUEST.json")
+        (fx.root / ".cdad-execution" / "packets" / fx.packet_id / "REQUEST.json")
         .read_text(encoding="utf-8"))
     scope = request.get("write_scope") or []
     assert any(sel.get("root") == "tests" for sel in scope), (
@@ -717,7 +717,7 @@ def test_begin_con_request_ausente_y_rastro_de_publicacion_se_rechaza(tmp_path):
 
 
 def test_begin_legado_sin_arbol_de_paquetes_se_acepta(tmp_path):
-    """Control legacy: un proyecto sin árbol `.cdad/packets` (forma 003-007 T1:
+    """Control legacy: un proyecto sin árbol `.cdad-execution/packets` (forma 003-007 T1:
     política, state y contexto de ejecución, sin paquete publicado) acepta
     `begin` con rc 0 y persiste la cabecera de continuidad.
 
@@ -739,8 +739,8 @@ def test_begin_legado_sin_arbol_de_paquetes_se_acepta(tmp_path):
     exec_context = write_json("fixture/exec.json", exec_context_fixture())
     update = write_json("fixture/update.json",
                         update_fixture(references=[]))
-    assert not (root / ".cdad" / "packets").exists(), (
-        "precondición (fixture legado): no hay árbol .cdad/packets")
+    assert not (root / ".cdad-execution" / "packets").exists(), (
+        "precondición (fixture legado): no hay árbol .cdad-execution/packets")
     env = dict(os.environ)
     env["HOME"] = str(tmp_path / "legacy" / "home")
     env["XDG_CONFIG_HOME"] = str(tmp_path / "legacy" / "config-home")
@@ -777,7 +777,7 @@ def _v2_execution_context(fx) -> Path:
 
 
 def _head_bytes(fx) -> bytes | None:
-    head = (fx.root / ".cdad" / "executions" / fx.execution_id
+    head = (fx.root / ".cdad-execution" / "executions" / fx.execution_id
             / "continuity" / "head.json")
     return head.read_bytes() if head.is_file() else None
 
@@ -815,7 +815,7 @@ def test_011_begin_en_v2_sin_request_ni_rastro_se_rechaza_sin_efectos(tmp_path):
     fx = _RecoveryProject(tmp_path / "pc1-sin-rastro")
     _v2_execution_context(fx)
     new_id = next_packet_id(fx.packet_id)
-    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+    assert not (fx.root / ".cdad-execution" / "packets" / new_id).exists(), (
         "precondición (011): el paquete nuevo no deja rastro alguno")
     before_tree = fx.tree()
     before_state = fx.state_bytes()
@@ -837,7 +837,7 @@ def test_011_begin_en_v2_sin_request_ni_rastro_se_rechaza_sin_efectos(tmp_path):
                          before_tree, before_state)
     assert _head_bytes(fx) == before_head, (
         "PC-1 (011): la cabeza de continuidad conserva sus bytes (o su ausencia)")
-    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+    assert not (fx.root / ".cdad-execution" / "packets" / new_id).exists(), (
         "PC-1 (011): el rechazo no publica cuerpos para el paquete nuevo")
 
 
@@ -853,7 +853,7 @@ def test_011_tras_rechazo_prepare_begin_y_verify_begin_ok(tmp_path):
     fx = _RecoveryProject(tmp_path / "pc2-recuperacion")
     _v2_execution_context(fx)
     new_id = next_packet_id(fx.packet_id)
-    assert not (fx.root / ".cdad" / "packets" / new_id).exists(), (
+    assert not (fx.root / ".cdad-execution" / "packets" / new_id).exists(), (
         "precondición (011): el paquete nuevo no deja rastro alguno")
 
     rejected = _begin_new(fx, new_id, name="begin-rejected.json")

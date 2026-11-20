@@ -2,7 +2,7 @@
 epic_id: epic-019-discovery-dialogue
 epic_name: Effective discovery dialogue and agent instructions
 created_at: 2026-11-15
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-15
 ---
 
@@ -10,9 +10,9 @@ approved_at: 2026-11-15
 
 ## Purpose and opening mandate
 
-Pablo requested a new epic to design this sensitive change carefully, emphasizing
+<owner> requested a new epic to design this sensitive change carefully, emphasizing
 instructions that agents can understand and apply effectively. Opening the epic
-authorized discovery and planning, not implementation. Pablo subsequently approved
+authorized discovery and planning, not implementation. <owner> subsequently approved
 this plan on 2026-11-15. Subsequently 019-001 was accepted and 019-002 opened
 in discovery; the approved amendment below inserts 019-003 before its construction.
 
@@ -160,21 +160,21 @@ are retained; no separate new test is required for each postcondition.
 
 ## Authority and next step
 
-Plan approver: Pablo. Feature and gate authority: Pablo expressly delegated HITL
+Plan approver: <owner>. Feature and gate authority: <owner> expressly delegated HITL
 for this epic as recorded in `execution.md`. Users and operators: process owners
 and agents running CDAD. No approval delegation from an earlier epic applies here.
 
-Plan approved by Pablo on 2026-11-15. Pablo subsequently requested adding the
+Plan approved by <owner> on 2026-11-15. <owner> subsequently requested adding the
 idle/done correction to one of the two units and delegated HITL for this epic.
 The specification of each feature still requires an explicit recorded approval.
 Existing execution and receipt records belong to earlier work and confer no
 authority for this epic. No role instructions have been changed or deployed.
 
-Status: Approved by Pablo on 2026-11-15.
+Status: Approved by <owner> on 2026-11-15.
 
 ## Plan changes
 
-2026-11-15 — Pablo requested and approved inserting 019-003 before 019-002,
+2026-11-15 — <owner> requested and approved inserting 019-003 before 019-002,
 then explicitly approved the simplified direction ("Ok, hagamos eso, continúa"):
 each promise receives appropriate verification; the spec reviewer checks the
 promises and their verification before approval; tests precede implementation
@@ -193,7 +193,7 @@ The owner selected closure of 019-003 (`bc922c04`) as the restored product/test 
 
 ## Owner-approved extension — project layout and dispatch intake (2026-11-16)
 
-Pablo requested these improvements and explicitly instructed adding them as a new
+<owner> requested these improvements and explicitly instructed adding them as a new
 cycle of this same epic: “Sumémoslo como nuevo ciclo de este epic, seguimos
 haciendo mejoras.” The epic therefore remains open after 019-002; the new unit is
 `019-004-project-layout-and-dispatch-intake`. This is approval of the scope
@@ -221,7 +221,7 @@ or publication authority.
 
 ## Scope amendment — self-contained dispatch (2026-11-17)
 
-Pablo directed that a self-contained dispatch is not a separate cycle: this epic is
+<owner> directed that a self-contained dispatch is not a separate cycle: this epic is
 already a methodology cycle, so the correction is absorbed into 019-005 rather than
 queued as 019-006. The approved 019-005 specification receives amendment 001 adding
 the promise and its postconditions; implementation stays in the same batch, and the

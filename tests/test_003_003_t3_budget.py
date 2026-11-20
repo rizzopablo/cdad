@@ -6,7 +6,7 @@ Contract:
   1, 5, 11)
 - docs/specs/003-003-progress-guards/plan.md (T3; test focal declarado
   `tests/test_003_003_t3_budget.py`; escritura SOLO bajo
-  `.cdad/executions/<id>/guards/**`, nunca `docs/.cdad-state.json`).
+  `.cdad-execution/executions/<id>/guards/**`, nunca `docs/.cdad-state.json`).
 
 Superficie observable bajo prueba (V7: forma del CLI fijada en RED; §3):
 
@@ -28,7 +28,7 @@ record (`record-v1`):
       "schema_version": 1,
       "record": "record-v1",
       "event": {…guard-event-v1…},
-      "durable": ".cdad/executions/<execution_id>/guards/…",
+      "durable": ".cdad-execution/executions/<execution_id>/guards/…",
       "reconciled": <bool>,
       "receipt_ref": <str|null>,
       "do_not_repeat": <bool>
@@ -52,7 +52,7 @@ Semántica fijada por este RED:
 
 - P4: cada recuperación (evento `recovery-attempt`) consume presupuesto
   durable y produce receipt/evento; el evento persiste bajo
-  `.cdad/executions/<execution_id>/guards/**` (D4), keyed por
+  `.cdad-execution/executions/<execution_id>/guards/**` (D4), keyed por
   `execution_id+packet_id+attempt`.
 - P4 (reanudación): un restart o una sesión nueva NO reinicia el
   presupuesto; reanudar conserva intentos y causas anteriores
@@ -61,10 +61,10 @@ Semántica fijada por este RED:
   prueba de incumplimiento — `reconsider: true`, rc 0 (sin auto-bloqueo
   duro nuevo).
 - D7: antes de repetir, el guard consulta el receipt/journal de 002 bajo
-  `.cdad/runtime/results/<execution_id>/<packet_id>/`; si la acción ya
+  `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`; si la acción ya
   terminó, `do_not_repeat: true` y `receipt_ref` citan el receipt. El
   guard solo SEÑALA; no repite efectos ni redefinir 002 (invariante 5).
-- Invariante 1/D4: `record` escribe SOLO bajo `.cdad/executions/<id>/guards/`
+- Invariante 1/D4: `record` escribe SOLO bajo `.cdad-execution/executions/<id>/guards/`
   (nunca `docs/.cdad-state.json`, single-writer = orquestador); `budget`
   es read-only y determinista.
 
@@ -109,8 +109,8 @@ PACKET_ID_B = "003-003-progress-guards-implementer-green-002"
 GUARD_TIMEOUT_S = 120
 
 # Ruta durable del presupuesto (D4, plan T3).
-GUARDS_DIR_REL = f".cdad/executions/{EXEC_ID}/guards"
-RESULTS_DIR_REL = f".cdad/runtime/results/{EXEC_ID}/{PACKET_ID}"
+GUARDS_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/guards"
+RESULTS_DIR_REL = f".cdad-execution/runtime/results/{EXEC_ID}/{PACKET_ID}"
 
 # Límite declarado para el caso D3 (señal para reconsiderar).
 MAX_ATTEMPTS = 2
@@ -153,7 +153,7 @@ def exec_context_fixture(**extra: object) -> dict:
 
 def receipt_002_fixture(packet_id: str = PACKET_ID) -> dict:
     """Receipt de 002 (invariante 5: se REUTILIZA, no se redefine):
-    presencia bajo `.cdad/runtime/results/<execution_id>/<packet_id>/`
+    presencia bajo `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`
     con `semantic_status` siempre `pending` (003-002 closure)."""
     return {
         "schema_version": 1,
@@ -306,7 +306,7 @@ class TestP4DurableBudgetConsumption(GuardProjectCase):
 
     def test_p04_recuperacion_consume_y_emite_evento_durable(self) -> None:
         """P4: registrar una recuperación → evento persistido bajo
-        `.cdad/executions/<execution_id>/guards/**` (D4) y visible en el
+        `.cdad-execution/executions/<execution_id>/guards/**` (D4) y visible en el
         presupuesto: `consumed == 1`, el intento con su causa."""
         event_path, event = self.write_event()
 
@@ -319,20 +319,20 @@ class TestP4DurableBudgetConsumption(GuardProjectCase):
             msg="P4: el receipt de record debe devolver el evento "
                 "guard-event-v1 registrado, íntegro")
 
-        # Persistencia durable bajo .cdad/executions/<id>/guards/ (D4).
+        # Persistencia durable bajo .cdad-execution/executions/<id>/guards/ (D4).
         durable = env.get("durable")
         self.assertIsInstance(
             durable, str,
             msg="P4: el receipt debe declarar la ruta durable del evento")
         self.assertIn(
-            ".cdad/executions/", durable,
+            ".cdad-execution/executions/", durable,
             msg="P4 (D4): el presupuesto durable vive bajo "
-                "`.cdad/executions/…`, no en otro árbol")
+                "`.cdad-execution/executions/…`, no en otro árbol")
         self.assertIn(
             "guards/", durable,
             msg="P4 (D4): la persistencia del evento es bajo "
-                "`.cdad/executions/<id>/guards/`")
-        guards_dir = self.root / ".cdad" / "executions" / EXEC_ID / "guards"
+                "`.cdad-execution/executions/<id>/guards/`")
+        guards_dir = self.root / ".cdad-execution" / "executions" / EXEC_ID / "guards"
         self.assertTrue(
             guards_dir.is_dir() and any(guards_dir.iterdir()),
             msg="P4 (D4): el evento debe estar persistido de forma durable "
@@ -478,12 +478,12 @@ class TestP4ResumePreservesAttemptsAndCauses(GuardProjectCase):
 
 class TestP4WritesOnlyUnderGuards(GuardProjectCase):
     """P4 + D4 + invariante 1 — `record` escribe SOLO bajo
-    `.cdad/executions/<id>/guards/**`; NUNCA `docs/.cdad-state.json`
+    `.cdad-execution/executions/<id>/guards/**`; NUNCA `docs/.cdad-state.json`
     (single-writer = orquestador)."""
 
     def test_p04_escritura_solo_bajo_guards_y_state_intacto(self) -> None:
         """D4: tras registrar, TODO path nuevo/modificado del proyecto
-        vive bajo `.cdad/executions/<execution_id>/guards/`; el state del
+        vive bajo `.cdad-execution/executions/<execution_id>/guards/`; el state del
         orquestador queda byte a byte idéntico."""
         state_path = self.root / "docs" / ".cdad-state.json"
         state_path.parent.mkdir(parents=True, exist_ok=True)
@@ -516,9 +516,9 @@ class TestP4WritesOnlyUnderGuards(GuardProjectCase):
                 "persistido algo de forma durable")
         for path in sorted(changed):
             self.assertTrue(
-                path.startswith(f".cdad/executions/{EXEC_ID}/guards/"),
+                path.startswith(f".cdad-execution/executions/{EXEC_ID}/guards/"),
                 msg="P4/D4: `record` solo escribe bajo "
-                    f"`.cdad/executions/{EXEC_ID}/guards/**`; escritura "
+                    f"`.cdad-execution/executions/{EXEC_ID}/guards/**`; escritura "
                     f"fuera de guards: {path!r}")
 
 
@@ -571,7 +571,7 @@ class TestP4CheckReceiptBeforeRepeating(GuardProjectCase):
     def test_p07_receipt_de_002_consultado_antes_de_repetir(self) -> None:
         """D7: (a) sin receipt de 002, `record` de un retry NO declara
         reconciliación; (b) con el receipt presente bajo
-        `.cdad/runtime/results/<execution_id>/<packet_id>/`, `record` lo
+        `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`, `record` lo
         consulta y emite `do_not_repeat: true` con `receipt_ref` — la
         señal para reconciliar en vez de repetir el efecto (invariante 5:
         un receipt no es aprobación semántica; el guard no repite
@@ -614,7 +614,7 @@ class TestP4CheckReceiptBeforeRepeating(GuardProjectCase):
         self.assertIn(
             "runtime/results", receipt_ref,
             msg="D7: la referencia debe apuntar al journal/receipt de 002 "
-                "bajo `.cdad/runtime/results/…`; got "
+                "bajo `.cdad-execution/runtime/results/…`; got "
                 f"{receipt_ref!r}")
         self.assertIs(
             env.get("do_not_repeat"), True,

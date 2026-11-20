@@ -67,6 +67,8 @@ el test no importa el módulo del CLI.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import json
 import subprocess
 import sys
@@ -88,7 +90,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-CONTINUITY_DIR_REL = f".cdad/executions/{EXEC_ID}/continuity"
+CONTINUITY_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 
 REF_TEST_REL = "fixture/notes-history.md"
@@ -180,6 +182,7 @@ class ResumeProjectCase(unittest.TestCase):
                                             exec_context_fixture())
         self.write_text(REF_TEST_REL, TEST_REFERENCE_TEXT)
         self.write_text(REF_IMPL_REL, IMPL_REFERENCE_TEXT)
+        write_declaration(self.root)
         self.write_json("docs/cdad-policy.json", policy_fixture())
 
         update = update_fixture(

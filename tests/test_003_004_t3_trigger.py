@@ -58,7 +58,7 @@ GREEN/reviewer):
   `>=` fijadas por este RED (150000 usados → `rotate`; 130000 →
   `prepare`; 100000 → `ok`).
 - `budget.source` NOMBRA el durable de 003
-  (`.cdad/executions/<id>/guards/**`, clave
+  (`.cdad-execution/executions/<id>/guards/**`, clave
   `execution_id+packet_id+attempt`); una sesión nueva (proceso nuevo)
   NO lo reinicia (P4; criterio 6).
 - `--packet` valida segmento seguro como `reconcile`/`begin` (cierre C
@@ -124,7 +124,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-EXEC_DIR_REL = f".cdad/executions/{EXEC_ID}"
+EXEC_DIR_REL = f".cdad-execution/executions/{EXEC_ID}"
 CONTINUITY_DIR_REL = f"{EXEC_DIR_REL}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 GUARDS_DIR_REL = f"{EXEC_DIR_REL}/guards"
@@ -543,7 +543,7 @@ class TestP4IntentosDelDurableConSource(TriggerProjectCase):
         003 (`cdad_guard.py record`; intento 1 sess-A, intento 2 sess-B
         — 'sesión nueva' sobre el mismo execution+packet) → `trigger`
         reporta el presupuesto durable con `source` que nombra
-        `.cdad/executions/<id>/guards/**` (clave
+        `.cdad-execution/executions/<id>/guards/**` (clave
         `execution_id+packet_id+attempt`), `consumed == 2` y AMBAS
         causas; re-consultar con un proceso NUEVO (sesión nueva) NO
         reinicia el contador (sigue 2, mismas causas)."""
@@ -579,9 +579,9 @@ class TestP4IntentosDelDurableConSource(TriggerProjectCase):
             msg=f"P4: el presupuesto se reporta CON `source` (nota del "
                 f"orquestador); got {source!r}")
         self.assertIn(
-            ".cdad/executions/", source,
+            ".cdad-execution/executions/", source,
             msg=f"P4: `budget.source` nombra el durable de 003 bajo "
-                f"`.cdad/executions/…`; got {source!r}")
+                f"`.cdad-execution/executions/…`; got {source!r}")
         self.assertIn(
             "guards", source,
             msg=f"P4: `budget.source` nombra `guards/**` "

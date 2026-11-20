@@ -4,7 +4,7 @@
 > orquestador (desviación documentada: cdad-test-writer clasificado read-only
 > por el bug que esta feature arregla — chicken-and-egg; delegate muerto con
 > evidencia de timeouts. Riesgo de contaminación nulo: no existe
-> implementación que ver). Aprobado por Pablo vía delegación HITL
+> implementación que ver). Aprobado por <owner> vía delegación HITL
 > (2026-09-12, alcance: feature cdad-010).
 
 ## 1. Inventario de la suite existente

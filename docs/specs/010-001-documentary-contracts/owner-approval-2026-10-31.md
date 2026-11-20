@@ -1,7 +1,7 @@
 # Aprobación de spec y plan — 2026-10-31
 
 Aprobación de los documentos de `010-001-documentary-contracts`, emitida por el
-orquestador **en nombre de Pablo** al amparo del mandato HITL explícito registrado
+orquestador **en nombre de <owner>** al amparo del mandato HITL explícito registrado
 en `docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md`
 §3, que autoriza al orquestador a resolver «las aprobaciones que el plan del epic
 exige para specs y planes de esas features **en tanto implementen la

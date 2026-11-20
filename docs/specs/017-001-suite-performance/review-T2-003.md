@@ -18,7 +18,7 @@ Además, `calibration.md:102` indica usar C-U1/U3/U4 «sobre el árbol completo�
 
 ## Contrastes efectuados
 
-- **C-P:** revisé los `profile.json` crudos conservados bajo `~/clawd/tmp/017-001-calibration/`. C-P-cold contiene seis intervalos: `product.lookup[cold]`, sus hijos `product.copy` y `product.generate`, `product.lookup[cached]` y dos intervalos de aislamiento. C-P-present contiene cuatro: `checkout-manifest`, `cached` y dos de aislamiento, sin copy ni generate. Ambos perfiles figuran `complete` y sin errores de operación.
+- **C-P:** revisé los `profile.json` crudos conservados bajo `~/<workspace>/tmp/017-001-calibration/`. C-P-cold contiene seis intervalos: `product.lookup[cold]`, sus hijos `product.copy` y `product.generate`, `product.lookup[cached]` y dos intervalos de aislamiento. C-P-present contiene cuatro: `checkout-manifest`, `cached` y dos de aislamiento, sin copy ni generate. Ambos perfiles figuran `complete` y sin errores de operación.
 - **Sumideros:** P7 protege la coexistencia de `observed()` con otro sumidero; el helper agrega por identidad y distribuye los eventos a los sumideros conectados. La focal independiente pasó.
 - **Selecciones anteriores:** los seis perfiles restantes —C-R, C-E, C-U1, C-U3, C-U4 y C-D— contienen respectivamente 5, 8, 7, 9, 10 y 15 operaciones, con los conteos registrados. C-W está expresamente declarada no requerida para esta calibración y sus esperas permanecen desconocidas.
 - **Conservación:** contrasté el diff de los tests instrumentados frente a `05b58cc413cfd0669ddf9b5c6fd7e558502be672`. Los cambios examinados preservan las aserciones y llamadas visibles mediante envoltorios de marcas, además del cambio declarado de `_temp_root`. Esta revisión no acredita cada línea de todos los diffs.

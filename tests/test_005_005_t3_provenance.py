@@ -19,12 +19,12 @@ se importa y el código de implementación NUNCA se lee (INV del rol).
 Aislamiento (riesgo R7 del plan): NINGUNA corrida toca el HOME real ni
 depende de una activación real — el HOME del subproceso siempre es un
 tmpdir VACÍO (precedente de tests/test_003_006_t2_activation.py) y el
-registro `.cdad/activation.json` es SIEMPRE sintético del fixture.
+registro `.cdad-execution/activation.json` es SIEMPRE sintético del fixture.
 
 Fijaciones RED por postcondición (un test por postcondición; cada
 negativo con control positivo interno, exigido por spec §4):
 
-- PD-12 (origen resuelto): con `.cdad/activation.json` presente en el
+- PD-12 (origen resuelto): con `.cdad-execution/activation.json` presente en el
   proyecto del fixture (formato `{adopted_root, manifest_sha256, paths}`)
   y SIN la variable `CDAD_OPENCODE_AGENTS_DIR`, un `prepare` publica los
   agentes de proyecto y el `source_dir` del manifiesto
@@ -39,7 +39,7 @@ negativo con control positivo interno, exigido por spec §4):
 - PD-13 (contradicción diagnosticada): cuando el origen resuelto difiere
   del registrado (variable apunta a OTRA instalación; brazo a) o del
   `source_dir` del manifiesto anterior (caso MIX-V6V7; brazo b),
-  `prepare` emite en stderr un diagnóstico que nombra `.cdad/activation.json`
+  `prepare` emite en stderr un diagnóstico que nombra `.cdad-execution/activation.json`
   y la(s) versión(es)/commit en juego (los tags deterministas de las
   raíces `cdad-adopted-<tag>` del fixture); HOY re-deriva o avisa SIN
   nombrar el registro ni las versiones (MIX-V6V7 real:
@@ -90,6 +90,8 @@ no redefinidos). Ninguna escritura en este repo.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -112,7 +114,7 @@ from test_004_002_t2_bootstrap import (  # noqa: E402
 AGENTS_ENV = "CDAD_OPENCODE_AGENTS_DIR"
 DERIVED_DIR = ".opencode/agents"
 MANIFEST = ".cdad-derived.json"
-REGISTRY = ".cdad/activation.json"
+REGISTRY = ".cdad-execution/activation.json"
 POLICY_REL = "docs/cdad-policy.json"
 AGENTS_SUBDIR = (".config", "opencode", "agents")
 
@@ -130,7 +132,7 @@ POLICY_DOC = {
         "colocated_test_prefixes": ["test_"],
         "colocated_test_suffixes": ["_test.py"],
     },
-    "temporary_roots": [".cdad/tmp"],
+    "temporary_roots": [".cdad-execution/tmp"],
 }
 
 LAYOUT_FILES = ("scripts/x.py", "scripts/test_h.py", "agents/y.md",
@@ -227,6 +229,7 @@ class ProvenanceCase(unittest.TestCase):
 
     def make_project(self, name: str = "proj") -> Path:
         root = build_project(self.base / name)
+        write_declaration(root)
         (root / POLICY_REL).write_text(
             json.dumps(POLICY_DOC, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -264,7 +267,7 @@ class ProvenanceCase(unittest.TestCase):
             "manifest_sha256": manifest_sha,
             "paths": paths,
         }
-        (root / ".cdad").mkdir(parents=True, exist_ok=True)
+        (root / ".cdad-execution").mkdir(parents=True, exist_ok=True)
         (root / REGISTRY).write_text(
             json.dumps(doc, indent=2, sort_keys=True) + "\n")
         return doc
@@ -307,7 +310,7 @@ class ProvenanceCase(unittest.TestCase):
 
 class TestPd12OriginFromActivationRegistry(ProvenanceCase):
     """PD-12 (fuente por defecto = registro de activación; INV-7): con
-    `.cdad/activation.json` presente y SIN la variable, `prepare` publica
+    `.cdad-execution/activation.json` presente y SIN la variable, `prepare` publica
     los agentes de proyecto y el `source_dir` del manifiesto es la
     carpeta de agentes de la raíz adoptada REGISTRADA, no la global de
     HOME. Control positivo interno: sin activación, el camino vigente
@@ -386,7 +389,7 @@ class TestPd12OriginFromActivationRegistry(ProvenanceCase):
 
 class TestPd13ContradictionDiagnosed(ProvenanceCase):
     """PD-13 (contradicción diagnosticada, INV-7): cuando el origen
-    resuelto difiere del registrado en `.cdad/activation.json` (variable
+    resuelto difiere del registrado en `.cdad-execution/activation.json` (variable
     apunta a OTRA instalación; brazo a) o del `source_dir` del manifiesto
     anterior (caso MIX-V6V7; brazo b), `prepare` emite en STDERR un
     diagnóstico que nombra el registro y las versiones en juego; nunca

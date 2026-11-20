@@ -1,7 +1,7 @@
 # cdad-006-git-safety-close — Review (Etapa 4)
 
 > **Caveat de aislamiento (registrado):** review INLINE por el orquestador
-> (runtime `delegate` roto, 8/8 timeouts). HITL delegado por Pablo
+> (runtime `delegate` roto, 8/8 timeouts). HITL delegado por <owner>
 > ("sos dueño del proceso"). Checks mecánicos reproducidos por el orquestador
 > post-GREEN (no traidos de la sesión del implementer).
 

@@ -108,6 +108,8 @@ Mapeo test → postcondición:
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -152,8 +154,8 @@ RECEIVE_PART_KINDS: dict[str, str] = {
     "role-notes": "test-writer-notes",
 }
 RECEIVE_ATTEMPT_ID = "attempt-006-004-u1-red-001"
-RECEIVE_DESCRIPTOR = ".cdad/inbox/RESULT.json"
-RECEIVE_MANIFEST = ".cdad/inbox/changes.json"
+RECEIVE_DESCRIPTOR = ".cdad-execution/inbox/RESULT.json"
+RECEIVE_MANIFEST = ".cdad-execution/inbox/changes.json"
 RECEIVE_BASELINE_REF = "orchestrator-prepared-reference"
 RECEIVE_BASELINE_SHA256 = "0" * 64
 
@@ -250,8 +252,9 @@ class DecisionProject:
                 "implementation_roots": ["src", "lib"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }
+        write_declaration(root)
         (root / POLICY_FILE).write_text(
             json.dumps(policy, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -319,7 +322,7 @@ class DecisionProject:
 
     @property
     def packets_dir(self) -> Path:
-        return self.root / ".cdad" / "packets"
+        return self.root / ".cdad-execution" / "packets"
 
     def write_decision(self, name: str) -> str:
         """Crea el archivo de la decisión en el proyecto; devuelve su ruta relativa."""
@@ -330,8 +333,8 @@ class DecisionProject:
         return rel
 
     def write_temporary(self, name: str, payload: dict) -> Path:
-        """Documento temporal del proyecto (raíz temporal declarada: .cdad/tmp)."""
-        path = self.root / ".cdad" / "tmp" / name
+        """Documento temporal del proyecto (raíz temporal declarada: .cdad-execution/tmp)."""
+        path = self.root / ".cdad-execution" / "tmp" / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
         return path
@@ -369,7 +372,7 @@ class DecisionCase(unittest.TestCase):
         return json.loads(path.read_text(encoding="utf-8"))
 
     def execution_context(self, project: DecisionProject) -> Path:
-        docs = sorted((project.root / ".cdad" / "executions").glob("*/execution.json"))
+        docs = sorted((project.root / ".cdad-execution" / "executions").glob("*/execution.json"))
         self.assertTrue(docs, "fixture: no hay contexto de ejecución v2 publicado")
         return docs[0]
 
@@ -667,8 +670,8 @@ class TestV3ReceiveRevalidatesTheRequest(DecisionCase):
         state = json.loads(project.state_path.read_text(encoding="utf-8"))
         packet_id = state["active_packet"]["id"]
         execution_id = state["execution"]["id"]
-        context = project.root / ".cdad" / "executions" / execution_id / "execution.json"
-        packet_dir = project.root / ".cdad" / "packets" / packet_id
+        context = project.root / ".cdad-execution" / "executions" / execution_id / "execution.json"
+        packet_dir = project.root / ".cdad-execution" / "packets" / packet_id
         observation = project.root / "docs" / "observations-fixture.json"
         observation.write_text(
             json.dumps(
@@ -709,7 +712,7 @@ class TestV3ReceiveRevalidatesTheRequest(DecisionCase):
             + record.stderr.decode(errors="replace"),
         )
 
-        inbox = project.root / ".cdad" / "inbox"
+        inbox = project.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in RECEIVE_PARTS.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -744,7 +747,7 @@ class TestV3ReceiveRevalidatesTheRequest(DecisionCase):
                         {
                             "name": name,
                             "artifact_kind": RECEIVE_PART_KINDS[name],
-                            "staged_path": f".cdad/inbox/{name}.md",
+                            "staged_path": f".cdad-execution/inbox/{name}.md",
                         }
                         for name in RECEIVE_PARTS
                     ],
@@ -813,7 +816,7 @@ class TestV3ReceiveRevalidatesTheRequest(DecisionCase):
         packet = (packet_dir / "PACKET.md").read_bytes()
         if rendered.returncode == 0:
             packet = rendered.stdout
-        packet_path = project.root / ".cdad" / "tmp" / "PACKET.with-rows.md"
+        packet_path = project.root / ".cdad-execution" / "tmp" / "PACKET.with-rows.md"
         packet_path.parent.mkdir(parents=True, exist_ok=True)
         packet_path.write_bytes(packet)
         received = self._receive(project, context, packet_path, crafted, descriptor)
@@ -843,7 +846,7 @@ class TestV3ReceiveRevalidatesTheRequest(DecisionCase):
             "V-3: receive aceptó un request con una fila malformada: "
             + rejected.stdout.decode(errors="replace"),
         )
-        results = other.root / ".cdad" / "runtime" / "results"
+        results = other.root / ".cdad-execution" / "runtime" / "results"
         receipts = sorted(results.rglob("receipt.json")) if results.is_dir() else []
         self.assertEqual(receipts, [], "V-3: el rechazo no debe publicar un recibo")
 

@@ -119,9 +119,9 @@ preexistente `tests/test_005_001_t3_idle.py` (4 passed en primera persona).
 ## (f) Anonimización de los documentos versionados de la feature
 
 ```
-$ grep -rn -E "/home/[a-z]+|/root/|ofap|ses-[a-zA-Z0-9]{6,}|<ip>" docs/specs/005-011-common-entry/
+$ grep -rn -E "/home/[a-z]+|/root/|<owner>|ses-[a-zA-Z0-9]{6,}|<ip>" docs/specs/005-011-common-entry/
 → sin coincidencias (salvo magnitudes ya publicadas: 304.054, 105 mil)
-$ grep -rn -E "/home/|/tmp/opencode|ofap|51\.83" skills/cdad-cycle/SKILL.md skills/cdad-epic/SKILL.md \
+$ grep -rn -E "/home/|/tmp/opencode|<owner>|51\.83" skills/cdad-cycle/SKILL.md skills/cdad-epic/SKILL.md \
     skills/cdad-cycle/references/orientation.md skills/cdad-cycle/references/project-execution.md \
     skills/cdad-cycle/scripts/cdad_packet.py
 → sin coincidencias

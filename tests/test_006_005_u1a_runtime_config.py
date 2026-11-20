@@ -429,7 +429,7 @@ class TestPd8ExplicitRuntimeResolution(DispatchCase):
         """PD-8/V-9: a flat v1 context that DECLARES `runtime` is not a source:
         without the flag the invocation still fails naming `--runtime`."""
         write_json(
-            self.project / ".cdad" / "execution.json",
+            self.project / ".cdad-execution" / "execution.json",
             {
                 "schema_version": 1,
                 "execution_id": "exec-006-005-u1a-fixture-001",

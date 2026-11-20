@@ -34,7 +34,7 @@ Escenario (PD-17, un solo método secuencial; cada bloque nombra su PD):
       spec; PD-1; el contrato del architect es el plan del epic, D1/D2).
   S2. RECEPCIÓN del paquete del architect por el flujo real del
       orquestador: `prepare --record-dispatch` (I8) → dispatched; staging
-      del texto final bajo `.cdad/inbox` + manifest + descriptor;
+      del texto final bajo `.cdad-execution/inbox` + manifest + descriptor;
       `cdad_result.py receive` → receipt durable ligado a la identidad;
       `validate-receipt` → rc=0; transición de estado del orquestador
       (único escritor del state) a `completed` (INV-4: la misma llave
@@ -96,6 +96,8 @@ lectura de implementación (skills/cdad-cycle/scripts/cdad_packet.py).
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import re
@@ -117,7 +119,7 @@ STATE_FILE = "docs/.cdad-state.json"
 PLAN_FILE = f"docs/epics/{EPIC_ID}/plan.md"
 SPEC_FILE = f"docs/specs/{FEATURE_ID}/spec.md"
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 ARCHITECT_OBJECTIVE = "005-001 T4 PD-17: discovery del architect sin spec aprobada"
 WRITER_OBJECTIVE = "005-001 T4 PD-17: red del test-writer tras la aprobación pineada"
 REASON = "spec re-aprobada despues de editar el contrato del paquete P1"
@@ -152,7 +154,7 @@ ASSIGNMENT_FIELDS = (
     "evidence_required",
 )
 
-# Texto final del architect (S2): staging bajo el inbox fijo `.cdad/inbox`.
+# Texto final del architect (S2): staging bajo el inbox fijo `.cdad-execution/inbox`.
 FINAL_TEXT_PARTS: dict[str, bytes] = {
     "architect-report": (
         b"# Architect discovery draft (fixture T4 PD-17)\n"
@@ -169,8 +171,8 @@ PART_KINDS: dict[str, str] = {
 }
 BASELINE_REF = "orchestrator-staged-reference"
 BASELINE_SHA256 = "0" * 64
-MANIFEST_PATH = ".cdad/inbox/changes.json"
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
 
 
 # ---------------------------------------------------------------- fixtures
@@ -208,11 +210,11 @@ def write_state(root: Path, state: dict) -> None:
 
 
 def packet_dir(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id
+    return root / ".cdad-execution" / "packets" / packet_id
 
 
 def packet_ids(root: Path) -> list[str]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return []
     return sorted(d.name for d in base.iterdir() if d.is_dir())
@@ -235,6 +237,7 @@ def build_fixture(root: Path) -> Path:
     for rel in ("tests", "src", "lib"):
         (root / rel).mkdir(exist_ok=True)
     (root / "docs").mkdir(exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -242,7 +245,7 @@ def build_fixture(root: Path) -> Path:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     plan = root / PLAN_FILE
     plan.parent.mkdir(parents=True, exist_ok=True)
@@ -403,11 +406,11 @@ class T4Decisive(unittest.TestCase):
         execution_id = (state.get("execution") or {}).get("id")
         self.assertTrue(
             execution_id, msg=f"S1: state.execution sin id: {execution_id!r}")
-        context_path = (root / ".cdad" / "executions" / execution_id
+        context_path = (root / ".cdad-execution" / "executions" / execution_id
                         / "execution.json")
         self.assert_precondition(
             "S1", context_path.is_file(),
-            "el contexto v2 no fue publicado en .cdad/executions")
+            "el contexto v2 no fue publicado en .cdad-execution/executions")
         architect_request = request_of(root, architect_id)
         self.assertEqual(
             (architect_request.get("contract") or {}).get("kind"),
@@ -446,7 +449,7 @@ class T4Decisive(unittest.TestCase):
         self.assertEqual(
             read_state(root)["active_packet"].get("status"), "dispatched",
             msg="S2/I8: el paquete activo no quedó dispatched")
-        inbox = root / ".cdad" / "inbox"
+        inbox = root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in FINAL_TEXT_PARTS.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -465,7 +468,7 @@ class T4Decisive(unittest.TestCase):
             "source": {"kind": "staged-file", "sdk_message_ref": None},
             "parts": [
                 {"name": name, "artifact_kind": PART_KINDS[name],
-                 "staged_path": f".cdad/inbox/{name}.md"}
+                 "staged_path": f".cdad-execution/inbox/{name}.md"}
                 for name in sorted(FINAL_TEXT_PARTS)
             ],
             "observed_changes": {
@@ -500,7 +503,7 @@ class T4Decisive(unittest.TestCase):
                          msg=f"S2: receive terminó con traceback: "
                              f"{receive.stderr!r}")
         receipt = json.loads(receive.stdout)
-        final_dir = (root / ".cdad" / "runtime" / "results"
+        final_dir = (root / ".cdad-execution" / "runtime" / "results"
                      / execution_id / architect_id)
         receipt_path = final_dir / "receipt.json"
         self.assertTrue(
@@ -698,7 +701,7 @@ class T4Decisive(unittest.TestCase):
             read_state(root)["stage_history"][-1]["contract_sha256"],
             SPEC_SHA256,
             msg="S5a (fixture): el pin sigue en los bytes aprobados; "
-                "Pablo/orquestador registra aprobaciones, no el CLI (INV-2)")
+                "<owner>/orquestador registra aprobaciones, no el CLI (INV-2)")
 
         # (b) PD-16: resume de un paquete obsoleto → marcador + acción.
         before = tree_snapshot(root)

@@ -286,7 +286,7 @@ assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'my arXiv pi
   "F010 (M8): verdict-tuple.md without a reference to 'my arXiv pipeline'"
 assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'fb-012' \
   "F010 (M8): verdict-tuple.md without a reference to 'fb-012'"
-assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'Approved by Pablo' \
+assert_file_not_has "skills/cdad-cycle/references/verdict-tuple.md" 'Approved by <owner>' \
   "F010 (M8): verdict-tuple.md without the owner's proper name"
 
 echo

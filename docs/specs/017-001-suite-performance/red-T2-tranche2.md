@@ -21,10 +21,10 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m pytest tests/test_017_001_suite_tranche2.py
 
 → `1 failed in 1.22s`, `AssertionError: …las fronteras reales deben emitir sus ocho reutilizaciones…: []` (`assert (0 == 8)`). Falla en aserción de promesa ausente, nunca por ImportError/colección. Tras las marcas: `1 passed` (1.19s; re-verificado post-fix: `1 passed in 1.07s`).
 
-Sonda no comprometida sobre el recorrido real C-U1 (plugin efímero en `~/clawd/tmp/cdad-probe2/`, fuera de `tests/`, no commiteado):
+Sonda no comprometida sobre el recorrido real C-U1 (plugin efímero en `~/<workspace>/tmp/cdad-probe2/`, fuera de `tests/`, no commiteado):
 
 ```sh
-CDAD_PROBE_OUT=.../cu1.json PYTHONPATH=~/clawd/tmp/cdad-probe2 PYTHONDONTWRITEBYTECODE=1 python3 -m pytest "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_opencode_adapter_has_exactly_one_delegation_section" "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_claude_code_adapter_has_exactly_one_delegation_section" -o addopts= -p no:cacheprovider -p obs_probe2_plugin -q
+CDAD_PROBE_OUT=.../cu1.json PYTHONPATH=~/<workspace>/tmp/cdad-probe2 PYTHONDONTWRITEBYTECODE=1 python3 -m pytest "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_opencode_adapter_has_exactly_one_delegation_section" "tests/test_006_002_u1_delegation_section.py::TestPd2aExactlyOneDelegationSection::test_pd2a_claude_code_adapter_has_exactly_one_delegation_section" -o addopts= -p no:cacheprovider -p obs_probe2_plugin -q
 ```
 
 → `2 passed in 150.05s`, **14 eventos** (7 begin + 7 end): `u1.lookup` ×2 (`cold` 1 + `cached` 1), `u1.copy` ×1 y `u1.generate` ×1 colgando del lookup frío (`parent-linked-ok: True`), `isolation.seed` ×3 (1 `shared/session` + 2 `test/test`), fases `setup`/`call` correctas, terminaciones `ok` ×7. Exactamente conteos y relaciones del mapeo §3B/C-U1. Con observador activo los eventos llegan; sin observador los mismos tests pasan igual y no se escribe evidencia (las corridas de §5 corrieron sin observador).

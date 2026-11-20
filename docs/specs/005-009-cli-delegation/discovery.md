@@ -238,7 +238,7 @@ documentada con referencias locales concretas.
 ### 4.3 Riesgo de fallback silencioso a un agente genérico
 - Evidencia de que existen agentes **no-Cdad** en el mismo namespace de OpenCode:
   el directorio global instalado contiene 20 agentes `.md`: los 11 CDAD (5 roles ×
-  base/odoo + orquestador) **más** `bootstrapper`, `coder`, `general`, `ofap`, `ofap-plan`,
+  base/odoo + orquestador) **más** `bootstrapper`, `coder`, `general`, `<owner>`, `<owner>-plan`,
   `probe`, `researcher`, `reviewer`, `scribe` (observación local de este VPS).
 - Riesgo: si el adaptador no verifica el modo de carga y el agente efectivamente
   seleccionado, una entrada `mode: subagent` puede colgar en silencio o degradar a un

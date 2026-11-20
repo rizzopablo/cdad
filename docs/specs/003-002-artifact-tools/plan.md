@@ -4,7 +4,7 @@ feature_name: Recepcion original y materializacion explicita
 created_at: 2026-09-17
 replanned_at: 2026-10-05
 status: approved
-approved_by: Pablo (HITL delegada al orquestador OpenCode)
+approved_by: <owner> (HITL delegada al orquestador OpenCode)
 approved_at: 2026-10-05
 ---
 

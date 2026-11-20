@@ -1,6 +1,6 @@
 # Epic 019 — Delegated execution authority
 
-Pablo expressly delegated HITL for this epic: “Te delego hitl, eres el dueño
+<owner> expressly delegated HITL for this epic: “Te delego hitl, eres el dueño
 del proceso, toma decisiones con criterio amplio pensando en el uso real del
 sistema por el usuario final. Continúa orquestando proactivamente hasta completar
 las correcciones pendientes y el epic completo.”
@@ -15,7 +15,7 @@ explicit instruction. This delegation does not carry over from or to other epics
 
 ## Owner decision — verification of purely documentary products (2026-11-15)
 
-Decided directly by Pablo (not delegated): for a unit whose product is purely
+Decided directly by <owner> (not delegated): for a unit whose product is purely
 documentary, with no executable behavior, no automated RED/GREEN test is
 required. The independent semantic review, judged against the approved
 contract, IS the verification ("the test is the review").
@@ -29,7 +29,7 @@ not changed here. Publication and deployment remain excluded.
 
 ## Renewed mandate — 019-004
 
-Pablo renewed the epic HITL delegation and instructed proactive completion of
+<owner> renewed the epic HITL delegation and instructed proactive completion of
 the remaining corrections and the whole epic. Existing projects retain their
 registered methodology directories; new projects default to `cdad/`. A
 per-project metadata value, resolved relative to the product repository root,
@@ -47,7 +47,7 @@ packet or an orchestrator-authored entry.
 
 ## Owner decision — suite selector maintenance (2026-11-17)
 
-Pablo approved opening `019-007-suite-selector-maintenance` to repair the test
+<owner> approved opening `019-007-suite-selector-maintenance` to repair the test
 instrument that blocked the epic's closure gate ("Sí, ok A"). The change is
 test-only, does not alter the product, and grants no deployment or publication
 authority.

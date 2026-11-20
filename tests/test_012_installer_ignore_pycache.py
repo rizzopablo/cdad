@@ -2,7 +2,7 @@
 """RED tests for 012 — the installer never registers `__pycache__` as own artifact.
 
 Contract: `docs/specs/012-installer-ignore-pycache/spec.md`
-(approved by Pablo on 2026-11-01;
+(approved by <owner> on 2026-11-01;
 sha256 b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4).
 
 Black-box: `install.sh` runs as a subprocess and only its published effects

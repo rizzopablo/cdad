@@ -31,7 +31,7 @@ El RED del hallazgo **B-1** de la revisión de etapa 4 (`docs/specs/006-004-acti
 ## 4. Comandos y salida
 
 ```sh
-cd <home>/clawd/projects/cdad/cdad
+cd <home>/<workspace>/projects/cdad/cdad
 PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode python3 -m pytest -p no:cacheprovider tests/test_006_004_b1_template_empty.py -v
 ```
 ```

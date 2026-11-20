@@ -1,11 +1,11 @@
 # Discovery — bounded review and fix cycles
 
-Status: scope approved by Pablo on 2026-11-16; specification not drafted or
+Status: scope approved by <owner> on 2026-11-16; specification not drafted or
 approved. Planned cycle of epic-019-discovery-dialogue after 019-004.
 
 ## Owner decisions
 
-Pablo requested a maximum number of consecutive review+fix rounds per cycle,
+<owner> requested a maximum number of consecutive review+fix rounds per cycle,
 configured per project together with the specifications. Low or medium
 difficulty might need two or three rounds; high difficulty five or six. Those
 figures are guidance, not fixed quotas: the architect specifies a reasonable

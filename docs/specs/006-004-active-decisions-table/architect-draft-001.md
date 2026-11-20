@@ -715,7 +715,7 @@ Status: **BORRADOR — SIN APROBAR** (draft-001). La aprobación es un acto sepa
 
 - **Status**: Proposed (redactado por el architect el 2026-10-20; **a la espera de la aprobación** de la autoridad vigente —el orquestador bajo la HITL delegada del epic-006, con veto del dueño—)
 - **Date**: 2026-10-20
-- **Deciders**: Pablo (dueño: fijó el principio de general antes que específico en la enmienda 005 del plan del epic, 2026-10-18) + orquestador Claude (HITL delegada de epic-006: aprueba el ADR) + architect (redacción; **no aprueba**)
+- **Deciders**: <owner> (dueño: fijó el principio de general antes que específico en la enmienda 005 del plan del epic, 2026-10-18) + orquestador Claude (HITL delegada de epic-006: aprueba el ADR) + architect (redacción; **no aprueba**)
 - **Confidence**: Alta
 - **Aprobación**: *pendiente* — el owner puede vetarla. **Evidencia disponible para la decisión:** contrato `docs/epics/epic-006-opencode-concurrency/plan.md` §12 (enmienda 005, sha256 `d6da11db…9809`) y §10 (enmienda 003); `docs/specs/006-004-active-decisions-table/discovery.md` §4.1-4.3; `docs/specs/006-004-active-decisions-table/spec.md` §2.6 y DEC-9/DEC-10; `plan.md` §3 U3.
 

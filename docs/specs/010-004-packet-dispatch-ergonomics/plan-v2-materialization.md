@@ -8,7 +8,7 @@ El diff se extrajo literalmente del original y se reconstruyó en memoria verifi
 
 Transición delivery `cfc71792f0c64bdcbb9085fd3b26268aa46b043079a9601cfe741fe483e5da84`: original y plan registrados. No cambia la etapa specification ni aprueba el plan. Próximo paso: revisión independiente acotada del PLAN v2, no revisión de la spec.
 
-Límites reales: la correlación nativa no pudo acreditar parent/moment; record lo declaró y recibió los bytes bajo garantía reducida PD-6/INV-2, sin inventar identidad acreditada. La plantilla POST-AUDIT vigente combina subfases; el plan exige resolver esa contradicción antes de despachar, sin parchear paquetes. El reviewer debe juzgar ese procedimiento y señalar cualquier defecto real, sin autorizar bypass ni exigir producto extra no aprobado. La aprobación del plan sigue siendo decisión separada de Pablo.
+Límites reales: la correlación nativa no pudo acreditar parent/moment; record lo declaró y recibió los bytes bajo garantía reducida PD-6/INV-2, sin inventar identidad acreditada. La plantilla POST-AUDIT vigente combina subfases; el plan exige resolver esa contradicción antes de despachar, sin parchear paquetes. El reviewer debe juzgar ese procedimiento y señalar cualquier defecto real, sin autorizar bypass ni exigir producto extra no aprobado. La aprobación del plan sigue siendo decisión separada de <owner>.
 
 Incidencias mecánicas sin efecto de producto: primer patch rechazado por faltar encabezado Begin Patch; corregido. Consulta verify-begin con flag incorrecto devolvió rc=2; record verificó internamente el begin vigente de attempt 13 antes de registrar. El dispatch histórico no se repitió.
 

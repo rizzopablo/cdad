@@ -1,6 +1,6 @@
 # Directiva del owner — reutilizar la cobertura existente antes de crear tests
 
-**Vigente desde:** 2026-10-31, por decisión del dueño (Pablo).
+**Vigente desde:** 2026-10-31, por decisión del dueño (<owner>).
 **Alcance:** la selección de pruebas de todo encargo CDAD a partir de la próxima
 unidad que edite las fuentes; se registra acá mientras no esté formalizada.
 **Estado:** directiva vigente en uso; su formalización en las fuentes es una

@@ -11,7 +11,7 @@ Sesión aislada cdad-architect vía delegación nativa; materializado por el orq
 
 ## 0. Estado verificado
 
-**Repositorio.** Anidado `/clawd/projects/cdad/cdad`, rama `codex/epic-003-context-efficiency`. Commits: HEAD `37e23f3` (registro C0 + notas de review externa) sobre `4a821a0` (base inspeccionada por la sesión previa). Historia reciente verificado con `git log`: `37e23f3 → 4a821a0 → 4f79a1a → f6396f1 → dce7d7e → 72a7e82 → ddd3109 → 137698c`.
+**Repositorio.** Anidado `/<workspace>/projects/cdad/cdad`, rama `codex/epic-003-context-efficiency`. Commits: HEAD `37e23f3` (registro C0 + notas de review externa) sobre `4a821a0` (base inspeccionada por la sesión previa). Historia reciente verificado con `git log`: `37e23f3 → 4a821a0 → 4f79a1a → f6396f1 → dce7d7e → 72a7e82 → ddd3109 → 137698c`.
 
 **Cambios sin commit** (documentales, heredados; leídos tal como están en disco, no revertidos ni commiteados): modificados `docs/activeContext.md`, `docs/progress.md`, `docs/epics/epic-003-context-efficiency/{execution,handoff,plan,remaining-features-handoff}.md`; sin trackear `docs/epics/epic-003-context-efficiency/history/`, `docs/epics/epic-004-single-source-planning/{plan,planning-contract-draft}.md`, `docs/handoffs/`.
 

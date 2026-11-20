@@ -1,6 +1,6 @@
 ## recovery-plan
 
-**Status:** Approved under Pablo's explicit HITL delegation for epic 019. Approval and mandatory pre-T8 execution-feasibility condition: `recovery-approval.md`.
+**Status:** Approved under <owner>'s explicit HITL delegation for epic 019. Approval and mandatory pre-T8 execution-feasibility condition: `recovery-approval.md`.
 
 1. **Reconcile the contract before production.**  
    Materialize this draft, obtain independent sufficiency review and explicit approval through existing procedures. Amend the epic plan to reference this replacement and its bounded evidence. Add prospective supersession notices to the old 019-002 specification/plan and 019-001 design entry point; preserve original text, approval pins, receipts and failed observations. Do not claim historical acceptance retroactively.

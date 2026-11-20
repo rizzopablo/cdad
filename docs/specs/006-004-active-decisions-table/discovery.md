@@ -165,7 +165,7 @@ ls: cannot access 'docs/adr/README.md': No such file or directory
 ### M5 — quién toca docs/systemPatterns.md
 8fd6489 docs(memory): cierre 006-006 — Memory Bank, closure, evidencia W-1 desplegado
 cd31f79 docs(memory): 006-005 Memory Bank y cierre
-43986e2 docs(memory): close feature 006-003-… (Memory Bank aprobado por Pablo; ADR-033 reemplaza ADR-007)
+43986e2 docs(memory): close feature 006-003-… (Memory Bank aprobado por <owner>; ADR-033 reemplaza ADR-007)
 e4d17e3 docs(memory): close feature 006-002-delegation-by-layer (…; ADR-032)
 6978709 docs(memory): close feature 006-001-… (…; ADR-031)
 ### M6 — inventario de estados de los 33 ADR (parser sobre el head)

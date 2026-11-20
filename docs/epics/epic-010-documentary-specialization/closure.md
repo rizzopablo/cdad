@@ -18,7 +18,7 @@ defecto comprometidas.
 
 | Orden | Feature | Cierre | Resultado observable |
 |---|---|---|---|
-| 0 | `010-000-continuity-relative-root` | 2026-10-29 (aprobado por Pablo) | raíces relativas/absolutas equivalentes aceptadas sin debilitar controles, validado por la vía instalable |
+| 0 | `010-000-continuity-relative-root` | 2026-10-29 (aprobado por <owner>) | raíces relativas/absolutas equivalentes aceptadas sin debilitar controles, validado por la vía instalable |
 | 1 | `010-004-packet-dispatch-ergonomics` | 2026-10-31 | contexto de ejecución v2 declarado, `render --route C` sin retranscribir el cuerpo, intake exclusivo con diagnóstico |
 | 2 | `010-001-documentary-contracts` | 2026-10-31 | una casa normativa documental y obligación por puntero en fuentes, bloques y 22 agentes |
 | 3 | `010-002-documentary-role-integration` | 2026-10-31 | encargo documental operable con los campos existentes; aplicabilidad Odoo y destinatario coherente |

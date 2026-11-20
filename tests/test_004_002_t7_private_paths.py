@@ -176,7 +176,8 @@ def root_clone(src: Path, tag: str) -> Path:
     dst = Path(tmp) / "proj"
     shutil.copytree(src, dst,
                     ignore=shutil.ignore_patterns(".git", "__pycache__",
-                                                  ".cdad"))
+                                                  ".cdad",
+                                                  ".cdad-execution"))
     write_state(dst, state_document())
     return dst
 
@@ -605,7 +606,7 @@ class TestP1InvalidEntries(unittest.TestCase):
                    "documentation_roots": ["docs"],
                    PRIVATE_FIELD: entries,
                },
-               "temporary_roots": [".cdad/tmp"]}
+               "temporary_roots": [".cdad-execution/tmp"]}
         (root / POLICY_FILE).write_text(
             json.dumps(doc, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")

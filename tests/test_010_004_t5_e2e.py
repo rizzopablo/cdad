@@ -20,7 +20,7 @@ que el entrypoint resuelve bajo la raíz aislada, no en el checkout.
 Raíz aislada FUERA del checkout: `tests.product_staging.run_scoped_mkdtemp`
 (prefijo propio `cdad-t5-isolated-`; subdirectorio único por corrida, retirado
 al final por limpieza de clase). Nada del recorrido escribe dentro del checkout
-real: `.cdad/tmp` NO es raíz temporal declarada por la política del proyecto
+real: `.cdad-execution/tmp` NO es raíz temporal declarada por la política del proyecto
 (hoy `docs/cdad-policy.json` declara `temporary_roots` vacío).
 
 Nota de fixture declarada: el instalador rechaza un destino gestionado dentro
@@ -54,7 +54,7 @@ Mapa test → postcondición → consecuencia de usuario (R4):
 | Test | PC | Promesa observable | R4: sin este test el usuario… |
 |---|---|---|---|
 | `test_pc12_isolated_consumer_prepares_validates_and_emits_canonical_route_c` | PC-12 (protege PC-01/PC-05 en la superficie instalada) | El consumidor instalado prepara un paquete nuevo v2, resuelve su contexto sin argumento explícito, valida request y paquete (rc=0), re-renderiza el paquete byte-idéntico y emite la identificación C canónica de siete campos, determinista, sin modificar archivos ni la instalación global | …la mejora solo estaría demostrada sobre el CLI del checkout: un defecto de empaquetado o instalación (script, instrucciones o assets ausentes, instalación que escribe fuera de su raíz) llegaría a la máquina del usuario con toda la suite del repo en verde, y su despacho fallaría o emitiría una identificación no canónica |
-| `test_pc12_isolated_consumer_rejects_divergent_packet_and_non_canonical_copies_fail_closed` | PC-12 (protege PC-02) | En el consumidor instalado, C rechaza fail-closed un `PACKET.md` publicado divergente y sendas copias no canónicas (request fuera de `.cdad/packets/<id>/REQUEST.json`; contexto fuera de `.cdad/executions/<id>/execution.json`): sin identificación, sin efectos persistentes, sin normalizar ni reescribir archivos, con control positivo antes y después de cada tanda | …las restricciones de C estarían acreditadas solo en el checkout: un consumidor instalado podría aceptar un paquete divergente o una copia fuera de su ubicación canónica y despachar un encargo nunca validado, sin que ninguna prueba lo notara |
+| `test_pc12_isolated_consumer_rejects_divergent_packet_and_non_canonical_copies_fail_closed` | PC-12 (protege PC-02) | En el consumidor instalado, C rechaza fail-closed un `PACKET.md` publicado divergente y sendas copias no canónicas (request fuera de `.cdad-execution/packets/<id>/REQUEST.json`; contexto fuera de `.cdad-execution/executions/<id>/execution.json`): sin identificación, sin efectos persistentes, sin normalizar ni reescribir archivos, con control positivo antes y después de cada tanda | …las restricciones de C estarían acreditadas solo en el checkout: un consumidor instalado podría aceptar un paquete divergente o una copia fuera de su ubicación canónica y despachar un encargo nunca validado, sin que ninguna prueba lo notara |
 
 Límite declarado: la corrida acredita conducta del CLI instalado sobre archivos
 publicados; no acredita recepción nativa del mensaje por un runtime ni
@@ -317,7 +317,7 @@ class IsolatedInstalledConsumerCase(PublishedPacketCase):
         ).resolve()
         self.addCleanup(shutil.rmtree, root, True)
         project = PrepareProject(root, "test-writer", "e2e")
-        packets_dir = root / ".cdad" / "packets"
+        packets_dir = root / ".cdad-execution" / "packets"
         result = run_prepare(
             self.installed_cli,
             *project.args(out_dir=packets_dir),
@@ -512,7 +512,7 @@ class TestIsolatedConsumerE2E(IsolatedInstalledConsumerCase):
         case = self.publish("cdad-t5e2e-journey-")
         request = case.request
         expected_context = (
-            f".cdad/executions/{request['execution_id']}/execution.json"
+            f".cdad-execution/executions/{request['execution_id']}/execution.json"
         )
         self.assertEqual(
             request["execution_context"],
@@ -655,8 +655,8 @@ class TestIsolatedConsumerFailClosed(IsolatedInstalledConsumerCase):
         Promesa observable: en el consumidor INSTALADO, C rechaza fail-closed
         un `PACKET.md` publicado divergente (cuerpo alterado, cabecera
         intacta) y sendas copias no canónicas — request byte-idéntico fuera de
-        `.cdad/packets/<id>/REQUEST.json` y contexto v2 byte-idéntico fuera de
-        `.cdad/executions/<id>/execution.json` —: sin identificación, rc≠0,
+        `.cdad-execution/packets/<id>/REQUEST.json` y contexto v2 byte-idéntico fuera de
+        `.cdad-execution/executions/<id>/execution.json` —: sin identificación, rc≠0,
         diagnóstico con envoltura `ERROR:` que no divulga el cuerpo, sin
         efectos persistentes y sin normalizar ni reescribir ninguno de los
         archivos; control positivo (la identificación canónica) antes y
@@ -742,7 +742,7 @@ class TestIsolatedConsumerFailClosed(IsolatedInstalledConsumerCase):
             "C",
         )
         stderr = self.assert_rejection(result, "PC-12/request no publicado")
-        expected_reference = f".cdad/packets/{case.packet_id}/REQUEST.json"
+        expected_reference = f".cdad-execution/packets/{case.packet_id}/REQUEST.json"
         self.assertIn(
             expected_reference,
             stderr,
@@ -792,7 +792,7 @@ class TestIsolatedConsumerFailClosed(IsolatedInstalledConsumerCase):
                 f"contexto (§4.5); stderr={stderr!r}",
         )
         canonical_reference = (
-            f".cdad/executions/{case.request['execution_id']}/execution.json"
+            f".cdad-execution/executions/{case.request['execution_id']}/execution.json"
         )
         self.assertIn(
             canonical_reference,

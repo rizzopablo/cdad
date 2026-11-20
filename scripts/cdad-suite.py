@@ -1514,9 +1514,10 @@ def reference_preparation_s(profile) -> float | None:
 
 
 def checkout_canary_roots() -> list[Path]:
-    """Raices del canario del checkout: ``build/`` y ``.cdad/`` del repo."""
+    """Raices del canario del checkout: ``build/``, ``.cdad/`` (legado) y
+    ``.cdad-execution/`` (directorio operacional declarado por defecto)."""
     root = _repo_root()
-    return [root / "build", root / ".cdad"]
+    return [root / "build", root / ".cdad", root / ".cdad-execution"]
 
 
 def checkout_canary_snapshot(exclude: Path | None = None) -> dict:
@@ -1524,7 +1525,8 @@ def checkout_canary_snapshot(exclude: Path | None = None) -> dict:
 
     Detecta cambios persistentes de contenido (incluida la reescritura del
     mismo tamano con mtime restaurado, que conteo+bytes+mtime no ven):
-    recorre ``build/`` y ``.cdad/`` (sin seguir enlaces), ordena las rutas
+    recorre ``build/``, ``.cdad/`` y ``.cdad-execution/`` (sin seguir enlaces),
+    ordena las rutas
     y encadena ``relativo + sha256(contenido)`` en un sha256 global.
     Ademas conserva conteo de archivos, bytes totales y mtime maximo como
     informacion (no como huella). Requiere Linux solo para el barrido de
@@ -2242,7 +2244,7 @@ def _parallel_markdown(summary: dict) -> str:
         lines.append(f"preparacion duplicada: no calculada "
                      f"({summary.get('duplicated_preparation_note')})")
     checkout = summary.get("checkout_canary") or {}
-    lines.append(f"canario del checkout (build/ + .cdad/: "
+    lines.append(f"canario del checkout (build/ + .cdad/ + .cdad-execution/: "
                  f"{checkout.get('files')} archivos, "
                  f"{checkout.get('total_bytes')} bytes): "
                  f"{'limpio' if checkout.get('unchanged') else 'SUCIO'}")

@@ -4,6 +4,18 @@ Estado actual del proyecto. Cada feature cerrada agrega una entry. Las entries m
 
 ---
 
+## 2026-11-19 — Feature: 020-001-versioned-layout-local-execution
+
+**Cerrada.** Separa el estado metodológico versionado del registro de ejecución local: un clon reconoce el proyecto sin registros operacionales. Contrato `spec.md` y `plan.md` aprobados por <owner> el 2026-11-19.
+
+**Producto.** Declaración en ruta fija `cdad/project-layout.json` (esquema 2: `schema_version`, `methodology_dir`, `operational_dir`; campos cerrados). Directorio operacional por defecto `.cdad-execution/`; proyecto nuevo con metodología `cdad/`, existentes conservan `docs/` o su ubicación registrada. Un único accesorio `cdad_layout.operational_dir()` alimenta paquete, resultado, continuidad, guard, dispatch, delegación, versión, activación, contract-links, path guard, canario y gate de CI. `.gitignore` incorpora la entrada anclada `/.cdad-execution/`.
+
+**Migración.** Solo manual, documentada en `skills/cdad-cycle/references/layout-migration.md`. "No migrado" son tres señales fijas: `.cdad/project-layout.json`, declaración sin `operational_dir`, o `.cdad/` poblado (archivos o symlinks a cualquier profundidad; un subárbol vacío no cuenta); el CLI rechaza antes de cualquier escritura operacional y nombra la guía. Sin conversión automática, alias, selección por contenido ni replay histórico; paquetes, recibos y checkpoints previos quedan byte-idénticos. Traspaso del trabajo abierto: limpiar solo `execution` y `active_packet`, conservar feature/etapa/resultados/revisiones/aprobaciones y preparar con `--new-execution`; unidades suspendidas con procedimiento de selección documentado (no es prerequisito de migración). Puntero de cambio de versión en `project-start.md` y `orientation.md`; el verificador sigue detectando solo desacuerdo de marcadores.
+
+**Evidencia.** Suite completa paralela (6 workers, temporales en `/var/tmp`): **2202 passed, 1 failed, 5 skipped**, canary delta 0, sobre `f6424903`. El único fallo es `test_006_001_t3_concurrency::test_pd6_two_concurrent_service_mode_dispatches_complete_without_cross_correlation`, timeout de 1.22 s bajo carga en un test de concurrencia preexistente que **pasa en aislamiento** (4.01 s); no es regresión de esta feature. Inventario vivo `python3 scripts/cdad-suite.py validate` rc=0. Nodeids 2206 → 2208: dos casos nuevos y 26 renombrados/invertidos por cambios deliberados de promesa. Dos rondas de revisión independiente (familia resultado 2/2); dos bloqueantes corregidos y verificados (gate de CI sin escritura previa; ramas de la guía de migración). Sin instalación, despliegue ni publicación.
+
+**Deuda.** `deferred-hardening` del spec conservado: replay histórico, detección de ediciones de la misma versión, sincronización automática de upgrades concurrentes. El gate de CI mantiene el bypass de `--evidence-root` explícito y el fallback si el módulo de layout no se puede importar. Detalle: `docs/specs/020-001-versioned-layout-local-execution/{spec.md,review.md}` y `docs/adr/ADR-045-declaracion-versionada-fija-y-almacenamiento-operativo-local.md`.
+
 ## 2026-11-17 — Feature: 019-007-suite-selector-maintenance
 
 **Cerrada; sin producto desplegable (cambio solo de tests).** Epic 019 (`epic-019-discovery-dialogue`), unidad mínima abierta por decisión del dueño ("Sí, ok A") para reparar el **instrumento de verificación** que bloqueaba el gate de cierre del epic, no el producto. Commit `b08d1ad8`, tres archivos de tests (+257/−22). Contrato `spec.md` sha256 `3ba4f69f…d14` (cuatro postcondiciones bajo dos promesas) y `plan.md` sha256 `d2e54daf…6c` (una tarea).
@@ -60,7 +72,7 @@ Decisiones relevantes:
 - Decisiones refinadas sin cambiar promesa: root placement no soportado; stores de continuidad/guard operativos (no evidencia de inicialización); candidato = cualquier JSON con `packet_id` o `execution_id` en cualquier forma de entrega.
 
 Deuda técnica detectada:
-- Desplegado localmente el 2026-11-17 con autorización del dueño (backup `~/clawd/archive/cdad-deploy-019-004-20261117-094730`; `install.sh` 11 agentes, verificación PASS; `--check` PASS, 379 grupos; 22 registros de modelo sin cambios; CLI instalado responde `layout` e `intake --help`). El despliegue es independiente del cierre, que se apoya en la evidencia de HOME aislado.
+- Desplegado localmente el 2026-11-17 con autorización del dueño (backup `~/<workspace>/archive/cdad-deploy-019-004-20261117-094730`; `install.sh` 11 agentes, verificación PASS; `--check` PASS, 379 grupos; 22 registros de modelo sin cambios; CLI instalado responde `layout` e `intake --help`). El despliegue es independiente del cierre, que se apoya en la evidencia de HOME aislado.
 - Journey fresh-role post-reubicación no demostrado (depende de observación acotada a solicitud del dueño); el procedimiento se verificó mecánicamente contra el manifiesto para los tres prefijos de runtime.
 - Procedencia histórica Route C ausente: no se recuperó representación recibida legítima; la gramática se ejercita con wrappers sintéticos.
 - Captura nativa no verificada: el comando valida la representación suministrada y no prueba su origen; las instrucciones exigen el procedimiento manual y prohíben afirmar validación automatizada sin captura.
@@ -96,7 +108,7 @@ Deuda técnica detectada:
 - Límites de la verificación: una traza acotada no prueba cumplimiento universal de agentes; el escenario es declarado, no comportamiento del producto; no ejercita el CLI; no reemplaza la revisión contextual independiente. El receptor sobre el trace completo no pudo determinar el contenido de autorización más allá de 4/4 (consecuencia esperada del límite de scope).
 - Suite completa de la feature no realizada (recomendada al cerrar feature); la del epic es obligatoria por defecto y está en curso.
 - Cierre formal de 019-005 no registrado todavía (`closure.md` y transición correspondiente se materializan después de la suite de cierre del epic).
-- Desplegado localmente el 2026-11-17 con autorización del dueño (backup `~/clawd/archive/cdad-deploy-019-005-20261117-120956`; dry run sin conflictos; `install.sh` 11 agentes, verificación PASS; `--check` PASS, 410 grupos; 22 registros de modelo sin cambios; árbol instalado contiene `bounded-review-cycles.md` y la sección de despacho autocontenido en `handoff-prompts.md`). Publicación no realizada.
+- Desplegado localmente el 2026-11-17 con autorización del dueño (backup `~/<workspace>/archive/cdad-deploy-019-005-20261117-120956`; dry run sin conflictos; `install.sh` 11 agentes, verificación PASS; `--check` PASS, 410 grupos; 22 registros de modelo sin cambios; árbol instalado contiene `bounded-review-cycles.md` y la sección de despacho autocontenido en `handoff-prompts.md`). Publicación no realizada.
 
 Próxima feature en cola: ninguna nueva — 019-005 es la última feature del plan del epic 019 (5/5). Lo que sigue es el cierre formal del epic 019 con suite completa por el gate atribuible (019-002 aún pendiente de cierre formal y de la suite completa de `tests/`, cuatro regresiones preexistentes de README). El epic permanece abierto hasta que su cierre se registre; una corrida completa de la suite (cierre del epic) está en curso.
 
@@ -272,14 +284,14 @@ Publicar y desplegar siguen fuera del mandato delegado.
 
 ## 2026-11-15 — Epic 019 opened: discovery dialogue
 
-Opened `epic-019-discovery-dialogue` at Pablo's request. Target: the normal CDAD
+Opened `epic-019-discovery-dialogue` at <owner>'s request. Target: the normal CDAD
 cycle, with the orchestrator conducting functional dialogue, targeted architect
 research and drafting, and preserved independent review and owner approval.
 The draft plan proposes two units: an operating design, then coherent instruction
 activation with observed agent acceptance. Comprehensible, effective agent
 instructions are a central acceptance concern, not a wording-only cleanup.
 
-Update 2026-11-15: **plan approved by Pablo**, explicitly covering both the normal
+Update 2026-11-15: **plan approved by <owner>**, explicitly covering both the normal
 and lightweight workflows. No feature opened, no approval
 delegation inherited, no product instructions changed, no publication or deployment.
 See `docs/epics/epic-019-discovery-dialogue/plan.md` for scope and open decisions.
@@ -1308,7 +1320,7 @@ pero mientras no se publique todo despacho real sigue necesitando la toolchain d
 unidad con su evidencia de suite completa; la aprobación del cierre y del Memory
 Bank es del dueño y publicar es una decisión separada. Contrato:
 `docs/specs/010-004-packet-dispatch-ergonomics/spec.md`, pin
-`fc6b2ccc…5d64`, aprobado por Pablo el 2026-10-30.
+`fc6b2ccc…5d64`, aprobado por <owner> el 2026-10-30.
 
 **Qué se cerró.** El encargo dejó de depender de retranscribir su cuerpo y el rol
 dejó de inferir su contexto de ejecución: `render --route C` emite solo una
@@ -1428,7 +1440,7 @@ despacho real sigue necesitando la toolchain del repo (R1).
 
 ## 2026-10-29 — Feature: 010-000-continuity-relative-root (epic 010)
 
-**Cierre local aprobado por Pablo:** «cierra 000 y continúa con los siguientes».
+**Cierre local aprobado por <owner>:** «cierra 000 y continúa con los siguientes».
 Con `.`, con una raíz relativa o por symlink al mismo proyecto, la continuidad y
 los paquetes rechazaban trabajo válido: el candidato resuelto se comparaba con
 la raíz sin resolver. La corrección canonicaliza la raíz en los bordes; conserva
@@ -3160,7 +3172,7 @@ y el generador quedan **sin perfiles y sin mapa de modelos**; la delegación ext
 archivo de configuración**; el instalador **retira sus propios obsoletos**; y la credencial del servidor se carga
 de un archivo con permisos verificados. **Contrato:** `spec.md` sha256 `c25ebf0e…` (PD-1..PD-8, INV-1..INV-7,
 D1..D8; **§8 A-1..A-4** del orquestador y **§9 A-5** del dueño) y `plan.md` con **A-6**; aprobados el **2026-10-18**
-por el orquestador Claude bajo la **HITL delegada del epic** (A-5 lo aprobó **Pablo**). **El epic NO se cierra.**
+por el orquestador Claude bajo la **HITL delegada del epic** (A-5 lo aprobó **<owner>**). **El epic NO se cierra.**
 
 **Problema medido (no presupuestado).** Dos hechos: (i) el despliegue de 006-002 dejó en HOME las dos referencias
 retiradas como `pending_removal` — el instalador **no borra** lo que dejó de desplegar y un orquestador puede seguir
@@ -3203,7 +3215,7 @@ Con eso, el mapa de perfiles de `scripts/cdad-models.sh` y la línea `model:` de
   005-010 reformulada por D3/U4.
 
 **A-5 (decisión del dueño, en mitad de camino): se retira la verificación de familia.** Mientras corría el GREEN de
-U5, Pablo retiró el requisito: para la delegación **externa** el modelo se configura en `delegation.json`; para la
+U5, <owner> retiró el requisito: para la delegación **externa** el modelo se configura en `delegation.json`; para la
 **interna**, en la config de cada agente según lo que el runtime permita; y **no** se exige al orquestador despachar
 controlando familia ni modelo. Se retiran PD-4a..e, D4, §2.4, el script `cdad_model_family.py` (**no se construyó**) y
 **INV-5 se reemplaza**; se conservan la observación I8 (`model_configured`/`model_reported`, que solo registra) y los
@@ -5022,7 +5034,7 @@ corrige** el encargo). 4 tareas (T1–T4) + T-CORR; suite completa **629 passed*
   exigen los negativos de `validate-state`.
 - **Una entrada histórica no conforme no habilita nada (PD-6/INV-6).** Contexto: el
   `stage_history[161]` real (creado para el primer `prepare` como
-  `specification`/`approved_by: Pablo`) se **rectificó** a `discovery-authorization` /
+  `specification`/`approved_by: <owner>`) se **rectificó** a `discovery-authorization` /
   `authorized_by` con `rectified_at`. Razón: una entrada de otro vocabulario o sin pin no
   debe habilitar autoridad; el test PD-6 reproduce ese caso exacto. Trade-off: el
   vocabulario histórico de `epic_history` de epics viejos no se unifica (fuera de alcance).
@@ -5859,7 +5871,7 @@ Cerrada el 2026-10-03. La segunda mirada (Codex) dejó 6 hallazgos registrados c
 durable y verifica el recorrido CDAD completo sobre trabajo real (PD-13):
 spec.md:117-122. Suite final 329 passed (`9c92350`); el cierre cierra T7 con el
 review del conjunto (review-014) y el fix de una línea F-SET-3 (`c596e7a`).
-Aprobación de Memory Bank por Pablo.
+Aprobación de Memory Bank por <owner>.
 
 **Decisiones relevantes** (decisión + contexto + razones + trade-offs):
 
@@ -5939,7 +5951,7 @@ por el orquestador; 4–7 con evidencia verificada por el orquestador)
 ([closure.md](specs/004-001-canonical-runtime-artifacts/closure.md)). Suite
 completa: 132 passed tras `5e12c0f` (corrida del test-writer; la del orquestador, 120/120 antes de la matriz); reviews 1–6 (GPT/Codex), review-7
 (Claude, T6) y review externa GPT de T7 con todos los bloqueantes cerrados.
-Merge y Memory Bank aprobados por Pablo (2026-09-29).
+Merge y Memory Bank aprobados por <owner> (2026-09-29).
 
 **Decisiones relevantes** (decisión + contexto + razones + trade-offs):
 
@@ -6158,7 +6170,7 @@ Decisiones clave:
   escritura/ejecución (`find -delete`, `-exec sh`) en los 6 roles read-only
   cuya allowlist declara "solo lectura". Navegación preservada (`ls *`, `wc *`,
   `pwd`, `cd *`, pares `rtk find*` en lectores).
-- **Política de enforcement del dueño (Capa 2, Pablo):** bloquear vectores
+- **Política de enforcement del dueño (Capa 2, <owner>):** bloquear vectores
   directos y evidentes, no bypasses hipotéticos; la expectativa se documenta en
   skills/procedimientos; agente que cumple violando el protocolo sin motivo
   válido = tarea NO cumplida. Definición operativa (N3): "vector directo y
@@ -6191,7 +6203,7 @@ Pendiente (bucket de hardening, NO fixeado acá):
 ## 2026-09-04 — Fix: path-guard reconoce tests colocados (sin ciclo formal)
 
 Fix en `scripts/claude-code-path-guard.sh` (commit `0fd023f`), detectado en
-un proyecto cliente (backend Go + extensión JS) y reportado por Pablo. El
+un proyecto cliente (backend Go + extensión JS) y reportado por <owner>. El
 guard asumía tests en
 `tests/**` dedicado, pero Go EXIGE tests en el mismo paquete/directorio
 (`*_test.go`, requisito del compilador) y JS/TS coloca `*.test.{js,ts}`
@@ -6215,7 +6227,7 @@ variantes Odoo) — 19/19 PASS. Copia instalada (`~/.claude/cdad-scripts/`)
 redesplegada e idéntica a la canónica.
 
 **Deuda de proceso (documentada, no oculta):** el fix se aplicó inline y
-antes del spec — bypass del ciclo CDAD (Pablo pidió ciclo light a mitad de
+antes del spec — bypass del ciclo CDAD (<owner> pidió ciclo light a mitad de
 camino; se decidió no retroactivar y solo documentar). La batería de 19
 casos no vive como test permanente en `tests/` — si el guard vuelve a
 tocarse, incorporarla como RED formal de esa feature.
@@ -6224,23 +6236,23 @@ tocarse, incorporarla como RED formal de esa feature.
 
 Cerrado el epic que corrige los hallazgos de
 `findings/audit-consistencia-2026-09-02.md` (auditoría completa de
-metodología, agentes OpenCode/Claude Code y skills, pedida por Pablo).
+metodología, agentes OpenCode/Claude Code y skills, pedida por <owner>).
 Delegación HITL explícita para todo el epic (spec approval, priorización,
 Memory Bank) — ver `docs/.cdad-state.json` campo `hitl_delegation`.
 
 Decisiones relevantes:
 - **B1 (bash como fuga del aislamiento)**: calibrado como defensa en
-  profundidad, no reescritura estricta — decisión explícita de Pablo antes
+  profundidad, no reescritura estricta — decisión explícita de <owner> antes
   de ejecutar: *"la combinación de barrera estructural parcial + conductual
   está funcionando bastante bien"*. La allowlist de bash cierra la fuga de
   contenido (cat/head/tail/rg) preservando TODO lo legítimo (tests, lint,
   git commit propio, navegación) — ningún rol perdió capacidad real.
-- **Perfil `basic`**: es el más usado por Pablo (costo de tokens) y su
+- **Perfil `basic`**: es el más usado por <owner> (costo de tokens) y su
   comportamiento NO cambió — el fix fue puramente documental (dejar de
   afirmar el anti-bias como garantizado ahí, cuando ADR-007 ya documentaba
   la excepción).
 - **RED verifica requerimiento, no cobertura**: refuerzo explícito pedido
-  por Pablo — un test-writer no debe sobre-especificar más allá del spec
+  por <owner> — un test-writer no debe sobre-especificar más allá del spec
   (tests carísimos/imposibles de satisfacer, tiempo y tokens perdidos).
   Agregado a SKILL.md, stage-3-tdd.md, y a los 4 agentes test-writer.
 
@@ -6253,7 +6265,7 @@ Deuda técnica detectada:
 - Deuda ya registrada sin cambios: CI del repo, dogfood pendiente de varias
   features (ver progress.md Queued).
 
-Próxima feature en cola: ninguna decidida — Pablo define.
+Próxima feature en cola: ninguna decidida — <owner> define.
 
 ## 2026-09-02 — Feature: cdad-004-lint-gate
 
@@ -6296,10 +6308,10 @@ recomendada; epic obligatoria salvo dispensa expresa). Aprobar la política auto
 de epic. Cierre: `docs/specs/014-001-suite-evidence-defaults/closure.md`. Pendiente: cierre del epic 014 con suite
 completa por `scripts/cdad-ci-gate.py`; despliegue reservado al dueño.
 
-## 2026-11-02 — Despliegue (decidido por Pablo)
+## 2026-11-02 — Despliegue (decidido por <owner>)
 
 Epic 014 desplegado al HOME con `./install.sh` (commit `fea6e93b`; respaldo previo en
-`~/clawd/archive/20261102-cdad-pre-epic014`). Agentes: 11 presentes; skills idénticas al repo (sin `__pycache__`).
+`~/<workspace>/archive/20261102-cdad-pre-epic014`). Agentes: 11 presentes; skills idénticas al repo (sin `__pycache__`).
 Los agentes de OpenCode conservan sus líneas `model:` locales (overlay del usuario). `install.sh --check` sigue en
 rc=1 por un artefacto del entorno: `~/.config/opencode/skills/*` y `~/.claude/skills/*` son symlinks a
 `~/.agents/skills/*` (consolidación del 2026-11-02) y el verificador los cuenta como «0 files».
@@ -6308,10 +6320,10 @@ rc=1 por un artefacto del entorno: `~/.config/opencode/skills/*` y `~/.claude/sk
 
 Recepción contra fuentes congeladas: `instruction_sources` con snapshots en REQUEST.json; render/validate/record/receive desde el respaldo; históricos con vía viva; replay intacto. Cierre: `docs/specs/015-001-frozen-reception/closure.md`. Commits 15051d35..daa4eb8f. Queda 015-002 (intake guards) y la suite completa de cierre del epic.
 
-## 2026-11-03 — Cierre epic 015, despliegue y publicación (autorizados por Pablo)
+## 2026-11-03 — Cierre epic 015, despliegue y publicación (autorizados por <owner>)
 
 Epic 015 cerrado (suite completa verde atribuible, 1967 passed, tercer intento; ver `docs/epics/epic-015-dispatch-reception/integration.md`).
-Desplegado en HOME (respaldo `~/clawd/archive/20261103-cdad-pre-epic015`). Publicado en `origin/main` como un commit
+Desplegado en HOME (respaldo `~/<workspace>/archive/20261103-cdad-pre-epic015`). Publicado en `origin/main` como un commit
 nuevo saneado (`666c37b8`, fast-forward sin force) desde `.cdad/local/publish-export.sh`; historial privado sin publicar.
 
 ## 2026-11-04 — Feature: 016-003-suite-review-tranche-1
@@ -6326,7 +6338,7 @@ nuevo saneado (`666c37b8`, fast-forward sin force) desde `.cdad/local/publish-ex
 
 **Decisiones relevantes.** *Selección congelada por selector frente a elección por preferencia*: el tramo es el 20 % más nuevo del inventario y `select` lo reproduce byte a byte, así que la muestra es auditable; el precio es que **no es aleatoria** y no autoriza extrapolación estadística. *Dos caminos de resolución de obligaciones —marcadores e índice legacy— sin mezclarlos*: el contrato anterior a los marcadores se resuelve por `contract.path`+`sha256` y el nuevo por `cdad:pc`, y el payload declara el modo; el precio es una segunda ruta que hay que mantener y declarar, a cambio de no forzar backfill ni reescribir contratos cerrados. *Cero candidatos se registra como ausencia de hallazgo, no como prueba*: el método sólo puede declarar que no identificó protección observable duplicada ni promesa irrecuperable con la lectura exigida; el precio es que **el costo experimental por candidato queda sin calibrar**. *Continuar el tramo 2 con cambios explícitos de método frente a repetir el procedimiento*: lotes de 25–40 nodeids con el registro en la misma entrega (elimina la segunda pasada de normalización que consumió B1a/B1b/B2a/B2b), objetivo del lote generado por script y auditoría dirigida por promesa; el precio es que los cambios **no están medidos** y la proyección no descuenta su ahorro. *Revisión en tres pasadas hasta aprobar con observaciones*: conserva el registro de los rechazos y de lo que quedó declarado, a cambio de que N2 y N3 vivan como deuda en vez de corrección.
 
-**Deuda técnica detectada.** **(1) Cero candidatos deja el costo experimental sin calibrar**, y las sospechas S1/S2/S3 quedan registradas en `experiments/suspicions.json` sin experimento, cada una con la evidencia que faltaría para promoverla o descartarla; ninguna autoriza poda. **(2) N3 del review:** seis filas citan fragmentos que viven en un test hermano que no ejecutan (declaradas con sus nodeids en el informe §2); sustituirlos por aserciones propias exige otra pasada de auditoría. **(3) N2:** el bloque de cierre usa el rótulo `<session>_cierre`, sin id de sesión del runtime; sus tokens se declaran «no disponibles», no cero. **(4) O2:** el volumen de lectura de caché (92,9 M tokens) ya está en `costs.json` y en el informe; falta decidir si entra en la noción de costo que el dueño quiere gobernar. **(5)** La proyección es lineal y por cota alta y no descuenta el ahorro esperado de los cambios de método. **(6)** El tramo es el 20 % más nuevo **por construcción**: no es muestra aleatoria. **(7) Suite completa de la feature no realizada** (la exige el gate de cierre del epic). **(8)** Los **siete `deferred-hardening`** de `spec.md` §11 —antigüedad individual de cada protección, demostración universal de redundancia, poda y consolidación efectivas, extrapolación estadística de redundancia, backfill fuera del tramo, autenticación criptográfica de ejecuciones y métricas, y automatización general del juicio semántico— quedan conservados con su disposición en `docs/specs/016-003-suite-review-tranche-1/closure.md`, sin que ninguno aplace PC-1..PC-10.
+**Deuda técnica detectada.** **(1) Cero candidatos deja el costo experimental sin calibrar**, y las sospechas S1/S2/S3 quedan registradas en `experiments/suspicions.json` sin experimento, cada una con la evidencia que faltaría para promoverla o descartarla; ninguna autoriza poda. **(2) N3 del review:** seis filas citan fragmentos que viven en un test hermano que no ejecutan (declaradas con sus nodeids en el informe §2); sustituirlos por aserciones propias exige otra pasada de auditoría. **(3) N2:** el bloque de cierre usa el rótulo `ses_orquestador_cierre`, sin id de sesión del runtime; sus tokens se declaran «no disponibles», no cero. **(4) O2:** el volumen de lectura de caché (92,9 M tokens) ya está en `costs.json` y en el informe; falta decidir si entra en la noción de costo que el dueño quiere gobernar. **(5)** La proyección es lineal y por cota alta y no descuenta el ahorro esperado de los cambios de método. **(6)** El tramo es el 20 % más nuevo **por construcción**: no es muestra aleatoria. **(7) Suite completa de la feature no realizada** (la exige el gate de cierre del epic). **(8)** Los **siete `deferred-hardening`** de `spec.md` §11 —antigüedad individual de cada protección, demostración universal de redundancia, poda y consolidación efectivas, extrapolación estadística de redundancia, backfill fuera del tramo, autenticación criptográfica de ejecuciones y métricas, y automatización general del juicio semántico— quedan conservados con su disposición en `docs/specs/016-003-suite-review-tranche-1/closure.md`, sin que ninguno aplace PC-1..PC-10.
 
 **Next feature in queue.** Ninguna: `016-003` era **orden 3/3** y el plan del epic queda completo. Lo que sigue es el **cierre de `epic-016-traceability-and-suite-review`** con la **suite completa por el gate atribuible** (criterio de aceptación del epic), que hoy no está corrida. Publicar y desplegar siguen siendo actos del dueño.
 
@@ -6347,12 +6359,12 @@ rama local, así que el diff mezcló 593 rutas previas al epic y tres quedaron s
 autorizado por `docs/specs/016-003-suite-review-tranche-1/tranche-1/decision.md`, con revisión si el costo se aparta
 más de 30 % de la proyección.
 
-## 2026-11-04 — Despliegue y publicación del epic 016 (autorizados por Pablo)
+## 2026-11-04 — Despliegue y publicación del epic 016 (autorizados por <owner>)
 
 Epic 016 desplegado al HOME y publicado en `origin/main` como un commit squash (`cbeab5f0`, padre
 `666c37b8`, fast-forward, exactamente 1 commit desde la base capturada; 98 archivos, +50 643/−5 326).
 Instalador: **11/11 agentes**, árbol canónico de skills **byte-idéntico al repo** (con las dos herramientas
-nuevas y sus referencias), respaldo en `~/clawd/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check`
+nuevas y sus referencias), respaldo en `~/<workspace>/archive/20261104-1339-cdad-pre-epic016`. `install.sh --check`
 y `scripts/validate-subagents.sh` (F011) salen rc=1 por los 16 caminos de skills que son symlinks a
 `~/.agents/skills` —artefacto del entorno, no drift de contenido—; `make validate` da 182 PASS / 1 FAIL por el
 mismo F011 preexistente y no se declara gate verde. Saneamiento de la publicación: rutas locales e ids de

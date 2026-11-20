@@ -183,7 +183,7 @@ Estos pendientes no bloquean entregar el discovery, que debe documentarlos; **s�
 - **Seguridad paralela:** falta revisión de recursos compartidos y evidencia concurrente.
 - **Comparabilidad:** faltan revisión candidata, selección, estado de staging y condiciones acordadas.
 
-Preguntas para Pablo:
+Preguntas para <owner>:
 
 1. **¿Autorizas preparar y ejecutar una línea base completa instrumentada**, tras calibración focal, con ese presupuesto orientativo?
 2. **¿Qué reducción de espera sería útil para dar por cumplido el objetivo?** Conviene acordarla con la línea base, no inventar ahora un porcentaje.

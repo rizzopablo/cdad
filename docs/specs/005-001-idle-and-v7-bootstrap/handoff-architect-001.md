@@ -19,7 +19,7 @@ retirado `005-001-idle-and-v7-bootstrap-architect-discovery-001` (obsoleto; ver
 
 ## Autoridad
 
-- Plan del epic aprobado por Pablo (2026-10-08): `docs/epics/epic-005-real-operation/plan.md`.
+- Plan del epic aprobado por <owner> (2026-10-08): `docs/epics/epic-005-real-operation/plan.md`.
 - Delegación HITL al orquestador OpenCode: `docs/epics/epic-005-real-operation/execution.md`.
 - Este despacho va por el **camino temporal fuera del CLI** (por el defecto I2 circular que
   esta misma feature corrige; ver §Obstáculos). **No es una aprobación de spec**: la spec

@@ -185,7 +185,7 @@ class ObjectFormCase(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         project = PrepareProject(Path(temp.name).resolve(), role, substage)
         # 010-004 T2 POST-AUDIT (PC-04/§4.1): el contexto canónico de la
-        # preparación nueva (mismo documento, .cdad/executions/<id>/) se
+        # preparación nueva (mismo documento, .cdad-execution/executions/<id>/) se
         # materializa en la construcción para que los oráculos de árbol
         # existentes reflejen la convención migrada sin atribuírsela a
         # prepare.

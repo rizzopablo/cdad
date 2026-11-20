@@ -161,10 +161,10 @@ sí (mismo archivo = serial, regla de `stage-3-tdd.md` §Despacho paralelo).
 
 ## Stakeholders
 
-- **Aprobador del plan del epic**: Pablo
-- **Aprobador de specs de features**: Pablo (o delegación explícita puntual,
+- **Aprobador del plan del epic**: <owner>
+- **Aprobador de specs de features**: <owner> (o delegación explícita puntual,
   igual que en el resto del ciclo)
-- **Operador del resultado**: Pablo (dueño del repo `cdad`)
+- **Operador del resultado**: <owner> (dueño del repo `cdad`)
 
 ## Cambios al plan
 
@@ -172,4 +172,4 @@ _(vacía — se completa durante el loop de features si el plan cambia)_
 
 ---
 
-Status: Approved by Pablo on 2026-09-02 ("aprobado, ahora eres el dueño del proceso, actúa como hitl, tomá las mejores decisiones hasta completar todas las correcciones"). Todas las 12 features done — ver `closure.md`.
+Status: Approved by <owner> on 2026-09-02 ("aprobado, ahora eres el dueño del proceso, actúa como hitl, tomá las mejores decisiones hasta completar todas las correcciones"). Todas las 12 features done — ver `closure.md`.

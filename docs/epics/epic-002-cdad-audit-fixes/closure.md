@@ -70,7 +70,7 @@ Sin ADRs nuevos — los fixes de este epic corrigen drift de contenido y cierran
 ## Notas finales
 
 Sesión con delegación HITL completa (`docs/.cdad-state.json` campo
-`hitl_delegation`, `requested_by: Pablo`, `requested_at: 2026-09-02`). La
+`hitl_delegation`, `requested_by: <owner>`, `requested_at: 2026-09-02`). La
 severidad de los hallazgos no se relajó por la delegación (mismo criterio
 que un humano, per AP-15) — cada fix quedó respaldado por una aserción
 verificable en `tests/validate-consistency.sh`, no por juicio no

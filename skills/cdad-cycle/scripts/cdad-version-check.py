@@ -52,6 +52,15 @@ import json
 import sys
 from pathlib import Path
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+try:
+    import cdad_layout  # noqa: E402
+except ImportError:  # a copy installed without the skill's resolver module
+    cdad_layout = None
+
 DERIVED_MANIFEST_REL = Path(".opencode") / "agents" / ".cdad-derived.json"
 VERSION_MARKER = "version.txt"
 
@@ -67,7 +76,7 @@ SKILL_TREE_SUFFIX = ("cdad-cycle", "scripts")
 # (install.sh) and the project may declare the adopted root in the activation
 # registry that `cdad-activate.py` writes.
 CLAUDE_AGENTS_SUBDIR = (".claude", "agents")
-ACTIVATION_REGISTRY_REL = Path(".cdad") / "activation.json"
+ACTIVATION_REGISTRY_NAME = "activation.json"
 
 EXIT_COHERENT = 0
 EXIT_DRIFT = 1
@@ -121,12 +130,26 @@ def _skill_installation_root(script: Path) -> Path | None:
     return container  # dev checkout / extra dir: the dir that contains `skills`
 
 
+def _activation_registry_path(project_root: Path) -> Path | None:
+    """The activation registry under the DECLARED operational directory (020-001).
+
+    None when this copy of the checker does not carry the layout resolver
+    (`cdad_layout.py`); a real installation places the whole skill tree beside
+    the checker. The registry is then not detectable, never guessed: the
+    detection falls back to the runtime's global Claude Code agents directory.
+    """
+    if cdad_layout is None:
+        return None
+    return (project_root / cdad_layout.operational_dir(project_root)
+            / ACTIVATION_REGISTRY_NAME)
+
+
 def _claude_code_installation_root(project_root: Path) -> Path | None:
     """Installation root behind the Claude Code agents, or None when no Claude
     Code installation is detectable (PD-3).
 
     The root is resolved from the project's activation registry when it exists
-    and declares a Claude Code installation (`.cdad/activation.json` →
+    and declares a Claude Code installation (`<operational_dir>/activation.json` →
     `adopted_root`, the registry `cdad-activate.py` writes) and otherwise from
     the runtime's global Claude Code agents directory (`<home>/.claude/agents`,
     the layout install.sh deploys). A Claude Code installation is "detectable"
@@ -134,9 +157,11 @@ def _claude_code_installation_root(project_root: Path) -> Path | None:
     marker of that root: it never walks up across an installation boundary (F2)
     and never reads the OpenCode derived manifest to infer this side.
     """
-    registry = project_root / ACTIVATION_REGISTRY_REL
+    # 020-001 PC-1: the registry lives under the DECLARED operational directory.
+    registry = _activation_registry_path(project_root)
     try:
-        document = json.loads(registry.read_text(encoding="utf-8"))
+        document = (json.loads(registry.read_text(encoding="utf-8"))
+                    if registry is not None else None)
     except (OSError, ValueError):
         document = None
     if isinstance(document, dict):
@@ -193,7 +218,12 @@ def main(argv: list[str] | None = None) -> int:
 
     project_version, source_dir = _project_version(project_root)
 
-    cc_root = _claude_code_installation_root(project_root)
+    try:
+        cc_root = _claude_code_installation_root(project_root)
+    except cdad_layout.LayoutError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        print("verdict: UNKNOWN (the project layout could not be resolved; version NOT verified)")
+        return EXIT_UNKNOWN
     cc_version = _claude_code_version(cc_root) if cc_root is not None else None
 
     if args.install_root:

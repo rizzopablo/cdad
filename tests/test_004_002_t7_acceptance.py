@@ -183,7 +183,7 @@ class TestT7Pd4ResumeAcrossSessions(LandingInstall):
             boot.stdout.startswith(PACKET_BEGIN),
             msg="precondición: el bootstrap no imprimió el paquete")
         packet_id = next(iter(published_packets(root)))
-        packet_bytes = (root / ".cdad" / "packets" / packet_id
+        packet_bytes = (root / ".cdad-execution" / "packets" / packet_id
                         / "PACKET.md").read_bytes()
         execs_before = v2_execution_docs(root)
         self.assertEqual(
@@ -317,7 +317,7 @@ class TestT7LayoutsConsumersMatrix(LandingInstall):
         path = root / "docs" / "cdad-policy.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         doc = {"schema_version": 1, "path_policy": T7_LAYOUT_POLICIES[layout],
-               "temporary_roots": [".cdad/tmp"]}
+               "temporary_roots": [".cdad-execution/tmp"]}
         path.write_text(
             json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
@@ -394,7 +394,7 @@ class TestT7LayoutsConsumersMatrix(LandingInstall):
         # v2-reanudado: resume desde OTRA sesión (cwd/env ajenos).
         with self.subTest(cell="v2-reanudado", layout=layout):
             packet_id = next(iter(published_packets(root)))
-            packet_bytes = (root / ".cdad" / "packets" / packet_id
+            packet_bytes = (root / ".cdad-execution" / "packets" / packet_id
                             / "PACKET.md").read_bytes()
             env = os.environ.copy()
             for key in list(env):
@@ -434,7 +434,7 @@ class TestT7LayoutsConsumersMatrix(LandingInstall):
         PC-04/010-004 §4.1/§7 + INV-11)."""
         with self.subTest(cell="legacy", layout=layout):
             root = self._new_consumer(prefix="cdad-t7-mtx-legacy-")
-            cdad = root / ".cdad"
+            cdad = root / ".cdad-execution"
             cdad.mkdir()
             v1_path = cdad / "execution.json"
             doc = v1_execution_document()

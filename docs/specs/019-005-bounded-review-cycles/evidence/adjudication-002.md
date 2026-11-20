@@ -1,6 +1,6 @@
 # Adjudication 002 — the round 5 blocker was evidentiary, and is now supplied
 
-Recorded by the orchestrator under Pablo's delegated HITL, applying the owner's
+Recorded by the orchestrator under <owner>'s delegated HITL, applying the owner's
 clarification that the ceiling exists to distinguish a real blocker from perfectionism,
 not to forbid a supported continuation.
 

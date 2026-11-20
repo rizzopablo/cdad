@@ -1,6 +1,6 @@
 # Adjudication 001 — unmet promise at the ceiling
 
-Recorded by the orchestrator under Pablo's delegated HITL, at result-family round 3/3.
+Recorded by the orchestrator under <owner>'s delegated HITL, at result-family round 3/3.
 
 ## Unmet promise
 

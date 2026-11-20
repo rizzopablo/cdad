@@ -6,12 +6,12 @@ Fijadas antes de ejecutar, segun spec §4.4 y plan T4.
 - Revision efectiva: `7426438bdbace78d55f3ea97f1a74e2d000a7310` (registrada por `attempt.json`, `dirty=0`)
 - Arbol: sin cambios pendientes al fijar (git status limpio)
 - Seleccion: `--all` (2034 nodeids coleccionados, suite completa)
-- Comando: `python3 scripts/cdad-suite.py close --all --evidence-root ~/clawd/projects/cdad/evidence/017-001-baseline`
+- Comando: `python3 scripts/cdad-suite.py close --all --evidence-root ~/<workspace>/projects/cdad/evidence/017-001-baseline`
 - Registro de alcance aplicado: `performance/operation-scope.json` (calibrated=true)
 - Instrumentacion: la del commit fijado (T1/T2/T3); sin variables de entorno adicionales
 - Staging/caches: `build/staging/manifest.json` presente en el checkout; cache de producto y de staging del suite en estado inicial de la corrida (ninguna precarga)
 - Recursos: 8 nucleos; RAM 31 GB (20 GB libres al fijar); carga `3.43 3.92 4.64 4/3257 3645080`; disco libre 30 GB
-- Evidencia cruda: `~/clawd/projects/cdad/evidence/017-001-baseline` (fuera del repo, ruta estable del workspace)
+- Evidencia cruda: `~/<workspace>/projects/cdad/evidence/017-001-baseline` (fuera del repo, ruta estable del workspace)
 - Alcance declarado vs observado: se contrasta al cerrar la corrida con `reconcile` y `entry-check`
 - Suite completa: esta corrida **es** la corrida completa autorizada por el dueno para la base
 

@@ -28,7 +28,7 @@ Re-measure after a real cycle with the same script; expected: ~0 shell denials, 
 2. The spec's `context` names the defect location (scripts/cdad-generate.py, read_pairs); the test-writer therefore saw where the bug is (not the code). Accepted for a bugfix contract; RED oracles are behavioral black-box.
 3. `write: ask` is active in opencode v2.0.16: in non-interactive `opencode run` the request is auto-rejected ("permission requested: edit ... auto-rejecting"); `--auto` is required (path deny-lists stay in force). The WATCH RULE in the generator fired.
 4. The implementer ended its `run` client with a "suite still running" message and no final report, its session stayed alive, then hit `/tmp` inode exhaustion (see 5) and attempted `rm -rf` of stale test dirs, including reviewers' reproduction dirs cited in earlier reviews. The command never completed; nothing was deleted by it. Independent verification replaced its report.
-5. Environment: `/tmp` (tmpfs) at 100% inodes (1,047,959 of 1,048,576) while 56 GB free; ~9.7k inodes are `ofap`'s, the rest are in unreadable directories of other users. Needs root inspection. Verification used TMPDIR on disk.
+5. Environment: `/tmp` (tmpfs) at 100% inodes (1,047,959 of 1,048,576) while 56 GB free; ~9.7k inodes are `<owner>`'s, the rest are in unreadable directories of other users. Needs root inspection. Verification used TMPDIR on disk.
 6. Two opencode binaries coexist: PATH `opencode` = 1.18.32 (legacy `session` table; `--agent <mode: subagent role>` hangs silently, `--format json` produced no output); real runtime `~/.opencode/bin/opencode` = v2.0.16 (`session_v2`).
 
 ## Follow-ups (not in this cycle)

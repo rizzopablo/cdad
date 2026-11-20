@@ -6,7 +6,7 @@ The T1 reviewer noted that `cdad_layout.py` rejects a locator that resolves to t
 repository root itself (`spec` §4.1 does not list that case) and offered two
 remedies: remove the guard or declare repository-root placement unsupported.
 
-Decision by the orchestrator under Pablo's renewed HITL delegation: keep the
+Decision by the orchestrator under <owner>'s renewed HITL delegation: keep the
 guard and treat repository-root methodology placement as unsupported. Reasons:
 `.cdad/` and the methodology directory share the repository root, so state,
 policy and operational storage would become indistinguishable in scope; the

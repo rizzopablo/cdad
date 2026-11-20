@@ -28,17 +28,17 @@ them the route starts at:
 
 | Arrival state | How it arrives | Route from here |
 |---|---|---|
-| **FINAL TEXT pending** — the role's text is not staged yet | the role's FINAL TEXT in the orchestrator's session (a handoff to a new chat, a chat that answers with the text) | stage the **exact bytes** under `.cdad/inbox` with their `RESULT.json` descriptor, then invoke `receive` with that descriptor (step 1) |
-| **Descriptor already staged** — the NATIVE path | the entry's `record` verb (006-005 §2.1) wrote the FINAL TEXT under `.cdad/inbox` with its `RESULT.json` descriptor, byte-exact, and declared the derived artifact kind there; the entry's ENVELOPE declares `delivery=staged` with that descriptor | invoke `receive` with that descriptor (step 1) — the bytes are already staged and are not retyped |
+| **FINAL TEXT pending** — the role's text is not staged yet | the role's FINAL TEXT in the orchestrator's session (a handoff to a new chat, a chat that answers with the text) | stage the **exact bytes** under `.cdad-execution/inbox` with their `RESULT.json` descriptor, then invoke `receive` with that descriptor (step 1) |
+| **Descriptor already staged** — the NATIVE path | the entry's `record` verb (006-005 §2.1) wrote the FINAL TEXT under `.cdad-execution/inbox` with its `RESULT.json` descriptor, byte-exact, and declared the derived artifact kind there; the entry's ENVELOPE declares `delivery=staged` with that descriptor | invoke `receive` with that descriptor (step 1) — the bytes are already staged and are not retyped |
 | **Receipt already durable** — the EXTERNAL path | the runtime module received the delivery; the entry's ENVELOPE declares `delivery=received` and carries `delivery_ref`, the durable receipt | validate that receipt (`validate-receipt`) and continue with `materialize` and `register-transition` (steps 2-4) — the delivery is **not staged** and **not received again** |
 
 1. **RECEIVE.** The role's output arrives either as FINAL TEXT or as staged parts
-   under `.cdad/inbox` (with a `RESULT.json` descriptor) — the two arrival
+   under `.cdad-execution/inbox` (with a `RESULT.json` descriptor) — the two arrival
    states that this step covers. `receive` only accepts staged parts
-   (`source.kind="staged-file"`, regular files under the fixed `.cdad/inbox`
+   (`source.kind="staged-file"`, regular files under the fixed `.cdad-execution/inbox`
    inbox), so a FINAL TEXT payload must first be **staged by the orchestrator**
    — a prior mechanical step, before invoking `receive`:
-   - write the **exact bytes** of the role's FINAL TEXT under `.cdad/inbox`
+   - write the **exact bytes** of the role's FINAL TEXT under `.cdad-execution/inbox`
      (one file per part), **without retyping, summarizing or regenerating** them;
    - write the `RESULT.json` descriptor that points to them (`source.kind`,
      `parts[].name` / `artifact_kind` / `staged_path` under the inbox,
@@ -101,7 +101,7 @@ active `prepared` packet with no positive or inconclusive effect signal.
 
 This procedure governs the arrivals **that carry an envelope**. An arrival as
 FINAL TEXT without an envelope keeps its existing route (staging under
-`.cdad/inbox` → `receive`, step 1 above): this procedure never makes it depend
+`.cdad-execution/inbox` → `receive`, step 1 above): this procedure never makes it depend
 on an envelope. The envelope's shape, vocabulary, valid combinations and
 historical compatibility are owned by `references/cli-delegation.md`; read them
 there and never restate them here.
@@ -134,7 +134,7 @@ there and never restate them here.
 
 Native delegation does not change the delivery contract: the role returns its
 **FINAL TEXT** in the **orchestrator's session**, and the **exact bytes** are
-staged under `.cdad/inbox` with their `RESULT.json` descriptor, **without
+staged under `.cdad-execution/inbox` with their `RESULT.json` descriptor, **without
 retyping, summarizing or regenerating** them (on the native path the entry's
 `record` verb does that staging mechanically). The staged bytes are the
 original ones, and receiving approves nothing — `semantic_status` stays

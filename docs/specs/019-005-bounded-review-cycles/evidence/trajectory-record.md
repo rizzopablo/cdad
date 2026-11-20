@@ -1,7 +1,7 @@
 # bounded-round-trajectory-v1 — executed record
 
 Declared scenario, not product behavior. Executed on 2026-11-17 in
-`~/clawd/tmp/cdad019-005-trajectory`, preserved under `evidence/`.
+`~/<workspace>/tmp/cdad019-005-trajectory`, preserved under `evidence/`.
 
 ## Scenario inputs
 

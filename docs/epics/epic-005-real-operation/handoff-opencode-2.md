@@ -13,14 +13,14 @@ Este encargo trae el diagnóstico hecho: no hace falta reconstruirlo.
   proyecto: publicados desde la v7 y verificados (11/11 hashes, `source_dir` en
   `<raíz adoptada>/.config/opencode/agents`). Usá los scripts del proyecto con esa
   misma versión; no mezcles v6.
-- **Autoridad:** plan aprobado por Pablo y delegación en [execution.md](execution.md). La ampliación
+- **Autoridad:** plan aprobado por <owner> y delegación en [execution.md](execution.md). La ampliación
   de 005-001 también está aprobada (ver «Cambios al plan»).
 
 ## 2. Estado comprobado (al escribir este encargo)
 
 - `docs/.cdad-state.json`: `active_epic` epic-005, `features-loop`, `active_feature`
   005-001, `current_stage: discovery`, ejecución `exec-005-001-idle-and-v7-bootstrap-001`.
-- `stage_history[161]`: entrada con `stage: specification` y `approved_by: Pablo` para 005-001,
+- `stage_history[161]`: entrada con `stage: specification` y `approved_by: <owner>` para 005-001,
   con el plan como evidencia. **No es una aprobación de spec**: la spec no existe. Se registró para
   pasar el control I2 del primer `prepare`.
 - `active_packet`: `005-001-idle-and-v7-bootstrap-architect-discovery-001`, `prepared`, nunca

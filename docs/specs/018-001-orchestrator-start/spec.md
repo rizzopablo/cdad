@@ -23,4 +23,4 @@
 **deferred-hardening:** control automático de lecturas/cumplimiento del modelo (fuera de alcance, exigiría otro mecanismo); benchmarks estadísticos y atribución causal (diferidos); ayudas exhaustivas para todo el CLI (limitado a operaciones implicadas); rediseño del historial/medidor/instalación (no necesario); transporte externo completo (conservado por regresión).
 
 
-Status: Approved by Pablo on 2026-11-13
+Status: Approved by <owner> on 2026-11-13

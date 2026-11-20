@@ -1,6 +1,6 @@
 # Cierre de 006-002-delegation-by-layer
 
-**Feature:** 006-002-delegation-by-layer · **Epic:** `epic-006-opencode-concurrency` (segunda feature) · **Cerrada:** 2026-10-18 · **Contrato:** `spec.md` con enmiendas 001 y 002 · **Plan:** `plan.md` con A-1 y A-2 · **Aprobación:** orquestador Claude bajo la HITL delegada del epic-006; enmiendas y Memory Bank aprobados por Pablo.
+**Feature:** 006-002-delegation-by-layer · **Epic:** `epic-006-opencode-concurrency` (segunda feature) · **Cerrada:** 2026-10-18 · **Contrato:** `spec.md` con enmiendas 001 y 002 · **Plan:** `plan.md` con A-1 y A-2 · **Aprobación:** orquestador Claude bajo la HITL delegada del epic-006; enmiendas y Memory Bank aprobados por <owner>.
 
 ## 1. Qué entrega
 

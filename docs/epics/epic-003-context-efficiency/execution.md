@@ -92,7 +92,7 @@ heredes silenciosamente delegaciones anteriores.»
 | Campo | Valor |
 |---|---|
 | delegated_to | OpenCode orchestrator (agente `cdad-orchestrator`) |
-| requested_by | usuario (Pablo) |
+| requested_by | usuario (<owner>) |
 | requested_at | 2026-10-05 |
 | scope | epic-003-context-efficiency: alcance del epic aprobado, specs, priorización de reviews, aprobaciones de Memory Bank y gates para sus features pendientes (003-002, 003-003, 003-004) e integración |
 | expires | cierre, cancelación o revocación del epic |

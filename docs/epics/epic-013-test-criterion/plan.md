@@ -2,7 +2,7 @@
 epic_id: epic-013-test-criterion
 epic_name: Criterio y mantenimiento de la suite de tests
 created_at: 2026-11-02
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-02
 ---
 

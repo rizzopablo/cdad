@@ -67,7 +67,7 @@ Sin ADRs nuevos durante este epic (las 5 features fueron extensiones documentale
 ## Notas finales
 
 Este closure se escribió como parte de `epic-002-cdad-audit-fixes` (feature
-002-012), con delegación HITL explícita de Pablo para todo el epic-002
+002-012), con delegación HITL explícita de <owner> para todo el epic-002
 (spec approval, priorización, Memory Bank) — ver `docs/.cdad-state.json`
 campo `hitl_delegation`. La escritura retroactiva de un closure no es el
 patrón recomendado (Gate E4 debería cerrarse en su momento); se documenta

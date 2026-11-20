@@ -680,7 +680,7 @@ class U65WriteAheadCase(unittest.TestCase):
         ])
 
     def reconcile(self) -> subprocess.CompletedProcess:
-        execution = (self.project["root"] / ".cdad" / "executions"
+        execution = (self.project["root"] / ".cdad-execution" / "executions"
                      / self.project["execution_id"] / "execution.json")
         return self.run_cli(CONTINUITY_CLI, [
             "reconcile",
@@ -1199,7 +1199,7 @@ class TestU65CrashBeforeLaunch(U65WriteAheadCase):
         RED today: the client starts with no provisional record."""
         self.set_variant("sleep-no-store")
         self.track_client()
-        inbox = self.project["root"] / ".cdad" / "inbox"
+        inbox = self.project["root"] / ".cdad-execution" / "inbox"
         inbox_before = snapshot_under(inbox)
         proc = self.start_dispatch()
         self.addCleanup(self.crash_coordinator, proc)
@@ -1245,9 +1245,9 @@ class TestU65CrashBeforeLaunch(U65WriteAheadCase):
         self.assertEqual(
             snapshot_diff(inbox_before, snapshot_under(inbox)), [],
             msg="E4/PD-19: una caída antes de cualquier efecto no debe "
-                "escenificar nada bajo `.cdad/inbox`")
+                "escenificar nada bajo `.cdad-execution/inbox`")
         self.assertFalse(
-            (self.project["root"] / ".cdad" / "inbox" / "RESULT.json").is_file(),
+            (self.project["root"] / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
             msg="E4/PD-19: no debe existir descriptor RESULT.json")
 
         self.assert_recovers_after_crash("oráculo 2")
@@ -1579,7 +1579,7 @@ class TestU65WriteAheadFailure(U65WriteAheadCase):
         dispatches = dispatch_dir(self.project["root"],
                                   self.project["execution_id"])
         dispatches.mkdir(parents=True, exist_ok=True)
-        inbox = self.project["root"] / ".cdad" / "inbox"
+        inbox = self.project["root"] / ".cdad-execution" / "inbox"
         inbox_before = snapshot_under(inbox)
         os.chmod(dispatches, 0o500)
         try:
@@ -1627,7 +1627,7 @@ class TestU65WriteAheadFailure(U65WriteAheadCase):
             snapshot_diff(inbox_before, snapshot_under(inbox)), [],
             msg="D-U65-1: la falla del write-ahead no produce efectos del rol")
         self.assertFalse(
-            (self.project["root"] / ".cdad" / "inbox" / "RESULT.json").is_file(),
+            (self.project["root"] / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
             msg="D-U65-1: no debe existir descriptor RESULT.json")
 
 

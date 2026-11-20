@@ -1,6 +1,6 @@
 # Plan — 019-007-suite-selector-maintenance
 
-Status: Approved by CDAD orchestrator under Pablo's renewed HITL delegation for epic 019 on 2026-11-17.
+Status: Approved by CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019 on 2026-11-17.
 
 Architect draft received 2026-11-17 (packet
 019-007-suite-selector-maintenance-architect-draft-003, which adds the mandatory

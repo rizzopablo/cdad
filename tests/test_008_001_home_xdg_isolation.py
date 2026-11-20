@@ -37,6 +37,8 @@ entre snapshots.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -423,6 +425,7 @@ class TestPC2LazyOrigin(unittest.TestCase):
 
     def project(self, name: str) -> Path:
         root = build_project(self.base / name)
+        write_declaration(root)
         (root / POLICY_REL).write_text(json.dumps(POLICY_DOC, indent=2) + "\n")
         return root
 

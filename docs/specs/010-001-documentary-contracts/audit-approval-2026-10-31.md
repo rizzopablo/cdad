@@ -1,7 +1,7 @@
 # Aprobación del AUDIT y resoluciones — 010-001 — 2026-10-31
 
 Aprobación del AUDIT de `010-001-documentary-contracts` emitida por el orquestador
-**en nombre de Pablo** bajo el mandato HITL del 2026-10-30
+**en nombre de <owner>** bajo el mandato HITL del 2026-10-30
 (`docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md` §1
 y §2: aprobar los gates operativos y resolver las ambigüedades funcionales que el
 AUDIT escala).

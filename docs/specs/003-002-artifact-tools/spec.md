@@ -4,7 +4,7 @@ feature_name: Recepción original y materialización explícita
 created_at: 2026-09-17
 reconciled_at: 2026-10-05
 status: approved
-approved_by: Pablo (HITL delegada al orquestador OpenCode)
+approved_by: <owner> (HITL delegada al orquestador OpenCode)
 approved_at: 2026-10-05
 ---
 
@@ -331,7 +331,7 @@ durable y no repite un cambio ya reflejado en state.
   "execution_id": "exec-003-002-artifact-tools-001",
   "packet_id": "003-002-artifact-tools-architect-draft-001",
   "receipt_sha256": "<64 lowercase hex>",
-  "authorized_by": "Pablo (HITL delegada al orquestador OpenCode)",
+  "authorized_by": "<owner> (HITL delegada al orquestador OpenCode)",
   "authority_ref": "docs/epics/epic-003-context-efficiency/execution.md",
   "approval_effect": false,
   "copies": [

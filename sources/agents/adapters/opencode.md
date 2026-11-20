@@ -86,7 +86,7 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
 - **Dispatch vehicle (route C — explicit file backup).** A dispatch that carries
   no inline body emits the identification with
   `<skill-dir>/scripts/cdad_packet.py render --route C` on the published request
-  (`--request .cdad/packets/<packet_id>/REQUEST.json`, inside the project root),
+  (`--request .cdad-execution/packets/<packet_id>/REQUEST.json`, inside the project root),
   and passes that stdout ALONE, unchanged: the identification is never
   recomposed, retranscribed or accompanied by the packet body. The complete
   render (route A) stays valid for the transport that requires it; C authorizes
@@ -113,7 +113,7 @@ Delegation in OpenCode — the native mechanism, not the CLI adapter:
   return a FINAL TEXT — its receipt comes from the runtime module. This bullet
   does not restate the steps: the re-entry wiring composed in this same body
   (from `sources/roles/orchestrator.md`) already names the command that stages
-  those exact bytes under `.cdad/inbox` + `RESULT.json` and the single state
+  those exact bytes under `.cdad-execution/inbox` + `RESULT.json` and the single state
   transition, and the installed `<skill-dir>/references/re-entry.md` owns the
   Orchestrator materialization protocol; the receipt stays
   `semantic_status: pending` (approving nothing).

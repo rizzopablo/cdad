@@ -96,6 +96,8 @@ sobre ese comportamiento ausente; el resto son anclas declaradas.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -153,8 +155,8 @@ MEMORY_BANK_TARGETS = (
     "docs/progress.md",
 )
 
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
-MANIFEST_PATH = ".cdad/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
 BASELINE_REF = "orchestrator-prepared-reference"
 BASELINE_SHA256 = "0" * 64
 
@@ -266,6 +268,7 @@ def build_project(root: Path) -> Path:
     """Proyecto sintético válido para `prepare` (política v2)."""
     for rel in ("tests", "src", "docs"):
         (root / rel).mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -273,7 +276,7 @@ def build_project(root: Path) -> Path:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
     (root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -323,7 +326,7 @@ class ScribeRowCase(unittest.TestCase):
 
     @property
     def final_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     @property
@@ -385,12 +388,12 @@ class ScribeRowCase(unittest.TestCase):
                 "contexto v2")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): el contexto v2 debe existir")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):
@@ -420,7 +423,7 @@ class ScribeRowCase(unittest.TestCase):
         """Recibo durable de la única parte (receive de 003-002, rc=0): el kind
         declarado va en el descriptor y gatea en `materialize`, no en
         `receive`."""
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / f"{self.PART_NAME}.md").write_bytes(self.PART_BYTES)
         (self.root / MANIFEST_PATH).write_text(
@@ -440,7 +443,7 @@ class ScribeRowCase(unittest.TestCase):
             "parts": [
                 {"name": self.PART_NAME,
                  "artifact_kind": self.part_kind,
-                 "staged_path": f".cdad/inbox/{self.PART_NAME}.md"}
+                 "staged_path": f".cdad-execution/inbox/{self.PART_NAME}.md"}
             ],
             "observed_changes": {
                 "observation_status": "trusted",
@@ -514,7 +517,7 @@ class ScribeRowCase(unittest.TestCase):
         }
 
     def write_authorization(self, doc: dict) -> Path:
-        path = self.root / ".cdad" / "inbox" / "MATERIALIZE.json"
+        path = self.root / ".cdad-execution" / "inbox" / "MATERIALIZE.json"
         path.write_text(
             json.dumps(doc, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")

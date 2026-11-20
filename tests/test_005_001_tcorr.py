@@ -61,6 +61,8 @@ repo y ninguna lectura de implementación.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import shutil
@@ -98,7 +100,7 @@ DEFAULT_EVIDENCE = (
     "commit",
 )
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 REASON = "contrato editado despues de preparar el paquete (T-CORR)"
 
 ROLE, SUBSTAGE = "test-writer", "red"
@@ -185,11 +187,11 @@ def write_state(root: Path, state: dict) -> None:
 
 
 def packet_dir(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id
+    return root / ".cdad-execution" / "packets" / packet_id
 
 
 def packet_ids(root: Path) -> list[str]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return []
     return sorted(d.name for d in base.iterdir() if d.is_dir())
@@ -252,6 +254,7 @@ def build_project(root: Path, *,
     test_files = path_policy.setdefault("test_files", [])
     if CUSTOM_TEST_FILE not in test_files:
         test_files.append(CUSTOM_TEST_FILE)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps(policy, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     spec = root / SPEC_FILE

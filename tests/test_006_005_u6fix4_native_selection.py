@@ -437,7 +437,7 @@ class U6Fix4Case(unittest.TestCase):
         }
 
     def request_doc(self) -> dict:
-        path = (self.project["root"] / ".cdad" / "packets"
+        path = (self.project["root"] / ".cdad-execution" / "packets"
                 / self.project["packet_id"] / "REQUEST.json")
         return json.loads(path.read_text(encoding="utf-8"))
 
@@ -507,7 +507,7 @@ class U6Fix4Case(unittest.TestCase):
                                 self.project["execution_id"])
 
     def record_doc(self, stem: str) -> dict:
-        base = (self.project["root"] / ".cdad" / "executions"
+        base = (self.project["root"] / ".cdad-execution" / "executions"
                 / self.project["execution_id"] / "dispatches")
         return json.loads((base / (stem + ".json")).read_text(encoding="utf-8"))
 
@@ -536,15 +536,15 @@ class U6Fix4Case(unittest.TestCase):
         return "\n".join(parts)
 
     def staged_payloads(self) -> list:
-        inbox = self.project["root"] / ".cdad" / "inbox"
+        inbox = self.project["root"] / ".cdad-execution" / "inbox"
         return [path for path in sorted(inbox.rglob("*"))
                 if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
 
     def descriptor_path(self) -> Path:
-        return self.project["root"] / ".cdad" / "inbox" / "RESULT.json"
+        return self.project["root"] / ".cdad-execution" / "inbox" / "RESULT.json"
 
     def receipt_path(self) -> Path:
-        return (self.project["root"] / ".cdad" / "runtime" / "results"
+        return (self.project["root"] / ".cdad-execution" / "runtime" / "results"
                 / self.project["execution_id"] / self.project["packet_id"]
                 / "receipt.json")
 
@@ -780,7 +780,7 @@ class TestU64CandidateSelection(U6Fix4Case):
         child = "ses-u64-only-before-0001"
         self.write_store([self.row(child, time_created=BEFORE_MS)])
         root = self.project["root"]
-        inbox_before = snapshot_under(root / ".cdad" / "inbox")
+        inbox_before = snapshot_under(root / ".cdad-execution" / "inbox")
         before = self.records()
 
         proc = self.record(attempt="att-u64-d1-0001")
@@ -807,10 +807,10 @@ class TestU64CandidateSelection(U6Fix4Case):
                 "RESULT.json")
         self.assertEqual(
             snapshot_diff(inbox_before,
-                          snapshot_under(root / ".cdad" / "inbox")),
+                          snapshot_under(root / ".cdad-execution" / "inbox")),
             [],
             msg="PD-5/E1 (U6-4)/PD-4: sin texto final se escenificó algo bajo "
-                "`.cdad/inbox`")
+                "`.cdad-execution/inbox`")
         self.assertFalse(
             self.receipt_path().is_file(),
             msg="PD-5/E1 (U6-4)/PD-4: sin texto final hay un recibo")

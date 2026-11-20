@@ -107,7 +107,7 @@ def observation_doc(**overrides) -> dict:
 
 
 def dispatch_path(root: Path, eid: str, attempt_id: str) -> Path:
-    return (root / ".cdad" / "executions" / eid / "dispatches"
+    return (root / ".cdad-execution" / "executions" / eid / "dispatches"
             / f"{attempt_id}.json")
 
 
@@ -630,8 +630,8 @@ class TestPd6StateStatusAndFrontier(DispatchCase):
         unexpected = [
             rel for rel in changed
             if not (rel.startswith(
-                        f".cdad/executions/{eid}/dispatches/")
-                    or rel == ".cdad/.lock"
+                        f".cdad-execution/executions/{eid}/dispatches/")
+                    or rel == ".cdad-execution/.lock"
                     # la transición prepared→dispatched la exige el propio
                     # test (state arriba, comparación normalizada); el state
                     # publicado cambia por ese mismo motivo.

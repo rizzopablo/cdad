@@ -1,7 +1,7 @@
 # Tema 2: Git safety al cierre — investigación (02 Sep 2026)
 
 > Fase 1: qué hace Superpowers, qué hacen otros, qué tiene CDAD, gap real.
-> Sin tocar código. Decisión cycle light (aprobada por Pablo 02 Sep).
+> Sin tocar código. Decisión cycle light (aprobada por <owner> 02 Sep).
 
 ## Fuentes revisadas
 

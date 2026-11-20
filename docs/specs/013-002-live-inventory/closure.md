@@ -2,7 +2,7 @@
 
 **Epic:** `epic-013-test-criterion` — orden 2/4. **Cerrada:** 2026-11-02.
 **Contrato:** `docs/specs/013-002-live-inventory/spec.md`, sha256
-`31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1`, aprobado por Pablo
+`31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1`, aprobado por <owner>
 (HITL delegada, `docs/epics/epic-013-test-criterion/execution.md`) el 2026-11-02.
 **Estado:** cerrada en el repositorio; **no publicada ni desplegada**.
 

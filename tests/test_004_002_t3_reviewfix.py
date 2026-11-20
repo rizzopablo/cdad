@@ -104,11 +104,11 @@ def set_active_packet_status(root: Path, status: str) -> None:
 
 
 def lock_path(root: Path) -> Path:
-    return root / ".cdad" / ".lock"
+    return root / ".cdad-execution" / ".lock"
 
 
 def txn_root(root: Path) -> Path:
-    return root / ".cdad" / ".txn"
+    return root / ".cdad-execution" / ".txn"
 
 
 def active_packet_bytes(root: Path) -> bytes:
@@ -169,12 +169,12 @@ class ReviewFixProjectCase(unittest.TestCase):
 
 class TestF1LockRendezvousIsPermanent(ReviewFixProjectCase):
     def test_f1_lock_file_survives_successful_prepare(self) -> None:
-        """F1 (PD-11): tras un prepare exitoso `.cdad/.lock` SIGUE existiendo:
+        """F1 (PD-11): tras un prepare exitoso `.cdad-execution/.lock` SIGUE existiendo:
         el archivo de rendezvous es permanente y solo se libera el flock."""
         self.prepare_ok(self.root, label="bootstrap")
         self.assertTrue(
             lock_path(self.root).is_file(),
-            msg="un prepare exitoso eliminó .cdad/.lock (el rendezvous debe "
+            msg="un prepare exitoso eliminó .cdad-execution/.lock (el rendezvous debe "
                 "ser permanente; solo se libera el flock)")
         # No es un caso especial del bootstrap: un prepare posterior tampoco
         # elimina el archivo ya existente.
@@ -185,7 +185,7 @@ class TestF1LockRendezvousIsPermanent(ReviewFixProjectCase):
                         label="segundo prepare")
         self.assertTrue(
             lock_path(self.root).is_file(),
-            msg="el segundo prepare eliminó .cdad/.lock preexistente")
+            msg="el segundo prepare eliminó .cdad-execution/.lock preexistente")
 
 
 # ---------------------------------------------------------------- F2
@@ -233,7 +233,7 @@ class TestF2PauseAtReservedId(ReviewFixProjectCase):
         # publicar.
         self.assertTrue(
             lock_path(root).is_file(),
-            msg="A pausado en reserved-id no dejó el rendezvous .cdad/.lock")
+            msg="A pausado en reserved-id no dejó el rendezvous .cdad-execution/.lock")
 
         before = tree_snapshot(root)
         state_before = state_bytes(root)
@@ -305,7 +305,7 @@ class TestF3RecoveryKeepsForeignFiles(ReviewFixProjectCase):
         self.assertTrue(
             txn_dirs,
             msg="precondición: la interrupción en context-written debe dejar "
-                "un directorio de transacción en .cdad/.txn/")
+                "un directorio de transacción en .cdad-execution/.txn/")
         stage_dir = txn_dirs[0]
         foreign = stage_dir / "foreign.txt"
         foreign_payload = b"archivo ajeno del usuario; la recuperacion no lo toca\n"

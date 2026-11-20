@@ -1,7 +1,7 @@
 OWNER INPUT (protected, verbatim): Decision: yes, show the tags next to each note in the plain list by default. Now, if everything else is settled, go ahead and get the draft written and independently reviewed. Do not approve it; I will decide that. 
 
 TEXT: Before I go further I need to check the configuration steps, since the status is still blocked. I'll read the execution reference and the policy template.
-TOOL shell {"command": "cd .opencode/skills/cdad-cycle; ls assets; echo ----; sed -n 1,140p references/project-execution.md", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "cd .opencode/skills/cdad-cycle; ls assets; echo ----; sed -n 1,140p references/project-execution.md", "workdir": "~/<workspace>/tmp/cand019b"} 
   => active-packet.schema.json
 active-record.schema.json
 adr-template
@@ -169,7 +169,7 @@ python3 <skill>/scripts/cdad_packet.py prepare --project-root <root> \
 ```
 
 TEXT: The reference says the architect is enabled only by an approved epic plan, not by a feature spec. Before I conclude that, I'll confirm it with the CLI's own diagnostics. I'll run the write-free policy proposal and a test architect preparation, then check that nothing was written.
-TOOL shell {"command": "P=.opencode/skills/cdad-cycle/scripts/cdad_packet.py; echo \"== propose-policy\"; python3 $P prepare --project-root \"$PWD\" --propose-policy; echo \"rc=$?\"; echo \"== architect prepare (expected to refuse)\"; python3 $P prepare --project-root \"$PWD\" --role architect --substage discovery --objective \"Discovery for tag feature\"; echo \"rc=$?\"; echo \"== tree after\"; git status --short; ls -la .cdad 2>/dev/null || echo \"no .cdad dir\"", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "P=.opencode/skills/cdad-cycle/scripts/cdad_packet.py; echo \"== propose-policy\"; python3 $P prepare --project-root \"$PWD\" --propose-policy; echo \"rc=$?\"; echo \"== architect prepare (expected to refuse)\"; python3 $P prepare --project-root \"$PWD\" --role architect --substage discovery --objective \"Discovery for tag feature\"; echo \"rc=$?\"; echo \"== tree after\"; git status --short; ls -la .cdad 2>/dev/null || echo \"no .cdad dir\"", "workdir": "~/<workspace>/tmp/cand019b"} 
   => == propose-policy
 {
   "path_policy": {
@@ -194,11 +194,11 @@ rc=2
 no .cdad dir
 
 TEXT: Two of the three checks confirm what I expected. The third is new: the CLI refuses to prepare anything because no feature is open. I'll record your decision and this finding in the project memory, then commit.
-TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n", "newString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n- The plain `notes list` shows each note's tags next to it by default.\n"} 
+TOOL edit {"path": "~/<workspace>/tmp/cand019b/docs/activeContext.md", "oldString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n", "newString": "- Listing with several tags shows the notes that carry ANY of the given tags (OR), not only those carrying all of them.\n- The plain `notes list` shows each note's tags next to it by default.\n"} 
   => Edited docs/activeContext.md (1 replacement)
-TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.\n", "newString": "- Spec approver: not named yet. The owner has said they will decide the spec approval.\n\nProcess blockers found on 2026-11-15 (checked with the CLI, nothing written):\n- `prepare` refuses to start any execution: \"no active feature in state\". A feature must be opened first.\n- The architect can only be enabled by an approved epic plan (`epic_history` entry with `stage: epic-plan` and an approver). A feature spec does not enable it. So the architect's discovery and draft need an epic plan that the owner approves.\n- Policy: a write-free proposal exists (`prepare --propose-policy`: docs and tests roots, `.cdad/tmp` as temporary root). The owner has not accepted it, so `docs/cdad-policy.json` is not written.\n"} 
+TOOL edit {"path": "~/<workspace>/tmp/cand019b/docs/activeContext.md", "oldString": "- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.\n", "newString": "- Spec approver: not named yet. The owner has said they will decide the spec approval.\n\nProcess blockers found on 2026-11-15 (checked with the CLI, nothing written):\n- `prepare` refuses to start any execution: \"no active feature in state\". A feature must be opened first.\n- The architect can only be enabled by an approved epic plan (`epic_history` entry with `stage: epic-plan` and an approver). A feature spec does not enable it. So the architect's discovery and draft need an epic plan that the owner approves.\n- Policy: a write-free proposal exists (`prepare --propose-policy`: docs and tests roots, `.cdad/tmp` as temporary root). The owner has not accepted it, so `docs/cdad-policy.json` is not written.\n"} 
   => Edited docs/activeContext.md (1 replacement)
-TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): record list-tags decision and process blockers\" && git log --oneline | head -1 && git status --short", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): record list-tags decision and process blockers\" && git log --oneline | head -1 && git status --short", "workdir": "~/<workspace>/tmp/cand019b"} 
   => 654123e docs(memory): record list-tags decision and process blockers
 
 TEXT: I haven't had the architect write the draft. Not everything is settled, and the CDAD route needs an approval from you first.

@@ -52,7 +52,7 @@ Mapa test → postcondición (docstrings «E2/PD-24 (U6-7b)»)
            nunca es `ask`.
     test_u6_7b_derived_test_writer_keeps_tests_docs_and_temporary
         -> PD-24: test-writer: `tests/x.py` allow, `docs/x.md` deny, raíz
-           temporal declarada (`.cdad/tmp/x`) allow; el derivado -odoo
+           temporal declarada (`.cdad-execution/tmp/x`) allow; el derivado -odoo
            resuelve lo que su propio mapa `edit` resuelve (bajo la
            política cdad `addons/` no está clasificado: la expectativa
            concreta del stack odoo va con la política odoo, ver A-1 bis).
@@ -123,6 +123,8 @@ expectation y su fixture.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import json
 import os
 import re
@@ -166,7 +168,7 @@ ORCHESTRATOR = "cdad-orchestrator.md"
 PROBES = (
     "tests/x.py",
     "docs/x.md",
-    ".cdad/tmp/x",
+    ".cdad-execution/tmp/x",
     "scripts/x.py",
     ".opencode/agents/cdad-test-writer.md",
     "addons/m/tests/test_m.py",
@@ -242,6 +244,7 @@ class InstalledLeverProject(unittest.TestCase):
         self.root = Path(self._tmp) / "proj"
         build_project(self.root)
         materialize_layout(self.root, self.LAYOUT)
+        write_declaration(self.root)
         (self.root / POLICY_FILE).write_text(
             json.dumps(policy_doc(self.LAYOUT), indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -352,7 +355,7 @@ class TestDerivedAgentsIgnoreInstalledWriteLever(InstalledLeverProject):
     def test_u6_7b_derived_test_writer_keeps_tests_docs_and_temporary(
             self) -> None:
         """E2/PD-24 (U6-7b): test-writer derivado: `tests/x.py` allow,
-        `docs/x.md` deny y la raíz temporal declarada (`.cdad/tmp/x`) allow;
+        `docs/x.md` deny y la raíz temporal declarada (`.cdad-execution/tmp/x`) allow;
         su variante -odoo: `addons/m/models/m.py` deny y
         `addons/m/tests/test_m.py` resuelto por su propio mapa `edit`.
 
@@ -367,7 +370,7 @@ class TestDerivedAgentsIgnoreInstalledWriteLever(InstalledLeverProject):
         cases = (
             ("cdad-test-writer.md", "tests/x.py", "allow"),
             ("cdad-test-writer.md", "docs/x.md", "deny"),
-            ("cdad-test-writer.md", ".cdad/tmp/x", "allow"),
+            ("cdad-test-writer.md", ".cdad-execution/tmp/x", "allow"),
             ("cdad-test-writer.md", "scripts/x.py", "deny"),
             ("cdad-test-writer-odoo.md", "addons/m/models/m.py", "deny"),
         )
@@ -417,7 +420,7 @@ class TestDerivedAgentsIgnoreInstalledWriteLever(InstalledLeverProject):
             for suffix in ("", "-odoo"):
                 agent = f"cdad-{role}{suffix}.md"
                 for probe in ("docs/x.md", "tests/x.py", "scripts/x.py",
-                              ".cdad/tmp/x", "addons/m/models/m.py"):
+                              ".cdad-execution/tmp/x", "addons/m/models/m.py"):
                     with self.subTest(agent=agent, probe=probe):
                         got = write_verdict(self.derived[agent], probe)
                         self.assertEqual(

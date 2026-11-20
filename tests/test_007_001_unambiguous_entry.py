@@ -102,7 +102,7 @@ Aclaraciones del audit aplicadas aquí:
 3. `observed_sha256` es `null` explícito —nunca omitido— cuando se emite
    `contract` sin comprobar bytes (PC-08 caso ilegible y S1 de PC-06).
 4. `next.operation.source` de `pending-work-unresolved` es la cadena exacta
-   `docs/.cdad-state.json:active_packet / .cdad/packets`.
+   `docs/.cdad-state.json:active_packet / .cdad-execution/packets`.
 5. Los `unknowns`/`reason` nuevos se prueban por concepto (fuente +
    condición); los diagnósticos anteriores, por contenido y orden relativo.
 
@@ -186,18 +186,18 @@ OLD_TOP_LEVEL = frozenset({
     "authority", "version", "next", "entry", "unknowns", "unit_contract",
 })
 NEW_CAUSE_TOKEN = re.compile(
-    r"(?i)pertenencia|membership|active_packet|\.cdad/packets|unresolved|"
+    r"(?i)pertenencia|membership|active_packet|\.cdad-execution/packets|unresolved|"
     r"inconsisten"
 )
 
 # Conceptos exigidos a las causas NUEVAS de `unknowns` (aclaración 5: no se
 # exige texto estable, sí que identifiquen la fuente y la condición).
-_SOURCE_REQUEST = re.compile(r"(?i)request|solicitud|request\.json|\.cdad/packets")
+_SOURCE_REQUEST = re.compile(r"(?i)request|solicitud|request\.json|\.cdad-execution/packets")
 _SOURCE_EXECUTION = re.compile(
     r"(?i)request|solicitud|execution|ejecuci[oó]n|packet|paquete"
 )
 _SOURCE_PACKET = re.compile(
-    r"(?i)request|solicitud|packet|paquete|directorio|directory|\.cdad/packets"
+    r"(?i)request|solicitud|packet|paquete|directorio|directory|\.cdad-execution/packets"
 )
 _SOURCE_FEATURE = re.compile(r"(?i)request|solicitud|feature|unidad|packet|paquete")
 _SOURCE_ROLE = re.compile(
@@ -589,7 +589,7 @@ def _packet_id(root: Path) -> str:
 
 
 def _request_path(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id / "REQUEST.json"
+    return root / ".cdad-execution" / "packets" / packet_id / "REQUEST.json"
 
 
 def _mutate_request(root: Path, active_packet_id: str, **changes) -> dict:
@@ -605,8 +605,8 @@ def _add_pending_dir(
     root: Path, template_packet: str, new_packet: str, **overrides
 ) -> Path:
     """Copia un paquete de la MISMA ejecución sin recibo (trabajo pendiente)."""
-    source = root / ".cdad" / "packets" / template_packet
-    target = root / ".cdad" / "packets" / new_packet
+    source = root / ".cdad-execution" / "packets" / template_packet
+    target = root / ".cdad-execution" / "packets" / new_packet
     assert source.is_dir(), f"fixture: falta {source}"
     assert not target.exists(), f"fixture: {target} ya existe"
     shutil.copytree(source, target)
@@ -618,7 +618,7 @@ def _add_pending_dir(
 
 
 def _add_receipt(root: Path, execution_id: str, packet_id: str) -> None:
-    receipt = root / ".cdad" / "runtime" / "results" / execution_id / packet_id
+    receipt = root / ".cdad-execution" / "runtime" / "results" / execution_id / packet_id
     receipt.mkdir(parents=True, exist_ok=True)
     (receipt / "receipt.json").write_text(
         json.dumps({"runtime": "opencode", "rc": 0}), encoding="utf-8"
@@ -652,7 +652,7 @@ def _case_execution_active(base: Path) -> tuple[Path, Path]:
     root, home = _project(base)
     _prepare(root, home)
     _drop_active_packet(root)
-    shutil.rmtree(root / ".cdad" / "packets")
+    shutil.rmtree(root / ".cdad-execution" / "packets")
     return root, home
 
 
@@ -762,7 +762,7 @@ MATRIX_CASES = [
             verb="diagnose",
             script=None,
             procedure="references/project-execution.md",
-            source="docs/.cdad-state.json:active_packet / .cdad/packets",
+            source="docs/.cdad-state.json:active_packet / .cdad-execution/packets",
         ),
         id="pending-work-unresolved",
     ),
@@ -1114,7 +1114,7 @@ def test_unresolved_pending_work_is_not_dispatchable(
         f"PC-04: procedimiento esperado references/project-execution.md: "
         f"{op['procedure']!r}"
     )
-    assert op["source"] == "docs/.cdad-state.json:active_packet / .cdad/packets", (
+    assert op["source"] == "docs/.cdad-state.json:active_packet / .cdad-execution/packets", (
         "PC-04/§2.2: `source` exacto de pending-work-unresolved incorrecto "
         f"(aclaración 4): {op['source']!r}"
     )
@@ -1286,7 +1286,7 @@ def _spec_entry(
     contract_path: str = CONTRACT_FILE,
     contract_sha256: str = DECLARED_SPEC_SHA,
     transition_key: str | None = None,
-    approved_by: str = "Pablo",
+    approved_by: str = "<owner>",
     **extra,
 ) -> dict:
     entry = {
@@ -1307,7 +1307,7 @@ def _history_entry(**extra) -> dict:
     entry = {
         "feature": FEATURE_ID,
         "stage": "discovery",
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "approved_at": "2026-10-19T00:00:00Z",
         "note": "entrada histórica del fixture (no es registro de aprobación)",
     }
@@ -2038,7 +2038,7 @@ def test_status_bound_and_history_independence(tmp_path: Path) -> None:
         {
             "feature": f"999-99{index:03d}-other-feature",
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-20T00:00:00Z",
             "contract_path": f"docs/specs/999-99{index:03d}-other/spec.md",
             "contract_sha256": _sha(f"other-{index}".encode()),
@@ -2523,7 +2523,7 @@ def test_request_symlink_escape_is_unresolved(tmp_path: Path) -> None:
     assert op["procedure"] == "references/project-execution.md", (
         f"review-001 BLOCKING 3/§2.2: procedimiento esperado: {op['procedure']!r}"
     )
-    assert op["source"] == "docs/.cdad-state.json:active_packet / .cdad/packets", (
+    assert op["source"] == "docs/.cdad-state.json:active_packet / .cdad-execution/packets", (
         "review-001 BLOCKING 3/§2.2: `source` exacto de "
         f"pending-work-unresolved: {op['source']!r}"
     )

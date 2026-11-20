@@ -43,12 +43,21 @@ import os
 import subprocess
 import sys
 import tempfile
+import re
 import unittest
 from pathlib import Path
 
+from _layout_support import (
+    DECLARATION_REL, OLD_OPERATIONAL_DIR, OPERATIONAL_DIR, declaration_document,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "cdad_packet.py"
-LOCATOR = Path(".cdad") / "project-layout.json"
+# 020-001: la declaración versionable vive en la ruta fija
+# `cdad/project-layout.json` (schema 2: schema_version, methodology_dir,
+# operational_dir); `.cdad/project-layout.json` es el localizador VIEJO.
+LOCATOR = Path(DECLARATION_REL)
+OLD_LOCATOR = Path(OLD_OPERATIONAL_DIR) / "project-layout.json"
 
 
 def run_layout(root, *extra, cwd=None, root_arg="__default__", env_home=None):
@@ -89,6 +98,19 @@ def assert_failure(test, proc, *, mention=None):
         test.assertIn(mention, proc.stderr.lower())
 
 
+def assert_migration_guidance(proc, label: str = "") -> None:
+    """020-001 PC-2: proyecto no migrado => rechazo con guía breve que apunta a
+    la guía canónica `layout-migration.md` y nombra el layout viejo `.cdad/`
+    (no basta `.cdad-state.json` / `.cdad-execution`)."""
+    where = f"{label}: " if label else ""
+    assert proc.returncode != 0, f"{where}debe rechazar; stdout={proc.stdout!r}"
+    assert "schema_version" not in proc.stdout, f"{where}objeto de éxito en fallo"
+    assert "layout-migration.md" in proc.stderr, (
+        f"{where}la guía debe apuntar a layout-migration.md; stderr={proc.stderr!r}")
+    assert re.search(r"\.cdad(?![-\w])", proc.stderr), (
+        f"{where}la guía debe nombrar el layout viejo `.cdad`; stderr={proc.stderr!r}")
+
+
 def snapshot(root: Path):
     """Full tree snapshot: relative path -> (kind, content/target)."""
     out = {}
@@ -111,8 +133,17 @@ def put(root: Path, rel: str, text: str = "x\n"):
 
 
 def write_locator(root: Path, doc):
+    """Escribe la declaración en la ruta fija (`doc` ya es el contenido)."""
     text = doc if isinstance(doc, str) else json.dumps(doc)
     return put(root, str(LOCATOR), text)
+
+
+def decl(methodology_dir, operational_dir=OPERATIONAL_DIR, **overrides):
+    """Declaración schema 2 válida con campos sobreescribibles (para romper
+    exactamente un campo por fila)."""
+    doc = declaration_document(methodology_dir, operational_dir)
+    doc.update(overrides)
+    return doc
 
 
 class LayoutBase(unittest.TestCase):
@@ -137,7 +168,9 @@ class LayoutBase(unittest.TestCase):
 class TestLayout(LayoutBase):
     # PC-01
     def test_registered_locator_selects_its_directory_exclusively(self):
-        write_locator(self.root, {"schema_version": 1, "methodology_dir": "process/cdad"})
+        # 020-001: declaración schema 2 con un operational_dir NO por defecto
+        # (la resolución de metodología no depende del valor operacional).
+        write_locator(self.root, decl("process/cdad", "var/cdad-exec"))
         # Distractors that must NOT win: legacy markers, bare cdad/ and docs/.
         put(self.root, "docs/.cdad-state.json", "{}")
         put(self.root, "docs/cdad-policy.json", "{}")
@@ -184,7 +217,13 @@ class TestLayout(LayoutBase):
                         put(root, f, "{}")
                     before = snapshot(root)
                     proc = run_layout(root, *flags)
-                    assert_failure(self, proc, mention="ambiguous")
+                    if name == "operational-records-only":
+                        # 020-001 (INVERTIDO): un `.cdad/` poblado sin
+                        # declaración es un proyecto no migrado: guía, no
+                        # «ambiguo».
+                        assert_migration_guidance(proc, name)
+                    else:
+                        assert_failure(self, proc, mention="ambiguous")
                     self.assertEqual(snapshot(root), before)
 
     # PC-04 (ordinary docs) + PC-03 resolution
@@ -215,24 +254,46 @@ class TestLayout(LayoutBase):
     def test_invalid_locator_is_rejected_without_fallback_or_writes(self):
         outside = self.tmp / "outside"
         outside.mkdir()
+        # 020-001: cada fila es schema 2 con un operational_dir válido y rompe
+        # SOLO el campo nombrado (si no, cualquier fila fallaría por «schema
+        # viejo» y no comprobaría su regla de ruta).
         bad = {
-            "unknown-field": {"schema_version": 1, "methodology_dir": "cdad", "x": 1},
-            "missing-field": {"schema_version": 1},
-            "bad-version": {"schema_version": 2, "methodology_dir": "cdad"},
-            "empty": {"schema_version": 1, "methodology_dir": ""},
-            "non-string": {"schema_version": 1, "methodology_dir": 7},
-            "absolute": {"schema_version": 1, "methodology_dir": "/etc"},
-            "dotdot": {"schema_version": 1, "methodology_dir": "../up"},
-            "inner-dotdot": {"schema_version": 1, "methodology_dir": "a/../b"},
-            "dot": {"schema_version": 1, "methodology_dir": "."},
-            "dot-component": {"schema_version": 1, "methodology_dir": "a/./b"},
-            "backslash": {"schema_version": 1, "methodology_dir": "a\\b"},
-            "cdad-ops": {"schema_version": 1, "methodology_dir": ".cdad"},
-            "beneath-cdad-ops": {"schema_version": 1, "methodology_dir": ".cdad/process"},
+            "unknown-field": decl("cdad", x=1),
+            "missing-field": {"schema_version": 2, "operational_dir": OPERATIONAL_DIR},
+            "bad-version": decl("cdad", schema_version=3),
+            "empty": decl(""),
+            "non-string": decl(7),
+            "absolute": decl("/etc"),
+            "dotdot": decl("../up"),
+            "inner-dotdot": decl("a/../b"),
+            "dot": decl("."),
+            "dot-component": decl("a/./b"),
+            "backslash": decl("a\\b"),
+            "cdad-ops": decl(OPERATIONAL_DIR),
+            "beneath-cdad-ops": decl(f"{OPERATIONAL_DIR}/process"),
             "malformed-json": "{not json",
-            "duplicate-keys": '{"schema_version":1,"methodology_dir":"a","methodology_dir":"b"}',
+            "duplicate-keys": '{"schema_version":2,"methodology_dir":"a","methodology_dir":"b","operational_dir":".cdad-execution"}',
             "not-object": "[1]",
         }
+        # 020-001 (INVERTIDO): la declaración schema 1 (sin operational_dir)
+        # ya no es «versión inválida» sino proyecto no migrado: guía.
+        old_schema = self.tmp / "old-schema-declaration"
+        old_schema.mkdir()
+        write_locator(old_schema, {"schema_version": 1, "methodology_dir": "cdad"})
+        put(old_schema, "docs/.cdad-state.json", "{}")
+        before_old = snapshot(old_schema)
+        for flags in ((), ("--for-bootstrap",)):
+            assert_migration_guidance(run_layout(old_schema, *flags), "schema 1")
+        self.assertEqual(snapshot(old_schema), before_old)
+        # El localizador viejo `.cdad/project-layout.json` también es no migrado.
+        old_locator = self.tmp / "old-locator"
+        old_locator.mkdir()
+        put(old_locator, str(OLD_LOCATOR),
+            json.dumps({"schema_version": 1, "methodology_dir": "cdad"}))
+        before_old = snapshot(old_locator)
+        for flags in ((), ("--for-bootstrap",)):
+            assert_migration_guidance(run_layout(old_locator, *flags), ".cdad locator")
+        self.assertEqual(snapshot(old_locator), before_old)
         for name, doc in bad.items():
             for flags in ((), ("--for-bootstrap",)):
                 with self.subTest(case=name, flags=flags):
@@ -250,18 +311,18 @@ class TestLayout(LayoutBase):
         link_root = self.tmp / "bad-symlink-escape"
         link_root.mkdir()
         os.symlink(outside, link_root / "escape")
-        write_locator(link_root, {"schema_version": 1, "methodology_dir": "escape/cdad"})
+        write_locator(link_root, decl("escape/cdad"))
         fs_cases["symlink-escape"] = link_root
         file_root = self.tmp / "bad-target-file"
         file_root.mkdir()
-        put(file_root, "cdad", "i am a file")
-        write_locator(file_root, {"schema_version": 1, "methodology_dir": "cdad"})
+        put(file_root, "process", "i am a file")
+        write_locator(file_root, decl("process"))
         fs_cases["target-is-file"] = file_root
         ops_link_root = self.tmp / "bad-symlink-into-ops"
         ops_link_root.mkdir()
-        (ops_link_root / ".cdad" / "inner").mkdir(parents=True)
-        os.symlink(ops_link_root / ".cdad" / "inner", ops_link_root / "alias")
-        write_locator(ops_link_root, {"schema_version": 1, "methodology_dir": "alias"})
+        (ops_link_root / OPERATIONAL_DIR / "inner").mkdir(parents=True)
+        os.symlink(ops_link_root / OPERATIONAL_DIR / "inner", ops_link_root / "alias")
+        write_locator(ops_link_root, decl("alias"))
         fs_cases["symlink-into-cdad-ops"] = ops_link_root
         for name, root in fs_cases.items():
             with self.subTest(case=name):
@@ -276,7 +337,7 @@ class TestLayout(LayoutBase):
         for basename in ("repo", "docs", "cdad", "my project", "x.y"):
             root = self.tmp / "roots" / basename
             root.mkdir(parents=True)
-            write_locator(root, {"schema_version": 1, "methodology_dir": "process/cdad"})
+            write_locator(root, decl("process/cdad"))
             parent = root.parent
             unrelated = self.tmp / "elsewhere"
             unrelated.mkdir(exist_ok=True)
@@ -314,7 +375,7 @@ class TestLayout(LayoutBase):
     # §4.3 placement != operational validation
     def test_placement_success_is_not_operational_validation(self):
         # Registered directory that does not exist yet and has no state/policy.
-        write_locator(self.root, {"schema_version": 1, "methodology_dir": "process/cdad"})
+        write_locator(self.root, decl("process/cdad"))
         before = snapshot(self.root)
         got = parse_success(self, run_layout(self.root))
         self.assertEqual(got, self.expect(self.root, "registered", "process/cdad"))

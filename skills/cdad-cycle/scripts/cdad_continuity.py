@@ -18,7 +18,7 @@ existing history. Implemented surface:
 
 Contracts: `continuity-checkpoint-v1` (L2), `active-record-v1` (L1 render),
 `reconcile-v1` and `trigger-v1` (§3, V6). `begin`/`checkpoint` are write-ahead
-and write ONLY under `.cdad/executions/<execution_id>/continuity/**` (head +
+and write ONLY under `<operational_dir>/executions/<execution_id>/continuity/**` (head +
 content-addressed bodies); they never touch `docs/.cdad-state.json` (invariant
 1/D3). `reconcile`, `resume` and `trigger` are read-only and deterministic.
 
@@ -28,7 +28,7 @@ snapshot frozen in the checkpoint body (`--update.budget`, D11) and only emits
 integers; otherwise it stays `trigger: unknown` with `context_*: null` and an
 explicit `unknowns[]`. Bytes are never converted into tokens and no limit is
 fabricated (invariant 2). The durable attempt budget is REPORTED by reading
-003's `.cdad/executions/<id>/guards/**` (invariant 5: reused, not redefined);
+003's `<operational_dir>/executions/<id>/guards/**` (invariant 5: reused, not redefined);
 a new session never resets it (P4).
 
 Content addressing: the canonical body is the frozen `--update` (D11) plus the
@@ -140,10 +140,12 @@ _HEX64_RE = re.compile(r"[0-9a-f]{64}")
 PROFILE_RESERVE = 50_000
 PROFILE_PREPARE_AT = 120_000
 
-CONTINUITY_TREE = (".cdad", "executions")
-RUNTIME_TREE = (".cdad", "runtime")
+# 020-001: operational stores are names under the DECLARED operational
+# directory (`cdad_layout.operational_dir`), never a fixed prefix.
+EXECUTIONS_SUBDIR = "executions"
+RUNTIME_SUBDIR = "runtime"
 # 007-003 (§2.1): the published packet (request) the pre-transport proof reads.
-PACKETS_TREE = (".cdad", "packets")
+PACKETS_SUBDIR = "packets"
 REQUEST_NAME = "REQUEST.json"
 
 # Policy file read (never written) to classify references for `--role` (P5).
@@ -311,8 +313,20 @@ def _safe_segment(value: Any, label: str) -> str:
     return value
 
 
+def _operational_dir(root: Path) -> str:
+    """020-001 PC-1: the declared operational directory, or a ContinuityError."""
+    try:
+        return cdad_layout.operational_dir(root)
+    except cdad_layout.LayoutError as exc:
+        raise ContinuityError(str(exc)) from exc
+
+
+def _operational_path(root: Path, *parts: str) -> Path:
+    return root.joinpath(_operational_dir(root), *parts)
+
+
 def _continuity_dir(root: Path, execution_id: str) -> Path:
-    return root.joinpath(*CONTINUITY_TREE, execution_id, "continuity")
+    return _operational_path(root, EXECUTIONS_SUBDIR, execution_id, "continuity")
 
 
 def _head_path(root: Path, execution_id: str) -> Path:
@@ -324,16 +338,16 @@ def _body_path(root: Path, execution_id: str, body_sha256: str) -> Path:
 
 
 def _results_dir(root: Path, execution_id: str, packet_id: str) -> Path:
-    return root.joinpath(*RUNTIME_TREE, "results", execution_id, packet_id)
+    return _operational_path(root, RUNTIME_SUBDIR, "results", execution_id, packet_id)
 
 
 def _dispatch_dir(root: Path, execution_id: str) -> Path:
-    return root.joinpath(*CONTINUITY_TREE, execution_id, "dispatches")
+    return _operational_path(root, EXECUTIONS_SUBDIR, execution_id, "dispatches")
 
 
 def _materialization_dir(root: Path, execution_id: str, packet_id: str) -> Path:
-    return root.joinpath(*RUNTIME_TREE, "materializations", execution_id,
-                         packet_id)
+    return _operational_path(root, RUNTIME_SUBDIR, "materializations", execution_id,
+                             packet_id)
 
 
 # ------------------------------------------------------------------ body
@@ -398,16 +412,18 @@ _AUTHORITY_PRESENTATION = {
 
 def _located_execution_id(root: Path, path: Path) -> str | None:
     """The identity implied by the canonical location of a context
-    (`.cdad/executions/<id>/execution.json`), or None when the document lives
+    (`<operational_dir>/executions/<id>/execution.json`), or None when the document lives
     anywhere else (a copy, a fixture, the real 001 context)."""
     try:
         relative = path.resolve().relative_to(root.resolve())
     except (OSError, ValueError):
         return None
-    parts = relative.parts
-    if len(parts) == 4 and parts[0] == CONTINUITY_TREE[0] and \
-            parts[1] == CONTINUITY_TREE[1] and parts[3] == "execution.json":
-        return parts[2]
+    try:
+        tail = relative.relative_to(Path(_operational_dir(root)) / EXECUTIONS_SUBDIR)
+    except ValueError:
+        return None
+    if len(tail.parts) == 2 and tail.parts[1] == "execution.json":
+        return tail.parts[0]
     return None
 
 
@@ -1243,7 +1259,7 @@ def _run_write(command: str, args: argparse.Namespace, *,
 
 def _published_request(root: Path, packet_id: str) -> dict[str, Any]:
     """The canonical request of a packet already published by `prepare`."""
-    directory = root.joinpath(*PACKETS_TREE, packet_id)
+    directory = _operational_path(root, PACKETS_SUBDIR, packet_id)
     path = directory / REQUEST_NAME
     if not path.is_file():
         raise ContinuityError(
@@ -1313,7 +1329,7 @@ def _admit_packet(root: Path, packet_id: Any,
     """
     if not isinstance(packet_id, str) or not packet_id:
         return None
-    directory = root.joinpath(*PACKETS_TREE, packet_id)
+    directory = _operational_path(root, PACKETS_SUBDIR, packet_id)
     request_path = directory / REQUEST_NAME
     if not request_path.is_file():
         if not _published_commission_trace(directory):
@@ -1485,9 +1501,10 @@ def verify_begin(project_root: Path, execution_context_path: Path,
 
 def execution_context_path(project_root: Path, execution_id: str) -> Path:
     """The published context of an execution (001's convention, reused)."""
-    return Path(project_root).joinpath(
-        *CONTINUITY_TREE, _safe_segment(execution_id, "execution_id"),
-        "execution.json")
+    return _operational_path(Path(project_root),
+                             EXECUTIONS_SUBDIR,
+                             _safe_segment(execution_id, "execution_id"),
+                             "execution.json")
 
 
 def continuity_state(project_root: Path, execution_id: str) -> str:
@@ -2490,12 +2507,13 @@ def _require_reanchor_effect_free(root: Path, execution_id: str,
             # was renamed to another packet, or a stale/foreign one. It is
             # inconclusive, never "another packet's dispatch", so it blocks the
             # operation instead of reading as an absent effect (I3).
-            if not (root.joinpath(*PACKETS_TREE, recorded_packet)
+            if not (_operational_path(root, PACKETS_SUBDIR, recorded_packet)
                     / REQUEST_NAME).is_file():
                 raise ContinuityError(
                     f"inconclusive dispatch signal at {path}: the record names the "
                     f"packet {recorded_packet!r}, which has no published request "
-                    f"({'/'.join(PACKETS_TREE)}/{recorded_packet}/{REQUEST_NAME}); "
+                    f"({_operational_path(root, PACKETS_SUBDIR)}/"
+                    f"{recorded_packet}/{REQUEST_NAME}); "
                     f"its identity cannot be established in the examined scope")
 
     # The STRONGEST effect is reported first: a materialization (copies already
@@ -2778,11 +2796,11 @@ def _is_int(value: Any) -> bool:
 def _collect_guard_attempts(root: Path, execution_id: str,
                             packet_id: str) -> list[dict[str, Any]]:
     """Durable recovery attempts for (execution, packet) under 003's
-    `.cdad/executions/<id>/guards/**`, sorted by attempt. Mirrors
+    `<operational_dir>/executions/<id>/guards/**`, sorted by attempt. Mirrors
     `cdad_guard.py::_collect_attempts` (invariant 5: the 003 budget is REUSED,
     never redefined). Unreadable/foreign files are skipped, never fabricated.
     """
-    guards_dir = root.joinpath(*CONTINUITY_TREE, execution_id, "guards")
+    guards_dir = _operational_path(root, EXECUTIONS_SUBDIR, execution_id, "guards")
     if not guards_dir.is_dir():
         return []
     attempts: list[dict[str, Any]] = []
@@ -2815,7 +2833,8 @@ def _durable_budget(root: Path, execution_id: str,
                     packet_id: str) -> dict[str, Any]:
     """The 003 durable attempt budget, reported WITH its `source` path (P4)."""
     attempts = _collect_guard_attempts(root, execution_id, packet_id)
-    source = Path(*CONTINUITY_TREE, execution_id, "guards").as_posix()
+    source = (_operational_path(root, EXECUTIONS_SUBDIR, execution_id, "guards")
+              .relative_to(root).as_posix())
     return {"source": source, "consumed": len(attempts), "attempts": attempts}
 
 
@@ -3116,7 +3135,7 @@ def _managed_context_without_state(root: Path, context_path: Path,
 
     The identity is never read with a local precedence (008-003 §4.2): it is the
     one the shared core already resolved for this context."""
-    executions_root = (root / ".cdad" / "executions").resolve()
+    executions_root = _operational_path(root, EXECUTIONS_SUBDIR).resolve()
     try:
         context_path.resolve().relative_to(executions_root)
         return True

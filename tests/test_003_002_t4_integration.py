@@ -18,8 +18,8 @@ el INSTALADO por `install.sh --basic`:
 
 invocado desde un PROYECTO FIXTURE (tempdir) que contiene sólo los
 artefactos del proyecto (docs/cdad-policy.json,
-.cdad/executions/<id>/execution.json,
-.cdad/packets/<id>/{REQUEST.json,PACKET.md}, docs/.cdad-state.json) y
+.cdad-execution/executions/<id>/execution.json,
+.cdad-execution/packets/<id>/{REQUEST.json,PACKET.md}, docs/.cdad-state.json) y
 NINGÚN wrapper del repo. Patrón de instalación aislada reutilizado
 (sin modificar): tests/product_staging.py (PRODUCT_ROOT) y
 tests/test_004_001_acceptance_matrix.py (PRODUCT_ENTRIES = install.sh,
@@ -28,7 +28,7 @@ CDAD_INSTALL_ROOT apuntando a un tempdir EXISTENTE + install.sh --basic).
 
 Fixtures offline: proyecto sintético v2 preparado con el runtime de 001
 (`prepare` + `--record-dispatch`, I8), igual que T1/T2; parts staged bajo
-`.cdad/inbox`. Todo proyecto es tempdir; NUNCA se escribe en el repo ni se
+`.cdad-execution/inbox`. Todo proyecto es tempdir; NUNCA se escribe en el repo ni se
 instala en el HOME real.
 
 RED honesto: T1–T3 ya entregaron `cdad_result.py`; si una aserción pasa hoy
@@ -36,6 +36,8 @@ se declara GUARD (pre-satisfecha) con su razón; no se fabrica una falla.
 """
 
 from __future__ import annotations
+
+from _layout_support import write_declaration
 
 import hashlib
 import json
@@ -77,7 +79,7 @@ CONTRACT_BYTES = b"# Spec fixture 003-002 (T4 RED)\n"
 ROLE = "test-writer"
 SUBSTAGE = "red"
 ATTEMPT_ID = "attempt-t4-red-001"
-AUTHORIZED_BY = "Pablo (HITL delegada al orquestador OpenCode)"
+AUTHORIZED_BY = "<owner> (HITL delegada al orquestador OpenCode)"
 
 # staged parts del fixture (§3; kinds de la tabla cerrada del rol).
 STAGED_PARTS: dict[str, bytes] = {
@@ -98,8 +100,8 @@ PART_NAME = "role-report"
 
 BASELINE_REF = "orchestrator-prepared-reference"
 BASELINE_SHA256 = "0" * 64
-MANIFEST_PATH = ".cdad/inbox/changes.json"
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
 
 # Raíz permitida por kind `test-writer-role-report` (§7) y target exacto.
 ALLOWED_ROOT = f"docs/specs/{FEATURE_ID}/"
@@ -159,14 +161,14 @@ def fixture_state_document() -> dict:
         "stage_history": [{
             "feature": FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-05T00:00:00Z",
             # 005-001 T1 (D3): forma pineada — CONTRACT_BYTES es lo que
             # build_project escribe en CONTRACT_FILE (migración mecánica).
             "contract_path": CONTRACT_FILE,
             "contract_sha256": hashlib.sha256(CONTRACT_BYTES).hexdigest(),
         }],
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-10-05T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -180,6 +182,7 @@ def build_project(root: Path) -> Path:
     (root / "tests").mkdir(exist_ok=True)
     (root / "src").mkdir(exist_ok=True)
     (root / "docs").mkdir(exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps({
             "schema_version": 1,
@@ -188,7 +191,7 @@ def build_project(root: Path) -> Path:
                 "implementation_roots": ["src", "lib"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
     (root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -278,7 +281,7 @@ class FixtureProjectCase(InstalledProductCase):
 
     @property
     def final_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     @property
@@ -304,7 +307,7 @@ class FixtureProjectCase(InstalledProductCase):
         El proyecto se prepara con el runtime de 001 en un tempdir
         intermedio y luego se copia COMPLETO al fixture: el fixture contiene
         sólo los artefactos del proyecto (docs/cdad-policy.json,
-        docs/.cdad-state.json, .cdad/executions, .cdad/packets, .cdad/inbox)
+        docs/.cdad-state.json, .cdad-execution/executions, .cdad-execution/packets, .cdad-execution/inbox)
         y ningún script del repo.
         """
         source = build_project(Path(self._proj_tmp) / "prep")
@@ -337,9 +340,9 @@ class FixtureProjectCase(InstalledProductCase):
             self.execution_id,
             msg="precondición (fixture): state.execution debe referenciar "
                 "el contexto v2 de 001")
-        for rel in (f".cdad/executions/{self.execution_id}/execution.json",
-                    f".cdad/packets/{self.packet_id}/PACKET.md",
-                    f".cdad/packets/{self.packet_id}/REQUEST.json"):
+        for rel in (f".cdad-execution/executions/{self.execution_id}/execution.json",
+                    f".cdad-execution/packets/{self.packet_id}/PACKET.md",
+                    f".cdad-execution/packets/{self.packet_id}/REQUEST.json"):
             self.assertTrue(
                 (root / rel).is_file(),
                 msg=f"precondición (fixture): debe existir {rel} (runtime v2)")
@@ -374,7 +377,7 @@ class FixtureProjectCase(InstalledProductCase):
 
     def establish_inbox(self, root: Path) -> None:
         """Parts staged + manifest trusted vacío + descriptor (§3/§4)."""
-        inbox = root / ".cdad" / "inbox"
+        inbox = root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in STAGED_PARTS.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -396,7 +399,7 @@ class FixtureProjectCase(InstalledProductCase):
                 "parts": [
                     {"name": name,
                      "artifact_kind": PART_KINDS[name],
-                     "staged_path": f".cdad/inbox/{name}.md"}
+                     "staged_path": f".cdad-execution/inbox/{name}.md"}
                     for name in STAGED_PARTS
                 ],
                 "observed_changes": {
@@ -412,16 +415,16 @@ class FixtureProjectCase(InstalledProductCase):
 
     @property
     def execution_context_path(self) -> Path:
-        return (self.root / ".cdad" / "executions" / self.execution_id
+        return (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json")
 
     @property
     def packet_path(self) -> Path:
-        return self.root / ".cdad" / "packets" / self.packet_id / "PACKET.md"
+        return self.root / ".cdad-execution" / "packets" / self.packet_id / "PACKET.md"
 
     @property
     def request_path(self) -> Path:
-        return self.root / ".cdad" / "packets" / self.packet_id / "REQUEST.json"
+        return self.root / ".cdad-execution" / "packets" / self.packet_id / "REQUEST.json"
 
     # -- recorrido --------------------------------------------------------------
 
@@ -442,12 +445,12 @@ class FixtureProjectCase(InstalledProductCase):
             "materialize",
             "--project-root", str(self.root),
             "--receipt", str(self.receipt_path),
-            "--authorization", str(self.root / ".cdad" / "inbox"
+            "--authorization", str(self.root / ".cdad-execution" / "inbox"
                                    / "MATERIALIZE.json"),
         ])
 
     def write_authorization(self) -> Path:
-        auth_path = self.root / ".cdad" / "inbox" / "MATERIALIZE.json"
+        auth_path = self.root / ".cdad-execution" / "inbox" / "MATERIALIZE.json"
         auth_path.write_text(
             json.dumps({
                 "schema_version": 1,
@@ -496,7 +499,7 @@ class FixtureProjectCase(InstalledProductCase):
         state["stage_history"].append({
             "feature": FEATURE_ID,
             "stage": "tdd",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-05T00:00:01Z",
             "receipt_sha256": self.receipt_sha256,
         })
@@ -543,7 +546,7 @@ class TestT4IntegrationWalkthrough(FixtureProjectCase):
     def test_t4_receive_then_materialize_from_installed_entrypoint(self) -> None:
         """P1/P4 + criterio «Smoke instalado»: desde el proyecto fixture y
         con el entrypoint INSTALADO, `receive` persiste cada part con bytes
-        idénticos bajo `.cdad/runtime/results/<execution_id>/<packet_id>/`
+        idénticos bajo `.cdad-execution/runtime/results/<execution_id>/<packet_id>/`
         (§5), escribe en stdout exactamente los bytes del receipt canónico y
         `materialize` copia los bytes originales al target exacto declarado
         en la autorización (§7), con exit 0 en ambos."""
@@ -580,7 +583,7 @@ class TestT4IntegrationWalkthrough(FixtureProjectCase):
             if before.get(rel) != data)
         for rel in changed:
             self.assertTrue(
-                rel == TARGET_REPORT or rel.startswith(".cdad/"),
+                rel == TARGET_REPORT or rel.startswith(".cdad-execution/"),
                 msg=f"P1/P4: el recorrido escribió fuera de los targets y "
                     f"del store operacional: {rel}")
 
@@ -648,7 +651,7 @@ class TestT4IdempotentIntegration(FixtureProjectCase):
             rel for rel, data in after.items() if before.get(rel) != data)
         for rel in changed:
             self.assertTrue(
-                rel.startswith(".cdad/"),
+                rel.startswith(".cdad-execution/"),
                 msg=f"P2/P4: el retry de materialize sólo puede tocar el "
                     f"journal/store bajo `.cdad/`, nunca duplicar efectos "
                     f"en targets: {rel}")
@@ -764,7 +767,7 @@ class TestT4RetryAfterReconciledState(FixtureProjectCase):
             if targets_before.get(rel) != data)
         for rel in changed:
             self.assertTrue(
-                rel.startswith(".cdad/"),
+                rel.startswith(".cdad-execution/"),
                 msg=f"plan T4: el retry con el state ya reconciliado no "
                     f"debe repetir efectos fuera del journal/store: {rel}")
 

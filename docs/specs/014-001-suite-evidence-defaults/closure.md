@@ -2,7 +2,7 @@
 
 **Epic:** `epic-014-suite-evidence-policy` — orden 1/1. **Cerrada:** 2026-11-02.
 **Contrato:** `docs/specs/014-001-suite-evidence-defaults/spec.md`, sha256
-`6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0`, aprobado por Pablo (HITL delegada).
+`6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0`, aprobado por <owner> (HITL delegada).
 **Estado:** cerrada en el repositorio; **no publicada ni desplegada**.
 
 ## 1. Resultado

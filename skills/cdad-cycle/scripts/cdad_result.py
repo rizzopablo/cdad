@@ -7,7 +7,7 @@
 - validates execution/state and the packet through the public validators of
   `cdad_packet.py` (validate-state / validate-request / rendered packet);
 - persists each part byte-for-byte under
-  `PROJECT_ROOT/.cdad/runtime/results/<execution_id>/<packet_id>/`
+  `PROJECT_ROOT/<operational_dir>/runtime/results/<execution_id>/<packet_id>/`
   (`parts/<name>.utf8`, `bundle.json`, `receipt.json`) through a sibling
   temporary directory published with one exclusive rename;
 - is idempotent: an identical retry returns the durable receipt byte-for-byte;
@@ -66,11 +66,13 @@ class ResultError(ValueError):
     """A result descriptor, manifest or store state violates the contract."""
 
 
-RUNTIME_RELPATH = Path(".cdad") / "runtime"
-RESULTS_RELPATH = RUNTIME_RELPATH / "results"
-MATERIALIZE_RELPATH = RUNTIME_RELPATH / "materializations"
-INBOX_RELPATH = Path(".cdad") / "inbox"
-EXECUTIONS_RELPATH = Path(".cdad") / "executions"
+# 020-001: operational stores live under the DECLARED operational directory of
+# the project (`cdad_layout.operational_dir`), never under a fixed prefix.
+RUNTIME_DIRNAME = "runtime"
+RESULTS_RELDIRNAME = "runtime/results"
+MATERIALIZE_RELDIRNAME = "runtime/materializations"
+INBOX_DIRNAME = "inbox"
+EXECUTIONS_DIRNAME = "executions"
 # 019-004 §4.2: the state lives at the selected methodology base (`docs/` when no
 # locator exists). Consumers resolve it through `_state_path`, never a literal.
 # The ONE name of the durable receipt inside the result directory of an
@@ -130,7 +132,7 @@ RUN_SHELL_OPERATOR_TOKENS = {
     "1>", "1>>", "2>", "2>>",
 }
 RUN_SHELL_OPERATOR_CHARS = frozenset(";&|<>`")
-SNAPSHOT_EXCLUDED_RELPATHS = (".cdad/runtime", ".cdad/inbox")
+SNAPSHOT_EXCLUDED_SUBDIRS = (RUNTIME_DIRNAME, INBOX_DIRNAME)
 _RAN_RE = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
 _FAILURES_RE = re.compile(r"failures=(\d+)")
 _ERRORS_RE = re.compile(r"errors=(\d+)")
@@ -222,8 +224,34 @@ def _segment(value: Any, label: str) -> str:
     return value
 
 
+def operational_dir(project_root: Path) -> str:
+    """020-001 PC-1: the declared operational directory, or a ResultError."""
+    try:
+        return cdad_layout.operational_dir(project_root)
+    except cdad_layout.LayoutError as exc:
+        raise ResultError(str(exc)) from exc
+
+
+def _operational_root(project_root: Path) -> Path:
+    return project_root / operational_dir(project_root)
+
+
+def _operational_relpath(project_root: Path, *parts: str) -> str:
+    return "/".join((operational_dir(project_root), *parts))
+
+
+def inbox_relpath(project_root: Path) -> str:
+    """Repository-relative inbox of the declared operational directory."""
+    return _operational_relpath(project_root, INBOX_DIRNAME)
+
+
+def results_relpath(project_root: Path) -> str:
+    """Repository-relative durable results root of the project."""
+    return _operational_relpath(project_root, *RESULTS_RELDIRNAME.split("/"))
+
+
 def _final_dir(project_root: Path, execution_id: str, packet_id: str) -> Path:
-    return (project_root / RESULTS_RELPATH
+    return (_operational_root(project_root) / RESULTS_RELDIRNAME
             / _segment(execution_id, "execution_id")
             / _segment(packet_id, "packet_id"))
 
@@ -233,7 +261,7 @@ def durable_receipt_path(project_root: Path, execution_id: Any,
     """The ONE location of the durable receipt of an (execution, packet).
 
     003-002 publishes one result directory per errand; its receipt is
-    `<root>/.cdad/runtime/results/<execution_id>/<packet_id>/receipt.json`.
+    `<root>/<operational_dir>/runtime/results/<execution_id>/<packet_id>/receipt.json`.
     Consumers that must decide whether a reference IS that receipt import this
     rule (ADR-036) instead of composing the path themselves; the segments are
     validated here, so a forged identity is rejected.
@@ -278,7 +306,7 @@ def _read_parts(descriptor: dict[str, Any],
     raw_parts = descriptor.get("parts")
     if not isinstance(raw_parts, list) or not raw_parts:
         raise ResultError("descriptor.parts must be a non-empty list")
-    inbox = (project_root / INBOX_RELPATH).resolve()
+    inbox = (_operational_root(project_root) / INBOX_DIRNAME).resolve()
     parts: list[dict[str, Any]] = []
     seen: set[str] = set()
     total = 0
@@ -300,7 +328,8 @@ def _read_parts(descriptor: dict[str, Any],
                                f"descriptor.parts[{index}].staged_path")
         if not _is_within(staged, inbox):
             raise ResultError(
-                f"part {name!r} escapes the inbox ({INBOX_RELPATH.as_posix()}): "
+                f"part {name!r} escapes the inbox "
+                f"({_operational_relpath(project_root, INBOX_DIRNAME)}): "
                 f"{part.get('staged_path')!r}")
         if not staged.is_file():
             raise ResultError(f"staged part {name!r} not found: {staged}")
@@ -740,7 +769,8 @@ def receive(args: argparse.Namespace, project_root: Path) -> bytes:
                 "sha256": part["sha256"],
                 "bytes": part["bytes"],
                 "stored_ref": (
-                    f"{RESULTS_RELPATH.as_posix()}/{descriptor['execution_id']}/"
+                    f"{_operational_relpath(project_root, *RESULTS_RELDIRNAME.split('/'))}/"
+                    f"{descriptor['execution_id']}/"
                     f"{descriptor['packet_id']}/parts/{part['name']}.utf8"),
             }
             for part in parts
@@ -942,7 +972,8 @@ def _validate_authorization(authorization: dict[str, Any]) -> None:
 
 def _journal_path(project_root: Path, execution_id: str, packet_id: str,
                   authorization_sha: str) -> Path:
-    return (project_root / MATERIALIZE_RELPATH / _segment(execution_id, "execution_id")
+    return (_operational_root(project_root) / MATERIALIZE_RELDIRNAME
+            / _segment(execution_id, "execution_id")
             / _segment(packet_id, "packet_id") / f"{authorization_sha}.json")
 
 
@@ -1069,7 +1100,8 @@ def materialize(args: argparse.Namespace, project_root: Path) -> None:
             "receipt semantic_status must remain pending: materialize never approves")
 
     execution_document = _load_json(
-        project_root / EXECUTIONS_RELPATH / execution_id / "execution.json",
+        _operational_root(project_root) / EXECUTIONS_DIRNAME / execution_id
+        / "execution.json",
         "execution context")
     execution = _object(execution_document.get("execution"), "execution context execution")
     if execution.get("id") != execution_id or execution.get("feature_id") != feature_id:
@@ -1471,9 +1503,7 @@ def _collect_snapshot(project_root: Path, base: Path, patterns: list[str],
         except (ValueError, OSError):
             continue
         parts = rel.split("/")
-        if ".git" in parts or any(
-                rel == excluded or rel.startswith(excluded + "/")
-                for excluded in SNAPSHOT_EXCLUDED_RELPATHS):
+        if _snapshot_excluded(project_root, rel):
             continue
         if current.is_dir():
             if rel in visited:
@@ -1492,13 +1522,15 @@ def _collect_snapshot(project_root: Path, base: Path, patterns: list[str],
             entries[rel] = _sha256(_read_bytes(current, "snapshot file"))
 
 
-def _snapshot_excluded(rel: str) -> bool:
-    """Excluded from snapshots: `.git` and the coordination stores of `.cdad`."""
+def _snapshot_excluded(project_root: Path, rel: str) -> bool:
+    """Excluded from snapshots: `.git` and the runtime/inbox coordination stores."""
     parts = rel.split("/")
     if ".git" in parts:
         return True
     return any(rel == excluded or rel.startswith(excluded + "/")
-               for excluded in SNAPSHOT_EXCLUDED_RELPATHS)
+               for excluded in (
+                   _operational_relpath(project_root, subdir)
+                   for subdir in SNAPSHOT_EXCLUDED_SUBDIRS))
 
 
 def _git_listing(project_root: Path) -> list[str] | None:
@@ -1548,7 +1580,7 @@ def _snapshot(project_root: Path, selections: list[str]) -> dict[str, Any]:
         for rel in git_paths:
             if not any(_rel_within(rel, root) for root in roots):
                 continue
-            if _snapshot_excluded(rel):
+            if _snapshot_excluded(project_root, rel):
                 continue
             full = project_root / rel
             if full.is_file():

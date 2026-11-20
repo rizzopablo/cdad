@@ -1,6 +1,6 @@
 # Directiva del owner — test por contrato, no por cobertura (provisional)
 
-**Vigente desde:** 2026-10-27, por decisión del dueño (Pablo).
+**Vigente desde:** 2026-10-27, por decisión del dueño (<owner>).
 **Alcance:** todo el epic 008, a partir de su aplicación en 008-002 y hasta que 008-006 la formalice en las fuentes de los roles.
 **Estado:** provisional — se prueba en uso antes de convertirla en doctrina del producto.
 

@@ -33,7 +33,7 @@ All evidence collected. Final report:
 - **Focales T1/T2/T3/T4:** `… test_017_001_suite_profile.py …_operations.py …_reconcile.py …_external.py` → **41 passed en 45.60 s**.
 - **Regresión proporcional** (consumidores de `close`/canarios): `test_008_002_suite_evidence.py`, `test_008_002_suite_selection.py`, `test_008_005_ci_gate.py`, `test_013_002_live_inventory.py`, `test_014_001_suite_evidence_defaults.py` → **60 passed en 45.90 s**.
 - `python3 scripts/cdad-suite.py validate` → **rc 0**.
-- **Corrida real corta** (dos archivos tranche, `--workers 2`, evidencia en `~/clawd/tmp/t6-green-evidence`, fuera del checkout) → **rc 0**: veredicto `accepted`; `orphans 0/0/0 checked True`; worker-0 `pgid=1207531 wall=0.699 s`, worker-1 `pgid=1207532 wall=1.853 s`, `total_wall=1.857 s` (≈ max, arranque conjunto), `overlap=0.696 s`; canario config `unchanged True delta 0`; checkout `unchanged True` (20199 archivos, 434253273 bytes); consolidado `passed=2 failed=0 skipped=0`.
+- **Corrida real corta** (dos archivos tranche, `--workers 2`, evidencia en `~/<workspace>/tmp/t6-green-evidence`, fuera del checkout) → **rc 0**: veredicto `accepted`; `orphans 0/0/0 checked True`; worker-0 `pgid=1207531 wall=0.699 s`, worker-1 `pgid=1207532 wall=1.853 s`, `total_wall=1.857 s` (≈ max, arranque conjunto), `overlap=0.696 s`; canario config `unchanged True delta 0`; checkout `unchanged True` (20199 archivos, 434253273 bytes); consolidado `passed=2 failed=0 skipped=0`.
 - Higiene: `sleep 60` vivos → 0; centinelas `build/.canary_probe_*` → ninguno (los tests N1/N2 limpian los suyos).
 - **Suite completa no realizada**: sin autorización para corrida completa y con prohibición expresa del packet; selección ejecutada: T6 (14) + T1–T4 (41) + regresión (60) + `validate`.
 

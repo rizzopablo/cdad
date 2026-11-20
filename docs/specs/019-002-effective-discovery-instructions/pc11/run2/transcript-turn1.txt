@@ -1,20 +1,20 @@
 OWNER INPUT (protected, verbatim): I own a small command-line notes tool (the project in this directory). I want to be able to tag my notes and then list only the notes that carry a given tag. Please start a CDAD feature for this and guide me through it. Ask me what you need; I decide the behaviour. 
 
 TEXT: I'll start by looking at the project directory to see what state it's in.
-TOOL shell {"command": "pwd && ls -la && git -C . status --short | head -20 && git log --oneline | head -5 && ls -la docs 2>/dev/null", "workdir": "~/clawd/tmp/cand019b"} 
-  => ~/clawd/tmp/cand019b
+TOOL shell {"command": "pwd && ls -la && git -C . status --short | head -20 && git log --oneline | head -5 && ls -la docs 2>/dev/null", "workdir": "~/<workspace>/tmp/cand019b"} 
+  => ~/<workspace>/tmp/cand019b
 total 68
-drwxrwxr-x  6 ofap ofap   8 Nov 15 17:54 .
-drwxrwxr-x 64 ofap ofap 306 Nov 15 17:54 ..
-drwxrwxr-x  8 ofap ofap  13 Nov 15 17:54 .git
--rw-rw-r--  1 ofap ofap  24 Nov 15 17:54 .gitignore
-drwxrwxr-x  2 ofap ofap   5 Nov 15 17:54 notes
-drwxrwxr-x  4 ofap ofap   4 Nov 15 17:54 .opencode
--rw-rw-r--  1 ofap ofap  42 Nov 15 17:54 README.md
-drwxrwxr-x  2 ofap ofap   2 Nov 15 17:54 tests
+drwxrwxr-x  6 <owner> <owner>   8 Nov 15 17:54 .
+drwxrwxr-x 64 <owner> <owner> 306 Nov 15 17:54 ..
+drwxrwxr-x  8 <owner> <owner>  13 Nov 15 17:54 .git
+-rw-rw-r--  1 <owner> <owner>  24 Nov 15 17:54 .gitignore
+drwxrwxr-x  2 <owner> <owner>   5 Nov 15 17:54 notes
+drwxrwxr-x  4 <owner> <owner>   4 Nov 15 17:54 .opencode
+-rw-rw-r--  1 <owner> <owner>  42 Nov 15 17:54 README.md
+drwxrwxr-x  2 <owner> <owner>   2 Nov 15 17:54 tests
 707e286 initial scratch project
 
-TOOL shell {"command": "cat README.md .gitignore; echo ---; ls -la notes tests .opencode; echo ---; find .opencode -maxdepth 3 | head -50; echo ---; for f in $(git ls-files); do echo \"== $f\"; done", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "cat README.md .gitignore; echo ---; ls -la notes tests .opencode; echo ---; find .opencode -maxdepth 3 | head -50; echo ---; for f in $(git ls-files); do echo \"== $f\"; done", "workdir": "~/<workspace>/tmp/cand019b"} 
   => # notes-cli
 Tiny notes command line tool.
 .opencode/
@@ -22,23 +22,23 @@ __pycache__/
 ---
 notes:
 total 19
-drwxrwxr-x 2 ofap ofap   5 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap   8 Nov 15 17:54 ..
--rw-rw-r-- 1 ofap ofap 356 Nov 15 17:54 cli.py
--rw-rw-r-- 1 ofap ofap   0 Nov 15 17:54 __init__.py
--rw-rw-r-- 1 ofap ofap 619 Nov 15 17:54 storage.py
+drwxrwxr-x 2 <owner> <owner>   5 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner>   8 Nov 15 17:54 ..
+-rw-rw-r-- 1 <owner> <owner> 356 Nov 15 17:54 cli.py
+-rw-rw-r-- 1 <owner> <owner>   0 Nov 15 17:54 __init__.py
+-rw-rw-r-- 1 <owner> <owner> 619 Nov 15 17:54 storage.py
 
 .opencode:
 total 18
-drwxrwxr-x 4 ofap ofap 4 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap 8 Nov 15 17:54 ..
-drwxrwxr-x 2 ofap ofap 8 Nov 15 17:54 agents
-drwxrwxr-x 4 ofap ofap 4 Nov 15 17:54 skills
+drwxrwxr-x 4 <owner> <owner> 4 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner> 8 Nov 15 17:54 ..
+drwxrwxr-x 2 <owner> <owner> 8 Nov 15 17:54 agents
+drwxrwxr-x 4 <owner> <owner> 4 Nov 15 17:54 skills
 
 tests:
 total 9
-drwxrwxr-x 2 ofap ofap 2 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap 8 Nov 15 17:54 ..
+drwxrwxr-x 2 <owner> <owner> 2 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner> 8 Nov 15 17:54 ..
 ---
 .opencode
 .opencode/skills
@@ -64,8 +64,8 @@ drwxrwxr-x 6 ofap ofap 8 Nov 15 17:54 ..
 == notes/cli.py
 == notes/storage.py
 
-TOOL read {"path": "~/clawd/tmp/cand019b/notes/cli.py"} 
-  => Read file ~/clawd/tmp/cand019b/notes/cli.py, lines 1-15
+TOOL read {"path": "~/<workspace>/tmp/cand019b/notes/cli.py"} 
+  => Read file ~/<workspace>/tmp/cand019b/notes/cli.py, lines 1-15
 1: import sys
 2: from . import storage
 3: 
@@ -81,8 +81,8 @@ TOOL read {"path": "~/clawd/tmp/cand019b/notes/cli.py"}
 13: 
 14: if __name__ == "__main__":
 15:     main(sys.argv[1:])
-TOOL read {"path": "~/clawd/tmp/cand019b/notes/storage.py"} 
-  => Read file ~/clawd/tmp/cand019b/notes/storage.py, lines 1-27
+TOOL read {"path": "~/<workspace>/tmp/cand019b/notes/storage.py"} 
+  => Read file ~/<workspace>/tmp/cand019b/notes/storage.py, lines 1-27
 1: """Notes are kept in notes.json as a JSON list; a note's id is its list index."""
 2: import json, os
 3: PATH = os.environ.get("NOTES_FILE", "notes.json")
@@ -110,61 +110,61 @@ TOOL read {"path": "~/clawd/tmp/cand019b/notes/storage.py"}
 25: 
 26: def all_notes():
 27:     return list(enumerate(load()))
-TOOL shell {"command": "ls -la .opencode/skills/cdad-cycle/scripts .opencode/skills/cdad-cycle/references | head -60; ls -la .opencode/skills/cdad-cycle/packets | head", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "ls -la .opencode/skills/cdad-cycle/scripts .opencode/skills/cdad-cycle/references | head -60; ls -la .opencode/skills/cdad-cycle/packets | head", "workdir": "~/<workspace>/tmp/cand019b"} 
   => .opencode/skills/cdad-cycle/references:
 total 319
-drwxrwxr-x 2 ofap ofap    29 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap     7 Nov 15 17:54 ..
--rw-rw-r-- 1 ofap ofap 17394 Nov 15 17:54 anti-patterns.md
--rw-rw-r-- 1 ofap ofap  6041 Nov 15 17:54 bootstrap.md
--rw-rw-r-- 1 ofap ofap  6228 Nov 15 17:54 capabilities.md
--rw-rw-r-- 1 ofap ofap 30997 Nov 15 17:54 cli-delegation.md
--rw-rw-r-- 1 ofap ofap 24416 Nov 15 17:54 context-meter.md
--rw-rw-r-- 1 ofap ofap 14411 Nov 15 17:54 continuity.md
--rw-rw-r-- 1 ofap ofap 12670 Nov 15 17:54 contract-test-links.md
--rw-rw-r-- 1 ofap ofap  1139 Nov 15 17:54 design-principles.md
--rw-rw-r-- 1 ofap ofap  9859 Nov 15 17:54 documentary-contracts.md
--rw-rw-r-- 1 ofap ofap 43261 Nov 15 17:54 handoff-prompts.md
--rw-rw-r-- 1 ofap ofap 13668 Nov 15 17:54 orientation.md
--rw-rw-r-- 1 ofap ofap  4029 Nov 15 17:54 progress-guards.md
--rw-rw-r-- 1 ofap ofap 20140 Nov 15 17:54 project-execution.md
--rw-rw-r-- 1 ofap ofap 14074 Nov 15 17:54 project-start.md
--rw-rw-r-- 1 ofap ofap 11384 Nov 15 17:54 receiving-feedback.md
--rw-rw-r-- 1 ofap ofap 36589 Nov 15 17:54 re-entry.md
--rw-rw-r-- 1 ofap ofap  4325 Nov 15 17:54 runtime-adoption.md
--rw-rw-r-- 1 ofap ofap  3872 Nov 15 17:54 stage-1-discovery.md
--rw-rw-r-- 1 ofap ofap 24370 Nov 15 17:54 stage-2-specification.md
--rw-rw-r-- 1 ofap ofap 31614 Nov 15 17:54 stage-3-tdd.md
--rw-rw-r-- 1 ofap ofap 16943 Nov 15 17:54 stage-4-review.md
--rw-rw-r-- 1 ofap ofap 12135 Nov 15 17:54 stage-5-merge.md
--rw-rw-r-- 1 ofap ofap  9231 Nov 15 17:54 stage-debugging.md
--rw-rw-r-- 1 ofap ofap  7356 Nov 15 17:54 state-detection.md
--rw-rw-r-- 1 ofap ofap  9792 Nov 15 17:54 sub-agent-strategies.md
--rw-rw-r-- 1 ofap ofap  4448 Nov 15 17:54 suite-review.md
--rw-rw-r-- 1 ofap ofap  5840 Nov 15 17:54 verdict-tuple.md
+drwxrwxr-x 2 <owner> <owner>    29 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner>     7 Nov 15 17:54 ..
+-rw-rw-r-- 1 <owner> <owner> 17394 Nov 15 17:54 anti-patterns.md
+-rw-rw-r-- 1 <owner> <owner>  6041 Nov 15 17:54 bootstrap.md
+-rw-rw-r-- 1 <owner> <owner>  6228 Nov 15 17:54 capabilities.md
+-rw-rw-r-- 1 <owner> <owner> 30997 Nov 15 17:54 cli-delegation.md
+-rw-rw-r-- 1 <owner> <owner> 24416 Nov 15 17:54 context-meter.md
+-rw-rw-r-- 1 <owner> <owner> 14411 Nov 15 17:54 continuity.md
+-rw-rw-r-- 1 <owner> <owner> 12670 Nov 15 17:54 contract-test-links.md
+-rw-rw-r-- 1 <owner> <owner>  1139 Nov 15 17:54 design-principles.md
+-rw-rw-r-- 1 <owner> <owner>  9859 Nov 15 17:54 documentary-contracts.md
+-rw-rw-r-- 1 <owner> <owner> 43261 Nov 15 17:54 handoff-prompts.md
+-rw-rw-r-- 1 <owner> <owner> 13668 Nov 15 17:54 orientation.md
+-rw-rw-r-- 1 <owner> <owner>  4029 Nov 15 17:54 progress-guards.md
+-rw-rw-r-- 1 <owner> <owner> 20140 Nov 15 17:54 project-execution.md
+-rw-rw-r-- 1 <owner> <owner> 14074 Nov 15 17:54 project-start.md
+-rw-rw-r-- 1 <owner> <owner> 11384 Nov 15 17:54 receiving-feedback.md
+-rw-rw-r-- 1 <owner> <owner> 36589 Nov 15 17:54 re-entry.md
+-rw-rw-r-- 1 <owner> <owner>  4325 Nov 15 17:54 runtime-adoption.md
+-rw-rw-r-- 1 <owner> <owner>  3872 Nov 15 17:54 stage-1-discovery.md
+-rw-rw-r-- 1 <owner> <owner> 24370 Nov 15 17:54 stage-2-specification.md
+-rw-rw-r-- 1 <owner> <owner> 31614 Nov 15 17:54 stage-3-tdd.md
+-rw-rw-r-- 1 <owner> <owner> 16943 Nov 15 17:54 stage-4-review.md
+-rw-rw-r-- 1 <owner> <owner> 12135 Nov 15 17:54 stage-5-merge.md
+-rw-rw-r-- 1 <owner> <owner>  9231 Nov 15 17:54 stage-debugging.md
+-rw-rw-r-- 1 <owner> <owner>  7356 Nov 15 17:54 state-detection.md
+-rw-rw-r-- 1 <owner> <owner>  9792 Nov 15 17:54 sub-agent-strategies.md
+-rw-rw-r-- 1 <owner> <owner>  4448 Nov 15 17:54 suite-review.md
+-rw-rw-r-- 1 <owner> <owner>  5840 Nov 15 17:54 verdict-tuple.md
 
 .opencode/skills/cdad-cycle/scripts:
 total 647
-drwxrwxr-x 2 ofap ofap     14 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap      7 Nov 15 17:54 ..
--rw-rw-r-- 1 ofap ofap  82318 Nov 15 17:54 cdad_context_meter.py
--rw-rw-r-- 1 ofap ofap 154038 Nov 15 17:54 cdad_continuity.py
--rwxrwxr-x 1 ofap ofap  79185 Nov 15 17:54 cdad_contract_links.py
--rw-rw-r-- 1 ofap ofap 161292 Nov 15 17:54 cdad_delegate_opencode.py
--rw-rw-r-- 1 ofap ofap  29960 Nov 15 17:54 cdad_delegate.py
--rw-rw-r-- 1 ofap ofap  62294 Nov 15 17:54 cdad_dispatch.py
--rw-rw-r-- 1 ofap ofap  38829 Nov 15 17:54 cdad_guard.py
--rw-rw-r-- 1 ofap ofap  24122 Nov 15 17:54 cdad_lifecycle.py
--rw-rw-r-- 1 ofap ofap 568399 Nov 15 17:54 cdad_packet.py
--rw-rw-r-- 1 ofap ofap  81497 Nov 15 17:54 cdad_result.py
--rw-rw-r-- 1 ofap ofap  63665 Nov 15 17:54 cdad_suite_review.py
--rw-rw-r-- 1 ofap ofap  10992 Nov 15 17:54 cdad-version-check.py
+drwxrwxr-x 2 <owner> <owner>     14 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner>      7 Nov 15 17:54 ..
+-rw-rw-r-- 1 <owner> <owner>  82318 Nov 15 17:54 cdad_context_meter.py
+-rw-rw-r-- 1 <owner> <owner> 154038 Nov 15 17:54 cdad_continuity.py
+-rwxrwxr-x 1 <owner> <owner>  79185 Nov 15 17:54 cdad_contract_links.py
+-rw-rw-r-- 1 <owner> <owner> 161292 Nov 15 17:54 cdad_delegate_opencode.py
+-rw-rw-r-- 1 <owner> <owner>  29960 Nov 15 17:54 cdad_delegate.py
+-rw-rw-r-- 1 <owner> <owner>  62294 Nov 15 17:54 cdad_dispatch.py
+-rw-rw-r-- 1 <owner> <owner>  38829 Nov 15 17:54 cdad_guard.py
+-rw-rw-r-- 1 <owner> <owner>  24122 Nov 15 17:54 cdad_lifecycle.py
+-rw-rw-r-- 1 <owner> <owner> 568399 Nov 15 17:54 cdad_packet.py
+-rw-rw-r-- 1 <owner> <owner>  81497 Nov 15 17:54 cdad_result.py
+-rw-rw-r-- 1 <owner> <owner>  63665 Nov 15 17:54 cdad_suite_review.py
+-rw-rw-r-- 1 <owner> <owner>  10992 Nov 15 17:54 cdad-version-check.py
 total 31
-drwxrwxr-x 4 ofap ofap    5 Nov 15 17:54 .
-drwxrwxr-x 6 ofap ofap    7 Nov 15 17:54 ..
--rw-rw-r-- 1 ofap ofap 1682 Nov 15 17:54 common.md
-drwxrwxr-x 2 ofap ofap    7 Nov 15 17:54 roles
-drwxrwxr-x 2 ofap ofap   16 Nov 15 17:54 substages
+drwxrwxr-x 4 <owner> <owner>    5 Nov 15 17:54 .
+drwxrwxr-x 6 <owner> <owner>    7 Nov 15 17:54 ..
+-rw-rw-r-- 1 <owner> <owner> 1682 Nov 15 17:54 common.md
+drwxrwxr-x 2 <owner> <owner>    7 Nov 15 17:54 roles
+drwxrwxr-x 2 <owner> <owner>   16 Nov 15 17:54 substages
 
 TEXT: The project has no `docs/` folder and no CDAD state file, so this is a fresh start rather than a resume. I'll load the cdad-cycle methodology and its start-up procedure.
 TOOL skill {"id": "cdad-cycle"} 
@@ -332,8 +332,8 @@ For each role task, decide the mechanism in this order:
 3. **Neither native dispatch nor a new chat (forced single-session):** → act as the role inline applying the table's contract to yourself, with strict discipline. **Weaker assurance**: you cannot un-know what you already read in previous turns; tell the user.
 
 Never mix: if you started as orchestrator, don't write tests "becau
-TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md"} 
-  => Read file ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md, lines 1-248
+TOOL read {"path": "~/<workspace>/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md"} 
+  => Read file ~/<workspace>/tmp/cand019b/.opencode/skills/cdad-cycle/references/project-start.md, lines 1-248
 1: # Project start — from rest to the first useful delegation
 2: 
 3: Short procedure for when a **brief instruction** must start a project from rest
@@ -531,7 +531,7 @@ TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/
 195: the **agents** and the **CLI** are the same version:
 196: `python3 <skill-dir>/scripts/cdad-version-check.py --
 TEXT: The project-start procedure says a truly empty project needs bootstrap first. I'll run the read-only status view and read the bootstrap reference.
-TOOL shell {"command": "python3 ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root ~/clawd/tmp/cand019b; echo \"rc=$?\"", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "python3 ~/<workspace>/tmp/cand019b/.opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root ~/<workspace>/tmp/cand019b; echo \"rc=$?\"", "workdir": "~/<workspace>/tmp/cand019b"} 
   => {
   "authority": {
     "approval": {
@@ -607,8 +607,8 @@ TOOL shell {"command": "python3 ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle
 }
 rc=0
 
-TOOL read {"path": "~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md"} 
-  => Read file ~/clawd/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md, lines 1-129
+TOOL read {"path": "~/<workspace>/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md"} 
+  => Read file ~/<workspace>/tmp/cand019b/.opencode/skills/cdad-cycle/references/bootstrap.md, lines 1-129
 1: # Bootstrap — Initializing a new project in CDAD
 2: 
 3: When the project has no Memory Bank and no `docs/specs/`, the user is starting from scratch. This is the first time CDAD is applied to this project.

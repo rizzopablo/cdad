@@ -2,11 +2,11 @@
 
 - **Status**: Accepted
 - **Date**: 2026-10-17
-- **Deciders**: Pablo (dueño: aprobó el **cambio de alcance** del modo `service` el 2026-10-16 y la dirección
+- **Deciders**: <owner> (dueño: aprobó el **cambio de alcance** del modo `service` el 2026-10-16 y la dirección
   del epic; delegó la HITL del epic-006 a Claude) + orquestador Claude (HITL delegada: ratificó **D-11 (A)** y
   **D-9**, y condujo los recorridos reales y la suite de cierre) + architect (spec v2 y plan v2)
 - **Confidence**: Media
-- **Aprobación**: aprobado por Pablo el 2026-10-17 (Memory Bank de 006-001), a partir del borrador del scribe (patrón
+- **Aprobación**: aprobado por <owner> el 2026-10-17 (Memory Bank de 006-001), a partir del borrador del scribe (patrón
   Scribe; ADR-003/ADR-011). **Evidencia disponible:** contrato **spec v2** `dac418b9…` y **plan v2**
   `2726744…` aprobados juntos el 2026-10-16; RED→GREEN por unidad (T1 `91f7e98` → `4bc8934`+`a96c2d8`; T1b
   `7ccedb4` → `b949849`; T2 `8447443` → `ddba831`; T3 `5e5828a` → `d0a7963`); **review formal 3 bloqueantes /

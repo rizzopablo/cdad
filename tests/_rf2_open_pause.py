@@ -4,7 +4,7 @@
 Origen: evidencia de review `harness_b.py` / `p_orphan_inode.py`
 (scratchpad de la review T3/T4 suplente). Parchea `os.open` del proceso
 invocado para que ese proceso SE PAUSE (bandera) justo antes o justo
-después de abrir `<raíz>/.cdad/.lock`. NO inyecta opciones (el argv que
+después de abrir `<raíz>/<operational_dir>/.lock`. NO inyecta opciones (el argv que
 recibe se pasa integro al CLI) ni modifica el SUT: solo congela el
 tiempo en un punto donde el gancho oficial I5b/I5d no llega (entre el
 `open` y el `flock`), tal como lo hizo el reviewer.
@@ -24,6 +24,8 @@ import runpy
 import sys
 import time
 from pathlib import Path
+
+from _layout_support import OPERATIONAL_DIR  # one constant for the lock path
 
 _PAUSE_MAX = 30
 
@@ -45,7 +47,7 @@ def main() -> None:
     hit = {"done": False}
 
     def patched(path, flags, *a, **k):
-        if (not hit["done"]) and str(path).endswith(".cdad/.lock"):
+        if (not hit["done"]) and str(path).endswith(OPERATIONAL_DIR + "/.lock"):
             hit["done"] = True
             if when == "after-open":
                 fd = real_open(path, flags, *a, **k)

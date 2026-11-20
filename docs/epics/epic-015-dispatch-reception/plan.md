@@ -2,7 +2,7 @@
 epic_id: epic-015-dispatch-reception
 epic_name: Recepción de despachos contra fuentes congeladas
 created_at: 2026-11-02
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-02
 ---
 
@@ -23,7 +23,7 @@ Fix: validar contra los sha256 congelados en `REQUEST.json` (`instruction_source
 re-renderizar desde el árbol vivo. De paso: mensajes de error con el formato esperado, choque `docs=docs` vs
 referencias `contract`, y `open-unit` que abre unidades queued de epics cerrados (abrió 013-004).
 
-Insumo: todo del proyecto `0efea826` («CDAD: fix de recepción de despachos», pedido por Pablo 2026-11-02).
+Insumo: todo del proyecto `0efea826` («CDAD: fix de recepción de despachos», pedido por <owner> 2026-11-02).
 
 ## Alcance
 

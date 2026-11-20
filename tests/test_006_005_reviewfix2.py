@@ -772,7 +772,7 @@ class TestB3ExternalWalk(U6Fix8Case):
                 }
             ],
         }
-        authorization_path = (self.project["root"] / ".cdad" / "inbox"
+        authorization_path = (self.project["root"] / ".cdad-execution" / "inbox"
                               / "MATERIALIZE.json")
         authorization_path.write_text(
             json.dumps(authorization, indent=2, sort_keys=True) + "\n",

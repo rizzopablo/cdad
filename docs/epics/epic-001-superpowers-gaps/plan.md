@@ -2,7 +2,7 @@
 epic_id: epic-001-superpowers-gaps
 epic_name: superpowers-gaps
 created_at: 2026-09-02
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-09-02
 ---
 
@@ -94,8 +94,8 @@ Usado por: 008 y 009 (1), 005-009 (2), 007 (3).
 
 ## Stakeholders
 
-- **Aprobador del plan del epic**: Pablo
-- **Aprobador de specs de features**: Pablo
+- **Aprobador del plan del epic**: <owner>
+- **Aprobador de specs de features**: <owner>
 - **Operador del resultado**: cdad-orchestrator
 
 ## Cambios al plan
@@ -104,4 +104,4 @@ _(vacío — se actualiza durante el loop de features si el plan cambia)_
 
 ---
 
-Status: Approved by Pablo on 2026-09-02
+Status: Approved by <owner> on 2026-09-02

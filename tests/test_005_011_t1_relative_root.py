@@ -114,10 +114,10 @@ class _Fixture:
         assert packet_id, "fixture: no hay paquete activo tras `prepare`"
         execution_id = (state.get("execution") or {}).get("id")
         assert execution_id, "fixture: no hay binding de ejecución tras `prepare`"
-        packet_dir = self.root / ".cdad" / "packets" / packet_id
+        packet_dir = self.root / ".cdad-execution" / "packets" / packet_id
         request = packet_dir / "REQUEST.json"
         packet = packet_dir / "PACKET.md"
-        context = (self.root / ".cdad" / "executions" / execution_id
+        context = (self.root / ".cdad-execution" / "executions" / execution_id
                    / "execution.json")
         for path in (request, packet, context):
             assert path.is_file(), f"fixture: falta el artefacto {path}"

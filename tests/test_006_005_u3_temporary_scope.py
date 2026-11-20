@@ -64,6 +64,8 @@ seguir valiendo después de U3.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import json
 import os
 import re
@@ -88,10 +90,10 @@ AGENTS_ENV = "CDAD_OPENCODE_AGENTS_DIR"
 AGENTS_SOURCE = REPO_ROOT / "agents"
 
 # Selector del fixture: un subdirectorio de la raíz temporal declarada por la
-# política (contención, no igualdad) — D-5 C2/C3: `.cdad/tmp` es subdirectorio
+# política (contención, no igualdad) — D-5 C2/C3: `.cdad-execution/tmp` es subdirectorio
 # disjunto de los subárboles que el CLI escribe.
-TEMPORARY_ROOT = ".cdad/tmp"
-SELECTOR = ".cdad/tmp/work"
+TEMPORARY_ROOT = ".cdad-execution/tmp"
+SELECTOR = ".cdad-execution/tmp/work"
 
 ROLE = "test-writer"
 SUBSTAGE = "red"
@@ -100,8 +102,8 @@ PART_NAME = "role-report"
 PART_KIND = "test-writer-role-report"  # §2.8: test-writer fuera de `audit`
 REAL_TEST_REL = "tests/test_u3_real_fixture.py"
 OUT_OF_SCOPE_REL = "src/leaked_implementation.py"
-MANIFEST_REL = ".cdad/inbox/changes.json"
-DESCRIPTOR_REL = ".cdad/inbox/RESULT.json"
+MANIFEST_REL = ".cdad-execution/inbox/changes.json"
+DESCRIPTOR_REL = ".cdad-execution/inbox/RESULT.json"
 
 
 # ---------------------------------------------------------------- helpers
@@ -130,6 +132,7 @@ def write_policy_doc(root: Path, *, temporary_roots: list[str],
         "path_policy": path_policy,
         "temporary_roots": list(temporary_roots),
     }
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -169,7 +172,7 @@ def temporary_prepare_args(root: Path, *extra: str) -> list[str]:
 
 
 def packet_dirs(root: Path) -> list[Path]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return []
     return sorted(p for p in base.iterdir() if (p / "REQUEST.json").is_file())
@@ -189,7 +192,7 @@ class TemporaryProjectCase(unittest.TestCase):
     TEMPORARY_ROOTS: tuple[str, ...] = (TEMPORARY_ROOT,)
     PATH_POLICY: dict | None = None
     GIT: bool = True
-    GITIGNORE: str | None = ".cdad/\n"
+    GITIGNORE: str | None = "/.cdad-execution/\n"
 
     def setUp(self) -> None:
         self._tmp = tempfile.mkdtemp(prefix="cdad-006-005-u3-red-")
@@ -359,10 +362,10 @@ class TestPd16NonGitTree(TemporaryProjectCase):
 class TestPd16IgnoredSelector(TemporaryProjectCase):
     """PD-16 (lado positivo): selector ignorado ⇒ acepta."""
 
-    GITIGNORE = ".cdad/\n"
+    GITIGNORE = "/.cdad-execution/\n"
 
     def test_pd16_ignored_selector_is_accepted(self) -> None:
-        """PD-16: `.gitignore` cubre `.cdad/` ⇒ `git check-ignore` lo acredita
+        """PD-16: `.gitignore` cubre `/.cdad-execution/` ⇒ `git check-ignore` lo acredita
         y el paquete se acepta."""
         probe = git(self.root, "check-ignore", "-q", SELECTOR)
         self.assertEqual(
@@ -386,10 +389,10 @@ class TestPd17ReceiptWithTemporaryScope(TemporaryProjectCase):
     fuera de todo scope sigue rechazado."""
 
     TEMPORARY_ROOTS = (TEMPORARY_ROOT,)
-    # `.cdad/` (raíz temporal y espacio de coordinación) y `.opencode/`
+    # `.cdad-execution/` (raíz temporal y espacio de coordinación) y `.opencode/`
     # (derivados que publica prepare) quedan fuera del árbol observado, igual
     # que en el repo del producto: el manifiesto sólo ve producto y tests.
-    GITIGNORE = ".cdad/\n.opencode/\n"
+    GITIGNORE = "/.cdad-execution/\n.opencode/\n"
 
     def _dispatch(self) -> tuple[Path, Path, Path, str]:
         """prepare + record-dispatch: paquete dispatched con scope temporal."""
@@ -402,10 +405,10 @@ class TestPd17ReceiptWithTemporaryScope(TemporaryProjectCase):
         state = read_state(self.root)
         packet_id = state["active_packet"]["id"]
         execution_id = state["execution"]["id"]
-        packet_dir = self.root / ".cdad" / "packets" / packet_id
+        packet_dir = self.root / ".cdad-execution" / "packets" / packet_id
         packet_path = packet_dir / "PACKET.md"
         request_path = packet_dir / "REQUEST.json"
-        execution_path = (self.root / ".cdad" / "executions" / execution_id
+        execution_path = (self.root / ".cdad-execution" / "executions" / execution_id
                           / "execution.json")
         for path in (packet_path, request_path, execution_path):
             self.assertTrue(path.is_file(),
@@ -473,7 +476,7 @@ class TestPd17ReceiptWithTemporaryScope(TemporaryProjectCase):
         return [p for p in listed.stdout.split("\0") if p]
 
     def _descriptor(self, *, manifest_path: str) -> Path:
-        inbox = ".cdad/inbox"
+        inbox = ".cdad-execution/inbox"
         doc = {
             "schema_version": 1,
             "execution_id": self.execution_id,
@@ -510,7 +513,7 @@ class TestPd17ReceiptWithTemporaryScope(TemporaryProjectCase):
         ])
 
     def _stage_part(self) -> None:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / f"{PART_NAME}.md").write_bytes(
             b"# Role report (fixture U3 RED)\nTemporal declarado e ignorado.\n")
@@ -608,7 +611,7 @@ class TestPd17ReceiptWithTemporaryScope(TemporaryProjectCase):
         self.assertEqual(
             proc.stdout, "",
             msg="PD-17: el rechazo no publica un recibo por stdout")
-        final_dir = (self.root / ".cdad" / "runtime" / "results"
+        final_dir = (self.root / ".cdad-execution" / "runtime" / "results"
                      / self.execution_id / self.packet_id)
         self.assertFalse(
             (final_dir / "receipt.json").exists(),

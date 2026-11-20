@@ -142,6 +142,8 @@ Ningún fallo es ImportError/SyntaxError/NameError ni error de fixture.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import datetime as dt
 import json
 import os
@@ -300,6 +302,7 @@ class ReviewFixB1Case(unittest.TestCase):
             msg="B-1 (precondición): la política vigente no declara la raíz "
                 "de tests `tests`")
         (self.root / POLICY_FILE).parent.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
         (self.root / POLICY_FILE).write_text(
             json.dumps(document, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -678,7 +681,7 @@ class ReviewFixB2Case(unittest.TestCase):
         return dispatch_records(project["root"], project["execution_id"])
 
     def record_doc(self, project: dict, stem: str) -> dict:
-        base = (project["root"] / ".cdad" / "executions"
+        base = (project["root"] / ".cdad-execution" / "executions"
                 / project["execution_id"] / "dispatches")
         return json.loads((base / (stem + ".json")).read_text(encoding="utf-8"))
 
@@ -693,17 +696,17 @@ class ReviewFixB2Case(unittest.TestCase):
         return self.record_doc(project, next(iter(new)))
 
     def staged_payloads(self, project: dict) -> list:
-        inbox = project["root"] / ".cdad" / "inbox"
+        inbox = project["root"] / ".cdad-execution" / "inbox"
         if not inbox.is_dir():
             return []
         return [path for path in sorted(inbox.rglob("*"))
                 if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
 
     def descriptor_path(self, project: dict) -> Path:
-        return project["root"] / ".cdad" / "inbox" / "RESULT.json"
+        return project["root"] / ".cdad-execution" / "inbox" / "RESULT.json"
 
     def receipt_path(self, project: dict) -> Path:
-        return (project["root"] / ".cdad" / "runtime" / "results"
+        return (project["root"] / ".cdad-execution" / "runtime" / "results"
                 / project["execution_id"] / project["packet_id"] / "receipt.json")
 
     def diagnosis_text(self, out: dict) -> str:
@@ -1094,7 +1097,7 @@ class TestB3ExternalWalk(U6Fix8Case):
         módulo real del runtime + binario falso) devuelve un SOBRE §2.1 cuyo
         `delivery_ref` es el RECIBO DURABLE, y ese recibo es aceptado por
         `cdad_result.py validate-receipt`. El módulo ya recibió: el recibo y
-        la parte persistida existen bajo `.cdad/runtime/results/`.
+        la parte persistida existen bajo `.cdad-execution/runtime/results/`.
 
         Esta es la salida real que las instrucciones generadas deben
         describir (y la razón de que no puedan pedir un FINAL TEXT)."""
@@ -1122,7 +1125,7 @@ class TestB3ExternalWalk(U6Fix8Case):
             str(receipt).endswith("receipt.json"),
             msg="review-fix B-3 (006-005): `delivery_ref` debe ser el RECIBO "
                 "durable (`receipt.json`); apunta a %r" % (ref,))
-        results = self.project["root"] / ".cdad" / "runtime" / "results"
+        results = self.project["root"] / ".cdad-execution" / "runtime" / "results"
         self.assertTrue(
             str(receipt).startswith(str(results)),
             msg="review-fix B-3 (006-005): el recibo quedó fuera del árbol "

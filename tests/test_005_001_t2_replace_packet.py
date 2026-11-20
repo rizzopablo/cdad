@@ -51,6 +51,8 @@ nuevo (PD-7/PD-10/PD-16) o NO vigente (PD-11).
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import re
@@ -75,7 +77,7 @@ SPEC_DRIFT_BYTES = SPEC_BYTES + b"# linea editada despues de aprobar\n"
 SPEC_SHA256 = hashlib.sha256(SPEC_BYTES).hexdigest()
 SPEC_DRIFT_SHA256 = hashlib.sha256(SPEC_DRIFT_BYTES).hexdigest()
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 OBJECTIVE = "005-001 T2 objective"
 REASON = "contrato editado despues de preparar el paquete"
 
@@ -158,11 +160,11 @@ def write_state(root: Path, state: dict) -> None:
 
 
 def packet_dir(root: Path, packet_id: str) -> Path:
-    return root / ".cdad" / "packets" / packet_id
+    return root / ".cdad-execution" / "packets" / packet_id
 
 
 def packet_ids(root: Path) -> list[str]:
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return []
     return sorted(d.name for d in base.iterdir() if d.is_dir())
@@ -183,6 +185,7 @@ def registered_contract_sha(root: Path, packet_id: str) -> str:
 
 def write_policy(root: Path) -> None:
     (root / "docs").mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -190,7 +193,7 @@ def write_policy(root: Path) -> None:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -658,7 +661,7 @@ class TestPd11ReplaceDoesNotInventAuthorization(T2Case):
         state = read_state(root)
         self.assertEqual(
             state["stage_history"][-1]["contract_sha256"], SPEC_SHA256,
-            msg="fixture: el pin sigue en los bytes aprobados (Pablo, no el "
+            msg="fixture: el pin sigue en los bytes aprobados (<owner>, no el "
                 "CLI, registra aprobaciones — INV-2)")
         before = tree_snapshot(root)
         state_before = state_bytes(root)

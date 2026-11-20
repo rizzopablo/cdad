@@ -195,7 +195,7 @@ class _U5Fixture(_BaseFixture):
             objective="006-005 U5: siguiente encargo tras el intento fallido"))
 
     def receipt_path_for(self, packet_id: str) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results" / self.execution_id
+        return (self.root / ".cdad-execution" / "runtime" / "results" / self.execution_id
                 / packet_id / RECEIPT_NAME)
 
     def reconcile(self) -> subprocess.CompletedProcess:
@@ -203,7 +203,7 @@ class _U5Fixture(_BaseFixture):
             "reconcile",
             "--project-root", str(self.root),
             "--execution-context", str(
-                self.root / ".cdad" / "executions" / self.execution_id
+                self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json"),
             "--packet", self.packet_id,
             "--json",
@@ -212,7 +212,7 @@ class _U5Fixture(_BaseFixture):
     # -- entrega tardía (PD-19 (c)) ---------------------------------------
 
     def stage_late_delivery(self) -> None:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / "role-report.md").write_bytes(LATE_REPORT_BYTES)
         (inbox / "changes.json").write_text(json.dumps({
@@ -232,19 +232,19 @@ class _U5Fixture(_BaseFixture):
             "parts": [{
                 "name": "role-report",
                 "artifact_kind": "test-writer-role-report",
-                "staged_path": ".cdad/inbox/role-report.md",
+                "staged_path": ".cdad-execution/inbox/role-report.md",
             }],
             "observed_changes": {
                 "observation_status": "trusted",
                 "baseline_ref": BASELINE_REF,
                 "baseline_sha256": BASELINE_SHA256,
-                "manifest_path": ".cdad/inbox/changes.json",
+                "manifest_path": ".cdad-execution/inbox/changes.json",
             },
             "run_evidence_ref": None,
         }, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-        self.packet_md = (self.root / ".cdad" / "packets" / self.packet_id
+        self.packet_md = (self.root / ".cdad-execution" / "packets" / self.packet_id
                           / "PACKET.md")
-        self.request_json = (self.root / ".cdad" / "packets" / self.packet_id
+        self.request_json = (self.root / ".cdad-execution" / "packets" / self.packet_id
                              / "REQUEST.json")
         assert self.packet_md.is_file() and self.request_json.is_file(), (
             "precondición (fixture): el paquete del fixture está publicado")
@@ -254,7 +254,7 @@ class _U5Fixture(_BaseFixture):
             "receive",
             "--project-root", str(self.root),
             "--execution-context", str(
-                self.root / ".cdad" / "executions" / self.execution_id
+                self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json"),
             "--packet", str(self.packet_md),
             "--request", str(self.request_json),

@@ -113,6 +113,8 @@ La suite completa NO se corre (acotado). Nunca background.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import shutil
@@ -138,7 +140,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 # Tope duro: un CLI determinista nunca puede colgarse (acotado).
 CLI_TIMEOUT_S = 120
 
-CONTINUITY_DIR_REL = f".cdad/executions/{EXEC_ID}/continuity"
+CONTINUITY_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 STATE_REL = "docs/.cdad-state.json"
 POLICY_REL = "docs/cdad-policy.json"
@@ -333,6 +335,7 @@ class ReferenceClassCase(unittest.TestCase):
 
     def build_project(self, references: list) -> dict:
         """Sistema base: policy + referencias existentes + begin rc 0."""
+        write_declaration(self.root)
         self.write_json(POLICY_REL, policy_fixture())
         self.write_text(REF_LIVING_LEDGER_REL, LIVING_LEDGER_TEXT)
         self.write_text(REF_LIVING_DEBT_REL, LIVING_DEBT_TEXT)

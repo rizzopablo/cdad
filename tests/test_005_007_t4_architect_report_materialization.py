@@ -75,6 +75,8 @@ controles 2-5 pasan hoy y se declaran como tales.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -105,8 +107,8 @@ PLAN_BYTES = b"# Epic plan fixture (005-007 T4)\n"
 CONTRACT_FILE = f"docs/specs/{FEATURE_ID}/spec.md"
 CONTRACT_BYTES = b"# Spec fixture (solo necesaria para el fixture del reviewer)\n"
 
-APPROVER = "Pablo"
-AUTHORIZED_BY = "Pablo (HITL delegada al orquestador OpenCode)"
+APPROVER = "<owner>"
+AUTHORIZED_BY = "<owner> (HITL delegada al orquestador OpenCode)"
 ATTEMPT_ID = "att-005-007-t4-red-001"
 OBJECTIVE_ARCHITECT = "005-007 T4 RED: materialización legítima del informe del architect"
 OBJECTIVE_REVIEWER = "005-007 T4 RED: fixture del reviewer para la regresión del kind review"
@@ -118,8 +120,8 @@ ALLOWED_ROOT = f"docs/specs/{FEATURE_ID}/"
 TARGET_REPORT = ALLOWED_ROOT + "discovery.md"
 TARGET_REVIEW = ALLOWED_ROOT + "review.md"
 
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
-MANIFEST_PATH = ".cdad/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
 BASELINE_REF = "orchestrator-staged-reference"
 BASELINE_SHA256 = "0" * 64
 
@@ -235,6 +237,7 @@ def build_project(root: Path, *, state: dict) -> Path:
     """Proyecto sintético válido para `prepare` (política v2)."""
     for rel in ("tests", "src", "lib", "docs"):
         (root / rel).mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -242,7 +245,7 @@ def build_project(root: Path, *, state: dict) -> Path:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     # Plan del epic (contrato del architect en el fixture Architect).
     (root / PLAN_FILE).parent.mkdir(parents=True, exist_ok=True)
@@ -298,7 +301,7 @@ class ReceivedProjectCase(unittest.TestCase):
 
     @property
     def final_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     @property
@@ -351,13 +354,13 @@ class ReceivedProjectCase(unittest.TestCase):
                 "el contexto v2 de 001")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): el contexto v2 debe existir en "
-                ".cdad/executions")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+                ".cdad-execution/executions")
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):
@@ -390,7 +393,7 @@ class ReceivedProjectCase(unittest.TestCase):
         """Recibo durable de la única parte (receive de 003-002, rc=0):
         el kind declarado va en el descriptor (gatea en `materialize`,
         no en `receive` — R5 de 003-002)."""
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / f"{self.PART_NAME}.md").write_bytes(self.PART_BYTES)
         (self.root / MANIFEST_PATH).write_text(
@@ -410,7 +413,7 @@ class ReceivedProjectCase(unittest.TestCase):
             "parts": [
                 {"name": self.PART_NAME,
                  "artifact_kind": self.part_kind,
-                 "staged_path": f".cdad/inbox/{self.PART_NAME}.md"}
+                 "staged_path": f".cdad-execution/inbox/{self.PART_NAME}.md"}
             ],
             "observed_changes": {
                 "observation_status": "trusted",
@@ -479,7 +482,7 @@ class ReceivedProjectCase(unittest.TestCase):
         }
 
     def write_authorization(self, doc: dict) -> Path:
-        path = self.root / ".cdad" / "inbox" / "MATERIALIZE.json"
+        path = self.root / ".cdad-execution" / "inbox" / "MATERIALIZE.json"
         path.write_text(
             json.dumps(doc, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")

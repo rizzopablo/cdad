@@ -20,7 +20,7 @@ Dos subcomandos nuevos, read-only sobre la evidencia (nunca reescriben el intent
 - **Focal T1:** `PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -o addopts= -p no:cacheprovider tests/test_017_001_suite_profile.py` → **17 passed in 32.34s**.
 - **Focal T2:** misma invocación sobre `tests/test_017_001_suite_operations.py` → **9 passed in 18.81s**.
 - **Regresión proporcional** (ruta `close` compartida): `tests/test_008_002_suite_evidence.py tests/test_008_002_suite_selection.py tests/test_008_005_ci_gate.py` → **49 passed in 54.71s**.
-- **Calibración real** (8 selecciones, outs en `~/clawd/tmp/017-001-T3-green/`, intentos intactos — `READONLY_OK`): los 8 `reconcile` rc 0, `status=complete`, `diagnostics=none`, cobertura `available` con su selección inferida. Números (atribuido ≤ S_test, residuos positivos, sin doble conteo):
+- **Calibración real** (8 selecciones, outs en `~/<workspace>/tmp/017-001-T3-green/`, intentos intactos — `READONLY_OK`): los 8 `reconcile` rc 0, `status=complete`, `diagnostics=none`, cobertura `available` con su selección inferida. Números (atribuido ≤ S_test, residuos positivos, sin doble conteo):
   - C-R: S=1.416 attr=0.356 resto=1.061; R_pytest=0.806 R_exterior=0.778
   - C-U4: top S=4.648 attr=4.633 resto=0.015; R_pytest=0.978 R_exterior=0.859
   - C-D: top S=13.710 attr=12.994 resto=0.717; R_pytest=3.576 R_exterior=1.731

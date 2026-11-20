@@ -13,8 +13,8 @@ Trazabilidad test → postcondición numerada → consecuencia de usuario (R4):
 |---|---|---|---|
 | `test_pc01_…exact_identification` | PC-01 | `render --route C` sobre paquete publicado válido con contexto canónico v2 emite SOLO la declaración literal y un único bloque ```json con el objeto completo de §4.2, concordante con archivos/contexto, determinista y sin modificar request, paquete ni estado | …recibiría una identificación incompleta, absoluta o no concordante y el receptor resolvería otro archivo (o ninguno): el encargo ejecutado no sería el publicado (INV-05/INV-12). |
 | `test_pc02_…v1_context` | PC-02 | C rechaza un contexto v1 con diagnóstico explícito de C v2-only (causa + siguiente acción), sin identificación y sin efectos | …C podría identificar un paquete sobre el contexto v1 histórico que la regla de publicación nueva no admite, despachando trabajo sobre una autoridad no v2 (INV-08/INV-12). |
-| `test_pc02_…request_outside_published_location` | PC-02 | C rechaza un request byte-idéntico fuera de `.cdad/packets/<packet_id>/REQUEST.json`, con referencia segura y sin efectos | …una copia del request podría representar el paquete publicado y el receptor no sabría cuál archivo es el entregado (O-2/INV-05). |
-| `test_pc02_…non_canonical_context_copy` | PC-02 | C rechaza un contexto v2 en copia no canónica aunque el argumento sea byte-idéntico, indicando el localizador canónico y sin efectos | …una copia fuera de `.cdad/executions/<id>/execution.json` sería aceptada como fuente de contexto sin autoridad de ubicación (INV-03). |
+| `test_pc02_…request_outside_published_location` | PC-02 | C rechaza un request byte-idéntico fuera de `.cdad-execution/packets/<packet_id>/REQUEST.json`, con referencia segura y sin efectos | …una copia del request podría representar el paquete publicado y el receptor no sabría cuál archivo es el entregado (O-2/INV-05). |
+| `test_pc02_…non_canonical_context_copy` | PC-02 | C rechaza un contexto v2 en copia no canónica aunque el argumento sea byte-idéntico, indicando el localizador canónico y sin efectos | …una copia fuera de `.cdad-execution/executions/<id>/execution.json` sería aceptada como fuente de contexto sin autoridad de ubicación (INV-03). |
 | `test_pc02_…divergent_packet` | PC-02/PC-09 | C rechaza un `PACKET.md` publicado divergente (cuerpo alterado, cabecera intacta) con diagnóstico seguro que no divulga el cuerpo ni reescribe archivos | …se despacharía un paquete cuyas instrucciones no son las validadas (INV-05) o el diagnóstico filtraría contenido del encargo (§4.5). |
 | `test_pc08a_validate_packet_does_not_strip_preamble` | PC-08a (§4.4, A1) | `validate-packet --packet` acepta el archivo canónico sin envoltura y RECHAZA el que antepone un preámbulo legítimo al marcador A (no elimina el preámbulo ni reescribe bytes) | …una unificación futura de comparadores haría pasar por validate-packet mensajes envueltos, ampliando la superficie de confianza sin contrato (§4.4). |
 | `test_pc08a_route_c_accepts_published_preamble` | PC-08a (§4.4, A1) | la verificación publicada que usa C acepta un `PACKET.md` con preámbulo legítimo antes del único marcador A, comparando desde el marcador hasta el final y sin normalizar ni reescribir el archivo | …C rechazaría paquetes legítimos con preámbulo de runtime (falso negativo) o normalizaría los bytes del archivo publicado. |
@@ -104,15 +104,15 @@ class Published:
 
 class PublishedPacketCase(unittest.TestCase):
     """Fixture: preparación v2 real que publica el paquete en
-    `.cdad/packets/<packet_id>/` con su contexto canónico v2 en
-    `.cdad/executions/<execution_id>/execution.json`."""
+    `.cdad-execution/packets/<packet_id>/` con su contexto canónico v2 en
+    `.cdad-execution/executions/<execution_id>/execution.json`."""
 
     def publish(self, prefix: str) -> Published:
         temp = tempfile.TemporaryDirectory(prefix=prefix)
         self.addCleanup(temp.cleanup)
         root = Path(temp.name).resolve()
         project = PrepareProject(root)
-        packets_dir = root / ".cdad" / "packets"
+        packets_dir = root / ".cdad-execution" / "packets"
         result = run_prepare(CLI, *project.args(out_dir=packets_dir))
         self.assertEqual(
             result.returncode,
@@ -181,7 +181,7 @@ class PublishedPacketCase(unittest.TestCase):
     def packet_dirs(self, case: Published) -> list[str]:
         return sorted(
             entry.name
-            for entry in (case.root / ".cdad" / "packets").iterdir()
+            for entry in (case.root / ".cdad-execution" / "packets").iterdir()
         )
 
     def expected_identification(self, case: Published) -> dict:
@@ -354,11 +354,11 @@ class TestRouteCPositiveIdentification(PublishedPacketCase):
                 f"por el receptor; obtuvo {identification['project_root']!r}",
         )
         for field, expected_rel in (
-            ("request", f".cdad/packets/{case.packet_id}/REQUEST.json"),
-            ("packet", f".cdad/packets/{case.packet_id}/PACKET.md"),
+            ("request", f".cdad-execution/packets/{case.packet_id}/REQUEST.json"),
+            ("packet", f".cdad-execution/packets/{case.packet_id}/PACKET.md"),
             (
                 "execution_context",
-                f".cdad/executions/{case.request['execution_id']}"
+                f".cdad-execution/executions/{case.request['execution_id']}"
                 "/execution.json",
             ),
         ):
@@ -495,7 +495,7 @@ class TestRouteCRejections(PublishedPacketCase):
         archivo publicado; una copia byte-idéntica no basta; §4.5; §5 PC-02).
 
         Promesa observable: una copia byte-idéntica del request fuera de
-        `.cdad/packets/<packet_id>/REQUEST.json` no emite identificación; el
+        `.cdad-execution/packets/<packet_id>/REQUEST.json` no emite identificación; el
         rechazo ofrece la referencia esperada project-relative y no produce
         efectos.
 
@@ -530,7 +530,7 @@ class TestRouteCRejections(PublishedPacketCase):
         stderr = self.assert_rejection(result, "PC-02/request no publicado")
 
         expected_reference = (
-            f".cdad/packets/{case.packet_id}/REQUEST.json"
+            f".cdad-execution/packets/{case.packet_id}/REQUEST.json"
         )
         self.assertIn(
             expected_reference,
@@ -566,7 +566,7 @@ class TestRouteCRejections(PublishedPacketCase):
         referencia canónica segura project-relative, sin efectos.
 
         R4: sin esta prueba, una copia fuera de
-        `.cdad/executions/<id>/execution.json` sería aceptada como fuente de
+        `.cdad-execution/executions/<id>/execution.json` sería aceptada como fuente de
         contexto, contra la autoridad de ubicación (INV-03).
 
         RED hoy: `--route` no existe; el render histórico sí acepta el
@@ -605,7 +605,7 @@ class TestRouteCRejections(PublishedPacketCase):
         stderr = self.assert_rejection(result, "PC-02/contexto no canónico")
 
         canonical_reference = (
-            f".cdad/executions/{case.request['execution_id']}/execution.json"
+            f".cdad-execution/executions/{case.request['execution_id']}/execution.json"
         )
         self.assertRegex(
             stderr,

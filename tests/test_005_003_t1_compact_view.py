@@ -393,8 +393,8 @@ def test_pd2_entry_does_not_depend_on_literal_inicializar(fx: _Fixture) -> None:
     selección (con paquete pendiente sigue `continuity-reconcile`)."""
     fx.prepare(objective="inicializar el proyecto desde reposo")
     # El literal queda en una fuente declarada de la vista
-    # (.cdad/packets/<id>/REQUEST.json, campo `objective`).
-    request = next((fx.root / ".cdad" / "packets").glob("*/REQUEST.json"))
+    # (.cdad-execution/packets/<id>/REQUEST.json, campo `objective`).
+    request = next((fx.root / ".cdad-execution" / "packets").glob("*/REQUEST.json"))
     assert "inicializar" in request.read_text(encoding="utf-8"), (
         "fixture: el literal «inicializar» no quedó en el REQUEST del paquete"
     )

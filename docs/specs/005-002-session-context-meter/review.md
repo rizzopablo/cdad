@@ -10,7 +10,7 @@
   3. `git show fd58199 --stat` + diff `b153cb3..fd58199` → el GREEN de T3 solo agregó anotación/relaciones; **ningún mecanismo nuevo de privacidad/compacción**.
   4. `grep -rn "context-meter|context_meter" agents/ sources/ scripts/ Makefile` → **0 referencias en gates** (PD-13/INV-5 ✓).
   5. `grep -c "session_v2|session_message"` sobre asset y reference → **0** (neutralidad PD-1/INV-3 ✓).
-  6. `grep` del diff por `ofap|/home/|4\.67|GB|anthropic|opencode\.db` → **sin fugas** (PD-10/INV-7 ✓).
+  6. `grep` del diff por `<owner>|/home/|4\.67|GB|anthropic|opencode\.db` → **sin fugas** (PD-10/INV-7 ✓).
   7. Auditoría test↔PD: los 4 archivos de tests leídos completos (912+1346+911+1069 líneas).
 
 **Veredicto por postcondición** (código + tests la verifican): PD-1/2/3/4/5/6/7/8/9/10/11/12/13/15/16 ✓ observables (PD-1 con salvedad F3, PD-9 con salvedad F4). PD-14 ✓ resuelta documentalmente por reference (verificará P:(d)). Sin PD sin test salvo la PD-14 declarada; sin tests huérfanos sin PD. No hay aserciones sobre nombres internos ni mocks sobre plumbing: todo test observa el **wrapper por subproceso** (JSON/stdout/rc/stderr).

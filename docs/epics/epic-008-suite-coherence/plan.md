@@ -2,7 +2,7 @@
 epic_id: epic-008-suite-coherence
 epic_name: Coherencia y sostenibilidad de la suite
 created_at: 2026-10-26
-approved_by: Pablo (dueño)
+approved_by: <owner> (dueño)
 approved_at: 2026-10-26
 ---
 
@@ -109,4 +109,4 @@ que rija en las tres unidades restantes.
 - **Reservado al dueño:** push/publicación, servicios compartidos, runtime y cualquier activación.
 - **Operador del resultado:** orquestador CDAD con la delegación HITL que el dueño establezca.
 
-Status: Approved by Pablo on 2026-10-26
+Status: Approved by <owner> on 2026-10-26

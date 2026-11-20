@@ -172,7 +172,7 @@ class TestB7ResumeAfterReconcile(DurableProjectCase):
         bytes idénticos → el dueño cambia la política y reconcilia →
         resume P1: rc 2, stdout vacío, diagnóstico que nombra la revisión
         del paquete y la aceptada y pide preparar un paquete nuevo, sin
-        ninguna escritura (árbol .cdad/docs y state byte a byte) → un
+        ninguna escritura (árbol .cdad-execution/docs y state byte a byte) → un
         paquete nuevo P2 preparado tras la reconciliación se reanuda rc 0
         con bytes idénticos."""
         # 1) bootstrap → P1

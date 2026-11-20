@@ -6,7 +6,7 @@ I've validated route C, and the packet is admitted. Below is the review, written
 **Digest:** `3a52522f285e42756d7240f84b5b76338837c7642169970ae8893e708961a038` (recomputed, matches)
 **Packet:** `010-004-packet-dispatch-ergonomics-reviewer-plan-review-002` · execution `exec-010-004-packet-dispatch-ergonomics-001` · HEAD `c5e3dd6b`
 
-**Dictamen:** this is a review, not an approval. The draft holds 2 BLOCKING findings and 5 OPTIONAL ones. It reaches its stated intention only once B-1 and B-2 are fixed. Neither touches the overall direction (reuse route C, add a context field, separate the three kinds of evidence), which the code supports. Pablo decides the blockers and the plan/observations tension.
+**Dictamen:** this is a review, not an approval. The draft holds 2 BLOCKING findings and 5 OPTIONAL ones. It reaches its stated intention only once B-1 and B-2 are fixed. Neither touches the overall direction (reuse route C, add a context field, separate the three kinds of evidence), which the code supports. <owner> decides the blockers and the plan/observations tension.
 
 ## Intake (route C)
 
@@ -98,7 +98,7 @@ The identification metadata matches REQUEST.json and the header: packet_id, exec
 - **Historical render compatibility:** the header is built from a closed list of keys (`:1825-1839`), and optional fields are added only when present, following the existing pattern (`:1620`, `:1846-1852`). "Ausencia ⇒ bytes idénticos" (`spec.md:87`) can be implemented and tested.
 - **Request schema:** the field set is closed, with three optional keys added in the past without loosening the rule (`:1599-1620`). Adding `execution_context` fits that pattern.
 - **I-4, safe diagnostics, evidence table (§4.5), deferred-hardening:** consistent with `observations-packet-dispatch.md:48-72` and `discovery.md:64-74`. They promise nothing that can't be observed.
-- **Plan/observations tension:** §2.1 states it explicitly and leaves it for approval. It does not edit the plan. Citations checked: `plan.md:123-130` and `observations-packet-dispatch.md:36-46`. **This is a pending decision for Pablo, not something the review resolves.**
+- **Plan/observations tension:** §2.1 states it explicitly and leaves it for approval. It does not edit the plan. Citations checked: `plan.md:123-130` and `observations-packet-dispatch.md:36-46`. **This is a pending decision for <owner>, not something the review resolves.**
 
 ## Abstentions
 

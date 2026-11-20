@@ -1,6 +1,6 @@
 # Decisión del dueño: P-1 rutas privadas y R5 (2026-10-02)
 
-Aprobado por Pablo en sesión, sobre las recomendaciones del orquestador.
+Aprobado por <owner> en sesión, sobre las recomendaciones del orquestador.
 
 1. **P-1.** Se agrega a la política del proyecto el campo opcional
    `path_policy.private_paths`. Sirve para archivos que ningún rol necesita

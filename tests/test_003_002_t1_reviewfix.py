@@ -203,7 +203,7 @@ class TestR2KillAndConcurrency(EstablishedProjectCase):
         rename de publicación (§5: «directorio temporal hermano» → rename
         exclusivo). Devuelve True sólo si el kill ocurrió antes de publicar
         (sin directorio final)."""
-        exec_results_dir = (self.root / ".cdad" / "runtime" / "results"
+        exec_results_dir = (self.root / ".cdad-execution" / "runtime" / "results"
                             / self.execution_id)
         proc = popen_result_cli(self.receive_args(descriptor))
         deadline = time.monotonic() + KILL_DETECT_TIMEOUT_S

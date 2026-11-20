@@ -64,4 +64,4 @@ Dentro del mismo cambio: el vocabulario de `epic_stage` deja de vivir en dos fue
 
 ---
 
-Status: Approved by Pablo (usuario) on 2026-09-24 — aprobación registrada en esta sesión tras el dictamen conforme focal de Claude (corrección requerida y observaciones incorporadas por el architect; ver `docs/epics/epic-004-single-source-planning/correction-004-001-architect-2026-09-24.md`).
+Status: Approved by <owner> (usuario) on 2026-09-24 — aprobación registrada en esta sesión tras el dictamen conforme focal de Claude (corrección requerida y observaciones incorporadas por el architect; ver `docs/epics/epic-004-single-source-planning/correction-004-001-architect-2026-09-24.md`).

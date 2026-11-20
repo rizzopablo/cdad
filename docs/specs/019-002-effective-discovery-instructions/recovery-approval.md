@@ -1,6 +1,6 @@
 # Recovery approval and execution decisions
 
-Approved under Pablo's renewed explicit HITL delegation for epic 019.
+Approved under <owner>'s renewed explicit HITL delegation for epic 019.
 The owner selected `bc922c04`; restoration of product and tests is complete.
 
 ## Independent review disposition

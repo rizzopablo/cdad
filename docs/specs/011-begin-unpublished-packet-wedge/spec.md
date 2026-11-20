@@ -1,6 +1,6 @@
 # 011 — Begin sobre paquete no publicado (wedge)
 
-**Estado:** Approved by Pablo on 2026-11-01.
+**Estado:** Approved by <owner> on 2026-11-01.
 
 ## 1. Descripcion
 
@@ -50,4 +50,4 @@ Los paquetes publicados conservan la admision canonica vigente (REQUEST, texto d
 - Suite completa no corrida (directiva del dueno); evidencia comprometida: regresion focal.
 - Seguimiento 2 (unicidad por clave + reanudacion), 3-5 (recuperacion, autoridad, reanchor), ejecuciones ya bloqueadas y hash editorial: fuera.
 
-Status: Approved by Pablo on 2026-11-01.
+Status: Approved by <owner> on 2026-11-01.

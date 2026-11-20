@@ -2,7 +2,7 @@
 epic_id: epic-016-traceability-and-suite-review
 epic_name: Trazabilidad contrato→test y revisión completa de la suite
 created_at: 2026-11-03
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-03
 ---
 

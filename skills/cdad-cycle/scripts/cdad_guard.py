@@ -70,18 +70,18 @@ labelled `simulation`) and emits one JSON envelope on stdout:
   legitimate progressive run does not escalate (P7).
 
 T3 (`record`/`budget`) writes durable recovery events/budget ONLY under
-`.cdad/executions/<execution_id>/guards/**` (D4, never `docs/.cdad-state.json`).
+`<operational_dir>/executions/<execution_id>/guards/**` (D4, never the methodology state).
 `record` is create-exclusive: the durable path components are validated as safe
 segments (002 `_segment`) and a repeated `(packet, attempt, kind)` key is a
 conflict (rc!=0, original bytes untouched), so evidence is never overwritten.
 `record` consults the 002 receipt/journal under
-`.cdad/runtime/results/<execution_id>/<packet_id>/` before repeating and only
+`<operational_dir>/runtime/results/<execution_id>/<packet_id>/` before repeating and only
 SIGNALS (`do_not_repeat`/`receipt_ref`), it never repeats an effect (D7,
 invariant 5). `budget` is read-only and deterministic; exhausting the declared
 attempts is a signal to reconsider (D3), not a violation.
 
 Pure Python stdlib. `classify`/`budget` are read-only over the product; only
-`record` writes, and only under `.cdad/executions/<id>/guards/**`.
+`record` writes, and only under `<operational_dir>/executions/<id>/guards/**`.
 """
 
 from __future__ import annotations
@@ -110,11 +110,12 @@ ESCALATION_CONTRACT = "escalation-v1"
 GUARD_EVENT_CONTRACT = "guard-event-v1"
 SCHEMA_VERSION = 1
 
-# Durable trees (D4): recovery events/budget live under
-# `.cdad/executions/<execution_id>/guards/`; the 002 receipts/journal live under
-# `.cdad/runtime/results/<execution_id>/<packet_id>/`.
-GUARDS_TREE = (".cdad", "executions")
-RESULTS_TREE = (".cdad", "runtime", "results")
+# Durable trees (D4, 020-001): recovery events/budget live under
+# `<operational_dir>/executions/<execution_id>/guards/`; the 002
+# receipts/journal live under
+# `<operational_dir>/runtime/results/<execution_id>/<packet_id>/`.
+EXECUTIONS_SUBDIR = "executions"
+RESULTS_SUBDIR = "runtime/results"
 
 # Closed event->action table (D5): only reversible, proportional actions. The
 # guard never invents a decision outside this set; ambiguity goes back to the
@@ -535,7 +536,7 @@ def evaluate_preflight(policy: Any, exec_context: Any, role: str,
 # ------------------------------------------------------------------ record/budget
 #
 # T3 (P4/P5, D3/D4/D7). `record` persists one durable recovery event under
-# `.cdad/executions/<execution_id>/guards/` and consults the 002 receipt/journal
+# `<operational_dir>/executions/<execution_id>/guards/` and consults the 002 receipt/journal
 # before repeating (it only SIGNALS). `budget` reports the durable, accumulated
 # attempts for one `execution_id+packet_id`; it is read-only and deterministic
 # and never resets on a restart/new session (invariant 11). Exhausting the
@@ -578,7 +579,7 @@ def _segment(value: Any) -> str | None:
 
     Mirrors `cdad_result.py`'s `_segment`: `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`
     with no `..`. Used for the durable filename components so a traversal or an
-    absolute path can never escape `.cdad/executions/<id>/guards/` (F1).
+    absolute path can never escape `<operational_dir>/executions/<id>/guards/` (F1).
     """
     if not isinstance(value, str) or SEGMENT_RE.fullmatch(value) is None \
             or ".." in value:
@@ -586,8 +587,14 @@ def _segment(value: Any) -> str | None:
     return value
 
 
+def _operational_dir(root: Path) -> str:
+    """020-001 PC-1: the declared operational directory (LayoutError on failure)."""
+    return cdad_layout.operational_dir(root)
+
+
 def _guards_dir(root: Path, execution_id: str) -> Path:
-    return root.joinpath(*GUARDS_TREE, execution_id, "guards")
+    return root.joinpath(_operational_dir(root), EXECUTIONS_SUBDIR,
+                         execution_id, "guards")
 
 
 def _find_receipt(root: Path, execution_id: str,
@@ -599,7 +606,8 @@ def _find_receipt(root: Path, execution_id: str,
     other artifact of the 002 layout (`bundle.json`, `parts/…`) (O1/D7).
     Absent receipt -> None (never fabricate a reconciliation).
     """
-    results_dir = root.joinpath(*RESULTS_TREE, execution_id, packet_id)
+    results_dir = root.joinpath(_operational_dir(root), *RESULTS_SUBDIR.split("/"),
+                                execution_id, packet_id)
     if not results_dir.is_dir():
         return None
     candidate = results_dir / "receipt.json"
@@ -849,7 +857,7 @@ def _cmd_record(args: argparse.Namespace) -> int:
     packet_id = segments["packet_id"]
     kind = segments["kind"]
 
-    # D4: durable persistence ONLY under .cdad/executions/<id>/guards/**. The
+    # D4: durable persistence ONLY under <operational_dir>/executions/<id>/guards/**.
     # key on disk is (packet, attempt, kind) — exact safe segments, no
     # `_slug` collapsing (F2: a slug collision must not overwrite evidence).
     guards_dir = _guards_dir(root, execution_id)

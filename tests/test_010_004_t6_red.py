@@ -37,6 +37,8 @@ RED de hoy (medido con sondas caja-negra, no leído del producto):
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import base64
 import hashlib
 import json
@@ -56,7 +58,7 @@ EPIC_ID = "epic-010-documentary-specialization"
 FEATURE_ID = "010-004-packet-dispatch-ergonomics"
 AUTHORITY_REF = f"docs/epics/{EPIC_ID}/execution.md"
 EXECUTION_ID = "exec-010-004-t6-fixture-001"
-CANONICAL_LOCATOR = f".cdad/executions/{EXECUTION_ID}/execution.json"
+CANONICAL_LOCATOR = f".cdad-execution/executions/{EXECUTION_ID}/execution.json"
 POLICY_PATH = "docs/cdad-policy.json"
 STATE_PATH = "docs/.cdad-state.json"
 CONTRACT_PATH = f"docs/specs/{FEATURE_ID}/spec.md"
@@ -96,6 +98,7 @@ class T6Project:
         for rel in ("tests", "src", "lib", "docs"):
             (root / rel).mkdir(parents=True, exist_ok=True)
         self.policy_bytes = (REPO_ROOT / POLICY_PATH).read_bytes()
+        write_declaration(root)
         (root / POLICY_PATH).write_bytes(self.policy_bytes)
         self.contract = root / CONTRACT_PATH
         self.contract.parent.mkdir(parents=True, exist_ok=True)
@@ -126,7 +129,7 @@ class T6Project:
                 {
                     "feature": FEATURE_ID,
                     "stage": "specification",
-                    "approved_by": "Pablo",
+                    "approved_by": "<owner>",
                     "approved_at": "2026-10-20T00:00:00Z",
                     "contract_path": CONTRACT_PATH,
                     "contract_sha256": hashlib.sha256(
@@ -134,7 +137,7 @@ class T6Project:
                     ).hexdigest(),
                 }
             ],
-            "approver": "Pablo",
+            "approver": "<owner>",
             "last_updated": "2026-10-20T00:00:00Z",
             "execution": None,
             "active_packet": None,
@@ -160,7 +163,7 @@ class T6Project:
         return (self.root / STATE_PATH).read_bytes()
 
     def write_v2_context(self) -> Path:
-        """Contexto v2 canónico en `.cdad/executions/<execution_id>/execution.json`
+        """Contexto v2 canónico en `.cdad-execution/executions/<execution_id>/execution.json`
         (la ubicación que PC-04 declara), con la política real del repo."""
         policy_sha = hashlib.sha256(self.policy_bytes).hexdigest()
         policy_doc = json.loads(self.policy_bytes)
@@ -194,7 +197,7 @@ class T6Project:
         return canonical
 
     def write_v1_context(self) -> Path:
-        """Contexto v1 histórico en `.cdad/execution.json` (schema_version 1)."""
+        """Contexto v1 histórico en `.cdad-execution/execution.json` (schema_version 1)."""
         document = {
             "schema_version": 1,
             "execution": {
@@ -213,7 +216,7 @@ class T6Project:
                 "documentation_roots": ["docs"],
             },
         }
-        legacy = self.root / ".cdad" / "execution.json"
+        legacy = self.root / ".cdad-execution" / "execution.json"
         legacy.parent.mkdir(parents=True, exist_ok=True)
         legacy.write_text(
             json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -223,7 +226,7 @@ class T6Project:
 
     def publish_legacy_active_packet(self) -> str:
         """Publica el paquete v1 activo `prepared` en
-        `.cdad/packets/<id>/{REQUEST.json,PACKET.md}`, con la forma histórica:
+        `.cdad-execution/packets/<id>/{REQUEST.json,PACKET.md}`, con la forma histórica:
         su request NO declara `execution_context`."""
         contract_sha = hashlib.sha256(self.contract.read_bytes()).hexdigest()
         request = {
@@ -352,7 +355,7 @@ class T6Project:
     # -- lectura de artefactos -------------------------------------------
 
     def packet_dir(self, packet_id: str) -> Path:
-        return self.root / ".cdad" / "packets" / packet_id
+        return self.root / ".cdad-execution" / "packets" / packet_id
 
     def packet_bytes(self, packet_id: str, name: str) -> bytes:
         return (self.packet_dir(packet_id) / name).read_bytes()
@@ -429,7 +432,7 @@ class TestB2ActiveV1PacketDiagnosis(unittest.TestCase):
             )
 
             # CASO: paquete v1 activo `prepared` ya publicado y contexto v1
-            # en `.cdad/execution.json`.
+            # en `.cdad-execution/execution.json`.
             project = T6Project(Path(tmp) / "v1-active")
             project.write_v1_context()
             packet_id = project.publish_legacy_active_packet()

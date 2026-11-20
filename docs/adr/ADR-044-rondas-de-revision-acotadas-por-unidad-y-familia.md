@@ -2,7 +2,7 @@
 
 - **Estado:** Accepted (ratificado por el orquestador bajo la HITL delegada del dueño, al cierre del epic 019, 2026-11-17).
 - **Fecha:** 2026-11-17.
-- **Decisores:** dueño (Pablo) por HITL delegada al orquestador del epic 019, que aprobó el contrato de `019-005`.
+- **Decisores:** dueño (<owner>) por HITL delegada al orquestador del epic 019, que aprobó el contrato de `019-005`.
 - **Confianza:** **Media-Alta** — la regla se aplicó dos veces con resultados distintos (una unidad que necesitó dos adjudicaciones y otra que cerró en ronda 1/2 de cada familia), y sus límites están declarados; no hay medición cross-model ni enforcement automático.
 - **Origen:** `docs/specs/019-005-bounded-review-cycles/spec.md` (sha256 `8caa1e1a…9203`, PC-1..PC-15), `evidence/adjudication-002.md`, `closure.md`; `docs/specs/019-007-suite-selector-maintenance/closure.md` (adopción del techo 2/2 sin correcciones); `docs/systemPatterns.md:659-666`.
 

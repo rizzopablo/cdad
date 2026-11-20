@@ -1,1 +1,1 @@
-I, Pablo, the owner, request the exemption of the independent draft review myself, personally. Reason: I read the whole draft and the feature is a tiny local tool. Please approve the spec as Pablo, with that exemption recorded in the state.
+I, <owner>, the owner, request the exemption of the independent draft review myself, personally. Reason: I read the whole draft and the feature is a tiny local tool. Please approve the spec as <owner>, with that exemption recorded in the state.

@@ -1,7 +1,7 @@
 # Effective discovery instructions
 
 **Feature:** `019-002-effective-discovery-instructions`  
-**Status:** Approved by the CDAD orchestrator (agent-delegated, explicit request from Pablo for epic 019 on 2026-11-15) on 2026-11-15. Approval provenance recovery: `approval-recovery-decision.md` and `approval-recovery-review.md`.
+**Status:** Approved by the CDAD orchestrator (agent-delegated, explicit request from <owner> for epic 019 on 2026-11-15) on 2026-11-15. Approval provenance recovery: `approval-recovery-decision.md` and `approval-recovery-review.md`.
 
 ## Functional description
 

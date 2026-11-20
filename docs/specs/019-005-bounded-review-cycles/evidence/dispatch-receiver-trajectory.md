@@ -1,10 +1,10 @@
 # Dispatch sent to the trajectory receiver (verbatim)
 
 Tool: native subagent, agent `cdad-reviewer`, fresh session.
-Project root: `~/clawd/tmp/cdad019-005-trajectory`.
+Project root: `~/<workspace>/tmp/cdad019-005-trajectory`.
 
 ---
-project-root: ~/clawd/tmp/cdad019-005-trajectory
+project-root: ~/<workspace>/tmp/cdad019-005-trajectory
 
 This is a bounded, declared scenario. Read only files inside that project root. It contains no product code and no packet: it is the acceptance trajectory for bounded review cycles. Do not look for a CDAD packet; do not search outside the root.
 

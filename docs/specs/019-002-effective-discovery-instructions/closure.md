@@ -1,6 +1,6 @@
 # Closure — 019-002 effective discovery instructions
 
-Approved by the CDAD orchestrator under Pablo's renewed HITL delegation for epic
+Approved by the CDAD orchestrator under <owner>'s renewed HITL delegation for epic
 019 and his explicit instruction to close 019-002 and proceed to 019-004.
 
 ## Accepted contract and evidence

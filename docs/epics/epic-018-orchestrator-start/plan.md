@@ -2,7 +2,7 @@
 epic_id: epic-018-orchestrator-start
 epic_name: Arranque directo y verificable del orquestador
 created_at: 2026-11-12
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-12
 ---
 
@@ -20,7 +20,7 @@ y ejemplos ejecutables, preservando autoridad, continuidad y separación de role
 
 Entra el diseño aprobado y revisado «Arranque CDAD directo y verificable», con
 las precisiones de su revisión independiente; la enmienda de ADR-021 ya fue
-aprobada por Pablo y registrada en `0c83f2dd`. Las tareas T1–T4 forman una
+aprobada por <owner> y registrada en `0c83f2dd`. Las tareas T1–T4 forman una
 única unidad de entrega: entrada y encargo coherentes (T1), ayudas y diagnósticos
 (T2), ejemplos y captura fiables (T3), revisión y ensayo (T4).
 
@@ -51,14 +51,14 @@ documentación orienta al modelo, pero no garantiza sus lecturas ni su latencia.
 
 ## Autoridad
 
-Pablo aprobó el diseño y autorizó dar de alta una unidad nueva para ejecutar
+<owner> aprobó el diseño y autorizó dar de alta una unidad nueva para ejecutar
 T1–T4. El mandato operativo y sus límites constan en `execution.md`. La
 aprobación del plan no equivale por sí sola a una aprobación de especificación,
 priorización de revisión, Memory Bank, publicación o despliegue.
 
 ## Cambios al plan
 
-- 2026-11-12 — Alta de la unidad nueva por instrucción de Pablo, sin reabrir
+- 2026-11-12 — Alta de la unidad nueva por instrucción de <owner>, sin reabrir
   las unidades históricas de epics cerrados.
 
-Status: Approved by Pablo on 2026-11-12.
+Status: Approved by <owner> on 2026-11-12.

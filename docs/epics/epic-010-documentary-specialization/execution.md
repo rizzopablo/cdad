@@ -14,7 +14,7 @@ resultados de roles read-only y ejecutar git de documentación/estado. Incluye
 Discovery de 010-001-documentary-contracts. No hereda mandatos de otras épicas.
 
 Las specs, cambios de alcance, priorización estratégica de reviews, aceptación
-funcional y Memory Bank requieren aprobación de Pablo. Esta delegación operativa
+funcional y Memory Bank requieren aprobación de <owner>. Esta delegación operativa
 no autoriza al orquestador a aprobarlos en su nombre. No hay push, publicación ni
 modificación de instalaciones globales autorizados por este mandato.
 
@@ -22,7 +22,7 @@ Vigencia: hasta cierre, cancelación o revocación de esta épica.
 
 ## Ampliación explícita del mandato — 2026-10-29
 
-Pablo solicita: «Te delego hitl, eres el dueño del proceso. Continúa orquestando
+<owner> solicita: «Te delego hitl, eres el dueño del proceso. Continúa orquestando
 proactivamente hasta completar las correcciones pendientes y el epic completo».
 Se registra la instrucción como mandato de continuidad operativa para las cuatro
 features, empezando por 010-000, y la integración y cierre de la épica. No se

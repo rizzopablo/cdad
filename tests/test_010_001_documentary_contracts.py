@@ -172,7 +172,7 @@ ROLE_BLOCKS = {
 
 # INV-07 (A5): el nombre concreto del aprobador de esta unidad. La spec lo
 # nombra en §5 criterio 9 y §9; fuera de docs/ no puede aparecer.
-APPROVER_NAME = "Pablo"
+APPROVER_NAME = "<owner>"
 
 # PC-14: los 11 agentes declarados por runtime (5 roles × genérico/Odoo +
 # orquestador), tal como los fija tests/test_cdad_generate.py.

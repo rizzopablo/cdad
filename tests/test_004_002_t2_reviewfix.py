@@ -196,7 +196,7 @@ class TestF1ReuseValidatesCurrentState(RfCase):
         state["stage_history"].append({
             "feature": OTHER_FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-09-29T00:00:00Z",
             "contract_path": OTHER_CONTRACT_FILE,
             "contract_sha256": OTHER_CONTRACT_SHA256,
@@ -238,7 +238,7 @@ class TestF1ReuseValidatesCurrentState(RfCase):
         state["stage_history"].append({
             "feature": OTHER_FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-09-29T00:00:00Z",
             "contract_path": OTHER_CONTRACT_FILE,
             "contract_sha256": OTHER_CONTRACT_SHA256,
@@ -343,7 +343,7 @@ class TestF4ResumeUnvalidatedBytes(RfCase):
         self.require_bootstrap_completed()
         packet_id = read_state(self.root)["active_packet"]["id"]
         self.assertTrue(packet_id, msg="precondición: sin packet_id activo")
-        unrelated = self.root / ".cdad" / "unrelated"
+        unrelated = self.root / ".cdad-execution" / "unrelated"
         unrelated.mkdir(parents=True)
         (unrelated / "PACKET.md").write_text("UNRELATED BYTES\n",
                                              encoding="utf-8")
@@ -358,7 +358,7 @@ class TestF4ResumeUnvalidatedBytes(RfCase):
                 "de paquetes (sin validación de ruta, F4)")
         self.assertNotIn(
             "UNRELATED BYTES", proc.stdout,
-            msg="resume-packet devolvió bytes de fuera de .cdad/packets")
+            msg="resume-packet devolvió bytes de fuera de .cdad-execution/packets")
         self.assertNotIn("Traceback", proc.stderr, msg="F4: traceback")
         self.assertEqual(
             tree_snapshot(self.root), snapshot,
@@ -368,7 +368,7 @@ class TestF4ResumeUnvalidatedBytes(RfCase):
         """WS-F4: PACKET.md adulterado → resume rc≠0 y NO devuelve bytes."""
         self.require_bootstrap_completed()
         packet_id = read_state(self.root)["active_packet"]["id"]
-        packet_path = self.root / ".cdad" / "packets" / packet_id / "PACKET.md"
+        packet_path = self.root / ".cdad-execution" / "packets" / packet_id / "PACKET.md"
         packet_path.write_bytes(b"TAMPERED\n")
         state = read_state(self.root)
         snapshot = tree_snapshot(self.root)
@@ -419,7 +419,8 @@ class TestF5RollbackOfOrdinaryPublishingErrors(RfCase):
             msg=f"{label}: sin diagnóstico ({out!r})")
         self.assertEqual(
             proc.stdout, "", msg=f"{label}: stdout no vacío")
-        for rel in (".cdad", ".cdad/executions", ".cdad/packets"):
+        for rel in (".cdad", ".cdad-execution", ".cdad-execution/executions",
+                    ".cdad-execution/packets"):
             path = self.root / rel
             if rel in preexisting:
                 self.assertTrue(
@@ -437,24 +438,24 @@ class TestF5RollbackOfOrdinaryPublishingErrors(RfCase):
             msg=f"{label}: state.active_packet ligado")
 
     def test_f5_packets_path_being_a_file_does_not_leave_dirs(self) -> None:
-        """WS-F5: si `.cdad/packets` es un archivo PREEXISTENTE, prepare falla
-        con diagnóstico (sin traceback), conserva los preexistentes (`.cdad` y
-        `.cdad/packets` con sus bytes) y no deja `.cdad/executions` creado por
+        """WS-F5: si `.cdad-execution/packets` es un archivo PREEXISTENTE, prepare falla
+        con diagnóstico (sin traceback), conserva los preexistentes (`.cdad-execution` y
+        `.cdad-execution/packets` con sus bytes) y no deja `.cdad-execution/executions` creado por
         la operación (F5)."""
-        packets_path = self.root / ".cdad" / "packets"
+        packets_path = self.root / ".cdad-execution" / "packets"
         packets_path.parent.mkdir()
         packets_path.write_text("not a dir\n", encoding="utf-8")
         packets_bytes = packets_path.read_bytes()
         self._assert_clean_failure(
-            ".cdad/packets es archivo", preexisting=(".cdad", ".cdad/packets"))
+            ".cdad-execution/packets es archivo", preexisting=(".cdad-execution", ".cdad-execution/packets"))
         self.assertEqual(
             packets_path.read_bytes(), packets_bytes,
-            msg=".cdad/packets preexistente cambió su contenido")
+            msg=".cdad-execution/packets preexistente cambió su contenido")
 
     def test_f5_state_tmp_being_a_dir_fails_cleanly_without_new_dirs(self) -> None:
         """WS-F5: si `docs/.cdad-state.json.tmp` es un directorio, prepare
-        falla sin traceback, con diagnóstico, y no deja `.cdad`,
-        `.cdad/executions` ni `.cdad/packets` (creados por la operación)."""
+        falla sin traceback, con diagnóstico, y no deja `.cdad-execution`,
+        `.cdad-execution/executions` ni `.cdad-execution/packets` (creados por la operación)."""
         (self.root / "docs" / ".cdad-state.json.tmp").mkdir()
         self._assert_clean_failure(".cdad-state.json.tmp es directorio")
 
@@ -475,7 +476,7 @@ class TestF6NoLegacyFallbackOnInvalidPolicyLocation(RfCase):
         self.assertEqual(
             (self.root / POLICY_FILE).is_dir(), True,
             msg="precondición: docs/cdad-policy.json debe ser un directorio")
-        v1_bytes = (self.root / ".cdad" / "execution.json").read_bytes()
+        v1_bytes = (self.root / ".cdad-execution" / "execution.json").read_bytes()
         self.before = tree_snapshot(self.root)
         proc = run_prepare(self.root)
         out = proc.stdout + proc.stderr
@@ -491,7 +492,7 @@ class TestF6NoLegacyFallbackOnInvalidPolicyLocation(RfCase):
             proc.stdout, "",
             msg="F6: stdout no vacío (paquete legacy publicado)")
         self.assertEqual(
-            (self.root / ".cdad" / "execution.json").read_bytes(), v1_bytes,
+            (self.root / ".cdad-execution" / "execution.json").read_bytes(), v1_bytes,
             msg="F6: el contexto v1 fue modificado")
         self.assertEqual(
             published_packets(self.root), {},
@@ -695,7 +696,7 @@ class TestI7ResumeAcceptsNoOrdinaryOptions(RfCase):
             state_before.get("status"), "prepared",
             msg=f"precondición: paquete activo no está prepared: "
                 f"{state_before!r}")
-        execution_context = str(self.root / ".cdad" / "executions" /
+        execution_context = str(self.root / ".cdad-execution" / "executions" /
                                 execution_id / "execution.json")
         for label, option in self.I7_CASES:
             option = tuple(v.replace("{execution_context}", execution_context)

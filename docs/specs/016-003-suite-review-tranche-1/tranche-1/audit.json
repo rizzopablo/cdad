@@ -3882,7 +3882,7 @@
    "uncertainties": []
   },
   {
-   "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
+   "nodeid": "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
    "module": "tests/test_007_006_withdraw_and_republish.py",
    "revision": "120fa8b9eefbc10a64367c55b84c98de7e53b65b",
    "contract": {
@@ -3920,14 +3920,14 @@
     {
      "path": "docs/specs/007-006-withdraw-and-republish/spec.md",
      "sha256": "d4e3702ee889395dcef122324c8501c6749ecab1ffacb14e30dda131587020d7",
-     "locator": "test_status_preserves_prepared_situation_and_expo<session>_drift_resolution"
+     "locator": "test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
     }
    ],
    "references": [
     {
      "path": "tests/test_007_006_withdraw_and_republish.py",
      "sha256": "e143dbb2ca01da0bc752dfb108d8030c093b6b73146e91bdc6f256c7c3281dad",
-     "locator": "def test_status_preserves_prepared_situation_and_expo<session>_drift_resolution"
+     "locator": "def test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution"
     }
    ],
    "disposition": "Mantener",

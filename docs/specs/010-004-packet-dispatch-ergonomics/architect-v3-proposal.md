@@ -15,7 +15,7 @@ Aplicar las sustituciones siguientes sobre esa base. Los bloques no indicados pe
 
 Sustituir la línea de estado por:
 
-> **Estado:** borrador v3, revisado conforme a `owner-decision-v2-new-assignments.md`; pendiente de revisión y aprobación explícita de Pablo.
+> **Estado:** borrador v3, revisado conforme a `owner-decision-v2-new-assignments.md`; pendiente de revisión y aprobación explícita de <owner>.
 
 ### 2. Añadir §2.4, inmediatamente antes de §3
 
@@ -409,7 +409,7 @@ Añadir al párrafo de base técnica:
 
 N-1 queda atendido en esta propuesta, no aprobado por el architect. La pregunta histórica de `orchestration-review-v2-decision-pending.md` se conserva y se referencia como resuelta por `owner-decision-v2-new-assignments.md`; no se borra ni reescribe su registro.
 
-I-4, I-5, el incidente y las revisiones anteriores se conservan. La tensión de §2.1 sigue pendiente de decisión explícita de Pablo. Este borrador no autoriza implementación.
+I-4, I-5, el incidente y las revisiones anteriores se conservan. La tensión de §2.1 sigue pendiente de decisión explícita de <owner>. Este borrador no autoriza implementación.
 ```
 
 ### 13. Etiquetar la evidencia histórica sin alterar sus hechos

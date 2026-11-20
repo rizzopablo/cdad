@@ -146,7 +146,7 @@ La aprobación y autoridad se resuelven desde los registros del proyecto y sus r
 
 ---
 
-**Status: Aprobada por Pablo (2026-09-29) con las condiciones C1–C2 del plan.**
+**Status: Aprobada por <owner> (2026-09-29) con las condiciones C1–C2 del plan.**
 
 ## Cambios respecto de draft-001
 

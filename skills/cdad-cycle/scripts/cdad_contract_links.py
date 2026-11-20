@@ -895,9 +895,11 @@ def cmd_gap_report(args: argparse.Namespace) -> int:
         # report is produced. It never falls back to docs/ on insufficient
         # evidence.
         layout_base = cdad_layout.methodology_base(root)
-    except cdad_layout.AmbiguousLayoutError as exc:
-        # Ambiguous placement: a diagnostic and NO report, not even an empty
-        # universe (019-004 §4.2, PC-04).
+    except (cdad_layout.AmbiguousLayoutError,
+            cdad_layout.MigrationRequiredError) as exc:
+        # Ambiguous placement or an unmigrated legacy operational layout: a
+        # diagnostic and NO report, not even an empty universe (019-004 §4.2
+        # PC-04; 020-001 PC-2).
         sys.stderr.write(f"gap-report: {exc}\n")
         return EXIT_INVALID
     except cdad_layout.LayoutError as exc:

@@ -25,11 +25,11 @@
       "stage": "specification",
       "status": "approved",
       "completed_at": "2026-11-15T20:55:47Z",
-      "note": "spec.md approved by owner (Pablo) as written; independent draft review exempted by the owner Pablo, personally requested; reason given by the owner: he read the whole draft and the feature is a tiny local tool; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
+      "note": "spec.md approved by owner (<owner>) as written; independent draft review exempted by the owner <owner>, personally requested; reason given by the owner: he read the whole draft and the feature is a tiny local tool; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
     }
   ],
   "epic_history": [],
-  "approver": "Pablo",
+  "approver": "<owner>",
   "last_updated": "2026-11-15T20:55:47Z",
   "execution": null,
   "active_packet": null,

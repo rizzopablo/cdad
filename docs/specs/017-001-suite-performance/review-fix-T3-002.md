@@ -16,7 +16,7 @@ Work complete. FINAL TEXT report:
 - Focal T2: `… tests/test_017_001_suite_operations.py` → **9 passed in 9.88s**.
 - Proportional regression (T2 tranches + T1 plan regressions, all exercise `scripts/cdad-suite.py`): `… tests/test_017_001_suite_tranche1.py tests/test_017_001_suite_tranche2.py tests/test_008_002_suite_evidence.py tests/test_008_002_suite_selection.py tests/test_008_005_ci_gate.py` → **51 passed in 47.11s**.
 - `python3 scripts/cdad-suite.py validate` → rc 0, `status: ok`.
-- Real 8-selection map (`~/clawd/tmp/017-001-calibration-map.json` → out under `~/clawd/tmp/017-001-reviewfix-007/`, outside `/tmp/opencode`): correct map → **rc 0, satisfied=true**; C-R→C-E negative control → **rc 1, satisfied=false**, `selection-coverage` names C-R with both discrepant selections.
+- Real 8-selection map (`~/<workspace>/tmp/017-001-calibration-map.json` → out under `~/<workspace>/tmp/017-001-reviewfix-007/`, outside `/tmp/opencode`): correct map → **rc 0, satisfied=true**; C-R→C-E negative control → **rc 1, satisfied=false**, `selection-coverage` names C-R with both discrepant selections.
 - Reviewer's exact repro on real evidence (copied C-R attempt, deleted only `selection`, repointed map): → **rc 1, satisfied=false**, `selection-coverage` = `["C-R: el intento no declara una seleccion verificable (selection ausente o irresoluble en attempt.json; sin inventarla)"]`. Original evidence untouched.
 
 ## Limits

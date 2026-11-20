@@ -1559,3 +1559,23 @@ La forma del frontmatter (hoy V2: `permissions:` como lista de `{action, resourc
 La política operativa de publicación squash, autorizada por el usuario, está en
 [`publication-policy.md`](publication-policy.md). Conserva el historial local
 detallado y remoto publicado; cada entrega nueva añade un único commit remoto.
+
+## Directorio operacional declarado: una sola declaración, ningún `.cdad/` fijo (020-001)
+
+El registro de ejecución **no** vive en una ruta fija: se declara. `cdad/project-layout.json` (esquema 2:
+`schema_version`, `methodology_dir`, `operational_dir`, campos cerrados) es la **única** fuente, y su ruta es
+fija justamente para que el descubrimiento no tenga que conocer el directorio de metodología; un directorio
+personalizado no se descubre solo, se declara. El código de producto **no** codifica `.cdad/`: todo consumidor
+operacional (paquete, resultado, continuidad, guard, dispatch, delegación, versión, activación, contract-links,
+path guard, canario, gate de CI) deriva de `cdad_layout.operational_dir()`, y `.cdad-execution/` es el default,
+no una constante esparcida. Consecuencia de diseño: una ruta operacional nueva **no** necesita tocar N módulos,
+sino el accesorio; una prueba que fije `.cdad/` a mano está probando una ruta que el producto ya no posee.
+El proyecto que no migró **se rechaza antes de escribir**: localizador `.cdad/project-layout.json`, declaración
+sin `operational_dir` o `.cdad/` poblado (archivos o symlinks a cualquier profundidad; un subárbol de directorios
+vacíos no cuenta) producen `MigrationRequiredError` con la guía canónica
+(`skills/cdad-cycle/references/layout-migration.md`), nunca una conversión silenciosa, un alias, una selección
+por contenido de store ni un fallback. La historia es **inmutable**: paquetes, recibos, checkpoints y diarios
+previos quedan byte-idénticos y son evidencia, no superficie de replay — el traspaso del trabajo sin terminar es
+un acto administrativo explícito (limpiar solo `execution` y `active_packet`, preparar con `--new-execution`),
+no un modo de compatibilidad. Límite declarado: el verificador de versión detecta desacuerdo de marcadores, no
+ediciones de la misma versión, y la migración es manual por decisión, no por falta de tiempo.

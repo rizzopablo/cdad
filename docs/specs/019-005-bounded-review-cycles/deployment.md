@@ -1,9 +1,9 @@
 # Deployment record — 019-005
 
-Authorized by Pablo on 2026-11-17 after the bounded-cycle instructions were
+Authorized by <owner> on 2026-11-17 after the bounded-cycle instructions were
 implemented. Deployment is independent of acceptance.
 
-- Backup: `~/clawd/archive/cdad-deploy-019-005-20261117-120956`
+- Backup: `~/<workspace>/archive/cdad-deploy-019-005-20261117-120956`
   (installed agents, skill trees and manifest, plus the model records before).
 - Dry run reported no conflicts; `install.sh` completed with 11 cdad agents present and
   verification PASS.

@@ -33,7 +33,7 @@ nothing, and more than one occurrence is never resolved by choosing.
 - **Validated packet path (route A).** Exactly one marker line
   `---cdad-packet-json`, at any position, opening a block closed by
   `---end-cdad-packet-json`: before working, resolve and validate the request
-  it identifies (`.cdad/packets/<packet_id>/REQUEST.json`), then compare every
+  it identifies (`.cdad-execution/packets/<packet_id>/REQUEST.json`), then compare every
   received byte from that marker to the end of the received packet against the
   COMPLETE canonical render of the validated request
   (`cdad_packet.py render`) — not the header alone. Do not load

@@ -359,7 +359,7 @@ class U6Fix6Case(unittest.TestCase):
                                 self.project["execution_id"])
 
     def record_doc(self, stem: str) -> dict:
-        base = (self.project["root"] / ".cdad" / "executions"
+        base = (self.project["root"] / ".cdad-execution" / "executions"
                 / self.project["execution_id"] / "dispatches")
         return json.loads((base / (stem + ".json")).read_text(encoding="utf-8"))
 

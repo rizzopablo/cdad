@@ -1,6 +1,6 @@
 # Closure — 019-007-suite-selector-maintenance
 
-Approved by the CDAD orchestrator under Pablo's renewed HITL delegation for epic 019.
+Approved by the CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019.
 The unit repaired the verification instrument that blocked the epic's closure gate.
 
 ## Accepted contract

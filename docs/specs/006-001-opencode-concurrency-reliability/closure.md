@@ -2,7 +2,7 @@
 
 **Feature:** 006-001-opencode-concurrency-reliability · **Epic:** `epic-006-opencode-concurrency` (primera feature) ·
 **Cerrada:** 2026-10-17 · **Contrato:** `spec.md` sha256 `dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b` (v2) ·
-**Aprobación:** orquestador Claude bajo la HITL delegada del epic-006 (`docs/epics/epic-006-opencode-concurrency/execution.md`); Memory Bank aprobado por Pablo el 2026-10-17.
+**Aprobación:** orquestador Claude bajo la HITL delegada del epic-006 (`docs/epics/epic-006-opencode-concurrency/execution.md`); Memory Bank aprobado por <owner> el 2026-10-17.
 
 ## 1. Qué entrega
 

@@ -2539,7 +2539,7 @@ class TestDistribution(_ProductCase):
 # `docs/.cdad-state.json` y es el único input de dominio que cada caso fija.
 # ===========================================================================
 
-CANONICAL_PACKETS = Path(".cdad") / "packets"
+CANONICAL_PACKETS = Path(".cdad-execution") / "packets"
 STACK_ABSENT = object()  # centinela: la clave `stack` no existe (D3)
 
 OBSERVATION = {
@@ -2764,7 +2764,7 @@ class AgentBindingCase(unittest.TestCase):
     def dispatch_dir(self, project: PrepareProject) -> Path:
         return (
             project.root
-            / ".cdad"
+            / ".cdad-execution"
             / "executions"
             / self.execution_id(project)
             / "dispatches"

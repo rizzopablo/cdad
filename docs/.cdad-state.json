@@ -255,14 +255,14 @@
       "epic": "epic-010-documentary-specialization",
       "stage": "epic-plan",
       "completed_at": "2026-10-29T17:34:50Z",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "source": "docs/epics/epic-010-documentary-specialization/plan.md",
-      "note": "Aprobación explícita del plan por el usuario; aprobaciones estratégicas posteriores reservadas a Pablo."
+      "note": "Aprobación explícita del plan por el usuario; aprobaciones estratégicas posteriores reservadas a <owner>."
     },
     {
       "stage": "epic-plan",
       "completed_at": "2026-09-02T00:00:00Z",
-      "approved_by": "Pablo"
+      "approved_by": "<owner>"
     },
     {
       "stage": "epic-closure",
@@ -350,7 +350,7 @@
       "epic": "epic-004-single-source-planning",
       "stage": "activation",
       "completed_at": "2026-09-24T00:00:00Z",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "note": "Activación según procedimiento §6 (correction-004-001-architect-2026-09-24.md): snapshot de suspensión de epic-003 en docs/epics/epic-003-context-efficiency/handoff-suspension.md; congelación pre-activación en commit eba6d47; único write del state; dictamen C0 conforme de Claude (21238de); spec 004-001 aprobada (24d37f0). Delegación Codex/epic-003 archivada como suspended.",
       "evidence": "docs/epics/epic-004-single-source-planning/execution.md"
@@ -359,7 +359,7 @@
       "epic": "epic-004-single-source-planning",
       "stage": "epic-closure",
       "completed_at": "2026-10-05T14:35:00-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador OpenCode)",
+      "approved_by": "<owner> (HITL delegada al orquestador OpenCode)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-004-single-source-planning/closure.md",
       "note": "Tres features cerradas (004-001/002/003). Integración verificada reutilizando evidencia válida y ejecutando solo lo faltante: determinismo de fuentes (make agents sin diff) y smoke del paso 7 desde el producto instalado. Criterios de plan.md:329-336 cumplidos con excepciones expresas E1-E4 (AC-7 eximido; validadores preexistentes; sin CI; recepción = 003-002). Handoff a 003: handoff-resume-2026-10-05.md."
@@ -368,7 +368,7 @@
       "epic": "epic-003-context-efficiency",
       "stage": "reactivation",
       "completed_at": "2026-10-05T14:35:00-03:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-003-context-efficiency/handoff-resume-2026-10-05.md",
       "note": "Reanudación por RECONCILIACIÓN, no restauración ciega del snapshot 24d37f0/handoff-suspension.md. La delegación HITL de Codex NO se hereda: nueva autoridad registrada (ver hitl_delegation). Cambios de 004 que afectan a 003 declarados en el handoff: runtime v2, política/adaptadores, ADR-013, plan de validación por unidad, requisitos de orquestación proporcional, versión operativa adoptada (8cb6580) y reparto de modelos del proyecto (ADR-010 disponible pero no invocado). 003-002 entra con plan replanificado y revisado (F1/F2 aplicados; F3-F6 abiertos). 003-003 y 003-004 NO se implementan por anticipado."
@@ -377,7 +377,7 @@
       "epic": "epic-003-context-efficiency",
       "stage": "epic-closure",
       "completed_at": "2026-10-08",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "quote": "De acuerdo, avanza con eso (2026-10-08), sobre la lista de decisiones que incluía cerrar el epic con la enmienda; aplicación diferida al cierre de 003-007",
       "evidence": "docs/epics/epic-003-context-efficiency/closure.md",
@@ -387,51 +387,51 @@
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-08",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
-      "note": "Plan del epic aprobado por Pablo el 2026-10-08 («ok») y delegacion HITL registrada al orquestador OpenCode. Activacion del epic y de la feature 005-001 en el state.",
+      "note": "Plan del epic aprobado por <owner> el 2026-10-08 («ok») y delegacion HITL registrada al orquestador OpenCode. Activacion del epic y de la feature 005-001 en el state.",
       "evidence": "docs/epics/epic-005-real-operation/plan.md, execution.md"
     },
     {
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-10",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
       "plan_sha256": "f3b66be0d7aafc4f2a7ef7bd4e14dc7c8ecbefb1fa8615df123d41ee6deaefef",
       "amendment": "docs/epics/epic-005-real-operation/priority-perl-cli-plan-2026-10-10.md",
       "amendment_sha256": "b801efaeedaa7c6b749021fbcf5f4f208754fdddceb519f82e92ff96c3aa58d9",
-      "note": "ENMIENDA AL PLAN aprobada por el dueno («Apruebo la ampliacion y prioridades documentadas en …/priority-perl-cli-plan-2026-10-10.md», Pablo, 2026-10-10). Se agregan 005-008-project-path-capabilities (orden 4; capacidades de rutas de proyecto con tests anidados, primer consumidor Perl/Webmin) y 005-009-cli-delegation (orden 5; interfaz comun de delegacion externa y primer adaptador OpenCode), despues de 005-006 y antes de 005-002; se amplia el alcance y se agrega el criterio de aceptacion 5 (aceptacion conjunta del consumidor). El orden restante pasa a 005-002, 005-003, 005-007 y 005-004: 005-002 NO se cancela, no repite su discovery y conserva sus contratos. Fuera del alcance: POLICY-CLASS completa, CI, sandbox y una plataforma universal de jobs. Esta entrada es el registro del plan actualizado con su ruta y hash reales, segun el mecanismo vigente que habilita al architect (epic_history, stage 'epic-plan'); no transfiere una aprobacion de otro archivo ni declara una aprobacion de spec."
+      "note": "ENMIENDA AL PLAN aprobada por el dueno («Apruebo la ampliacion y prioridades documentadas en …/priority-perl-cli-plan-2026-10-10.md», <owner>, 2026-10-10). Se agregan 005-008-project-path-capabilities (orden 4; capacidades de rutas de proyecto con tests anidados, primer consumidor Perl/Webmin) y 005-009-cli-delegation (orden 5; interfaz comun de delegacion externa y primer adaptador OpenCode), despues de 005-006 y antes de 005-002; se amplia el alcance y se agrega el criterio de aceptacion 5 (aceptacion conjunta del consumidor). El orden restante pasa a 005-002, 005-003, 005-007 y 005-004: 005-002 NO se cancela, no repite su discovery y conserva sus contratos. Fuera del alcance: POLICY-CLASS completa, CI, sandbox y una plataforma universal de jobs. Esta entrada es el registro del plan actualizado con su ruta y hash reales, segun el mecanismo vigente que habilita al architect (epic_history, stage 'epic-plan'); no transfiere una aprobacion de otro archivo ni declara una aprobacion de spec."
     },
     {
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-11",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md, execution.md",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
       "plan_sha256": "996dd7e0afa837892a79d66f847c451e4cc65e909742c0ed1729cfb98a97466e",
-      "note": "ENMIENDA AL PLAN aprobada por el dueno («ok: a», Pablo, 2026-10-11): se agrega 005-010-real-opencode-delegation (orden 6, antes de 005-002), continuacion correctiva de 005-009 (PD-10 sin evidencia; adaptador instalado inoperable contra OpenCode real). Orquestada por Claude con roles en OpenCode (execution.md, seccion 2026-10-11)."
+      "note": "ENMIENDA AL PLAN aprobada por el dueno («ok: a», <owner>, 2026-10-11): se agrega 005-010-real-opencode-delegation (orden 6, antes de 005-002), continuacion correctiva de 005-009 (PD-10 sin evidencia; adaptador instalado inoperable contra OpenCode real). Orquestada por Claude con roles en OpenCode (execution.md, seccion 2026-10-11)."
     },
     {
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-11",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (seccion «Ajuste de los ciclos pendientes»), findings/agent-operation-strategy-2026-10-11.md",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
       "plan_sha256": "fbb0770b7fe25d321d8e897921aa29832d8e67b3b060a4d975f30642565ad53a",
-      "note": "Aprobacion de la version vigente del plan del epic («Despliegalo y aprueba», Pablo, 2026-10-11): ajustes de 005-002/003/007/004 y restriccion transversal, preparados con Codex. No cambia la lista de features, su secuencia ni los criterios."
+      "note": "Aprobacion de la version vigente del plan del epic («Despliegalo y aprueba», <owner>, 2026-10-11): ajustes de 005-002/003/007/004 y restriccion transversal, preparados con Codex. No cambia la lista de features, su secuencia ni los criterios."
     },
     {
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-12",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (fila 8 y «Cambios al plan» 2026-10-12); docs/specs/005-003-orientation-reduction/discovery.md §3; review-claude-spec-2026-10-12.md",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
@@ -442,7 +442,7 @@
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-13",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (filas 11-12 y «Cambios al plan» 2026-10-13); docs/specs/005-007-progressive-planning/acceptance.md §7",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
@@ -453,7 +453,7 @@
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-13",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (fila 13 y «Cambios al plan» 2026-10-13, segunda)",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
@@ -464,7 +464,7 @@
       "epic": "epic-005-real-operation",
       "stage": "epic-plan",
       "completed_at": "2026-10-14",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (fila 14 y «Cambios al plan» 2026-10-14)",
       "plan_path": "docs/epics/epic-005-real-operation/plan.md",
@@ -486,7 +486,7 @@
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-plan",
       "completed_at": "2026-10-16",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
@@ -497,18 +497,18 @@
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-plan-amendment",
       "completed_at": "2026-10-17",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
       "plan_sha256": "1efa6b83d798e2014122d286be5bc8d41371656718216317a3cff1e7b0c9706e",
-      "note": "Enmienda 001: agrega 006-002 (delegacion por capas). Aprobacion: «Ok, confio en tu criterio para eso. adelante» (Pablo, 2026-10-17)."
+      "note": "Enmienda 001: agrega 006-002 (delegacion por capas). Aprobacion: «Ok, confio en tu criterio para eso. adelante» (<owner>, 2026-10-17)."
     },
     {
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-plan-amendment",
       "completed_at": "2026-10-17",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
@@ -519,7 +519,7 @@
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-plan-amendment",
       "completed_at": "2026-10-17",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
@@ -530,7 +530,7 @@
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-plan-amendment",
       "completed_at": "2026-10-17",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-006-opencode-concurrency/execution.md",
       "plan_path": "docs/epics/epic-006-opencode-concurrency/plan.md",
@@ -541,7 +541,7 @@
       "epic": "epic-006-opencode-concurrency",
       "stage": "epic-closure",
       "completed_at": "2026-10-22",
-      "approved_by": "Pablo (HITL delegada a Claude para epic-006)",
+      "approved_by": "<owner> (HITL delegada a Claude para epic-006)",
       "requested_by": "usuario",
       "quote": "Ok, continúa (2026-10-22), tras el despliegue de 006-004",
       "evidence": "docs/epics/epic-006-opencode-concurrency/closure.md",
@@ -658,7 +658,7 @@
     {
       "stage": "epic-plan",
       "completed_at": "2026-10-26T23:18:08.512864+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "note": "epic-008-suite-coherence: plan de 5 features aprobado por el dueño",
       "epic": "epic-008-suite-coherence"
     },
@@ -732,7 +732,7 @@
     {
       "stage": "epic-plan",
       "completed_at": "2026-10-28T13:22:00+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador; instruccion 'ciclo CDAD light')",
+      "approved_by": "<owner> (HITL delegada al orquestador; instruccion 'ciclo CDAD light')",
       "note": "epic-009-installer-updates: plan de 1 feature (009-001-installer-agent-overlay) aprobado en la sesion de orquestacion",
       "epic": "epic-009-installer-updates"
     },
@@ -774,13 +774,13 @@
       "epic": "epic-013-test-criterion",
       "stage": "epic-plan",
       "completed_at": "2026-11-02T03:33:36.369994+00:00",
-      "approved_by": "Pablo"
+      "approved_by": "<owner>"
     },
     {
       "epic": "epic-013-test-criterion",
       "stage": "epic-closure",
       "completed_at": "2026-11-02T06:35:54.523253+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-013)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-013)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-013-test-criterion/closure.md",
       "closure_path": "docs/epics/epic-013-test-criterion/closure.md",
@@ -791,14 +791,14 @@
       "epic": "epic-014-suite-evidence-policy",
       "stage": "epic-plan",
       "completed_at": "2026-11-02T14:23:43.202475+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "evidence": "«Si, vamos con A» (2026-11-02)"
     },
     {
       "epic": "epic-014-suite-evidence-policy",
       "stage": "epic-closure",
       "completed_at": "2026-11-02T21:37:47.348997+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-014)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-014)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-014-suite-evidence-policy/closure.md",
       "closure_path": "docs/epics/epic-014-suite-evidence-policy/closure.md",
@@ -809,14 +809,14 @@
       "epic": "epic-015-dispatch-reception",
       "stage": "epic-plan",
       "completed_at": "2026-11-02T21:46:06.088324+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "evidence": "«De acuerdo, adelante» (2026-11-02)"
     },
     {
       "epic": "epic-015-dispatch-reception",
       "stage": "epic-closure",
       "completed_at": "2026-11-03T04:15:15.550473+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-015)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-015)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-015-dispatch-reception/closure.md",
       "closure_path": "docs/epics/epic-015-dispatch-reception/closure.md",
@@ -827,14 +827,14 @@
       "epic": "epic-016-traceability-and-suite-review",
       "stage": "epic-plan",
       "completed_at": "2026-11-03T21:13:28.602566+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "evidence": "«Aprobado, mandato igual que antes» (2026-11-03)"
     },
     {
       "epic": "epic-016-traceability-and-suite-review",
       "stage": "epic-closure",
       "completed_at": "2026-11-04T06:31:06.176173+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-016)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-016)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-016-traceability-and-suite-review/closure.md",
       "closure_path": "docs/epics/epic-016-traceability-and-suite-review/closure.md",
@@ -845,7 +845,7 @@
       "epic": "epic-017-suite-performance",
       "stage": "epic-plan",
       "completed_at": "2026-11-07T02:47:44.736977+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "«ok» (2026-11-06) a la propuesta de abrir el epic; plan en docs/epics/epic-017-suite-performance/plan.md"
     },
@@ -853,7 +853,7 @@
       "epic": "epic-017-suite-performance",
       "stage": "epic-closure",
       "completed_at": "2026-11-08T15:21:34.966168+00:00",
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-017)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-017)",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-017-suite-performance/closure.md",
       "closure_path": "docs/epics/epic-017-suite-performance/closure.md",
@@ -863,34 +863,34 @@
     {
       "epic": "epic-018-orchestrator-start",
       "stage": "epic-plan",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "completed_at": "2026-11-13T02:13:32.770067+00:00",
       "evidence": "docs/epics/epic-018-orchestrator-start/plan.md"
     },
     {
       "epic": "epic-018-orchestrator-start",
       "stage": "epic-closure",
-      "approved_by": "Pablo (HITL delegada al orquestador)",
+      "approved_by": "<owner> (HITL delegada al orquestador)",
       "completed_at": "2026-11-13T03:47:19.642086+00:00"
     },
     {
       "epic": "epic-018-orchestrator-start",
       "stage": "epic-closure",
-      "approved_by": "Pablo (HITL delegada al orquestador)",
+      "approved_by": "<owner> (HITL delegada al orquestador)",
       "completed_at": "2026-11-13T03:47:41.586553+00:00"
     },
     {
       "epic": "epic-019-discovery-dialogue",
       "stage": "epic-discovery",
       "opened_at": "2026-11-15T01:26:32Z",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "evidence": "docs/epics/epic-019-discovery-dialogue/plan.md",
       "note": "Owner requested opening the epic; plan and decomposition remain unapproved. No inherited execution authority or role changes."
     },
     {
       "epic": "epic-019-discovery-dialogue",
       "stage": "epic-plan",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "completed_at": "2026-11-15T01:47:07Z",
       "evidence": "docs/epics/epic-019-discovery-dialogue/plan.md",
       "note": "Owner approved the plan with explicit coverage of both normal and lightweight workflows. No feature started."
@@ -898,7 +898,7 @@
     {
       "epic": "epic-019-discovery-dialogue",
       "stage": "epic-plan",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "completed_at": "2026-11-15T14:29:09.904135+00:00",
       "evidence": "docs/epics/epic-019-discovery-dialogue/plan.md",
       "note": "Owner requested 019-003 before 019-002 and approved simplified direction: each promise receives appropriate verification; independent spec sufficiency review; executable tests before implementation and contextual review after. No reader/checklist machinery. Review: verification-strategy-review-004.md. Synchronize plan order preserving statuses/history."
@@ -906,7 +906,7 @@
     {
       "epic": "epic-019-discovery-dialogue",
       "stage": "epic-closure",
-      "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
       "completed_at": "2026-11-18T00:06:04.554085+00:00",
       "evidence": "docs/epics/epic-019-discovery-dialogue/closure.md",
       "note": "6/6 units (019-001, 019-003, 019-002, 019-004, 019-005, 019-007). Complete suite exit 0: 2201 passed, 5 skipped, 0 failed in 5215.49 s at 56e667ee (.cdad/orchestration/epic-019/final-suite-epic-6). No accumulation unit admitted; 019-005 round-5 findings supplied by adjudication 002. Deployment performed twice on 2026-11-17; publication not performed. ADR-044 accepted."
@@ -1114,14 +1114,14 @@
       "feature": "003-001-role-packets",
       "stage": "merge-memory-bank",
       "completed_at": "2026-09-18T16:14:46+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "note": "cierre pedido por el usuario en sesión Claude Code; roles pasan de Codex/gpt-5.6-sol a Claude"
     },
     {
       "feature": "011-begin-unpublished-packet-wedge",
       "stage": "specification",
       "completed_at": "2026-09-18T16:35:35+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "evidence": "docs/specs/003-005-claude-code-packets/spec.md",
       "note": "alcance elegido por el usuario: port + prepare; ciclo ligero RED/GREEN + review focal",
       "contract_path": "docs/specs/011-begin-unpublished-packet-wedge/spec.md",
@@ -1164,7 +1164,7 @@
       "feature": "003-005-claude-code-packets",
       "stage": "merge-memory-bank",
       "completed_at": "2026-09-18T16:56:59+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "note": "alcance pedido por el usuario: portar a Claude Code e instalar"
     },
     {
@@ -1345,7 +1345,7 @@
       "feature": "permissive-bash-policy",
       "stage": "owner-direct-change",
       "completed_at": "2026-09-29T07:11:14+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/permissive-bash-policy-2026-09-29/spec.yaml",
       "note": "Decision del dueno 2026-09-29 (revierte 002-009): politica bash PERMISIVA para todos los roles ('\"*\": allow', sin filtro de operaciones); barreras retenidas PATH-based (edit/read/grep + CC path-guard sin hooks Bash). Ejecucion inline por orden directa (desviacion declarada del ciclo: no paso por RED/GREEN delegado). Bugfix incluido: implementer-odoo volvia a editar models/views (su propio scope). Oraculos actualizados: test_cdad_adapters_opencode (1a/1b), test_bash_policy_selection, test_packet_prepare EXPECTED_GUARDS, validate-consistency F009, validate-odoo-specialization P1, cdad-bash-allowlist (tail toolchain retirado). Evidencia: pytest 92 passed + 2 RED intencionales T6 (baseline); validate-subagents/consistency/odoo-specialization PASS; install.sh --check PASS 395 grupos; PD-2 byte-identico. Backups: ~/tmp/cdad-agents-backup-20260929/ (pin qwen3.8-flash del dueno preservado ahi; adoptado el valor del mapa qwen3.7-plus para cero deriva)."
@@ -1354,7 +1354,7 @@
       "feature": "opencode-read-map-and-steps",
       "stage": "light-cycle-closed",
       "completed_at": "2026-09-29T17:44:35+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/opencode-read-map-and-steps-2026-09-29/evidence/results.md",
       "note": "Ciclo liviano documentado. Fix 1: el generador antepone catch-all deny al mapa read del test-writer (36 read denegados, 0 ok, ventana 24-29/09) -> eliminado. Fix 2: techo steps=300 declarado una vez en sources/agents/adapters/opencode.md y emitido en los 10 roles OpenCode (bucle de 2073 reintentos, cost 15.86 segun OpenCode). RED por cdad-test-writer y GREEN por cdad-implementer (OpenCode v2.0.16, glm-5.3-flash, via opencode run --auto); review independiente Claude sin bloqueantes. Suite 96 passed + 2 RED de T6 (baseline); F011 preexistente. Instalado y probado en vivo antes/despues. Desviaciones e incidentes (write:ask en v2, /tmp sin inodos, implementer sin reporte final) en results.md."
@@ -1413,7 +1413,7 @@
       "feature": "004-001-canonical-runtime-artifacts",
       "stage": "merge-memory-bank",
       "completed_at": "2026-09-30T02:00:00+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-001-canonical-runtime-artifacts/closure.md; docs/activeContext.md, progress.md, systemPatterns.md",
       "note": "Borradores del scribe (GLM) corregidos por fidelidad por el orquestador y aprobados por el dueno. Esquema de modelos para 004-002 en adelante (decision del dueno): construccion con modelos economicos (glm-5.3-flash, deepseek-v4.1-flash, gpt-6-luna); gpt-6-astra via Codex solo para review y, a prueba, architect; Claude orquesta con criterio HITL."
@@ -1422,7 +1422,7 @@
       "feature": "004-002-project-execution-bootstrap",
       "stage": "discovery-owner-decisions",
       "completed_at": "2026-09-30T03:05:00+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-002-project-execution-bootstrap/owner-decisions-2026-09-29.md",
       "note": "Architect draft 001 (Codex gpt-6-astra) + gate Claude changes-required (G1 mecanismo PD-8 con spike, G2 recorrido real, G3 consumidores). Decisiones D1-D6 del dueno; D2 solo hacia adelante (sin migracion). Sigue la revision del architect."
@@ -1431,7 +1431,7 @@
       "feature": "011-begin-unpublished-packet-wedge",
       "stage": "specification",
       "completed_at": "2026-09-30T03:40:00+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-002-project-execution-bootstrap/spec.md, plan.md, spec-gate-claude-002.md",
       "note": "Spec y plan (architect Codex gpt-6-astra, 2 rondas) aprobados con C1 (T7 = adoptar v2 en este repo) y C2 (guard CC Grep/Glob). El dueno delega la orquestacion al orquestador (Claude) como dueno del proceso con criterio HITL hasta completar.",
@@ -1477,7 +1477,7 @@
       "feature": "004-002-project-execution-bootstrap",
       "stage": "closure",
       "completed_at": "2026-10-03T12:00:00-03:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-002-project-execution-bootstrap/supervision-record.md, review-second-look.md, debt-second-look.md, docs/progress.md, docs/activeContext.md, docs/adr/ADR-012-politica-limites-por-proyecto.md",
       "note": "T1–T7 cerradas; suite de cierre de 329 passed en worktree fijado (5b14f0e). Memory Bank y ADR-012 aprobados (5561114). Segunda mirada de Codex astra (review-015): 6 Required, registrados como deuda por decisión del dueño (MVP con camino feliz viable); F4 tiene prioridad alta para layouts co-ubicados. Paquete red-027 (tanda A) abandonado sin escrituras."
@@ -1486,7 +1486,7 @@
       "feature": "004-003-planning-procedures",
       "stage": "discovery",
       "completed_at": "2026-10-05T01:49:17-03:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-003-planning-procedures/architect-draft-001.md, dispatch-ledger.md, supervision-record.md",
       "note": "Discovery y borradores por cdad-architect (subagente del harness, mofgw/deepseek-v4.1-flash, sesión <ses-1>), despacho legacy identificado: prepare v2 bloqueado por I2 (rc=2; cdad_packet.py:1281) — la brecha D8 que esta feature resuelve. Enmienda de alcance del dueño (efficient-orchestration-requirements.md) incorporada al encargo."
@@ -1495,7 +1495,7 @@
       "feature": "011-begin-unpublished-packet-wedge",
       "stage": "specification",
       "completed_at": "2026-10-05T01:49:17-03:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/specs/004-003-planning-procedures/spec.md, plan.md, owner-decisions-2026-10-05.md",
       "note": "Spec (PD-1..PD-13, invariantes, criterios, cambios de gates G1-G5) y plan (T1..T7) materializados desde architect-draft-001 con las decisiones D1-D7 aprobadas por el dueño. D3: F4 fuera del camino feliz de este repo (test_roots:['tests']); T6 condicional, F4 a deuda priorizada. Verificación proporcional del orquestador: 6 citas de carga del borrador confirmadas contra el código.",
@@ -1703,7 +1703,7 @@
       "feature": "004-003-planning-procedures",
       "stage": "merge-memory-bank",
       "completed_at": "2026-10-05T09:28:28-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador OpenCode)",
+      "approved_by": "<owner> (HITL delegada al orquestador OpenCode)",
       "requested_by": "usuario",
       "evidence": "docs/activeContext.md, docs/progress.md, docs/adr/ADR-013-contrato-plan-borrador-revision-sin-aprobacion.md",
       "note": "Borradores del scribe (mofgw/deepseek-v4.1-flash, sesión <ses-29>) revisados por fidelidad por el orquestador y APROBADOS por el dueño (HITL delegada): entry de activeContext (decisiones, deuda, 6 lecciones de proceso), transición en progress.md (004-003 a Done; epic-004 pendiente de cierre) y ADR-013 (el contrato draft-plan separa revisión de aprobación; confianza Media-Alta). systemPatterns.md sin cambios (el scribe lo declaró y el orquestador lo confirmó: no hay patrón nuevo que no cubra el ADR). FEATURE 004-003 CERRADA."
@@ -1712,7 +1712,7 @@
       "feature": "003-002-artifact-tools",
       "stage": "specification",
       "completed_at": "2026-10-05T15:10:00-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador OpenCode)",
+      "approved_by": "<owner> (HITL delegada al orquestador OpenCode)",
       "requested_by": "usuario",
       "evidence": "docs/specs/003-002-artifact-tools/spec.md, docs/specs/003-002-artifact-tools/plan.md",
       "note": "Spec reconciliada con el runtime v2 y aprobada; plan replanificado al contrato vigente, revisado por sesion independiente (004-003 T7) y aprobado. Reconciliacion delegada al architect via handoff LEGACY identificado (el renderer v2 no puede servir la etapa de spec de una feature sin spec aprobada: I2 exige el registro de aprobacion que justamente se estaba produciendo; gap registrado como deuda). Verificacion archivo:linea del architect: contexto v2 (cdad_packet.py:64-77), I2 (:1263-1274), I8 (:1735-1810,:1865-1871), active_packet (:440-469), plan-tasks (planning-contract-draft.md:87-138). 5 UNKNOWN declarados (U1-U5) y 3 decisiones de dueno resueltas: F5 (.gitignore fuera de T1: el store ya esta bajo .cdad/ ignorado), F4 (la referencia en state la agrega el orquestador, no las herramientas), U2 (los ADR quedan fuera de la tabla de materializacion; siguen siendo del orquestador por ADR-003). U3 aceptada como campo propio de 003-002. F3 resuelto: T3 depende de T2 por el archivo compartido cdad_result.py."
@@ -1972,7 +1972,7 @@
       "feature": "003-002-artifact-tools",
       "stage": "merge-memory-bank",
       "completed_at": "2026-10-06T01:15:00-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador OpenCode)",
+      "approved_by": "<owner> (HITL delegada al orquestador OpenCode)",
       "evidence": "docs/activeContext.md, docs/progress.md, docs/systemPatterns.md, docs/adr/ADR-014-recepcion-materializacion-aprobacion-separadas.md",
       "note": "Memory Bank aprobado por el dueño (HITL delegada) y materializado POR EL FLUJO con CAS: scribe cdad-scribe (mofgw/deepseek-v4.1-flash, sesion <ses-61>) entrego el CONTENIDO COMPLETO de 3 targets como parts; el orquestador verifico fidelidad (ninguna seccion perdida; activeContext gana exactamente la entrada nueva), hizo staging + RESULT.json, receive rc=0 (validaciones passed) y materialize CAS rc=0 contra el digest anterior exacto de los 3 targets; bytes verificados identicos; retry idempotente. ADR-014 (recepcion/materializacion/aprobacion separadas; el recibo nunca aprueba) materializado por el orquestador (ADR-003; los ADR estan fuera de la tabla de artefactos) con Estado 'Aceptado (2026-10-06)'. projectbrief.md NO cambia (sin cambio de proposito/stack/ alcance) - declarado por el scribe con razon."
     },
@@ -1980,7 +1980,7 @@
       "feature": "003-002-artifact-tools",
       "stage": "feature-closure",
       "completed_at": "2026-10-06T01:20:00-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador OpenCode)",
+      "approved_by": "<owner> (HITL delegada al orquestador OpenCode)",
       "evidence": "docs/specs/003-002-artifact-tools/closure.md",
       "note": "003-002-artifact-tools CERRADA: P1-P6 implementadas y verificadas; T1-T4 cerradas con 4 reviews y sus re-reviews; gate de cierre = suite completa 439 passed en 8f5aaa5 (608.67s, arbol limpio) + validadores 141 PASS/2 FAIL preexistentes ajenos; integracion verificada por dos vias (producto instalado en raiz aislada + primer uso real con recibo); Memory Bank y ADR-014 aprobados y materializados. Limitaciones y deuda declaradas en closure.md §6 (destaca: README.md sin clasificar en la politica -> decision del dueno; observation_status=unknown no ejercitado). 003-003 y 003-004 NO se implementan por anticipado."
     },
@@ -1994,7 +1994,7 @@
       "feature": "003-003-progress-guards",
       "stage": "specification",
       "completed_at": "2026-10-06T21:30:00-03:00",
-      "approved_by": "Pablo (HITL delegada al orquestador Claude)",
+      "approved_by": "<owner> (HITL delegada al orquestador Claude)",
       "requested_by": "usuario",
       "evidence": "docs/specs/003-003-progress-guards/spec.md, plan.md, review-draft-001.md",
       "note": "Spec y plan finales (architect deepseek, handoff legacy por I2) tras review independiente GLM (0 bloqueantes; F2/O1-O3 aplicados; fusion 7->5). D1-D11 resueltas segun recomendacion del architect: dentro del alcance aprobado del epic."
@@ -2003,7 +2003,7 @@
       "feature": "003-003-progress-guards",
       "stage": "closure",
       "completed_at": "2026-10-07",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "evidence": "docs/specs/003-003-progress-guards/closure.md",
       "note": "Suite de cierre 487 passed en 87d91b2 (worktree fijado). Memory Bank y ADR-015 aprobados por el dueno."
     },
@@ -2084,7 +2084,7 @@
       "stage": "discovery",
       "at": "2026-10-08",
       "by": "orchestrator (HITL delegation epic-003)",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "ref": "docs/specs/003-007-living-continuity/handoff-architect-001.md",
       "note": "Feature añadida por el dueño (2026-10-08) tras revisión externa de Codex: resolver T4-REF/T4-CKPT de 003-006 y reconciliar la regla de encargo atómico. Aprobado también: gate del implementer = focales + módulos tocados; cierre de epic-003 con enmienda diferido al cierre de 003-007. v6 (abcd4d3) activada en el repo por el dueño (.cdad/activation.json, 2026-10-08 11:43)."
     },
@@ -2156,7 +2156,7 @@
       "feature": "005-001-idle-and-v7-bootstrap",
       "stage": "discovery-authorization",
       "completed_at": "2026-10-08",
-      "authorized_by": "Pablo",
+      "authorized_by": "<owner>",
       "requested_by": "usuario",
       "evidence": "docs/epics/epic-005-real-operation/plan.md",
       "rectified_at": "2026-10-08",
@@ -2439,7 +2439,7 @@
       "at": "2026-10-09",
       "by": "implementer mofgw/deepseek-v4.1-flash (<ses-87>)",
       "evidence": "commits b4ce4d9 (3 archivos) y 1f1cc63 (completar normalizacion); docs/specs/005-001-idle-and-v7-bootstrap/review.md + docs/epics/epic-005-real-operation/handoff-opencode*.md; paquete 005-005-adoption-coherence-implementer-green-004",
-      "note": "T3b (doc-only): PD-16 review.md normalizado SIN repetir la revision (veredicto changes-required, B1 unico bloqueante, B2..B7, tabla PD<->test, INV y abstenciones intactos; PD-27 -> PD-20; cadenas corruptas reconstruidas). Se completo la unidad en la misma sesion (misma unidad/mismo write scope) porque la primera pasada dejo frases mal traducidas ('techo referencial', 'simulacion de la sub-modalidad', 'Enfriamiento', 'Audit o test', 'grosero', 'giro declarado'); tras la segunda pasada el grep de esas frases da 0. PD-17: handoff-opencode.md y handoff-opencode-2.md genericizados; grep de /home/|/Users/|ofap|cdad-adopted-[0-9a-f] en docs/epics/epic-005-real-operation = 0; se conservan (D7) ~/.claude, ~/.agents, ~/.config/opencode. Los originales quedaron en el registro local .cdad/local/handoff-opencode*.original.md (los guardo el orquestador). VERIFICADO POR EL ORQUESTADOR: commit sin tests/, estructura de review.md intacta por inspeccion, grep PD-17 = 0. Despacho (I8) at-005-005-implementer-green-004."
+      "note": "T3b (doc-only): PD-16 review.md normalizado SIN repetir la revision (veredicto changes-required, B1 unico bloqueante, B2..B7, tabla PD<->test, INV y abstenciones intactos; PD-27 -> PD-20; cadenas corruptas reconstruidas). Se completo la unidad en la misma sesion (misma unidad/mismo write scope) porque la primera pasada dejo frases mal traducidas ('techo referencial', 'simulacion de la sub-modalidad', 'Enfriamiento', 'Audit o test', 'grosero', 'giro declarado'); tras la segunda pasada el grep de esas frases da 0. PD-17: handoff-opencode.md y handoff-opencode-2.md genericizados; grep de /home/|/Users/|<owner>|cdad-adopted-[0-9a-f] en docs/epics/epic-005-real-operation = 0; se conservan (D7) ~/.claude, ~/.agents, ~/.config/opencode. Los originales quedaron en el registro local .cdad/local/handoff-opencode*.original.md (los guardo el orquestador). VERIFICADO POR EL ORQUESTADOR: commit sin tests/, estructura de review.md intacta por inspeccion, grep PD-17 = 0. Despacho (I8) at-005-005-implementer-green-004."
     },
     {
       "feature": "005-005-adoption-coherence",
@@ -2695,7 +2695,7 @@
       "feature": "005-006-guided-project-start",
       "stage": "closure",
       "at": "2026-10-10",
-      "approved_by": "Pablo (instruccion directa: 'Despliega 005-006 y cierra')",
+      "approved_by": "<owner> (instruccion directa: 'Despliega 005-006 y cierra')",
       "requested_by": "usuario",
       "evidence": "docs/specs/005-006-guided-project-start/closure.md",
       "note": "005-006 CERRADA por instruccion directa del dueno, que autoriza la accion reservada de activar una version en HOME y decide el cierre. Despliegue de la version de cierre (perfil basic) y verificacion: ver closure.md §6 y §9. La corrida R2 de sesion nueva en el proyecto de aceptacion NO se ejecuto: queda como verificacion del dueno y, si fallara, la feature se reabre. 005-002 queda in-progress pero PAUSADA (discovery completo); el dueño anuncio que entra otra feature aun no definida. El state queda en reposo legitimo."
@@ -2704,7 +2704,7 @@
       "feature": "005-006-guided-project-start",
       "stage": "deployment",
       "at": "2026-10-10",
-      "approved_by": "Pablo (instruccion directa: 'Despliega 005-006 y cierra')",
+      "approved_by": "<owner> (instruccion directa: 'Despliega 005-006 y cierra')",
       "requested_by": "usuario",
       "evidence": "docs/specs/005-006-guided-project-start/closure.md §9; .cdad/local/deploy-005-006-home.sh; .cdad/local/handoff-005-005.local.md",
       "note": "Despliegue EJECUTADO por el orquestador por instruccion directa del dueno (accion normalmente reservada). Version 35062b0 (commit de cierre), perfil basic, en ~/.config/opencode, ~/.agents y ~/.claude; respaldo previo en <workspace>/archive/20261010-opencode-agents-pre-005-006/. Verificado: version.txt y source_version del manifiesto = 35062b0; install.sh --check PASS (358 grupos); el cdad-orchestrator.md instalado tiene 8 <skill-dir> y 0 CDAD_INSTALL_ROOT; project-start.md y cdad-version-check.py instalados en los tres roots. DRIFT honesto declarado: el marcador del PROYECTO sale de los agentes derivados de este repo (source_version 7f66619) que ensombrecen a los globales nuevos -> se resuelve republicandolos con el primer prepare del proximo ciclo, o activando el proyecto (reservado al dueno, no pedido). Deuda nueva: install.sh --check es sensible a los __pycache__ que Python escribe junto al CLI instalado. La corrida R2 de sesion nueva queda como verificacion del dueno."
@@ -2826,7 +2826,7 @@
       "feature": "005-009-cli-delegation",
       "stage": "deployment-of-005-008-successor",
       "at": "2026-10-10",
-      "approved_by": "Pablo (instruccion directa: 'si, quiero desplegar 008')",
+      "approved_by": "<owner> (instruccion directa: 'si, quiero desplegar 008')",
       "requested_by": "usuario",
       "evidence": ".cdad/local/deploy-005-008-home.sh; docs/specs/005-008-project-path-capabilities/closure.md §9",
       "note": "DESPLIEGUE de la version sucesora de 005-008 (accion normalmente reservada al dueno; ejecutada por el orquestador por instruccion directa). Version: commit de cierre de 005-008 = 10507e5 (v10), perfil basic, en ~/.config/opencode, ~/.agents y ~/.claude. Respaldo previo en <workspace>/archive/20261010-opencode-agents-pre-005-008. Verificado: version.txt y source_version del manifiesto = 10507e599d80a77f0128ff607ec5683e06baade0; conflicts 0; el CLI instalado contiene el arreglo de 005-008 (_test_patterns incluye test_files y el diagnostico del esquema nombra el campo: 'unknown field(s):'). El unico FAIL de install.sh --check es el DEUDOR CONOCIDO de __pycache__ (74 vs 73 archivos en skills/cdad-cycle por el .pyc que Python escribe junto al CLI instalado), no una divergencia de contenido. TRANSICION DE VERSION declarada y verificada: los derivados del proyecto declaraban 35062b0 -> DRIFT rc=1; el primer prepare legitimo tras el despliegue los republico a 10507e5 y el cdad-version-check.py instalado da COHERENT rc=0 (project == agents == CLI). Se ejecuto ENTRE unidades: el discovery de 005-009 ya habia cerrado y el paquete del draft es el primero preparado con el CLI nuevo. Sin push; sin reinicio de servidores compartidos; sin operaciones de produccion."
@@ -2959,7 +2959,7 @@
       "feature": "005-009-cli-delegation",
       "stage": "deployment-of-005-009-successor",
       "at": "2026-10-11",
-      "approved_by": "Pablo (instruccion directa: 'si, despliega')",
+      "approved_by": "<owner> (instruccion directa: 'si, despliega')",
       "requested_by": "usuario",
       "evidence": ".cdad/local/deploy-005-009-home.sh",
       "note": "DESPLIEGUE de la version sucesora (incluye 005-008 y 005-009) por instruccion directa del dueno. Version: commit revisado 6f4d5db, perfil basic, en las tres bases. Respaldo previo en <workspace>/archive/20261011-opencode-agents-pre-005-009. Verificado: version.txt y source_version del manifiesto = 6f4d5dba4d791144b92094b3de88f542d55f156f; 343 archivos propios, 0 conflictos, 11/11 agentes presentes; los CLI de delegacion instalados (cdad_delegate.py, cdad_delegate_opencode.py, references/cli-delegation.md). El unico FAIL de install.sh --check es la DEUDA CONOCIDA de __pycache__ (77 vs 76 en skills/cdad-cycle). Cierre de la familia F011 que la review de 005-009 atribuyo al despliegue: los archivos publicados por el diff ya estan instalados. Transicion declarada: los derivados del proyecto declaraban 10507e5 -> DRIFT; se republican con el primer prepare legitimo. Sin push; sin reinicio de servidores; sin operaciones de produccion."
@@ -2986,7 +2986,7 @@
       "feature": "005-010-real-opencode-delegation",
       "stage": "feature-start",
       "at": "2026-10-11",
-      "approved_by": "Pablo («ok: a»)",
+      "approved_by": "<owner> («ok: a»)",
       "requested_by": "usuario",
       "by": "orquestador Claude",
       "evidence": "docs/epics/epic-005-real-operation/plan.md, execution.md",
@@ -3192,7 +3192,7 @@
       "feature": "005-010-real-opencode-delegation",
       "stage": "deployment-and-pd10-step-b",
       "at": "2026-10-11",
-      "approved_by": "Pablo («Despliegalo y aprueba»)",
+      "approved_by": "<owner> («Despliegalo y aprueba»)",
       "requested_by": "usuario",
       "evidence": ".cdad/local/deploy-005-010-home.sh; docs/specs/005-010-real-opencode-delegation/evidence/pd10-acceptance.md §7",
       "note": "Despliegue global de c9f4810 (perfil basic) ejecutado por el orquestador por instruccion directa. PD-9 paso b cumplido desde la instalacion global (<ses-146>). Pendiente: B1 de la verificacion de Codex (seleccion del texto final)."
@@ -3201,7 +3201,7 @@
       "feature": "005-010-real-opencode-delegation",
       "stage": "reopen-b1",
       "at": "2026-10-11",
-      "approved_by": "Pablo («Si, adelante», HITL delegada al orquestador Claude por unas horas)",
+      "approved_by": "<owner> («Si, adelante», HITL delegada al orquestador Claude por unas horas)",
       "evidence": "docs/specs/005-010-real-opencode-delegation/review-codex-2026-10-11.md",
       "note": "Reapertura focal por B1 (verificacion posterior de Codex): _last_assistant_text puede tomar texto de un mensaje assistant intermedio cuando el ultimo no tiene texto (PD-1/PD-5). Alcance: RED focal + GREEN con seleccion exclusiva del ultimo assistant y oraculo del doble alineado. Sin despliegue hasta que el otro proyecto activo este en reposo."
     },
@@ -3227,7 +3227,7 @@
       "feature": "005-010-real-opencode-delegation",
       "stage": "feature-closure-b1",
       "completed_at": "2026-10-11",
-      "approved_by": "orquestador Claude (HITL delegada por Pablo)",
+      "approved_by": "orquestador Claude (HITL delegada por <owner>)",
       "evidence": "docs/specs/005-010-real-opencode-delegation/closure.md §6",
       "note": "B1 cerrada: RED 1b62f5d, GREEN 7a2ed0a; suite completa 765 passed / 2 skipped en worktree fijado a 7a2ed0a; integracion real 1 passed (reintento; la primera fallo por el modelo, no por el adaptador). Despliegue pendiente hasta que el otro proyecto activo este en reposo. La orquestacion vuelve al orquestador OpenCode para 005-002."
     },
@@ -3413,7 +3413,7 @@
       "at": "2026-10-12",
       "by": "orquestador OpenCode (agente cdad-orchestrator)",
       "requested_by": "usuario (encargo del tramo: reapertura acotada de 005-002)",
-      "approved_by": "Pablo (HITL delegada epic-005; criterio de review aprobado: «De acuerdo, adelante»)",
+      "approved_by": "<owner> (HITL delegada epic-005; criterio de review aprobado: «De acuerdo, adelante»)",
       "evidence": "docs/epics/epic-005-real-operation/execution.md (seccion «Criterio de review vigente — 2026-10-12»); docs/specs/005-002-session-context-meter/debt.md (D1-D5)",
       "note": "REAPERTURA ACOTADA de 005-002 bajo el criterio nuevo. Precedente del mecanismo: la reapertura de 005-010 por B1 (su closure.md seccion 6). Pasos del tramo: (1) la feature vuelve a in-progress y queda activa; (2) RED y GREEN focales sin cambiar el contrato aprobado (PD-3, PD-4, PD-6, PD-12, PD-15); (3) suite completa de cierre en un worktree fijado; (4) cierre con nota en closure.md y en debt.md. Alcance: A (desconocido no es cero como CLASE de defecto: D1 time_relative 0.0, el proxy por paso que suma (x or 0), max_output sin salidas, barrido del resto de las metricas), B (D2: la salida por defecto respeta el limite publicado de 16384 bytes con cualquier tamano de sesion, con resumen de tamano fijo e indicador de truncado con causa; el detalle por paso solo con flag explicito documentado en el reference), C (D4: que herramientas de despacho reconoce el lector, declaradas en la salida y el reference; la ausencia distingue «no detectado por este lector» de «no ocurrio»; sumar task), D (D5: --session parcialmente casado declara las referencias pedidas no encontradas como unknown con causa, sin medir un subconjunto en silencio), E (D3: relajar el oraculo de aceptacion segun su condicion de cierre). D6 (run.runtime_version con sesiones de versiones heterogeneas) queda en deuda. Reglas del tramo: roles en primer plano y commitean; fixtures sinteticos (sin copiar de la base real); reviewer de otra familia que el implementer con el criterio nuevo; la integracion real de T4 (5 tests, solo lectura) tiene que seguir en verde; la HITL del epic sigue delegada al orquestador OpenCode. Prohibido en este tramo: desplegar o reinstalar en HOME, reiniciar o recargar servidores de OpenCode, push, leer tests/.sensitive-patterns.local, tocar otros proyectos y arrancar 005-003."
     },
@@ -3540,7 +3540,7 @@
       "at": "2026-10-12",
       "by": "orquestador OpenCode (agente cdad-orchestrator)",
       "requested_by": "usuario (encargo del tramo: discovery -> spec + plan, aprobacion con la HITL delegada y registro en el state; sin arrancar TDD)",
-      "approved_by": "Pablo (HITL delegada epic-005; la aprobacion del plan del epic vigente fbb0770b... ya estaba registrada y no se vuelve a registrar)",
+      "approved_by": "<owner> (HITL delegada epic-005; la aprobacion del plan del epic vigente fbb0770b... ya estaba registrada y no se vuelve a registrar)",
       "evidence": "docs/epics/epic-005-real-operation/plan.md (fila 8), docs/specs/005-003-orientation-reduction/discovery-inputs.md, docs/specs/005-003-orientation-reduction/discovery-inputs-2026-10-12.md",
       "note": "8va feature del epic-005 activada en reposo legitimo (005-002 cerrada el 2026-10-12). Se abre la ejecucion exec-005-003-orientation-reduction-001 (prepare --new-execution) con la autoridad del epic. Alcance del tramo: discovery y spec+plan por el architect, aprobacion con la HITL delegada y registro en el state. Linea base medida con el medidor de 005-002 en solo lectura sobre las sesiones de orquestacion de 005-002 (reapertura del 2026-10-12 y ciclo original del 2026-10-11) y sobre S-BOOT-04; evidencia en docs/specs/005-003-orientation-reduction/evidence/baseline-meter-2026-10-12.md. Hallazgo de procedencia: el medidor NO esta en la version instalada (c9f4810, COHERENT) ni en las skills instaladas de OpenCode/Claude Code; se midio con el artefacto del repo (sin cambios desde d435e9b). No se arranca TDD: el orquestador Claude revisa antes."
     },
@@ -3839,7 +3839,7 @@
       "feature": "005-003-orientation-reduction",
       "stage": "specification",
       "at": "2026-10-13",
-      "approved_by": "Pablo («Si»)",
+      "approved_by": "<owner> («Si»)",
       "requested_by": "usuario",
       "evidence": "docs/specs/005-003-orientation-reduction/spec.md §2.2 y PD-2 (enmienda F2); review-claude-spec-2026-10-12.md",
       "contract_path": "docs/specs/005-003-orientation-reduction/spec.md",
@@ -3870,7 +3870,7 @@
       "feature": "005-003-orientation-reduction",
       "stage": "feature-closure-f2",
       "completed_at": "2026-10-13",
-      "approved_by": "orquestador Claude (reapertura F2 aprobada por Pablo)",
+      "approved_by": "orquestador Claude (reapertura F2 aprobada por <owner>)",
       "evidence": "docs/specs/005-003-orientation-reduction/closure.md (Reapertura por F2)",
       "note": "F2 cerrada: RED 92d9bdc, GREEN 03cea96; suite 849 passed / 4 skipped en worktree fijado a 03cea96; status en reposo -> next-unit en este repo. Sigue: despliegue autorizado (el otro proyecto activo en reposo) y aceptacion real A1/A2/A6."
     },
@@ -6536,7 +6536,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+        "approved_by": "Claude orchestrator (HITL delegada por <owner>, epic-006)",
         "contract": {
           "path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
           "sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453"
@@ -6554,7 +6554,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GATE 2->3 de 006-001: spec (PD-1..PD-12, INV-1..INV-9) y plan (T1..T3, bloque plan-tasks) APROBADOS por el orquestador bajo la HITL delegada de epic-006, con verificacion propia de referencias contra el codigo (spec §14). Gate en la misma familia (architect y orquestador Claude), declarado; la review de codigo sera de otra familia. Oraculos autorizados a cambiar: solo los dos del plan §3.",
-      "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+      "approved_by": "Claude orchestrator (HITL delegada por <owner>, epic-006)",
       "contract_path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
       "contract_sha256": "7e224121bb3cbceabd4c81b9ce322c715aa64ce75cbb49c31bb51c773e91e453",
       "plan_path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
@@ -6800,7 +6800,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+        "approved_by": "Claude orchestrator (HITL delegada por <owner>, epic-006)",
         "contract": {
           "path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
           "sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b"
@@ -6818,7 +6818,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RE-APROBACION del contrato (enmienda 001, spec v2 con PD-13/PD-14 y plan v2 con T1b): bytes cambiados, el pin v1 queda reemplazado. D-11 (A) ratificada, D-9 compat v1. Oraculos T1/T2 sin cambios.",
-      "approved_by": "Claude orchestrator (HITL delegada por Pablo, epic-006)",
+      "approved_by": "Claude orchestrator (HITL delegada por <owner>, epic-006)",
       "contract_path": "docs/specs/006-001-opencode-concurrency-reliability/spec.md",
       "contract_sha256": "dac418b98f938b23bd98ceec625c741cf1df601a3c178a2144ee48996415183b",
       "plan_path": "docs/specs/006-001-opencode-concurrency-reliability/plan.md",
@@ -7254,7 +7254,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -7269,7 +7269,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/006-001-opencode-concurrency-reliability/closure.md",
       "closure_sha256": "ef3324fb76eb34f73b46a6e0feb278592eb2a5cce281361d83817cbecd1cfae0"
     },
@@ -7327,7 +7327,7 @@
         "docs/systemPatterns.md": "a8b4bcffede02fb0399937d5c5943920bf8ccf63faec927c02d8c819609a351d",
         "docs/adr/ADR-031-seleccion-explicita-de-modo-y-servicio-no-gestionado.md": "1e1ed7b66ec1eca346487516fb52eb02c1fd855c6bc8e135a0f10f3f322f046d"
       },
-      "note": "Entrega del scribe (receipt valido) aplicada por el orquestador tras la aprobacion de Pablo; registrada como late-delivery porque el cierre ya estaba aplicado."
+      "note": "Entrega del scribe (receipt valido) aplicada por el orquestador tras la aprobacion de <owner>; registrada como late-delivery porque el cierre ya estaba aplicado."
     },
     {
       "feature": "006-002-delegation-by-layer",
@@ -8086,7 +8086,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/006-002-delegation-by-layer/spec.md",
           "sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd"
@@ -8104,7 +8104,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/006-002-delegation-by-layer/spec.md",
       "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd",
       "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
@@ -8131,7 +8131,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/006-002-delegation-by-layer/spec.md",
           "sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd"
@@ -8149,7 +8149,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Re-aprobacion por la enmienda 001 (regla de /tmp), pedida por el duenio.",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/006-002-delegation-by-layer/spec.md",
       "contract_sha256": "c4fc55842786832a4ae0f3159b47a3e3712af9ff145024f0b08010f82f71b6dd",
       "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
@@ -8263,7 +8263,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/006-002-delegation-by-layer/spec.md",
           "sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4"
@@ -8281,7 +8281,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Re-aprobacion por la enmienda 002 (/tmp fuera de la metodologia).",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/006-002-delegation-by-layer/spec.md",
       "contract_sha256": "19ba351ccc60cd89b201634713bc9225cc489a36b2e3882557f849170bdb5cb4",
       "plan_path": "docs/specs/006-002-delegation-by-layer/plan.md",
@@ -8597,7 +8597,7 @@
         "docs/systemPatterns.md": "17666cdb00b56e26831a961ba945b2cdb0e2244af9a787d5a6125ba0046692f8",
         "docs/adr/ADR-032-delegacion-por-capa-agente-del-runtime-dueno-del-mecanismo.md": "7cfaf9d916f92df0d7386fef308484004136ff399d2c23302d569a998e1aacee"
       },
-      "note": "Borradores del scribe aprobados por Pablo (2026-10-18), aplicados por el orquestador con dos correcciones: lo instalado es 6978709 (006-001 completo) y PD-6 de 006-001 resuelto despues de su cierre."
+      "note": "Borradores del scribe aprobados por <owner> (2026-10-18), aplicados por el orquestador con dos correcciones: lo instalado es 6978709 (006-001 completo) y PD-6 de 006-001 resuelto despues de su cierre."
     },
     {
       "feature": "006-002-delegation-by-layer",
@@ -8620,7 +8620,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -8635,7 +8635,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/006-002-delegation-by-layer/closure.md",
       "closure_sha256": "deac6c5a0f25c53688f5ec32b87898e962bf2913290ced41309f41e7d7f49bf9"
     },
@@ -8747,7 +8747,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "orquestador (HITL delegada por Pablo)",
+        "approved_by": "orquestador (HITL delegada por <owner>)",
         "contract": {
           "path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
           "sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419"
@@ -8765,7 +8765,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "orquestador (HITL delegada por Pablo)",
+      "approved_by": "orquestador (HITL delegada por <owner>)",
       "contract_path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
       "contract_sha256": "32ed55c46a59a180523e06845649dbba4edc5fda1a9864c4e4b5d366a1487419",
       "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
@@ -9267,7 +9267,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo (enmienda A-5)",
+        "approved_by": "<owner> (enmienda A-5)",
         "contract": {
           "path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
           "sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890"
@@ -9285,7 +9285,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo (enmienda A-5)",
+      "approved_by": "<owner> (enmienda A-5)",
       "contract_path": "docs/specs/006-003-installer-single-profile-delegation-config/spec.md",
       "contract_sha256": "c25ebf0e0c7867c03de072439128e7a77e4b2a7dcd7f52228535ea9785d18890",
       "plan_path": "docs/specs/006-003-installer-single-profile-delegation-config/plan.md",
@@ -10127,7 +10127,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo (Memory Bank y ADR-033, 2026-10-18)",
+        "approved_by": "<owner> (Memory Bank y ADR-033, 2026-10-18)",
         "contract": null,
         "plan": null,
         "closure": {
@@ -10142,7 +10142,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo (Memory Bank y ADR-033, 2026-10-18)",
+      "approved_by": "<owner> (Memory Bank y ADR-033, 2026-10-18)",
       "closure_path": "docs/specs/006-003-installer-single-profile-delegation-config/closure.md",
       "closure_sha256": "dac4701cd01451142d0cc2d169b3a10a7caba256700bf370e267593e0a468efa"
     },
@@ -10577,7 +10577,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "orquestador (HITL delegada por Pablo)",
+        "approved_by": "orquestador (HITL delegada por <owner>)",
         "contract": {
           "path": "docs/specs/006-005-native-path-parity/spec.md",
           "sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01"
@@ -10595,7 +10595,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "spec+plan draft-005 aprobados tras plan-review x4 (último sin bloqueantes); erratas O-6/O-7 declaradas en la marca",
-      "approved_by": "orquestador (HITL delegada por Pablo)",
+      "approved_by": "orquestador (HITL delegada por <owner>)",
       "contract_path": "docs/specs/006-005-native-path-parity/spec.md",
       "contract_sha256": "3a824be31e45cd8e6122b7d6f23d3f4d3e6af847ab73f7babef8aa90ce20df01",
       "plan_path": "docs/specs/006-005-native-path-parity/plan.md",
@@ -14858,7 +14858,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo (HITL delegada a Claude para epic-006)",
+        "approved_by": "<owner> (HITL delegada a Claude para epic-006)",
         "contract": null,
         "plan": null,
         "closure": {
@@ -14873,7 +14873,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "006-004 cerrada; sin despliegue a HOME (orden del owner)",
-      "approved_by": "Pablo (HITL delegada a Claude para epic-006)",
+      "approved_by": "<owner> (HITL delegada a Claude para epic-006)",
       "closure_path": "docs/specs/006-004-active-decisions-table/closure.md",
       "closure_sha256": "a99aabfe87ba6ef25765a14fabb642eb68179707d33750af704e160a55425321"
     },
@@ -22158,7 +22158,7 @@
       "receipt_ref": null,
       "receipt_sha256": null,
       "artifacts": {},
-      "note": "Pablo solicita priorizar un ciclo correctivo de rutas relativas de continuidad para distribuirlo. Discovery documental no despachado se retira y volverá a prepararse tras el fix.",
+      "note": "<owner> solicita priorizar un ciclo correctivo de rutas relativas de continuidad para distribuirlo. Discovery documental no despachado se retira y volverá a prepararse tras el fix.",
       "resolution": "withdrawn"
     },
     {
@@ -22460,7 +22460,7 @@
             "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/010-000-continuity-relative-root/spec.md",
           "sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2"
@@ -22477,7 +22477,7 @@
         "docs/specs/010-000-continuity-relative-root/plan-review.md": "7f6898e3bb3010ed18712e919abbc3c145bc7c250fdf8615dd0aa3aee8dae786"
       },
       "note": "Usuario aprueba explícitamente la spec revisada mediante «aprobada». Único cambio posterior al digest revisado: marca de aprobación; PCs intactas.",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/010-000-continuity-relative-root/spec.md",
       "contract_sha256": "623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2"
     },
@@ -22662,7 +22662,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -22676,7 +22676,7 @@
       },
       "note": "Gate técnico de selección dentro del mandato operativo delegado explícitamente; no aprobación de spec. Conservar originales y reutilizar controles existentes, agregar solo brechas por promesa de usuario; baseline focalizado pendiente a ejecutar antes de nueva regresión. No cuotas por PC.",
       "approved_by": "cdad-orchestrator",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -22826,7 +22826,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -22840,7 +22840,7 @@
       },
       "note": "Gate RED tecnico dentro del mandato delegado: cinco fallos AssertionError de comportamiento, ninguno por import/infra; aserciones vacuas eliminadas y APIs cubiertas por introspeccion publica. No se aprueba la implementacion ni se relaja el contrato.",
       "approved_by": "cdad-orchestrator",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -22956,7 +22956,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -22970,7 +22970,7 @@
       },
       "note": "GREEN tecnico: 5/5 focalizadas verdes verificadas por el orquestador en HEAD 3842e18+6e71e78 (18.44s); regresion de modulos tocados 97 verdes reportada por implementer; RED pre-fix 4 fallos AssertionError en worktree. Implementer no edito tests. La suite completa queda para el cierre. No se aprueba el review.",
       "approved_by": "cdad-orchestrator",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -23316,7 +23316,7 @@
       "receipt_ref": ".cdad/runtime/results/exec-010-000-continuity-relative-root-001/010-000-continuity-relative-root-scribe-memory-002/receipt.json",
       "receipt_sha256": "13f6dc806a7af083ea5aef46e0bbeab277ce003df8de12cec9e0978e1ed6c61c",
       "artifacts": {},
-      "note": "Original íntegro recibido; intake sólo acredita render vs PACKET.md y cotejo por campos, no cmp del prompt (I-4). Aprobación de cierre y Memory Bank por Pablo: cierra 000 y continúa con los siguientes."
+      "note": "Original íntegro recibido; intake sólo acredita render vs PACKET.md y cotejo por campos, no cmp del prompt (I-4). Aprobación de cierre y Memory Bank por <owner>: cierra 000 y continúa con los siguientes."
     },
     {
       "feature": "010-000-continuity-relative-root",
@@ -23352,7 +23352,7 @@
             "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null
@@ -23368,7 +23368,7 @@
         "docs/specs/010-000-continuity-relative-root/closure.md": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
       },
       "note": "Usuario aprobó cierre local y Memory Bank sin ADR nuevo y con deuda conservada; scribe contrastado contra fuentes; limitación intake I-4 y diff-stat incorrecto declarados.",
-      "approved_by": "Pablo"
+      "approved_by": "<owner>"
     },
     {
       "feature": "010-000-continuity-relative-root",
@@ -23391,7 +23391,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -23406,7 +23406,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Cierre local aprobado; deuda conservada; publicación separada pendiente por historial saliente ajeno al alcance000.",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/010-000-continuity-relative-root/closure.md",
       "closure_sha256": "e316ceb6d23d03bbc94619ad415b6c81bf2caf7bfae8b38e19c57d5051d65413"
     },
@@ -23734,7 +23734,7 @@
       "artifacts": {
         "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-v2-new-assignments.md": "354e8f6c066f71ce590989ebc140492d682ace7f4d491bb39cc2604936f31da4"
       },
-      "note": "Decisión explícita Pablo: V1 solo para retomar proyecto viejo; todo nuevo v2. N1: C v2-only y toda preparación nueva v2; legado conservado sin migración automática. Encargar revisión architect; spec no aprobada, sin gate ni autoridad nueva."
+      "note": "Decisión explícita <owner>: V1 solo para retomar proyecto viejo; todo nuevo v2. N1: C v2-only y toda preparación nueva v2; legado conservado sin migración automática. Encargar revisión architect; spec no aprobada, sin gate ni autoridad nueva."
     },
     {
       "feature": "010-004-packet-dispatch-ergonomics",
@@ -23936,7 +23936,7 @@
             "e801dd96053c8bb4322755e3b4974ab4f889b8af2897fa796e29e363bb38a381"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
           "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
@@ -23952,8 +23952,8 @@
       "artifacts": {
         "docs/specs/010-004-packet-dispatch-ergonomics/owner-approval-2026-10-30.md": "e801dd96053c8bb4322755e3b4974ab4f889b8af2897fa796e29e363bb38a381"
       },
-      "note": "Pablo: «aprobado, adelante», sobre spec reviewed SHA256 054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008. Solo metadatos de aprobación añadidos; pin derivado del archivo actual. N4/N5/N6 OPTIONAL abiertos/postergados. Registra aprobación estratégica de spec, NO avance a TDD: Gate 2→3 pendiente plan.md multicomponente revisado/aprobado; detalle en owner-approval-2026-10-30.md.",
-      "approved_by": "Pablo",
+      "note": "<owner>: «aprobado, adelante», sobre spec reviewed SHA256 054d4657b5dae096114a9e41beaad3c356234fe8fd5c60236752c24c89212008. Solo metadatos de aprobación añadidos; pin derivado del archivo actual. N4/N5/N6 OPTIONAL abiertos/postergados. Registra aprobación estratégica de spec, NO avance a TDD: Gate 2→3 pendiente plan.md multicomponente revisado/aprobado; detalle en owner-approval-2026-10-30.md.",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
       "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
     },
@@ -24191,7 +24191,7 @@
             "8f1810ba6cdd212f97b5236bd27b0a234c8ba0e0c4f6846b240df0a455a79c2d"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
           "sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64"
@@ -24210,8 +24210,8 @@
       "artifacts": {
         "docs/specs/010-004-packet-dispatch-ergonomics/owner-decision-plan-v2-1.md": "8f1810ba6cdd212f97b5236bd27b0a234c8ba0e0c4f6846b240df0a455a79c2d"
       },
-      "note": "Pablo aprueba plan v2 pin 2ae8ada3 y elige opcion (a) V2-1 (owner-decision-plan-v2-1.md): corregir plantilla post-audit y su generacion en T2/T4 para POST-AUDIT mono-subfase; sin editar plan.md ni spec.md, sin relajar gates ni combinar subfases. Supersede el gate spec-only anterior conservando el mismo pin de spec: el nuevo gate mantiene la aprobacion de la spec y completa el pin del plan. Gate 2->3 cumplido; AUDIT abierto, POST-AUDIT/RED no preparados.",
-      "approved_by": "Pablo",
+      "note": "<owner> aprueba plan v2 pin 2ae8ada3 y elige opcion (a) V2-1 (owner-decision-plan-v2-1.md): corregir plantilla post-audit y su generacion en T2/T4 para POST-AUDIT mono-subfase; sin editar plan.md ni spec.md, sin relajar gates ni combinar subfases. Supersede el gate spec-only anterior conservando el mismo pin de spec: el nuevo gate mantiene la aprobacion de la spec y completa el pin del plan. Gate 2->3 cumplido; AUDIT abierto, POST-AUDIT/RED no preparados.",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
       "contract_sha256": "fc6b2ccc5cfda3215f83e4610b17b042064ebfda72f0d5377b0a6f0dca515d64",
       "plan_path": "docs/specs/010-004-packet-dispatch-ergonomics/plan.md",
@@ -26526,7 +26526,7 @@
             "ada456bebd5e623e94474f79e528d83188569cc987ec1470205fdcb2a3608f7f"
           ]
         ],
-        "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+        "approved_by": "<owner> (dueño del repo), transmitido por la sesión orquestadora",
         "contract": null,
         "plan": null,
         "closure": null
@@ -26543,7 +26543,7 @@
         "docs/progress.md": "3cbb84a67240ce7590eb4184f53abaa387068431a63a303bf383d83577245007"
       },
       "note": "Aprobación explícita del dueño de (1) aplicar el Memory Bank de 010-004 desde los borradores y (2) publicar la instalación global, transmitida por la sesión orquestadora con este texto literal: «El DUEÑO aprobó explícitamente dos cosas (regístralas con la cita de su respuesta): (1) aplicar el Memory Bank de 010-004 desde los borradores; (2) publicar la instalación global.» Procedencia declarada: esta sesión no recibió el mensaje crudo del dueño; la cita es la del relay del orquestador, no se inventa una transcripción. Aplicados byte-idénticos los tres borradores del scribe (projectbrief, activeContext, systemPatterns) más la fila de progress del orquestador; sin ADR nuevo. Publicación medida aparte en el mismo cierre.",
-      "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora"
+      "approved_by": "<owner> (dueño del repo), transmitido por la sesión orquestadora"
     },
     {
       "feature": "010-004-packet-dispatch-ergonomics",
@@ -26579,7 +26579,7 @@
             "3939c8e31c16478d0369d7f380a8d6272d6c820a6b415b3ea6b080442fde2977"
           ]
         ],
-        "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+        "approved_by": "<owner> (dueño del repo), transmitido por la sesión orquestadora",
         "contract": null,
         "plan": null,
         "closure": {
@@ -26598,7 +26598,7 @@
         "docs/projectbrief.md": "3939c8e31c16478d0369d7f380a8d6272d6c820a6b415b3ea6b080442fde2977"
       },
       "note": "Cierre de 010-004 aprobado por el dueño (misma autorización que aprobó el Memory Bank y la publicación; cita y procedencia en la entrada memory-approved). Publicación ejecutada con install.sh del repo: ANTES --check rc=1 (FAIL; DRIFT en 22/22 agentes instalados, 5 referencias del skill, cdad_packet.py, cdad_continuity.py y __pycache__) -> DESPUES rc=0 (PASS, 414 grupos), sostenido tras ejecutar el CLI instalado. Resueltos con el mecanismo del propio instalador 12 destinos incoherentes del manifiesto previo (9 agentes con overlay model= del usuario via agent-overlay.py merge + 3 __pycache__ retirados); respaldo .cdad/local/deploy-backup-20261031/. D-1 RESUELTO: cdad_packet.py sha256 d62278a15f930674bf4eb8fce8e45eb6d79502297c488d1da8d383c3062167df identico en repo, ~/.config/opencode, ~/.agents y ~/.claude; --route C verificado con el CLI instalado sobre el paquete publicado del scribe (rc=0, 8 campos); token de intake en los 10 agentes de rol por runtime; make validate rc=0 (183+68 PASS, 0 FAIL) con F011 en PASS. Sin push: la publicacion del repositorio es otra decision. Manifiesto resultante: 390 artefactos, 0 conflictos, 0 pending_removal (runtime claude-code, stack odoo).",
-      "approved_by": "Pablo (dueño del repo), transmitido por la sesión orquestadora",
+      "approved_by": "<owner> (dueño del repo), transmitido por la sesión orquestadora",
       "closure_path": "docs/specs/010-004-packet-dispatch-ergonomics/closure.md",
       "closure_sha256": "820b1a31bc1a5923c1ee7fdb7ee5b8c98ba466a9193bbf35bf4fb8637b42ee5c"
     },
@@ -26623,7 +26623,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
           "sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
@@ -26638,7 +26638,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Re-pin de saneamiento (2026-10-31): la publicacion del delta exigio reemplazar rutas absolutas del HOME local por <repo>/~ y los ids de sesion crudos por <session> en los artefactos del feature. spec.md cambia en UNA linea cosmetica de evidencia (variable R); no cambia ninguna promesa, postcondicion, invariante, decision ni alcance. Este registro fija el pin vigente (contract_path + contract_sha256) de los bytes saneados para que los roles de construccion sigan habilitados; NO es una aprobacion nueva: la aprobacion estrategica del owner sobre el contenido revisado (054d4657...) sigue siendo la del 2026-10-30 y los pines anteriores no se editan. Declarado en closure.md SS11. Sin paquetes, sin tests nuevos, sin efecto de aprobacion.",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/010-004-packet-dispatch-ergonomics/spec.md",
       "contract_sha256": "3dcfc5ec7ddc33e473c66606525482f15b32ef5a9e9feda50e917140f27603e2"
     },
@@ -26985,7 +26985,7 @@
         "postcondition": null,
         "current_stage": "specification",
         "artifacts": [],
-        "approved_by": "Pablo (mandato HITL del 2026-10-30, ejercido por el orquestador)",
+        "approved_by": "<owner> (mandato HITL del 2026-10-30, ejercido por el orquestador)",
         "contract": {
           "path": "docs/specs/010-001-documentary-contracts/spec.md",
           "sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da"
@@ -26996,7 +26996,7 @@
         },
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -27007,12 +27007,12 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Aprobacion de spec a01969d7 y plan v4 5fe898b8, tras tres pasadas de plan-review sin bloqueantes; observaciones O1/O2 diferidas con motivo en owner-approval-2026-10-31.md.",
-      "approved_by": "Pablo (mandato HITL del 2026-10-30, ejercido por el orquestador)",
+      "approved_by": "<owner> (mandato HITL del 2026-10-30, ejercido por el orquestador)",
       "contract_path": "docs/specs/010-001-documentary-contracts/spec.md",
       "contract_sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
       "plan_path": "docs/specs/010-001-documentary-contracts/plan.md",
       "plan_sha256": "cb3c25a8ba6b420baab8ec495620560c122ca17fbe749c95cb171e5867ab0265",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -27131,7 +27131,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -27147,7 +27147,7 @@
       "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; AUDIT aprobado en docs/specs/010-001-documentary-contracts/audit-approval-2026-10-31.md)",
       "contract_path": "docs/specs/010-001-documentary-contracts/spec.md",
       "contract_sha256": "9bf17a398b55384e271815c8a6c2910563f75a5d2475ec291c31d4f4d26c94da",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -27561,7 +27561,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -27577,7 +27577,7 @@
       },
       "note": "Review de T5 aprobado: B1 y B2 cerrados tras el review-fix 71c2a7e2, O2/O3 incorporadas, sin bloqueantes nuevos; N1/N2 (nits) y O1/O4 diferidos con motivo al cierre.",
       "approved_by": "Orquestador CDAD en nombre del dueno (HITL delegada: docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md; B1/B2 cerrados en docs/specs/010-001-documentary-contracts/review-002.md)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -27687,7 +27687,7 @@
             "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
           ]
         ],
-        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+        "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
         "contract": null,
         "plan": null,
         "closure": null
@@ -27704,7 +27704,7 @@
         "docs/progress.md": "ebb75ae957248529ab696402fddb344f15ec0370668110fdbf5cd00bc7a48dd3"
       },
       "note": null,
-      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md"
+      "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md"
     },
     {
       "feature": "010-001-documentary-contracts",
@@ -27744,7 +27744,7 @@
             "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
           ]
         ],
-        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+        "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
         "contract": null,
         "plan": null,
         "closure": {
@@ -27764,7 +27764,7 @@
         "docs/systemPatterns.md": "7bafc4aec6c46c6719421d8b813df0f0c6b1a57ca35976a68a0aeaf9ab9832d2"
       },
       "note": null,
-      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
+      "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptación en docs/specs/010-001-documentary-contracts/owner-acceptance-2026-10-31.md",
       "closure_path": "docs/specs/010-001-documentary-contracts/closure.md",
       "closure_sha256": "d48a1fcf8a25785daacb0786d69fc68c729f3dd43247d9997b39b5601a21ccf6"
     },
@@ -28100,7 +28100,7 @@
             "a245fcb5e421821f764959850f6676f9d5cfb9d210efe2095ce28107c2166ae3"
           ]
         ],
-        "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
+        "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
         "contract": {
           "path": "docs/specs/010-002-documentary-role-integration/spec.md",
           "sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc"
@@ -28120,7 +28120,7 @@
         "docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md": "a245fcb5e421821f764959850f6676f9d5cfb9d210efe2095ce28107c2166ae3"
       },
       "note": null,
-      "approved_by": "Pablo (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
+      "approved_by": "<owner> (dueño del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); registro en docs/specs/010-002-documentary-role-integration/owner-approval-2026-10-31.md",
       "contract_path": "docs/specs/010-002-documentary-role-integration/spec.md",
       "contract_sha256": "0d630c49cfd4c8b0f671026437000617b96bf1bc44b2383dd2914bc7e5581abc",
       "plan_path": "docs/specs/010-002-documentary-role-integration/plan.md",
@@ -28575,7 +28575,7 @@
             "2c6f366981e9265da3144b48867ff53088a7a2e439c9d702e709f70be0b89623"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -28591,7 +28591,7 @@
         "docs/specs/010-002-documentary-role-integration/review-fix.md": "499136d12a7c14853853c36bc9c9be3d1a5fec2c15317e818271fb38af19d3d3"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); dictamenes review.md (3 bloqueantes) y review-002.md (B1, B2 y B3 cerrados, sin bloqueantes nuevos)"
     },
     {
       "feature": "010-002-documentary-role-integration",
@@ -28710,7 +28710,7 @@
             "32776aad664885286afe7ff65930d9751516db07ea64b37cd678613c580f68d7"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md",
         "contract": null,
         "plan": null,
         "closure": null
@@ -28728,7 +28728,7 @@
         "docs/specs/010-002-documentary-role-integration/memory-bank-drafts-2026-10-31.md": "270f4cc91beac710cd64b971530aa50e47c713240a55721b7f41b8983a418cc2"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de los cuatro borradores de Memory Bank registrada en owner-acceptance-2026-10-31.md"
     },
     {
       "feature": "010-002-documentary-role-integration",
@@ -28760,7 +28760,7 @@
             "c3ff32366d4e28849bcde551b5e5df14c6c9410bff29c331b3e880499e61a090"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
         "contract": null,
         "plan": null,
         "closure": {
@@ -28778,7 +28778,7 @@
         "docs/specs/010-002-documentary-role-integration/owner-acceptance-2026-10-31.md": "c3ff32366d4e28849bcde551b5e5df14c6c9410bff29c331b3e880499e61a090"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en owner-acceptance-2026-10-31.md",
       "closure_path": "docs/specs/010-002-documentary-role-integration/closure.md",
       "closure_sha256": "3656cb9cf489c2144fdb2bb85132fc54c0ce733863079d06b62963fcbcbf5f18"
     },
@@ -28846,7 +28846,7 @@
             "6673d95144201d3a9e97017df7a6895b9dfa6c1cf7b3eec4b69497f9d56a4e15"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md",
         "contract": null,
         "plan": null,
         "closure": null
@@ -28861,7 +28861,7 @@
         "docs/specs/010-003-documentary-pilot/discovery-decisions-2026-10-31.md": "1504b5267a109e1229c371619b134474bae2f2a1dad212d5e1c2c9706737b0a2"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); decisiones D-1..D-6 en discovery-decisions-2026-10-31.md"
     },
     {
       "feature": "010-003-documentary-pilot",
@@ -29309,7 +29309,7 @@
             "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
         "contract": {
           "path": "docs/specs/010-003-documentary-pilot/spec.md",
           "sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5"
@@ -29332,7 +29332,7 @@
         "docs/specs/010-003-documentary-pilot/plan-review-closure-2026-10-31.md": "15d252239daf4e4cefa1ce564bd94c8c50331d78506d3f6d9bd74a1069aceb1f"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aprobacion de spec v5 y plan v6 registrada en plan-review-closure-2026-10-31.md",
       "contract_path": "docs/specs/010-003-documentary-pilot/spec.md",
       "contract_sha256": "f2dce9e0d1eb35d94d67ed3dfb4e756551d3b236f9513f7aee2ad50d0ff1d5e5",
       "plan_path": "docs/specs/010-003-documentary-pilot/plan.md",
@@ -29440,7 +29440,7 @@
             "6f04ccaab633b2bd1219e79e7ab7f94fb4192851936c92d0f3412399772c07ce"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada",
         "contract": null,
         "plan": null,
         "closure": null
@@ -29456,7 +29456,7 @@
         "docs/specs/010-003-documentary-pilot/audit-reading-deviation-2026-10-31.md": "21925233d0d0a0a1c358107ddcd257ea5dbdb761907dac276e4e610a5dadbff1"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); AUDIT y POST-AUDIT aprobados en test-audit.md y post-audit.md, con la desviacion de lectura registrada"
     },
     {
       "feature": "010-003-documentary-pilot",
@@ -29560,7 +29560,7 @@
             "21b80cd515d2d38d0bcb0499f12c676365e440045c364ad4414fd1f1d8a7d929"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado",
         "contract": null,
         "plan": null,
         "closure": null
@@ -29576,7 +29576,7 @@
         "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "e1ff5a6fe4c93bd019fe3e1488e6db3ab5603da02d8d30a755be2ff2b95a2a09"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); GREEN de T4 verde (8 focales, 40 regresiones) y producto verificado"
     },
     {
       "feature": "010-003-documentary-pilot",
@@ -29752,7 +29752,7 @@
             "0a0ecf0adb92d9cd59e4acbb33244549e80c1e105b364b8a40fd4c1b1a69db6b"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -29769,7 +29769,7 @@
         "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); revision del producto aprobada: product-review.md (F-1 bloqueante), tdd-t7-review-fix.md y product-review-002.md (F-1 cerrado, sin bloqueantes)"
     },
     {
       "feature": "010-003-documentary-pilot",
@@ -29873,7 +29873,7 @@
             "21a70f2fca86a3934fc78378ef86e8a4d043582f4183be7e67fb7b3fa74c19f8"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md",
         "contract": null,
         "plan": null,
         "closure": null
@@ -29889,7 +29889,7 @@
         "docs/progress.md": "411e5343b0ae9d5b7f58d11a677b3df0f35e5e915c6a745a40e46d2eefcb2599"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md"
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); borradores de Memory Bank aprobados desde memory-bank-drafts-2026-10-31.md, insertados verbatim en docs/activeContext.md y docs/progress.md"
     },
     {
       "feature": "010-003-documentary-pilot",
@@ -29933,7 +29933,7 @@
             "07c83e9b35b7de802a62a72a8b0b3ee387bbef7178beafdc14df66c86ed79e56"
           ]
         ],
-        "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
+        "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
         "contract": null,
         "plan": null,
         "closure": {
@@ -29954,14 +29954,14 @@
         "docs/specs/010-003-documentary-pilot/product/relevamiento.md": "007af655ef926e98df26920792f48d4098136cfc1d2a347a0cc427da1ef40e0f"
       },
       "note": null,
-      "approved_by": "Pablo (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
+      "approved_by": "<owner> (dueno del repo), ejercido por el orquestador bajo el mandato HITL del 2026-10-30 (§1 y §3); aceptacion funcional registrada en functional-acceptance.md, sin bloqueantes y con pendientes admisibles declarados",
       "closure_path": "docs/specs/010-003-documentary-pilot/closure.md",
       "closure_sha256": "b9621af624ed372477fd2eb358668a903ffd559d28a001112fd98b5bcdd4f836"
     },
     {
       "stage": "specification",
       "completed_at": "2026-11-01T00:57:43.445314+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "feature": "011-begin-unpublished-packet-wedge",
       "contract_path": "docs/specs/011-begin-unpublished-packet-wedge/spec.md",
       "contract_sha256": "5fcea0bf136aec4af520655cfb4a9e093889eec1b5db3b6f65729d318fc14f63"
@@ -30072,14 +30072,14 @@
       "stage": "closure",
       "feature": "011-begin-unpublished-packet-wedge",
       "completed_at": "2026-11-02T00:56:33.390060+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "note": "review 0 bloqueantes; suite completa no corrida por directiva; deuda declarada"
     },
     {
       "stage": "specification",
       "feature": "012-installer-ignore-pycache",
       "completed_at": "2026-11-02T00:56:36.765502+00:00",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/012-installer-ignore-pycache/spec.md",
       "contract_sha256": "b475b7ddba130a25ecf9148568d1c893bc61791b3eac26d1f9c9c58d65002ca4"
     },
@@ -30308,7 +30308,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -30323,7 +30323,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/012-installer-ignore-pycache/review.md",
       "closure_sha256": "1653aaa920513d2bea4aa45ec0ac7c372b2a169338379a98f98fd05185dd7629"
     },
@@ -30334,15 +30334,15 @@
       "retired": {
         "status": "active",
         "epic_id": "epic-010-documentary-specialization",
-        "requested_by": "Pablo",
+        "requested_by": "<owner>",
         "requested_at": "2026-10-29",
         "renewed_at": "2026-10-30",
-        "renewed_by": "Pablo",
+        "renewed_by": "<owner>",
         "source": "docs/epics/epic-010-documentary-specialization/execution.md",
         "epic_mandate": "docs/epics/epic-010-documentary-specialization/execution.md",
         "mandate_ref": "docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md",
         "mandate_quote": "Te delego hitl, eres el dueño del proceso, toma decisiones con criterio amplio pensando en el uso real del sistema por el usuario final. Continúa orquestando proactivamente hasta completar las correcciones pendientes y el epic completo.",
-        "mandate_scope": "Aprueba en nombre de Pablo los gates operativos de 010-004 y del resto del epic-010 dentro del alcance y la descomposicion ya aprobados en plan.md; no cambia contratos aprobados (spec fc6b2ccc…, plan 2ae8ada3…), no relaja evidencias ni gates, no autoriza push/publicacion/deploy ni instalacion global, no se hereda a otras epicas. Revocable por el dueno en cualquier momento (registrar revoked_at).",
+        "mandate_scope": "Aprueba en nombre de <owner> los gates operativos de 010-004 y del resto del epic-010 dentro del alcance y la descomposicion ya aprobados en plan.md; no cambia contratos aprobados (spec fc6b2ccc…, plan 2ae8ada3…), no relaja evidencias ni gates, no autoriza push/publicacion/deploy ni instalacion global, no se hereda a otras epicas. Revocable por el dueno en cualquier momento (registrar revoked_at).",
         "scope": "epic-010-documentary-specialization: continuar proactivamente la orquestación operativa hasta completar 010-000, las tres features documentales, integración y cierre, con encargos por rol, gates y materialización. La solicitud explícita de HITL se registra en execution.md; no habilita autoaprobaciones contrarias al contrato superior ni publicación.",
         "expires": "cierre, cancelación o revocación de esta épica",
         "note": "Mandato de orquestacion del 2026-10-29 (execution.md) ampliado por instruccion literal del dueno del 2026-10-30: aprobacion de gates operativos en su nombre dentro del alcance aprobado. Revocable en cualquier momento (revoked_at)."
@@ -30471,7 +30471,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/013-001-criterion-coherence/spec.md",
           "sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00"
@@ -30479,7 +30479,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -30490,10 +30490,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/013-001-criterion-coherence/spec.md",
       "contract_sha256": "79b9c12b481efe1f240e09465c7687607c599c0aac8054c996950bf00e3bfd00",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -30551,12 +30551,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -30567,8 +30567,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -30626,12 +30626,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -30642,8 +30642,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -30701,12 +30701,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -30717,8 +30717,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -30845,12 +30845,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -30861,8 +30861,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31022,12 +31022,12 @@
         "postcondition": null,
         "current_stage": "merge",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31038,8 +31038,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31097,7 +31097,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -31112,7 +31112,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/013-001-criterion-coherence/closure.md",
       "closure_sha256": "a6f164a319c5161bb13392fb4ef8977b2facc4ab871397e0092da51c5613bbb0"
     },
@@ -31239,12 +31239,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31255,8 +31255,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31280,7 +31280,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/013-002-live-inventory/spec.md",
           "sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1"
@@ -31288,7 +31288,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31299,10 +31299,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/013-002-live-inventory/spec.md",
       "contract_sha256": "31a6ddbdd1eef65b358b51356c0dc100c92d1001a429d095a3fdc2258c1727e1",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31360,12 +31360,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31376,8 +31376,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31435,12 +31435,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31451,8 +31451,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31476,12 +31476,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31492,8 +31492,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31619,12 +31619,12 @@
         "postcondition": null,
         "current_stage": "merge",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31635,8 +31635,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31694,7 +31694,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -31709,7 +31709,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/013-002-live-inventory/closure.md",
       "closure_sha256": "31341c10d27bac50423b28e71e1c2d0fd2c8caab9520f63a644279140b84bcdb"
     },
@@ -31768,7 +31768,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/013-003-redundancy-pilot/spec.md",
           "sha256": "b8c4810d3a7e44fb54fa7c4edf540269d57fb31168d2c7cfb2457fca08baedbb"
@@ -31776,7 +31776,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31787,10 +31787,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/013-003-redundancy-pilot/spec.md",
       "contract_sha256": "b8c4810d3a7e44fb54fa7c4edf540269d57fb31168d2c7cfb2457fca08baedbb",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31848,12 +31848,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31864,8 +31864,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31923,12 +31923,12 @@
         "postcondition": null,
         "current_stage": "merge",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -31939,8 +31939,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -31998,7 +31998,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32013,7 +32013,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/013-003-redundancy-pilot/closure.md",
       "closure_sha256": "652effa04f3232e35947ad3916fc4be0fe1e63c64830c19dc553f8a76e987705"
     },
@@ -32038,7 +32038,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
           "sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0"
@@ -32046,7 +32046,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32057,10 +32057,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/014-001-suite-evidence-defaults/spec.md",
       "contract_sha256": "6403397f4d57abee961d59c69a4d8d7403f7a306b2fdbc2e4785622208b0c2f0",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32089,12 +32089,12 @@
             "ee745e6cb118b6f5dec47b83006c117944e6e3fea740a4a3048d5df03cc8fe03"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32107,8 +32107,8 @@
         "docs/specs/014-001-suite-evidence-defaults/test-audit.md": "ee745e6cb118b6f5dec47b83006c117944e6e3fea740a4a3048d5df03cc8fe03"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32132,12 +32132,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32148,8 +32148,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED c0c5c73f: 4 AssertionError",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32208,12 +32208,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32224,8 +32224,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN bda98739..fbd8a675; POST-AUDIT no aplica (ver test-audit §5)",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32284,7 +32284,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32299,7 +32299,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/014-001-suite-evidence-defaults/closure.md",
       "closure_sha256": "4a85f14651fc03ef16f82612fc6fac645f2c7fbe71ae32c307f1e2409d957223"
     },
@@ -32324,7 +32324,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/014-002-pd10-window-drift/spec.md",
           "sha256": "45b6ab84f50bac26ba256fe678375bc9c3d144b90a5a0d6cb65616f38f4b2e27"
@@ -32332,7 +32332,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32343,10 +32343,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/014-002-pd10-window-drift/spec.md",
       "contract_sha256": "45b6ab84f50bac26ba256fe678375bc9c3d144b90a5a0d6cb65616f38f4b2e27",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32370,7 +32370,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32385,7 +32385,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/014-002-pd10-window-drift/closure.md",
       "closure_sha256": "37ed7d2bfe24f7e7118e290beebb3c9ae75e81613c430a0b2238aaea61c56785"
     },
@@ -32410,7 +32410,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/015-001-frozen-reception/spec.md",
           "sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce"
@@ -32418,7 +32418,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32429,10 +32429,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/015-001-frozen-reception/spec.md",
       "contract_sha256": "f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32461,12 +32461,12 @@
             "bd95926866728a74c41eec21c52c159ec277be7987443be1fe090a6f078b4f94"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32479,8 +32479,8 @@
         "docs/specs/015-001-frozen-reception/test-audit.md": "bd95926866728a74c41eec21c52c159ec277be7987443be1fe090a6f078b4f94"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32504,12 +32504,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32520,8 +32520,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 15051d35: 7 AssertionError + guarda D2",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32545,12 +32545,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32561,8 +32561,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN 92e4c4a0 8/8 + regresión proporcional + POST-AUDIT 855afd42 (P1/P2)",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32586,7 +32586,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32601,7 +32601,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/015-001-frozen-reception/closure.md",
       "closure_sha256": "c3ffe55f91836ff0db9359410acacd373239fe0259c72f2aa9a5ef8a5ae81f21"
     },
@@ -32626,7 +32626,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/015-002-intake-guards/spec.md",
           "sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e"
@@ -32634,7 +32634,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32645,10 +32645,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/015-002-intake-guards/spec.md",
       "contract_sha256": "a8bafbdd28d14b31f9c126904b2763490721c45e8b7cf769d250696dc3b22f9e",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32677,12 +32677,12 @@
             "6634e8cc579c3ec836b1a9c4ff1cb134b1bac6203f49995584ca2d2da71d5a38"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32695,8 +32695,8 @@
         "docs/specs/015-002-intake-guards/test-audit.md": "6634e8cc579c3ec836b1a9c4ff1cb134b1bac6203f49995584ca2d2da71d5a38"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32720,12 +32720,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32736,8 +32736,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 71d50cad: 9 AssertionError",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32761,12 +32761,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32777,8 +32777,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN 015-002 b4411999/74552842/737deb57; 9/9 + regresión",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32802,7 +32802,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32817,7 +32817,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/015-002-intake-guards/closure.md",
       "closure_sha256": "fa856375afdbbaecbb7e7041a8aef3ddb2e98b65d97349cf68d6577f507201ab"
     },
@@ -32842,7 +32842,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/015-003-closed-set-oracle/spec.md",
           "sha256": "cd7bee1d4bbee238ade02eba2ec1162c28bc9380d4cf832d0e90b4a14589bcd8"
@@ -32850,7 +32850,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32861,10 +32861,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/015-003-closed-set-oracle/spec.md",
       "contract_sha256": "cd7bee1d4bbee238ade02eba2ec1162c28bc9380d4cf832d0e90b4a14589bcd8",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32888,7 +32888,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -32903,7 +32903,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/015-003-closed-set-oracle/closure.md",
       "closure_sha256": "71cf944d7025d7ae4484e062e883d7571dd044822b1cfb13f236674e6957c028"
     },
@@ -32928,7 +32928,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/016-001-contract-test-link/spec.md",
           "sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e"
@@ -32936,7 +32936,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32947,10 +32947,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/016-001-contract-test-link/spec.md",
       "contract_sha256": "88b144e5a8bb278a3e34d0336e5e4a4cd9f8ca324cd75657e55dc6149eca688e",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -32979,12 +32979,12 @@
             "f8c5a626f4354c501e4097d2134fb7129be27721c143704dddff27c75c981037"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -32997,8 +32997,8 @@
         "docs/specs/016-001-contract-test-link/test-audit.md": "f8c5a626f4354c501e4097d2134fb7129be27721c143704dddff27c75c981037"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33022,12 +33022,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33038,8 +33038,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 50ef71da: 6 AssertionError (CLI ausente)",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33301,12 +33301,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33317,8 +33317,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN 016-001: 7/7 verificadores, registro (índice legacy) validado rc=0, inventario vivo rc=0, regresión proporcional 99 passed",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33487,12 +33487,12 @@
             "692a04c30157ae2729000319dfc243f24e4ea3cac4bd79a1835b4983b3663001"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33506,8 +33506,8 @@
         "docs/specs/016-001-contract-test-link/review-closure.md": "db81ebe12af4ffbd82e854a4889649a5136b3c80f729ed1ab1eb235882daa3ea"
       },
       "note": "Review 016-001 aprobado: 2 bloqueantes cerrados y verificados en sesión nueva",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33531,7 +33531,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -33546,7 +33546,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "016-001 cerrada",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/016-001-contract-test-link/closure.md",
       "closure_sha256": "689cbd46dbe028930678753289646a226e110b056510203e1cd452c61b1f0d41"
     },
@@ -33605,7 +33605,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/016-002-gap-report/spec.md",
           "sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b"
@@ -33613,7 +33613,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33624,10 +33624,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/016-002-gap-report/spec.md",
       "contract_sha256": "315fad2c206b446acbb554942e71d9f4c247d5edadbbcbb7679ab33154bc7c4b",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33690,12 +33690,12 @@
             "9cb9b5e2f75d42dad3fc414d7eb3a7aa30807cb5a882659856423077fe6b8986"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33708,8 +33708,8 @@
         "docs/specs/016-002-gap-report/test-audit.md": "9cb9b5e2f75d42dad3fc414d7eb3a7aa30807cb5a882659856423077fe6b8986"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33767,12 +33767,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33783,8 +33783,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 1f56d8fa: 5 AssertionError (subcomando ausente)",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -33944,12 +33944,12 @@
         "postcondition": null,
         "current_stage": "review",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -33960,8 +33960,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN 016-002: 5/5 + 11/11, regresión 16 intake + 48 instalador, registro ok (marcadores, 10 obligaciones), inventario rc=0",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -34130,12 +34130,12 @@
             "98b19412501f3a4c600307f6c77a97534fc15fdeaf3434881a63833f6d29a372"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -34149,8 +34149,8 @@
         "docs/specs/016-002-gap-report/review-closure.md": "8ba9b66c8eb977dbe280a6939eceeb3490a5a9c4a62844da585401f985cdfad1"
       },
       "note": "Review 016-002 aprobado: 4 bloqueantes y 2 nits cerrados, verificado en sesión nueva",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -34174,7 +34174,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -34189,7 +34189,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "016-002 cerrada",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/016-002-gap-report/closure.md",
       "closure_sha256": "49b2caa25e035ee055eab495fa80d435c38fc78e3abda693f87c072481fdae09"
     },
@@ -34214,7 +34214,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
           "sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4"
@@ -34222,7 +34222,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -34233,10 +34233,10 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/016-003-suite-review-tranche-1/spec.md",
       "contract_sha256": "b3f91691e9cd44e32b60f5fa9aa98b42fffa9e363757a4ec28592622d069f9c4",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -34333,12 +34333,12 @@
             "60cb48a241ed5869ac0393f13c6aa54dc55d8bbfd179965ee38bd869d1916034"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -34351,8 +34351,8 @@
         "docs/specs/016-003-suite-review-tranche-1/test-audit.md": "60cb48a241ed5869ac0393f13c6aa54dc55d8bbfd179965ee38bd869d1916034"
       },
       "note": null,
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -34410,12 +34410,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -34426,8 +34426,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "RED 39d54116: 5 AssertionError (herramienta ausente)",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -34689,12 +34689,12 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -34705,8 +34705,8 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "GREEN-002 (+fix de fixture en 34e628f4): 6/6 y 16/16; vuelve a auditoría del tramo",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -35257,12 +35257,12 @@
             "a1b4a36e9bdaa5bcbbc8589d95ab08e21db0ab617038cf5c54b68c2551c26d71"
           ]
         ],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -35278,8 +35278,8 @@
         "docs/specs/016-003-suite-review-tranche-1/tranche-1/report.md": "a1b4a36e9bdaa5bcbbc8589d95ab08e21db0ab617038cf5c54b68c2551c26d71"
       },
       "note": "Tramo 1 completo: 398 filas, 0 candidatos, costs/decision/experiments/report; validador rc 0; vuelve a revisión independiente de la etapa 4",
-      "approved_by": "Pablo",
-      "requested_by": "Pablo",
+      "approved_by": "<owner>",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -35575,7 +35575,7 @@
         "postcondition": null,
         "current_stage": "merge",
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": null,
         "plan": null,
         "closure": {
@@ -35590,7 +35590,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "016-003 cerrada: 398 filas, 0 candidatos, costo medido, decision autorizada, review-r3 aprobado con observaciones y N1 corregido; POST-AUDIT e inventario rc 0",
-      "approved_by": "Pablo",
+      "approved_by": "<owner>",
       "closure_path": "docs/specs/016-003-suite-review-tranche-1/closure.md",
       "closure_sha256": "c08818080e7489f8e568b12f922a828fbb19a6673d313d3491b8fe0ec5ff6f32"
     },
@@ -35934,7 +35934,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo (HITL delegada al orquestador, 2026-11-07: «eres el dueño del proceso»); aprobado por el orquestador en su nombre tras plan-review-003 sin bloqueantes",
+        "approved_by": "<owner> (HITL delegada al orquestador, 2026-11-07: «eres el dueño del proceso»); aprobado por el orquestador en su nombre tras plan-review-003 sin bloqueantes",
         "contract": {
           "path": "docs/specs/017-001-suite-performance/spec.md",
           "sha256": "472bab0c942268956484d55edec8d24934105dab29a2c86effdcbf82e192672e"
@@ -35952,7 +35952,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Contrato de 017-001 v3 aprobado en el gate de Specification: spec 472bab0c… y plan 781dd61c… fijados. Discovery, decisiones del dueno y tres revisiones independientes como evidencia.",
-      "approved_by": "Pablo (HITL delegada al orquestador, 2026-11-07: «eres el dueño del proceso»); aprobado por el orquestador en su nombre tras plan-review-003 sin bloqueantes",
+      "approved_by": "<owner> (HITL delegada al orquestador, 2026-11-07: «eres el dueño del proceso»); aprobado por el orquestador en su nombre tras plan-review-003 sin bloqueantes",
       "contract_path": "docs/specs/017-001-suite-performance/spec.md",
       "contract_sha256": "472bab0c942268956484d55edec8d24934105dab29a2c86effdcbf82e192672e",
       "plan_path": "docs/specs/017-001-suite-performance/plan.md",
@@ -38733,7 +38733,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo (HITL delegada al orquestador para epic-017)",
+        "approved_by": "<owner> (HITL delegada al orquestador para epic-017)",
         "contract": null,
         "plan": null,
         "closure": {
@@ -38748,7 +38748,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "Pablo (HITL delegada al orquestador para epic-017)",
+      "approved_by": "<owner> (HITL delegada al orquestador para epic-017)",
       "closure_path": "docs/specs/017-001-suite-performance/closure.md",
       "closure_sha256": "28e1f7a8574a50f7fa1d259f1c02960a53c750b6b4374f33209b6d3ce68ed8fb"
     },
@@ -38818,7 +38818,7 @@
       "receipt_ref": ".cdad/runtime/results/exec-018-001-orchestrator-start-001/018-001-orchestrator-start-architect-draft-003/receipt.json",
       "receipt_sha256": "eda5a30169c140cfafb3735fd4bbdc2974826cfcf8665058618f4c12468fb42b",
       "artifacts": {},
-      "note": "Recepción del borrador de especificación y plan del arquitecto 003; pendiente de aprobación explícita de Pablo."
+      "note": "Recepción del borrador de especificación y plan del arquitecto 003; pendiente de aprobación explícita de <owner>."
     },
     {
       "feature": "018-001-orchestrator-start",
@@ -38980,7 +38980,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "contract": {
           "path": "docs/specs/018-001-orchestrator-start/spec.md",
           "sha256": "96f25143f505604fe850a63650f2580039aaff3077c30f6d8422f839744623a0"
@@ -38994,8 +38994,8 @@
       "receipt_ref": null,
       "receipt_sha256": null,
       "artifacts": {},
-      "note": "Aprobación de la especificación por el dueño (Pablo) el 2026-11-13.",
-      "approved_by": "Pablo",
+      "note": "Aprobación de la especificación por el dueño (<owner>) el 2026-11-13.",
+      "approved_by": "<owner>",
       "contract_path": "docs/specs/018-001-orchestrator-start/spec.md",
       "contract_sha256": "96f25143f505604fe850a63650f2580039aaff3077c30f6d8422f839744623a0"
     },
@@ -39480,7 +39480,7 @@
             "073c73423b1fa69d63ac18d726f24d63248762c2a9c877eb1a9d3a4d593daf15"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
         "contract": {
           "path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
           "sha256": "80d26ba7826fe94c85329953014ff013281f843d2ddf1211e7c11675201f0539"
@@ -39498,7 +39498,7 @@
         "docs/specs/019-001-discovery-dialogue-contract/plan-review-002.md": "8e460de9f86ada6a16c25f83f531c801a15ba626193370298eccc37efb09b5f6"
       },
       "note": "Original blocker resolved by architect and independently re-reviewed; D1-D5 accepted within delegated epic scope.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
       "contract_path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
       "contract_sha256": "80d26ba7826fe94c85329953014ff013281f843d2ddf1211e7c11675201f0539"
     },
@@ -39562,7 +39562,7 @@
             "56794b265c385574382be54d13fde3f470b669273d3adb0702c2c54dacc646f4"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -39576,7 +39576,7 @@
         "docs/specs/019-001-discovery-dialogue-contract/test-audit.md": "56794b265c385574382be54d13fde3f470b669273d3adb0702c2c54dacc646f4"
       },
       "note": "Audit accepted for mapping and existing control preservation. Proposed six promise groups are candidates, not a test quota: RED selection requires a user consequence and independent semantic review; no text-matching substitutes for comprehension.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner>)"
     },
     {
       "feature": "019-001-discovery-dialogue-contract",
@@ -40012,7 +40012,7 @@
             "1048c67f84396d393de52fae2fd9385d14dbf56d5dd9f2bdbf63ceb6f92ffcfa"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo; verification-by-review is Pablo's direct decision)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner>; verification-by-review is <owner>'s direct decision)",
         "contract": {
           "path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
           "sha256": "1e50141c91b84a309be92d115c8df025a1fb5e138dc0ba35b2c13f74bd864853"
@@ -40020,7 +40020,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -40033,10 +40033,10 @@
         "docs/specs/019-001-discovery-dialogue-contract/spec-amendment-review-002.md": "1048c67f84396d393de52fae2fd9385d14dbf56d5dd9f2bdbf63ceb6f92ffcfa"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo; verification-by-review is Pablo's direct decision)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner>; verification-by-review is <owner>'s direct decision)",
       "contract_path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
       "contract_sha256": "1e50141c91b84a309be92d115c8df025a1fb5e138dc0ba35b2c13f74bd864853",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -40375,7 +40375,7 @@
             "a894cdbce46485ab24041e7336e0046ce40f097a9c861e7a301d53ba03c61153"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": {
           "path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
           "sha256": "1e50141c91b84a309be92d115c8df025a1fb5e138dc0ba35b2c13f74bd864853"
@@ -40383,7 +40383,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -40397,10 +40397,10 @@
         "docs/specs/019-001-discovery-dialogue-contract/acceptance-record.md": "e316e3bcddad023a6d064b9dcd58ce689b8220dd13daaf93564f5cbc2bd80d94"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "contract_path": "docs/specs/019-001-discovery-dialogue-contract/spec.md",
       "contract_sha256": "1e50141c91b84a309be92d115c8df025a1fb5e138dc0ba35b2c13f74bd864853",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -40527,7 +40527,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": {
@@ -40542,7 +40542,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "closure_path": "docs/specs/019-001-discovery-dialogue-contract/closure.md",
       "closure_sha256": "2fc94b9d8f777ecc9f6edf3d06aa90fad6e50f5d9b61dc3a7f3448291bbb86bc"
     },
@@ -40850,7 +40850,7 @@
             "70e77dc45c904c8f6bd6db06a9ecacc0104be8dd475d89fdb626f9231d358c6d"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": {
           "path": "docs/specs/019-003-contract-verification-strategy/spec.md",
           "sha256": "969ff8e531672976fe050f999f0fc671cab6e52cd51103b0afe32851d641a3cf"
@@ -40858,7 +40858,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -40871,10 +40871,10 @@
         "docs/specs/019-002-effective-discovery-instructions/verification-strategy-review-004.md": "70e77dc45c904c8f6bd6db06a9ecacc0104be8dd475d89fdb626f9231d358c6d"
       },
       "note": "Approval explicitly includes proposed verification strategy; independent review of exact substantive content recorded before materialization.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "contract_path": "docs/specs/019-003-contract-verification-strategy/spec.md",
       "contract_sha256": "969ff8e531672976fe050f999f0fc671cab6e52cd51103b0afe32851d641a3cf",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -41175,7 +41175,7 @@
             "269aff43c1d4e6a861d7676e4b0e1328798a93d902d5d9c2a514f3164c7eeb8e"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -41189,7 +41189,7 @@
         "docs/specs/019-003-contract-verification-strategy/test-audit.md": "269aff43c1d4e6a861d7676e4b0e1328798a93d902d5d9c2a514f3164c7eeb8e"
       },
       "note": "Approved: no new executable test proposed; existing protection retained, contextual semantic review mandatory; no tests executed, not evidence of green.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner>)"
     },
     {
       "feature": "019-003-contract-verification-strategy",
@@ -41829,7 +41829,7 @@
             "047977cf59476e49ad15e3e266b8050db46e20dfc827f02a6e91721bb4b4b08b"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
         "contract": {
           "path": "docs/specs/019-003-contract-verification-strategy/spec.md",
           "sha256": "969ff8e531672976fe050f999f0fc671cab6e52cd51103b0afe32851d641a3cf"
@@ -41837,7 +41837,7 @@
         "plan": null,
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -41850,10 +41850,10 @@
         "docs/specs/019-003-contract-verification-strategy/review-009.md": "047977cf59476e49ad15e3e266b8050db46e20dfc827f02a6e91721bb4b4b08b"
       },
       "note": "Independent review no blocking findings; independent focused regression 38 passed rc=0 (stable log .cdad/orchestration/epic-019/019-003-final-regression.log); inventory integrity rc=0; isolated candidate distribution 69 comparisons no differences; installation real not deployed.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner>)",
       "contract_path": "docs/specs/019-003-contract-verification-strategy/spec.md",
       "contract_sha256": "969ff8e531672976fe050f999f0fc671cab6e52cd51103b0afe32851d641a3cf",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -41946,7 +41946,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": {
@@ -41961,7 +41961,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "closure_path": "docs/specs/019-003-contract-verification-strategy/closure.md",
       "closure_sha256": "45934aff5c960fa1d4f352287ad6e15be9b10b82fe4c7b73efb1f13d2f652334"
     },
@@ -42161,7 +42161,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": {
           "path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
           "sha256": "5cca6fa6d0cde92cadab961c8218126a741432b575bc169df24c7901eef34eb0"
@@ -42179,7 +42179,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "contract_path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
       "contract_sha256": "5cca6fa6d0cde92cadab961c8218126a741432b575bc169df24c7901eef34eb0",
       "plan_path": "docs/specs/019-002-effective-discovery-instructions/plan.md",
@@ -42249,7 +42249,7 @@
             "254800dae95581b314069e22b8f103cf4ae7910eb2cdcf2d6557c2584d2cb00e"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -42264,7 +42264,7 @@
         "docs/specs/019-002-effective-discovery-instructions/audit-decision.md": "a838d7d144a80d6916c4825283e27806c6d1fcd8b68936be89ed632a69c19a0e"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -42329,7 +42329,7 @@
             "ede5d9901a03367b1c9f75d17e9f0e0d45bd6e64c9f9864b853692d7bdc9069a"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -42343,7 +42343,7 @@
         "docs/specs/019-002-effective-discovery-instructions/t1-red-report.md": "ede5d9901a03367b1c9f75d17e9f0e0d45bd6e64c9f9864b853692d7bdc9069a"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -42479,7 +42479,7 @@
             "851e52b2f389c55d15606e8bc38b4a5704ba21238b32fabd050d2a318fffc0c4"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -42493,7 +42493,7 @@
         "docs/specs/019-002-effective-discovery-instructions/t2-red-report.md": "851e52b2f389c55d15606e8bc38b4a5704ba21238b32fabd050d2a318fffc0c4"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -43106,7 +43106,7 @@
             "9110158db98c9b21e96752f25fd3d5585fa0ed0c2cdce7e625ac66b1620b5b41"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": {
           "path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
           "sha256": "dc0800fadd18d607e4563612fa17bf23fca077efa1d24a1b682aef9e8b728594"
@@ -43117,7 +43117,7 @@
         },
         "closure": null,
         "exemption": {
-          "requested_by": "Pablo",
+          "requested_by": "<owner>",
           "delegated": true
         }
       },
@@ -43131,12 +43131,12 @@
         "docs/specs/019-002-effective-discovery-instructions/approval-recovery-review.md": "9110158db98c9b21e96752f25fd3d5585fa0ed0c2cdce7e625ac66b1620b5b41"
       },
       "note": "Administrative approval provenance correction; independent draft review performed, not exempted. No substantive contract change.",
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
       "contract_path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
       "contract_sha256": "dc0800fadd18d607e4563612fa17bf23fca077efa1d24a1b682aef9e8b728594",
       "plan_path": "docs/specs/019-002-effective-discovery-instructions/plan.md",
       "plan_sha256": "d5d3968bd7333e7c5ce868c9e8aa2cf70da831dc1b767dfc413b38288fb3e69f",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "delegated": true
     },
     {
@@ -43199,7 +43199,7 @@
             "f83a2acf09dfe53318612e4dbb142224333560b57b8b6aa9b1d57e7406f4cdd3"
           ]
         ],
-        "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)",
+        "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)",
         "contract": null,
         "plan": null,
         "closure": null
@@ -43213,7 +43213,7 @@
         "docs/specs/019-002-effective-discovery-instructions/regression-audit.md": "f83a2acf09dfe53318612e4dbb142224333560b57b8b6aa9b1d57e7406f4cdd3"
       },
       "note": null,
-      "approved_by": "CDAD orchestrator (HITL delegated by Pablo for epic 019)"
+      "approved_by": "CDAD orchestrator (HITL delegated by <owner> for epic 019)"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -43861,7 +43861,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under explicit renewed HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under explicit renewed HITL delegation by <owner>",
         "contract": {
           "path": "docs/specs/019-002-effective-discovery-instructions/recovery-spec.md",
           "sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382"
@@ -43879,7 +43879,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Owner-directed replacement; independent reviews 001/002 addressed; candidate-runtime feasibility is mandatory before T8, owned by orchestrator. See recovery-approval.md.",
-      "approved_by": "CDAD orchestrator under explicit renewed HITL delegation by Pablo",
+      "approved_by": "CDAD orchestrator under explicit renewed HITL delegation by <owner>",
       "contract_path": "docs/specs/019-002-effective-discovery-instructions/recovery-spec.md",
       "contract_sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382",
       "plan_path": "docs/specs/019-002-effective-discovery-instructions/recovery-plan.md",
@@ -43906,7 +43906,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
         "contract": {
           "path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
           "sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382"
@@ -43924,7 +43924,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Same reviewed and approved replacement bytes published at canonical paths required by packet resolver. Previous documents explicitly preserved as pre-recovery-* and in git; old pins remain historical.",
-      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
       "contract_path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
       "contract_sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382",
       "plan_path": "docs/specs/019-002-effective-discovery-instructions/plan.md",
@@ -43951,7 +43951,7 @@
         "postcondition": null,
         "current_stage": "tdd",
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
         "contract": {
           "path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
           "sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382"
@@ -43969,7 +43969,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Canonical specification stage registration of explicitly approved replacement; independent review records and dispositions in recovery-approval.md.",
-      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
       "contract_path": "docs/specs/019-002-effective-discovery-instructions/spec.md",
       "contract_sha256": "cd61455c3a5b799cdbfa0d29b5c08fbe8eddc1bd601f69869baa6eb00a1f0382",
       "plan_path": "docs/specs/019-002-effective-discovery-instructions/plan.md",
@@ -44326,7 +44326,7 @@
             "089f01d7f0f3c6f1f166e4faec2b9fb65664eab2dbab180080701234a91a43dc"
           ]
         ],
-        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
         "contract": null,
         "plan": null,
         "closure": null
@@ -44341,7 +44341,7 @@
         "docs/specs/019-002-effective-discovery-instructions/recovery-exercise-review.md": "089f01d7f0f3c6f1f166e4faec2b9fb65664eab2dbab180080701234a91a43dc"
       },
       "note": "Accept independent review of all replacement PCs within declared limits. Feature focal/regression evidence recorded; complete suite remains required at epic closure and is running. Installation F011 excluded, not green. Optional scratch-brief staleness deferred since disposable exercise is not continued.",
-      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo"
+      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -44459,7 +44459,7 @@
             "2712fbf3c1c166a0695a52e52a4bbfeb7b589ba305b7c91292734c9a34af5ea3"
           ]
         ],
-        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
         "contract": null,
         "plan": null,
         "closure": null
@@ -44475,7 +44475,7 @@
         "docs/systemPatterns.md": "2712fbf3c1c166a0695a52e52a4bbfeb7b589ba305b7c91292734c9a34af5ea3"
       },
       "note": "Approved concise scribe deltas, materialized unchanged with unrelated history preserved. Feature/epic closure pending full suite and bounded README maintenance; no deployment claim.",
-      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo"
+      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -44511,7 +44511,7 @@
             "7a18b55d009172d490065382f9f10ebca462c26cf56ac2e5f23102c6bb60f8da"
           ]
         ],
-        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo",
+        "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>",
         "contract": null,
         "plan": null,
         "closure": null
@@ -44527,7 +44527,7 @@
         "docs/systemPatterns.md": "7a18b55d009172d490065382f9f10ebca462c26cf56ac2e5f23102c6bb60f8da"
       },
       "note": "Complete three approved unchanged scribe deltas. Prior materialization stopped on duplicate heading substring before systemPatterns insertion; exact heading anchor resolved. All unrelated history retained. Epic stays open.",
-      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by Pablo"
+      "approved_by": "CDAD orchestrator under renewed explicit HITL delegation by <owner>"
     },
     {
       "feature": "019-002-effective-discovery-instructions",
@@ -44632,7 +44632,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under Pablo explicit HITL delegation and instruction to close 019-002",
+        "approved_by": "CDAD orchestrator under <owner> explicit HITL delegation and instruction to close 019-002",
         "contract": null,
         "plan": null,
         "closure": {
@@ -44647,7 +44647,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": "Complete serial suite 2069 passed 5 skipped exit0 at65d0ba62; inventory integrity rc0. Epic stays open for019004.",
-      "approved_by": "CDAD orchestrator under Pablo explicit HITL delegation and instruction to close 019-002",
+      "approved_by": "CDAD orchestrator under <owner> explicit HITL delegation and instruction to close 019-002",
       "closure_path": "docs/specs/019-002-effective-discovery-instructions/closure.md",
       "closure_sha256": "36524ff58a0353236edb5b1e8ac85e13b455eaa0328356589da9b62bcf10ba2a"
     },
@@ -44838,7 +44838,7 @@
             "75d95a098020e23662207a974a8e66c0310ae04f21971e5caacc659b77a05989"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
           "sha256": "29f7c39bf3972d8783503f5e9978635362b07f351428474cc68ad26399b21be1"
@@ -44859,7 +44859,7 @@
         "docs/specs/019-004-project-layout-and-dispatch-intake/plan-review-002.md": "75d95a098020e23662207a974a8e66c0310ae04f21971e5caacc659b77a05989"
       },
       "note": "Approved draft-002 spec and plan after two independent review rounds. Four blockers resolved; ADR index reconciliation deferred as optional; no installation or deployment authorized.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
       "contract_sha256": "29f7c39bf3972d8783503f5e9978635362b07f351428474cc68ad26399b21be1",
       "plan_path": "docs/specs/019-004-project-layout-and-dispatch-intake/plan.md",
@@ -44891,7 +44891,7 @@
             "75d95a098020e23662207a974a8e66c0310ae04f21971e5caacc659b77a05989"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
           "sha256": "29f7c39bf3972d8783503f5e9978635362b07f351428474cc68ad26399b21be1"
@@ -44911,7 +44911,7 @@
         "docs/specs/019-004-project-layout-and-dispatch-intake/plan-review-002.md": "75d95a098020e23662207a974a8e66c0310ae04f21971e5caacc659b77a05989"
       },
       "note": "Specification approval recorded with contract pin at the stage the lifecycle expects; supersedes the earlier mislabeled spec-approval entry, which is retained as history.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
       "contract_sha256": "29f7c39bf3972d8783503f5e9978635362b07f351428474cc68ad26399b21be1",
       "plan_path": "docs/specs/019-004-project-layout-and-dispatch-intake/plan.md",
@@ -45448,7 +45448,7 @@
             "6582aecd262e8ac2d82a71fde1cc15c9d1e887863b61a3ae38846f2978e0b965"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
           "sha256": "8ad2d594d3b91b53710ed3003ffa397fc570752d6716c1c441d387c1bba0b839"
@@ -45470,7 +45470,7 @@
         "docs/specs/019-004-project-layout-and-dispatch-intake/review-amendment-002.md": "c7130b910eb65b190bd04eda801a2a0ec3236fc042fd8cbc580d5edb3041bd58"
       },
       "note": "Amendment 001 applied to section 4.2 after two independent review rounds: closed enumeration of ambiguous initialization evidence, with continuity and guards as operational stores. Contract re-pinned.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-004-project-layout-and-dispatch-intake/spec.md",
       "contract_sha256": "8ad2d594d3b91b53710ed3003ffa397fc570752d6716c1c441d387c1bba0b839",
       "plan_path": "docs/specs/019-004-project-layout-and-dispatch-intake/plan.md",
@@ -45709,7 +45709,7 @@
             "3ab451f63ed000093093232a633d147db6e9c444228882965795d7f1493d2302"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": null
@@ -45725,7 +45725,7 @@
         "skills/cdad-cycle/scripts/cdad_layout.py": "9b7974fb2e76f6cdf278bd294cee22f09e053cf5ecdbdc2ca57a96ae17c4dea9"
       },
       "note": "T2 scope closed: every prescribed remedy from review-t2-final is implemented verbatim (entry-based evidence for named locations, empty directory not evidence) and verified by the focal file, 31 passing. T3 may start.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019"
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019"
     },
     {
       "feature": "019-004-project-layout-and-dispatch-intake",
@@ -46130,7 +46130,7 @@
             "428d3b85ae2f5e582290de99c49997734d2e6e69a0308e8663a02ac410fb38fd"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": null
@@ -46146,7 +46146,7 @@
         "docs/specs/019-004-project-layout-and-dispatch-intake/review-t3-final.md": "828c65eea7a8ec99889ee3700bf3091e16649f725fc9ce3ca5e9a8ecbda5a806"
       },
       "note": "T3 CLI contract closed after four review rounds: route selection without override, complete-body comparison for A, candidate identification by packet_id or execution_id in any delivery form, heading/delimiter/verbatim-body fragment rejection, read-only with no success object on failure. 21 intake tests pass. Remaining limits declared: arbitrary paraphrases of packet content are not detectable; native runtime capture and historical Route C provenance stay open for T4 and section 10. No further wrapper round is opened without a new demonstrated defect.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019"
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019"
     },
     {
       "feature": "019-004-project-layout-and-dispatch-intake",
@@ -46360,7 +46360,7 @@
             "5ea990464a360a7d708fb598196b37a7d20502f01e72c2cac91d38a4cb27f754"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": null
@@ -46377,7 +46377,7 @@
         "skills/cdad-cycle/references/bootstrap.md": "106aa9e10088a3a1c01760828fd9389697ee1ebe381a2e669f37ed5beab7808c"
       },
       "note": "T4 instruction scope closed: three blockers fixed, agents regenerated, resolution verified mechanically. Deployment to HOME and a fresh-role journey remain outside this closure and depend on the owner decision.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019"
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019"
     },
     {
       "feature": "019-004-project-layout-and-dispatch-intake",
@@ -46405,7 +46405,7 @@
             "9d95e21c637032916505018e245fa6acd5bf33b5be09793628a3855fa40a3262"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": {
@@ -46422,7 +46422,7 @@
         "docs/specs/019-004-project-layout-and-dispatch-intake/closure.md": "9d95e21c637032916505018e245fa6acd5bf33b5be09793628a3855fa40a3262"
       },
       "note": "Complete serial suite 2195 passed 5 skipped exit0 at64ff624d; inventory rc0. Deployment and fresh-role journey declared as limits, not delivered.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "closure_path": "docs/specs/019-004-project-layout-and-dispatch-intake/closure.md",
       "closure_sha256": "9d95e21c637032916505018e245fa6acd5bf33b5be09793628a3855fa40a3262"
     },
@@ -46568,7 +46568,7 @@
             "8c2837de7d0cdd6681c45988ffa9868694da2053662540a813419ee880c5d484"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-005-bounded-review-cycles/spec.md",
           "sha256": "57c7a6bb61fb2b45352e3a6a0a8c2ec8daa174f3657276d24f472b8ba02e0315"
@@ -46588,7 +46588,7 @@
         "docs/specs/019-005-bounded-review-cycles/plan-review-004.md": "8c2837de7d0cdd6681c45988ffa9868694da2053662540a813419ee880c5d484"
       },
       "note": "Specification and plan approved after a bounded sufficiency review with no blocking findings across the seven questions. Proposed maximum of three rounds per family adopted. Three earlier review attempts are preserved: one incomplete, two blocked at intake resolution.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-005-bounded-review-cycles/spec.md",
       "contract_sha256": "57c7a6bb61fb2b45352e3a6a0a8c2ec8daa174f3657276d24f472b8ba02e0315",
       "plan_path": "docs/specs/019-005-bounded-review-cycles/plan.md",
@@ -46751,7 +46751,7 @@
             "b15d3708e51dacdd025626e157b18b08728def11ed22e36a44d1105ee8e1acb2"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-005-bounded-review-cycles/spec.md",
           "sha256": "8caa1e1acb49c6603721b4fbef76935f01eac3bdb2070ba2984b4a8207ff9203"
@@ -46773,7 +46773,7 @@
         "docs/specs/019-005-bounded-review-cycles/plan-review-005.md": "7ec4b570436af3a27efb66614847b6c9112ae1830263d1fe0c0c66fd2e9cd4c8"
       },
       "note": "Amendment 001 applied: promise E and PC-11 to PC-15 added to the approved specification; plan extended to draft-002 with matching coverage, strategy and checks; approval re-pinned.",
-      "approved_by": "CDAD orchestrator under Pablo renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner> renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-005-bounded-review-cycles/spec.md",
       "contract_sha256": "8caa1e1acb49c6603721b4fbef76935f01eac3bdb2070ba2984b4a8207ff9203",
       "plan_path": "docs/specs/019-005-bounded-review-cycles/plan.md",
@@ -47131,7 +47131,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": {
@@ -47146,7 +47146,7 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
       "closure_path": "docs/specs/019-005-bounded-review-cycles/closure.md",
       "closure_sha256": "26482f4bcc17769a8ddd0e6cc9b0ba62a40ae90db72d576659c3b41b26d16d85"
     },
@@ -47312,7 +47312,7 @@
             "782b914d31daa19d289f300cf8b73cac58c0a8a21d7741aa073303532516f319"
           ]
         ],
-        "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
         "contract": {
           "path": "docs/specs/019-007-suite-selector-maintenance/spec.md",
           "sha256": "3ba4f69f833469eec69b423770529c600ed2a89ccc03daf3ff0ae6d80d761d14"
@@ -47332,7 +47332,7 @@
         "docs/specs/019-007-suite-selector-maintenance/plan-review.md": "782b914d31daa19d289f300cf8b73cac58c0a8a21d7741aa073303532516f319"
       },
       "note": "Spec and plan approved after draft review round 1/2 with no findings; ceiling of two rounds per family adopted as proposed; test-only scope; verification: class, module and complete suite.",
-      "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
       "contract_path": "docs/specs/019-007-suite-selector-maintenance/spec.md",
       "contract_sha256": "3ba4f69f833469eec69b423770529c600ed2a89ccc03daf3ff0ae6d80d761d14",
       "plan_path": "docs/specs/019-007-suite-selector-maintenance/plan.md",
@@ -47393,7 +47393,7 @@
         "postcondition": null,
         "current_stage": null,
         "artifacts": [],
-        "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+        "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
         "contract": null,
         "plan": null,
         "closure": {
@@ -47408,27 +47408,27 @@
       "receipt_sha256": null,
       "artifacts": {},
       "note": null,
-      "approved_by": "CDAD orchestrator under Pablo's renewed HITL delegation for epic 019",
+      "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
       "closure_path": "docs/specs/019-007-suite-selector-maintenance/closure.md",
       "closure_sha256": "94db1400515dc63bdfaa97c1d6a1acbfab16664b940349360284a7298f779c7a"
     }
   ],
-  "approver": "Pablo",
+  "approver": "<owner>",
   "hitl_delegation": {
     "status": "active",
     "epic_id": "epic-019-discovery-dialogue",
     "source": "docs/epics/epic-019-discovery-dialogue/execution.md",
     "scope": "epic-019-discovery-dialogue: delegated HITL for decisions, specifications, gates, reviews, evidence and closure; publication and deployment excluded",
-    "requested_by": "Pablo",
+    "requested_by": "<owner>",
     "requested_at": "2026-11-15",
     "expires": "cierre, cancelación o revocación del epic",
-    "note": "Mandate expressly delegated by Pablo for epic 019; no inheritance from epic 018."
+    "note": "Mandate expressly delegated by <owner> for epic 019; no inheritance from epic 018."
   },
   "last_updated": "2026-11-18T00:02:12.877058+00:00",
   "delegation_history": [
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-28",
       "scope": "epic-009-installer-updates: ciclo light de 009-001-installer-agent-overlay (spec compacta, RED, GREEN, review y cierre) con la evidencia del plan; la severidad de los defectos no se relaja. Sin push.",
       "expires": "al cerrar, cancelar o revocar la feature",
@@ -47440,7 +47440,7 @@
     },
     {
       "delegated_to": "Claude (orquestador de este epic)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-09-02",
       "scope": "epic-002-cdad-audit-fixes completo: aprobación de specs, priorización de review, aprobación de Memory Bank para las 12 features de este epic",
       "note": "Delegación explícita per feature/etapa puntual, según AP-10/AP-15 de cdad-cycle. Severidad de bloqueantes (seguridad, bug funcional) no se relaja por ser delegación agente."
@@ -47491,7 +47491,7 @@
     },
     {
       "delegated_to": "OpenCode orchestrator (agente cdad-orchestrator) para epic-005-real-operation",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-08",
       "scope": "epic-005-real-operation: alcance aprobado del epic, specs y planes de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
       "expires": "cierre, cancelacion o revocacion del epic",
@@ -47501,7 +47501,7 @@
     },
     {
       "delegated_to": "Claude (sesion de Claude Code, orquestador de 005-010)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-11",
       "scope": "005-010-real-opencode-delegation, con el alcance y reservas de la delegacion de epic-005",
       "expires": "al cerrar 005-010; el resto del epic vuelve al orquestador OpenCode",
@@ -47511,7 +47511,7 @@
     },
     {
       "delegated_to": "OpenCode orchestrator (agente cdad-orchestrator) para epic-005-real-operation",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-08",
       "scope": "epic-005-real-operation: alcance aprobado del epic, specs y planes de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
       "expires": "al cerrar, cancelar o revocar el epic",
@@ -47524,7 +47524,7 @@
     },
     {
       "delegated_to": "Claude (sesion de Claude Code, orquestador de epic-006)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-16",
       "scope": "epic-006-opencode-concurrency: plan aprobado (§6), spec y plan de sus features, priorizacion de reviews, gates y aprobacion de Memory Bank con evidencia. La severidad de los defectos no se relaja.",
       "expires": "al cerrar, cancelar o revocar el epic",
@@ -47535,7 +47535,7 @@
     },
     {
       "delegated_to": "Claude (sesion de Claude Code, orquestador del proximo epic)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-23",
       "scope": "epic-007-reliable-cycle-operation: E1/E2 (alcance, orden, plan), spec y plan de sus features, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
       "expires": "al cerrar, cancelar o revocar el epic",
@@ -47548,7 +47548,7 @@
     },
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-26",
       "scope": "epic-008-suite-coherence: alcance, orden, plan de features, specs, gates, reviews y Memory Bank con evidencia; dudas importantes consultadas al architect. La severidad de los defectos no se relaja.",
       "expires": "al cerrar, cancelar o revocar el epic",
@@ -47560,7 +47560,7 @@
     },
     {
       "delegated_to": "Orquestador CDAD (agente cdad-orchestrator, sesion subagente del supervisor del epic-010)",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-10-30",
       "status": "active",
       "epic_id": "epic-010-documentary-specialization",
@@ -47574,14 +47574,14 @@
     {
       "status": "expired",
       "epic_id": "epic-013-test-criterion",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-11-02",
       "source": "docs/epics/epic-013-test-criterion/execution.md",
       "epic_mandate": "docs/epics/epic-013-test-criterion/execution.md",
       "mandate_ref": "docs/epics/epic-013-test-criterion/execution.md",
       "mandate_quote": "te delego todas las decisiones hasta completar el epic. retengo únicamente la decisión de publicar y desplegar.",
-      "mandate_scope": "Decide en nombre de Pablo dentro de epic-013-test-criterion hasta completarlo; publicar y desplegar quedan reservados a Pablo.",
-      "scope": "epic-013-test-criterion: orquestación con todas las decisiones hasta completar el epic; publicar y desplegar reservados a Pablo.",
+      "mandate_scope": "Decide en nombre de <owner> dentro de epic-013-test-criterion hasta completarlo; publicar y desplegar quedan reservados a <owner>.",
+      "scope": "epic-013-test-criterion: orquestación con todas las decisiones hasta completar el epic; publicar y desplegar reservados a <owner>.",
       "expires": "cierre, cancelación o revocación de esta épica",
       "note": "Vence al cerrar epic-013; no se hereda.",
       "expired_at": "2026-11-02T06:35:54.523253+00:00"
@@ -47589,13 +47589,13 @@
     {
       "status": "expired",
       "epic_id": "epic-014-suite-evidence-policy",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-11-02",
       "source": "docs/epics/epic-014-suite-evidence-policy/execution.md",
       "epic_mandate": "docs/epics/epic-014-suite-evidence-policy/execution.md",
       "mandate_ref": "docs/epics/epic-014-suite-evidence-policy/execution.md",
       "mandate_quote": "Todo salvo publicar (Recomendado)",
-      "mandate_scope": "Decide en nombre de Pablo dentro de epic-014 hasta completarlo; publicar y desplegar reservados a Pablo.",
+      "mandate_scope": "Decide en nombre de <owner> dentro de epic-014 hasta completarlo; publicar y desplegar reservados a <owner>.",
       "scope": "epic-014-suite-evidence-policy: todas las decisiones salvo publicar y desplegar.",
       "expires": "cierre, cancelación o revocación de esta épica",
       "note": "No se hereda.",
@@ -47604,13 +47604,13 @@
     {
       "status": "expired",
       "epic_id": "epic-015-dispatch-reception",
-      "requested_by": "Pablo",
+      "requested_by": "<owner>",
       "requested_at": "2026-11-02",
       "source": "docs/epics/epic-015-dispatch-reception/execution.md",
       "epic_mandate": "docs/epics/epic-015-dispatch-reception/execution.md",
       "mandate_ref": "docs/epics/epic-015-dispatch-reception/execution.md",
       "mandate_quote": "Todo salvo publicar (Recomendado)",
-      "mandate_scope": "Decide en nombre de Pablo dentro de epic-015 hasta completarlo; publicar y desplegar reservados a Pablo.",
+      "mandate_scope": "Decide en nombre de <owner> dentro de epic-015 hasta completarlo; publicar y desplegar reservados a <owner>.",
       "scope": "epic-015-dispatch-reception: todas las decisiones salvo publicar y desplegar.",
       "expires": "cierre, cancelación o revocación de esta épica",
       "note": "No se hereda.",

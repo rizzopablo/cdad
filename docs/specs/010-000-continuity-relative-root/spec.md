@@ -1,6 +1,6 @@
 # 010-000 — Raíces equivalentes en continuidad
 
-**Estado: aprobado por Pablo el 2026-10-29.**
+**Estado: aprobado por <owner> el 2026-10-29.**
 
 ## 1. Descripción funcional
 
@@ -152,4 +152,4 @@ Interfaces y comportamiento contrastados en:
 
 **Pendiente de ejecución, no presentado como resultado:** regresiones del fix, publicaciones en fixtures, comprobaciones de symlinks, staging e instalación aislada.
 
-Status: Approved by Pablo on 2026-10-29
+Status: Approved by <owner> on 2026-10-29

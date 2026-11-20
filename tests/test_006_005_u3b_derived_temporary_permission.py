@@ -61,6 +61,8 @@ de U3 (esa es exactamente la regresión que O-4 vigila).
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -111,6 +113,7 @@ def write_policy(root: Path, *, temporary_roots: list[str],
     doc["temporary_roots"] = list(temporary_roots)
     if private_paths is not None:
         doc["path_policy"]["private_paths"] = list(private_paths)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return doc

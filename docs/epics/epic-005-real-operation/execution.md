@@ -3,7 +3,7 @@
 ## Mandato y aprobación — 2026-10-08
 
 Se le pidió al dueño, en una misma solicitud, (1) aprobar `plan.md` y (2)
-confirmar la delegación propuesta. Respondió: «ok» (Pablo, 2026-10-08).
+confirmar la delegación propuesta. Respondió: «ok» (<owner>, 2026-10-08).
 
 **Delegado:** orquestador OpenCode (agente `cdad-orchestrator`).
 
@@ -26,7 +26,7 @@ epics ni proviene de delegaciones anteriores.
 
 Propuesta al dueño: un ciclo correctivo de 005-009 orquestado por Claude, porque
 el recorrido a probar tiene a Claude como coordinador, con los roles despachados a
-OpenCode. Respondió: «ok: a» (Pablo, 2026-10-11).
+OpenCode. Respondió: «ok: a» (<owner>, 2026-10-11).
 
 **Delegado para 005-010-real-opencode-delegation:** Claude (sesión de Claude Code
 en este repo), con el mismo alcance y las mismas reservas que la delegación del

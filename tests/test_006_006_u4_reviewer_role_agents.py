@@ -153,6 +153,7 @@ _IGNORED_NAMES = frozenset(
     {
         ".git",
         ".cdad",
+        ".cdad-execution",
         "build",
         "__pycache__",
         ".pytest_cache",

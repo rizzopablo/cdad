@@ -71,6 +71,8 @@ ajustado por el orquestador/implementer en el GREEN.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -96,7 +98,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-EXEC_DIR_REL = f".cdad/executions/{EXEC_ID}"
+EXEC_DIR_REL = f".cdad-execution/executions/{EXEC_ID}"
 CONTINUITY_DIR_REL = f"{EXEC_DIR_REL}/continuity"
 BODIES_DIR_REL = f"{CONTINUITY_DIR_REL}/bodies"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
@@ -207,6 +209,7 @@ class Ru2RefusedWriteCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
         self.build_real_project()
 
     # -- construcción del proyecto fixture -----------------------------

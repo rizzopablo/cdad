@@ -29,7 +29,7 @@ siendo verdadero. Queda en el cierre como límite, no como deuda.
 
 ## Aprobación bajo el mandato
 
-La spec v5 y el plan v6 se aprueban en nombre de Pablo (dueño del repo) bajo el
+La spec v5 y el plan v6 se aprueban en nombre de <owner> (dueño del repo) bajo el
 mandato HITL del 2026-10-30 (§1 y §3): el piloto implementa la descomposición ya
 aprobada del epic (`010-003`: «un piloto recorre el ciclo con un entregable
 trazable y evidencia independiente de detección de defectos estructurales y

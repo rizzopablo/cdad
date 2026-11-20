@@ -20,7 +20,7 @@ Los cinco fallos tienen **dos causas distintas**. Solo una es de 019-002.
 
 | Nodeid | Causa | ¿La introdujo 019-002? |
 |---|---|---|
-| `t2_intake::test_pd10_intake_wiring_u<session>_cli` | La línea 157 de `sources/roles/orchestrator.md` nombra `re-entry.md` sin `<skill-dir>` (fragmento: «`re-entry.md`), also when no consultation was warranted — readiness is…»). Esa línea apareció con 019-002 (PC-3, readiness sin consulta). | **Sí.** Pasa en la base anterior. |
+| `t2_intake::test_pd10_intake_wiring_uses_installed_cli` | La línea 157 de `sources/roles/orchestrator.md` nombra `re-entry.md` sin `<skill-dir>` (fragmento: «`re-entry.md`), also when no consultation was warranted — readiness is…»). Esa línea apareció con 019-002 (PC-3, readiness sin consulta). | **Sí.** Pasa en la base anterior. |
 | `t4_readme::test_pd11…` y `::test_inv6…` | El README no tiene sección de arranque guiado. INV-6 no se puede evaluar sin esa sección. | **No.** Ya fallaban antes de 019-002. |
 | `t6_owner_reviewfix::test_hallazgo_a1…` | `README.md:91` usa `CDAD_INSTALL_ROOT`. | **No.** Ya fallaba antes de 019-002. |
 | `t6_owner_reviewfix::test_hallazgo_a2…` | `README.md:127` invoca `cdad_packet.py status` sin `<skill-dir>/scripts/`. | **No.** Ya fallaba antes de 019-002. |
@@ -36,7 +36,7 @@ Cada test recibe una sola disposición. Ninguno requiere cambiar el oráculo, po
 
 | Test | Disposición | Promesa y postcondiciones | Consecuencia para el usuario |
 |---|---|---|---|
-| `test_pd10_intake_wiring_u<session>_cli` | Mantener | El intake del orquestador usa las referencias de la skill instalada, no rutas relativas al proyecto. Protege PD-10 e INV-5 de 005-006. | Sin este test, en un proyecto que no es el de CDAD el orquestador seguiría un `re-entry.md` que no existe en esa ruta. |
+| `test_pd10_intake_wiring_uses_installed_cli` | Mantener | El intake del orquestador usa las referencias de la skill instalada, no rutas relativas al proyecto. Protege PD-10 e INV-5 de 005-006. | Sin este test, en un proyecto que no es el de CDAD el orquestador seguiría un `re-entry.md` que no existe en esa ruta. |
 | `test_pd11_readme_guided_start…` | Mantener | El README debe decir que una instrucción breve basta y remitir a `project-start.md` (PD-11). | Sin este test, quien empieza no se entera de que no hace falta un prompt largo. |
 | `test_inv6_no_long_prompt_block…` | Mantener | El arranque es un puntero corto, sin bloque de prompt largo ni plantilla (INV-6). | Sin este test, el README podría volver a copiar el prompt largo. |
 | `test_hallazgo_a1_no_install_root…` | Mantener | El README no cita `CDAD_INSTALL_ROOT`, que es una variable del instalador y no del runtime. | Sin este test, con instalación global la ruta del CLI resuelve a una carpeta inexistente. |

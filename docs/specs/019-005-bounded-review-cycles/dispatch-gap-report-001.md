@@ -14,7 +14,7 @@ I stopped before making any changes, because I can't validate this Route C packe
 - **Not verified:** I did not compare the full `PACKET.md` bytes, the instruction snapshots or the sha256 values against a render.
 
 **Ambiguity in the dispatch**
-- My working directory is `~/clawd/projects/cdad`.
+- My working directory is `~/<workspace>/projects/cdad`.
 - The `project_root` in the dispatch is `<repo>`.
 - Neither the dispatch nor the packet says which directory I should treat as the product root.
 

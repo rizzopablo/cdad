@@ -23,7 +23,7 @@ Mapa test → postcondición (hallazgo):
   R-2  record_retry_completes_pending_transition_after_crash_window
         PD-11/I8 (recuperación B-1): estado de "muerte entre los dos
         renames" — registro de despacho ya publicado en
-        .cdad/executions/<eid>/dispatches/<attempt>.json y state con el
+        .cdad-execution/executions/<eid>/dispatches/<attempt>.json y state con el
         paquete activo todavía `prepared` (siembra por interfaz
         pública: registrar una vez y restaurar los bytes previos del
         state). Un reintento idéntico de --record-dispatch da rc=0,
@@ -130,7 +130,7 @@ class TestR2RetryCompletesPendingTransition(RecordCase):
             self) -> None:
         """R-2 (PD-11/I8, rama de recuperación de B-1): siembra el estado
         de "muerte entre los dos renames" — el registro de despacho ya
-        publicado en .cdad/executions/<eid>/dispatches/<attempt>.json
+        publicado en .cdad-execution/executions/<eid>/dispatches/<attempt>.json
         con los bytes del registro, y el state con el paquete activo
         todavía `prepared` (siembra: registrar una vez y restaurar
         después los bytes previos del state). Un reintento idéntico de

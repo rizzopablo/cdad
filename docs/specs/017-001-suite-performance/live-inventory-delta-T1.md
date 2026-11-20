@@ -5,7 +5,7 @@ orquestador en el re-entry, antes de la siguiente transicion.
 
 | nodeid | capacidad | contrato | procedencia |
 |---|---|---|---|
-| `tests/test_017_001_suite_profile.py::test_close_emits_xml_and_pha<session>_emitted_selection` | T1-check-1 | phase-profile-v1 (spec §§4.2-4.3, PC-1 parte, INV-1/INV-6) | nuevo RED T1 |
+| `tests/test_017_001_suite_profile.py::test_close_emits_xml_and_phases_matching_emitted_selection` | T1-check-1 | phase-profile-v1 (spec §§4.2-4.3, PC-1 parte, INV-1/INV-6) | nuevo RED T1 |
 | `tests/test_017_001_suite_profile.py::test_attempt_preserves_argv_and_new_artifacts_across_attempts` | T1-check-2 | phase-profile-v1 (PC-1 parte, PC-2 reserva, INV-1) | nuevo RED T1 |
 | `tests/test_017_001_suite_profile.py::test_profile_preserves_failures_skips_and_interruptions_without_substituting_rc` | T1-check-3 | phase-profile-v1 (PC-2, INV-6) | nuevo RED T1 |
 | `tests/test_017_001_suite_profile.py::test_incomplete_measurement_is_diagnosed_not_presented_as_contract` | T1-check-4 | phase-profile-v1 (PC-1 parte, INV-6) | nuevo RED T1 |

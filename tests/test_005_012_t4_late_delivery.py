@@ -42,7 +42,7 @@ tempdir VACÍO (nunca el HOME real, nunca este repo). La capa previa se produce
 por el CAMINO LEGÍTIMO del CLI (`prepare` → `prepare --record-dispatch` →
 `cdad_result.py receive` → `register-transition --transition delivery` →
 `prepare` de un segundo paquete → `register-transition --transition closure` de
-T3), y la entrega tardía se staged en el buzón `.cdad/inbox` con la forma de
+T3), y la entrega tardía se staged en el buzón `.cdad-execution/inbox` con la forma de
 `tests/test_003_002_t1_receive.py`. Los ids del fixture son sintéticos y
 anónimos. Aislamiento: el fixture de la entrega tardía tiene DOS paquetes de la
 MISMA ejecución — el primero con recibo durable y ya entregado (T1) y el segundo
@@ -120,7 +120,7 @@ test; el contrato fue verificable y no hubo detención):
    la entrega tardía es el segundo paquete publicado (`prepared`) de la misma
    ejecución.
 3. **La ausencia de recibo se asevera por el path del recibo durable**
-   (`.cdad/runtime/results/<exec>/<packet>/receipt.json`), el mismo que resuelve
+   (`.cdad-execution/runtime/results/<exec>/<packet>/receipt.json`), el mismo que resuelve
    `register-transition` (PD-13/§2.1).
 4. **Sin cifras del state vivo.** PD-17 se verifica con `validate-state` rc=0
    antes y después sobre el state del FIXTURE (nunca el del repo): ninguna
@@ -175,7 +175,7 @@ LATE_STAGE = "late-delivery"
 # recibos y su `semantic_status` SIEMPRE `pending` (PD-13/INV-2).
 SEMANTIC_PENDING = "pending"
 
-# La entrega tardía: partes staged bajo el buzón `.cdad/inbox` (forma de
+# La entrega tardía: partes staged bajo el buzón `.cdad-execution/inbox` (forma de
 # `tests/test_003_002_t1_receive.py`), sintéticas y anónimas.
 LATE_REPORT_BYTES = (
     b"# Role report (fixture demo-100, entrega tardia)\n"
@@ -237,7 +237,7 @@ class _LateFixture(_BaseFixture):
       4. el cierre citado se materializa y `register-transition --transition
          closure` (T3) cierra la feature: queda `done` (con `closed_at` y
          `closure_evidence`), `active_feature: null` y `current_stage: "idle"`;
-      5. la entrega tardía del packet2 se staged en el buzón `.cdad/inbox`.
+      5. la entrega tardía del packet2 se staged en el buzón `.cdad-execution/inbox`.
     """
 
     def __init__(self, base: Path, *, closed: bool = True) -> None:
@@ -292,9 +292,9 @@ class _LateFixture(_BaseFixture):
     # -- construcción adicional (interfaz pública del CLI) ----------------
 
     def _stage_late_delivery(self) -> None:
-        """Staged de la entrega tardía bajo `.cdad/inbox` (forma del focal de
+        """Staged de la entrega tardía bajo `.cdad-execution/inbox` (forma del focal de
         `receive` de 003-002) y del descriptor `RESULT.json` del packet2."""
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / "role-report.md").write_bytes(LATE_REPORT_BYTES)
         (inbox / "changes.json").write_text(json.dumps({
@@ -314,23 +314,23 @@ class _LateFixture(_BaseFixture):
             "parts": [{
                 "name": "role-report",
                 "artifact_kind": "test-writer-role-report",
-                "staged_path": ".cdad/inbox/role-report.md",
+                "staged_path": ".cdad-execution/inbox/role-report.md",
             }],
             "observed_changes": {
                 "observation_status": "trusted",
                 "baseline_ref": BASELINE_REF,
                 "baseline_sha256": BASELINE_SHA256,
-                "manifest_path": ".cdad/inbox/changes.json",
+                "manifest_path": ".cdad-execution/inbox/changes.json",
             },
             "run_evidence_ref": None,
         }, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-        self.packet_md = (self.root / ".cdad" / "packets" / self.packet2
+        self.packet_md = (self.root / ".cdad-execution" / "packets" / self.packet2
                           / "PACKET.md")
-        self.request_json = (self.root / ".cdad" / "packets" / self.packet2
+        self.request_json = (self.root / ".cdad-execution" / "packets" / self.packet2
                              / "REQUEST.json")
         assert self.packet_md.is_file() and self.request_json.is_file(), (
             "precondición (fixture): el paquete del fixture debe estar "
-            "publicado bajo `.cdad/packets/`")
+            "publicado bajo `.cdad-execution/packets/`")
 
     # -- invocación (caja negra) ------------------------------------------
 
@@ -341,7 +341,7 @@ class _LateFixture(_BaseFixture):
             "receive",
             "--project-root", str(self.root),
             "--execution-context", str(
-                self.root / ".cdad" / "executions" / self.execution_id
+                self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json"),
             "--packet", str(self.packet_md),
             "--request", str(self.request_json),
@@ -371,7 +371,7 @@ class _LateFixture(_BaseFixture):
     # -- observación ------------------------------------------------------
 
     def receipt_path_for(self, packet_id: str) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results" / self.execution_id
+        return (self.root / ".cdad-execution" / "runtime" / "results" / self.execution_id
                 / packet_id / RECEIPT_NAME)
 
 
@@ -387,7 +387,7 @@ def closed_fx(tmp_path: Path) -> _LateFixture:
 def test_pd13_receive_late_persists_durable_receipt_and_normal_receive_stays_closed(
         closed_fx: _LateFixture) -> None:
     """PD-13 (1) + INV-2, caso 1: con la feature CERRADA por el camino legítimo
-    y una entrega staged en el buzón `.cdad/inbox`, `receive --late` → rc=0 y
+    y una entrega staged en el buzón `.cdad-execution/inbox`, `receive --late` → rc=0 y
     recibo durable bajo el root de resultados con `semantic_status: "pending"`;
     el `receive` NORMAL (sin `--late`) sobre la MISMA feature cerrada SIGUE
     fallando cerrado (la única precondición que el modo tardío invierte es la de

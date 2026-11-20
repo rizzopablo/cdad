@@ -321,7 +321,7 @@ def _run_dispatch(project: _Project, ex: dict) -> subprocess.CompletedProcess:
 
 def _run_continuity(project: _Project, ex: dict) -> subprocess.CompletedProcess:
     """Ejecuta el UPDATE de continuidad del asset contra el CLI del árbol."""
-    exec_ctx = project.write_json(".cdad/fixtures/exec.json", _exec_context())
+    exec_ctx = project.write_json(".cdad-execution/fixtures/exec.json", _exec_context())
     target = _rel_target(ex.get("target"), "docs/update.json")
     update_path = project.write_json(target, ex["input"])
     return project.run(

@@ -2,7 +2,7 @@
 
 * Estado: **Aceptado** (2026-10-08; orquestador bajo delegación HITL de epic-003)
 * Fecha: 2026-10-08
-* Decisores: dueño (Pablo); orquestador bajo delegación HITL de epic-003
+* Decisores: dueño (<owner>); orquestador bajo delegación HITL de epic-003
 * Confianza: **Media**
 
 ## Contexto y enunciado del problema

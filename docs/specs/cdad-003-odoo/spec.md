@@ -1,6 +1,6 @@
 # cdad-003: Especialización Odoo de CDAD (Odoo-CDAD)
 
-> Estado: APROBADO 2026-08-28 — Ofap como orquestador/HITL designado por Pablo
+> Estado: APROBADO 2026-08-28 — <owner> como orquestador/HITL designado por <owner>
 > ("decide con el mejor criterio de visión general y de calidad"). Ciclo CDAD
 > habilitado (RED → GREEN → Review → Merge).
 > Fecha: 2026-08-28 · Origen: fases F0/F2/F3/Fb (evidencia empírica en dos

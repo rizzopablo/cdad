@@ -4,13 +4,13 @@
 - `docs/specs/010-001-documentary-contracts/plan.md`, versión 3, sha256 `9fee79a36dccb0faf6dbe9372f7d946e9aebf4886844b80162eb399fd506a478`.
 - `docs/specs/010-001-documentary-contracts/spec.md`, draft-3, sha256 `a01969d7f51da614c6e502d8660bafea17ad5ae8bb7caf5aea624f43927d94ac`.
 
-**Dictamen: NO LISTO PARA APROBACIÓN, con 1 bloqueante nuevo (N1).** F1 quedó cerrado, igual que F3, F4, F5 y F6. F2 queda cerrado con reparo: cumple la condición que fijó el dictamen anterior, pero esa misma condición era inejecutable, y de ahí sale N1. Este dictamen no aprueba nada ni autoriza implementar; la decisión es de Pablo.
+**Dictamen: NO LISTO PARA APROBACIÓN, con 1 bloqueante nuevo (N1).** F1 quedó cerrado, igual que F3, F4, F5 y F6. F2 queda cerrado con reparo: cumple la condición que fijó el dictamen anterior, pero esa misma condición era inejecutable, y de ahí sale N1. Este dictamen no aprueba nada ni autoriza implementar; la decisión es de <owner>.
 
 ## Estado de F1–F6
 
 | Hallazgo | Estado | Evidencia frente a la condición de cierre |
 |---|---|---|
-| **F1** (bloqueante) | **Cerrado** | PC-12 dice «usuario/dueño que aprueba» (`spec.md:164`). INV-07 limita el nombre concreto a los documentos de autoridad bajo `docs/` (`spec.md:188`). `rg Pablo skills sources agents` no da coincidencias. Las menciones restantes están solo en `docs/`, por ejemplo `spec.md:201`. |
+| **F1** (bloqueante) | **Cerrado** | PC-12 dice «usuario/dueño que aprueba» (`spec.md:164`). INV-07 limita el nombre concreto a los documentos de autoridad bajo `docs/` (`spec.md:188`). `rg <owner> skills sources agents` no da coincidencias. Las menciones restantes están solo en `docs/`, por ejemplo `spec.md:201`. |
 | **F2** | **Cerrado con reparo** | T1 prepara solo T2/T3, y los encargos posteriores se preparan justo antes de su despacho (`plan.md:39,42,181`). T4 declara obsoletos los paquetes anteriores (`plan.md:120,273`). Reparo: ver N1. |
 | **F3** | **Cerrado** | PC-13 y el grupo D declaran unicidad por frases derivadas de la referencia, con espacios normalizados, sobre `skills/`, `sources/` y `agents/` (`spec.md:170`, `plan.md:205`). Coincide con el precedente (`tests/test_006_004_u3_principle_single_source.py:52-57`). |
 | **F4** | **Cerrado** | T2 compromete `TestPromiseA` a `TestPromiseD` (`plan.md:59,207`) y T3 fija un comando exacto (`plan.md:84,252`). Sin `tests/__init__.py`, el import y la selección por clase funcionan desde la raíz; lo comprobé con módulos existentes. |
@@ -80,7 +80,7 @@ $C render --project-root . --execution-context $E --request $P/REQUEST.json > /t
 cmp /tmp/rv2.md $P/PACKET.md
 $C render --project-root . --execution-context $E --request $P/REQUEST.json --route C
 sha256sum docs/specs/010-001-documentary-contracts/*
-rg -n "Pablo" skills sources agents -c
+rg -n "<owner>" skills sources agents -c
 python3 -B -c "import tests.test_006_004_u3_principle_single_source as m; print(m.__file__, m.__spec__.name)"
 python3 -B -m unittest -v tests.test_cdad_generate.TestDeterministicGenerator
 git status --short

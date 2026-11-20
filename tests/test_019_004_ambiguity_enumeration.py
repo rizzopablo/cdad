@@ -27,6 +27,21 @@ Mapeo test -> postcondición (una promesa observable por test, R2):
       -> PC-01/PC-02. CONTROL: pasa hoy salvo donde la detección nueva
          degrade la precedencia. Sin este test, la nueva evidencia nombrada
          haría ambiguo a un proyecto legado o registrado que ya funcionaba.
+
+Enmienda 020-001 (docs/specs/020-001-versioned-layout-local-execution/
+spec.md, PC-1/PC-2; plan §0): el localizador versionable vive en la ruta
+fija `cdad/project-layout.json` (schema 2: schema_version, methodology_dir,
+operational_dir) y los registros operacionales nuevos viven bajo el
+`operational_dir` declarado. Un proyecto NO MIGRADO (existe
+`.cdad/project-layout.json`, o la declaración carece de `operational_dir`
+(schema 1), o queda una raíz `.cdad/` poblada) recibe guía de migración
+breve que apunta a `layout-migration.md`, SIN escribir. INVERSIONES
+deliberadas (no son cosmética): toda fila cuya evidencia es un `.cdad/`
+poblado (con o sin marcador legado, con o sin localizador viejo) pasa de
+«ambiguo» / «resuelve» a «guía de migración, sin escribir». Se conservan
+sin cambio de promesa: la evidencia AMBIGUA de docs/ y cdad/ sin registrar,
+la resolución del marcador legado exacto sin `.cdad/` poblado, y la
+resolución de la declaración schema 2 sola.
 """
 from __future__ import annotations
 
@@ -38,9 +53,12 @@ from pathlib import Path
 
 import pytest
 
-from test_019_004_layout import SCRIPT, put, snapshot
+from test_019_004_layout import (
+    SCRIPT, assert_migration_guidance, put, snapshot,
+)
+from _layout_support import DECLARATION_REL, OPERATIONAL_DIR, declaration_document
 
-LOCATOR_REL = ".cdad/project-layout.json"
+LOCATOR_REL = ".cdad/project-layout.json"  # localizador VIEJO (no migrado)
 TIMEOUT_S = 90
 
 # Ubicación nombrada -> archivos que la pueblan (una sola señal por caso).
@@ -93,6 +111,15 @@ def assert_ambiguous(proc, label: str) -> None:
         f"{label}: el diagnóstico debe indicar ambigüedad; stderr={proc.stderr!r}")
 
 
+def assert_refusal_for(files: list[str], proc, label: str) -> None:
+    """Evidencia solo de docs/ o cdad/ sin registrar sigue siendo AMBIGUA;
+    evidencia en un `.cdad/` poblado es un proyecto no migrado (guía)."""
+    if all(f.startswith(".cdad/") for f in files):
+        assert_migration_guidance(proc, label)
+    else:
+        assert_ambiguous(proc, label)
+
+
 def assert_not_ambiguous(proc, label: str) -> None:
     out = (proc.stdout + proc.stderr).lower()
     assert "ambiguous" not in out, f"{label}: no debe diagnosticarse ambiguo: {out!r}"
@@ -101,9 +128,13 @@ def assert_not_ambiguous(proc, label: str) -> None:
 @pytest.mark.parametrize("name", sorted(NAMED))
 def test_named_evidence_is_ambiguous_in_layout_and_operational_command(
         tmp_path: Path, name: str) -> None:
-    """PC-04 (§4.2 lista cerrada): cada ubicación nombrada, sola y sin locator
-    ni marcador legado, produce diagnóstico de ambigüedad en la consulta de
-    layout (ordinaria y de bootstrap) y en un comando operativo, sin escribir."""
+    """PC-04 (§4.2 lista cerrada) + 020-001 PC-2: cada ubicación nombrada,
+    sola y sin declaración ni marcador legado, produce rechazo sin escribir en
+    la consulta de layout (ordinaria y de bootstrap) y en un comando
+    operativo: evidencia de docs/ => diagnóstico de ambigüedad; registro en un
+    `.cdad/` poblado => proyecto no migrado, guía a `layout-migration.md`.
+    Sin este test, el usuario con un proyecto existente vería operar (o crear
+    estado nuevo) sin aviso, o un rechazo sin camino de salida."""
     root = make(tmp_path, NAMED[name])
     before = snapshot(root)
     for label, args in (
@@ -113,44 +144,52 @@ def test_named_evidence_is_ambiguous_in_layout_and_operational_command(
         ("validate-state", ["validate-state", "--project-root", str(root)]),
     ):
         proc = run_cli(root, *args)
-        assert_ambiguous(proc, f"{name}: {label}")
+        assert_refusal_for(NAMED[name], proc, f"{name}: {label}")
         assert snapshot(root) == before, f"{name}: {label} no debe escribir"
     assert not (root / LOCATOR_REL).exists()
+    assert not (root / OPERATIONAL_DIR).exists(), f"{name}: sin escrituras nuevas"
 
 
 @pytest.mark.parametrize("name", sorted(UNNAMED))
 def test_unnamed_locations_never_make_a_project_ambiguous(
         tmp_path: Path, name: str) -> None:
-    """PC-04 (CONTROL): ubicaciones que la lista no nombra no se examinan; el
-    proyecto sigue sin inicializar (nuevo en bootstrap), no ambiguo."""
+    """PC-04 + 020-001 PC-2 (INVERTIDO): ubicaciones que la lista no nombra
+    siguen sin volver AMBIGUO al proyecto, pero una raíz `.cdad/` poblada
+    ya es proyecto no migrado: guía de migración (nunca «ambiguo») y sin
+    escribir, en layout, bootstrap y un comando operativo. Sin este test, el
+    scratch o un archivo operativo suelto dejaría al usuario operar sobre
+    un layout operacional viejo sin aviso."""
     root = make(tmp_path, UNNAMED[name])
     before = snapshot(root)
-    plain = run_cli(root, "layout", "--project-root", str(root))
-    assert plain.returncode != 0, "sin layout admitido la consulta ordinaria falla"
-    assert_not_ambiguous(plain, f"{name}: layout")
-    boot = run_cli(root, "layout", "--project-root", str(root), "--for-bootstrap")
-    assert boot.returncode == 0, f"{name}: bootstrap debe proponer cdad/: {boot.stderr!r}"
-    got = json.loads(boot.stdout)
-    assert got["source"] == "new" and got["methodology_dir"] == "cdad"
-    op = run_cli(root, "validate-state", "--project-root", str(root))
-    assert_not_ambiguous(op, f"{name}: validate-state")
-    assert snapshot(root) == before
+    for label, args in (
+        ("layout", ["layout", "--project-root", str(root)]),
+        ("layout --for-bootstrap",
+         ["layout", "--project-root", str(root), "--for-bootstrap"]),
+        ("validate-state", ["validate-state", "--project-root", str(root)]),
+    ):
+        proc = run_cli(root, *args)
+        assert_migration_guidance(proc, f"{name}: {label}")
+        assert_not_ambiguous(proc, f"{name}: {label}")
+        assert snapshot(root) == before, f"{name}: {label} no debe escribir"
+    assert not (root / OPERATIONAL_DIR).exists()
 
 
 def test_locator_alone_is_not_ambiguity_evidence(tmp_path: Path) -> None:
-    """PC-01/PC-04 (CONTROL): el locator como único contenido de `.cdad/` se
-    resuelve como registrado, nunca como ambiguo."""
+    """PC-01/PC-04 (CONTROL, 020-001): la declaración schema 2 en
+    `cdad/project-layout.json` como único contenido se resuelve como
+    registrada, nunca como ambigua ni como no migrada."""
     root = tmp_path / "proj"
     root.mkdir()
-    put(root, LOCATOR_REL, json.dumps(
-        {"schema_version": 1, "methodology_dir": "process/cdad"}))
+    put(root, DECLARATION_REL, json.dumps(
+        declaration_document("process/cdad", OPERATIONAL_DIR)))
     before = snapshot(root)
     proc = run_cli(root, "layout", "--project-root", str(root))
     assert proc.returncode == 0, proc.stderr
     assert json.loads(proc.stdout)["source"] == "registered"
-    assert_not_ambiguous(
-        run_cli(root, "validate-state", "--project-root", str(root)),
-        "locator solo: validate-state")
+    op = run_cli(root, "validate-state", "--project-root", str(root))
+    assert_not_ambiguous(op, "locator solo: validate-state")
+    assert "layout-migration.md" not in op.stderr, (
+        "una declaración schema 2 sola no es un proyecto no migrado")
     assert snapshot(root) == before
 
 
@@ -160,47 +199,55 @@ def test_locator_alone_is_not_ambiguity_evidence(tmp_path: Path) -> None:
     [".cdad/executions/exec-1/continuity/head.json",
      ".cdad/executions/exec-1/guards/decision-1.json"],
 ], ids=["continuity-only", "guards-only", "continuity-and-guards"])
-def test_continuity_and_guards_only_resolve_as_uninitialized(
+def test_continuity_and_guards_only_require_migration_guidance(
         tmp_path: Path, files: list[str]) -> None:
-    """PC-04 (CONTROL, enmienda): solo `continuity/` y/o `guards/` es
-    bookkeeping operativo: sin inicializar, nunca ambiguo."""
+    """020-001 PC-2 (INVERTIDO; antes «sin inicializar, nunca ambiguo»): solo
+    `continuity/` y/o `guards/` bajo un `.cdad/` poblado ya es un proyecto no
+    migrado: guía a `layout-migration.md` (nunca ambiguo, nunca bootstrap
+    silencioso) y sin escribir. Sin este test, un proyecto con una cadena de
+    continuidad vieja sería tratado como nuevo y se le propondría un layout
+    pisando su operación pendiente."""
     root = make(tmp_path, files)
     before = snapshot(root)
-    plain = run_cli(root, "layout", "--project-root", str(root))
-    assert plain.returncode != 0
-    assert_not_ambiguous(plain, "layout")
-    boot = run_cli(root, "layout", "--project-root", str(root), "--for-bootstrap")
-    assert boot.returncode == 0, boot.stderr
-    assert json.loads(boot.stdout)["source"] == "new"
+    for label, args in (
+        ("layout", ["layout", "--project-root", str(root)]),
+        ("layout --for-bootstrap",
+         ["layout", "--project-root", str(root), "--for-bootstrap"]),
+    ):
+        proc = run_cli(root, *args)
+        assert_migration_guidance(proc, label)
+        assert_not_ambiguous(proc, label)
     assert snapshot(root) == before
 
 
-@pytest.mark.parametrize("kind", ["legacy-state", "legacy-policy", "registered"])
+@pytest.mark.parametrize("kind", ["legacy-state", "legacy-policy", "old-locator"])
 @pytest.mark.parametrize("evidence", [".cdad/inbox/delivery-1.json",
                                       ".cdad/runtime/results/receipt-1.json",
                                       ".cdad/publication/pub-1.json",
                                       ".cdad/packets/p1/REQUEST.json"])
-def test_exact_marker_and_registered_layout_win_over_named_evidence(
+def test_legacy_marker_or_old_locator_with_named_evidence_requires_migration(
         tmp_path: Path, kind: str, evidence: str) -> None:
-    """PC-01/PC-02: un marcador legado exacto o un locator válido siguen
-    resolviendo su layout aunque exista evidencia nombrada; no es ambiguo."""
+    """020-001 PC-2 (INVERTIDO; antes «el marcador o localizador ganaba»): un
+    marcador legado exacto (`docs/…`) o el localizador viejo
+    `.cdad/project-layout.json`, junto con registros operacionales en una
+    raíz `.cdad/` poblada, es el proyecto típico NO MIGRADO: guía a
+    `layout-migration.md`, nunca resolución silenciosa ni «ambiguo», sin
+    escribir. Sin este test, el usuario con un proyecto existente seguiría
+    operando sobre el layout operacional viejo sin aviso."""
     root = make(tmp_path, [evidence])
     if kind == "legacy-state":
         put(root, "docs/.cdad-state.json", "{}\n")
-        want = ("legacy", "docs")
     elif kind == "legacy-policy":
         put(root, "docs/cdad-policy.json", "{}\n")
-        want = ("legacy", "docs")
     else:
         put(root, LOCATOR_REL, json.dumps(
             {"schema_version": 1, "methodology_dir": "process/cdad"}))
-        want = ("registered", "process/cdad")
     before = snapshot(root)
     proc = run_cli(root, "layout", "--project-root", str(root))
-    assert proc.returncode == 0, f"{kind}+{evidence}: {proc.stderr!r}"
-    got = json.loads(proc.stdout)
-    assert (got["source"], got["methodology_dir"]) == want
+    assert_migration_guidance(proc, f"{kind}+{evidence}")
+    assert_not_ambiguous(proc, f"{kind}+{evidence}")
     assert snapshot(root) == before
+    assert not (root / OPERATIONAL_DIR).exists()
 
 
 # --- T2 final review (packet 008): entradas, no el directorio contenedor ----
@@ -231,10 +278,11 @@ def test_empty_packets_directory_is_uninitialized_not_ambiguous(
     assert not (root / LOCATOR_REL).exists()
 
 
-def test_single_entry_under_packets_is_ambiguous_without_writes(
+def test_single_entry_under_packets_requires_migration_guidance_without_writes(
         tmp_path: Path) -> None:
-    """PC-04 (§4.2): una sola entrada bajo `.cdad/packets/` basta para el
-    diagnóstico de ambigüedad, sin escribir. Contraparte del caso vacío: sin
+    """PC-04 (§4.2) + 020-001 PC-2: una sola entrada bajo `.cdad/packets/`
+    basta para tratar el proyecto como no migrado (guía a
+    `layout-migration.md`, sin escribir). Contraparte del caso vacío: sin
     este test, relajar la comprobación a «ignorar packets» dejaría pasar un
     proyecto con paquetes reales y se le propondría un `cdad/` nuevo."""
     root = make(tmp_path, [".cdad/packets/p1.json"])
@@ -245,6 +293,6 @@ def test_single_entry_under_packets_is_ambiguous_without_writes(
          ["layout", "--project-root", str(root), "--for-bootstrap"]),
         ("validate-state", ["validate-state", "--project-root", str(root)]),
     ):
-        assert_ambiguous(run_cli(root, *args), f"packets 1 entrada: {label}")
+        assert_migration_guidance(run_cli(root, *args), f"packets 1 entrada: {label}")
         assert snapshot(root) == before, f"{label} no debe escribir"
     assert not (root / LOCATOR_REL).exists()

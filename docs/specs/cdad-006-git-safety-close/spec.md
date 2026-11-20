@@ -1,6 +1,6 @@
 # cdad-006: Git safety al cierre de la branch
 
-> Estado: APROBADO — Status: Approved by Pablo on 2026-09-02 (delegación HITL
+> Estado: APROBADO — Status: Approved by <owner> on 2026-09-02 (delegación HITL
 > de ciclo: "sos dueño del proceso, HITL hasta el final de los temas").
 > Fecha: 2026-09-02 · Origen: research tema 2
 > (docs/epics/research-tema2-git-safety/research.md). Cycle light aprobado.

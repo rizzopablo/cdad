@@ -2,7 +2,7 @@
 epic_id: epic-010-documentary-specialization
 epic_name: Especialización documental de CDAD
 created_at: 2026-10-29
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-10-29
 ---
 
@@ -99,8 +99,8 @@ no fija todavía nombres de skills, agentes ni campos nuevos del estado.
 
 ## Autoridad
 
-- Aprobador del plan y de las specs: Pablo.
-- Aceptación funcional y aprobación del Memory Bank: Pablo.
+- Aprobador del plan y de las specs: <owner>.
+- Aceptación funcional y aprobación del Memory Bank: <owner>.
 - Orquestador: coordinación, paquetes, validación de gates y materialización.
 - No se hereda la delegación de autoridad de otras épicas. Las instrucciones de
   construir y avanzar autorizan preparar esta propuesta, no aprobarla en nombre
@@ -123,21 +123,21 @@ no fija todavía nombres de skills, agentes ni campos nuevos del estado.
 
 ### 2026-10-29 — Ergonomía de despacho encolada tras el fix de raíces
 
-Pablo indicó investigar y resolver el rechazo de paquetes por verificación tras
+<owner> indicó investigar y resolver el rechazo de paquetes por verificación tras
 cerrar `010-000`. Se agrega `010-004-packet-dispatch-ergonomics` como unidad
 siguiente: contexto de ejecución explícito en la cabecera, emisión de ruta C por
 el renderer, aclaración del intake y regresión de los tres fallos observados
 (transcripción, cierre del bloque JSON y contexto inferido). No cambia el
 alcance de las features documentales; solo su orden.
 
-### 2026-10-29 — Fix previo autorizado por Pablo
+### 2026-10-29 — Fix previo autorizado por <owner>
 
 El usuario solicita salvar el bloqueo mediante raíz absoluta e incluir primero
 el fix distribuible para otras instalaciones. Se agrega 010-000 como dependencia
-de 010-001. Se mantiene aprobación de specs por Pablo y la prohibición de push o
+de 010-001. Se mantiene aprobación de specs por <owner> y la prohibición de push o
 actualización automática de otras instalaciones. El paquete de Discovery
 documental no despachado se retira para no mezclar ambos encargos.
 
 ---
 
-Status: Approved by Pablo on 2026-10-29
+Status: Approved by <owner> on 2026-10-29

@@ -2,7 +2,7 @@
 
 **Epic:** `epic-013-test-criterion` — orden 3/4. **Cerrada:** 2026-11-02.
 **Contrato:** `docs/specs/013-003-redundancy-pilot/spec.md`, sha256
-`b8c4810d3a7e44fb54fa7c4edf540269d57fb31168d2c7cfb2457fca08baedbb`, aprobado por Pablo
+`b8c4810d3a7e44fb54fa7c4edf540269d57fb31168d2c7cfb2457fca08baedbb`, aprobado por <owner>
 (HITL delegada, `docs/epics/epic-013-test-criterion/execution.md`) el 2026-11-02.
 **Estado:** cerrada en el repositorio; **no publicada ni desplegada**.
 

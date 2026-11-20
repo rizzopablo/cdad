@@ -15,10 +15,10 @@ Route C validada; trabajo ejecutado solo con el paquete.
 
 **Tests agregados (append-only, +110, 9 vigentes intactos)**
 1. `test_entry_check_binds_map_key_to_declared_selection_and_register` → PC-1 (+PC-6). Contraste: C-R→intento que declara lo esperado sale 0/satisfied=true; C-R→intento que declara `test_other.py::test_wrong` debe salir 1/satisfied=false con motivo que nombre `c-r` y la discrepancia de selección.
-2. `test_reconcile_exterior_residual_u<session>_one_second_resolution` → PC-6, INV-6. `R_exterior=−0.5 s` (T_pytest 5.0, T_ext 4.5) no debe dar `residual-sign`; `R_exterior=−1.5 s` (T_ext 3.5) sí. R_pytest=+4.0 aísla el código al exterior.
+2. `test_reconcile_exterior_residual_uses_declared_one_second_resolution` → PC-6, INV-6. `R_exterior=−0.5 s` (T_pytest 5.0, T_ext 4.5) no debe dar `residual-sign`; `R_exterior=−1.5 s` (T_ext 3.5) sí. R_pytest=+4.0 aísla el código al exterior.
 
 **Evidencia RED (comando exacto)**
-- `PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -o addopts= -p no:cacheprovider tests/test_017_001_suite_reconcile.py::test_entry_check_binds_map_key_to_declared_selection_and_register tests/test_017_001_suite_reconcile.py::test_reconcile_exterior_residual_u<session>_one_second_resolution` → **2 failed in 0.82s**, ambos `AssertionError` de promesa ausente, nunca ImportError/colección:
+- `PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -o addopts= -p no:cacheprovider tests/test_017_001_suite_reconcile.py::test_entry_check_binds_map_key_to_declared_selection_and_register tests/test_017_001_suite_reconcile.py::test_reconcile_exterior_residual_uses_declared_one_second_resolution` → **2 failed in 0.82s**, ambos `AssertionError` de promesa ausente, nunca ImportError/colección:
   - T1: `debe salir 1; salio 0 … (satisfied=true)`.
   - T2: `-0.5 s … no debe diagnosticarse como residual-sign` (diagnósticos `['scope-unavailable','residual-sign']`, `R_exterior: -0.5`).
 - Regresión proporcional: mismo runner con `-k "not binds and not one_second"` → **9 passed** (los 9 vigentes siguen verdes).

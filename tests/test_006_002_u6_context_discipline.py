@@ -185,7 +185,13 @@ STABLE_WORKSPACE_PATH_RE = re.compile(
     r"\bdurable (?:path|location|directory)\b)"
 )
 # El recibo: `.cdad/inbox` es un nombre normativo (PD-5/INV-4).
-RECEIPT_INBOX_RE = re.compile(r"(?i)\.cdad/inbox|cdad/inbox")
+# Acepta el inbox bajo el directorio operativo declarado (`.cdad/inbox`,
+# `.cdad-execution/inbox` o el placeholder `<operational_dir>/inbox`); nunca un
+# `inbox` desnudo ni una ruta temporal.
+RECEIPT_INBOX_RE = re.compile(
+    r"(?i)(?:\.?cdad(?:-[a-z0-9_-]+)?|[<{$]\s*operational[ _-]?dir(?:ectory)?\s*[>}]?)"
+    r"/inbox"
+)
 
 # Igual que en u5: las marcas se combinan por CONCEPTO, no por frase; la regla
 # se declara cuando TODOS sus grupos co-ubican en una misma unidad (o, en su

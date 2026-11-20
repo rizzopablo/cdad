@@ -151,7 +151,7 @@ def _open_unit_project(base: Path, queued: list[str]) -> tuple[Path, Path]:
         state.setdefault("stage_history", []).append({
             "feature": fid,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-11-02T00:00:00Z",
             "contract_path": f"docs/specs/{fid}/spec.md",
             "contract_sha256": hashlib.sha256(data).hexdigest(),
@@ -173,7 +173,7 @@ def _open_unit_project(base: Path, queued: list[str]) -> tuple[Path, Path]:
         "epic": CLOSED_EPIC,
         "epic_id": CLOSED_EPIC,
         "stage": "epic-closure",
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "approved_at": "2026-11-02T00:00:00Z",
     }]
     state["epic_features"] = [{"id": fid, "status": "queued"}
@@ -555,7 +555,7 @@ def _ambiguous_unit_project(base: Path) -> tuple[Path, Path]:
         state.setdefault("stage_history", []).append({
             "feature": fid,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-11-02T00:00:00Z",
             "contract_path": f"docs/specs/{fid}/spec.md",
             "contract_sha256": hashlib.sha256(data).hexdigest(),
@@ -587,7 +587,7 @@ def _ambiguous_unit_project(base: Path) -> tuple[Path, Path]:
         "epic": CLOSED_EPIC,
         "epic_id": CLOSED_EPIC,
         "stage": "epic-closure",
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "approved_at": "2026-11-02T00:00:00Z",
     }]
     state["epic_features"] = [{"id": UNIT_AMBIGUOUS, "status": "queued"}]

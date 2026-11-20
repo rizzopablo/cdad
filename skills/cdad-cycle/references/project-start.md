@@ -108,9 +108,10 @@ python3 <skill-dir>/scripts/cdad_packet.py prepare --project-root "$PWD" \
     --role architect --substage discovery --objective "<first commission>" \
     --new-execution
 
-# 2. bind the ids prepare produced; they live under `.cdad/`:
-#      execution context: .cdad/executions/<EXEC_ID>/execution.json
-#      published packet:  .cdad/packets/<PACKET_ID>/{REQUEST.json,PACKET.md}
+# 2. bind the ids prepare produced; they live under the declared operational
+#    directory (`.cdad-execution/` by default; the examples below use it):
+#      execution context: .cdad-execution/executions/<EXEC_ID>/execution.json
+#      published packet:  .cdad-execution/packets/<PACKET_ID>/{REQUEST.json,PACKET.md}
 #    (prepare prints the PACKET.md on stdout; its front matter carries both ids)
 EXEC_ID=<execution-id>      # e.g. exec-<feature-id>-001
 PACKET_ID=<packet-id>       # e.g. <feature-id>-architect-discovery-001
@@ -118,19 +119,19 @@ PACKET_ID=<packet-id>       # e.g. <feature-id>-architect-discovery-001
 # 3. validate the binding, the request and the packet before dispatching.
 #    --packet consumes a physical PATH to PACKET.md, never a bare packet id.
 python3 <skill-dir>/scripts/cdad_packet.py validate-state --project-root "$PWD" \
-    --execution-context ".cdad/executions/$EXEC_ID/execution.json"
+    --execution-context ".cdad-execution/executions/$EXEC_ID/execution.json"
 python3 <skill-dir>/scripts/cdad_packet.py validate-request --project-root "$PWD" \
-    --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
-    --request ".cdad/packets/$PACKET_ID/REQUEST.json"
+    --execution-context ".cdad-execution/executions/$EXEC_ID/execution.json" \
+    --request ".cdad-execution/packets/$PACKET_ID/REQUEST.json"
 python3 <skill-dir>/scripts/cdad_packet.py validate-packet --project-root "$PWD" \
-    --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
-    --request ".cdad/packets/$PACKET_ID/REQUEST.json" \
-    --packet ".cdad/packets/$PACKET_ID/PACKET.md"
+    --execution-context ".cdad-execution/executions/$EXEC_ID/execution.json" \
+    --request ".cdad-execution/packets/$PACKET_ID/REQUEST.json" \
+    --packet ".cdad-execution/packets/$PACKET_ID/PACKET.md"
 
 # 4. freeze the write-ahead checkpoint before dispatching (UPDATE.json is the
 #    continuity update you author: goal/decisions/uncertainties/next_action)
 python3 <skill-dir>/scripts/cdad_continuity.py begin --project-root "$PWD" \
-    --execution-context ".cdad/executions/$EXEC_ID/execution.json" \
+    --execution-context ".cdad-execution/executions/$EXEC_ID/execution.json" \
     --update UPDATE.json --json
 
 # 5. record the dispatch attempt (docs/attempt.json per project-execution.md §5)
@@ -220,7 +221,16 @@ exit code; **only `COHERENT` is "ok"**:
 | `UNKNOWN` | 3 | an installation marker is missing (version NOT verified) |
 
 A consumer that checks `$?` must treat **any non-zero** code as "version not
-verified as coherent", never as ok. The check is honest about its boundary: the
+verified as coherent", never as ok.
+
+**After a methodology-version change.** When an observed methodology-version change
+is detected (the recorded `source_version` differs from the installed one), read
+`<skill-dir>/references/layout-migration.md` and prepare a fresh assignment before
+any dispatch. An unmigrated project (legacy `.cdad/project-layout.json`, a schema-1
+declaration, or a populated `.cdad/`) receives that guide's CLI refusal first;
+follow it before any operational write.
+
+The check is honest about its boundary: the
 CLI marker is read only at the installation root of the tree that hosts this
 script (never by walking up into an unrelated installation), so a **development
 checkout reports `UNKNOWN`** instead of borrowing the global installation's

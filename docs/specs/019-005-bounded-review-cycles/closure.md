@@ -1,6 +1,6 @@
 # Closure — 019-005 bounded review cycles
 
-Approved by the CDAD orchestrator under Pablo's renewed HITL delegation for epic 019,
+Approved by the CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019,
 including his clarification that the round ceiling exists to distinguish a real blocker
 from perfectionism rather than to forbid a supported continuation.
 

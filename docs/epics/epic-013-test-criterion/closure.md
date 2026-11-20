@@ -1,7 +1,7 @@
 # Closure — epic-013-test-criterion
 
 **Cerrado:** 2026-11-02. **Estado:** cerrado en el repositorio; **no publicado ni desplegado** (reserva del dueño).
-**Autoridad:** HITL delegada de Pablo (`execution.md`).
+**Autoridad:** HITL delegada de <owner> (`execution.md`).
 
 ## 1. Resultado
 

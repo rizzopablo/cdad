@@ -2,7 +2,7 @@
 
 Registro de la aceptación funcional del entregable de
 `010-001-documentary-contracts` y de la aprobación de los borradores de Memory
-Bank, **ejercidas por el orquestador en nombre de Pablo** bajo el mandato HITL
+Bank, **ejercidas por el orquestador en nombre de <owner>** bajo el mandato HITL
 del 2026-10-30
 (`docs/specs/010-004-packet-dispatch-ergonomics/owner-mandate-hitl-2026-10-30.md`
 §1 y §3: aprobar los gates operativos del ciclo y continuar el epic completo sin

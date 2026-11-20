@@ -625,7 +625,7 @@ class TestInv04NoSubstitutePacketProperties(PublishedPacketCase):
         """INV-04 (§6), PC-02 (§4.2) y PC-03 (§4.3).
 
         Promesa observable: con un SEGUNDO paquete presente en
-        `.cdad/packets/`, cada una de las 100 variantes sembradas de admisión
+        `.cdad-execution/packets/`, cada una de las 100 variantes sembradas de admisión
         fallida —request fuera de la ubicación canónica, request no publicado,
         request ausente e identificación inválida— se rechaza sin emitir
         identificación alguna y, en particular, sin emitir la del otro paquete;
@@ -639,7 +639,7 @@ class TestInv04NoSubstitutePacketProperties(PublishedPacketCase):
         DESPUÉS de la tanda, de modo que el rechazo no pueda ser universal.
         """
         case = self.publish("cdad-t5prop-inv04-")
-        packets_dir = case.root / ".cdad" / "packets"
+        packets_dir = case.root / ".cdad-execution" / "packets"
         canonical_request = case.request_path.read_bytes()
         decoy_id = f"{case.packet_id}-decoy"
         decoy = packets_dir / decoy_id

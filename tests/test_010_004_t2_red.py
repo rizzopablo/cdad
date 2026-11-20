@@ -12,7 +12,7 @@ Trazabilidad test → postcondición numerada → consecuencia de usuario (R4):
 
 | Test | PC | Promesa observable | R4: sin este test el usuario… |
 |---|---|---|---|
-| `test_pc04a_…declares_locator` | PC-04(a) | Una preparación nueva con contexto v2 canónico publica el paquete y declara el localizador `.cdad/executions/<id>/execution.json` en request y cabecera | …despacharía encargos nuevos que no dicen dónde vive el contexto v2 canónico, obligando al rol a adivinarlo o a confiar en ubicaciones sin autoridad (INV-12). |
+| `test_pc04a_…declares_locator` | PC-04(a) | Una preparación nueva con contexto v2 canónico publica el paquete y declara el localizador `.cdad-execution/executions/<id>/execution.json` en request y cabecera | …despacharía encargos nuevos que no dicen dónde vive el contexto v2 canónico, obligando al rol a adivinarlo o a confiar en ubicaciones sin autoridad (INV-12). |
 | `test_pc05a_…without_argument` | PC-05(a) fila 1 | request CON localizador y SIN `--execution-context` resuelve exclusivamente el localizador en `render`, `validate-request` y `validate-packet` | …tendría que transcribir la ruta del contexto por CLI aunque el paquete Ya la declara: la fila 1 de la matriz queda sin oráculo y la promesa de despacho sin retranscripción muere. |
 | `test_pc06a_…variants` | PC-06(a) | Checks compartidos: localizador absoluto/vacío/con escapes/no canónico/discordante en identidad o schema se rechazan con causa y sin efectos | …aceptaría copias no canónicas como fuente de contexto o recibiría rechazos sin causa distinguible, sin saber qué corrección hacer. |
 | `test_pc06b_…agree` | PC-06(b)/PC-05 fila 2 | El argumento explícito de los tres CLI debe resolver al MISMO archivo canónico que el localizador; si discrepa, rechazo con causa y sin efectos | …validaría o renderizaría contra un contexto cuyo archivo no es el canónico declarado, silenciosamente. |
@@ -57,7 +57,7 @@ from tests.test_packet_prepare import PrepareProject, run_prepare, tree_snapshot
 from tests.test_role_packet_render import PACKET_BEGIN, PacketFixture, parse_packet
 from tests.test_role_packets import EXECUTION_ID, PACKET_CLI, REPO_ROOT
 
-CANONICAL_LOCATOR = f".cdad/executions/{EXECUTION_ID}/execution.json"
+CANONICAL_LOCATOR = f".cdad-execution/executions/{EXECUTION_ID}/execution.json"
 
 
 def run_cli(command: str, *args: str, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -83,7 +83,7 @@ class T2RedTestCase(unittest.TestCase):
         self, locator: str | None = CANONICAL_LOCATOR
     ) -> tuple[Path, PacketFixture, Path]:
         """Proyecto público cuyo contexto v2 real vive en
-        `.cdad/executions/<EXECUTION_ID>/execution.json`; el request declara
+        `.cdad-execution/executions/<EXECUTION_ID>/execution.json`; el request declara
         el `execution_context` indicado (o ninguno, si `locator` es None).
         `EXECUTION.json` se retira del proyecto para que la única vía de
         contexto sea el localizador (y, en GREEN, el argumento explícito
@@ -102,7 +102,7 @@ class T2RedTestCase(unittest.TestCase):
             fixture.request["execution_context"] = locator
             fixture.request["agent"] = "cdad-test-writer"
         fixture.write()
-        canonical = root / ".cdad" / "executions" / EXECUTION_ID / "execution.json"
+        canonical = root / ".cdad-execution" / "executions" / EXECUTION_ID / "execution.json"
         canonical.parent.mkdir(parents=True, exist_ok=True)
         canonical.write_bytes((root / "EXECUTION.json").read_bytes())
         (root / "EXECUTION.json").unlink()
@@ -132,7 +132,7 @@ class TestPC04NewPreparationDeclaresLocator(T2RedTestCase):
         self.addCleanup(temp.cleanup)
         proj = PrepareProject(Path(temp.name).resolve())
         canonical = (
-            proj.root / ".cdad" / "executions" / EXECUTION_ID / "execution.json"
+            proj.root / ".cdad-execution" / "executions" / EXECUTION_ID / "execution.json"
         )
         canonical.parent.mkdir(parents=True, exist_ok=True)
         canonical.write_bytes(proj.execution_path.read_bytes())
@@ -157,7 +157,7 @@ class TestPC04NewPreparationDeclaresLocator(T2RedTestCase):
                 "debe publicar: "
                 + result.stderr.decode(errors="replace"),
         )
-        packet_dir = proj.root / ".cdad" / "packets" / proj.packet_id()
+        packet_dir = proj.root / ".cdad-execution" / "packets" / proj.packet_id()
         request = json.loads(
             (packet_dir / "REQUEST.json").read_text(encoding="utf-8")
         )
@@ -285,16 +285,16 @@ class TestPC06SharedChecksRejectOutOfDomainLocator(T2RedTestCase):
         en el mismo fixture, rc=0).
 
         R4: sin esta prueba, el proyecto toleraría copias no canónicas como
-        fuente de contexto (rutas absolutas, `.cdad/legacy.json`, documentos
+        fuente de contexto (rutas absolutas, `.cdad-execution/legacy.json`, documentos
         con otra identidad) o recibiría errores genéricos sin causa.
 
         RED hoy (sonda caja-negra): el campo nuevo fuera del schema produce
         rc=2 «request fields do not match schema» — neutro. La aserción de
         causa de localizador falla: el diagnóstico no nombra el dominio
-        buscado (`.cdad/executions/<id>/execution.json`).
+        buscado (`.cdad-execution/executions/<id>/execution.json`).
         """
-        domain_cause = r"(\.cdad/executions|(?i:execution_context|localiz|locator))"
-        identity_cause = r"([Ee]xecution[ _-]?id|\.cdad/executions|(?i:localiz|locator|execution_context))"
+        domain_cause = r"(\.cdad-execution/executions|(?i:execution_context|localiz|locator))"
+        identity_cause = r"([Ee]xecution[ _-]?id|\.cdad-execution/executions|(?i:localiz|locator|execution_context))"
         schema_cause = r"(?i:(\bv2\b|schema[_ -]?version|version\b.{0,8}\b2\b))"
 
         def assert_out_of_domain(root: Path, label: str, cause_pattern: str) -> None:
@@ -356,11 +356,11 @@ class TestPC06SharedChecksRejectOutOfDomainLocator(T2RedTestCase):
         with_absolute()
         for label, locator, cause_pattern in (
             ("empty", "", domain_cause),
-            ("escape", ".cdad/executions/../evil.json", domain_cause),
-            ("non-canonical copy", ".cdad/legacy-context.json", domain_cause),
+            ("escape", ".cdad-execution/executions/../evil.json", domain_cause),
+            ("non-canonical copy", ".cdad-execution/legacy-context.json", domain_cause),
             (
                 "identity mismatch",
-                ".cdad/executions/exec-other-identity/execution.json",
+                ".cdad-execution/executions/exec-other-identity/execution.json",
                 identity_cause,
             ),
             (
@@ -372,11 +372,11 @@ class TestPC06SharedChecksRejectOutOfDomainLocator(T2RedTestCase):
             with self.subTest(locator_variant=label):
                 root, fixture, canonical = self.locator_project(locator)
                 if label == "non-canonical copy":
-                    (root / ".cdad" / "legacy-context.json").write_bytes(
+                    (root / ".cdad-execution" / "legacy-context.json").write_bytes(
                         canonical.read_bytes()
                     )
                 if label == "identity mismatch":
-                    alt = root / ".cdad" / "executions" / "exec-other-identity"
+                    alt = root / ".cdad-execution" / "executions" / "exec-other-identity"
                     alt.mkdir(parents=True, exist_ok=True)
                     doc = json.loads(canonical.read_text(encoding="utf-8"))
                     doc["execution"]["id"] = "exec-other-identity"

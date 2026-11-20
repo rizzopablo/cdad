@@ -39,7 +39,7 @@ Mapa hallazgo → test (cada test nombra su hallazgo y su postcondición):
   de la copy 2 (§8: «crash… o preparando pending dirs documentados»: el
   punto de falla se fabrica con un archivo regular en el padre de la copy
   2, de modo que la copy 1 queda publicada y ya REGISTRADA en el journal
-  real `.cdad/runtime/materializations/<exec>/<packet>/<authorization_sha256>.json`
+  real `.cdad-execution/runtime/materializations/<exec>/<packet>/<authorization_sha256>.json`
   y la copy 2 sin publicar — sin carreras ni timing); el retry con la MISMA
   authorization continúa desde el journal (§7). Y
   `test_r4b_journal_divergent_retry_refuses_without_overwrite` — journal
@@ -172,12 +172,12 @@ class ReviewFixProjectCase(MaterializeProjectCase):
             execution_id, msg="precondición (fixture): binding v2 de 001")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): contexto v2 debe existir")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):
@@ -216,7 +216,7 @@ class ReviewFixProjectCase(MaterializeProjectCase):
     def establish_received(self) -> None:
         """Fixture hasta el recibo durable (receive de T1) con parts propios."""
         staged_parts = self.staged_parts()
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in staged_parts.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -235,7 +235,7 @@ class ReviewFixProjectCase(MaterializeProjectCase):
             "source": {"kind": "staged-file", "sdk_message_ref": None},
             "parts": [
                 {"name": name, "artifact_kind": self.part_kind(name),
-                 "staged_path": f".cdad/inbox/{name}.md"}
+                 "staged_path": f".cdad-execution/inbox/{name}.md"}
                 for name in staged_parts
             ],
             "observed_changes": {
@@ -279,7 +279,7 @@ class ReviewFixProjectCase(MaterializeProjectCase):
 
     @property
     def journal_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "materializations"
+        return (self.root / ".cdad-execution" / "runtime" / "materializations"
                 / self.execution_id / self.packet_id)
 
     def journal_copies(self) -> list[dict]:
@@ -621,7 +621,7 @@ class TestR4RealJournalObserve(WriterReportCase):
             [entry.get("target") for entry in entries], [TARGET_REPORT],
             msg="R4 (precondición): el journal real debe registrar SÓLO la "
                 "copy 1 (límite observable: copy 2 sin efecto)")
-        journal_root = (self.root / ".cdad" / "runtime" / "materializations"
+        journal_root = (self.root / ".cdad-execution" / "runtime" / "materializations"
                         / self.execution_id / self.packet_id)
         journal_before = sorted(p.name for p in journal_root.glob("*.json"))
         self.assertEqual(

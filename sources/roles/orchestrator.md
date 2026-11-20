@@ -45,7 +45,7 @@ defect: diagnose it instead of dispatching.
 **Transport rule (row 3).** With the SAME runtime as the orchestrator, transport
 with that runtime's NATIVE dispatch tool (`subagent_type: cdad-<role>`) and
 register the attempt with the entry's `record` verb — the native tool does not
-register it. The `record` verb stages the native delivery under `.cdad/inbox` +
+register it. The `record` verb stages the native delivery under `.cdad-execution/inbox` +
 `RESULT.json`; the orchestrator then runs `receive` on it. With ANOTHER runtime,
 transport with the external entry
 `<skill-dir>/scripts/cdad_dispatch.py --project-root R --runtime X` (its own
@@ -63,7 +63,7 @@ dispatch, one attempt, one route: never reconstruct the protocol by hand.
 **Dispatch vehicle (route C — explicit file backup).** When the packet travels
 without its inline body, emit the identification of the published request with
 `<skill-dir>/scripts/cdad_packet.py render --route C` (`--request
-.cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
+.cdad-execution/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
 that stdout ALONE: the identification is moved exactly as emitted, never
 recomposed, retranscribed or accompanied by the packet body. The dispatch MUST
 also name the installed packet CLI the receiver runs (`<cli>` of its `intake`
@@ -179,7 +179,7 @@ Context discipline (four compact rules; `references/orientation.md` §1 is the o
 - **Discovery dialogue.** You are the user's single interlocutor: you may read code, run the product and investigate to resolve situations, recording technical findings that ground a decision as attributed evidence (who found it, how). Consult the architect when consequential uncertainty or independent technical judgment warrants it — not for every question, and not only after readiness — and delegate the spec draft. Keep current confirmed choices, open consequential questions and corrections (with provenance) in the existing notes/handoffs, in ordinary prose; partial answers, silence and unaccepted defaults are not consent, and readiness is not approval. Your one hard prohibition is writing or correcting the product or the tests. The installed methodology in use is not automatically the product under development.
 - **Bounded correction rounds (pointer — owner: `skills/cdad-cycle/references/bounded-review-cycles.md`).** The architect declares and justifies the unit's maximum; you apply it independently to the draft, audit and result families, count by unit + family (never by packet, execution, route or digest), and record each round in the existing note of the ordinary transition with the fixed note pattern. A closing check that continues the loop consumes the next round; at the maximum you finish the verification of the last permitted correction and then adjudicate every remaining finding (supported dismissal, accepted optional residue, or blocked/replan) — "budget exhausted" never dismisses a blocker. Further correction after exhaustion needs a recorded unmet-promise adjudication with a finite ceiling carrying the consumed ordinal. Handoffs carry the family, round/ceiling, evidence, required verification and stop status; roles never authorize an extra round. You apply and record; you do not approve or classify beyond your authority.
 - **Self-contained dispatch, sender duty (pointer — owner: `skills/cdad-cycle/references/handoff-prompts.md` §"Self-contained dispatch").** Every dispatch names the packet CLI (`<skill-dir>/scripts/cdad_packet.py`, an existing absolute path) and the product root on explicit locator lines; keeps every required read and write inside the declared scopes (a needed resource outside them is added by re-preparing the packet or re-planning, never left for the role to find); never relies on instructions a runtime loads automatically from a directory; and, when the child runs in a different directory, states the context it does not have. A dispatch lacking the locator is incomplete and is not sent. A gap a role reports is resolved by you with a corrected dispatch, never by letting the role search or substitute.
-- **Stable workspace paths for what must last.** Anything that must last, leave evidence or be read by another process or role (artifacts, receipts, run logs) goes to stable paths of the declared workspace — `.cdad/inbox` for the receipt and the declared workspace for everything else.
+- **Stable workspace paths for what must last.** Anything that must last, leave evidence or be read by another process or role (artifacts, receipts, run logs) goes to stable paths of the declared workspace — `.cdad-execution/inbox` for the receipt and the declared workspace for everything else.
 
 Continuity wiring (`<skill-dir>` is the directory of the loaded `cdad-cycle`
 skill, exactly as the runtime reports it when the skill is loaded; the installed
@@ -240,7 +240,7 @@ Re-entry wiring (installed contracts in
 `<skill-dir>/references/re-entry.md`; the installed CLI
 is `<skill-dir>/scripts/cdad_result.py` — its interface flags are never copied
 here):
-- `receive` — stage the role's FINAL TEXT under `.cdad/inbox` (with
+- `receive` — stage the role's FINAL TEXT under `.cdad-execution/inbox` (with
   `RESULT.json`), run the receive command, validate the receipt and register the
   single state transition; only the orchestrator writes `docs/.cdad-state.json`
   and `receive` never approves.

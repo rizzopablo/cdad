@@ -81,7 +81,7 @@ caché cuando el runtime las expone, inicio, fin y duración observada.
 | Tokens de caché (lectura / escritura) | 92.903.503 / 117.392 — dominan el volumen real |
 | Costo experimental | **sin calibrar**: cero candidatos |
 
-El bloque de cierre se registra con el rótulo `<session>_cierre`, que no es un id de sesión del
+El bloque de cierre se registra con el rótulo `ses_orquestador_cierre`, que no es un id de sesión del
 runtime: sus tokens se declaran «no disponibles» (no cero) y sus 31 comandos son reconstruibles desde
 el archivo.
 | Proyección del resto (1.590 nodeids) | 28.286,1 s de auditoría + 1.700,5 s fijos ≈ 8,3 h (cota alta, sin descontar los cambios de método) |

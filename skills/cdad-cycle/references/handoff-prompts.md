@@ -5,7 +5,7 @@
 Every new preparation runs on a v2 execution: produce the packet
 with `skills/cdad-cycle/scripts/cdad_packet.py prepare --role <role> --substage
 <substage> --objective "<atomic task>"`. It derives contract, inputs, scopes,
-invariants and evidence from the role, writes `.cdad/packets/<packet_id>/`
+invariants and evidence from the role, writes `.cdad-execution/packets/<packet_id>/`
 (REQUEST.json, PACKET.md) and the state binding (`execution`, `active_packet`),
 and prints the packet. Capture the complete stdout bytes and use them unchanged
 as either the Task prompt or the copyable new-chat body. A role receiving that
@@ -17,7 +17,7 @@ Two dispatch vehicles exist, and the packet is never re-typed by hand:
 - **Route C — explicit file backup** (preferred for new native dispatches). Emit
   the identification with `skills/cdad-cycle/scripts/cdad_packet.py render
   --route C` on the published request (`--request
-  .cdad/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
+  .cdad-execution/packets/<packet_id>/REQUEST.json`, inside the project root) and transfer
   that stdout ALONE: the identification travels without an inline body, and it is
   never recomposed, retranscribed or accompanied by the packet body. A transport may
   add inert preamble or trailing text around that stdout; the receiver's `intake`
@@ -39,8 +39,8 @@ order — in the same `prepare` invocation; the package then carries the rows it
 declares. The flag is optional: without it the package is byte-identical.
 
 The execution context is the canonical v2 document the first `prepare` writes
-at `.cdad/executions/<execution_id>/execution.json`, declared by the request as
-`execution_context` (keep `.cdad/` out of git). A v1 `.cdad/execution.json` is
+at `.cdad-execution/executions/<execution_id>/execution.json`, declared by the request as
+`execution_context` (keep the operational directory, `.cdad-execution/` by default, out of git). A v1 `.cdad/execution.json` is
 historical: it is not a universal preparation entry and it is never adopted
 forward. The bootstrap that creates the v2 context, and that boundary with the
 legacy document, are owned by `project-execution.md` §3 and are not restated here.
@@ -779,34 +779,6 @@ For the reviewer's packet, the equivalent block:
 - **Final line of the packet**: your turn always ends with the packet and the instruction to the user to "come back when the role finishes, with the output". Nothing else.
 - **Self-contained dispatch** (§"Self-contained dispatch"): every handoff, packet or legacy, names the packet CLI and the product root on explicit locator lines, keeps required reads and writes inside the declared scopes, carries what a directory-loaded instruction file would have supplied, and states the context a role running in another directory does not have. The receiver reports a missing or out-of-scope resource and stops; it never searches or substitutes.
 - **Bounded rounds**: every handoff into a correction loop (draft, audit or result family) preserves, from the ordinary records, the unit, the family, the cumulative round and its ceiling, the evidence references, the verification still required and the stop/escalation status (`references/bounded-review-cycles.md`); the receiver reports these and never authorizes an extra round. Re-dispatch, a new packet or execution identity, or a changed digest never resets the count.
-
-### Inventario vivo (013-002 PC-7) — regla para handoffs
-
-La declaración vive en `docs/suite-maintenance.md` `## Inventario vivo`
-(el comando de integridad declarado, inventario y mapa). El
-orquestador la lee en los re-entries de cambios de tests y transmite la regla
-en estos handoffs, por ruta legacy y por paquetes. Si no hay inventario vivo
-declarado, registra `sin inventario vivo declarado` sin bloquear. El
-test-writer entrega el delta de altas (nodeid, capacidad, contrato,
-procedencia) como texto; el orquestador lo materializa al re-entry antes de la
-siguiente transición. Los cambios de orígenes o destinos incorporan además el
-delta del mapa de PC-6; POST-AUDIT devuelve los deltas documentales
-pertinentes bajo la misma separación de responsabilidades. `validate` con rc=0
-bloquea solo en entrada a Review y cierre, medido sobre la revisión que ya
-contiene los deltas materializados y los últimos cambios de tests.
-
-### Vínculos contrato↔test (016-001 PC-6) — regla para handoffs
-
-El hogar canónico es `skills/cdad-cycle/references/contract-test-links.md`
-(formato y uso; esta sección solo la cita). El orquestador transmite la regla
-en estos handoffs, por ruta legacy y por paquetes: ruta del registro, contrato
-(path + sha256), regla de delta (`CURRENT − BASE` del mismo ámbito) y
-comprobación aplicable. El test-writer entrega el delta del registro como
-texto; el orquestador lo materializa al re-entry antes de la siguiente
-transición. En entrada a Review y cierre se exige comprobación sobre los
-deltas y tests actuales; en los re-entries intermedios un resultado no cero se
-registra sin convertirse en gate de RED («tests nuevos no comprobados» sin
-baseline).
 
 ### Inventario vivo (013-002 PC-7) — regla para handoffs
 

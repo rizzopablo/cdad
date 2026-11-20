@@ -1,7 +1,7 @@
 # Specification amendment 001 — ambiguous initialization evidence
 
 Status: proposed amendment to `spec.md` §4.2, prepared by the orchestrator under
-Pablo's delegated HITL for epic 019, revised after the first independent review of
+<owner>'s delegated HITL for epic 019, revised after the first independent review of
 this text. Independent review is required before it replaces anything.
 
 ## Problem

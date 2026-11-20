@@ -4,7 +4,7 @@
 
 El dueño respondió: «Apruebo `docs/epics/epic-006-opencode-concurrency/plan.md` y te delego la
 HITL para este ciclo, con el alcance, vencimiento y límites allí definidos. Orquestalo usando CDAD
-hasta completarlo.» (Pablo, 2026-10-16). La marca de aprobación quedó al final de `plan.md`.
+hasta completarlo.» (<owner>, 2026-10-16). La marca de aprobación quedó al final de `plan.md`.
 
 **Delegado:** Claude (sesión de Claude Code en este repo), orquestador del epic.
 
@@ -52,7 +52,7 @@ despliegue y rollback, y deja AC-7 pendiente con dueño y siguiente acción (pla
 
 Que esto elimine los bloqueos **no se demuestra**: queda como observación empírica en la recepción y después (errores de bloqueo, reintentos y tiempos frente al incidente).
 
-**Respuestas del dueño:** «Si, de acuerdo, me parece lo mas confiable como dices: configurado.» (Pablo, 2026-10-16). El dueño evalúa por su lado que OpenChamber use el mismo servicio. Esa topología queda fuera de este ciclo y reservada al dueño.
+**Respuestas del dueño:** «Si, de acuerdo, me parece lo mas confiable como dices: configurado.» (<owner>, 2026-10-16). El dueño evalúa por su lado que OpenChamber use el mismo servicio. Esa topología queda fuera de este ciclo y reservada al dueño.
 
 **Hechos verificados por el orquestador (solo lectura):**
 - `opencode service status` imprime la URL o `stopped` con rc=0 y no arranca nada; lo confirma una prueba con estado aislado;
@@ -119,7 +119,7 @@ Adaptador del repo, proyecto descartable, encargo mínimo de token fijo y store 
 
 ## Enmienda 001 del plan — 2026-10-17
 
-El dueño aprobó agregar la feature 006-002 (delegación por capas): «Ok, confío en tu criterio para eso. adelante» (Pablo, 2026-10-17). Va en el plan, §8. Se abre al cerrar 006-001.
+El dueño aprobó agregar la feature 006-002 (delegación por capas): «Ok, confío en tu criterio para eso. adelante» (<owner>, 2026-10-17). Va en el plan, §8. Se abre al cerrar 006-001.
 
 ## Insumo para 006-002: el orquestador OpenCode del consumidor — 2026-10-17
 
@@ -132,7 +132,7 @@ Lo trajo el dueño. Los puntos se adoptan con las correcciones del orquestador q
 
 ## Enmienda 002 del plan — 2026-10-17
 
-El dueño fijó la dirección: «los modelos no los fije nunca el orquestador ni los scripts… que el instalador sea siempre basic, pero que deje un archivo de configuración para los scripts de delegación» (Pablo, 2026-10-17). El criterio de forma lo delegó antes: «confío en tu criterio». El principio va en 006-002 y se agrega la feature 006-003 (plan §9).
+El dueño fijó la dirección: «los modelos no los fije nunca el orquestador ni los scripts… que el instalador sea siempre basic, pero que deje un archivo de configuración para los scripts de delegación» (<owner>, 2026-10-17). El criterio de forma lo delegó antes: «confío en tu criterio». El principio va en 006-002 y se agrega la feature 006-003 (plan §9).
 
 ## Review formal de 006-001 — disposición (2026-10-17)
 

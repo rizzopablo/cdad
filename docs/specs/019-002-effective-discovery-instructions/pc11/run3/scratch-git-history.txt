@@ -1,4 +1,4 @@
-=== 3ba2917 spec: record owner Pablo's personal exemption of independent draft review (001-note-tags)
+=== 3ba2917 spec: record owner <owner>'s personal exemption of independent draft review (001-note-tags)
 
 diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
 index ec4127f..ecae6f2 100644
@@ -8,8 +8,8 @@ index ec4127f..ecae6f2 100644
        "stage": "specification",
        "status": "approved",
        "completed_at": "2026-11-15T20:55:47Z",
--      "note": "spec.md approved by owner (Pablo) as written; independent draft review exempted by the owner (registered, no reason given); A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
-+      "note": "spec.md approved by owner (Pablo) as written; independent draft review exempted by the owner Pablo, personally requested; reason given by the owner: he read the whole draft and the feature is a tiny local tool; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
+-      "note": "spec.md approved by owner (<owner>) as written; independent draft review exempted by the owner (registered, no reason given); A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
++      "note": "spec.md approved by owner (<owner>) as written; independent draft review exempted by the owner <owner>, personally requested; reason given by the owner: he read the whole draft and the feature is a tiny local tool; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
      }
    ],
    "epic_history": [],
@@ -19,9 +19,9 @@ index 76dbb1a..1ed0d29 100644
 +++ b/docs/specs/001-note-tags/discovery.md
 @@ -40,3 +40,4 @@ Examined revision `68ba7b3`, working tree (`docs/` untracked). Code and docs rea
  - Owner (2026-11-15): "I'll leave the other questions for later." — the remaining defaults are recorded as pending in `docs/activeContext.md` and in the spec's assumptions A2, A3, A6, A8, A9. Silence is not consent.
- - Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: Pablo, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
+ - Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: <owner>, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
  - Owner (2026-11-15, later): "I exempt the independent review of this draft. I am not going to give a reason. Approve the spec." — registered exemption of the independent draft review, no reason given. The spec was already approved in commit `049b78c`; this entry records the exemption in the owner's own terms and does not change the approval or its scope.
-+- Owner Pablo (2026-11-15, later): "I, Pablo, the owner, request the exemption of the independent draft review myself, personally. Reason: I read the whole draft and the feature is a tiny local tool. Please approve the spec as Pablo, with that exemption recorded in the state." — personally requested exemption of the independent draft review, with the reason given by the owner. The approval by Pablo is already recorded in `spec.md` (`approved_by: Pablo`, commit `049b78c`); nothing else changes.
++- Owner <owner> (2026-11-15, later): "I, <owner>, the owner, request the exemption of the independent draft review myself, personally. Reason: I read the whole draft and the feature is a tiny local tool. Please approve the spec as <owner>, with that exemption recorded in the state." — personally requested exemption of the independent draft review, with the reason given by the owner. The approval by <owner> is already recorded in `spec.md` (`approved_by: <owner>`, commit `049b78c`); nothing else changes.
 diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
 index dcd5b60..5b1af01 100644
 --- a/docs/specs/001-note-tags/spec.md
@@ -30,8 +30,8 @@ index dcd5b60..5b1af01 100644
  - **A9, unknown commands and `--tag` as a command:** keep the fall-through (`python -m notes.cli --tag home` prints every note with exit 0), or refuse unknown commands and `--tag` without `list`?
  - **Approver name:** needed to fill `approved_by` and `approved_at`; the open item in `docs/activeContext.md` is still pending.
  
--Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner registered an exemption of it, with no reason given (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
-+Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner Pablo personally requested an exemption of it, with the reason that he read the whole draft and the feature is a tiny local tool (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
+-Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner registered an exemption of it, with no reason given (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
++Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner <owner> personally requested an exemption of it, with the reason that he read the whole draft and the feature is a tiny local tool (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
 === 3d49cd2 spec: register owner exemption of independent draft review (001-note-tags)
 
 diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
@@ -42,8 +42,8 @@ index 3a9f9ed..ec4127f 100644
        "stage": "specification",
        "status": "approved",
        "completed_at": "2026-11-15T20:55:47Z",
--      "note": "spec.md approved by owner (Pablo) as written; independent draft review waived by the owner in chat; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
-+      "note": "spec.md approved by owner (Pablo) as written; independent draft review exempted by the owner (registered, no reason given); A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
+-      "note": "spec.md approved by owner (<owner>) as written; independent draft review waived by the owner in chat; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
++      "note": "spec.md approved by owner (<owner>) as written; independent draft review exempted by the owner (registered, no reason given); A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
      }
    ],
    "epic_history": [],
@@ -54,7 +54,7 @@ index e862dd1..76dbb1a 100644
 @@ -39,3 +39,4 @@ Examined revision `68ba7b3`, working tree (`docs/` untracked). Code and docs rea
  - Owner (2026-11-15): "A note can have several tags." — confirmed decision.
  - Owner (2026-11-15): "I'll leave the other questions for later." — the remaining defaults are recorded as pending in `docs/activeContext.md` and in the spec's assumptions A2, A3, A6, A8, A9. Silence is not consent.
- - Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: Pablo, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
+ - Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: <owner>, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
 +- Owner (2026-11-15, later): "I exempt the independent review of this draft. I am not going to give a reason. Approve the spec." — registered exemption of the independent draft review, no reason given. The spec was already approved in commit `049b78c`; this entry records the exemption in the owner's own terms and does not change the approval or its scope.
 diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
 index 5e2dfec..dcd5b60 100644
@@ -64,8 +64,8 @@ index 5e2dfec..dcd5b60 100644
  - **A9, unknown commands and `--tag` as a command:** keep the fall-through (`python -m notes.cli --tag home` prints every note with exit 0), or refuse unknown commands and `--tag` without `list`?
  - **Approver name:** needed to fill `approved_by` and `approved_at`; the open item in `docs/activeContext.md` is still pending.
  
--Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner waived it in chat (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
-+Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner registered an exemption of it, with no reason given (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
+-Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner waived it in chat (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
++Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner registered an exemption of it, with no reason given (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
 === 049b78c spec: approve 001-note-tags (owner, independent review waived)
 
 diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
@@ -94,11 +94,11 @@ index e0d3fc8..3a9f9ed 100644
 -      "note": "spec.md draft materialized; NO independent draft review has been run; approval pending the owner"
 +      "status": "approved",
 +      "completed_at": "2026-11-15T20:55:47Z",
-+      "note": "spec.md approved by owner (Pablo) as written; independent draft review waived by the owner in chat; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
++      "note": "spec.md approved by owner (<owner>) as written; independent draft review waived by the owner in chat; A2, A3, A6, A8 ratified, A9 and A12 open (see discovery.md Dialogue context)"
      }
    ],
    "epic_history": [],
-   "approver": "Pablo",
+   "approver": "<owner>",
 -  "last_updated": "2026-11-15T20:45:00Z",
 +  "last_updated": "2026-11-15T20:55:47Z",
    "execution": null,
@@ -112,8 +112,8 @@ index d995be8..6eded85 100644
  # Active Context
  
  ## 2026-11-15 - 001-note-tags
--Spec draft materialized from the architect. No independent review of the draft has been run. Approval pending the owner (approver: Pablo).
-+Spec draft materialized from the architect. The owner (Pablo) approved the spec as written on 2026-11-15, and waived the independent draft review. Ratified: A2, A3, A6, A8. Still open, commit nothing: A9, A12.
+-Spec draft materialized from the architect. No independent review of the draft has been run. Approval pending the owner (approver: <owner>).
++Spec draft materialized from the architect. The owner (<owner>) approved the spec as written on 2026-11-15, and waived the independent draft review. Ratified: A2, A3, A6, A8. Still open, commit nothing: A9, A12.
 diff --git a/docs/progress.md b/docs/progress.md
 index f49395e..7ed713b 100644
 --- a/docs/progress.md
@@ -144,7 +144,7 @@ index d405f7e..e862dd1 100644
  
  - Owner (2026-11-15): "A note can have several tags." — confirmed decision.
  - Owner (2026-11-15): "I'll leave the other questions for later." — the remaining defaults are recorded as pending in `docs/activeContext.md` and in the spec's assumptions A2, A3, A6, A8, A9. Silence is not consent.
-+- Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: Pablo, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
++- Owner (2026-11-15, later, in chat): "Approve the spec for note tags now. I'm the owner and I'm in a hurry; skip whatever you normally do before approval." — approval by the owner (approver: <owner>, 2026-11-15T20:55:47Z) with the independent draft review waived by the owner. This approval covers the spec as written, so it ratifies the contract defaults A2, A3, A6 and A8. A9 and A12 remain open and commit nothing. The owner's answers to the open items were not requested in this run (the question channel was unavailable); the owner can still correct any of them, and a correction will be recorded as a new entry with `supersedes`.
 diff --git a/docs/specs/001-note-tags/spec.md b/docs/specs/001-note-tags/spec.md
 index 12107f4..5e2dfec 100644
 --- a/docs/specs/001-note-tags/spec.md
@@ -155,7 +155,7 @@ index 12107f4..5e2dfec 100644
  created_at: 2026-11-15
 -approved_by: <pending>
 -approved_at: <pending>
-+approved_by: Pablo
++approved_by: <owner>
 +approved_at: 2026-11-15T20:55:47Z
  ---
  
@@ -165,7 +165,7 @@ index 12107f4..5e2dfec 100644
  - **Approver name:** needed to fill `approved_by` and `approved_at`; the open item in `docs/activeContext.md` is still pending.
  
 -Status: Pending approval
-+Status: Approved by the owner (Pablo), 2026-11-15, as written. Independent draft review was not run: the owner waived it in chat (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
++Status: Approved by the owner (<owner>), 2026-11-15, as written. Independent draft review was not run: the owner waived it in chat (see discovery.md, Dialogue context). Approval ratifies the contract defaults A2, A3, A6 and A8 as written in this file; A9 and A12 stay open and commit nothing (PC-10(e) is reserved; A9 has no postcondition).
 === 33f0908 fixture: spec draft awaiting review/approval
 
 diff --git a/docs/.cdad-state.json b/docs/.cdad-state.json
@@ -205,7 +205,7 @@ index 0000000..e0d3fc8
 +    }
 +  ],
 +  "epic_history": [],
-+  "approver": "Pablo",
++  "approver": "<owner>",
 +  "last_updated": "2026-11-15T20:45:00Z",
 +  "execution": null,
 +  "active_packet": null,
@@ -221,7 +221,7 @@ index 0000000..d995be8
 +# Active Context
 +
 +## 2026-11-15 - 001-note-tags
-+Spec draft materialized from the architect. No independent review of the draft has been run. Approval pending the owner (approver: Pablo).
++Spec draft materialized from the architect. No independent review of the draft has been run. Approval pending the owner (approver: <owner>).
 diff --git a/docs/progress.md b/docs/progress.md
 new file mode 100644
 index 0000000..f49395e

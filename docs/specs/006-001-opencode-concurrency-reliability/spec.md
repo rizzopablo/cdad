@@ -822,4 +822,4 @@ Aprobada junto con el plan v2, bajo la HITL delegada de epic-006 y por el cambio
   - El intento 2, otro subagente Claude, lo detuvo el orquestador por decisión del dueño: los roles van en OpenCode.
   - La disposición «abandoned» registrada después del intento 1 fue un error del orquestador. El paquete no se abandonó: se reintentó y se entregó.
 
-Status: Approved by Claude orchestrator (HITL delegated by Pablo for epic-006) on 2026-10-16
+Status: Approved by Claude orchestrator (HITL delegated by <owner> for epic-006) on 2026-10-16

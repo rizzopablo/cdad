@@ -2,7 +2,7 @@
 
 > Fase 1 del ciclo de investigación: qué hace Superpowers, qué hacen otros,
 > qué tiene CDAD, qué falta de verdad. Sin tocar código. Decisión cycle vs
-> epic pendiente de la síntesis aprobada por Pablo.
+> epic pendiente de la síntesis aprobada por <owner>.
 
 ## Fuentes revisadas
 
@@ -60,7 +60,7 @@ Protocolo en dos lados del canal:
 5. Persistencia: patrón reutilizable → nota al scribe para systemPatterns
    (no edita el rol receptor inline).
 
-## Decisión de forma (pendiente de Pablo)
+## Decisión de forma (pendiente de <owner>)
 
 Toca ~6 archivos y tiene dos contratos diferenciables (receptor /
 reconsideración-reviewer). Opción A: **cycle standalone** con 1 feature

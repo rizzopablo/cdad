@@ -170,11 +170,11 @@ Never mix: if you started as orchestrator, don't write tests "because it's faste
 
 **Role invariants.** Whatever the mechanism, the §2 limits hold: the test-writer never sees implementation code, the implementer never touches `tests/**`, the reviewer is read-only and runs in a session separate from the implementer's, each role returns its own artifact; only the orchestrator writes the state.
 
-**Receipt — every route ends in the same receipt.** The worker returns its FINAL TEXT; the orchestrator stages the exact bytes under `.cdad/inbox` + `RESULT.json` and runs `receive` → `validate-receipt` → `materialize` → transition. Receiving approves nothing (the receipt stays `semantic_status: pending`).
+**Receipt — every route ends in the same receipt.** The worker returns its FINAL TEXT; the orchestrator stages the exact bytes under `.cdad-execution/inbox` + `RESULT.json` and runs `receive` → `validate-receipt` → `materialize` → transition. Receiving approves nothing (the receipt stays `semantic_status: pending`).
 
 **Packet and re-entry are independent of the transport.** The packet is the same bytes and the re-entry the same protocol on every route: native dispatch, a handoff packet to a new chat, or the external CLI adapter. The transport only moves the text; the Orchestrator materialization protocol (`references/re-entry.md`) is the single end of every route.
 
-**Context discipline (pointer).** The orchestrator agent's directive section owns the four compact context rules — orient first with the compact `status` view (owner: `references/orientation.md` §1), rotate the session at task boundaries, no self-repair (re-dispatch the role naming the defect), and stable workspace paths for what must last, leave evidence or be read by another process or role (`.cdad/inbox` for the receipt); cited here, not restated.
+**Context discipline (pointer).** The orchestrator agent's directive section owns the four compact context rules — orient first with the compact `status` view (owner: `references/orientation.md` §1), rotate the session at task boundaries, no self-repair (re-dispatch the role naming the defect), and stable workspace paths for what must last, leave evidence or be read by another process or role (`.cdad-execution/inbox` for the receipt); cited here, not restated.
 
 ### 5. Artifact materialization and commit rule
 

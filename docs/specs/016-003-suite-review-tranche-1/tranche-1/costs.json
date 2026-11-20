@@ -380,7 +380,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -1356,7 +1356,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -1485,7 +1485,7 @@
    "duration_s": 353.6
   },
   {
-   "session": "<session>_cierre",
+   "session": "ses_orquestador_cierre",
    "role": "orchestrator",
    "scope": "cierre del tramo: verificación, costo y decisión",
    "nodeids": [
@@ -1776,7 +1776,7 @@
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[policy-mismatch]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_preserves_existing_derivation_guards[second-destination-directory]",
     "tests/test_007_006_withdraw_and_republish.py::test_republish_agents_repairs_project_drift_without_cycle_changes",
-    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_expo<session>_drift_resolution",
+    "tests/test_007_006_withdraw_and_republish.py::test_status_preserves_prepared_situation_and_exposes_independent_drift_resolution",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_and_republish_respect_suspended_units",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_closes_current_begin_without_fabricating_delivery",
     "tests/test_007_006_withdraw_and_republish.py::test_withdraw_handles_absent_foreign_and_invalid_continuity[absent-head]",
@@ -2066,7 +2066,7 @@
   "commands_s": 41.44,
   "sessions": 22,
   "commands_measured": "31 comandos del bloque de cierre con duración observada; los comandos de los lotes de auditoría no se midieron individualmente y no se computan como cero",
-  "commands_note": "el bloque de cierre (<session>_cierre) conserva sus comandos y duraciones: es la única fuente de commands_s",
+  "commands_note": "el bloque de cierre (ses_orquestador_cierre) conserva sus comandos y duraciones: es la única fuente de commands_s",
   "audit_activities": 17,
   "aggregated_note": "aggregated_s es la unión de intervalos (sin doble conteo); sessions_sum_s es la suma cruda de sesiones"
  },

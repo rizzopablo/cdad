@@ -1,9 +1,9 @@
 # Deployment record — 019-004
 
-Authorized by Pablo on 2026-11-17 (“despliega localmente”), independently of the
+Authorized by <owner> on 2026-11-17 (“despliega localmente”), independently of the
 feature closure, which stands on the isolated-HOME evidence.
 
-- Backup: `~/clawd/archive/cdad-deploy-019-004-20261117-094730`
+- Backup: `~/<workspace>/archive/cdad-deploy-019-004-20261117-094730`
   (installed agents, skill trees and manifest, plus the model records before).
 - Ten opencode agent conflicts were resolved with `agent-overlay.py merge`, so the
   staged bodies were installed while the configured `model:` lines survived.

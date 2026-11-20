@@ -55,6 +55,8 @@ error de import).
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import json
 import subprocess
 import sys
@@ -76,7 +78,7 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-CONTINUITY_DIR_REL = f".cdad/executions/{EXEC_ID}/continuity"
+CONTINUITY_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 STATE_REL = "docs/.cdad-state.json"
 
@@ -165,6 +167,7 @@ class ReviewFixProjectCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
 
     # -- construcción del proyecto fixture -----------------------------
 

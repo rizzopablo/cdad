@@ -515,7 +515,7 @@ class _Project:
             assert self.packet_id and self.execution_id, (
                 f"precondición (fixture {name}): paquete y ejecución activos: "
                 f"{state!r}")
-            self.ctx = (self.root / ".cdad" / "executions" / self.execution_id
+            self.ctx = (self.root / ".cdad-execution" / "executions" / self.execution_id
                         / "execution.json")
             self._update_count = 0
 
@@ -626,7 +626,7 @@ class _Project:
 
     def write_observation(self, *, session: str = FIXTURE_SESSION,
                           name: str = "observation.json") -> Path:
-        path = self.root / ".cdad" / "inbox" / name
+        path = self.root / ".cdad-execution" / "inbox" / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({
             "runtime": "demo-runtime",
@@ -691,7 +691,7 @@ class _Project:
                 "started_at": "fixture (007-003)",
             },
         }
-        path = (self.root / ".cdad" / "executions" / self.execution_id
+        path = (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "dispatches" / f"{attempt_id}.json")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
@@ -701,7 +701,7 @@ class _Project:
 
     def stage_result(self, *, part_content: bytes = b"# role report (fixture)\n",
                      name: str = "role-report.md") -> Path:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         part = inbox / name
         part.write_bytes(part_content)
@@ -722,13 +722,13 @@ class _Project:
             "parts": [{
                 "name": "role-report",
                 "artifact_kind": "test-writer-role-report",
-                "staged_path": f".cdad/inbox/{name}",
+                "staged_path": f".cdad-execution/inbox/{name}",
             }],
             "observed_changes": {
                 "observation_status": "trusted",
                 "baseline_ref": "demo-baseline",
                 "baseline_sha256": "0" * 64,
-                "manifest_path": ".cdad/inbox/changes.json",
+                "manifest_path": ".cdad-execution/inbox/changes.json",
             },
             "run_evidence_ref": None,
         }, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
@@ -797,7 +797,7 @@ class _Project:
         return (self.root / STATE_REL).read_bytes()
 
     def continuity_dir(self) -> Path:
-        return (self.root / ".cdad" / "executions" / self.execution_id
+        return (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "continuity")
 
     def head_path(self) -> Path:
@@ -910,7 +910,7 @@ class _Project:
         return links[0]
 
     def receipt_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results" / self.execution_id
+        return (self.root / ".cdad-execution" / "runtime" / "results" / self.execution_id
                 / self.packet_id)
 
     def receipt_path(self) -> Path:
@@ -926,10 +926,10 @@ class _Project:
         return files_under(self.receipt_dir() / "parts")
 
     def inbox_files(self) -> dict[str, bytes]:
-        return files_under(self.root / ".cdad" / "inbox")
+        return files_under(self.root / ".cdad-execution" / "inbox")
 
     def packet_dir(self) -> Path:
-        return self.root / ".cdad" / "packets" / self.packet_id
+        return self.root / ".cdad-execution" / "packets" / self.packet_id
 
     def request_path(self) -> Path:
         return self.packet_dir() / "REQUEST.json"
@@ -943,7 +943,7 @@ class _Project:
             encoding="utf-8")
 
     def dispatch_files(self) -> list[str]:
-        base = (self.root / ".cdad" / "executions" / self.execution_id
+        base = (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "dispatches")
         if not base.is_dir():
             return []
@@ -1188,7 +1188,7 @@ def _transport_rejected(stage: _Stage, fx: _Project, label: str, call,
     assert fx.state_bytes() == before_state, (
         f"{label}: PC-01/INV-2 — el rechazo modificó {STATE_REL}")
     assert fx.inbox_files() == before_inbox, (
-        f"{label}: PC-01 — el rechazo escribió staging en `.cdad/inbox`")
+        f"{label}: PC-01 — el rechazo escribió staging en `.cdad-execution/inbox`")
     assert fx.continuity_files() == before_continuity, (
         f"{label}: PC-01 — el rechazo escribió continuidad")
 
@@ -1947,7 +1947,7 @@ def test_external_durable_receipt_uses_common_continuity_close(
 
 
 def _continuity_prefix(fx: _Project) -> str:
-    return f".cdad/executions/{fx.execution_id}/continuity/"
+    return f".cdad-execution/executions/{fx.execution_id}/continuity/"
 
 
 def _assert_only_continuity_changed(fx: _Project, before: dict,
@@ -2256,7 +2256,7 @@ def test_repair_preserves_history_and_invalidates_evidence_explicitly(
     def equivalent_paths() -> None:
         fx, _, _ = closed_project(tmp_path, "paths")
         before = fx.continuity_files()
-        dotdot = (fx.root / "docs" / ".." / ".cdad" / "runtime" / "results"
+        dotdot = (fx.root / "docs" / ".." / ".cdad-execution" / "runtime" / "results"
                   / fx.execution_id / fx.packet_id / RECEIPT_NAME)
         link = fx.root / "docs" / "receipt-link.json"
         link.parent.mkdir(parents=True, exist_ok=True)

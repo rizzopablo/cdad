@@ -72,6 +72,8 @@ importa el módulo del CLI y `jsonschema` se importa perezosamente.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -96,16 +98,16 @@ AUTHORITY_REF = "docs/epics/epic-003-context-efficiency/execution.md"
 
 CLI_TIMEOUT_S = 120
 
-EXEC_DIR_REL = f".cdad/executions/{EXEC_ID}"
+EXEC_DIR_REL = f".cdad-execution/executions/{EXEC_ID}"
 CONTINUITY_DIR_REL = f"{EXEC_DIR_REL}/continuity"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 BODIES_DIR_REL = f"{CONTINUITY_DIR_REL}/bodies"
 DISPATCH_REL = f"{EXEC_DIR_REL}/dispatches/attempt-1.json"
-RESULTS_DIR_REL = f".cdad/runtime/results/{EXEC_ID}/{PACKET_ID}"
+RESULTS_DIR_REL = f".cdad-execution/runtime/results/{EXEC_ID}/{PACKET_ID}"
 RECEIPT_REL = f"{RESULTS_DIR_REL}/receipt.json"
 PART_REL = f"{RESULTS_DIR_REL}/parts/role-report.utf8"
 BUNDLE_REL = f"{RESULTS_DIR_REL}/bundle.json"
-MAT_DIR_REL = f".cdad/runtime/materializations/{EXEC_ID}/{PACKET_ID}"
+MAT_DIR_REL = f".cdad-execution/runtime/materializations/{EXEC_ID}/{PACKET_ID}"
 AUTH_SHA = "0" * 64  # nombre del journal de materialización (SIMULACIÓN)
 MAT_REL = f"{MAT_DIR_REL}/{AUTH_SHA}.json"
 STATE_REL = "docs/.cdad-state.json"
@@ -194,6 +196,7 @@ class ReviewFixCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
         # 019-004 (spec §4.2, PC-02/PC-04): este fixture siembra registros
         # `.cdad/` (despacho, receipt) sin ningún layout admitido; bajo el
         # contrato nuevo eso es evidencia insuficiente y el layout es AMBIGUO,

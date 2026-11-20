@@ -91,7 +91,7 @@ class AcceptanceCase(AdapterCase):
         clasificación justificada; cada unidad aserte luego sobre qué
         clasificación espera y lo que NUNCA puede hacer."""
         exec_context = (
-            self.root / ".cdad" / "executions" / self.execution_id
+            self.root / ".cdad-execution" / "executions" / self.execution_id
             / "execution.json")
         self.assertTrue(
             exec_context.is_file(),

@@ -1,6 +1,6 @@
 # Acceptance record — 019-001 operating design
 
-Date: 2026-11-15. Accepted by: the CDAD orchestrator, under Pablo's delegation
+Date: 2026-11-15. Accepted by: the CDAD orchestrator, under <owner>'s delegation
 for epic 019 (`docs/epics/epic-019-discovery-dialogue/execution.md:8-14`),
 inside the epic, without publication or deployment.
 

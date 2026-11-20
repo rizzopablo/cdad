@@ -112,7 +112,7 @@ they are read from the **published packet** (PD-3).
 ```
 
 - `attempt` is the identity of the dispatch attempt and matches the record
-  `.cdad/executions/<execution-id>/dispatches/<attempt>.json`.
+  `.cdad-execution/executions/<execution-id>/dispatches/<attempt>.json`.
 - `session` is the identity of the role session when the adapter reports one;
   otherwise `null` (honest unknown).
 - `termination` is the cause of termination (vocabulary below).

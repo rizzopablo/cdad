@@ -280,7 +280,7 @@ class _Fixture:
         return tree_snapshot(self.root)
 
     def contexts(self) -> dict[str, dict]:
-        """Los contextos v2 publicados bajo `.cdad/executions` (oráculo de
+        """Los contextos v2 publicados bajo `.cdad-execution/executions` (oráculo de
         contenido: el directorio de ejecuciones no debe crecer)."""
         return v2_execution_docs(self.root)
 
@@ -309,8 +309,8 @@ def test_pd16_new_execution_with_open_unused_context_is_rejected_naming_it(
     (el que creó `open-unit`) y SIN USO —sin paquetes publicados con su
     `execution_id` y sin registros de despacho—, `prepare --new-execution …`
     → rc=2, marcador `state incoherent`, diagnóstico que NOMBRA el contexto ya
-    abierto (`.cdad/executions/<exec-id>/execution.json`) y CÓMO SEGUIR; y NO
-    acuña un segundo id: el directorio `.cdad/executions/` no crece y el state
+    abierto (`.cdad-execution/executions/<exec-id>/execution.json`) y CÓMO SEGUIR; y NO
+    acuña un segundo id: el directorio `.cdad-execution/executions/` no crece y el state
     (y el árbol, INV-7) quedan byte a byte idénticos. `validate-state` rc=0
     antes y después (PD-17).
 
@@ -324,14 +324,14 @@ def test_pd16_new_execution_with_open_unused_context_is_rejected_naming_it(
     """
     state = open_context.read_state()
     open_exec = state["execution"]["id"]
-    context_rel = f".cdad/executions/{open_exec}/execution.json"
+    context_rel = f".cdad-execution/executions/{open_exec}/execution.json"
 
     # Precondiciones del fixture (comportamiento existente): contexto abierto…
     assert (open_context.root / context_rel).is_file(), (
         f"precondición (fixture): el contexto abierto debe existir en disco "
         f"({context_rel})")
     # …y SIN USO: sin despachos, sin paquete activo ni paquete publicado.
-    assert not (open_context.root / ".cdad" / "executions" / open_exec
+    assert not (open_context.root / ".cdad-execution" / "executions" / open_exec
                 / "dispatches").exists(), (
         "precondición (fixture): el contexto abierto está SIN USO (sin "
         "registros de despacho)")
@@ -371,7 +371,7 @@ def test_pd16_new_execution_with_open_unused_context_is_rejected_naming_it(
     )
     assert open_context.contexts() == contexts_before, (
         "PD-16 violada (RECHAZO): el rechazo NO debe acuñar un segundo id "
-        f"(`.cdad/executions/` no debe crecer): antes "
+        f"(`.cdad-execution/executions/` no debe crecer): antes "
         f"{sorted(contexts_before)}, después "
         f"{sorted(open_context.contexts())}"
     )

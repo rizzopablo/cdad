@@ -2,7 +2,7 @@
 
 **Epic:** `epic-015-dispatch-reception` — orden 1/2. **Cerrada:** 2026-11-02.
 **Contrato:** `docs/specs/015-001-frozen-reception/spec.md`, sha256
-`f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce`, aprobado por Pablo (HITL delegada; D1+D2 aprobados expresamente).
+`f0493229b569775143643c452c0939082b3c1868f378f0de7e9298baa9fb63ce`, aprobado por <owner> (HITL delegada; D1+D2 aprobados expresamente).
 **Estado:** cerrada en el repositorio; **no publicada ni desplegada**.
 
 ## 1. Resultado

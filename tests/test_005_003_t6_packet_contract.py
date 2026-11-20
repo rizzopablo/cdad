@@ -321,7 +321,7 @@ class _Fixture:
         )
 
     def packet_dirs(self) -> list[Path]:
-        base = self.root / ".cdad" / "packets"
+        base = self.root / ".cdad-execution" / "packets"
         if not base.is_dir():
             return []
         return sorted(d for d in base.iterdir() if d.is_dir())
@@ -349,7 +349,7 @@ class _Fixture:
         return path.read_text(encoding="utf-8")
 
     def execution_context(self) -> Path:
-        base = self.root / ".cdad" / "executions"
+        base = self.root / ".cdad-execution" / "executions"
         docs = sorted(base.glob("*/execution.json")) if base.is_dir() else []
         assert docs, "fixture: no hay contexto de ejecución v2 publicado"
         return docs[0]

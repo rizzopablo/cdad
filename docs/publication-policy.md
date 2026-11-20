@@ -113,3 +113,39 @@ aislada existente y produjo los resultados anteriores, sin modificar HOME
 global, tests o código. Los logs están fuera del árbol publicado. Esta nota
 es la única modificación documental posterior a aquel árbol preflight;
 la equivalencia final y el hash publicado se registran localmente tras el push.
+
+## Publicación 2026-11-18 — epic 019
+
+Publicada con el procedimiento vigente: base remota `7ea73877`, commit squash único
+`2c6e9e9a` (`publish/019`), fast-forward verificado con `ls-remote`; sin force push.
+Saneamiento del árbol completo: rutas de HOME → `<repo>`/`~`, ids de sesión → `<session>`,
+email personal → `<owner-email>`; re-escaneo sin hallazgos nuevos. Detalle local:
+`.cdad/publication/publish-2026-11-18.md`. `main` local conserva su historial y diverge
+del remoto por diseño.
+
+## Regla de anonimización del árbol publicado (permanente, 2026-11-19)
+
+Cada publicación sanea el árbol completo, no solo el delta. Fuera de un crédito
+de autoría no queda ningún nombre ni identificador del dueño: nombre completo,
+nombre de pila, handle, rutas locales del workspace, ids de sesión, hosts,
+cuentas y correo. Se reemplazan por marcadores estables: `<owner>`,
+`<workspace>`, `<repo>`, `<session>`, `<owner-email>`.
+
+Los créditos de autoría son la única excepción y el único lugar donde el nombre
+del dueño y su handle pueden aparecer: `LICENSE`, cabeceras SPDX y metadatos de
+autoría. La lista concreta de cadenas permitidas y el detalle de cada saneamiento
+viven fuera del árbol publicado (`.cdad-execution/publication/`), para que la
+regla no reintroduzca lo que prohíbe. Una URL que identifica el repositorio
+público no es un crédito: se conserva solo cuando el documento describe dónde se
+publica el proyecto.
+
+## Publicación 2026-11-19 — 020-001
+
+Publicada con el procedimiento vigente: base remota `2c6e9e9a`, commit squash
+único, fast-forward verificado con `ls-remote`; sin force push. Saneamiento del
+árbol completo según la regla permanente: nombres y handle del dueño → `<owner>`,
+workspace → `<workspace>`, rutas de HOME → `<repo>`/`~`, ids de sesión →
+`<session>` y correo personal → `<owner-email>`; `make validate` con el conjunto
+local de patrones sensibles rc=0, instalación aislada y `--check` PASS. La URL
+del repositorio público se conserva en los dos documentos que describen dónde se
+publica el proyecto. Detalle local: `.cdad-execution/publication/publish-2026-11-19.md`.

@@ -1,6 +1,6 @@
 # Policy decision — classify existing methodology guide
 
-The CDAD orchestrator, acting under Pablo's recorded HITL delegation for epic
+The CDAD orchestrator, acting under <owner>'s recorded HITL delegation for epic
 019, authorizes adding the existing root document `CDAD_metodologia.md` to the
 project policy's exact `documentation_files` list. The approved epic's accepted
 activation map already requires reconciling this guide; this decision enables

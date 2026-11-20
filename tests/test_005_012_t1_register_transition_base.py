@@ -144,6 +144,7 @@ from pathlib import Path
 
 import pytest
 
+from _layout_support import OPERATIONAL_DIR, write_declaration
 from test_004_002_t2_bootstrap import (
     prepare_args,
     read_state,
@@ -166,7 +167,7 @@ AUTHORITY_REF = f"docs/epics/{EPIC_ID}/execution.md"
 CONTRACT_FILE = f"docs/specs/{FEATURE_ID}/spec.md"
 CONTRACT_BYTES = b"# Spec fixture (demo-100 transition registration)\n"
 APPROVER = "Demo Approver"
-ARTIFACT_REL = ".cdad/local/artifact-demo.md"
+ARTIFACT_REL = f"{OPERATIONAL_DIR}/local/artifact-demo.md"
 ARTIFACT_BYTES = b"# Artifact fixture (demo-100)\n"
 
 # Tokens y valores declarados por el contrato.
@@ -252,6 +253,7 @@ class _Fixture:
         (self.root / "tests").mkdir(exist_ok=True)
         (self.root / "src").mkdir(exist_ok=True)
         (self.root / "docs").mkdir(exist_ok=True)
+        write_declaration(self.root)
         (self.root / POLICY_REL).write_text(
             json.dumps({
                 "schema_version": 1,
@@ -260,7 +262,7 @@ class _Fixture:
                     "implementation_roots": ["src", "lib"],
                     "documentation_roots": ["docs"],
                 },
-                "temporary_roots": [".cdad/tmp"],
+                "temporary_roots": [f"{OPERATIONAL_DIR}/tmp"],
             }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (self.root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
         (self.root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -340,7 +342,7 @@ class _Fixture:
             "`dispatched`")
 
     def _receive(self) -> None:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / OPERATIONAL_DIR / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / "role-report.md").write_bytes(
             b"# Role report (fixture demo-100)\nEvidencia mecanica del intento.\n")
@@ -360,22 +362,22 @@ class _Fixture:
             "parts": [{
                 "name": "role-report",
                 "artifact_kind": "test-writer-role-report",
-                "staged_path": ".cdad/inbox/role-report.md",
+                "staged_path": f"{OPERATIONAL_DIR}/inbox/role-report.md",
             }],
             "observed_changes": {
                 "observation_status": "trusted",
                 "baseline_ref": "demo-baseline",
                 "baseline_sha256": "0" * 64,
-                "manifest_path": ".cdad/inbox/changes.json",
+                "manifest_path": f"{OPERATIONAL_DIR}/inbox/changes.json",
             },
             "run_evidence_ref": None,
         }, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-        packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+        packet_dir = self.root / OPERATIONAL_DIR / "packets" / self.packet_id
         proc = self.run_result(
             "receive",
             "--project-root", str(self.root),
             "--execution-context",
-            str(self.root / ".cdad" / "executions" / self.execution_id
+            str(self.root / OPERATIONAL_DIR / "executions" / self.execution_id
                 / "execution.json"),
             "--packet", str(packet_dir / "PACKET.md"),
             "--request", str(packet_dir / "REQUEST.json"),
@@ -436,7 +438,7 @@ class _Fixture:
         return (self.root / STATE_REL).read_bytes()
 
     def receipt_path(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / OPERATIONAL_DIR / "runtime" / "results"
                 / self.execution_id / self.packet_id / RECEIPT_NAME)
 
 
@@ -657,7 +659,7 @@ def test_pd3_artifact_absent_or_divergent_digest_fails_closed(
     RED hoy: rc=2 por error de uso → fallan las aserciones del marcador, en
     cada variante.
     """
-    absent = ready.root / ".cdad" / "local" / "absent-demo.md"
+    absent = ready.root / OPERATIONAL_DIR / "local" / "absent-demo.md"
     divergent = f"{ready.artifact}={'0' * 64}"
     variants = (
         ("ruta ausente", str(absent)),

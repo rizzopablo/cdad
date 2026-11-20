@@ -2,7 +2,7 @@
 
 # 010-001 — Contratos documentales compartidos
 
-**Estado:** borrador para aprobación de Pablo.  
+**Estado:** borrador para aprobación de <owner>.  
 **Épica:** `epic-010-documentary-specialization`.  
 **Dependencias:** `010-000`, `010-004`.
 
@@ -163,7 +163,7 @@ La modificación del contrato del implementer sustituye la restricción exclusiv
 
 - **PC-11.** Prescribe contrastar afirmaciones con sus fuentes, buscando respaldo insuficiente, contradicciones omitidas y referencias que existen pero no sostienen lo afirmado. La revisión declara su alcance real; no promete detección infalible.
 
-- **PC-12.** Prescribe que la aceptación funcional corresponda a Pablo, con las verificaciones comprometidas realizadas y sin pendientes que impidan acreditar el contrato. Los pendientes admisibles permanecen visibles.
+- **PC-12.** Prescribe que la aceptación funcional corresponda a <owner>, con las verificaciones comprometidas realizadas y sin pendientes que impidan acreditar el contrato. Los pendientes admisibles permanecen visibles.
 
 **Verificación:** revisión independiente de las obligaciones y de sus límites explícitos. Esta feature no sustituye el ensayo semántico del piloto.
 
@@ -187,7 +187,7 @@ La modificación del contrato del implementer sustituye la restricción exclusiv
 - **INV-04:** architect y reviewer siguen read-only; el test-writer no deriva su oráculo del producto producido.
 - **INV-05:** una propuesta, contradicción o ausencia de evidencia no se transforma silenciosamente en hecho.
 - **INV-06:** estructura válida no equivale a fidelidad semántica ni a aceptación funcional.
-- **INV-07:** las aprobaciones y la aceptación funcional permanecen en Pablo; la materialización conserva el contrato vigente.
+- **INV-07:** las aprobaciones y la aceptación funcional permanecen en <owner>; la materialización conserva el contrato vigente.
 - **INV-08:** una obligación textual o un paquete no se presenta como sandbox ni como prueba de ausencia de escrituras transitorias.
 
 ## 5. Criterios de aceptación medibles
@@ -200,7 +200,7 @@ La modificación del contrato del implementer sustituye la restricción exclusiv
 6. Los bloques estáticos cumplen el techo vigente, sin elevarlo para acomodar este cambio.
 7. Las pruebas focalizadas y regresiones pertinentes pasan. La suite completa se ejecuta una vez por quien cierre la tarea, conforme a la política vigente.
 8. La revisión independiente informa hallazgos y abstenciones; las discrepancias que impidan cumplir el contrato se resuelven antes de solicitar aceptación.
-9. Pablo aprueba explícitamente spec y plan antes de implementación, y decide la aceptación funcional al cierre.
+9. <owner> aprueba explícitamente spec y plan antes de implementación, y decide la aceptación funcional al cierre.
 
 Las pruebas se agrupan por promesa observable. No se exige una prueba por postcondición ni una cuota de variantes equivalentes.
 
@@ -252,7 +252,7 @@ Las pruebas se agrupan por promesa observable. No se exige una prueba por postco
 
 # Plan — 010-001 Contratos documentales compartidos
 
-**Estado:** borrador; pendiente de aprobación de Pablo.  
+**Estado:** borrador; pendiente de aprobación de <owner>.  
 **Contrato:** `docs/specs/010-001-documentary-contracts/spec.md`.
 
 ## Objetivo y fronteras
@@ -274,7 +274,7 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
 
 ## T1 — Aprobación y materialización
 
-**Responsables:** Pablo y orquestador.
+**Responsables:** <owner> y orquestador.
 
 1. Solicitar aprobación explícita de spec y plan, incluidas D1–D4.
 2. Materializar los documentos sin registrar aprobación inexistente.
@@ -282,7 +282,7 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
 
 **Verificación:**
 
-- Aprobación recuperable de Pablo.
+- Aprobación recuperable de <owner>.
 - Contrato materializado coherente con el texto aprobado.
 - Paquetes válidos y alcances delimitados.
 - Ningún permiso amplio sobre `docs/**` sustituye la identificación del producto.
@@ -413,11 +413,11 @@ Las correcciones vuelven al rol competente. El implementer no modifica verificad
 
 ## T6 — Cierre y Memory Bank
 
-**Responsables:** quien cierre la tarea, Pablo, scribe y orquestador, cada uno dentro de su función.
+**Responsables:** quien cierre la tarea, <owner>, scribe y orquestador, cada uno dentro de su función.
 
 1. Ejecutar una vez la suite completa declarada para el cierre, conforme a la política vigente.
 2. Consolidar evidencia automática y revisión independiente por separado.
-3. Solicitar aceptación funcional de Pablo.
+3. Solicitar aceptación funcional de <owner>.
 4. Despachar al scribe para los borradores de Memory Bank, conservando `deferred-hardening`.
 5. Materializar y registrar únicamente conforme a las aprobaciones obtenidas.
 
@@ -426,7 +426,7 @@ Las correcciones vuelven al rol competente. El implementer no modifica verificad
 - Suite completa y comandos/resultados registrados.
 - Ninguna postcondición comprometida sin acreditar.
 - Pendientes admisibles visibles y justificados.
-- Aceptación recuperable de Pablo.
+- Aceptación recuperable de <owner>.
 - Borradores de Memory Bank aprobados antes de su incorporación.
 - Sin push ni publicación externa.
 

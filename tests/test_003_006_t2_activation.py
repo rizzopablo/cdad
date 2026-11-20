@@ -281,7 +281,7 @@ def test_p2_outputs_links_and_opencode_jsonc(workspace):
 
 
 def test_p3_activation_registry(workspace):
-    """Registro `.cdad/activation.json`: adopted_root, sha del manifest de A y,
+    """Registro `.cdad-execution/activation.json`: adopted_root, sha del manifest de A y,
     por cada ruta emitida, su sha256 (archivo) o su destino (enlace)."""
     a, r, home = workspace
     res = run_activate(r, a, home=home)
@@ -289,8 +289,8 @@ def test_p3_activation_registry(workspace):
         f"rc={res.returncode}\nstdout: {res.stdout}\nstderr: {res.stderr}"
     )
 
-    reg_path = r / ".cdad" / "activation.json"
-    assert reg_path.is_file(), "debe registrarse .cdad/activation.json"
+    reg_path = r / ".cdad-execution" / "activation.json"
+    assert reg_path.is_file(), "debe registrarse .cdad-execution/activation.json"
     raw = reg_path.read_text()
     manifest_sha = _sha256_bytes((a / ".cdad-install-manifest.json").read_bytes())
     opencode_sha = _sha256_bytes((r / ".opencode" / "opencode.jsonc").read_bytes())
@@ -407,7 +407,7 @@ def test_r5_repoint_replaces_own_and_prunes(workspace):
     )
     assert not (r / ".agents" / "skills" / "cdad-epic").exists()
     assert (r / ".claude" / "skills" / "cdad-cycle").is_symlink()
-    reg = json.loads((r / ".cdad" / "activation.json").read_text())
+    reg = json.loads((r / ".cdad-execution" / "activation.json").read_text())
     assert reg.get("adopted_root") == str(a2), "el registro queda apuntando a A2"
 
 
@@ -470,8 +470,14 @@ def test_p3_zero_home_writes(workspace):
 
 def test_p3_gitignore_covers_runtime_dirs():
     """P3: el .gitignore REAL del repo ignora .opencode/, .claude/ y .agents/
-    (y .cdad/), verificado con git check-ignore."""
-    for d in (".opencode/", ".claude/", ".agents/", ".cdad/"):
+    (y .cdad/ legado y la entrada anclada a la raíz /.cdad-execution/),
+    verificado con git check-ignore y con la línea anclada en .gitignore."""
+    gitignore_lines = (REPO_ROOT / ".gitignore").read_text().splitlines()
+    assert "/.cdad-execution/" in gitignore_lines, (
+        "P3/PC-1: el .gitignore debe ignorar el directorio operacional "
+        "declarado con una entrada anclada a la raíz (/.cdad-execution/)"
+    )
+    for d in (".opencode/", ".claude/", ".agents/", ".cdad/", ".cdad-execution/"):
         res = subprocess.run(
             ["git", "check-ignore", "-q", d],
             cwd=REPO_ROOT,

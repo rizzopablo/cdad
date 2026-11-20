@@ -2,12 +2,12 @@
 
 - **Status**: Accepted
 - **Date**: 2026-10-18
-- **Deciders**: Pablo (dueño: fijó el **principio de capas** y aprobó las enmiendas 001/002 al plan §8/§9 y
+- **Deciders**: <owner> (dueño: fijó el **principio de capas** y aprobó las enmiendas 001/002 al plan §8/§9 y
   las dos enmiendas sobre `/tmp`) + orquestador Claude (HITL delegada de epic-006: aprobó spec y plan,
   condujo la corrida de aceptación y la suite de cierre) + architect (spec/plan) + scribe (borrador; **no
   aprueba**)
 - **Confidence**: Media
-- **Aprobación**: aprobado por Pablo el 2026-10-18 (Memory Bank de 006-002), a partir del borrador del scribe (patrón Scribe; ADR-003/ADR-011). **Evidencia disponible para la decisión:** contrato
+- **Aprobación**: aprobado por <owner> el 2026-10-18 (Memory Bank de 006-002), a partir del borrador del scribe (patrón Scribe; ADR-003/ADR-011). **Evidencia disponible para la decisión:** contrato
   `docs/specs/006-002-delegation-by-layer/spec.md` (PD-1..PD-11, INV-1..INV-8, D-1..D-7; aprobado el
   2026-10-17 bajo la HITL delegada del epic, con **enmiendas 001/002** aprobadas por el dueño) y `plan.md`
   (A-1, A-2); RED→GREEN por unidad (U1 `a2db8f8`→`51ab88d`; U2 `4e17dcc`→`8cf2d75`; U3 `2665d55`→`5ad04e2`

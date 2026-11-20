@@ -15,8 +15,12 @@ doctrina -> especializacion Odoo -> ``close --all`` (la unica corrida de
 pytest de la corrida entera, solo bajo autorizacion expresa; sin ella se registra no realizada). Herramienta de corrida completa, no gate focal; su omision nunca es verde.
 
 Evidencia (D8/D10): una raiz nueva por invocacion bajo la base de evidencia
-(default ``.cdad/local``), con ``gate.json`` (esquema 1) y
-``suite-report.md``. Toda corrida deja ``gate.json``, incluso cuando falla
+(default ``<operational_dir>/local`` del proyecto, 020-001 PC-1). Un proyecto no
+migrado o cuyo layout no resuelve NO recibe base por defecto: el gate se detiene
+con la guia de migracion (``layout-migration.md``) antes de reservar nada
+(PC-1/PC-2). ``.cdad/local`` solo se usa si el modulo ``cdad_layout`` no puede
+importarse (ninguna resolucion de layout es posible), con ``gate.json``
+(esquema 1) y ``suite-report.md``. Toda corrida deja ``gate.json``, incluso cuando falla
 antes de llegar a ``close`` (PC-7): la raiz se reserva antes de resolver la
 base.
 
@@ -53,9 +57,24 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# 020-001: the project layout is resolved by its single owner
+# (`skills/cdad-cycle/scripts/cdad_layout.py`), never re-derived here.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_RESOLVER_DIR = _SCRIPT_DIR.parent / "skills" / "cdad-cycle" / "scripts"
+if _RESOLVER_DIR.is_dir() and str(_RESOLVER_DIR) not in sys.path:
+    sys.path.insert(0, str(_RESOLVER_DIR))
+try:
+    import cdad_layout  # noqa: E402
+except ImportError:  # pragma: no cover - the resolver always travels with the repo
+    cdad_layout = None
+
 SCHEMA_VERSION = 1
 TOOL = "cdad-ci-gate"
-DEFAULT_EVIDENCE_ROOT = ".cdad/local"
+# Base de evidencia legada. Solo se usa si ``cdad_layout`` no puede importarse
+# (sin resolucion de layout posible). Un layout no resoluble NUNCA cae aqui: se
+# detiene con la guia de migracion (PC-1/PC-2); nunca se recrea la raiz legacy
+# ``.cdad/`` para escribir evidencia.
+LEGACY_EVIDENCE_ROOT = ".cdad/local"
 
 GATE_NAMES = ("validate-state", "surface", "doctrine",
               "odoo-specialization", "close")
@@ -128,6 +147,24 @@ def one_line(text) -> str:
 
 
 # ------------------------------------------------------------------ evidencia
+
+
+def default_evidence_root(repo_root: Path) -> str:
+    """Base de evidencia por defecto (020-001 PC-1).
+
+    El ``operational_dir`` declarado (o su default ``.cdad-execution`` si el
+    proyecto aun no tiene declaracion) mas ``local``. Es la unica lectura del
+    layout que hace el gate.
+
+    Un layout no resoluble (``LayoutError``, incluido ``MigrationRequiredError``)
+    se propaga sin fallback: ``main()`` se detiene antes de reservar evidencia
+    (PC-2). Solo si ``cdad_layout`` no puede importarse, no hay resolucion de
+    layout posible y se conserva el legado ``.cdad/local``.
+    """
+    if cdad_layout is None:
+        return LEGACY_EVIDENCE_ROOT
+    operational = cdad_layout.operational_dir(repo_root)
+    return str(repo_root / operational / "local")
 
 
 def reserve_run_root(evidence_root: Path) -> Path:
@@ -816,9 +853,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default=None,
                         help="checkout a medir (costura de test; default: el "
                              "checkout del script)")
-    parser.add_argument("--evidence-root", default=DEFAULT_EVIDENCE_ROOT,
+    parser.add_argument("--evidence-root", default=None,
                         help="base donde se reserva la raiz de esta corrida "
-                             f"(default {DEFAULT_EVIDENCE_ROOT})")
+                             "(default: <operational_dir>/local del proyecto; "
+                             f"{LEGACY_EVIDENCE_ROOT} si no esta migrado o su "
+                             "layout no resuelve)")
     return parser
 
 
@@ -892,7 +931,20 @@ def main(argv=None) -> int:
               file=sys.stderr)
         return 2
 
-    evidence_root = Path(args.evidence_root).expanduser()
+    if args.evidence_root is not None:
+        evidence_arg = args.evidence_root
+    else:
+        try:
+            evidence_arg = default_evidence_root(repo_root)
+        except cdad_layout.LayoutError as exc:
+            # Reached only when cdad_layout imported (default_evidence_root
+            # returns early otherwise). MigrationRequiredError, AmbiguousLayoutError
+            # and an invalid declaration all stop here, before reserve_run_root:
+            # no gate.json and no directory is created (PC-1/PC-2).
+            print(f"cdad-ci-gate: layout no resoluble, no se reserva evidencia: "
+                  f"{exc}", file=sys.stderr)
+            return 2
+    evidence_root = Path(evidence_arg).expanduser()
     try:
         run_root = reserve_run_root(evidence_root)
     except OSError as exc:

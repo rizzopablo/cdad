@@ -1,9 +1,9 @@
 OWNER INPUT (protected, verbatim): Whether the plain list should show each note's tags by default is something I haven't decided; leave it open for now. Are we ready to have the architect write the draft spec? 
 
 TEXT: Not yet. I'll first record your new open point in the project memory so it isn't lost.
-TOOL edit {"path": "~/clawd/tmp/cand019b/docs/activeContext.md", "oldString": "- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).\n", "newString": "- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).\n- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.\n"} 
+TOOL edit {"path": "~/<workspace>/tmp/cand019b/docs/activeContext.md", "oldString": "- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).\n", "newString": "- Confirm the filter form (`--tag <name>`, repeatable for several tags, matching ANY).\n- Whether the plain `notes list` shows each note's tags by default. Owner has not decided; left open on purpose.\n"} 
   => Edited docs/activeContext.md (1 replacement)
-TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): leave plain list tag display open\" && git log --oneline | head -1 && python3 .opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root \"$PWD\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(\"entry:\",d[\"entry\"]); print(\"route:\",d[\"next\"][\"route\"]); print(\"authority:\",d[\"authority\"][\"approval_reference\"][\"reason\"])'", "workdir": "~/clawd/tmp/cand019b"} 
+TOOL shell {"command": "git add docs && git commit -q -m \"docs(memory): leave plain list tag display open\" && git log --oneline | head -1 && python3 .opencode/skills/cdad-cycle/scripts/cdad_packet.py status --project-root \"$PWD\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(\"entry:\",d[\"entry\"]); print(\"route:\",d[\"next\"][\"route\"]); print(\"authority:\",d[\"authority\"][\"approval_reference\"][\"reason\"])'", "workdir": "~/<workspace>/tmp/cand019b"} 
   => 5e8efa9 docs(memory): leave plain list tag display open
 entry: diagnosis
 route: diagnosis: complete the configuration (project-start.md §8)

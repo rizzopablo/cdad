@@ -34,7 +34,7 @@ producida por `install.sh`; debe contener `.cdad-install-manifest.json`.
 - **codex:** `.agents/skills/<s>` como enlace simbólico a
   `<adopted-root>/.agents/skills/<s>`.
 
-Registro: `.cdad/activation.json` con `adopted_root`, el sha256 del manifest de
+Registro: `.cdad-execution/activation.json` con `adopted_root`, el sha256 del manifest de
 `<adopted-root>` y, por cada ruta emitida, su sha256 (archivo) o su destino
 (enlace). Orden determinista.
 
@@ -42,13 +42,13 @@ Registro: `.cdad/activation.json` con `adopted_root`, el sha256 del manifest de
 
 `prepare` publica los agentes de proyecto en `.opencode/agents/` y resuelve su
 origen en este orden: (1) `CDAD_OPENCODE_AGENTS_DIR`; (2) la raíz adoptada
-**registrada** en `.cdad/activation.json` → `<adopted_root>/.config/opencode/agents`;
+**registrada** en `.cdad-execution/activation.json` → `<adopted_root>/.config/opencode/agents`;
 (3) sin activación, la instalación global (`$HOME/.config/opencode/agents`). El
 manifiesto publicado `.opencode/agents/.cdad-derived.json` declara `source_dir` y
 `source_version` (versión/commit del origen), de modo que es verificable qué
 versión cargó una sesión. Si el origen resuelto difiere del registro o del
 `source_dir` del manifiesto anterior, `prepare` emite en **stderr** un
-diagnóstico que nombra `.cdad/activation.json` y las versiones en juego: nunca
+diagnóstico que nombra `.cdad-execution/activation.json` y las versiones en juego: nunca
 cambia de versión en silencio (INV-7). La recarga de una sesión ya iniciada y la
 versión cargada se conservan como evidencia histórica **no instalable** bajo
 `docs/` (006-002 PD-9: esa referencia por runtime salió del árbol instalable).
@@ -71,7 +71,7 @@ escribir.
   compara con el sha256 de su entrada en `.cdad-install-manifest.json`; si falta
   la entrada o el sha difiere, falla (rc≠0) y no escribe nada.
 - No-clobber con propiedad (R-5): un destino existente se reemplaza solo si lo
-  emitió el generador (está en `.cdad/activation.json` y su contenido coincide
+  emitió el generador (está en `.cdad-execution/activation.json` y su contenido coincide
   con lo registrado); cualquier otro destino divergente es conflicto
   (todo o nada).
 - Contención de ruta (B-1): antes de escribir o podar, el directorio contenedor

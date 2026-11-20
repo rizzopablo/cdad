@@ -17,7 +17,7 @@ $ bash tests/validate-odoo-specialization.sh → 1 FAIL: A3 (ver sección de ins
 $ python3 /tmp/opencode/review_005_013_inv3_repro.py  → reproducción del hallazgo B1 (abajo)
 ```
 
-Anonymization (INV-7): grep del diff completo → **0** `/home/`, **0** `ofap`, **0** ids crudos de sesión en docs, tests y código nuevos; fixtures sintéticos (`999-…`, `epic-999-fixture`, placeholder `ses-fixture-0001`). El único archivo del diff con patrones A3 es `docs/.cdad-state.json` — **ya marcado en base** (ver insumos 3) — xinúnca se leen sus patrones; los archivos private paths no fueron leídos.
+Anonymization (INV-7): grep del diff completo → **0** `/home/`, **0** `<owner>`, **0** ids crudos de sesión en docs, tests y código nuevos; fixtures sintéticos (`999-…`, `epic-999-fixture`, placeholder `ses-fixture-0001`). El único archivo del diff con patrones A3 es `docs/.cdad-state.json` — **ya marcado en base** (ver insumos 3) — xinúnca se leen sus patrones; los archivos private paths no fueron leídos.
 
 ---
 

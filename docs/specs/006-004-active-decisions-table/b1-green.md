@@ -30,7 +30,7 @@ Diff (commit `fc1179b`): `1 file changed, 6 insertions(+), 2 deletions(-)` — l
 ## 3. Comandos y salida
 
 ```sh
-cd <home>/clawd/projects/cdad/cdad
+cd <home>/<workspace>/projects/cdad/cdad
 PYTHONDONTWRITEBYTECODE=1 TMPDIR=/tmp/opencode python3 -m pytest -p no:cacheprovider tests/test_006_004_b1_template_empty.py -v
 ```
 ```

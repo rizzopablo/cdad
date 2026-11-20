@@ -1,6 +1,6 @@
 # Decisión del dueño — política de límites de este repo (C1)
 
-**Fecha:** 2026-10-01 · **Dueño:** Pablo (respuesta en la sesión del orquestador).
+**Fecha:** 2026-10-01 · **Dueño:** <owner> (respuesta en la sesión del orquestador).
 
 El dueño aprobó materializar tal cual la propuesta de `prepare --propose-policy`
 (CLI en `28324af`) como `docs/cdad-policy.json`. Coincide con C1:

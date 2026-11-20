@@ -8,7 +8,7 @@ activated_at: 2026-09-24
 # Epic 004 propuesto: autonomía supervisada, fuente única y planificación
 
 > **Estado vigente (reconciliado 2026-09-29 con `docs/.cdad-state.json`):**
-> epic **activo** desde 2026-09-24 (activación aprobada por Pablo según el
+> epic **activo** desde 2026-09-24 (activación aprobada por <owner> según el
 > procedimiento §6; registro en `epic_history` y en
 > [execution.md](execution.md)). 004-001 tiene T1–T7 cerrados y su cierre de
 > feature está pendiente; 004-002 y 004-003 están en cola. Las secciones

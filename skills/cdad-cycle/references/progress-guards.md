@@ -4,7 +4,7 @@
 reads already-existing signals and emits structured incidents/decisions; the
 semantic judgement stays with the orchestrator. It is **read-only** over the
 product, except `record`, which writes only under
-`.cdad/executions/<execution_id>/guards/`. **Nothing invokes it automatically** —
+`.cdad-execution/executions/<execution_id>/guards/`. **Nothing invokes it automatically** —
 no hook, no service, no agent. Run it by hand, and only when it fits.
 
 ## Applies / does not apply
@@ -12,7 +12,7 @@ no hook, no service, no agent. Run it by hand, and only when it fits.
 | Command | What it needs | Applies | Does not apply |
 |---|---|---|---|
 | `preflight` | `docs/cdad-policy.json` + execution context + `--role` + `--operation` | Any environment — reads the policy/context, writes nothing | — |
-| `record` | a `guard-event-v1` event JSON | Any environment — writes durable recovery events under `.cdad/` | — |
+| `record` | a `guard-event-v1` event JSON | Any environment — writes durable recovery events under `.cdad-execution/` | — |
 | `budget` | execution context + `--packet` | Any environment — reads one packet's durable events, writes nothing | — |
 | `classify` | a recorded `trace-v1` document | Only if a **reader** converts the environment's session log to `trace-v1` | Today **no product reader exists** for any environment: OpenCode has only a disposable prototype (`docs/specs/003-003-progress-guards/evidence/t5/recorder.py`); Claude Code has none. Without a reader → **do not use `classify`** |
 
@@ -64,7 +64,7 @@ python3 skills/cdad-cycle/scripts/cdad_guard.py preflight \
   --project-root ROOT --execution-context EXEC.json \
   --role ROLE --operation '{"tool":"write","path":"src/a.py"}' [--json]
 
-# persist one durable recovery event (writes under .cdad/executions/<id>/guards/)
+# persist one durable recovery event (writes under .cdad-execution/executions/<id>/guards/)
 python3 skills/cdad-cycle/scripts/cdad_guard.py record \
   --project-root ROOT --event EVENT.json
 

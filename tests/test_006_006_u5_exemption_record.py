@@ -159,6 +159,7 @@ from pathlib import Path
 
 import pytest
 
+from _layout_support import OLD_OPERATIONAL_DIR, OPERATIONAL_DIR
 from test_004_002_t2_bootstrap import prepare_args
 from test_005_012_t1_register_transition_base import (
     APPROVER,
@@ -939,6 +940,10 @@ def _two_revisions(fx, tmp_path: Path, label: str, transition: str,
     prev_cli = previous_product_cli(tmp_path / "previous-product")
     root_old = copy_project(fx.root, tmp_path / "project-old")
     root_new = copy_project(fx.root, tmp_path / "project-new")
+    # El producto ANTERIOR lee sus contextos de ejecución bajo el directorio
+    # operacional previo a 020-001 (`.cdad`): la copia «anterior» lo refleja
+    # con el contenido operacional declarado del fixture.
+    shutil.copytree(root_old / OPERATIONAL_DIR, root_old / OLD_OPERATIONAL_DIR)
 
     old = register(prev_cli, root_old)
     old_out = old.stdout + old.stderr
@@ -977,6 +982,9 @@ def _two_revisions(fx, tmp_path: Path, label: str, transition: str,
         f"(congelada); lleva {sorted(payload_new or {})}")
 
     # (iv) la repetición de la misma orden sobre la entrada del ANTERIOR.
+    # El espejo `.cdad` sólo servía al producto anterior; el vigente exige
+    # que no quede la raíz operacional legacy.
+    shutil.rmtree(root_old / OLD_OPERATIONAL_DIR)
     state_before = state_bytes(root_old)
     count_before = len(entries(read_state(root_old)))
     repeat = register(CURRENT_CLI, root_old)
@@ -1294,7 +1302,7 @@ def test_pd9_aba_walk_registers_the_return_with_a_distinguishable_value(
     """
     key_a, key_b = _register_a_and_b(gate_fx)
 
-    decision = gate_fx.root / ".cdad" / "local" / "owner-decision-u5.md"
+    decision = gate_fx.root / ".cdad-execution" / "local" / "owner-decision-u5.md"
     decision.parent.mkdir(parents=True, exist_ok=True)
     decision.write_bytes(b"# Decision del owner (fixture 006-006 U5)\n")
     digest = hashlib.sha256(decision.read_bytes()).hexdigest()

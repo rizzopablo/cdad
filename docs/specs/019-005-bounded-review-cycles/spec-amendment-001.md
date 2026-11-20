@@ -1,7 +1,7 @@
 # Specification amendment 001 — self-contained dispatch
 
 Status: proposed amendment to the approved 019-005 specification, prepared by the
-orchestrator under Pablo's instruction of 2026-11-17 that this correction belongs
+orchestrator under <owner>'s instruction of 2026-11-17 that this correction belongs
 to the current methodology cycle rather than a new one. Independent review is
 required before it replaces anything.
 

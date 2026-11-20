@@ -16,7 +16,7 @@ runtime vivo). Los tests observan SOLO artefactos:
   - la base SQLite del fixture (campo `sessions_db` de la config): la fila
     `session_v2` correlacionada y su columna `agent`;
   - el registro I8 del intento (mismo ledger, esquema cerrado);
-  - el recibo durable (`.cdad/runtime/results/<exec>/<packet>/receipt.json`);
+  - el recibo durable (`.cdad-execution/runtime/results/<exec>/<packet>/receipt.json`);
   - el envelope {attempt, session, termination, delivery_ref, diagnosis}.
 
 La configuración de ejecución llega por `--exec-config` (el mismo archivo

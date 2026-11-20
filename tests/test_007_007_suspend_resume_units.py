@@ -141,7 +141,7 @@ def test_007_007_safe_boundary_prepared_unresolved_and_received_red(tmp_path: Pa
     staged = _RecoveryProject(tmp_path / "staged")
     _assert_suspend_cli(staged)
     descriptor = staged._stage_result()
-    staged_result = staged.root / ".cdad" / "runtime" / "results" / staged.execution_id / staged.packet_id
+    staged_result = staged.root / ".cdad-execution" / "runtime" / "results" / staged.execution_id / staged.packet_id
     staged_result.mkdir(parents=True, exist_ok=True)
     (staged_result / "staged-result.json").write_bytes(descriptor.read_bytes())
     staged_before = staged.tree()
@@ -211,7 +211,7 @@ def test_007_007_continuity_checkpoints_link_without_fabricating_history(tmp_pat
     assert _begin(fx, attempt=4, next_action=original_action,
                   references=original_refs).returncode == 0, "fixture PC-3: begin público, intento 4"
     before_execution = copy.deepcopy(_state(fx)["execution"])
-    continuity = fx.root / ".cdad" / "executions" / fx.execution_id / "continuity"
+    continuity = fx.root / ".cdad-execution" / "executions" / fx.execution_id / "continuity"
     head_path = continuity / "head.json"
     assert head_path.is_file(), "fixture PC-3: begin publica cabeza en la ruta de continuidad de la ejecución"
     begin_head = json.loads(head_path.read_text(encoding="utf-8"))
@@ -244,7 +244,7 @@ def test_007_007_continuity_checkpoints_link_without_fabricating_history(tmp_pat
     bad = _RecoveryProject(tmp_path / "bad")
     _assert_suspend_cli(bad)
     assert _begin(bad).returncode == 0, "fixture PC-3: begin para corrupción"
-    bad_head = bad.root / ".cdad" / "executions" / bad.execution_id / "continuity" / "head.json"
+    bad_head = bad.root / ".cdad-execution" / "executions" / bad.execution_id / "continuity" / "head.json"
     assert bad_head.is_file(), "fixture PC-3: cabeza de continuidad de corrupción existe"
     bad_head.write_text("{broken", encoding="utf-8")
     before = bad.tree()
@@ -288,7 +288,7 @@ def test_007_007_resume_rejects_stale_authority_contract_policy_or_evidence(tmp_
                 "status": "vigente", "reason": "evidencia vigente de fixture",
                 "antecedent": None,
             }]).returncode == 0, "fixture PC-5: begin publica evidencia vigente"
-            head_path = fx.root / ".cdad" / "executions" / fx.execution_id / "continuity" / "head.json"
+            head_path = fx.root / ".cdad-execution" / "executions" / fx.execution_id / "continuity" / "head.json"
             assert head_path.is_file(), "fixture PC-5: cabeza de continuidad existe"
             head = json.loads(head_path.read_text(encoding="utf-8"))
             body_path = head_path.parent / "bodies" / f"{head['body_sha256']}.json"
@@ -403,7 +403,7 @@ def test_007_007_managed_checkpoint_after_state_removal_is_blocked(tmp_path: Pat
     _assert_suspend_cli(managed)
     assert _begin(managed, "managed checkpoint guard").returncode == 0, "fixture PC-7/A2: begin gestionado"
     assert _suspend(managed).returncode == 0, "fixture PC-7/A2: A suspendida"
-    managed_head = managed.root / ".cdad" / "executions" / managed.execution_id / "continuity" / "head.json"
+    managed_head = managed.root / ".cdad-execution" / "executions" / managed.execution_id / "continuity" / "head.json"
     assert managed_head.is_file(), "fixture PC-7/A2: head gestionado existe"
     head_before = managed_head.read_bytes()
     state_path = managed.root / STATE_REL
@@ -467,7 +467,7 @@ def test_007_007_standalone_checkpoint_without_project_state_still_works(
     ], capture_output=True, text=True, cwd=REPO_ROOT, env=env,
        stdin=subprocess.DEVNULL, timeout=TIMEOUT)
     assert accepted.returncode == 0, f"PC-7/A2 control: standalone checkpoint sigue permitido: {accepted.stdout!r} {accepted.stderr!r}"
-    assert (root / ".cdad" / "executions" / execution_id / "continuity" / "head.json").is_file(), "PC-7/A2 control: head standalone publicado"
+    assert (root / ".cdad-execution" / "executions" / execution_id / "continuity" / "head.json").is_file(), "PC-7/A2 control: head standalone publicado"
     assert not (root / STATE_REL).exists(), "PC-7/A2 control: standalone no crea state de proyecto"
 
 
@@ -527,7 +527,7 @@ def test_007_007_publication_lock_and_repetition_are_atomic(tmp_path: Path) -> N
     assert proc.returncode == 2, f"PC-9: repetir suspensión rechaza: {proc.stdout!r} {proc.stderr!r}"
     assert fx.tree() == before, "PC-9: repetición no crea checkpoints"
     # Lock ocupado de forma real: archivo lock existente y exclusivo.
-    lock = fx.root / ".cdad" / ".lock"
+    lock = fx.root / ".cdad-execution" / ".lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("a+") as handle:
         fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -540,7 +540,7 @@ def test_007_007_publication_lock_and_repetition_are_atomic(tmp_path: Path) -> N
     publication = _RecoveryProject(tmp_path / "state-publication-failure")
     _assert_suspend_cli(publication)
     assert _begin(publication, "publication failure fixture").returncode == 0, "PC-9/B2 fixture: continuidad previa"
-    continuity = publication.root / ".cdad" / "executions" / publication.execution_id / "continuity" / "head.json"
+    continuity = publication.root / ".cdad-execution" / "executions" / publication.execution_id / "continuity" / "head.json"
     assert continuity.is_file(), "PC-9/B2 fixture: cabeza previa existe"
     state_path = publication.root / STATE_REL
     state_before = state_path.read_bytes()

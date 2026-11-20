@@ -219,7 +219,7 @@ tocar el esquema del recibo (mínimo). No se amplía autoridad ni se aprueba al 
 - La aprobación del plan del epic habilita al arquitecto por **existencia** de la entrada `epic_history`
   `epic-plan` con `approved_by`, **sin** pin (D1/D2, `:1346-1360`; `project-execution.md:60-63`).
 - `hitl_delegation` (state): `status: active`, `epic_id`, `source`, `scope` (`project-execution.md:75-80`).
-  En este epic, `approver` = «Pablo (HITL delegada al orquestador OpenCode…)» y `policy_sha256` =
+  En este epic, `approver` = «<owner> (HITL delegada al orquestador OpenCode…)» y `policy_sha256` =
   `f508ab1e…` (ambos surfaced por `status`, `:4057` y `:4085`).
 - **Origen a registrar para la proyección:** id de la unidad + path del plan + sha del plan **al momento
   de generar** + la entrada `epic_history` aprobadora (`approved_by`/`completed_at`) + `policy_sha256`.

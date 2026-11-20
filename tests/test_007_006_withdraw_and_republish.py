@@ -229,12 +229,12 @@ def _restore_prepared(fx: _RecoveryProject) -> None:
 def _dispatch_record_path(fx: _RecoveryProject,
                           attempt_id: str = "attempt-demo-700-001") -> Path:
     """El archivo REAL de despacho que `fx.dispatch()` publica."""
-    return (fx.root / ".cdad" / "executions" / fx.execution_id / "dispatches"
+    return (fx.root / ".cdad-execution" / "executions" / fx.execution_id / "dispatches"
             / f"{attempt_id}.json")
 
 
 def _continuity_dir(fx: _RecoveryProject) -> Path:
-    return fx.root / ".cdad" / "executions" / fx.execution_id / "continuity"
+    return fx.root / ".cdad-execution" / "executions" / fx.execution_id / "continuity"
 
 
 def _continuity_snapshot(fx: _RecoveryProject) -> dict[str, bytes]:
@@ -275,7 +275,7 @@ def _packet_files(fx: _RecoveryProject) -> dict[str, bytes]:
 
 
 def _packets_snapshot(fx: _RecoveryProject) -> dict[str, bytes]:
-    base = fx.root / ".cdad" / "packets"
+    base = fx.root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return {}
     return {path.relative_to(fx.root).as_posix(): path.read_bytes()
@@ -352,7 +352,7 @@ def _installed_status(fx: _RecoveryProject, install: Path
 
 
 def _materialization_record_path(fx: _RecoveryProject) -> Path:
-    base = (fx.root / ".cdad" / "runtime" / "materializations"
+    base = (fx.root / ".cdad-execution" / "runtime" / "materializations"
             / fx.execution_id / fx.packet_id)
     records = sorted(base.glob("*.json")) if base.is_dir() else []
     assert len(records) == 1, (

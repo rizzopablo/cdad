@@ -118,6 +118,8 @@ La suite completa NO se corre (acotado). Nunca background.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -145,7 +147,7 @@ CLI_TIMEOUT_S = 120
 # Cap por defecto declarado en la spec (V5/P7 de 003-004 se mantiene).
 DEFAULT_MAX_BYTES = 16 * 1024
 
-CONTINUITY_DIR_REL = f".cdad/executions/{EXEC_ID}/continuity"
+CONTINUITY_DIR_REL = f".cdad-execution/executions/{EXEC_ID}/continuity"
 BODIES_DIR_REL = f"{CONTINUITY_DIR_REL}/bodies"
 HEAD_REL = f"{CONTINUITY_DIR_REL}/head.json"
 STATE_REL = "docs/.cdad-state.json"
@@ -352,6 +354,7 @@ class CheckpointVsBeginCase(unittest.TestCase):
             lambda: subprocess.run(["rm", "-rf", self._tmp], check=False))
         self.root = Path(self._tmp) / "proj"
         self.root.mkdir(parents=True, exist_ok=True)
+        write_declaration(self.root)
         self.exec_context = self.write_json("fixture/exec.json",
                                             exec_context_fixture())
 

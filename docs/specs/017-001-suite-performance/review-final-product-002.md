@@ -45,16 +45,16 @@ El producto rechaza los artefactos existentes y crea `worker-<i>` con `exist_ok=
 
 ## Comandos y evidencia
 
-Las sondas se ejecutaron mediante un programa Python temporal en memoria, que creó sus entradas y raíces bajo `~/clawd/tmp/review-022-v601pord`, con `PYTHONDONTWRITEBYTECODE=1`. Usó la misma selección liviana para las sondas ordinarias. Los comandos efectivos fueron:
+Las sondas se ejecutaron mediante un programa Python temporal en memoria, que creó sus entradas y raíces bajo `~/<workspace>/tmp/review-022-v601pord`, con `PYTHONDONTWRITEBYTECODE=1`. Usó la misma selección liviana para las sondas ordinarias. Los comandos efectivos fueron:
 
 ```sh
-CDAD_SUITE_FAULT=no-subreaper /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/no-subreaper --nodeids ~/clawd/tmp/review-022-v601pord/no-subreaper.nodeids
-CDAD_SUITE_FAULT=no-sweep /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/no-sweep --nodeids ~/clawd/tmp/review-022-v601pord/no-sweep.nodeids
-env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/clean --nodeids ~/clawd/tmp/review-022-v601pord/clean.nodeids
-env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/late --nodeids ~/clawd/tmp/review-022-v601pord/late.nodeids
-env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/unreadable --nodeids ~/clawd/tmp/review-022-v601pord/unreadable.nodeids
-env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/reuse-first --nodeids ~/clawd/tmp/review-022-v601pord/reuse-first.nodeids
-env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/clawd/tmp/review-022-v601pord/reuse-first --nodeids ~/clawd/tmp/review-022-v601pord/reuse-second.nodeids
+CDAD_SUITE_FAULT=no-subreaper /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/no-subreaper --nodeids ~/<workspace>/tmp/review-022-v601pord/no-subreaper.nodeids
+CDAD_SUITE_FAULT=no-sweep /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/no-sweep --nodeids ~/<workspace>/tmp/review-022-v601pord/no-sweep.nodeids
+env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/clean --nodeids ~/<workspace>/tmp/review-022-v601pord/clean.nodeids
+env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/late --nodeids ~/<workspace>/tmp/review-022-v601pord/late.nodeids
+env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/unreadable --nodeids ~/<workspace>/tmp/review-022-v601pord/unreadable.nodeids
+env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/reuse-first --nodeids ~/<workspace>/tmp/review-022-v601pord/reuse-first.nodeids
+env -u CDAD_SUITE_FAULT /usr/bin/python3 scripts/cdad-suite.py parallel --workers 1 --evidence-root ~/<workspace>/tmp/review-022-v601pord/reuse-first --nodeids ~/<workspace>/tmp/review-022-v601pord/reuse-second.nodeids
 ```
 
 Las rutas temporales fueron eliminadas en `finally`; no quedan para inspección posterior. La salida registró `finally_clean: True True True` y `git status --short` no mostró cambios.

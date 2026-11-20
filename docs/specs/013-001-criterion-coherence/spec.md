@@ -384,4 +384,4 @@ No se exige `cdad-suite.py validate rc=0` como resultado de esta unidad: reparar
 
 Ninguna exclusión permite diferir una postcondición de esta spec.
 
-Status: Approved by Pablo (HITL delegado, docs/epics/epic-013-test-criterion/execution.md) on 2026-11-02
+Status: Approved by <owner> (HITL delegado, docs/epics/epic-013-test-criterion/execution.md) on 2026-11-02

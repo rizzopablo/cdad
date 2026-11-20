@@ -114,7 +114,7 @@ POLICY_REL = "docs/cdad-policy.json"
 PROJECT_START_REL = "skills/cdad-cycle/references/project-start.md"
 CLI_TIMEOUT_S = 60
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 # Fixture: A cerrada (historia), B primera `queued` (la unidad a abrir), C
 # segunda `queued` (el orden del plan es la autoridad), D unidad pendiente
 # usada como dependencia NO `done` (observación 2, caso (a)).

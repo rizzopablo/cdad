@@ -28,7 +28,7 @@
    **No hace falta repetir íntegramente el diseño.** Si aparece cualquier cambio sustantivo, vuelve al architect y después a revisión: ya no sería una corrección puramente administrativa. La re-review es obligatoria cuando cambia el diseño (`re-entry.md:278–289`).
 
 4. **El aprobador delegado realiza nuevamente la autoevaluación y marca ambos documentos.**  
-   Usar su identidad real y fecha actual, indicando la delegación de Pablo y enlazando la recuperación. **No antedatar ni presentar la nueva marca como una aprobación directa de Pablo.** La marca de aprobación corresponde al aprobador, no al implementer.
+   Usar su identidad real y fecha actual, indicando la delegación de <owner> y enlazando la recuperación. **No antedatar ni presentar la nueva marca como una aprobación directa de <owner>.** La marca de aprobación corresponde al aprobador, no al implementer.
 
 5. **Registrar un nuevo gate sobre los bytes finales.**  
    Fijar nuevamente **spec y plan**, después de incorporar sus marcas. Preservar la entrada histórica.
@@ -45,7 +45,7 @@
      --contract-path docs/specs/019-002-effective-discovery-instructions/spec.md \
      --plan-path docs/specs/019-002-effective-discovery-instructions/plan.md \
      --delegated \
-     --requested-by Pablo \
+     --requested-by <owner> \
      --supersedes 6ed1e2ef60fe84754156a0a81506f8e170f8cf130b72364ad2acbc94a75f5573 \
      --artifact "<decisión de recuperación>" \
      --artifact "<revisión focalizada>" \
@@ -66,7 +66,7 @@
 
 ## Delegación no significa exención
 
-Utilizar **únicamente** `--delegated --requested-by Pablo`, sin `--exempted-by` ni `--exemption-reason`.
+Utilizar **únicamente** `--delegated --requested-by <owner>`, sin `--exempted-by` ni `--exemption-reason`.
 
 Aunque el CLI agrupa esos campos bajo una clave de identidad llamada `exemption`, el contrato aprobado **declara expresamente que también sirven para producir la procedencia de aprobación delegada** (`docs/specs/006-006-spec-plan-review/spec.md:168`). La entrada los escribe planos y sólo añade los campos declarados (`cdad_packet.py:8990–9003,9147–9162`).
 

@@ -72,7 +72,7 @@ Veredicto global: **RECHAZADO** — los 4 bloqueantes son mecánicos y baratos d
 
 ## Capa 2 — Priorización (usuario)
 
-**Política de enforcement del dueño (Pablo, 2026-09-13, transcripta):**
+**Política de enforcement del dueño (<owner>, 2026-09-13, transcripta):**
 
 > "No vamos a ser tan estrictos porque si no es infinito. La idea es bloquear
 > las opciones más directas y evidentes, y dejar claro en los skills y demás
@@ -116,7 +116,7 @@ silencio.
 
 ## Re-evaluación de H1-H8
 
-**H1: RESUELTO** — El registro cumple el hallazgo bajo la política del dueño: la desviación 5f9f4d2 quedó documentada como precedente (VALIDATION.md, con la regla "violación así futura = tarea NO cumplida"), la enmienda P1 precisiona la ubicación anidada con provenance al review (spec.md:58-66, aprobada por Pablo en Capa 2), y la expectativa vive ahora en procedimiento (systemPatterns.md). Verificado además que el loop de fixes respetó roles esta vez: `17ce985` (test:) toca solo run-checks.sh, `a45219c` (fix(agents)) solo agents+generador — AP-4 honrado en el loop.
+**H1: RESUELTO** — El registro cumple el hallazgo bajo la política del dueño: la desviación 5f9f4d2 quedó documentada como precedente (VALIDATION.md, con la regla "violación así futura = tarea NO cumplida"), la enmienda P1 precisiona la ubicación anidada con provenance al review (spec.md:58-66, aprobada por <owner> en Capa 2), y la expectativa vive ahora en procedimiento (systemPatterns.md). Verificado además que el loop de fixes respetó roles esta vez: `17ce985` (test:) toca solo run-checks.sh, `a45219c` (fix(agents)) solo agents+generador — AP-4 honrado en el loop.
 
 **H2: RESUELTO-CON-OBSERVACIÓN** — RED 184/31 → GREEN 215/0 + 3 validadores PASS pegados: la evidencia existe y es post-fix de código. Observación: la corrida pegada correspondía al árbol `a45219c`; HEAD añade el commit docs `9875917` (delta docs-only). **Cerrada post-re-review: corrida al HEAD pegada en VALIDATION (215 PASS / 0 FAIL).**
 
@@ -169,7 +169,7 @@ silencio.
 
 ## Capa 2 (segunda pasada) — Priorización de N1-N4
 
-Decisión del dueño (Pablo, 2026-09-13): "De acuerdo" con la recomendación del
+Decisión del dueño (<owner>, 2026-09-13): "De acuerdo" con la recomendación del
 orquestador:
 
 | Hallazgo | Decisión | Motivo |

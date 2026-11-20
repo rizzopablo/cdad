@@ -803,7 +803,7 @@ def _disposable_product_source(tmp_path, label, with_manifest):
         dest,
         symlinks=True,
         ignore=shutil.ignore_patterns(
-            ".git", ".pytest_cache", "__pycache__", "build", ".cdad"),
+            ".git", ".pytest_cache", "__pycache__", "build", ".cdad", ".cdad-execution"),
     )
     provenance = {"source_root": str(real_root), "disposable": str(dest)}
     if with_manifest:

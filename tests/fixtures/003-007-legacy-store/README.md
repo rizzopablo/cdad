@@ -45,3 +45,7 @@ directorio a un tmp (`shutil.copytree`) y corren `resume` sobre la copia:
 Prohibido como fuente: los stores reales de `.cdad/` del repo
 (autocontención, nota del orquestador del paquete
 `003-007-living-continuity-test-writer-red-001`).
+
+## Layout (020-001)
+
+El store histórico (bytes idénticos) vive ahora bajo `.cdad-execution/` y se acompaña de `cdad/project-layout.json` (schema 2, metodología `docs`) para que el proyecto cuente como migrado. "Legado" aquí = cuerpo de continuidad sin `class` (pre-003-007), no la ruta `.cdad/`.

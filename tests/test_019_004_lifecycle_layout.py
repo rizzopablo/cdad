@@ -64,6 +64,16 @@ Mapeo test -> postcondición (una promesa observable por test, R2):
       -> decisions.md (2026-11-16) + PC-04/PC-05. Sin este test, un locator
          hacia la raíz volvería indistinguibles estado, política y `.cdad/`.
 
+Enmienda 020-001 (docs/specs/020-001-versioned-layout-local-execution/):
+la declaración vive en la ruta fija `cdad/project-layout.json` (schema 2:
+schema_version, methodology_dir, operational_dir) y los registros
+operacionales nuevos van bajo el `operational_dir` declarado (por defecto
+`.cdad-execution`). `relocate()` REESCRIBE esa declaración con el
+methodology_dir elegido. Un `.cdad/` poblado, el localizador viejo
+`.cdad/project-layout.json` o una declaración sin `operational_dir` es un
+proyecto NO MIGRADO: guía a `layout-migration.md`, sin escribir (inversión
+deliberada de la fila `cdad_records` y del caso nuevo de migración al final).
+
 No cubierto aquí (declarado): variante de `policy.snapshot` alterado en
 contexto (§4.5.4), porque el rechazo del snapshot ya es comportamiento
 vigente independiente del layout y no es RED; PC-08/PC-09 de `intake` es T3.
@@ -73,6 +83,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -87,7 +98,13 @@ from test_005_012_t1_register_transition_base import (
     RESULT_CLI,
     _Fixture,
 )
-from test_004_002_t2_bootstrap import prepare_args, read_state, write_state
+from _layout_support import (
+    DECLARATION_REL, OPERATIONAL_DIR, declaration_document, write_declaration,
+)
+from test_004_002_t2_bootstrap import (
+    build_project, prepare_args, read_state, write_state,
+)
+from test_019_004_layout import assert_migration_guidance
 from test_019_002_resting_orientation import (
     CLOSURE_REL,
     CLOSURE_STAGE,
@@ -97,7 +114,7 @@ from test_019_002_resting_orientation import (
 
 APPROVER = "Demo Approver"
 CUSTOM = "docs/custom-method"
-LOCATOR_REL = ".cdad/project-layout.json"
+LOCATOR_REL = DECLARATION_REL  # 020-001: ruta fija de la declaración
 LEGACY_STATE = "docs/.cdad-state.json"
 LEGACY_POLICY = "docs/cdad-policy.json"
 CLI_TIMEOUT_S = 90
@@ -120,7 +137,7 @@ def snapshot(root: Path) -> dict:
 
 
 def exec_context_path(fx) -> Path:
-    return fx.root / ".cdad" / "executions" / fx.execution_id / "execution.json"
+    return fx.root / OPERATIONAL_DIR / "executions" / fx.execution_id / "execution.json"
 
 
 def relocate(fx, rel: str = CUSTOM, *, decoy: bool = False,
@@ -141,10 +158,10 @@ def relocate(fx, rel: str = CUSTOM, *, decoy: bool = False,
     if register:
         loc = root / LOCATOR_REL
         loc.parent.mkdir(parents=True, exist_ok=True)
-        loc.write_text(json.dumps(
-            {"schema_version": 1, "methodology_dir": rel}), encoding="utf-8")
+        loc.write_text(json.dumps(declaration_document(rel, OPERATIONAL_DIR)),
+                       encoding="utf-8")
     new_path = policy_path or f"{rel}/cdad-policy.json"
-    for ctx in (root / ".cdad" / "executions").glob("*/execution.json"):
+    for ctx in (root / OPERATIONAL_DIR / "executions").glob("*/execution.json"):
         doc = json.loads(ctx.read_text(encoding="utf-8"))
         doc["policy"]["path"] = new_path
         ctx.write_text(json.dumps(doc), encoding="utf-8")
@@ -187,9 +204,33 @@ def status_doc(fx) -> dict:
     return json.loads(proc.stdout)
 
 
+class _LazyRest:
+    """Construye `_RestFixture` en el primer acceso, DENTRO del cuerpo del test:
+    si la capa declarada (PC-1) aún no funciona, el fallo es un
+    AssertionError de comportamiento del test y no un ERROR de setup."""
+
+    def __init__(self, base: Path) -> None:
+        self.__dict__["_base"] = base
+        self.__dict__["_fx"] = None
+
+    def _build(self) -> _RestFixture:
+        if self.__dict__["_fx"] is None:
+            try:
+                self.__dict__["_fx"] = _RestFixture(self.__dict__["_base"])
+            except AssertionError as exc:
+                raise AssertionError(
+                    "PC-1 (precondición): un proyecto declarado en "
+                    f"{DECLARATION_REL} (schema 2) debe preparar, despachar y "
+                    f"recibir bajo {OPERATIONAL_DIR}/: {exc}") from exc
+        return self.__dict__["_fx"]
+
+    def __getattr__(self, name: str):
+        return getattr(self._build(), name)
+
+
 @pytest.fixture
-def rest(tmp_path: Path) -> _RestFixture:
-    return _RestFixture(tmp_path)
+def rest(tmp_path: Path) -> _LazyRest:
+    return _LazyRest(tmp_path)
 
 
 class _Bare(_Fixture):
@@ -267,7 +308,7 @@ def test_prepare_binds_state_and_policy_path_in_selected_directory(
     assert st["execution"] and st["active_packet"], (
         "prepare debe escribir execution y active_packet en el estado del "
         "layout")
-    ctxs = list((fx.root / ".cdad" / "executions").glob("*/execution.json"))
+    ctxs = list((fx.root / OPERATIONAL_DIR / "executions").glob("*/execution.json"))
     assert ctxs, "prepare debe publicar el contexto de ejecución"
     recorded = json.loads(ctxs[-1].read_text(encoding="utf-8"))["policy"]["path"]
     assert recorded == f"{CUSTOM}/cdad-policy.json", (
@@ -286,13 +327,13 @@ def _materialize(fx, target: str):
         "execution_id": fx.execution_id,
         "packet_id": fx.packet_id,
         "receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
-        "authorized_by": "Pablo (HITL delegada)",
+        "authorized_by": "<owner> (HITL delegada)",
         "authority_ref": AUTHORITY_REF,
         "approval_effect": False,
         "copies": [{"part": "role-report", "target": target,
                     "expected_previous_sha256": None}],
     }
-    path = fx.root / ".cdad" / "inbox" / "MATERIALIZE.json"
+    path = fx.root / OPERATIONAL_DIR / "inbox" / "MATERIALIZE.json"
     path.write_text(json.dumps(auth, sort_keys=True) + "\n", encoding="utf-8")
     return fx.run_result(
         "materialize", "--project-root", str(fx.root),
@@ -325,8 +366,9 @@ def test_materialization_refuses_legacy_destination_when_layout_is_registered(
     assert not (fx.root / target).exists()
     after = snapshot(fx.root)
     changed = [k for k in after
-               if before.get(k) != after[k] and k != ".cdad/inbox/MATERIALIZE.json"
-               and not k.startswith(".cdad/")]
+               if before.get(k) != after[k]
+               and k != f"{OPERATIONAL_DIR}/inbox/MATERIALIZE.json"
+               and not k.startswith(f"{OPERATIONAL_DIR}/")]
     assert not changed, f"el rechazo no debe escribir destinos: {changed}"
 
 
@@ -335,7 +377,11 @@ def test_materialization_refuses_legacy_destination_when_layout_is_registered(
 
 def test_legacy_project_without_locator_keeps_working_unchanged(rest) -> None:
     """PC-02/PC-05 (CONTROL, pasa hoy): sin locator el ciclo usa docs/ y no se
-    registra ningún locator."""
+    registra ningún locator. 020-001: la fixture nace declarada; aquí se
+    retira la declaración para conservar el proyecto legado SIN declaración
+    (sin `.cdad/` poblado, por tanto no es un proyecto no migrado)."""
+    (rest.root / LOCATOR_REL).unlink()
+    (rest.root / LOCATOR_REL).parent.rmdir()
     closed = rest.close()
     assert closed.returncode == 0, f"{closed.stdout!r} {closed.stderr!r}"
     assert "open-unit" in json.dumps(status_doc(rest))
@@ -452,11 +498,7 @@ def test_locator_resolving_to_repository_root_is_rejected_without_writes(
     escrituras, tanto en `layout` como en los consumidores operativos."""
     fx = _Fixture(tmp_path, mode="ready")
     (fx.root / "rootlink").symlink_to(".", target_is_directory=True)
-    loc = fx.root / LOCATOR_REL
-    loc.parent.mkdir(parents=True, exist_ok=True)
-    loc.write_text(json.dumps(
-        {"schema_version": 1, "methodology_dir": "rootlink"}),
-        encoding="utf-8")
+    write_declaration(fx.root, "rootlink")
     before = snapshot(fx.root)
     layout = subprocess.run(
         [sys.executable, str(PACKET_CLI), "layout",
@@ -513,10 +555,7 @@ def _gap_state(root: Path, rows: list[tuple[str, str, str]]) -> Path:
 
 
 def _register(root: Path, rel: str) -> None:
-    loc = root / LOCATOR_REL
-    loc.parent.mkdir(parents=True, exist_ok=True)
-    loc.write_text(json.dumps({"schema_version": 1, "methodology_dir": rel}),
-                   encoding="utf-8")
+    write_declaration(root, rel)
 
 
 def _gap_report(root: Path, state: Path) -> subprocess.CompletedProcess:
@@ -656,7 +695,7 @@ def test_materialization_rejects_policy_private_destination_under_methodology_ba
     after = snapshot(fx.root)
     changed = sorted(k for k in set(before) | set(after)
                      if before.get(k) != after.get(k)
-                     and k != ".cdad/inbox/MATERIALIZE.json")
+                     and k != f"{OPERATIONAL_DIR}/inbox/MATERIALIZE.json")
     assert not changed, f"el rechazo no debe cambiar archivos: {changed}"
     ok = f"{CUSTOM}/specs/{FEATURE_ID}/test-writer-role-report.md"
     good = _materialize(fx, ok)
@@ -669,6 +708,8 @@ def test_materialization_rejects_policy_private_destination_under_methodology_ba
 AMBIGUOUS_EVIDENCE = {
     "docs_specs": ("docs/specs/unit-a/spec.md", "# spec\n"),
     "docs_epics": ("docs/epics/e1/plan.md", "# plan\n"),
+    # 020-001 (INVERTIDO): un `.cdad/` poblado sin declaración ya no es
+    # «ambiguo» sino proyecto no migrado (guía a layout-migration.md).
     "cdad_records": (".cdad/executions/exec-x/execution.json", "{}\n"),
 }
 
@@ -697,16 +738,21 @@ def _run_in(root: Path, env: dict, *args: str):
                                      "prepare"])
 def test_operational_commands_refuse_ambiguous_layout_without_selecting_docs(
         tmp_path: Path, kind: str, command: str) -> None:
-    """PC-04: con solo señales insuficientes y sin locator ni marcador legado,
-    el comando operativo falla diagnosticando ambigüedad y sin escribir."""
+    """PC-04 + 020-001 PC-2: con solo señales insuficientes y sin locator ni
+    marcador legado, el comando operativo falla sin escribir: evidencia de
+    docs/ => ambigüedad; registros en un `.cdad/` poblado => proyecto no
+    migrado con guía a `layout-migration.md`."""
     root, env = _ambiguous_project(tmp_path, kind)
     args = {
         "prepare": prepare_args(root, objective="layout ambiguo"),
     }.get(command, [command, "--project-root", str(root)])
     before = snapshot(root)
     proc = _run_in(root, env, *args)
-    assert_rejected(proc, f"{command} con layout ambiguo ({kind})",
-                    mention=("ambiguous",))
+    if kind == "cdad_records":
+        assert_migration_guidance(proc, f"{command} con proyecto no migrado")
+    else:
+        assert_rejected(proc, f"{command} con layout ambiguo ({kind})",
+                        mention=("ambiguous",))
     assert snapshot(root) == before, (
         f"{command} no debe escribir con layout ambiguo")
     assert not (root / LOCATOR_REL).exists()
@@ -726,3 +772,151 @@ def test_single_legacy_marker_is_not_diagnosed_as_ambiguous(
         f"un marcador legado exacto no es ambiguo: {proc.stderr!r}")
     assert snapshot(root) == before
     assert not (root / LOCATOR_REL).exists()
+
+
+# ------------------------------------------------------------------- 020-001
+#
+# Mapeo (una promesa observable por test; techo de 2 casos nuevos):
+#   test_unmigrated_project_is_refused_with_migration_guidance_before_any_write
+#       -> 020-001 PC-2 (y PC-1: nada se escribe en una ubicación nueva). Sin
+#          este test, el usuario con un proyecto existente vería una operación
+#          que escribe en una ubicación operacional nueva sin avisarle, o un
+#          rechazo sin camino de salida.
+#   test_manual_handoff_then_new_execution_preserves_progress_and_history
+#       -> 020-001 PC-3 (continuación; con PC-1 para el almacenamiento
+#          declarado). Sin este test, el usuario con trabajo sin terminar no
+#          tendría evidencia de que el traspaso manual documentado produce
+#          una asignación fresca que conserva su progreso, ni de que la
+#          historia vieja queda intacta.
+
+
+def _files_under(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return {p.relative_to(path).as_posix(): p.read_bytes()
+            for p in sorted(path.rglob("*")) if p.is_file()}
+
+
+def test_unmigrated_project_is_refused_with_migration_guidance_before_any_write(
+        tmp_path: Path) -> None:
+    """PC-2: un proyecto que conserva el layout operacional viejo (`.cdad/`
+    poblado, sin declaración schema 2) recibe una guía breve que apunta a la
+    guía canónica `layout-migration.md`, antes de cualquier escritura
+    operacional: ni `.cdad/` ni `.cdad-execution/` se tocan."""
+    root = build_project(tmp_path / "proj", declared=False)
+    for rel, text in (
+            (".cdad/executions/exec-1/execution.json", "{}\n"),
+            (".cdad/packets/p1/REQUEST.json", "{}\n")):
+        seed = root / rel
+        seed.parent.mkdir(parents=True, exist_ok=True)
+        seed.write_text(text, encoding="utf-8")
+    home = tmp_path / "home"
+    home.mkdir()
+    env = dict(os.environ, HOME=str(home))
+    before = snapshot(root)
+    proc = subprocess.run(
+        [sys.executable, str(PACKET_CLI),
+         *prepare_args(root, objective="proyecto no migrado")],
+        capture_output=True, text=True, cwd=str(tmp_path), env=env,
+        stdin=subprocess.DEVNULL, timeout=CLI_TIMEOUT_S)
+    assert proc.returncode != 0, (
+        "PC-2: `prepare` debe rechazar un proyecto no migrado antes de "
+        f"escribir; rc={proc.returncode} stdout={proc.stdout!r} "
+        f"stderr={proc.stderr!r}")
+    assert "layout-migration.md" in proc.stderr, (
+        "PC-2: la guía debe apuntar a layout-migration.md; "
+        f"stderr={proc.stderr!r}")
+    assert re.search(r"\.cdad(?![-\w])", proc.stderr), (
+        "PC-2: la guía debe nombrar el layout viejo `.cdad`; "
+        f"stderr={proc.stderr!r}")
+    assert snapshot(root) == before, (
+        "PC-2: el rechazo no debe escribir nada (ningún lock ni archivo "
+        "nuevo, ni en `.cdad/` ni fuera)")
+    assert not (root / OPERATIONAL_DIR).exists(), (
+        f"PC-1/PC-2: no debe crearse {OPERATIONAL_DIR}/ en un proyecto no "
+        "migrado")
+
+
+def test_manual_handoff_then_new_execution_preserves_progress_and_history(
+        tmp_path: Path) -> None:
+    """PC-3: tras el traspaso manual (limpiar SOLO `execution` y
+    `active_packet`), `prepare --new-execution` produce una asignación fresca
+    bajo el directorio operacional declarado, sin cargar identidades
+    históricas, y conserva feature, etapa, resultados, historia y
+    delegación; los registros viejos quedan byte a byte intactos."""
+    try:
+        fx = _Fixture(tmp_path, mode="ready")
+    except AssertionError as exc:
+        raise AssertionError(
+            "PC-1 (precondición): un proyecto declarado en "
+            f"{DECLARATION_REL} (schema 2) debe preparar, despachar y "
+            f"recibir bajo {OPERATIONAL_DIR}/: {exc}") from exc
+    op = fx.root / OPERATIONAL_DIR
+    old_exec, old_packet = fx.execution_id, fx.packet_id
+    assert (op / "executions" / old_exec / "execution.json").is_file(), (
+        f"PC-1: el contexto de ejecución debe publicarse bajo {OPERATIONAL_DIR}/")
+    assert (op / "packets" / old_packet / "REQUEST.json").is_file(), (
+        f"PC-1: el paquete debe publicarse bajo {OPERATIONAL_DIR}/")
+    assert not (fx.root / ".cdad").exists(), (
+        "PC-1: ningún registro nuevo debe ir a la raíz `.cdad/`")
+
+    # Progreso sembrado (con {} la preservación sería vacía).
+    state = fx.read_state()
+    state["postconditions_status"] = {"1": "pending", "2": "pending", "3": "pending"}
+    fx.write_state(state)
+    keys = ("active_feature", "current_stage", "tdd_substage", "audit_status",
+            "postconditions_status", "stage_history", "epic_features",
+            "hitl_delegation")
+    kept = {k: json.loads(json.dumps(state.get(k))) for k in keys}
+    assert kept["postconditions_status"] and kept["stage_history"], (
+        "precondición: progreso e historia no vacíos antes del traspaso")
+    old_bytes = {
+        "executions": _files_under(op / "executions" / old_exec),
+        "packets": _files_under(op / "packets" / old_packet),
+        "results": _files_under(op / "runtime" / "results" / old_exec),
+        "inbox": _files_under(op / "inbox"),
+    }
+    assert all(old_bytes.values()), "precondición: registros viejos no vacíos"
+
+    # Traspaso manual: limpiar solo la identidad viva.
+    state["execution"] = None
+    state["active_packet"] = None
+    fx.write_state(state)
+
+    proc = fx.run_packet(*prepare_args(
+        fx.root, role="test-writer", substage="red",
+        objective="asignación fresca tras traspaso manual",
+        extra=("--new-execution",)))
+    assert proc.returncode == 0, (
+        "PC-3: `prepare --new-execution` debe preparar una asignación fresca: "
+        f"{proc.stdout!r} {proc.stderr!r}")
+    after = fx.read_state()
+    new_exec = (after.get("execution") or {}).get("id")
+    new_packet = (after.get("active_packet") or {}).get("id")
+    assert new_exec and new_exec != old_exec, (
+        f"PC-3: la ejecución nueva no debe reutilizar {old_exec!r}: {new_exec!r}")
+    assert new_packet and new_packet != old_packet, (
+        f"PC-3: el paquete nuevo no debe reutilizar {old_packet!r}: {new_packet!r}")
+    for key in keys:
+        assert after.get(key) == kept[key], (
+            f"PC-3: `{key}` debe conservarse tras el traspaso: "
+            f"{kept[key]!r} -> {after.get(key)!r}")
+    assert {
+        "executions": _files_under(op / "executions" / old_exec),
+        "packets": _files_under(op / "packets" / old_packet),
+        "results": _files_under(op / "runtime" / "results" / old_exec),
+        "inbox": _files_under(op / "inbox"),
+    } == old_bytes, "PC-3: los registros históricos deben quedar byte a byte intactos"
+    new_ctx = op / "executions" / new_exec / "execution.json"
+    assert new_ctx.is_file(), (
+        f"PC-1: el contexto nuevo debe publicarse bajo {OPERATIONAL_DIR}/")
+    assert (op / "packets" / new_packet / "REQUEST.json").is_file(), (
+        f"PC-1: el paquete nuevo debe publicarse bajo {OPERATIONAL_DIR}/")
+    assert old_exec not in new_ctx.read_text(encoding="utf-8"), (
+        "PC-3: el contexto nuevo no debe cargar la identidad histórica")
+    assert not (fx.root / ".cdad").exists(), (
+        "PC-1: no debe aparecer una raíz `.cdad/` en el proyecto declarado")
+    valid = fx.validate_state()
+    assert valid.returncode == 0, (
+        f"PC-3: validate-state debe pasar tras el traspaso: "
+        f"{valid.stdout!r} {valid.stderr!r}")

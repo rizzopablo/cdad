@@ -8,12 +8,12 @@ Fuente: FINAL TEXT de sesión `<session>`, mensaje `msg_18afba2ad001kvVav26f27NP
 
 Dictamen: B-1/B-2 cerrados; N-1 BLOCKING; O-A/O-B OPTIONAL. N-1 identifica una incompatibilidad de la promesa C/v1 con el verificador publicado, que solo carga v2.
 
-## Decisión que corresponde a Pablo
+## Decisión que corresponde a <owner>
 
 ¿Debe C admitir contextos v1?
 
 - (a) C v2-only, rechazando v1 con diagnóstico explícito de contexto y preservando A para v1. Recomendación acotada de supervisión: simplifica y reutiliza el verificador existente sin ampliar sus consumidores; implica recortar la promesa de C y requiere decisión del owner.
-- (b) Mantener C/v1 mediante comparación canónica del paquete contra el contexto seleccionado, sin cambiar el verificador compartido. Alternativa si Pablo necesita esa compatibilidad.
+- (b) Mantener C/v1 mediante comparación canónica del paquete contra el contexto seleccionado, sin cambiar el verificador compartido. Alternativa si <owner> necesita esa compatibilidad.
 
 No se elige ninguna alternativa. No preparar otro architect antes de la decisión; tampoco implementar ni abrir TDD. La tensión plan/observaciones de §2.1 sigue pendiente para aprobación del owner.
 

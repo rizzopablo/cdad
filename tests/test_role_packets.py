@@ -14,6 +14,8 @@ matriz que los afirmaban se retiran con trazabilidad; el resto se conserva.
 
 from __future__ import annotations
 
+from _layout_support import OPERATIONAL_DIR, write_declaration
+
 import copy
 import hashlib
 import json
@@ -77,6 +79,7 @@ def _bootstrap_v2_carrier() -> dict:
         )
         policy_bytes = proposal.stdout
         (root / "docs" / "cdad-policy.json").write_text(policy_bytes, encoding="utf-8")
+        write_declaration(root)  # 020-001: proyecto declarado (schema 2)
 
         authority = root / AUTHORITY_REF
         authority.parent.mkdir(parents=True, exist_ok=True)
@@ -103,7 +106,7 @@ def _bootstrap_v2_carrier() -> dict:
                 {
                     "feature": FEATURE_ID,
                     "stage": "specification",
-                    "approved_by": "Pablo",
+                    "approved_by": "<owner>",
                     "approved_at": "2026-09-29T00:00:00Z",
                     # 005-001 T1 (D3): forma pineada — path + sha256 del
                     # contrato del fixture (migración mecánica del RED).
@@ -113,7 +116,7 @@ def _bootstrap_v2_carrier() -> dict:
                     ).hexdigest(),
                 }
             ],
-            "approver": "Pablo",
+            "approver": "<owner>",
             "last_updated": "2026-09-29T00:00:00Z",
             "execution": None,
             "active_packet": None,
@@ -143,7 +146,15 @@ def _bootstrap_v2_carrier() -> dict:
         assert bootstrap.returncode == 0, (
             f"fixture: bootstrap del portador v2 falló: {bootstrap.stderr}"
         )
-        contexts = sorted((root / ".cdad" / "executions").glob("*/execution.json"))
+        # Esta fixture corre en tiempo de importación y la usan ~280 pruebas de
+        # render/prepare ajenas al layout: busca el contexto en el directorio
+        # operacional declarado y, solo como tolerancia de esa infraestructura,
+        # en el `.cdad/` viejo, para que la colección nunca falle por un
+        # cambio de ubicación (la ubicación se verifica en las pruebas de
+        # layout, no aquí).
+        contexts = sorted(
+            (root / OPERATIONAL_DIR / "executions").glob("*/execution.json")
+        ) or sorted((root / ".cdad" / "executions").glob("*/execution.json"))
         assert len(contexts) == 1, (
             f"fixture: el bootstrap publicó {len(contexts)} contextos, se "
             "esperaba exactamente uno"
@@ -185,7 +196,7 @@ def state_document(
     spec_entry = {
         "feature": FEATURE_ID,
         "stage": "specification",
-        "approved_by": "Pablo",
+        "approved_by": "<owner>",
         "approved_at": "2026-09-29T00:00:00Z",
     }
     if contract_sha256 is not None:

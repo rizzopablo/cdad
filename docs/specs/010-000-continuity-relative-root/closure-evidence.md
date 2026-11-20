@@ -4,7 +4,7 @@ Estado: cierre pendiente; este registro no aprueba gates ni Memory Bank.
 
 ## Evidencia disponible
 
-- Contrato aprobado por Pablo: `spec.md`, sha256
+- Contrato aprobado por <owner>: `spec.md`, sha256
   `623b15e14290739f6f7c099183a06348b91bcce02eac4dce37265019f01737e2`.
 - Implementación: `3842e18`, dos scripts canónicos del skill, sin cambios de tests.
 - Tests: `6e71e78`, corrección de fixtures/oráculos sin alterar el contrato.

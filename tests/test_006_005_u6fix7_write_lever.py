@@ -63,7 +63,7 @@ Mapa test → postcondición (docstrings «E2/PD-24 (U6-7)»)
         -> E2/PD-24 (U6-7): los derivados que publica `prepare` conservan su
            mapa también para la herramienta de escritura.
     test_u6_7_derived_test_writer_keeps_temporary_and_tests_writable
-        -> PD-24: tests y `.cdad/tmp` (temporal declarado) allow; docs deny.
+        -> PD-24: tests y `.cdad-execution/tmp` (temporal declarado) allow; docs deny.
     test_u6_7_derived_implementer_and_readers_keep_their_maps
         -> implementer: código allow / tests deny; lectores: toda ruta deny.
   TestDerivedTemporaryRootKeepsBarriers
@@ -91,6 +91,8 @@ aserción de comportamiento ausente (no por ImportError ni por fixture).
 """
 
 from __future__ import annotations
+
+from _layout_support import write_declaration
 
 import json
 import os
@@ -147,7 +149,7 @@ PROBES = (
     "src/app.py",
     "README.md",
     "install.sh",
-    ".cdad/tmp/x",
+    ".cdad-execution/tmp/x",
     ".opencode/agents/cdad-test-writer.md",
     "addons/m/models/m.py",
     "addons/m/tests/test_m.py",
@@ -428,6 +430,7 @@ class DerivedProjectCase(unittest.TestCase):
         doc = policy_doc("cdad")
         if self.PRIVATE_PATHS is not None:
             doc["path_policy"]["private_paths"] = list(self.PRIVATE_PATHS)
+        write_declaration(self.root)
         (self.root / POLICY_FILE).write_text(
             json.dumps(doc, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -500,13 +503,13 @@ class TestDerivedAgentsWriteLever(DerivedProjectCase):
     def test_u6_7_derived_test_writer_keeps_temporary_and_tests_writable(
             self) -> None:
         """E2/PD-24 (U6-7): el derivado test-writer conserva `tests/x.py`
-        allow, `.cdad/tmp/x` allow (temporal declarado por la política) y
+        allow, `.cdad-execution/tmp/x` allow (temporal declarado por la política) y
         `docs/x.md` deny, también para la herramienta de escritura."""
         self.require_derived()
         text = self.derived["cdad-test-writer.md"]
         cases = (
             ("tests/x.py", "allow"),
-            (".cdad/tmp/x", "allow"),
+            (".cdad-execution/tmp/x", "allow"),
             ("docs/x.md", "deny"),
             ("scripts/x.py", "deny"),
         )
@@ -568,7 +571,7 @@ class TestDerivedTemporaryRootKeepsBarriers(DerivedProjectCase):
         self.require_derived()
         text = self.derived["cdad-test-writer.md"]
         allow_cases = (
-            (".cdad/tmp/aux.py", "el temporal declarado por la política"),
+            (".cdad-execution/tmp/aux.py", "el temporal declarado por la política"),
             ("tests/test_u67_fixture.py", "el scope de tests del rol"),
         )
         deny_cases = (

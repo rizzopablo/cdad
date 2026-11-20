@@ -1240,7 +1240,7 @@ class TestFinalIsolatedDistribution(unittest.TestCase):
                 )
                 dispatch_dir = (
                     project.root
-                    / ".cdad"
+                    / ".cdad-execution"
                     / "executions"
                     / str((state.get("execution") or {}).get("id") or "")
                     / "dispatches"

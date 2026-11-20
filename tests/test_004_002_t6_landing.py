@@ -57,6 +57,8 @@ diagnóstico. Sin lectura de implementación.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -118,7 +120,7 @@ def consumer_state(*, epic: str | None = CONSUMER_EPIC) -> dict:
             {
                 "feature": CONSUMER_FEATURE,
                 "stage": "specification",
-                "approved_by": "Pablo",
+                "approved_by": "<owner>",
                 "approved_at": "2026-09-29T00:00:00Z",
                 # 005-001 T1 (D3): forma pineada — el contrato del fixture
                 # es CONTRACT_BYTES, escrito en CONSUMER_CONTRACT (migración
@@ -127,7 +129,7 @@ def consumer_state(*, epic: str | None = CONSUMER_EPIC) -> dict:
                 "contract_sha256": hashlib.sha256(CONTRACT_BYTES).hexdigest(),
             }
         ],
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-09-29T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -199,7 +201,7 @@ def write_consumer_state(root: Path, state: dict) -> None:
 
 def v2_execution_docs(root: Path) -> dict[str, dict]:
     docs: dict[str, dict] = {}
-    base = root / ".cdad" / "executions"
+    base = root / ".cdad-execution" / "executions"
     if not base.is_dir():
         return docs
     for path in sorted(base.glob("*/execution.json")):
@@ -209,7 +211,7 @@ def v2_execution_docs(root: Path) -> dict[str, dict]:
 
 def published_packets(root: Path) -> dict[str, bytes]:
     pkts: dict[str, bytes] = {}
-    base = root / ".cdad" / "packets"
+    base = root / ".cdad-execution" / "packets"
     if not base.is_dir():
         return pkts
     for path in sorted(base.glob("*/PACKET.md")):
@@ -451,7 +453,7 @@ class TestPd12InstalledConsumerFlow(LandingInstall):
         self.assertEqual(
             record.returncode, 0,
             f"el registro de despacho falló desde la instalación: {record.stderr}")
-        dispatch = (root / ".cdad" / "executions" / execution_id / "dispatches"
+        dispatch = (root / ".cdad-execution" / "executions" / execution_id / "dispatches"
                     / "attempt-a1.json")
         self.assertTrue(
             dispatch.is_file(),
@@ -606,7 +608,7 @@ class TestPd12LegacyIntake(LandingInstall):
     def test_pd12_legacy_without_policy_keeps_legacy_intake(self) -> None:
         """PC-04 (010-004 §4.1/§7/INV-11, sustitución N-3 del owner). Un
         proyecto legacy SIN política y SIN contexto v2, con su documento de
-        ejecución v1 en .cdad/execution.json, ya NO conserva el camino
+        ejecución v1 en .cdad-execution/execution.json, ya NO conserva el camino
         implícito anterior (PD-12 de 004-002:112-115): la selección v1
         implícita se RECHAZA antes de publicar (rc != 0, stdout vacío), sin
         publicar paquete y sin efectos persistentes (INV-11). El v1 queda
@@ -618,7 +620,7 @@ class TestPd12LegacyIntake(LandingInstall):
         root = Path(temp) / "legacy"
         write_git_project(root)
         write_consumer_authority_and_contract(root)
-        cdad = root / ".cdad"
+        cdad = root / ".cdad-execution"
         cdad.mkdir()
         v1_path = cdad / "execution.json"
         v1_path.write_text(
@@ -683,15 +685,16 @@ class TestPd10ExplicitV1Context(unittest.TestCase):
                 "implementation_roots": ["src", "lib"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }
         (self.root / "docs").mkdir()
+        write_declaration(self.root)
         (self.root / "docs" / "cdad-policy.json").write_text(
             json.dumps(policy, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
         write_consumer_authority_and_contract(self.root)
         write_consumer_state(self.root, consumer_state())
-        cdad = self.root / ".cdad"
+        cdad = self.root / ".cdad-execution"
         cdad.mkdir()
         self.v1_path = cdad / "execution.json"
         self.v1_path.write_text(

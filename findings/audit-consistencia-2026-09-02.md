@@ -403,7 +403,7 @@ Sugerencia: borrarlos, o dejar un stub de una línea apuntando al canónico.
 
 Sección *"Aplicación actual"*: *"Deep-read reviews (**mi pipeline arXiv**)"*,
 *"**fb-012 lesson**"*, *"**guard-event-log (G1)**"*, y en Anti-scope
-*"NO toca cdad-epic (**gated por aprobación de Pablo**)"*. Nada de eso es
+*"NO toca cdad-epic (**gated por aprobación de <owner>**)"*. Nada de eso es
 resoluble para un consumidor externo del skill, y `tests/…-odoo…sh` ya corre
 un check A3 de sanitización sobre `skills/`. Mover ese contexto al ADR o a
 `activeContext.md` y dejar en la reference sólo el contrato.
@@ -416,7 +416,7 @@ imprime el nombre del directorio, no su contenido — error de comando, no de
 lectura). `docs/epics/epic-001-superpowers-gaps/plan.md` existe, está
 completo (resumen, scope, 5 features con dependencias y orden de ejecución,
 contratos cross-feature, criterios de aceptación, riesgos) y tiene
-`Status: Approved by Pablo on 2026-09-02`. El Gate E2 de `cdad-epic` **sí**
+`Status: Approved by <owner> on 2026-09-02`. El Gate E2 de `cdad-epic` **sí**
 está cumplido. Retiro esa afirmación.
 
 Lo que sí queda en pie, más acotado:

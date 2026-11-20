@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "CDAD guard recovery event (003-003 guard-event-v1)",
-  "description": "Durable recovery event persisted by `cdad_guard record` under `.cdad/executions/<execution_id>/guards/**` (D4) and keyed by execution_id+packet_id+attempt. It is emitted verbatim inside the `record-v1` envelope; the orchestrator owns the semantic decision (D1/D5).",
+  "description": "Durable recovery event persisted by `cdad_guard record` under `.cdad-execution/executions/<execution_id>/guards/**` (D4) and keyed by execution_id+packet_id+attempt. It is emitted verbatim inside the `record-v1` envelope; the orchestrator owns the semantic decision (D1/D5).",
   "type": "object",
   "additionalProperties": false,
   "required": [

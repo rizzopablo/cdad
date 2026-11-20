@@ -148,7 +148,7 @@ def _prepare_project(base: Path) -> tuple[Path, Path, str, str, Path]:
     packet_id = (state.get("active_packet") or {}).get("id")
     execution_id = (state.get("execution") or {}).get("id")
     assert packet_id and execution_id, f"fixture: sin paquete/ejecución activos: {state!r}"
-    ctx = root / ".cdad" / "executions" / execution_id / "execution.json"
+    ctx = root / ".cdad-execution" / "executions" / execution_id / "execution.json"
     assert ctx.is_file(), f"fixture: falta contexto {ctx}"
     feat = json.loads(ctx.read_text(encoding="utf-8"))["execution"]["feature_id"]
     return root, ctx, packet_id, home, feat
@@ -201,8 +201,8 @@ def _ctx_for_variant(variant: Path) -> Path:
 
 
 def _bodies(variant: Path) -> dict[str, bytes]:
-    d = variant / ".cdad" / "executions" / sorted(
-        (variant / ".cdad" / "executions").iterdir())[0].name / "continuity" / "bodies"
+    d = variant / ".cdad-execution" / "executions" / sorted(
+        (variant / ".cdad-execution" / "executions").iterdir())[0].name / "continuity" / "bodies"
     if not d.is_dir():
         return {}
     return {p.name: p.read_bytes() for p in sorted(d.glob("*.json"))}
@@ -638,7 +638,7 @@ def test_C_existing_controls_hold_under_relative_root(tmp_path: Path) -> None:
     _assert_begin_success(proc_ok, "PC-06/PC-07 precondición relativa (RED: hoy rc=1)")
 
     # PC-06: paquete alterado respecto de su render canónico.
-    packet_dir = root / ".cdad" / "packets" / packet_id
+    packet_dir = root / ".cdad-execution" / "packets" / packet_id
     intact_packet = packet_dir / "PACKET.md"
     assert intact_packet.is_file(), f"fixture: falta paquete publicado {intact_packet}"
     request_doc = packet_dir / "REQUEST.json"

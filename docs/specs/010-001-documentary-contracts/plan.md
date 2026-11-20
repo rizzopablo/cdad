@@ -1,6 +1,6 @@
 # Plan — 010-001 Contratos documentales compartidos
 
-**Estado:** borrador; pendiente de aprobación de Pablo.  
+**Estado:** borrador; pendiente de aprobación de <owner>.  
 **Contrato:** `docs/specs/010-001-documentary-contracts/spec.md`.
 
 ## Objetivo y fronteras
@@ -35,12 +35,12 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
       ],
       "focal_tests": "@validation_strategy",
       "observable_checks": [
-        "Aprobación recuperable de Pablo de spec, plan y D1-D4; materialización fiel sin registrar aprobación inexistente.",
+        "Aprobación recuperable de <owner> de spec, plan y D1-D4; materialización fiel sin registrar aprobación inexistente.",
         "Preparación y validación únicamente del encargo de T2, con fuentes, producto editable, oráculos protegidos y evidencia, sin permisos amplios sobre docs/**. T3 y todos los encargos siguientes se preparan y validan justo antes de su despacho, tras cerrar el encargo anterior."
       ],
       "regressions": [],
-      "integration_gate": "Pablo aprueba; el orquestador materializa y prepara y valida únicamente el encargo de T2. T3 y todos los encargos siguientes se preparan y validan justo antes de su despacho, tras cerrar el encargo anterior.",
-      "owner": "Pablo: aprobación; orquestador: materialización y validación de paquetes."
+      "integration_gate": "<owner> aprueba; el orquestador materializa y prepara y valida únicamente el encargo de T2. T3 y todos los encargos siguientes se preparan y validan justo antes de su despacho, tras cerrar el encargo anterior.",
+      "owner": "<owner>: aprobación; orquestador: materialización y validación de paquetes."
     },
     {
       "id": "T2",
@@ -159,14 +159,14 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
       "files": [],
       "observable_checks": [
         "Suite completa y comandos/resultados registrados por quien cierra; PC-01-16 acreditadas y pendientes admisibles visibles.",
-        "Registros automático y semántico separados; aceptación funcional recuperable de Pablo.",
+        "Registros automático y semántico separados; aceptación funcional recuperable de <owner>.",
         "Scribe devuelve borradores de Memory Bank conservando deferred-hardening; materialización solo tras aprobación; sin push ni publicación."
       ],
       "regressions": [
         "@validation_strategy"
       ],
-      "integration_gate": "Pablo acepta funcionalmente y aprueba borradores de Memory Bank antes de su incorporación; el orquestador registra solo aprobaciones obtenidas.",
-      "owner": "Quien cierra: suite y evidencia; reviewer: evidencia semántica; Pablo: aceptación/aprobación; scribe: borradores; orquestador: materialización y registro."
+      "integration_gate": "<owner> acepta funcionalmente y aprueba borradores de Memory Bank antes de su incorporación; el orquestador registra solo aprobaciones obtenidas.",
+      "owner": "Quien cierra: suite y evidencia; reviewer: evidencia semántica; <owner>: aceptación/aprobación; scribe: borradores; orquestador: materialización y registro."
     }
   ]
 }
@@ -174,7 +174,7 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
 
 ## T1 — Aprobación y materialización
 
-**Responsables:** Pablo y orquestador.
+**Responsables:** <owner> y orquestador.
 
 1. Solicitar aprobación explícita de spec y plan, incluidas D1–D4.
 2. Materializar los documentos sin registrar aprobación inexistente.
@@ -182,7 +182,7 @@ Cada despacho corresponde a un único rol y subfase. Las tareas siguientes son s
 
 **Verificación:**
 
-- Aprobación recuperable de Pablo.
+- Aprobación recuperable de <owner>.
 - Contrato materializado coherente con el texto aprobado.
 - Paquetes válidos y alcances delimitados.
 - Ningún permiso amplio sobre `docs/**` sustituye la identificación del producto.
@@ -321,11 +321,11 @@ Las correcciones vuelven al rol competente. El implementer no modifica verificad
 
 ## T6 — Cierre y Memory Bank
 
-**Responsables:** quien cierre la tarea, Pablo, scribe y orquestador, cada uno dentro de su función.
+**Responsables:** quien cierre la tarea, <owner>, scribe y orquestador, cada uno dentro de su función.
 
 1. Ejecutar una vez la suite completa declarada para el cierre, conforme a la política vigente.
 2. Consolidar evidencia automática y revisión independiente por separado.
-3. Solicitar aceptación funcional de Pablo.
+3. Solicitar aceptación funcional de <owner>.
 4. Despachar al scribe para los borradores de Memory Bank, conservando `deferred-hardening`.
 5. Materializar y registrar únicamente conforme a las aprobaciones obtenidas.
 
@@ -334,7 +334,7 @@ Las correcciones vuelven al rol competente. El implementer no modifica verificad
 - Suite completa y comandos/resultados registrados.
 - Ninguna postcondición comprometida sin acreditar.
 - Pendientes admisibles visibles y justificados.
-- Aceptación recuperable de Pablo.
+- Aceptación recuperable de <owner>.
 - Borradores de Memory Bank aprobados antes de su incorporación.
 - Sin push ni publicación externa.
 
@@ -441,7 +441,7 @@ El estado final mostró las mismas rutas preexistentes indicadas arriba. `git di
 
 HEAD permaneció en `bd69977694d3eea936f905c348ce4350e4c127d4`.
 
-**Archivos modificados por esta corrección: ninguno. Commit creado: ninguno.** No ejecuté implementación, generación, instalación ni suite. Ambos documentos siguen siendo borradores pendientes de aprobación de Pablo.
+**Archivos modificados por esta corrección: ninguno. Commit creado: ninguno.** No ejecuté implementación, generación, instalación ni suite. Ambos documentos siguen siendo borradores pendientes de aprobación de <owner>.
 
 ## Evidencia de la corrección — `architect-draft-003`
 
@@ -614,10 +614,10 @@ HEAD observado al inicio y al final:
 bd69977694d3eea936f905c348ce4350e4c127d4
 ```
 
-**Archivos modificados por este encargo: ninguno. Commit creado: ninguno.** La propuesta se devuelve como texto, sin materializar archivos. No ejecuté implementación, generación, instalación ni suite. El estado preexistente no se atribuye a este trabajo ni demuestra ausencia de escrituras transitorias. Ambos documentos permanecen pendientes de aprobación de Pablo.
+**Archivos modificados por este encargo: ninguno. Commit creado: ninguno.** La propuesta se devuelve como texto, sin materializar archivos. No ejecuté implementación, generación, instalación ni suite. El estado preexistente no se atribuye a este trabajo ni demuestra ausencia de escrituras transitorias. Ambos documentos permanecen pendientes de aprobación de <owner>.
 
 ## Aprobación
 
-Plan aprobado por Pablo el 2026-10-31 con la spec, mediante el mismo mandato HITL delegado. Versión aprobada: 4, con el bloque `plan-tasks` de T1–T6. Observaciones O1 y O2 del plan-review-003 no bloqueantes, diferidas con motivo en `owner-approval-2026-10-31.md`.
+Plan aprobado por <owner> el 2026-10-31 con la spec, mediante el mismo mandato HITL delegado. Versión aprobada: 4, con el bloque `plan-tasks` de T1–T6. Observaciones O1 y O2 del plan-review-003 no bloqueantes, diferidas con motivo en `owner-approval-2026-10-31.md`.
 
-Status: Approved by Pablo on 2026-10-31
+Status: Approved by <owner> on 2026-10-31

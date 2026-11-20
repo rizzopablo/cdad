@@ -60,7 +60,7 @@ Ninguno.
 | PD-14 | `test_pd14` + `test_t4_pd14` (in situ) | manifiesto publicado declara `source_version` == `version.txt` de la raíz de la instalación (oráculo acepta hex 7-64, versión con puntos, etiqueta v<N>); la versión cargada es verificable desde el artefacto |
 | PD-15 | documental, sin test (declarado en plan T3) | `opencode-delegation.md` §Reload: dato del dueño como dato; comprobación aislada registrada (CLI instalado 1.18.32, HOME/XDG temporales, agente de proyecto sombrea al global en proceso nuevo); **`opencode reload` NO se afirma** (sin sub-comando en 1.18.32; `serve` con 401 sin token) |
 | PD-16 | documental | review.md de 005-001: barrido de glitches sin resultados; PD-27→PD-20 corregido; veredicto changes-required, B1 bloqueante, B2..B7, tabla PD↔test, INV y 3 abstenciones preservados sin re-evaluar |
-| PD-17 | documental | `grep -rn -E "/home/|/Users/|ofap|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/` → rc=1; originales preservados en `.cdad/local/handoff-opencode{,-2}.original.md` (git-ignorado); `~/.claude`/`~/.agents`/`~/.config/opencode` permanecen por criterio D7 |
+| PD-17 | documental | `grep -rn -E "/home/|/Users/|<owner>|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/` → rc=1; originales preservados en `.cdad/local/handoff-opencode{,-2}.original.md` (git-ignorado); `~/.claude`/`~/.agents`/`~/.config/opencode` permanecen por criterio D7 |
 | PD-18 | `test_t4_pd18_walkthrough` | end-to-end con el CLI INSTALADO en raíz aislada (nunca HOME): prepare → replace con validación completa T1 (insumo conservado inexistente rc=2 campo/motivo/opción, sin efectos; corrección explícita rc=0) → `record-dispatch` rc=0, paquete despachado; sin rodeos manuales |
 
 Anti-mocks ✓ (todo subprocess contra el CLI real; instalación real vía `cdad-generate.py` + `install.sh` con `CDAD_INSTALL_ROOT` en tempdirs; HOME de cada subproceso aislado, con guard estructural INV-8 que rechaza cualquier corrida cuyo HOME sea el real). RED legítima registrada en el ledger; el T4 RED destapó el defecto de declaración de versión (PD-14) que se cerró en T4 GREEN (`9e5215f`), y el RED-FIX del oráculo (_is_versionish) fue de test, no de producto. INV-1..INV-5, INV-8 revisados contra el código: sin cambios de comportamiento en `prepare` normal (único call-site de `_validate_corrections` es el reemplazo, :2022).
@@ -83,7 +83,7 @@ git diff --stat f148304..HEAD | tail -30     → 30 archivos, +3774/−107
 grep -rn -iE "once per GREEN|full suite per GREEN|required full regression suite" \
      skills/cdad-cycle/references/ skills/cdad-cycle/packets/ skills/cdad-cycle/SKILL.md
   → rc=1 (cero resultados)                                            [PD-9]
-grep -rn -E "/home/|/Users/|ofap|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/
+grep -rn -E "/home/|/Users/|<owner>|cdad-adopted-[0-9a-f]" docs/epics/epic-005-real-operation/
   → rc=1 (cero resultados)                                            [PD-17]
 grep -c "## Test evidence policy" skills/cdad-cycle/references/stage-3-tdd.md → 1      [PD-8]
 grep -rln "Test evidence policy" .../references + .../packets + SKILL.md → 13 archivos  [PD-9]

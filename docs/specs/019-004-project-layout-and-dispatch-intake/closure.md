@@ -1,6 +1,6 @@
 # Closure — 019-004 project layout and dispatch intake
 
-Approved by the CDAD orchestrator under Pablo's renewed HITL delegation for epic
+Approved by the CDAD orchestrator under <owner>'s renewed HITL delegation for epic
 019, on his explicit instruction to keep improving the epic.
 
 ## Accepted contract

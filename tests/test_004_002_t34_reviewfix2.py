@@ -15,7 +15,7 @@ Mapa test → postcondición (hallazgo):
 
   A-1 rejected_loser_keeps_holders_lock_and_no_c_entry
         PD-11/I5b/I5d: quien pierde la adquisición (flock fallido) da
-        rc≠0 "ocupado" y NUNCA retira el .cdad/.lock del tenedor; su
+        rc≠0 "ocupado" y NUNCA retira el .cdad-execution/.lock del tenedor; su
         inodo permanece; un tercero también queda fuera; al soltar A,
         A publica y queda un solo paquete despachable.
   A-2  mixed_reconcile_..._rejected (record / opciones ordinarias)
@@ -32,7 +32,7 @@ Mapa test → postcondición (hallazgo):
   A-4  recovery_preserves_foreign_txn_directory
         PD-11 + invariante 7: la recuperación limpia solo los archivos
         de transacción PROPIOS; un directorio ajeno dentro de
-        .cdad/.txn conserva TODOS sus archivos.
+        .cdad-execution/.txn conserva TODOS sus archivos.
   B-1  record_survives_state_write_failure_via_retry
         I8: el registro del intento y el state se publican en UNA
         transacción; si la escritura del state falla, no queda registro
@@ -95,7 +95,7 @@ FOREIGN_TXN_DIR = "ajeno-no-transaccion-propia"
 FOREIGN_TXN_FILES = {
     "execution.json": b'{"execution_id": "ajeno (no de esta invocacion)"}\n',
     "REQUEST.json": b'{"entrada ajena": true}\n',
-    "PACKET.md": b"# PACKET ajeno en .cdad/.txn (no de esta ejecucion)\n",
+    "PACKET.md": b"# PACKET ajeno en .cdad-execution/.txn (no de esta ejecucion)\n",
     "state.json": b'{"ajeno": "ni se le borra el state ni el resto"}\n',
 }
 
@@ -124,15 +124,15 @@ def set_active_packet_status(root: Path, status: str) -> None:
 
 
 def lock_path(root: Path) -> Path:
-    return root / ".cdad" / ".lock"
+    return root / ".cdad-execution" / ".lock"
 
 
 def txn_root(root: Path) -> Path:
-    return root / ".cdad" / ".txn"
+    return root / ".cdad-execution" / ".txn"
 
 
 def dispatch_path(root: Path, eid: str, attempt_id: str) -> Path:
-    return (root / ".cdad" / "executions" / eid / "dispatches"
+    return (root / ".cdad-execution" / "executions" / eid / "dispatches"
             / f"{attempt_id}.json")
 
 
@@ -255,7 +255,7 @@ class TestA1LoserNeverRemovesHoldersLock(ReviewFix2Case):
         despachable. RED hoy: el punto before-lock-open no existe (I5d)."""
         root = self.root
         # Precondición: .cdad existe y .lock NO (p. ej. tras un rechazo I5c).
-        (root / ".cdad").mkdir(exist_ok=True)
+        (root / ".cdad-execution").mkdir(exist_ok=True)
 
         flag_a = Path(self._tmp) / "pause-a.flag"
         flag_b = Path(self._tmp) / "pause-b.flag"
@@ -277,7 +277,7 @@ class TestA1LoserNeverRemovesHoldersLock(ReviewFix2Case):
             "A en reserved-id (I5b) — precondición de reproducción")
         self.assertTrue(
             lock_path(root).is_file(),
-            msg="A pausado en reserved-id no dejó el rendezvous .cdad/.lock")
+            msg="A pausado en reserved-id no dejó el rendezvous .cdad-execution/.lock")
         ino_a = os.stat(lock_path(root)).st_ino
 
         proc_b = self.spawn_parked(argv_b, pause_at="before-lock-open",
@@ -312,7 +312,7 @@ class TestA1LoserNeverRemovesHoldersLock(ReviewFix2Case):
             msg=f"B no informa la ocupación: {outb_all!r}")
         self.assertTrue(
             lock_path(root).is_file(),
-            msg="el perdedor B retiró el .cdad/.lock del tenedor A "
+            msg="el perdedor B retiró el .cdad-execution/.lock del tenedor A "
                 "(A-1/F1): el único que retira es __exit__ de una "
                 "adquisición verificada")
         self.assertEqual(
@@ -497,7 +497,7 @@ HARNESS_OPEN = Path(__file__).resolve().parent / "_rf2_open_pause.py"
 class TestA3StaleInodeFdRejectedOnAcquire(ReviewFix2Case):
     def _spawn_b_harness(self, argv: list[str], flag: Path) -> subprocess.Popen:
         """B: el CLI real corrido bajo pruebas con el `os.open` pausado
-        tras abrir .cdad/.lock y antes del flock (instrumentación de la
+        tras abrir .cdad-execution/.lock y antes del flock (instrumentación de la
         sonda p_orphan_inode/harness_b del reviewer; argv puro intacto)."""
         env = dict(os.environ)
         env.pop(PAUSE_AT_VAR, None)
@@ -554,7 +554,7 @@ class TestA3StaleInodeFdRejectedOnAcquire(ReviewFix2Case):
             msg="precondición: el camino de fallo (I5c) debe retirar el "
                 ".lock que la propia invocación creó")
 
-        # C arranca de cero: crea .cdad/.lock con inodo NUEVO y se pausa.
+        # C arranca de cero: crea .cdad-execution/.lock con inodo NUEVO y se pausa.
         pol.write_bytes(orig)
         proc_c = self.spawn_parked(
             [a.replace("{tag}", "C") for a in argv],
@@ -617,7 +617,7 @@ class TestA4RecoveryPreservesForeignTxnDirectory(ReviewFix2Case):
     def test_a4_recovery_preserves_foreign_txn_dir_and_all_files(
             self) -> None:
         """A-4 (PD-11 + invariante 7): la recuperación limpia solo las
-        transacciones PROPIAS. Un directorio AJENO dentro de .cdad/.txn
+        transacciones PROPIAS. Un directorio AJENO dentro de .cdad-execution/.txn
         (nombre que no es el de una transacción propia) conserva TODOS
         sus archivos —execution.json, REQUEST.json, PACKET.md y
         state.json incluidos— tras una recuperación. RED hoy: la
@@ -647,7 +647,7 @@ class TestA4RecoveryPreservesForeignTxnDirectory(ReviewFix2Case):
         if not txn_root(root).is_dir():
             self.fail(
                 "precondición: la interrupción debe dejar un directorio de "
-                "transacción en .cdad/.txn")
+                "transacción en .cdad-execution/.txn")
         own_dirs = {p.name for p in txn_root(root).iterdir() if p.is_dir()}
         foreign = txn_root(root) / FOREIGN_TXN_DIR
         foreign.mkdir(parents=True, exist_ok=True)
@@ -666,7 +666,7 @@ class TestA4RecoveryPreservesForeignTxnDirectory(ReviewFix2Case):
 
         if not txn_root(root).is_dir():
             self.fail(
-                "la recuperación eliminó .cdad/.txn por completo, "
+                "la recuperación eliminó .cdad-execution/.txn por completo, "
                 f"incluido el directorio ajeno {FOREIGN_TXN_DIR} "
                 "(A-4: la limpieza debe tocar solo transacciones propias)")
         still_there = {p.name for p in txn_root(root).iterdir()
@@ -680,7 +680,7 @@ class TestA4RecoveryPreservesForeignTxnDirectory(ReviewFix2Case):
             self.assertTrue(
                 target.is_file(),
                 msg=f"la recuperación borró {name} del directorio ajeno "
-                    f"{FOREIGN_TXN_DIR} dentro de .cdad/.txn (A-4: la "
+                    f"{FOREIGN_TXN_DIR} dentro de .cdad-execution/.txn (A-4: la "
                     f"limpieza debe tocar solo transacciones propias)")
             self.assertEqual(
                 target.read_bytes(), payload,

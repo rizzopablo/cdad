@@ -80,6 +80,8 @@ positivo), no por ImportError.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import re
@@ -183,14 +185,14 @@ def fixture_state_document() -> dict:
         "stage_history": [{
             "feature": FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-05T00:00:00Z",
             # 005-001 T1 (D3): forma pineada — CONTRACT_BYTES es lo que
             # build_project escribe en CONTRACT_FILE (migración mecánica).
             "contract_path": CONTRACT_FILE,
             "contract_sha256": CONTRACT_SHA256,
         }],
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-10-05T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -205,6 +207,7 @@ def build_project(root: Path, *, test_module: bytes = GREEN_MODULE) -> Path:
     (root / "src").mkdir(exist_ok=True)
     (root / "docs").mkdir(exist_ok=True)
     # Política válida de tres campos (soportada por el runtime v2).
+    write_declaration(root)
     (root / POLICY_FILE).write_text(
         json.dumps({
             "schema_version": 1,
@@ -213,7 +216,7 @@ def build_project(root: Path, *, test_module: bytes = GREEN_MODULE) -> Path:
                 "implementation_roots": ["src"],
                 "documentation_roots": ["docs"],
             },
-            "temporary_roots": [".cdad/tmp"],
+            "temporary_roots": [".cdad-execution/tmp"],
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
     (root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -347,13 +350,13 @@ class T3RunEvidenceCase(unittest.TestCase):
                 "el contexto v2 de 001")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): el contexto v2 debe existir en "
-                ".cdad/executions")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+                ".cdad-execution/executions")
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):

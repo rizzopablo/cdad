@@ -140,6 +140,8 @@ RED hoy (HEAD 2afdc18, medido con esta misma fixture):
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import copy
 import hashlib
 import json
@@ -450,6 +452,7 @@ class _RecoveryProject:
         self.root.mkdir(parents=True, exist_ok=True)
         for rel in ("tests", "src", "lib", "docs"):
             (self.root / rel).mkdir(exist_ok=True)
+        write_declaration(self.root)
         (self.root / POLICY_REL).write_text(
             json.dumps({
                 "schema_version": 1,
@@ -458,7 +461,7 @@ class _RecoveryProject:
                     "implementation_roots": ["src", "lib"],
                     "documentation_roots": ["docs"],
                 },
-                "temporary_roots": [".cdad/tmp"],
+                "temporary_roots": [".cdad-execution/tmp"],
             }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (self.root / SPEC_REL).parent.mkdir(parents=True, exist_ok=True)
         (self.root / SPEC_REL).write_bytes(SPEC_BYTES)
@@ -607,7 +610,7 @@ class _RecoveryProject:
     # -- camino legítimo del recibo y la materialización ------------------
 
     def _stage_result(self) -> Path:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         (inbox / "role-report.md").write_bytes(
             b"# Role report (fixture demo-700)\n")
@@ -630,13 +633,13 @@ class _RecoveryProject:
                 "parts": [{
                     "name": "role-report",
                     "artifact_kind": "test-writer-role-report",
-                    "staged_path": ".cdad/inbox/role-report.md",
+                    "staged_path": ".cdad-execution/inbox/role-report.md",
                 }],
                 "observed_changes": {
                     "observation_status": "trusted",
                     "baseline_ref": "demo-baseline",
                     "baseline_sha256": "0" * 64,
-                    "manifest_path": ".cdad/inbox/changes.json",
+                    "manifest_path": ".cdad-execution/inbox/changes.json",
                 },
                 "run_evidence_ref": None,
             }, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
@@ -663,7 +666,7 @@ class _RecoveryProject:
         assert receipt.is_file(), (
             "precondición (fixture): el recibo durable existe antes de "
             "materializar")
-        authorization = self.root / ".cdad" / "inbox" / MATERIALIZE_NAME
+        authorization = self.root / ".cdad-execution" / "inbox" / MATERIALIZE_NAME
         authorization.write_text(
             json.dumps({
                 "schema_version": 1,
@@ -700,14 +703,14 @@ class _RecoveryProject:
         return entries(self.read_state())
 
     def execution_context_path(self) -> Path:
-        return (self.root / ".cdad" / "executions" / self.execution_id
+        return (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json")
 
     def packet_dir(self, packet_id: str | None = None) -> Path:
-        return self.root / ".cdad" / "packets" / (packet_id or self.packet_id)
+        return self.root / ".cdad-execution" / "packets" / (packet_id or self.packet_id)
 
     def packet_ids(self) -> list[str]:
-        base = self.root / ".cdad" / "packets"
+        base = self.root / ".cdad-execution" / "packets"
         if not base.is_dir():
             return []
         return sorted(p.name for p in base.iterdir() if p.is_dir())
@@ -724,7 +727,7 @@ class _RecoveryProject:
         return self.packet_dir(packet_id) / SUPERSEDED_FILE
 
     def receipt_dir(self, packet_id: str | None = None) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results" / self.execution_id
+        return (self.root / ".cdad-execution" / "runtime" / "results" / self.execution_id
                 / (packet_id or self.packet_id))
 
     def receipt_path(self, packet_id: str | None = None) -> Path:
@@ -738,7 +741,7 @@ class _RecoveryProject:
         contaminaría la observación con `execution.json`, que no es evidencia
         de despacho.
         """
-        base = (self.root / ".cdad" / "executions" / self.execution_id
+        base = (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "dispatches")
         if not base.is_dir():
             return []
@@ -1077,7 +1080,7 @@ def test_replace_disposed_packet_without_drift_prepares_successor(
         "PC-4 violada: la preparación no reescribe la política")
 
     assert fx.dispatch_files() == [
-        f".cdad/executions/{fx.execution_id}/dispatches/attempt-demo-700-001.json"
+        f".cdad-execution/executions/{fx.execution_id}/dispatches/attempt-demo-700-001.json"
     ], (
         "PC-4/§2.4 violada: el sucesor no se despacha automáticamente; "
         f"despachos registrados: {fx.dispatch_files()}")
@@ -2045,7 +2048,7 @@ def test_replace_disposed_packet_preserves_policy_and_approval_checks(
         assert fx.dispose("abandoned").returncode == 0, (
             "precondición (fixture (i)): la disposición se registra")
         policy = _load_json(fx.root / POLICY_REL)
-        policy["temporary_roots"] = [".cdad/tmp-revisado"]
+        policy["temporary_roots"] = [".cdad-execution/tmp-revisado"]
         (fx.root / POLICY_REL).write_text(
             json.dumps(policy, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -2263,11 +2266,11 @@ def test_replace_disposed_packet_has_no_extra_effects_and_cannot_repeat(
         "PC-14 violada: el reemplazo no crea recibo del predecesor")
 
     after_tree = fx.tree()
-    successor_dir = f".cdad/packets/{successor}"
+    successor_dir = f".cdad-execution/packets/{successor}"
     allowed_prefixes = (
         successor_dir,
         f"{successor_dir}/",
-        f".cdad/packets/{fx.packet_id}/{SUPERSEDED_FILE}",
+        f".cdad-execution/packets/{fx.packet_id}/{SUPERSEDED_FILE}",
         STATE_REL,
     )
     unexpected = sorted(
@@ -2275,7 +2278,7 @@ def test_replace_disposed_packet_has_no_extra_effects_and_cannot_repeat(
         if not (rel == STATE_REL
                 or rel == successor_dir
                 or rel.startswith(f"{successor_dir}/")
-                or rel == f".cdad/packets/{fx.packet_id}/{SUPERSEDED_FILE}"))
+                or rel == f".cdad-execution/packets/{fx.packet_id}/{SUPERSEDED_FILE}"))
     assert not unexpected, (
         "PC-14 violada: la preparación aceptada sólo cambia artefactos de "
         "publicación y trazabilidad; cambios inesperados: "

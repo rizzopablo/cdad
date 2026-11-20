@@ -26,7 +26,7 @@ prometer atomicidad global". `approval_effect` es siempre `false` y el comando
 no modifica el state ni el receipt (P3/P6).
 
 Fixtures offline: proyecto sintético v2 (misma maquinaria que T1: `prepare`
-de 001, observación I8, parts staged bajo `.cdad/inbox`, manifest vacío
+de 001, observación I8, parts staged bajo `.cdad-execution/inbox`, manifest vacío
 trusted) + `receive` de T1 para obtener el recibo durable. Las corridas de
 `materialize` contra el fixture se ejecutan con `cwd` en la raíz del fixture:
 los targets declarados son project-relative, no cwd-relative (un target mal
@@ -39,6 +39,8 @@ nunca por ImportError o syntax error.
 """
 
 from __future__ import annotations
+
+from _layout_support import write_declaration
 
 import hashlib
 import json
@@ -72,7 +74,7 @@ CONTRACT_BYTES = b"# Spec fixture 003-002 (T2 RED)\n"
 ROLE = "test-writer"
 SUBSTAGE = "red"
 ATTEMPT_ID = "attempt-t2-red-001"
-AUTHORIZED_BY = "Pablo (HITL delegada al orquestador OpenCode)"
+AUTHORIZED_BY = "<owner> (HITL delegada al orquestador OpenCode)"
 
 # staged part del fixture con materialización declarada (§7; kind de la tabla
 # cerrada para test-writer no-audit: raíz permitida `docs/specs/<feature>/`).
@@ -103,8 +105,8 @@ TARGET_SECOND = ALLOWED_ROOT + "test-writer-red-copy.md"
 PRIOR_BYTES = b"# contenido previo (fixture CAS T2)\n"
 OTHER_BYTES = b"# contenido otro (no es el previo declarado)\n"
 
-DESCRIPTOR_PATH = ".cdad/inbox/RESULT.json"
-MANIFEST_PATH = ".cdad/inbox/changes.json"
+DESCRIPTOR_PATH = ".cdad-execution/inbox/RESULT.json"
+MANIFEST_PATH = ".cdad-execution/inbox/changes.json"
 BASELINE_REF = "orchestrator-prepared-reference"
 BASELINE_SHA256 = "0" * 64
 
@@ -162,14 +164,14 @@ def fixture_state_document() -> dict:
         "stage_history": [{
             "feature": FEATURE_ID,
             "stage": "specification",
-            "approved_by": "Pablo",
+            "approved_by": "<owner>",
             "approved_at": "2026-10-05T00:00:00Z",
             # 005-001 T1 (D3): forma pineada — CONTRACT_BYTES es lo que
             # build_project escribe en CONTRACT_FILE (migración mecánica).
             "contract_path": CONTRACT_FILE,
             "contract_sha256": hashlib.sha256(CONTRACT_BYTES).hexdigest(),
         }],
-        "approver": "Pablo",
+        "approver": "<owner>",
         "last_updated": "2026-10-05T00:00:00Z",
         "execution": None,
         "active_packet": None,
@@ -189,7 +191,7 @@ class MaterializeProjectCase(unittest.TestCase):
 
     @property
     def final_dir(self) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results"
+        return (self.root / ".cdad-execution" / "runtime" / "results"
                 / self.execution_id / self.packet_id)
 
     @property
@@ -220,6 +222,7 @@ class MaterializeProjectCase(unittest.TestCase):
         (root / "tests").mkdir(exist_ok=True)
         (root / "src").mkdir(exist_ok=True)
         (root / "docs").mkdir(exist_ok=True)
+        write_declaration(root)
         (root / POLICY_FILE).write_text(
             json.dumps({
                 "schema_version": 1,
@@ -228,7 +231,7 @@ class MaterializeProjectCase(unittest.TestCase):
                     "implementation_roots": ["src", "lib"],
                     "documentation_roots": ["docs"],
                 },
-                "temporary_roots": [".cdad/tmp"],
+                "temporary_roots": [".cdad-execution/tmp"],
             }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (root / CONTRACT_FILE).parent.mkdir(parents=True, exist_ok=True)
         (root / CONTRACT_FILE).write_bytes(CONTRACT_BYTES)
@@ -261,13 +264,13 @@ class MaterializeProjectCase(unittest.TestCase):
                 "el contexto v2 de 001")
         self.execution_id = execution_id
         self.execution_context_path = (
-            self.root / ".cdad" / "executions" / execution_id
+            self.root / ".cdad-execution" / "executions" / execution_id
             / "execution.json")
         self.assertTrue(
             self.execution_context_path.is_file(),
             msg="precondición (fixture): el contexto v2 debe existir en "
-                ".cdad/executions")
-        self.packet_dir = self.root / ".cdad" / "packets" / self.packet_id
+                ".cdad-execution/executions")
+        self.packet_dir = self.root / ".cdad-execution" / "packets" / self.packet_id
         self.packet_path = self.packet_dir / "PACKET.md"
         self.request_path = self.packet_dir / "REQUEST.json"
         for path in (self.packet_path, self.request_path):
@@ -307,7 +310,7 @@ class MaterializeProjectCase(unittest.TestCase):
 
     def establish_received(self) -> None:
         """Fixture hasta el recibo durable de T1 (receive idéntico y verde)."""
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         for name, data in STAGED_PARTS.items():
             (inbox / f"{name}.md").write_bytes(data)
@@ -330,7 +333,7 @@ class MaterializeProjectCase(unittest.TestCase):
             "parts": [
                 {"name": name,
                  "artifact_kind": PART_KINDS[name],
-                 "staged_path": f".cdad/inbox/{name}.md"}
+                 "staged_path": f".cdad-execution/inbox/{name}.md"}
                 for name in STAGED_PARTS
             ],
             "observed_changes": {
@@ -411,7 +414,7 @@ class MaterializeProjectCase(unittest.TestCase):
         }
 
     def write_authorization(self, doc: dict) -> Path:
-        path = self.root / ".cdad" / "inbox" / "MATERIALIZE.json"
+        path = self.root / ".cdad-execution" / "inbox" / "MATERIALIZE.json"
         path.write_text(
             json.dumps(doc, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -515,7 +518,7 @@ class TestP4CreateOnlyExactTargets(MaterializeProjectCase):
             rel for rel, data in after.items() if before.get(rel) != data)
         for rel in changed:
             self.assertTrue(
-                rel in (TARGET_REPORT, TARGET_SECOND) or rel.startswith(".cdad/"),
+                rel in (TARGET_REPORT, TARGET_SECOND) or rel.startswith(".cdad-execution/"),
                 msg=f"P4: materialize escribió fuera de los targets "
                     f"declarados y del store/journal: {rel}")
 

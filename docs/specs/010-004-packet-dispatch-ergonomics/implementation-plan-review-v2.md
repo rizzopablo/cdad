@@ -9,7 +9,7 @@
 
 - **P-1:** cerrado en todas sus condiciones.
 - **P-2, P-3 y P-4:** tratados y cerrados.
-- **Lo que debe saber quien apruebe:** T1 queda libre, pero **T2 se detendrá con certeza** en su primer despacho, hasta que Pablo decida cómo emitir un POST-AUDIT de una sola subfase (hallazgo V2-1). La parada es segura y no acredita ningún bypass. Aprobar v2 tal como está significa aprobar esa parada conocida.
+- **Lo que debe saber quien apruebe:** T1 queda libre, pero **T2 se detendrá con certeza** en su primer despacho, hasta que <owner> decida cómo emitir un POST-AUDIT de una sola subfase (hallazgo V2-1). La parada es segura y no acredita ningún bypass. Aprobar v2 tal como está significa aprobar esa parada conocida.
 
 ## Intake (ruta C)
 
@@ -81,16 +81,16 @@ N-4, N-5 y N-6 siguen abiertos y postergados (`plan.md:79`). No los toqué.
 - No exijo modificar la plantilla: sería pedir producto no aprobado.
 
 **Consecuencia:**
-- Tras un AUDIT aprobado, T2 se detiene con certeza. No se rompe ninguna promesa; el coste es una decisión más de Pablo.
+- Tras un AUDIT aprobado, T2 se detiene con certeza. No se rompe ninguna promesa; el coste es una decisión más de <owner>.
 - La redacción invita a tratarlo como algo que el orquestador resuelve solo.
 - El riesgo concreto es repetir el patrón 008, donde un objetivo acotado convivía con la plantilla combinada. `:38` lo cierra para esta feature, pero el plan no nombra ese patrón.
 
-**Condición de cierre (si Pablo decide aplicarlo):** sin cambio de producto, el plan cumple estas tres cosas:
+**Condición de cierre (si <owner> decide aplicarlo):** sin cambio de producto, el plan cumple estas tres cosas:
 1. Afirma que hoy todo render `post-audit` combina subfases.
-2. Nombra a Pablo como quien decide la vía antes del primer despacho POST-AUDIT.
+2. Nombra a <owner> como quien decide la vía antes del primer despacho POST-AUDIT.
 3. Refleja esa decisión en `uncertainty` y `resolves_when` de T2.
 
-También basta con que Pablo registre esa decisión junto a la aprobación del plan. Este hallazgo no prolonga el ciclo: aplicarlo o descartarlo es decisión de Pablo.
+También basta con que <owner> registre esa decisión junto a la aprobación del plan. Este hallazgo no prolonga el ciclo: aplicarlo o descartarlo es decisión de <owner>.
 
 ## Revisado sin hallazgo
 
@@ -130,4 +130,4 @@ También basta con que Pablo registre esa decisión junto a la aprobación del p
   - `git diff --exit-code` y `git diff --cached --exit-code` → 0
   - `git status --short` → solo `?? docs/specs/010-000-continuity-relative-root/discovery.md`, ya presente antes
 
-**Plan no aprobado: la aprobación sigue pendiente de Pablo como decisión separada. Ni esta revisión, ni el receipt, ni la materialización la acreditan, y esta revisión no autoriza implementación.**
+**Plan no aprobado: la aprobación sigue pendiente de <owner> como decisión separada. Ni esta revisión, ni el receipt, ni la materialización la acreditan, y esta revisión no autoriza implementación.**

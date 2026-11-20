@@ -4,7 +4,7 @@
 - Fecha: 2026-11-07
 - Registro aplicado: `docs/specs/017-001-suite-performance/performance/operation-scope.json`
 - Comando por seleccion: `python3 scripts/cdad-suite.py close --evidence-root <dir> --nodeids <seleccion>` en proceso nuevo.
-- Evidencia cruda: intentos bajo `~/clawd/tmp/017-001-calibration/<seleccion>/` (fuera de los origenes copiados).
+- Evidencia cruda: intentos bajo `~/<workspace>/tmp/017-001-calibration/<seleccion>/` (fuera de los origenes copiados).
 
 ## Resultado por seleccion
 

@@ -64,6 +64,7 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 import cdad_continuity  # noqa: E402
+import cdad_layout  # noqa: E402
 # 008-004 PC-01/PC-03: the admission of a published packet has ONE owner
 # (`cdad_packet.verify_published_packet`); this border imports it instead of
 # re-implementing the integrity of a commission.
@@ -227,7 +228,11 @@ def _packet_paths(project_root: Path, packet_id: str) -> tuple[Path, dict[str, A
     """Resolve the published packet inside the explicit project (PD-3)."""
     if not isinstance(packet_id, str) or FLAT_NAME.fullmatch(packet_id) is None or ".." in packet_id:
         raise DelegateError(f"invalid packet id {packet_id!r}: expected a flat name")
-    packet_dir = project_root / ".cdad" / "packets" / packet_id
+    try:
+        operational = cdad_layout.operational_dir(project_root)
+    except cdad_layout.LayoutError as exc:
+        raise DelegateError(str(exc)) from exc
+    packet_dir = project_root / operational / "packets" / packet_id
     packet_md = packet_dir / "PACKET.md"
     request_path = packet_dir / "REQUEST.json"
     if not packet_md.is_file() or not request_path.is_file():

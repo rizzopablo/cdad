@@ -71,6 +71,8 @@ comportamiento, nunca ImportError/SyntaxError/NameError.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import subprocess
@@ -94,7 +96,7 @@ PLAN_FILE = f"docs/epics/{EPIC_ID}/plan.md"
 SPEC_BYTES = b"# Spec fixture (005-006 T5)\n"
 SPEC_SHA256 = hashlib.sha256(SPEC_BYTES).hexdigest()
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 APPROVED_AT = "2026-10-10T00:00:00Z"
 OBJECTIVE = "005-006 T5 PD-16/R1: primer encargo preparado y despachable"
 EXEC_ID = "exec-005-006-t5-resume-no-checkpoint-001"
@@ -163,6 +165,7 @@ def write_json(root: Path, rel: str, doc: dict) -> None:
 
 
 def write_policy(root: Path) -> None:
+    write_declaration(root)
     write_json(root, POLICY_FILE, {
         "schema_version": 1,
         "path_policy": {
@@ -170,7 +173,7 @@ def write_policy(root: Path) -> None:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     })
 
 
@@ -257,9 +260,10 @@ class T5Case(unittest.TestCase):
         self.assertEqual(
             (root / STATE_FILE).read_bytes(), state_before,
             msg=f"{label}: el state cambió")
-        self.assertFalse(
-            (root / ".cdad").exists(),
-            msg=f"{label}: quedó un espacio de publicación `.cdad/`")
+        for operational in (".cdad", ".cdad-execution"):
+            self.assertFalse(
+                (root / operational).exists(),
+                msg=f"{label}: quedó un espacio de publicación `{operational}/`")
 
 
 # ---------------------------------------------------------------- PD-17
@@ -289,7 +293,7 @@ class TestPd17ResumeWithoutCheckpoint(T5Case):
                 "expires_on": "2099-12-31",
             },
         })
-        head_rel = f".cdad/executions/{EXEC_ID}/continuity/head.json"
+        head_rel = f".cdad-execution/executions/{EXEC_ID}/continuity/head.json"
         self.assertFalse(
             (root / head_rel).is_file(),
             msg="PD-17 (precondición): el fixture no debe tener head de "
@@ -530,10 +534,11 @@ class TestPd16R1FirstCommissionPreparedAndDispatchable(T5Case):
                 (root / rel).is_file(),
                 msg=f"R1 (precondición): el proyecto nuevo NO debe tener "
                     f"Memory Bank preexistente ({rel} existe)")
-        self.assertFalse(
-            (root / ".cdad").exists(),
-            msg="R1 (precondición): sin ejecución preparada no debe "
-                "existir `.cdad/`")
+        for operational in (".cdad", ".cdad-execution"):
+            self.assertFalse(
+                (root / operational).exists(),
+                msg="R1 (precondición): sin ejecución preparada no debe "
+                    f"existir `{operational}/`")
         state0 = read_state(root)
         self.assertIsNone(
             state0.get("execution"),
@@ -568,7 +573,7 @@ class TestPd16R1FirstCommissionPreparedAndDispatchable(T5Case):
             active.get("status"), "prepared",
             msg=f"R1: el primer encargo debe quedar PREPARADO y "
                 f"despachable; got {state.get('active_packet')!r}")
-        packet_dir = root / ".cdad" / "packets" / packet_id
+        packet_dir = root / ".cdad-execution" / "packets" / packet_id
         self.assertTrue(
             (packet_dir / "REQUEST.json").is_file(),
             msg=f"R1: el paquete preparado sin REQUEST.json publicado: "
@@ -612,13 +617,13 @@ class TestPd16R1FirstCommissionPreparedAndDispatchable(T5Case):
             execution.get("feature_id"), FEATURE_ID,
             msg=f"R1: el binding de ejecución no liga la feature: "
                 f"{execution!r}")
-        context_path = (root / ".cdad" / "executions"
+        context_path = (root / ".cdad-execution" / "executions"
                         / (execution.get("id") or "")
                         / "execution.json")
         self.assertTrue(
             context_path.is_file(),
             msg=f"R1: el contexto de ejecución no fue publicado en "
-                f"`.cdad/executions/`: {context_path}")
+                f"`.cdad-execution/executions/`: {context_path}")
         valid = run_packet_cli([
             "validate-request", "--project-root", str(root),
             "--execution-context", str(context_path),

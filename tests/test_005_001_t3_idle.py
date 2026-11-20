@@ -60,6 +60,8 @@ ni SyntaxError.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import copy
 import hashlib
 import json
@@ -82,7 +84,7 @@ SPEC_FILE = f"docs/specs/{FEATURE_ID}/spec.md"
 SPEC_BYTES = b"# Spec fixture (005-001 T3)\n"
 SPEC_SHA256 = hashlib.sha256(SPEC_BYTES).hexdigest()
 
-APPROVER = "Pablo"
+APPROVER = "<owner>"
 OBJECTIVE = "005-001 T3 objective"
 ROLE, SUBSTAGE = "test-writer", "red"
 IDLE = "idle"
@@ -138,6 +140,7 @@ def write_state(root: Path, state: dict) -> None:
 
 def write_policy(root: Path) -> None:
     (root / "docs").mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_FILE).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -145,7 +148,7 @@ def write_policy(root: Path) -> None:
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 

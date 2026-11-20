@@ -87,12 +87,13 @@ over whatever is installed.
 
 Copy the templates from `assets/memory-bank-templates/` to the methodology directory: `cdad/` for a new project, or the registered `methodology_dir` when a locator exists. Fill in what you know, and leave clear `<TODO: ...>` placeholders for what the user must complete. Never overwrite existing metadata, documentation or plans.
 
-For a new project, record the placement before anything else is created: write `.cdad/project-layout.json` with exactly this closed schema, under this bootstrap's authorization only (no other role may edit it):
+For a new project, record the placement before anything else is created: write `cdad/project-layout.json` (the fixed declaration path) with exactly this closed schema, under this bootstrap's authorization only (no other role may edit it):
 
 ```json
 {
-  "schema_version": 1,
-  "methodology_dir": "cdad"
+  "schema_version": 2,
+  "methodology_dir": "cdad",
+  "operational_dir": ".cdad-execution"
 }
 ```
 

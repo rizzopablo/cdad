@@ -32,7 +32,7 @@ spikes descubrieron semánticas que habrían roto el spec si se escribía antes:
 ## 3. F1 — Ciclo CDAD de la especialización
 
 - **Spec** (`docs/specs/cdad-003-odoo/spec.md`): P1-P6, I1-I3, A1-A4. Aprobado
-  por el orquestador/HITL designado (Pablo delegó la decisión).
+  por el orquestador/HITL designado (<owner> delegó la decisión).
 - **RED**: `tests/validate-odoo-specialization.sh` — 63 asserts iniciales,
   52 en rojo (agentes/skills inexistentes).
 - **GREEN**: 5 variantes de agente + 3 skills de rol + `odoo-make-env` +
@@ -66,7 +66,7 @@ Postcondición nueva (`action_submit`: draft→submitted) validada de punta a pu
 ## 5. Incidente post-merge: esquema de permisos inválido (OpenCode no arrancaba)
 
 **Síntoma:** OpenCode se caía al iniciar con los agentes variante instalados;
-Pablo tuvo que eliminar los permisos granulares de las copias instaladas para
+<owner> tuvo que eliminar los permisos granulares de las copias instaladas para
 poder levantarlo.
 
 **Causa raíz:** el implementer reescribió los permisos con un esquema de
@@ -99,7 +99,7 @@ reinstalados (commit `8ace12e`).
 | A3 sanitización | ✅ | grep de patrones sensibles = 0 en lo publicable |
 | A4 reviewer≠implementer | ✅ | qwen3.7-plus vs deepseek-v4-flash |
 
-## 7. Pendientes (escalados a Pablo)
+## 7. Pendientes (escalados a <owner>)
 
 1. **Postgres del servidor privado saturado** (Tier 1): subir `max_connections`
    o pgbouncer — causa flakiness en los runs warm de F3. Se descubrió además

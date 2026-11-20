@@ -24,7 +24,7 @@
 - **Scribe:** produce borradores de Memory Bank; explícitamente no es el agente general de documentación. `sources/roles/scribe.md:15-28,37-42`.
 - **Orquestador:** coordina y materializa los resultados read-only, pero no ejecuta trabajo de rol inline. `sources/roles/orchestrator.md:118-142`.
 
-El plan aprobado conserva esta separación y reserva las aprobaciones a Pablo. `docs/epics/epic-010-documentary-specialization/plan.md:55-69,99-106`.
+El plan aprobado conserva esta separación y reserva las aprobaciones a <owner>. `docs/epics/epic-010-documentary-specialization/plan.md:55-69,99-106`.
 
 ### Capacidades existentes de alcance y verificación
 
@@ -87,7 +87,7 @@ GREEN modificaría únicamente el producto autorizado. El test-writer conservar�
 
 **No propuesto aquí:** un motor genérico de verdad, puntajes semánticos automáticos, formatos binarios, corpus real, nuevos agentes o nuevos campos de estado. Son exclusiones o decisiones diferidas por el plan. `plan.md:32-37,49-51,92-97`.
 
-## 5. Preguntas abiertas para Pablo
+## 5. Preguntas abiertas para <owner>
 
 1. **¿Las categorías deben tener una representación Markdown obligatoria o basta una distinción explícita y localizable?** La primera simplifica controles estructurales; la segunda evita imponer un formato innecesario.
 2. **¿Qué localizador mínimo debe exigirse según la fuente?** Para el piloto Markdown puede acordarse archivo más línea/sección; versiones y documentos cambiantes requieren decidir cómo conservar la referencia.

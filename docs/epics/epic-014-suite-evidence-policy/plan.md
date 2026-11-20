@@ -2,7 +2,7 @@
 epic_id: epic-014-suite-evidence-policy
 epic_name: Política de evidencia de suite completa
 created_at: 2026-11-02
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-02
 ---
 

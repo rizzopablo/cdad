@@ -18,11 +18,23 @@ import hashlib
 import json
 import os
 import sys
+from pathlib import Path
+
+# 020-001: the project layout declaration is resolved by its single owner
+# (`skills/cdad-cycle/scripts/cdad_layout.py`), never re-derived here.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_RESOLVER_DIR = _SCRIPT_DIR.parent / "skills" / "cdad-cycle" / "scripts"
+if _RESOLVER_DIR.is_dir() and str(_RESOLVER_DIR) not in sys.path:
+    sys.path.insert(0, str(_RESOLVER_DIR))
+try:
+    import cdad_layout  # noqa: E402
+except ImportError:  # pragma: no cover - the resolver always travels with the repo
+    cdad_layout = None
 
 RUNTIMES = ("opencode", "claude-code", "codex")
 
 MANIFEST_NAME = ".cdad-install-manifest.json"
-REGISTRY_REL = ".cdad/activation.json"
+REGISTRY_NAME = "activation.json"
 OPENCODE_CONFIG_REL = ".opencode/opencode.jsonc"
 OPENCODE_SKILLS_REL = ".config/opencode/skills"
 CLAUDE_SKILLS_REL = ".claude/skills"
@@ -34,6 +46,19 @@ HOOK_TILDE = "~/.claude/cdad-scripts/path-guard.sh"
 
 class ActivationError(Exception):
     """Error de contrato: se reporta y no se escribe nada."""
+
+
+def registry_rel(project_root: str) -> str:
+    """`<operational_dir>/activation.json` del proyecto declarado (020-001)."""
+    if cdad_layout is None:
+        raise ActivationError(
+            "falta el resolvedor de layout (skills/cdad-cycle/scripts/cdad_layout.py): "
+            "no se puede localizar el registro de activación del proyecto")
+    try:
+        operational = cdad_layout.operational_dir(project_root)
+    except cdad_layout.LayoutError as exc:
+        raise ActivationError(str(exc)) from exc
+    return os.path.join(operational, REGISTRY_NAME)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -204,7 +229,7 @@ def verify_identity(adopted_root: str, source_rels: list[str], artifacts: dict) 
 
 
 def load_prior_paths(project_root: str) -> dict:
-    path = os.path.join(project_root, REGISTRY_REL)
+    path = os.path.join(project_root, registry_rel(project_root))
     if not os.path.isfile(path):
         return {}
     try:
@@ -313,7 +338,7 @@ def build_registry(adopted_root: str, manifest_sha: str, emissions: list[dict]) 
 
 
 def write_registry(project_root: str, content: bytes) -> None:
-    dest = os.path.join(project_root, REGISTRY_REL)
+    dest = os.path.join(project_root, registry_rel(project_root))
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     tmp = dest + ".tmp"
     with open(tmp, "wb") as fh:
@@ -390,7 +415,7 @@ def main(argv=None) -> int:
             conflicts.append(escape)
 
     registry_escape = path_escape_conflict(
-        project_root, os.path.join(project_root, REGISTRY_REL)
+        project_root, os.path.join(project_root, registry_rel(project_root))
     )
     if registry_escape is not None:
         conflicts.append(registry_escape)

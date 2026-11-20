@@ -446,7 +446,7 @@ class _ClosureFixture(_BaseFixture):
     # -- observación ------------------------------------------------------
 
     def receipt_path_for(self, packet_id: str) -> Path:
-        return (self.root / ".cdad" / "runtime" / "results" / self.execution_id
+        return (self.root / ".cdad-execution" / "runtime" / "results" / self.execution_id
                 / packet_id / RECEIPT_NAME)
 
     def write_contract(self, data: bytes) -> None:

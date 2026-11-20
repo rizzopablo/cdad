@@ -111,8 +111,8 @@ python3 <skill>/scripts/cdad_packet.py prepare \
     --objective "<assignment>"
 ```
 
-- Creates `.cdad/executions/<execution-id>/execution.json` (`schema_version: 2`),
-  binds it in `state.execution`, and publishes `.cdad/packets/<id>/`.
+- Creates `.cdad-execution/executions/<execution-id>/execution.json` (`schema_version: 2`),
+  binds it in `state.execution`, and publishes `.cdad-execution/packets/<id>/`.
 - If any prior context exists (a v1 `.cdad/execution.json` or an active v2),
   add `--new-execution`; without it the call fails with a diagnostic.
 - A published v1 packet that is still active (`prepared`, or `dispatched`
@@ -249,7 +249,7 @@ python3 <skill>/scripts/cdad_packet.py prepare --project-root <root> \
   `prepared` it points to `--replace-packet`, if `dispatched` it points to reconciliation.
 - **Superseded record (PD-7/PD-24).** The previous packet's `REQUEST.json` and
   `PACKET.md` stay byte-for-byte identical; a durable record is written to
-  `.cdad/packets/<id>/.superseded.json` with `superseded_by`, `reason`, `superseded_at`,
+  `.cdad-execution/packets/<id>/.superseded.json` with `superseded_by`, `reason`, `superseded_at`,
   `contract_sha256_old`, `contract_sha256_new`, plus the field trace `conserved_fields`
   and `changed_fields` — disjoint and covering the assignment universe
   `{execution_id, role, substage, objective, inputs, read_scope, write_scope, invariants,

@@ -190,7 +190,7 @@ class PerlLayoutProject(LayoutProject):
         if private:
             path_policy["private_paths"] = list(private)
         doc = {"schema_version": 1, "path_policy": path_policy,
-               "temporary_roots": [".cdad/tmp"]}
+               "temporary_roots": [".cdad-execution/tmp"]}
         (self.root / POLICY_FILE).write_text(
             json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         files = (MAIN, CGI, BASIC, HELPER, *test_files, *extra_files)

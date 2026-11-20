@@ -2,7 +2,7 @@
 epic_id: epic-017-suite-performance
 epic_name: Rendimiento de la suite
 created_at: 2026-11-06
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-11-06
 ---
 

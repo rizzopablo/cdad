@@ -3,7 +3,7 @@ epic_id: epic-005-real-operation
 epic_name: Operación real y medición de contexto
 created_at: 2026-10-08
 status: approved
-approved_by: Pablo
+approved_by: <owner>
 approved_at: 2026-10-08
 ---
 
@@ -136,8 +136,8 @@ carpeta de Claude Code.
 
 ## Aprobación
 
-- Aprobador del plan: Pablo
-- Estado: Aprobado por Pablo el 2026-10-08 («ok», en respuesta a la solicitud de aprobar el plan y confirmar la delegación). Delegación en [execution.md](execution.md).
+- Aprobador del plan: <owner>
+- Estado: Aprobado por <owner> el 2026-10-08 («ok», en respuesta a la solicitud de aprobar el plan y confirmar la delegación). Delegación en [execution.md](execution.md).
 
 ## Cambios al plan
 
@@ -160,7 +160,7 @@ carpeta de Claude Code.
   transiciones) como unidades correctivas después de 005-004. Motivo: la medición D-1 de 005-007
   (`acceptance.md` §7) atribuye el gasto previo al primer despacho a la entrada al proceso (skills
   que mandan leer el state, `status` tardío y un DRIFT sin acción), no al registro posterior; la
-  revisión de Codex lo confirmó y fijó las restricciones de la fila 12. Aprobada por Pablo («si,
+  revisión de Codex lo confirmó y fijó las restricciones de la fila 12. Aprobada por <owner> («si,
   ok»). No cambia las filas 1–10 ni los criterios del epic; 005-004 conserva su alcance.
 - 2026-10-13 (segunda): se suma la fila 13 (005-013, contrato por unidad). Motivo: el pin del
   architect es el sha del plan completo, y agregar planificación futura invalida encargos que no
@@ -173,7 +173,7 @@ carpeta de Claude Code.
   (`docs/specs/005-003-orientation-reduction/discovery.md` §3), con los ajustes de las
   revisiones de Claude y Codex: la entrada habitual del orquestador pasa por la vista
   compacta; cada encargo trae su validación concreta y su contrato aplicable; los roles
-  commitean; D11 y R4 se cierran dentro de la feature. Aprobada por Pablo («De acuerdo»).
+  commitean; D11 y R4 se cierran dentro de la feature. Aprobada por <owner> («De acuerdo»).
   No cambia la lista de features ni su secuencia. En el criterio 3 del epic, el medidor
   se invoca desde el repo mientras no esté instalado.
 
@@ -195,7 +195,7 @@ carpeta de Claude Code.
   obsoletos y mensajes de recuperación. Motivos: el paquete del architect quedó
   obsoleto cuando se editó este plan después de prepararlo, y el CLI no ofrece
   cómo reemplazarlo. Es una ampliación del alcance de la feature, aprobada por
-  Pablo el 2026-10-08 («Estoy de acuerdo con la propuesta de Claude»); no
+  <owner> el 2026-10-08 («Estoy de acuerdo con la propuesta de Claude»); no
   cambia el alcance ni los criterios del epic. 005-002 suma la línea base de la
   primera sesión.
 - Esta edición vuelve a cambiar el hash del plan: el paquete
@@ -229,7 +229,7 @@ carpeta de Claude Code.
   correctiva de 005-001, y 005-002 pasa a depender de 005-005 y de la adopción
   de su versión. 005-002 suma el formato de medición neutral y opcional y una
   segunda muestra. Las dependencias pasan a nombrar features en vez de números
-  de orden. Cambia la descomposición del plan; aprobado por Pablo el
+  de orden. Cambia la descomposición del plan; aprobado por <owner> el
   2026-10-09 («si», sobre la propuesta de agregar 005-005). El criterio 1
   pasa de «las cuatro features» a «todas las features del plan»; los demás
   criterios no cambian.
@@ -239,7 +239,7 @@ carpeta de Claude Code.
   «una versión estable durante cada ciclo, con entregas entre ciclos», según la
   regla del dueño del 2026-10-09 (desarrollar y desplegar son tareas distintas).
   Se quitan del título y del alcance las referencias a la v7. Aprobado por
-  Pablo el 2026-10-10 («continúa como dices», sobre la propuesta de registrar
+  <owner> el 2026-10-10 («continúa como dices», sobre la propuesta de registrar
   005-006 y 005-007 con ese orden y las precisiones de Codex). No cambia el
   objetivo del epic.
 - 2026-10-10: la fila de 005-006 nombraba por su nombre interno el proyecto
@@ -252,7 +252,7 @@ carpeta de Claude Code.
   interoperable. El dueño aprueba la propuesta
   `priority-perl-cli-plan-2026-10-10.md` en el encargo de continuación
   («Apruebo la ampliación y prioridades documentadas en
-  …/priority-perl-cli-plan-2026-10-10.md», Pablo, 2026-10-10). El orden restante
+  …/priority-perl-cli-plan-2026-10-10.md», <owner>, 2026-10-10). El orden restante
   pasa a 005-002, 005-003, 005-007 y 005-004, según el plan vigente y sus
   dependencias; 005-002 no se cancela y no repite su discovery. Se agrega el
   criterio 5 (aceptación conjunta del consumidor); los criterios 1-4 no cambian.
@@ -268,6 +268,6 @@ carpeta de Claude Code.
   la señal durable es un JSON que solo escribe el doble de los tests y el
   transporte por stdin no está verificado en la versión instalada (v2.0.26). La
   orquesta Claude, porque el lado coordinador del recorrido es Claude
-  (`execution.md`, sección 2026-10-11). Aprobada por el dueño («ok: a», Pablo,
+  (`execution.md`, sección 2026-10-11). Aprobada por el dueño («ok: a», <owner>,
   2026-10-11, sobre la propuesta de ciclo correctivo orquestado por Claude con
   roles en OpenCode). No cambia el objetivo ni los criterios del epic.

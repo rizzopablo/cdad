@@ -112,6 +112,8 @@ un fixture mal armado.
 
 from __future__ import annotations
 
+from _layout_support import write_declaration
+
 import hashlib
 import json
 import os
@@ -329,6 +331,7 @@ def build_project(root: Path, plan: str, *,
     root.mkdir(parents=True, exist_ok=True)
     for rel in ("tests", "src", "docs"):
         (root / rel).mkdir(parents=True, exist_ok=True)
+    write_declaration(root)
     (root / POLICY_REL).write_text(json.dumps({
         "schema_version": 1,
         "path_policy": {
@@ -336,7 +339,7 @@ def build_project(root: Path, plan: str, *,
             "implementation_roots": ["src", "lib"],
             "documentation_roots": ["docs"],
         },
-        "temporary_roots": [".cdad/tmp"],
+        "temporary_roots": [".cdad-execution/tmp"],
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (root / PLAN_REL).parent.mkdir(parents=True, exist_ok=True)
     (root / PLAN_REL).write_text(plan, encoding="utf-8")
@@ -422,12 +425,12 @@ class Fixture:
         return proc
 
     def receive(self, packet_id: str) -> subprocess.CompletedProcess:
-        inbox = self.root / ".cdad" / "inbox"
+        inbox = self.root / ".cdad-execution" / "inbox"
         inbox.mkdir(parents=True, exist_ok=True)
         part_name = "architect-report"
         (inbox / f"{part_name}.md").write_bytes(
             b"# Role report (fixture 005-013 T1)\nInforme del architect.\n")
-        manifest_rel = ".cdad/inbox/changes.json"
+        manifest_rel = ".cdad-execution/inbox/changes.json"
         (self.root / manifest_rel).write_text(json.dumps({
             "schema_version": 1,
             "observation_status": "trusted",
@@ -444,7 +447,7 @@ class Fixture:
             "parts": [{
                 "name": part_name,
                 "artifact_kind": "role-report",
-                "staged_path": f".cdad/inbox/{part_name}.md",
+                "staged_path": f".cdad-execution/inbox/{part_name}.md",
             }],
             "observed_changes": {
                 "observation_status": "trusted",
@@ -454,7 +457,7 @@ class Fixture:
             },
             "run_evidence_ref": None,
         }
-        descriptor_path = self.root / ".cdad" / "inbox" / "RESULT.json"
+        descriptor_path = self.root / ".cdad-execution" / "inbox" / "RESULT.json"
         descriptor_path.write_text(
             json.dumps(descriptor, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8")
@@ -510,7 +513,7 @@ class Fixture:
 
     @property
     def execution_context_path(self) -> Path:
-        return (self.root / ".cdad" / "executions" / self.execution_id
+        return (self.root / ".cdad-execution" / "executions" / self.execution_id
                 / "execution.json")
 
     def packet_id(self) -> str:
@@ -520,7 +523,7 @@ class Fixture:
         return active["id"]
 
     def packet_dir(self, packet_id: str | None = None) -> Path:
-        return (self.root / ".cdad" / "packets"
+        return (self.root / ".cdad-execution" / "packets"
                 / (packet_id or self.packet_id()))
 
     def packet_bytes(self, packet_id: str | None = None) -> bytes:
@@ -569,7 +572,7 @@ def make_fixture(tmp_path: Path, plan: str, name: str = "proj") -> Fixture:
 
 def test_pd1_pd4_projection_locates_unit_and_pins_digest(fx: Fixture) -> None:
     """PD-1/PD-4 (AC-1/AC-3): `prepare --role architect --substage discovery`
-    publica `.cdad/packets/<packet_id>/UNIT-CONTRACT.md`; la parte `unit` es
+    publica `.cdad-execution/packets/<packet_id>/UNIT-CONTRACT.md`; la parte `unit` es
     el ENCABEZADO de la tabla (fila de encabezado + separador) + la fila de
     la unidad, verbatim; las filas de otras unidades se remueven; una sección
     compartida aparece como parte `shared`; y el digest del archivo coincide
@@ -617,7 +620,7 @@ def test_pd1_pd4_projection_locates_unit_and_pins_digest(fx: Fixture) -> None:
     assert contract["kind"] == CONTRACT_KIND_PROJECTION, (
         "PD-4/PD-5 violada: el contrato del paquete debe ser "
         f"{CONTRACT_KIND_PROJECTION!r}: {contract!r}")
-    assert contract["path"] == f".cdad/packets/{packet_id}/UNIT-CONTRACT.md", (
+    assert contract["path"] == f".cdad-execution/packets/{packet_id}/UNIT-CONTRACT.md", (
         "PD-4 violada: el path del contrato debe ser la proyección publicada "
         f"junto al paquete: {contract['path']!r}")
     assert contract["sha256"] == sha256_bytes(
@@ -942,7 +945,7 @@ def test_b14_three_plan_forms_locator_and_coherent_pin(
     contract = fx.request(packet_id)["contract"]
     assert contract["kind"] == CONTRACT_KIND_PROJECTION, (
         f"PD-4 violada ({form}): {contract!r}")
-    assert contract["path"] == f".cdad/packets/{packet_id}/UNIT-CONTRACT.md", (
+    assert contract["path"] == f".cdad-execution/packets/{packet_id}/UNIT-CONTRACT.md", (
         f"PD-4 violada ({form}): {contract['path']!r}")
     assert contract["sha256"] == sha256_bytes(
         fx.unit_contract_path(packet_id).read_bytes()), (
@@ -1039,7 +1042,7 @@ def test_pd6_control_receive_does_not_approve_and_status_is_read_only(
     assert fx.snapshot() == before, (
         "PD-11 violada: `status` es de SOLO LECTURA; dos `status` consecutivos "
         "deben dejar el proyecto byte a byte idéntico")
-    assert not list(fx.root.glob(".cdad/packets/*/.impact.json")), (
+    assert not list(fx.root.glob(".cdad-execution/packets/*/.impact.json")), (
         "PD-11 violada: `status` nunca crea el journal de impacto")
 
 
@@ -1049,7 +1052,7 @@ def test_pd6_control_receive_does_not_approve_and_status_is_read_only(
 # bucket h): `prepare` con `--out-dir` custom acuña el `packet_id` contra el
 # directorio CUSTOM (vacío) mientras la proyección se publica en la ruta
 # canónica bajo el directorio POR DEFECTO
-# (`.cdad/packets/<packet_id>/UNIT-CONTRACT.md`); si ese `packet_id` ya existe
+# (`.cdad-execution/packets/<packet_id>/UNIT-CONTRACT.md`); si ese `packet_id` ya existe
 # ahí, el commit hacía `os.replace` y REESCRIBÍA el `UNIT-CONTRACT.md` del
 # paquete viejo, dejando su `contract.sha256` durable sin coincidir con el
 # archivo (paquete irrecebible). Viola INV-3 («una proyección publicada nunca
@@ -1228,7 +1231,7 @@ def test_b1_no_collision_with_custom_out_dir_still_publishes(
     """Control de B1 (PD-4/PD-5): con un `--out-dir` custom VACÍO y NINGÚN
     paquete con ese `packet_id` en el directorio por defecto, `prepare` rc=0 y
     la proyección se publica en la ruta canónica
-    (`.cdad/packets/<packet_id>/UNIT-CONTRACT.md`), con
+    (`.cdad-execution/packets/<packet_id>/UNIT-CONTRACT.md`), con
     `sha256(UNIT-CONTRACT.md) == contract.sha256 ==
     active_packet.contract_sha256`; el paquete (PACKET.md + REQUEST.json) queda
     en el directorio custom. Evita que la corrección de B1 rompa el camino sin
@@ -1273,7 +1276,7 @@ def test_b1_no_collision_with_custom_out_dir_still_publishes(
     contract = request["contract"]
     assert contract["kind"] == CONTRACT_KIND_PROJECTION, (
         f"PD-4 violada (control de B1): {contract!r}")
-    assert contract["path"] == f".cdad/packets/{packet_id}/UNIT-CONTRACT.md", (
+    assert contract["path"] == f".cdad-execution/packets/{packet_id}/UNIT-CONTRACT.md", (
         f"PD-4 violada (control de B1): {contract['path']!r}")
     assert contract["sha256"] == sha256_bytes(
         fx.unit_contract_path(packet_id).read_bytes()), (

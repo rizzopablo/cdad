@@ -78,4 +78,4 @@ Archivos modificados: ninguno. Commit: ninguno (subfase solo-lectura; reportado 
 
 ---
 
-**Estado de los movimientos:** AUDIT entregado FINAL TEXT, una sola subfase; no preparé, ni ejecuté POST-AUDIT o RED ni indagué más paquetes (fuente C única). El gate de integración corresponde al orquestador (`integration_gate` del paquete: Pablo aprueba o mandato explícito vigente antes de POST-AUDIT).
+**Estado de los movimientos:** AUDIT entregado FINAL TEXT, una sola subfase; no preparé, ni ejecuté POST-AUDIT o RED ni indagué más paquetes (fuente C única). El gate de integración corresponde al orquestador (`integration_gate` del paquete: <owner> aprueba o mandato explícito vigente antes de POST-AUDIT).

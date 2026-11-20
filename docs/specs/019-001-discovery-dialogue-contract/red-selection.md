@@ -13,4 +13,4 @@ structural verifier cannot prove that instructions are understandable or that an
 agent follows them. Semantic judgment and observed agent use remain independent
 evidence, not substitutes for RED.
 
-**Decision:** approved by the CDAD orchestrator under Pablo's delegated HITL.
+**Decision:** approved by the CDAD orchestrator under <owner>'s delegated HITL.
