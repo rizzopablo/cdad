@@ -91,6 +91,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.install_backup_oracle import backups_holding, snapshot_tree
 from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -410,9 +411,10 @@ class TestReview5SkillGuardConflicts(unittest.TestCase):
     artifacts too — same conflict-and-preserve policy (B2)."""
 
     def test_review5_b2_modified_skill_and_guard_reported_and_preserved(self) -> None:
-        """PD-7 (review-5 B2): a locally modified installed skill and a locally
-        modified installed guard must be reported as conflicts by dry-run AND
-        install, and must be preserved byte for byte."""
+        """PD-7 (review-5 B2, ALWAYS-DEPLOY-WITH-BACKUP since 2026-11-19): a
+        locally modified installed skill and guard no longer block the install:
+        they end with the expected staged bytes, the previous bytes are backed
+        up, the dry-run changes nothing and `--check` PASSes."""
         with tempfile.TemporaryDirectory(prefix="cdad-t5b-b2-") as root_dir:
             root = Path(root_dir)
             first = run_installer(staging_product(), root, "--basic")
@@ -422,51 +424,62 @@ class TestReview5SkillGuardConflicts(unittest.TestCase):
                 root, "skills/cdad-cycle/SKILL.md", ".config/opencode/skills/"
             )
             guard = find_deployed(root, "scripts/claude-code-path-guard.sh")
-            skill_mod = skill.read_bytes() + b"\n<!-- local skill edit must survive -->\n"
+            skill_expected = skill.read_bytes()
+            guard_expected = guard.read_bytes()
+            skill_mod = skill_expected + b"\n<!-- local skill edit must be backed up -->\n"
             skill.write_bytes(skill_mod)
-            guard_mod = guard.read_bytes() + b"\n# local guard edit must survive\n"
+            guard_mod = guard_expected + b"\n# local guard edit must be backed up\n"
             guard.write_bytes(guard_mod)
-            skill_rel = str(skill.relative_to(root))
-            guard_rel = str(guard.relative_to(root))
 
+            before_dry = snapshot_tree(root)
             dry = run_installer(staging_product(), root, "--dry-run", "--basic")
             dry_out = dry.stdout + dry.stderr
-            # RED pivot (B2): today the dry-run reports NO conflict for these
-            # owned files and a later reinstall silently overwrites both.
-            self.assertRegex(
-                dry_out,
-                r"(?i)conflict",
-                "review-5 B2 (PD-7): dry-run must report the locally modified "
-                f"skill ({skill_rel}) and guard ({guard_rel}) as conflicts; "
-                f"dry-run output:\n{dry_out}",
-            )
-            for rel in (skill_rel, guard_rel):
+            self.assertEqual(dry.returncode, 0, dry_out)
+            for name in (skill.parent.name, guard.name):
                 self.assertIn(
-                    rel,
+                    name,
                     dry_out,
-                    f"review-5 B2 (PD-7): the conflict report must name the "
-                    f"affected path {rel}; dry-run output:\n{dry_out}",
+                    f"review-5 B2 (PD-7): the dry-run plan must name the "
+                    f"affected destination {name}; dry-run output:\n{dry_out}",
                 )
+            self.assertEqual(
+                snapshot_tree(root),
+                before_dry,
+                "review-5 B2 (PD-7): a dry-run must not overwrite, back up or "
+                "create anything",
+            )
 
             second = run_installer(staging_product(), root, "--basic")
             second_out = second.stdout + second.stderr
-            self.assertRegex(
-                second_out,
-                r"(?i)conflict",
-                "review-5 B2 (PD-7): install must also report the modified "
-                f"skill/guard as conflicts; install output:\n{second_out}",
+            self.assertEqual(
+                second.returncode,
+                0,
+                "always-deploy: modified skill/guard must not stop the "
+                f"install; install output:\n{second_out}",
             )
             self.assertEqual(
                 skill.read_bytes(),
-                skill_mod,
-                "review-5 B2 (PD-7): the modified skill must be preserved, "
-                "neither overwritten nor deleted without explicit resolution",
+                skill_expected,
+                "always-deploy: the skill must end with the expected (staged) bytes",
             )
             self.assertEqual(
                 guard.read_bytes(),
-                guard_mod,
-                "review-5 B2 (PD-7): the modified guard must be preserved, "
-                "neither overwritten nor deleted without explicit resolution",
+                guard_expected,
+                "always-deploy: the guard must end with the expected (staged) bytes",
+            )
+            for dest, previous in ((skill, skill_mod), (guard, guard_mod)):
+                self.assertTrue(
+                    backups_holding(root, dest, previous),
+                    f"always-deploy: the user's previous bytes of "
+                    f"{dest.relative_to(root)} must be saved as a backup "
+                    "before the overwrite",
+                )
+            check = run_installer(staging_product(), root, "--check")
+            self.assertEqual(
+                check.returncode,
+                0,
+                "always-deploy: --check must PASS after the install; output:\n"
+                f"{check.stdout + check.stderr}",
             )
 
 

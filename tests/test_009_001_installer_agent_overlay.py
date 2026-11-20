@@ -18,6 +18,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.install_backup_oracle import backups_holding, snapshot_tree
 from tests.suite_operation_markers import operation
 
 
@@ -116,6 +117,18 @@ class AgentOverlayContract(unittest.TestCase):
         ]
         self.assertEqual(agent_conflict_lines, [],
                          "PC-1: a valid frontmatter overlay is not a conflict for cdad-reviewer.md")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # Idempotence: a further run over the model-only difference changes
+        # nothing (same files, same bytes, no extra backup).
+        settled = snapshot_tree(self.root)
+        again = self.install()
+        self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+        self.assertIn(b"model: user/chosen-model", target.read_bytes(),
+                      "PC-1: the user model survives repeated installs")
+        self.assertEqual(
+            {k: v for k, v in snapshot_tree(self.root).items() if k != MANIFEST},
+            {k: v for k, v in settled.items() if k != MANIFEST},
+            "PC-1: a second install over a model-only difference is a no-op")
 
     def test_pc2_update_rebases_non_overlay_bytes_onto_new_staging(self) -> None:
         self.install().check_returncode()
@@ -154,20 +167,29 @@ class AgentOverlayContract(unittest.TestCase):
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
 
     def test_pc4_non_overlay_local_edit_is_preserved_and_not_adopted(self) -> None:
+        """PC-4 (always-deploy-with-backup, 2026-11-19): a local edit outside the
+        `model:` overlay no longer blocks the install. The destination ends with
+        the staged bytes (no overlay present), the previous bytes are backed up,
+        the destination is owned with a matching digest and `--check` PASSes."""
         self.install().check_returncode()
-        _, _, name = self.staged_agent()
+        staged, _, name = self.staged_agent()
         target = self.installed_agent(name)
         target.write_bytes(target.read_bytes() + b"\nlocal body edit\n")
         local = target.read_bytes()
         result = self.install()
         output = result.stdout + result.stderr
-        self.assertEqual(target.read_bytes(), local, "PC-4: conflicting local bytes must not be overwritten")
-        self.assertIn("conflict", output.lower(), "PC-4: local non-overlay drift must be diagnosed")
+        self.assertEqual(result.returncode, 0, output)
+        self.assertEqual(target.read_bytes(), staged.read_bytes(),
+                         "PC-4: the destination must end with the expected (staged) bytes")
+        self.assertTrue(backups_holding(self.root, target, local),
+                        "PC-4: the user's previous bytes must be saved as a backup")
         manifest = json.loads((self.root / MANIFEST).read_text())
-        self.assertNotIn(target.relative_to(self.root).as_posix(), manifest.get("artifacts", {}),
-                         "PC-4: conflicted user content must not be adopted as owned")
+        rel = target.relative_to(self.root).as_posix()
+        self.assertEqual(manifest["artifacts"][rel]["sha256"],
+                         hashlib.sha256(target.read_bytes()).hexdigest(),
+                         "PC-4: the deployed destination is owned with its real digest")
         check = self.install("--check")
-        self.assertNotEqual(check.returncode, 0, "PC-4: unresolved drift is not a successful check")
+        self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
 
     def test_pc5_validator_rejects_installable_model_but_accepts_installed_overlay(self) -> None:
         self.install().check_returncode()

@@ -310,7 +310,7 @@ docs/specs:
 README.md
 Python 3.13.5
 <owner>
-<owner-email>
+info@<owner>.saas.ar
 
 TEXT: Templates are in place. Now I'll fill in the project brief with what the code shows, leaving open questions marked as pending.
 TOOL write {"path": "~/<workspace>/tmp/cand019b/docs/projectbrief.md", "content": "# Project Brief\n\n## Project purpose\n\n`notes-cli` is a tiny command-line tool for keeping short text notes: add a note, list notes, remove a note. The owner is the only user for now.\n\n## Technical stack\n\n- **Language**: Python 3 (3.13 on the development machine); standard library only.\n- **Main framework**: none.\n- **Database**: none. Notes live in a JSON file (`notes.json` by default, or the path in the `NOTES_FILE` environment variable).\n- **Test tooling**: pending (owner to choose between `unittest` and `pytest`). The `tests/` folder exists and is empty.\n- **Lint / type check**: none configured.\n- **CI**: none configured (recorded as debt, see `activeContext.md`).\n\n## Stakeholders and roles\n\n- **Spec approver**: pending. The owner has not yet said who approves specs (see `activeContext.md`).\n- **Tech lead**: not applicable.\n- **Others**: none.\n\n## Known constraints\n\n- Stdlib only, unless the owner decides otherwise.\n- The CLI is run as a module (`python -m notes.cli ...`), because `notes/cli.py` uses a relative import.\n\n## Overall scope\n\nCovered: adding, listing and removing notes; tagging notes (a note can carry several tags); listing notes by tag.\n\nLeft out for now: editing note text, search by text, multi-user access, sync, and any UI beyond the terminal.\n\n## External resources\n\nNone.\n\n---\n\nLast updated: 2026-11-15\n"} 

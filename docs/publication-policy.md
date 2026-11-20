@@ -149,3 +149,13 @@ workspace → `<workspace>`, rutas de HOME → `<repo>`/`~`, ids de sesión →
 local de patrones sensibles rc=0, instalación aislada y `--check` PASS. La URL
 del repositorio público se conserva en los dos documentos que describen dónde se
 publica el proyecto. Detalle local: `.cdad-execution/publication/publish-2026-11-19.md`.
+
+## Publicación 2026-11-19 (segunda) — corrección del instalador
+
+Base remota `12753d9f`. Commit squash único y fast-forward; sin force push.
+Publica la corrección `f7df80ee` (instalar deja siempre los bytes actuales y
+respalda la copia divergente en `<install root>/.cdad-install-backups/`) y
+`5102b58c` (cuatro casos adaptados, sin nodeids nuevos). Mismo saneamiento del
+árbol completo que la publicación anterior; `make validate` con el conjunto
+local de patrones sensibles rc=0. Detalle local:
+`.cdad-execution/publication/publish-2026-11-19.md`.

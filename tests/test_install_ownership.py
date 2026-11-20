@@ -66,6 +66,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.install_backup_oracle import backups_holding, snapshot_tree
 from tests.suite_operation_markers import operation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -380,46 +381,65 @@ class TestT5ConflictSemantics(unittest.TestCase):
     """Real-repo installer: conflict reporting without destroying local work."""
 
     def test_t5_case2_modified_installed_file_reported_and_preserved(self) -> None:
-        """PD-7: an installed file whose bytes differ from the registered hash
-        is reported as a conflict by dry-run AND install; it is neither
-        overwritten nor deleted without explicit resolution."""
+        """PD-7 (ALWAYS-DEPLOY-WITH-BACKUP, owner decision 2026-11-19): an
+        installed file whose bytes differ from what the install would write no
+        longer blocks the install. The dry-run changes nothing; the real install
+        completes (rc=0), leaves the destination with the expected (staged)
+        bytes, keeps a backup holding the user's previous bytes, and `--check`
+        PASSes afterwards. Without this, a local edit is either silently lost
+        or stops the user from receiving the update."""
         with tempfile.TemporaryDirectory(prefix="cdad-t5-conflict-") as root_dir:
             root = Path(root_dir)
             first = run_installer(staging_product(), root, "--basic")
             self.assertEqual(first.returncode, 0, first.stderr or first.stdout)
 
             installed = find_deployed(root, "agents/opencode/cdad-architect.md")
-            modified = installed.read_bytes() + b"\n<!-- local edit must survive -->\n"
+            expected = installed.read_bytes()
+            modified = expected + b"\n<!-- local edit must be backed up -->\n"
             installed.write_bytes(modified)
-            rel = str(installed.relative_to(root))
 
+            before_dry = snapshot_tree(root)
             dry = run_installer(staging_product(), root, "--dry-run", "--basic")
             dry_out = dry.stdout + dry.stderr
-            self.assertRegex(
-                dry_out,
-                r"(?i)conflict",
-                "PD-7: dry-run must report the locally modified installed "
-                f"file ({rel}) as a conflict; dry-run output:\n{dry_out}",
-            )
+            self.assertEqual(dry.returncode, 0, dry_out)
             self.assertIn(
-                rel,
+                installed.name,
                 dry_out,
-                "PD-7: the conflict report must name the affected path",
+                "PD-7: the dry-run plan must name the affected destination",
+            )
+            self.assertEqual(
+                snapshot_tree(root),
+                before_dry,
+                "PD-7: a dry-run must not overwrite, back up or create anything",
             )
 
             second = run_installer(staging_product(), root, "--basic")
             second_out = second.stdout + second.stderr
-            self.assertRegex(
-                second_out,
-                r"(?i)conflict",
-                "PD-7: install must also report the modified file as a "
-                f"conflict; install output:\n{second_out}",
+            self.assertEqual(
+                second.returncode,
+                0,
+                "always-deploy: a differing destination must not stop the "
+                f"install; output:\n{second_out}",
             )
             self.assertEqual(
                 installed.read_bytes(),
-                modified,
-                "PD-7: a conflicted file must be neither overwritten nor "
-                "deleted without explicit resolution",
+                expected,
+                "always-deploy: the destination must end with the expected "
+                "(staged) bytes",
+            )
+            self.assertTrue(
+                backups_holding(root, installed, modified),
+                "always-deploy: the user's previous bytes must be saved as a "
+                "backup before the overwrite (no file under the install root "
+                "holds them)",
+            )
+            assert_manifest_consistent(self, root)
+            check = run_installer(staging_product(), root, "--check")
+            self.assertEqual(
+                check.returncode,
+                0,
+                "always-deploy: --check must PASS after the install; output:\n"
+                f"{check.stdout + check.stderr}",
             )
 
     def test_t5_case5_symlink_at_destination_reported_not_followed(self) -> None:

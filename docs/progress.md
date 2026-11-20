@@ -1609,6 +1609,13 @@ local y el publicado son los marcadores de saneamiento (ids de sesión y rutas l
 
 ## Queued
 
+- **Mantenimiento del harness del instalador (agendado 2026-11-19, sin abrir):** unificar
+  el fixture de los módulos que prueban `install.sh` en un helper único (raíz temporal,
+  staging mínimo de un agente y una skill, `run/install/check`), migrar los cinco o seis
+  módulos que hoy montan su propio mundo y dejar **un** caso de integración con el árbol
+  completo. Motivo medido: 35 casos pagaban una instalación de ~400 archivos (62 módulos en
+  serie: 30:51; hasta 900 s por módulo bajo carga paralela). Conserva cobertura y nodeids;
+  es mantenimiento de tests, no rediseño del instalador.
 - **epic-006 — cola y pendientes del dueño:** **006-003-installer-single-profile-delegation-config**
   (instalador siempre `basic` y sin mapa de modelos —reemplaza ADR-007—, plantilla de config de delegación y
   credencial del servidor, y verificación de familias del reviewer) y **006-004-active-decisions-table**

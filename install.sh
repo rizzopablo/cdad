@@ -20,10 +20,13 @@
 # Ownership (D4, 004-001 T5): every successful install publishes the ownership
 # manifest <install root>/.cdad-install-manifest.json — runtime/stack resolved
 # by staging (R3-O2) plus per-file sha256+source provenance for
-# everything the installer deployed. Installs report conflicts (a locally
-# modified owned file — agents, skills and the guard share the SAME
-# conflict-and-preserve policy, review-5 B2 — or a symlink at a destination)
-# and preserve the local bytes; files owned by a previous install that this
+# everything the installer deployed. Every install writes the CURRENT staged or
+# source bytes to each managed destination (plus the user-owned overlay keys of
+# agents). A destination whose bytes differ is first copied to a backup under
+# <install root>/.cdad-install-backups/<UTC stamp>/<relative path>, registered in
+# the manifest under `backups`, and then overwritten: a content difference never
+# stops the deployment. A symlink or non-regular file at a destination is never
+# written through: it is reported as a conflict and preserved. Files owned by a previous install that this
 # install no longer deploys are RETIRED when their bytes still match the
 # recorded sha256 (006-003 U7/D6: the install retires its own obsoletes) and
 # stay registered as pending_removal when they were modified locally — or when
@@ -109,8 +112,13 @@ CHECK=0
 OWNERSHIP_MANIFEST="$INSTALL_ROOT/$INSTALL_MANIFEST_NAME"
 # Owned files recorded during THIS install: "rel<TAB>sha256<TAB>source".
 OWNED=()
-# Conflicts detected during THIS run: "rel<TAB>reason".
+# Conflicts detected during THIS run (symlink or non-regular destination, missing
+# source): "rel<TAB>reason".
 CONFLICTS=()
+# Backups taken during THIS run: "rel<TAB>backup-rel<TAB>sha256" (install-root-relative).
+BACKUPS=()
+# UTC stamp naming this run's backup directory (set once in main).
+RUN_STAMP=""
 # 006-003 U7/D6: the obsolete prune needs to know which DESTINATIONS this run
 # deploys (in BOTH modes: --dry-run must preview the same bajas) and which ones
 # it already disclosed as conflicts. Keyed by absolute path, so a manifest that
@@ -317,10 +325,12 @@ Options:
   --help       Show this help and exit.
 
 Exit codes: rc=1 from install/--uninstall/--check means PENDING work —
- conflicts preserved on re-install (CONFLICT ... PRESERVED), staged
- removals not yet retired (PENDING-REMOVAL), or drift (DRIFT) — NOT a
+ a symlink or non-regular file at a destination (CONFLICT ... PRESERVED),
+ staged removals not yet retired (PENDING-REMOVAL), or drift (DRIFT) — NOT a
  broken install: the rest is deployed and coherent; resolve the reported
- conflicts first.
+ conflicts first. A content difference is never a conflict: the install
+ deploys the current bytes and keeps the replaced ones under the backups
+ directory (see below).
 
 No flags = install (safe default). The model is NOT an installer concern: no
 installable surface pins a model, so no flag, env or marker selects one. The
@@ -362,7 +372,11 @@ What gets installed (from build/staging — the single agent input, PD-18):
       <install root>/.cdad-install-manifest.json
       (runtime/stack resolved by staging — R3-O2 — plus per-file
        sha256 + source provenance of everything deployed; conflicts listed
-       separately until explicitly resolved)
+       separately; `backups` lists every replaced copy kept)
+  Backups (every install that finds a destination with different bytes):
+      <install root>/.cdad-install-backups/<UTC stamp>/<relative path>
+      (the bytes the install replaced, mode 0600; a dot-directory no runtime
+       scans; never deployed and never removed by --uninstall)
 
 User-owned overlay (009-001) — your configuration survives every install:
   The frontmatter keys the USER owns in an installed agent are data, declared
@@ -375,9 +389,11 @@ User-owned overlay (009-001) — your configuration survives every install:
     - `--check` names the installed agent and the overlay it keeps.
     - `--uninstall` keeps an agent that carries your overlay byte for byte:
       it is your configuration, not the installer's to delete.
-    - Anything else you change, and any ambiguous overlay (no frontmatter, a
-      duplicated key, an empty value, a key in the body), is a CONFLICT:
-      preserved untouched, reported, and never adopted as owned.
+    - Anything else you change is backed up under .cdad-install-backups/ and
+      replaced by the current staged bytes. An overlay that cannot be read
+      (no frontmatter, a duplicated key, an empty value, a key in the body)
+      is not carried over: the staged bytes are deployed, the previous copy
+      is backed up, and a WARN line says so — recover the value from there.
   There is no flag: preserving your configuration is the behaviour, never an
   option. The product keeps pinning no model anywhere installable — the
   validator fails if agents/ or build/staging declares `model:`.
@@ -832,136 +848,106 @@ staged_agent_count() {  # runtime — prints the count (empty if unresolvable)
   printf '%s' "$count"
 }
 
-# previous_artifact_sha <rel> — the sha256 registered by the LAST successful
-# install (empty when the file is not owned yet). Load once per run, BEFORE
-# any deploy: the shared stage_owned_file semantics (review-5 B2) need it for
-# the skills/guard passes too, not only for the staged agents.
-# B-1: the records are exchanged NUL-framed (never a TSV read with `IFS=$'\t'
-# read`): tab is IFS whitespace, so consecutive tabs are ONE delimiter and an
-# EMPTY field would silently shift the remaining columns into the wrong slots.
-declare -A PREV_SHA=()
-declare -A PREV_SRC=()
-load_previous_ownership() {
-  local prev="$OWNERSHIP_MANIFEST"
-  [ -f "$prev" ] || return 0
-  local rel sha source
-  while IFS= read -r -d '' rel \
-     && IFS= read -r -d '' sha \
-     && IFS= read -r -d '' source; do
-    [ -n "$rel" ] || continue
-    PREV_SHA[$rel]="$sha"
-    PREV_SRC[$rel]="$source"
-  done < <(python3 - "$prev" <<'PY'
-import json, sys
-
-def field(value):
-    # B-1: a `null` digest is published as EMPTY, never as the Python repr
-    # `None`, so no record field can carry a non-string token.
-    return value if isinstance(value, str) else ""
-
-try:
-    data = json.load(open(sys.argv[1], encoding="utf-8"))
-except (OSError, ValueError):
-    raise SystemExit(0)
-artifacts = data.get("artifacts")
-if not isinstance(artifacts, dict):
-    raise SystemExit(0)
-for rel, record in sorted(artifacts.items()):
-    if isinstance(record, dict):
-        sys.stdout.write("%s\0%s\0%s\0" % (
-            rel, field(record.get("sha256")), field(record.get("source"))))
-PY
-)
+# backup_destination <dst> <rel> — the install contract: a destination whose bytes
+# differ from what this run writes keeps its CURRENT bytes first. The copy goes to
+# <install root>/.cdad-install-backups/<UTC stamp>/<rel>, a dot-directory no
+# runtime scans, with mode 0600. It is registered under `backups` in the ownership
+# manifest — never as an owned artifact, because the install does not deploy it.
+backup_destination() {
+  local dst="$1" rel="$2" bak bak_rel n=1 sha
+  bak_rel=".cdad-install-backups/$RUN_STAMP/${rel#/}"
+  bak="$INSTALL_ROOT/$bak_rel"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "DRY-RUN BACKUP $rel -> $bak_rel"
+    return 0
+  fi
+  mkdir -p -m 700 "$(dirname "$bak")" || die "Cannot create the backup directory for: $rel"
+  # An earlier backup of the same path in this run is never overwritten.
+  while [ -e "$bak" ]; do
+    n=$((n + 1))
+    bak="$INSTALL_ROOT/$bak_rel.$n"
+  done
+  bak_rel="${bak#"$INSTALL_ROOT"/}"
+  cp -p "$dst" "$bak" || die "Cannot back up $rel to $bak"
+  chmod 600 "$bak"
+  sha="$(sha256_of "$bak")"
+  BACKUPS+=("$rel"$'\t'"$bak_rel"$'\t'"$sha")
+  log "BACKUP $rel -> $bak_rel (previous bytes kept; the current bytes are deployed)"
 }
 
-# deploy_staged_overlay <staging-rel> <dst> <installed-rel> <keys>
-# 009-001 D2: writes the STAGED bytes with the installed user-owned values
-# reinserted — never the old file — or reports SYNC when the copy already is
-# exactly that. The bytes that end up installed are recorded as owned, so the
-# digest describes what the user now has (PC-3) and a second run is a no-op.
-deploy_staged_overlay() {
-  local srel="$1" dst="$2" rel="$3" keys="$4"
-  local expected_file synced copy
+# stage_user_overlay <staging-rel> <dst> <rel>
+# Every agent destination receives the STAGED bytes with the user-owned keys of
+# the INSTALLED copy reinserted (009-001: `model:` is configuration, not drift).
+# A copy that differs ONLY by the overlay is SYNC: nothing is backed up. Any other
+# difference — a local edit of the body, an unowned copy, an overlay the helper
+# cannot read or merge — is backed up first and replaced, so no content difference
+# stops the install. When the overlay cannot be carried over, the staged bytes are
+# deployed without it and the backup is the only place the old value survives;
+# the WARN line names it.
+stage_user_overlay() {
+  local srel="$1" dst="$2" rel="$3"
+  local keys="" expected="$STAGING_DIR/$srel" tmp="" raw synced copy
+  local readable=1 divergent=1 base_sha=""
+  if [ -f "$dst" ]; then
+    if raw="$(agent_overlay_extract "$dst" 2>&1)"; then
+      keys="${raw//$'\n'/, }"
+    else
+      readable=0
+      log "WARN $rel: user-owned overlay unreadable ($raw); staged bytes deployed, the previous copy is backed up"
+    fi
+  fi
+  # Divergence is judged OUTSIDE the user-owned keys: a copy whose base is the
+  # current staging differs at most by the overlay (its position included), so it
+  # is redeployed without a backup. Anything else is content this install replaces.
+  if [ -f "$dst" ] && [ "$readable" -eq 1 ]; then
+    if base_sha="$(agent_overlay_base_sha "$dst")" && [ "$base_sha" = "$(sha256_of "$STAGING_DIR/$srel")" ]; then
+      divergent=0
+    fi
+  fi
+  if [ -n "$keys" ]; then
+    tmp="$(mktemp)" || die "Cannot create the user-overlay merge temp file"
+    if agent_overlay_merge "$STAGING_DIR/$srel" "$dst" "$tmp"; then
+      expected="$tmp"
+    else
+      log "WARN $rel: user-owned overlay ($keys) cannot be merged; staged bytes deployed, the previous copy is backed up"
+      keys=""
+      divergent=1
+    fi
+  fi
   if [ -n "$keys" ]; then
     synced="staging + user overlay ($keys)"
-    copy="staged bytes + user overlay $keys"
+    copy="staging + user overlay $keys"
   else
-    # The user removed their overlay: staging IS the expected result.
     synced="staging"
     copy="staging regenerated"
   fi
-  expected_file="$(mktemp)" || die "Cannot create the user-overlay merge temp file"
-  if ! agent_overlay_merge "$STAGING_DIR/$srel" "$dst" "$expected_file"; then
-    rm -f "$expected_file"
-    add_conflict "$rel" "the staged bytes cannot receive the user-owned overlay ($keys); PRESERVED for explicit resolution"
-    return 0
-  fi
-  if cmp -s "$expected_file" "$dst"; then
+  if [ -f "$dst" ] && cmp -s "$expected" "$dst"; then
     if [ "$DRY_RUN" -eq 1 ]; then
       log "DRY-RUN SYNC $rel already in sync with $synced"
     else
       log "SYNC $rel already in sync with $synced"
     fi
-    record_owned "$dst" "$srel"
+  elif [ -f "$dst" ]; then
+    if [ "$divergent" -eq 1 ]; then
+      backup_destination "$dst" "$rel"
+    fi
+    if [ "$DRY_RUN" -eq 1 ]; then
+      log "DRY-RUN COPY ($copy) $srel -> $dst"
+    else
+      log "COPY ($copy) $srel -> $dst"
+      overlay_write "$expected" "$dst"
+    fi
   else
-    do_run "COPY ($copy) $srel -> $dst" overlay_write "$expected_file" "$dst"
-    record_owned "$dst" "$srel"
+    if [ "$DRY_RUN" -eq 0 ]; then
+      ensure_dir "$(dirname "$dst")"
+    fi
+    do_run "COPY $srel -> $dst" cp -p "$expected" "$dst"
   fi
-  rm -f "$expected_file"
+  record_owned "$dst" "$srel"
+  if [ -n "$tmp" ]; then
+    rm -f "$tmp"
+  fi
   return 0
-}
-
-# stage_user_overlay <staging-rel> <dst> <installed-sha> <recorded-sha>
-# 009-001: the user-owned keys of the INSTALLED copy are the user's
-# configuration, not local drift. Returns 0 when the copy can be brought to
-# (staging + overlay) — in sync, redeployed, or preserved as a conflict — and 1
-# when the difference is not an overlay at all, so the historical D4 path runs
-# untouched.
-# Order matters (§2). The comparison against the CURRENT staging decides sync
-# FIRST: when the bytes outside the overlay ARE the staged bytes, nothing foreign
-# is adopted — the result is staging plus the user's own values — so provenance
-# has no remaining difference to judge. That is what makes changing the model,
-# deleting it, and a copy an older installer left unowned an UPDATE instead of a
-# conflict (review 009-001 F1). Provenance is consulted only when the base is NOT
-# the current staging: there the difference left over is either the upstream
-# update the record accredits (the base we recorded, with or without the overlay
-# already applied) or a local edit, which stays preserved (PC-4).
-# The referent is the STAGED FILE this run would deploy (the same bytes `cp`
-# puts at a destination and `--check` compares against), not the digest the
-# staging manifest declares: the decision is about bytes, and the manifest's
-# value describes the tree as it was generated.
-stage_user_overlay() {
-  local srel="$1" dst="$2" installed_sha="$3" recorded="$4"
-  local rel keys base_sha staged_sha
-  # Agents are the only installable text with a user-owned overlay (§1). Every
-  # other destination keeps the historical D4 diagnostic untouched, so a local
-  # edit of a skill or a script is never reported as an overlay problem.
-  case "$srel" in
-    agents/*) ;;
-    *) return 1 ;;
-  esac
-  rel="${dst#"$INSTALL_ROOT"/}"
-  if ! keys="$(agent_overlay_extract "$dst" 2>&1)"; then
-    add_conflict "$rel" "user-owned overlay cannot be recognized ($keys); PRESERVED for explicit resolution"
-    return 0
-  fi
-  keys="${keys//$'\n'/, }"
-  base_sha="$(agent_overlay_base_sha "$dst")" || die "Cannot read the user-owned overlay of: $dst"
-  staged_sha="$(sha256_of "$STAGING_DIR/$srel")"
-  if [ "$base_sha" != "$staged_sha" ]; then
-    # Bytes outside the overlay differ from the current staging: an overlay never
-    # authorizes adopting foreign bytes, and never hides a D4 conflict (PC-4).
-    [ -n "$keys" ] || return 1
-    if [ -z "$recorded" ]; then
-      add_conflict "$rel" "an unowned copy carries a user-owned overlay ($keys); PRESERVED — an overlay does not authorize adopting foreign bytes"
-      return 0
-    fi
-    if [ "$base_sha" != "$recorded" ] && [ "$installed_sha" != "$recorded" ]; then
-      add_conflict "$rel" "modified outside the user-owned overlay ($keys: the bytes around it are not the ones recorded by the last install, $recorded); PRESERVED for explicit resolution"
-      return 0
-    fi
-  fi
-  deploy_staged_overlay "$srel" "$dst" "$rel" "$keys"
 }
 
 # overlay_write <merged-file> <dst> — replace the installed bytes IN PLACE so the
@@ -970,101 +956,32 @@ overlay_write() {
   cat "$1" > "$2"
 }
 
-# stage_one_destination <staging-rel> <staged-sha> <abs-destination>
-# PD-6/7 conflict semantics at ONE destination, then deploy or record:
-#   symlink/non-regular at destination      -> conflict, preserved, NOT owned
-#   owned file modified since last install  -> conflict, preserved, NOT owned
-#   bytes differing only by the USER's       -> redeploy (staged + overlay), owned
-#     overlay (009-001: base == staging)        (SYNC when it already is that)
-#   installed bytes == staged bytes         -> in sync (or adopted), owned
-#   registered + staging regenerated        -> redeploy the STAGED bytes
-#   unowned bytes differ from staging        -> conflict, preserved, NOT owned
-#                                              (unless only the overlay differs:
-#                                               then the copy is repaired)
-#   missing                                 -> deploy the STAGED bytes
+# stage_one_destination <staging-rel> <abs-destination>
+# One agent destination. A symlink or non-regular file is never written through:
+# it is reported as a conflict and not owned. Anything else is brought to the
+# staged bytes plus the user's overlay (see stage_user_overlay), with a backup
+# first when the bytes differ.
 stage_one_destination() {
-  local srel="$1" staged_sha="$2" dst="$3"
-  local rel installed_sha prev dst_dir
+  local srel="$1" dst="$2" rel
   rel="${dst#"$INSTALL_ROOT"/}"
   if [ -L "$dst" ] || { [ -e "$dst" ] && [ ! -f "$dst" ]; }; then
     add_conflict "$rel" "symlink or non-regular file at destination; never written through"
     return 0
   fi
-  if [ -f "$dst" ]; then
-    installed_sha="$(sha256_of "$dst")"
-    prev="${PREV_SHA[$rel]:-}"
-    if [ -n "$prev" ] && [ "$prev" != "$installed_sha" ]; then
-      # The copy changed since the last install: the ONE sanctioned change is the
-      # user-owned overlay on the bytes we recorded.
-      if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
-        return 0
-      fi
-      add_conflict "$rel" "modified locally since the last install (registered $prev, found $installed_sha)"
-      return 0
-    fi
-    if [ "$installed_sha" = "$staged_sha" ]; then
-      if [ "$DRY_RUN" -eq 1 ]; then
-        log "DRY-RUN COPY $srel -> $dst"
-        log "DRY-RUN SYNC $rel already in sync with staging"
-      else
-        log "SYNC $rel already in sync with staging"
-      fi
-      record_owned "$dst" "$srel"
-      return 0
-    fi
-    if [ -z "$prev" ]; then
-      # No record of this destination, yet the staged bytes are the only ones it
-      # may carry outside an overlay: an overlay copy left unowned by an older
-      # installer is repaired by the same comparison (review 009-001 F1c), while
-      # any other foreign byte stays a preserved conflict.
-      if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
-        return 0
-      fi
-      add_conflict "$rel" "unowned content at an owned destination differs from staging"
-      return 0
-    fi
-    # Owned and unchanged since the last install while staging moved on: the
-    # copy can still carry the user's overlay (it was registered WITH it), so the
-    # expected bytes are the new staging plus that overlay.
-    if stage_user_overlay "$srel" "$dst" "$installed_sha" "$prev"; then
-      return 0
-    fi
-    if [ "$DRY_RUN" -eq 1 ]; then
-      log "DRY-RUN COPY $srel -> $dst"
-      log "DRY-RUN STAGED-UPDATE $rel staging moved on; would redeploy the staged bytes"
-      record_owned "$dst" "$srel"
-    else
-      do_run "COPY (staging regenerated) $srel -> $dst" cp -p "$STAGING_DIR/$srel" "$dst"
-      record_owned "$dst" "$srel"
-    fi
-    return 0
-  fi
-  if [ "$DRY_RUN" -eq 1 ]; then
-    log "DRY-RUN COPY $srel -> $dst"
-    record_owned "$dst" "$srel"
-    return 0
-  fi
-  dst_dir="$(dirname "$dst")"
-  ensure_dir "$dst_dir"
-  do_run "COPY $srel -> $dst" cp -p "$STAGING_DIR/$srel" "$dst"
-  record_owned "$dst" "$srel"
+  stage_user_overlay "$srel" "$dst" "$rel"
 }
 
 # stage_owned_file <src> <dest> <source-label> [chmod-mode]
-# Review-5 B2: SKILLS and the GUARD get the SAME ownership semantics as the
-# staged agents (one shared policy, not per-file-type criteria). For ONE
-# destination file:
-#   symlink/non-regular at destination      -> conflict, preserved, NOT owned
-#   owned file modified since last install  -> conflict, preserved, NOT owned
+# SKILLS and the GUARD (one policy for every non-agent file). For ONE destination:
+#   symlink/non-regular at destination      -> conflict, never written through
 #   installed bytes == source bytes         -> in sync, owned
-#   unowned bytes differ from source        -> conflict, preserved, NOT owned
-#   owned file, source moved on             -> redeploy the source bytes
-#   missing                                 -> deploy the source bytes
-# [chmod-mode] is applied ONLY when bytes are actually (re)deployed — a
-# preserved file is never touched in any way (D4/PD-7).
+#   bytes differ, or destination missing    -> backup the current bytes when
+#                                              present, then deploy the source
+# A content difference never stops the install (install contract). [chmod-mode]
+# applies only to bytes actually deployed in a real run.
 stage_owned_file() {
   local src="$1" dst="$2" source_label="$3" chmod_mode="${4:-}"
-  local rel installed_sha src_sha prev dst_dir
+  local rel
   if [ ! -f "$src" ]; then
     add_conflict "$dst" "source missing; nothing overwritten"
     return 0
@@ -1074,64 +991,37 @@ stage_owned_file() {
     add_conflict "$rel" "symlink or non-regular file at destination; never written through"
     return 0
   fi
-  src_sha="$(sha256_of "$src")"
-  if [ -f "$dst" ]; then
-    installed_sha="$(sha256_of "$dst")"
-    prev="${PREV_SHA[$rel]:-}"
-    if [ -n "$prev" ] && [ "$prev" != "$installed_sha" ]; then
-      add_conflict "$rel" "modified locally since the last install (registered $prev, found $installed_sha)"
-      return 0
-    fi
-    if [ "$installed_sha" = "$src_sha" ]; then
-      if [ "$DRY_RUN" -eq 1 ]; then
-        log "DRY-RUN SYNC $rel already in sync"
-      else
-        log "SYNC $rel already in sync"
-      fi
-      record_owned "$dst" "$source_label"
-      return 0
-    fi
-    if [ -z "$prev" ]; then
-      add_conflict "$rel" "unowned content at an owned destination differs from the source; preserved for explicit resolution"
-      return 0
-    fi
+  if [ -f "$dst" ] && cmp -s "$src" "$dst"; then
     if [ "$DRY_RUN" -eq 1 ]; then
-      log "DRY-RUN COPY $source_label -> $dst"
-      log "DRY-RUN UPDATE $rel source moved on; would redeploy the source bytes"
-      record_owned "$dst" "$source_label"
+      log "DRY-RUN SYNC $rel already in sync"
     else
-      do_run "COPY (source moved on) $source_label -> $dst" cp -p "$src" "$dst"
-      record_owned "$dst" "$source_label"
-      if [ -n "$chmod_mode" ]; then
-        chmod "$chmod_mode" "$dst"
-      fi
+      log "SYNC $rel already in sync"
     fi
-    return 0
-  fi
-  if [ "$DRY_RUN" -eq 1 ]; then
-    log "DRY-RUN COPY $source_label -> $dst"
     record_owned "$dst" "$source_label"
     return 0
   fi
-  dst_dir="$(dirname "$dst")"
-  ensure_dir "$dst_dir"
+  if [ -f "$dst" ]; then
+    backup_destination "$dst" "$rel"
+  elif [ "$DRY_RUN" -eq 0 ]; then
+    ensure_dir "$(dirname "$dst")"
+  fi
   do_run "COPY $source_label -> $dst" cp -p "$src" "$dst"
   record_owned "$dst" "$source_label"
-  if [ -n "$chmod_mode" ]; then
+  if [ -n "$chmod_mode" ] && [ "$DRY_RUN" -eq 0 ]; then
     chmod "$chmod_mode" "$dst"
   fi
 }
 
-deploy_staged_agents() {  # deploy the manifest-declared staged set (D4)
-  local srel staged_sha dst
-  while IFS=$'\t' read -r srel staged_sha; do
+deploy_staged_agents() {  # deploy the manifest-declared staged set
+  local srel dst
+  while IFS=$'\t' read -r srel _; do
     [ -n "$srel" ] || continue
     if [ ! -f "$STAGING_DIR/$srel" ]; then
       die "Staged artifact missing from the staging tree: $STAGING_DIR/$srel"
     fi
     while IFS= read -r dst; do
       [ -n "$dst" ] || continue
-      stage_one_destination "$srel" "$staged_sha" "$dst"
+      stage_one_destination "$srel" "$dst"
     done < <(staged_destinations "$srel")
   done < <(staged_artifact_list)
 }
@@ -1157,6 +1047,8 @@ write_ownership_manifest() {
     printf '%s\n' "${OWNED[@]}"
     printf '%s\n' '%%CONFLICTS%%'
     printf '%s\n' "${CONFLICTS[@]}"
+    printf '%s\n' '%%BACKUPS%%'
+    printf '%s\n' "${BACKUPS[@]}"
   } > "$stream_file"; then
     rm -f "$stream_file"
     die "Cannot write the ownership-manifest stream temp file: $stream_file"
@@ -1187,12 +1079,21 @@ for line in stream[0].splitlines():
         continue
     rel, sha, source = line.split("\t", 2)
     artifacts[rel] = {"sha256": sha, "source": source}
+conflicts_blob, _, backups_blob = stream[1].partition("%%BACKUPS%%")
 conflicts = []
-for line in stream[1].splitlines():
+for line in conflicts_blob.splitlines():
     if not line.strip():
         continue
     rel, reason = line.split("\t", 1)
     conflicts.append({"path": rel, "reason": reason})
+# Install contract: a backup taken by this run (the bytes it replaced). Kept as its
+# own section — a backup is never an owned artifact, the install does not deploy it.
+new_backups = []
+for line in backups_blob.splitlines():
+    if not line.strip():
+        continue
+    rel, backup, sha = line.split("\t", 2)
+    new_backups.append({"path": rel, "backup": backup, "sha256": sha})
 conflict_paths = {entry["path"] for entry in conflicts}
 # Review-5 B3: a reinstall must never FORGET an installed file it has stopped
 # deploying. Every previously registered file (last artifacts or last
@@ -1200,6 +1101,7 @@ conflict_paths = {entry["path"] for entry in conflicts}
 # REGISTERED as pending_removal — visible to --check, retired by --uninstall.
 previous = {}
 previous_pending = {}
+previous_backups = []
 if os.path.exists(out_path):
     try:
         pdata = json.load(open(out_path, encoding="utf-8"))
@@ -1215,6 +1117,11 @@ if os.path.exists(out_path):
         for rel, record in pp.items():
             if isinstance(record, dict):
                 previous_pending[rel] = record
+    # Backups of earlier installs are kept: the record is the audit trail of the
+    # bytes each install replaced. Uninstall never drops this list.
+    pb = pdata.get("backups")
+    if isinstance(pb, list):
+        previous_backups = [entry for entry in pb if isinstance(entry, dict)]
 pending = {}
 for rel, record in sorted(previous.items()):
     if rel in artifacts or rel in conflict_paths or rel in pruned:
@@ -1239,6 +1146,7 @@ manifest = {
     "artifacts": dict(sorted(artifacts.items())),
     "pending_removal": dict(sorted(pending.items())),
     "conflicts": sorted(conflicts, key=lambda c: c["path"]),
+    "backups": previous_backups + new_backups,
 }
 tmp_path = out_path + ".tmp"
 with open(tmp_path, "w", encoding="utf-8") as fh:
@@ -1264,23 +1172,25 @@ PY
   else
     log "OWNERSHIP summary: ${#OWNED[@]} owned file(s) (pending_removal carried in the manifest)"
   fi
+  if [ "${#BACKUPS[@]}" -gt 0 ]; then
+    log "BACKUPS: ${#BACKUPS[@]} replaced copy(ies) kept under $INSTALL_ROOT/.cdad-install-backups/$RUN_STAMP"
+  fi
 }
 
 # ---------------------------------------------------------------------------
 # Install operations (staging-driven agents; ownership recorded per file)
 # ---------------------------------------------------------------------------
-sync_skill_to() {  # skill_name target_base_dir — per-file owned copy (review-5
-                   # B2: same conflict-and-preserve policy as agents), never --delete
+sync_skill_to() {  # skill_name target_base_dir — per-file owned copy, never --delete
   local skill="$1" base="$2"
   local src="$SOURCE_SKILLS_DIR/$skill"
   local dst="$base/$skill"
   local src_file
   ensure_dir "$dst"
-  # Every file gets the D4/PD-7 semantics via stage_owned_file: a locally
-  # modified owned skill file is reported as a conflict and preserved byte
-  # for byte, never overwritten. Files present in the destination but NOT in
-  # the source are left alone (never --delete); if they were owned by a
-  # previous install they surface as pending_removal (review-5 B3).
+  # Every file gets the install contract via stage_owned_file: the source bytes
+  # are deployed, and a divergent local copy is backed up first (never refused).
+  # Files present in the destination but NOT in the source are left alone (never
+  # --delete); if they were owned by a previous install they surface as
+  # pending_removal (review-5 B3).
   while IFS= read -r -d '' src_file; do
     if is_cache_artifact_path "$src_file"; then
       continue
@@ -2245,10 +2155,7 @@ main() {
   guard_agent_overlay
   guard_sources
   guard_staging
-  # Review-5 B2: the per-file ownership semantics (stage_owned_file) compare
-  # the installed bytes against the LAST install's register — needed for the
-  # skills pass too, so load it once here, before anything is deployed.
-  load_previous_ownership
+  RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
   install_skills
   install_skills_extra
   install_agents
