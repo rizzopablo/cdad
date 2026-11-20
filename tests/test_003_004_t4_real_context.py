@@ -165,7 +165,7 @@ def state_fixture(**delegation_overrides: object) -> dict:
     vence POR EVENTOS (prosa en `expires`, sin `expires_on` de fecha)."""
     delegation = {
         "delegated_to": "orchestrator",
-        "requested_by": "user (pablo)",
+        "requested_by": "user (<owner>)",
         "requested_at": "2026-10-07T00:00:00Z",
         "scope": EPIC_ID,
         "expires": "vence por eventos; 001 valida la vigencia en prepare",

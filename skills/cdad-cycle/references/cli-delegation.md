@@ -48,7 +48,11 @@ python3 cdad_dispatch.py migrate --runtime <X> --legacy-exec-config <file> [--dr
   reads (`binary`, `binary_version`, `mode`, `server`, `service`, `auto`,
   `sessions_db`, `wait`). Without a section the entry fails closed with a
   diagnostic that names the file, the section and the key-by-key
-  correspondence.
+  correspondence. Native `record` is the exception: the delivery already
+  happened and no external launch is configured, so an absent file, `runtimes`
+  map or section is the empty configuration (`{}`, still handed to the module's
+  single bounded observation when there is a motive). Unreadable JSON, a
+  present non-object section and forbidden keys still reject.
 - **`model` and the credential route never live in the section** — they are
   `delegation.json` and its `credential_env_file` (ADR-033 D3 / point 6); a
   section that carries either is rejected, naming where it lives (INV-12).

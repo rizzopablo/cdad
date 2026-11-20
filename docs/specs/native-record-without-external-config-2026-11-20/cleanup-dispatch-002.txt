@@ -1,0 +1,9 @@
+packet CLI: <home>/.config/opencode/skills/cdad-cycle/scripts/cdad_packet.py
+product root: <repo>
+received dispatch capture: <repo>/docs/specs/native-record-without-external-config-2026-11-20/cleanup-dispatch-002.txt
+
+Route C — explicit file backup
+
+```json
+{"contract": {"commit": null, "kind": "approved-feature-spec", "path": "docs/specs/native-record-without-external-config-2026-11-20/spec.md", "sha256": "cb0ded8a5f3a1b521b9857b09fdaddc1c34b1f0d36a13fc273a267c49b97109c"}, "execution_context": ".cdad-execution/executions/exec-native-record-without-external-config-2026-11-20-001/execution.json", "execution_id": "exec-native-record-without-external-config-2026-11-20-001", "packet": ".cdad-execution/packets/native-record-without-external-config-2026-11-20-test-writer-post-audit-002/PACKET.md", "packet_id": "native-record-without-external-config-2026-11-20-test-writer-post-audit-002", "project_root": "<repo>", "request": ".cdad-execution/packets/native-record-without-external-config-2026-11-20-test-writer-post-audit-002/REQUEST.json"}
+```

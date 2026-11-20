@@ -284,14 +284,32 @@ def retired_option_message(token: str) -> str:
     ])
 
 
-def load_runtime_section(runtime: str) -> dict[str, Any]:
+def load_runtime_section(runtime: str, *,
+                         optional: bool = False) -> dict[str, Any]:
     """PD-9: read and validate the runtime section — the single config source.
 
     Absent section or absent document ⇒ the fail-closed diagnostic with the
     correspondence; a forbidden key ⇒ rejection naming where it lives.
+
+    `optional=True` (native `record` only: the delivery already happened, no
+    external launch is configured): an absent document, absent `runtimes` map
+    or absent section is the empty configuration `{}`. Unreadable JSON, a
+    present non-object section and forbidden keys still reject.
     """
     path = runtimes_config_path()
-    section = _section_of(_read_document(path), runtime) if path.is_file() else None
+    section: Any = None
+    # optional: an existing-but-unreadable path (a directory) is an error, not absence
+    if path.exists() if optional else path.is_file():
+        document = _read_document(path)
+        runtimes = document.get(RUNTIMES_KEY) if isinstance(document, dict) else None
+        if isinstance(runtimes, dict) and runtime in runtimes:
+            section = runtimes[runtime]
+            if optional and not isinstance(section, dict):
+                raise DispatchError(
+                    f"the {RUNTIMES_CONFIG_NAME} section `{runtime}` ({path}) is "
+                    f"present but is not an object: fix or remove it")
+    if section is None and optional:
+        return {}
     if not isinstance(section, dict):
         raise DispatchError(_missing_section_message(runtime))
     for key, guidance in FORBIDDEN_SECTION_KEYS.items():
@@ -343,7 +361,8 @@ def _internal_config_path(root: Path, runtime: str) -> Path:
 
 
 def derived_internal_config(root: Path, runtime: str,
-                            section: dict[str, Any]) -> Path:
+                            section: dict[str, Any], *,
+                            with_runtime: bool = True) -> Path:
     """§2.6: DERIVE the internal configuration of the module from the section.
 
     It carries only the correspondence keys — never the `model` (which lives in
@@ -355,7 +374,8 @@ def derived_internal_config(root: Path, runtime: str,
     directory.mkdir(parents=True, exist_ok=True)
     path = _internal_config_path(root, runtime)
     document = {key: section[key] for key in SECTION_KEYS if key in section}
-    document["runtime"] = runtime
+    if with_runtime:
+        document["runtime"] = runtime
     path.write_text(
         json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8")
@@ -690,7 +710,9 @@ def observe_model(*, module: Path, runtime: str, section: dict[str, Any],
     instant; `detail` is the declared diagnostic of a read that accredits no row
     (no candidate, ambiguity, uninterpretable instant) — never a rejection.
     """
-    derived = derived_internal_config(root, runtime, section)
+    # PC-3: the module receives the available section as is (even `{}`); the
+    # observation needs no runtime marker.
+    derived = derived_internal_config(root, runtime, section, with_runtime=False)
     argv = [
         sys.executable, str(module),
         "--project-root", str(root),
@@ -1091,7 +1113,7 @@ def record(runtime: str, project_root: str | None, packet: str | None,
     mechanical staging step; the receipt belongs to the re-entry protocol."""
     attempt = _continuity_attempt_or_none(continuity_attempt)
     module = resolve_runtime_module(runtime)
-    section = load_runtime_section(runtime)
+    section = load_runtime_section(runtime, optional=True)
     if not packet:
         raise DispatchError(
             "record requires --packet <id>: the dispatched packet this attempt "

@@ -8,6 +8,7 @@ Las decisiones que gobiernan este proyecto, una fila por decisión. Es el índic
 
 | Archivo | Estado | Resumen | Roles | Referencia |
 |---|---|---|---|---|
+| `docs/adr/ADR-046-registro-nativo-sin-configuracion-de-transporte.md` | `vigente` | Native recording does not require external launch configuration; observation availability belongs to the runtime module, and contradictory identity still rejects. | `architect`, `implementer`, `reviewer`, `orchestrator` | `skills/cdad-cycle/references/cli-delegation.md` |
 | `docs/adr/ADR-001-modelos-por-etapa.md` | `vigente` | Modelo distinto por etapa CDAD (sub-agentes especializados). Su mapa de modelos por agente no tiene efecto operativo desde ADR-033; su retiro formal es una decisión pendiente del dueño. | `orchestrator` | el propio ADR |
 | `docs/adr/ADR-002-arquitectura-repo-fuente-e-install-sh.md` | `vigente` | Repo fuente como única fuente de verdad + install.sh para propagación. | `architect`, `orchestrator` | el propio ADR |
 | `docs/adr/ADR-003-orquestador-materializa-artefactos.md` | `vigente` | El orquestador materializa los artefactos de los sub-agentes CDAD read-only. | `architect`, `reviewer`, `scribe`, `orchestrator` | el propio ADR |

@@ -17,7 +17,7 @@
 
 ### B2 — GREEN-002 · **cerrado**
 - `duration_s` 1.040,2 s = `ended` (01:19:31) − `started` (01:02:11), y el `ended` coincide con el **último mensaje de la sesión** en `session_v2` (01:19:31,97). `duration_s_receipt` 615,1 se conserva con su explicación (`measurement`): recibo de entrega frente a intervalo completo.
-- **Solapamiento declarado y real:** `overlap_with` apunta a `ses_e5be26339ffe…` (fixture de R-F) con 90,1 s; la sesión del fixture (01:12:39–01:14:09) cae íntegra dentro de GREEN (01:02:11–01:19:31) → intersección exacta **90,1 s**.
+- **Solapamiento declarado y real:** `overlap_with` apunta a `<session>` (fixture de R-F) con 90,1 s; la sesión del fixture (01:12:39–01:14:09) cae íntegra dentro de GREEN (01:02:11–01:19:31) → intersección exacta **90,1 s**.
 - **`aggregated_s` es unión, no suma:** recalculé la unión de los 22 intervalos desde los timestamps → **8.692,5 s**, idéntico al declarado; `sessions_sum_s` 8.782,3 = suma cruda; 8.782,3 − 90,1 = 8.692,2… y la unión medida da 8.692,5 por los bordes de intervalo. La afirmación «la unión evita el doble conteo» se verifica.
 - **Totales derivados correctos:** preparación 174,3 + 90,1 + 1.040,2 = **1.304,6** ✔; `fixed_s` 1.304,6 + 353,6 + 42,3 = **1.700,5** ✔; proyección 28.286,1 + 1.700,5 = **29.986,6 s ≈ 8,3 h** ✔.
 - `elapsed_s` 9.643,7 = intervalo 00:43:45 → 03:24:29 ✔ (no cambia al extender GREEN, porque el máximo sigue siendo la revisión).

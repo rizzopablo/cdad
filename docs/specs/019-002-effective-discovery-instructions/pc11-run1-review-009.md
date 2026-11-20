@@ -31,7 +31,7 @@ Input digests are verified by `sha256sum -c` (prefixes shown). Turn numbers are 
 | J4 recorded decisions | **Failed** | discovery.md Dialogue context has 2 entries. T3–T6 appear only in activeContext. No classes, supersession links or message ids (F2). |
 | J5 readiness R1–R5 | **Failed** | No readiness record in transcripts or in `.cdad-state.json` `stage_history` (bootstrap, discovery, specification only). Drafting started at T2 and again at T6 under unmet conditions (F3). |
 | J6 draft as final text | Observed | architect returned the spec unapproved (status Pending approval); but produced before readiness (order defect under F3) |
-| J7 independent draft review | Observed, with defects | Reviewer ran in its own session (`ses_e1f211cb…`, distinct from orchestrator `ses_e1f26a4f…` and architect `ses_e1f242ef…`). Blockers went to the architect and each design change got a focused re-review. Nothing was approved. Defects in F8. |
+| J7 independent draft review | Observed, with defects | Reviewer ran in its own session (`<session>`, distinct from orchestrator `<session>` and architect `<session>`). Blockers went to the architect and each design change got a focused re-review. Nothing was approved. Defects in F8. |
 
 ### 3. PC-1 to PC-4
 

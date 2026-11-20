@@ -168,7 +168,7 @@ def state_fixture() -> dict:
         "schema_version": 1,
         "hitl_delegation": {
             "delegated_to": "orchestrator",
-            "requested_by": "user (pablo)",
+            "requested_by": "user (<owner>)",
             "requested_at": "2026-10-07T00:00:00Z",
             "scope": EPIC_ID,
             "expires": "vence por eventos; 001 valida la vigencia en "

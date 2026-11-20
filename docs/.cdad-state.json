@@ -5,6 +5,18 @@
   "epic_stage": null,
   "epic_features": [
     {
+      "id": "native-record-without-external-config-2026-11-20",
+      "status": "done",
+      "depends_on": [],
+      "note": "Standalone maintenance fix approved by the owner on 2026-11-20; no epic, no direct-to-disk delivery redesign.",
+      "opened_at": "2026-11-20T13:06:05.424721+00:00",
+      "closed_at": "2026-11-20T15:51:56.081022+00:00",
+      "closure_evidence": {
+        "path": "docs/specs/native-record-without-external-config-2026-11-20/closure.md",
+        "sha256": "18702e33a3e81d010a86feeb2c1ae33f99adddab95ac8e8271b12652f0f708b9"
+      }
+    },
+    {
       "id": "011-begin-unpublished-packet-wedge",
       "status": "done"
     },
@@ -47411,6 +47423,549 @@
       "approved_by": "CDAD orchestrator under <owner>'s renewed HITL delegation for epic 019",
       "closure_path": "docs/specs/019-007-suite-selector-maintenance/closure.md",
       "closure_sha256": "94db1400515dc63bdfaa97c1d6a1acbfab16664b940349360284a7298f779c7a"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "specification",
+      "substage": "audit",
+      "at": "2026-11-20T13:06:17.006490+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "54678c4c4f1e4a16aceb7e496f38219625c1066026bb827b4f3c822c445a7406",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "gate",
+        "stage": "specification",
+        "substage": "audit",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/plan-review-002.md",
+            "d3beb0576462a0fb5c21c494fb4b0a2a2bf9048d9b639f6c04d684e75307f5df"
+          ]
+        ],
+        "approved_by": "owner",
+        "contract": {
+          "path": "docs/specs/native-record-without-external-config-2026-11-20/spec.md",
+          "sha256": "cb0ded8a5f3a1b521b9857b09fdaddc1c34b1f0d36a13fc273a267c49b97109c"
+        },
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/plan-review-002.md": "d3beb0576462a0fb5c21c494fb4b0a2a2bf9048d9b639f6c04d684e75307f5df"
+      },
+      "note": "Owner explicitly approved the reviewed fix in chat; direct-to-disk delivery deferred; correction ceiling 2 per family.",
+      "approved_by": "owner",
+      "contract_path": "docs/specs/native-record-without-external-config-2026-11-20/spec.md",
+      "contract_sha256": "cb0ded8a5f3a1b521b9857b09fdaddc1c34b1f0d36a13fc273a267c49b97109c"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "test-audit",
+      "substage": null,
+      "at": "2026-11-20T13:10:56.634139+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "706074ffda929c53e7244ac7c7aa03f371fb3f87bb9a5dec76c927d13fad73f4",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "test-audit",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-test-writer-audit-001",
+        "receipt_sha256": "4373642f17e1b1ed0135db5a2ca16c9624c05c933f66ef5e9a458b2a2814f740",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/test-audit.md",
+            "1030ff2b74cef07efc504d9b7d05dbc9478ad2caf031cc7f0219aceb8c390f8a"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-test-writer-audit-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-test-writer-audit-001/receipt.json",
+      "receipt_sha256": "4373642f17e1b1ed0135db5a2ca16c9624c05c933f66ef5e9a458b2a2814f740",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/test-audit.md": "1030ff2b74cef07efc504d9b7d05dbc9478ad2caf031cc7f0219aceb8c390f8a"
+      },
+      "note": "Read-only audit received and materialized unchanged; no test changes, approval pending. No new nodeids or inventory deltas yet."
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "test-audit",
+      "substage": "red",
+      "at": "2026-11-20T14:11:59.380927+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "e9742eea64b91fa9ba80603fb8f93a206c90b837e4132c8c174dae9f42196e2e",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "gate",
+        "stage": "test-audit",
+        "substage": "red",
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/test-audit.md",
+            "1030ff2b74cef07efc504d9b7d05dbc9478ad2caf031cc7f0219aceb8c390f8a"
+          ]
+        ],
+        "approved_by": "owner",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/test-audit.md": "1030ff2b74cef07efc504d9b7d05dbc9478ad2caf031cc7f0219aceb8c390f8a"
+      },
+      "note": "Owner ok approves five existing-nodeid extensions; scope follows approved PC-1..PC-9. User consequence recorded in discovery.md. No POST-AUDIT substitutes.",
+      "approved_by": "owner"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "red-evidence-returned",
+      "substage": null,
+      "at": "2026-11-20T14:21:53.131755+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "a7bac275dcb707dd1c589ba1564f21a135a907194a96596f5aed99d3074103c7",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "red-evidence-returned",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-test-writer-red-001",
+        "receipt_sha256": "54f20166ed1bd6fa3cd7e9945ab565b9f0c69c86edaf6c5848e75f2c000460a4",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/red-report.md",
+            "d0cfe61d4c3da97d6c913186b490e114028e5379bb8dd85661f994cb148591ea"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-test-writer-red-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-test-writer-red-001/receipt.json",
+      "receipt_sha256": "54f20166ed1bd6fa3cd7e9945ab565b9f0c69c86edaf6c5848e75f2c000460a4",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/red-report.md": "d0cfe61d4c3da97d6c913186b490e114028e5379bb8dd85661f994cb148591ea"
+      },
+      "note": "review-round unit=native-record-without-external-config-2026-11-20; family=result; round=1/2; event=assessment; outcome=fixture unavailable/null distinction and evidence need correction; evidence=red-report.md and discovery.md; next=test-writer correction before GREEN; authority=orchestrator boundary verification"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "red",
+      "substage": "green",
+      "at": "2026-11-20T14:28:59.745547+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "d35340baa045b2632e98065ef24d516a4cf014e99dcad6b6558b7aceb70c1e15",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "red",
+        "substage": "green",
+        "packet_id": "native-record-without-external-config-2026-11-20-test-writer-red-002",
+        "receipt_sha256": "fda552dabf0670dc7b358d0d4a50d4ee50ac6b2175a75ee9fce3fe5587d19c6c",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "tdd",
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/red-correction-report.md",
+            "324f19ae6a60d5168e2cb5e110d16b0b03b4a7621dfd20e4975f3101142c9c14"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-test-writer-red-002",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-test-writer-red-002/receipt.json",
+      "receipt_sha256": "fda552dabf0670dc7b358d0d4a50d4ee50ac6b2175a75ee9fce3fe5587d19c6c",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/red-correction-report.md": "324f19ae6a60d5168e2cb5e110d16b0b03b4a7621dfd20e4975f3101142c9c14"
+      },
+      "note": "review-round unit=native-record-without-external-config-2026-11-20; family=result; round=1/2; event=verification; outcome=fixture correction and RED evidence verified, user consequence recorded; evidence=red-correction-report.md and saved pytest outputs; next=GREEN preserving tests; authority=orchestrator approved RED gate"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "green-returned",
+      "substage": null,
+      "at": "2026-11-20T14:55:39.139720+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "570cacc91daea88584d8e6af077321f345cf8dcefe724a8f2febbd2ce39f23be",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "green-returned",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-implementer-green-001",
+        "receipt_sha256": "808b2f69e6f52a8eb1770d6c88f78f5722750a00966ede086df89d25dcd7c548",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/green-report.md",
+            "a81afbfd9b0a6a8daba088b4b8e6d2ecd13958f00d65d0d4cc20c82e4c3a25b1"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-implementer-green-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-implementer-green-001/receipt.json",
+      "receipt_sha256": "808b2f69e6f52a8eb1770d6c88f78f5722750a00966ede086df89d25dcd7c548",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/green-report.md": "a81afbfd9b0a6a8daba088b4b8e6d2ecd13958f00d65d0d4cc20c82e4c3a25b1"
+      },
+      "note": "review-round unit=native-record-without-external-config-2026-11-20; family=result; round=2/2; event=assessment; outcome=35 passed 1 cleanup failure, GREEN not closed; evidence=green-report.md; next=test-writer minimal cleanup correction then verify/adjudicate at ceiling; authority=orchestrator boundary check"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "cleanup-blocked",
+      "substage": null,
+      "at": "2026-11-20T14:57:44.350316+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "6bd1c35d7c74d0fb062eecc06dbeef71d66fe182bd74e42ec89a66cf8901e3d3",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "cleanup-blocked",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-test-writer-post-audit-001",
+        "receipt_sha256": "dec6da0244069e57594912d31b31b39047114588048c9f0b21865e23ddd6da1a",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-test-writer-post-audit-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-test-writer-post-audit-001/receipt.json",
+      "receipt_sha256": "dec6da0244069e57594912d31b31b39047114588048c9f0b21865e23ddd6da1a",
+      "artifacts": {},
+      "note": "Role reports intake capture unavailable; zero test writes or suite executions. Durable blocked final report received, no semantic gate approval. Prepare successor with literal dispatch capture in declared read scope; keep result correction ordinal 2/2."
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "cleanup-verified",
+      "substage": null,
+      "at": "2026-11-20T15:10:34.841769+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "1e282a1933ab17a227ff153205aa69093704d7d68c5ab7752d88629665a08964",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "cleanup-verified",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-test-writer-post-audit-002",
+        "receipt_sha256": "6b7fd2f3a155c915b870e8b44f283b44c06742ee15c09af661be19bd007c8860",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/cleanup-report.md",
+            "b0377a2c517ab9b4bf35f725d3a9ddc222cbfd08395324cc1938a4d6a686b900"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-test-writer-post-audit-002",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-test-writer-post-audit-002/receipt.json",
+      "receipt_sha256": "6b7fd2f3a155c915b870e8b44f283b44c06742ee15c09af661be19bd007c8860",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/cleanup-report.md": "b0377a2c517ab9b4bf35f725d3a9ddc222cbfd08395324cc1938a4d6a686b900"
+      },
+      "note": "review-round unit=native-record-without-external-config-2026-11-20; family=result; round=2/2; event=verification; outcome=36 focal and 95 proportional pass, inventory validate rc0; evidence=cleanup-report.md and discovery.md; next=independent review, no further correction without adjudication; authority=orchestrator verifies final permitted correction"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "tdd-verified",
+      "substage": null,
+      "at": "2026-11-20T15:10:35.306052+00:00",
+      "by": "orchestrator",
+      "transition": "advance",
+      "transition_key": "0d1297f747ccc95992cd148e9c332ae2ccb7d754f4f478b9cc412dc6ee0a20bd",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "advance",
+        "stage": "tdd-verified",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "review",
+        "artifacts": [],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {},
+      "note": "Approved executable promises have focal plus proportional green evidence; inventory integrity measured rc0 after deltas. Independent semantic/test-mapping review pending, full suite not executed with limits in discovery.md."
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-11-20T15:20:46.599257+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "56d45c836fe7a3d42b6a744bc68267dc000e0b7efe4ac020a267796436506bb5",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "review",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-reviewer-review-001",
+        "receipt_sha256": "066c68e4bd409ce7414de27c4cae951dc9628b273a5f05c19ed2198a57b6969e",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/review.md",
+            "87408b08ceb1ef46ae83f65c09ab57299a69271bb90e9e86b8e800b6e17cdefc"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-reviewer-review-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-reviewer-review-001/receipt.json",
+      "receipt_sha256": "066c68e4bd409ce7414de27c4cae951dc9628b273a5f05c19ed2198a57b6969e",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/review.md": "87408b08ceb1ef46ae83f65c09ab57299a69271bb90e9e86b8e800b6e17cdefc"
+      },
+      "note": "review-round unit=native-record-without-external-config-2026-11-20; family=result; round=2/2; event=verification; outcome=no independent blockers, optional F1 F2 N1 preserved for owner prioritization; evidence=review.md; next=owner decision before closure drafts; authority=orchestrator receives review, does not self-approve priorities"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "review",
+      "substage": null,
+      "at": "2026-11-20T15:27:17.951007+00:00",
+      "by": null,
+      "transition": "gate",
+      "transition_key": "c048c2cc9c390a3588b149030aca4f5bc7add67337aefe16078c4e0ee9baee37",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "gate",
+        "stage": "review",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": "merge",
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/review.md",
+            "87408b08ceb1ef46ae83f65c09ab57299a69271bb90e9e86b8e800b6e17cdefc"
+          ]
+        ],
+        "approved_by": "owner",
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/review.md": "87408b08ceb1ef46ae83f65c09ab57299a69271bb90e9e86b8e800b6e17cdefc"
+      },
+      "note": "Owner si ok accepts disclosed optional F1/F2/N1 as documented limits and approves closure preparation; no blockers and no new correction. Memory Bank drafts still require owner approval. No deployment/publication.",
+      "approved_by": "owner"
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "memory-drafts",
+      "substage": null,
+      "at": "2026-11-20T15:34:35.644182+00:00",
+      "by": null,
+      "transition": "delivery",
+      "transition_key": "8ec82b52c18be86054543890a8e7284b68530d655daa03a91e3ec3be4b6223f3",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "delivery",
+        "stage": "memory-drafts",
+        "substage": null,
+        "packet_id": "native-record-without-external-config-2026-11-20-scribe-memory-001",
+        "receipt_sha256": "31a6480ed6bd43df1c7f010348567b354119e1e3e741cdd41712ad549a882739",
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/specs/native-record-without-external-config-2026-11-20/memory-drafts.md",
+            "5583d0a6013bc64ef7b9f4acc60203f4856625076320efe2e980b99d858380c2"
+          ]
+        ],
+        "approved_by": null,
+        "contract": null,
+        "plan": null,
+        "closure": null
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": "native-record-without-external-config-2026-11-20-scribe-memory-001",
+      "receipt_ref": ".cdad-execution/runtime/results/exec-native-record-without-external-config-2026-11-20-001/native-record-without-external-config-2026-11-20-scribe-memory-001/receipt.json",
+      "receipt_sha256": "31a6480ed6bd43df1c7f010348567b354119e1e3e741cdd41712ad549a882739",
+      "artifacts": {
+        "docs/specs/native-record-without-external-config-2026-11-20/memory-drafts.md": "5583d0a6013bc64ef7b9f4acc60203f4856625076320efe2e980b99d858380c2"
+      },
+      "note": "Original scribe final text received byte-exact from native session store and materialized as drafts only. Owner Memory Bank approval pending; ADR-046 remains proposed, no closure, deployment or publication."
+    },
+    {
+      "feature": "native-record-without-external-config-2026-11-20",
+      "stage": "merge",
+      "substage": null,
+      "at": "2026-11-20T15:51:56.081022+00:00",
+      "by": null,
+      "transition": "closure",
+      "transition_key": "799e8f7e1468172ac76ee4c0a1e86061325ac7f3e37447f229ddbf5be384d555",
+      "transition_key_payload": {
+        "execution_id": "exec-native-record-without-external-config-2026-11-20-001",
+        "feature_id": "native-record-without-external-config-2026-11-20",
+        "transition": "closure",
+        "stage": "merge",
+        "substage": null,
+        "packet_id": null,
+        "receipt_sha256": null,
+        "resolution": null,
+        "replaced_by": null,
+        "postcondition": null,
+        "current_stage": null,
+        "artifacts": [
+          [
+            "docs/activeContext.md",
+            "35afcc45c96fbb001610c687901a1d3d7841e3f45273fd2af45b182f2c826faf"
+          ],
+          [
+            "docs/adr/ADR-046-registro-nativo-sin-configuracion-de-transporte.md",
+            "98dbe675785d5f4e6d9283a3c5f54a08f980826c1937312b53277aca682bf832"
+          ],
+          [
+            "docs/progress.md",
+            "b018c2e8b2bdb299a8c56515483e569c55dda68fbc1c62dd5e88ff9b43827d2a"
+          ]
+        ],
+        "approved_by": "owner",
+        "contract": null,
+        "plan": null,
+        "closure": {
+          "path": "docs/specs/native-record-without-external-config-2026-11-20/closure.md",
+          "sha256": "18702e33a3e81d010a86feeb2c1ae33f99adddab95ac8e8271b12652f0f708b9"
+        }
+      },
+      "supersedes": null,
+      "approval_effect": false,
+      "packet_id": null,
+      "receipt_ref": null,
+      "receipt_sha256": null,
+      "artifacts": {
+        "docs/activeContext.md": "35afcc45c96fbb001610c687901a1d3d7841e3f45273fd2af45b182f2c826faf",
+        "docs/progress.md": "b018c2e8b2bdb299a8c56515483e569c55dda68fbc1c62dd5e88ff9b43827d2a",
+        "docs/adr/ADR-046-registro-nativo-sin-configuracion-de-transporte.md": "98dbe675785d5f4e6d9283a3c5f54a08f980826c1937312b53277aca682bf832"
+      },
+      "note": "Owner approved Memory Bank and ADR-046; documentation committed, 95 proportional and 63 independent focused checks green; full suite not run with rationale/limits in closure. Deployment and publication separately authorized and pending.",
+      "approved_by": "owner",
+      "closure_path": "docs/specs/native-record-without-external-config-2026-11-20/closure.md",
+      "closure_sha256": "18702e33a3e81d010a86feeb2c1ae33f99adddab95ac8e8271b12652f0f708b9"
     }
   ],
   "approver": "<owner>",
@@ -47424,7 +47979,7 @@
     "expires": "cierre, cancelación o revocación del epic",
     "note": "Mandate expressly delegated by <owner> for epic 019; no inheritance from epic 018."
   },
-  "last_updated": "2026-11-18T00:02:12.877058+00:00",
+  "last_updated": "2026-11-20T15:51:56.081022+00:00",
   "delegation_history": [
     {
       "delegated_to": "Orquestador CDAD (sesión OpenCode)",
@@ -47620,7 +48175,7 @@
   "suspended_units": {},
   "active_feature": null,
   "current_stage": "idle",
-  "tdd_substage": null,
+  "tdd_substage": "green",
   "postconditions_status": {
     "5": "green",
     "7": "green",
@@ -47630,11 +48185,11 @@
   "review_status": null,
   "active_packet": null,
   "execution": {
-    "id": "exec-019-007-suite-selector-maintenance-001",
-    "epic_id": "epic-019-discovery-dialogue",
-    "feature_id": "019-007-suite-selector-maintenance",
-    "scope": "epic-019-discovery-dialogue",
-    "authority_ref": "docs/epics/epic-019-discovery-dialogue/execution.md",
+    "id": "exec-native-record-without-external-config-2026-11-20-001",
+    "epic_id": null,
+    "feature_id": "native-record-without-external-config-2026-11-20",
+    "scope": "native-record-without-external-config-2026-11-20",
+    "authority_ref": "docs/specs/native-record-without-external-config-2026-11-20/spec.md",
     "model_policy": "ordinary",
     "policy_sha256": "bfcab391371da9f193ce63710c27edf41f079f4b4fb7786b98db4384025a3f71"
   }

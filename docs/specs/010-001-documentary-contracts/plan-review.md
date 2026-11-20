@@ -101,7 +101,7 @@ python3 -B scripts/cdad_packet.py render --project-root . --execution-context .c
 sha256sum docs/specs/010-001-documentary-contracts/*
 wc -c skills/cdad-cycle/packets/common.md skills/cdad-cycle/packets/roles/* skills/cdad-cycle/packets/substages/*
 rg -n -c '<owner>' skills sources agents
-grep -c -i 'pablo' tests/.sensitive-patterns.local
+grep -c -i '<owner>' tests/.sensitive-patterns.local
 git status --short
 ```
 

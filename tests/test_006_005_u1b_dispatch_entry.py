@@ -447,8 +447,23 @@ if "--capabilities" in sys.argv[1:]:
 
 if "--observe" in sys.argv[1:]:
     row, reason = _observe()
+    if reason in ("no-store", "no-schema"):
+        # UNAVAILABLE observation surface: reported explicitly at the module's
+        # CLI boundary (nonzero + the missing surface named). A successful
+        # observation with no matching row stays `null` with rc 0 (below).
+        _log({"mode": "observe", "argv": sys.argv[1:], "reason": reason,
+              "row": None, "unavailable": True, "config": _config(),
+              "config_passed": bool(_option("--exec-config")
+                                    or os.environ.get("CDAD_EXEC_CONFIG"))})
+        sys.stderr.write(
+            "u1b fixture: observation surface unavailable: %s (session store "
+            "%s)\n" % (reason, "missing" if reason == "no-store"
+                       else "without session_v2 schema"))
+        sys.exit(3)
     _log({"mode": "observe", "argv": sys.argv[1:], "reason": reason,
-          "row": row})
+          "row": row, "config": _config(),
+          "config_passed": bool(_option("--exec-config")
+                                or os.environ.get("CDAD_EXEC_CONFIG"))})
     if _is_direct():
         sys.stdout.write(
             (json.dumps(row, sort_keys=True) if row is not None else "null")
@@ -560,7 +575,7 @@ class U1bEntryCase(unittest.TestCase):
 
     # -- projects -----------------------------------------------------------
 
-    def new_project(self, *, role: str, substage: str) -> dict:
+    def new_project(self, *, role: str, substage: str, tag: str = "") -> dict:
         """Disposable project with a canonical packet published by `prepare`.
 
         The fixture authority registers the approved plan of the active epic
@@ -569,7 +584,8 @@ class U1bEntryCase(unittest.TestCase):
         package cannot be published at all — an independent fixture
         precondition, not a behavior under test.
         """
-        root = self.base / ("project-%s-%s" % (role, substage))
+        root = self.base / ("project-%s-%s%s" % (
+            role, substage, ("-" + tag) if tag else ""))
         root.mkdir(parents=True, exist_ok=True)
         build_project(root)
         # the architect sheet of the fixture authority reads the epic plan.
@@ -623,6 +639,87 @@ class U1bEntryCase(unittest.TestCase):
             json.dumps(document, indent=2, sort_keys=True) + "\n",
             encoding="utf-8")
         return path
+
+    def runtimes_path(self) -> Path:
+        return self.config_home / "cdad" / "runtimes.json"
+
+    def set_runtimes(self, kind: str) -> None:
+        """Configuration-availability partitions of the NATIVE record path
+        (spec PC-1): `full` keeps the original fixture section; the rest are
+        absent file / no `runtimes` key / no section for the runtime / empty
+        map / empty section object."""
+        path = self.runtimes_path()
+        if kind == "full":
+            self.write_runtimes()
+            return
+        if kind == "absent":
+            if path.exists():
+                path.unlink()
+            return
+        documents = {
+            "no-key": {"version": 1},
+            "no-section": {"version": 1, "runtimes": {"otherruntime": {}}},
+            "empty-map": {"version": 1, "runtimes": {}},
+            "empty-section": {"version": 1, "runtimes": {RUNTIME: {}}},
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(documents[kind]) + "\n", encoding="utf-8")
+
+    def fresh_project(self, tag: str) -> dict:
+        """A new disposable project (clean ledger/inbox), a clean fixture
+        module log and no store: each partition starts from nothing."""
+        self.project = self.new_project(
+            role="test-writer", substage="red", tag=tag)
+        log = self.fixture_dir / "module-log.jsonl"
+        if log.exists():
+            log.unlink()
+        if self.store_path().exists():
+            self.store_path().unlink()
+        return self.project
+
+    def observe_log(self) -> list:
+        return [entry for entry in self.module_log()
+                if entry.get("mode") == "observe"]
+
+    def effects(self, ctx: dict | None = None) -> tuple:
+        """(ledger stems, inbox snapshot): the durable effects of `record`."""
+        ctx = ctx or self.project
+        return (sorted(self.records(ctx)),
+                snapshot_under(ctx["root"] / ".cdad-execution" / "inbox"))
+
+    def assert_no_effects(self, before: tuple, label: str,
+                          ctx: dict | None = None) -> None:
+        ctx = ctx or self.project
+        after = self.effects(ctx)
+        self.assertEqual(
+            after[0], before[0],
+            msg="%s: quedó un intento registrado (no debe haber registro "
+                "durable): %r" % (label, sorted(set(after[0]) - set(before[0]))))
+        self.assertEqual(
+            snapshot_diff(before[1], after[1]), [],
+            msg="%s: se escenificó algo bajo `.cdad-execution/inbox`" % label)
+        self.assertFalse(
+            (ctx["root"] / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
+            msg="%s: existe un descriptor RESULT.json" % label)
+
+    def assert_staged_exact(self, label: str, ctx: dict | None = None) -> None:
+        """The original bytes are staged and the descriptor points at them."""
+        ctx = ctx or self.project
+        root = ctx["root"]
+        descriptor = self.descriptor(ctx)
+        located = []
+        for part in descriptor.get("parts") or []:
+            rel = part.get("staged_path") or part.get("path")
+            if isinstance(rel, str) and (root / rel).is_file() and \
+                    (root / rel).read_bytes() == NATIVE_PAYLOAD:
+                located.append(rel)
+        self.assertTrue(
+            located,
+            msg="%s: el descriptor no apunta a una parte con los bytes "
+                "originales (parts=%r)" % (label, descriptor.get("parts")))
+        self.assertFalse(
+            (self.receipt_dir(ctx) / "receipt.json").is_file(),
+            msg="%s: `record` no recibe ni aprueba: hay un recibo" % label)
 
     def write_store(self, columns: list, rows: list) -> Path:
         """Disposable SQLite store: its COLUMNS are the fixture's «store
@@ -1076,6 +1173,65 @@ class TestPd4WithoutFinalTextThereIsNoDelivery(U1bEntryCase):
             out.get("diagnosis"),
             msg="PD-4: el sobre no declara el hecho (diagnóstico vacío)")
 
+        # PC-6 (native-record-without-external-config-2026-11-20): omitted
+        # native text never creates a delivery. With the observation surface
+        # UNAVAILABLE (no store, empty runtime map) the record fails closed:
+        # no durable registration, no staging. Without this check a user could
+        # get a registered delivery when no final text exists.
+        self.fresh_project("pc6-unavailable")
+        self.set_runtimes("empty-map")
+        before_unavailable = self.effects()
+        proc = self.record(attempt=ATTEMPT_PD4, session=NATIVE_SESSION)
+        self.assert_record_surface(proc, "PC-6 observación no disponible")
+        self.assertNotEqual(
+            proc.returncode, 0,
+            msg="PC-6: sin texto nativo y con observación no disponible, "
+                "`record` debe fallar (rc=0):\n%s" % tail(self.output(proc)))
+        self.assertNotIn(
+            "no execution configuration", self.output(proc),
+            msg="PC-6: el fallo debe venir de la observación no disponible, "
+                "no de la falta de configuración externa:\n%s"
+                % tail(self.output(proc)))
+        self.assert_no_effects(
+            before_unavailable, "PC-6 sin texto + observación no disponible")
+
+        # PC-6: an explicitly given but missing / empty / unreadable native
+        # input is an ERROR, never reinterpreted as «omitted» (which, with the
+        # observation available, would register an attempt-only record).
+        self.fresh_project("pc6-explicit")
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": NATIVE_SESSION, "agent": "cdad-test-writer"}])
+        empty = self.base / "native-empty-u1b.md"
+        empty.write_bytes(b"")
+        directory = self.base / "native-directory-u1b-dir"
+        directory.mkdir()
+        cases = [("missing", self.base / "native-missing-u1b.md"),
+                 ("empty", empty),
+                 ("directory (not a regular file)", directory)]
+        # A REAL unreadable regular file, only where the executing OS user is
+        # actually denied (a privileged user reads through chmod 000).
+        unreadable = self.base / "native-unreadable-u1b.md"
+        unreadable.write_bytes(NATIVE_PAYLOAD)
+        unreadable.chmod(0)
+        if os.access(str(unreadable), os.R_OK):
+            unreadable.chmod(0o600)  # not feasible under this user: skipped
+        else:
+            cases.append(("unreadable regular file", unreadable))
+        self.addCleanup(
+            lambda: unreadable.chmod(0o600) if unreadable.exists() else None)
+        for label, path in cases:
+            with self.subTest(native_result=label):
+                before_explicit = self.effects()
+                proc = self.record(attempt=ATTEMPT_PD4, session=NATIVE_SESSION,
+                                   native_result=path)
+                self.assert_record_surface(proc, "PC-6 %s" % label)
+                self.assertNotEqual(
+                    proc.returncode, 0,
+                    msg="PC-6: un --native-result %s debe ser error, no "
+                        "«omitido» (rc=0):\n%s" % (label, tail(self.output(proc))))
+                self.assert_no_effects(before_explicit, "PC-6 %s" % label)
+
 
 # ---------------------------------------------------------------- PD-5
 
@@ -1140,6 +1296,48 @@ class TestPd5NativeCorrelation(U1bEntryCase):
             msg="PD-5/O-3: el diagnóstico no nombra la llave discriminante que "
                 "falta:\n%s" % tail(self.output(proc)))
 
+        # PC-3 (native-record-without-external-config-2026-11-20): a motivated
+        # observation (declared session/parent) always reaches the runtime
+        # module ONCE with the available section — even an empty `{}` with no
+        # `sessions_db` — also when native bytes are available. Without this
+        # check observation could be skipped on a default installation and a
+        # contradictory identity would go unseen.
+        self.fresh_project("pc3-empty-section")
+        self.set_runtimes("empty-map")
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": "ses-conc-a", "agent": "cdad-test-writer"},
+             {"id": "ses-conc-b", "agent": "cdad-test-writer"}])
+        before_empty = self.records()
+        proc = self.record(attempt=ATTEMPT_PD5, session="ses-conc-a",
+                           parent=NATIVE_PARENT,
+                           native_result=self.native_result_file())
+        out = self.envelope(proc, "PC-3 sección vacía")
+        observed = self.observe_log()
+        self.assertEqual(
+            len(observed), 1,
+            msg="PC-3: la observación motivada debe invocar al módulo "
+                "exactamente una vez sin `sessions_db` (sección vacía); "
+                "invocaciones: %d" % len(observed))
+        self.assertTrue(
+            observed[0].get("config_passed"),
+            msg="PC-3: el módulo no recibió la sección disponible (ni siquiera "
+                "vacía): %r" % observed[0])
+        self.assertEqual(
+            observed[0].get("config"), {},
+            msg="PC-3: el módulo debía recibir la sección vacía tal cual, sin "
+                "claves añadidas: %r" % observed[0].get("config"))
+        record = self.single_record(before_empty)
+        self.assertIn(
+            record["session"], (None, "unknown"),
+            msg="PC-3: con sólo «agente» la identidad sigue sin acreditarse: "
+                "%r" % record.get("session"))
+        self.assertEqual(
+            out["termination"], "completed",
+            msg="PC-3/PC-2: con bytes nativos la entrega se registra: %r"
+                % out["termination"])
+        self.assert_staged_exact("PC-3 sección vacía")
+
     def test_pd5_native_contradiction_is_a_rejection_naming_the_key(self) -> None:
         """PD-5 (verificada e incorrecta): an evaluable key that contradicts
         (the row's `parent_id` is not the declared parent) is a REJECTION that
@@ -1175,6 +1373,49 @@ class TestPd5NativeCorrelation(U1bEntryCase):
                 self.record_doc(stem).get("session"), NATIVE_SESSION,
                 msg="PD-5: el rechazo acreditó igual la sesión contradictoria "
                     "(%r) en el registro %r" % (NATIVE_SESSION, stem))
+
+        # PC-5 (native-record-without-external-config-2026-11-20): the same
+        # contradiction WITH native bytes available — and with a default
+        # installation (no/empty runtime section) — is still `blocked + none +
+        # null` naming the key, with nothing registered or staged: available
+        # bytes never override a contradiction. Without this check a
+        # contradicting session could be accredited just because bytes exist.
+        for kind in ("full", "absent", "empty-map"):
+            with self.subTest(pc5_config=kind):
+                self.fresh_project("pc5-%s" % kind)
+                self.set_runtimes(kind)
+                self.write_store(
+                    ["id TEXT PRIMARY KEY", "parent_id TEXT"],
+                    [{"id": NATIVE_SESSION, "parent_id": "ses-otro-parent"}])
+                effects_before = self.effects()
+                proc = self.record(
+                    attempt=ATTEMPT_PD5, session=NATIVE_SESSION,
+                    parent=NATIVE_PARENT,
+                    native_result=self.native_result_file())
+                text = self.output(proc)
+                self.assert_record_surface(proc, "PC-5 %s" % kind)
+                self.assertRegex(
+                    text, r"(?i)parent|padre",
+                    msg="PC-5: el rechazo no nombra la llave (parent):\n%s"
+                        % tail(text))
+                out = self.json_or_none(proc)
+                if out is not None:
+                    self.assertEqual(
+                        (out.get("termination"), out.get("delivery"),
+                         out.get("session")),
+                        ("blocked", "none", None),
+                        msg="PC-5: la contradicción debe devolver blocked + "
+                            "none + null: %r" % out)
+                else:
+                    self.assertNotEqual(
+                        proc.returncode, 0,
+                        msg="PC-5: la contradicción no falló cerrado:\n%s"
+                            % tail(text))
+                self.assertEqual(
+                    len(self.observe_log()), 1,
+                    msg="PC-5: la observación motivada debía invocar al "
+                        "módulo exactamente una vez: %r" % self.observe_log())
+                self.assert_no_effects(effects_before, "PC-5 %s" % kind)
 
     def test_pd5_native_session_outside_the_authorized_root_is_a_rejection(
             self) -> None:
@@ -1547,6 +1788,65 @@ class TestPd6UnverifiableIdentityKeepsNoSession(U1bEntryCase):
             msg="PD-6: la garantía menor exige la entrega byte-exacta del "
                 "resultado nativo (no se escenificó ninguna parte)")
 
+        # PC-1..PC-4 (native-record-without-external-config-2026-11-20):
+        # recording genuine native delivery needs no external launch settings.
+        # Each partition starts from a fresh project, NO store (the module's
+        # observation surface is unavailable) and a different configuration
+        # availability. Without this check a user on a default installation
+        # completes native delegation and still cannot record or receive it.
+        partitions = (
+            ("absent", "absent", {"session": NATIVE_SESSION}, True),
+            ("no-key", "no-key", {"session": NATIVE_SESSION}, True),
+            ("no-section", "no-section", {"parent": NATIVE_PARENT}, True),
+            ("empty-map", "empty-map", {"session": NATIVE_SESSION}, True),
+            ("empty-section", "empty-section", {"session": NATIVE_SESSION},
+             True),
+            # PC-3: `--since` alone is NOT an observation motive.
+            ("no-motive", "absent", {"since": "2026-01-01T00:00:00Z"}, False),
+        )
+        for name, kind, motive, observed in partitions:
+            with self.subTest(pc1_partition=name):
+                self.fresh_project("pc1-%s" % name)
+                self.set_runtimes(kind)
+                before = self.records()
+                proc = self.record(attempt=ATTEMPT_PD6,
+                                   native_result=self.native_result_file(),
+                                   **motive)
+                out = self.envelope(proc, "PC-1/PC-2 %s" % name)
+                self.assertEqual(
+                    (out["termination"], out["delivery"]),
+                    ("completed", "staged"),
+                    msg="PC-2: el sobre debe declarar completed + staged: %r"
+                        % out)
+                self.assertIsNone(
+                    out["session"],
+                    msg="PC-2: la sesión no verificable queda null en el "
+                        "sobre: %r" % out["session"])
+                self.assertEqual(out["attempt"], ATTEMPT_PD6)
+                self.assertTrue(
+                    out.get("diagnosis"),
+                    msg="PC-2: el sobre no explica la evidencia faltante")
+                record = self.single_record(before)
+                self.assertIsNone(
+                    record.get("session"),
+                    msg="PC-2/PC-4: la sesión declarada no se copia a la "
+                        "identidad acreditada: %r" % record.get("session"))
+                self.assertIsNone(
+                    record.get("model_reported"),
+                    msg="PC-2/PC-4: no se inventa un modelo: %r"
+                        % record.get("model_reported"))
+                source = (record.get("provenance") or {}).get("session")
+                self.assertTrue(
+                    isinstance(source, str) and source.strip(),
+                    msg="PC-2: el provenance no explica la sesión no "
+                        "verificada: %r" % (record.get("provenance"),))
+                self.assert_staged_exact("PC-2 %s" % name)
+                self.assertEqual(
+                    len(self.observe_log()), 1 if observed else 0,
+                    msg="PC-3/PC-4: observación del módulo esperada %s vez "
+                        "(motivo=%s): %r"
+                        % (1 if observed else 0, motive, self.observe_log()))
+
 
 # ---------------------------------------------------------------- PD-9
 
@@ -1600,6 +1900,72 @@ class TestPd9NewVerbsRejectTheRetiredToken(U1bEntryCase):
                         legacy.read_bytes(), legacy_bytes,
                         msg="PD-9/D-11: el rechazo de `%s` en `%s` tocó el "
                             "documento heredado" % (form[0], verb))
+
+        # PC-7/PC-8 (native-record-without-external-config-2026-11-20): the
+        # native record tolerates ABSENCE of configuration, not configuration
+        # ERRORS, and never succeeds with an invalid runtime merely because
+        # native text exists. Each case: rc≠0, nothing registered or staged.
+        # Without this check a broken configuration would be silently ignored
+        # or an invalid runtime would succeed.
+        runtimes = self.runtimes_path()
+        runtimes.parent.mkdir(parents=True, exist_ok=True)
+
+        def native_rejection(label: str, needle: str | None = None,
+                             runtime: str = RUNTIME) -> None:
+            with self.subTest(native_case=label):
+                before = self.effects()
+                args = ["record", "--project-root", str(self.project["root"]),
+                        "--packet", self.project["packet_id"],
+                        "--attempt-id", ATTEMPT_PD9, "--runtime", runtime,
+                        "--native-result", str(self.native_result_file()),
+                        "--json"]
+                proc = self.run_entry(*args)
+                text = self.output(proc)
+                self.assert_record_surface(proc, label)
+                self.assertNotEqual(
+                    proc.returncode, 0,
+                    msg="PC-7/PC-8: %s debe fallar con texto nativo "
+                        "presente (rc=0):\n%s" % (label, tail(text)))
+                if label.startswith("runtime"):
+                    self.assertNotIn(
+                        "no execution configuration", text,
+                        msg="PC-8: el rechazo debe ser por el runtime, no "
+                            "por falta de configuración externa:\n%s"
+                            % tail(text))
+                if needle:
+                    self.assertIn(
+                        needle, text,
+                        msg="PC-7: %s no trae el diagnóstico `%s`:\n%s"
+                            % (label, needle, tail(text)))
+                self.assert_no_effects(before, label)
+
+        # PC-7: unreadable / invalid JSON.
+        runtimes.write_text("{not json", encoding="utf-8")
+        native_rejection("JSON inválido")
+        runtimes.unlink()
+        runtimes.mkdir()
+        native_rejection("runtimes.json ilegible (directorio)")
+        runtimes.rmdir()
+        # PC-7: a PRESENT section that is not an object.
+        for label, section in (("lista", []), ("texto", "x")):
+            runtimes.write_text(
+                json.dumps({"version": 1, "runtimes": {RUNTIME: section}}),
+                encoding="utf-8")
+            native_rejection("sección presente no objeto (%s)" % label)
+        # PC-7: forbidden keys of a present object section keep their guidance.
+        # (`model` is the forbidden key the existing u1a suite pins with its
+        # guidance naming `delegation.json`; no other key policy is asserted.)
+        runtimes.write_text(
+            json.dumps({"version": 1,
+                        "runtimes": {RUNTIME: {"model": "legacy/model"}}}),
+            encoding="utf-8")
+        native_rejection("clave prohibida `model`", needle="delegation.json")
+        # PC-8: runtime validation stays mandatory with valid/absent config.
+        runtimes.unlink()
+        native_rejection("runtime con identificador inválido",
+                         runtime="Bad/Id")
+        native_rejection("runtime sin módulo disponible",
+                         runtime="nomoduleu1b")
 
 
 # ---------------------------------------------------------------- PD-23

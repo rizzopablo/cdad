@@ -1,0 +1,418 @@
+FFF.FF                                                                   [100%]
+=================================== FAILURES ===================================
+_ TestPd4WithoutFinalTextThereIsNoDelivery.test_pd4_without_final_text_no_staging_no_descriptor_no_receipt _
+
+self = <test_006_005_u1b_dispatch_entry.TestPd4WithoutFinalTextThereIsNoDelivery testMethod=test_pd4_without_final_text_no_staging_no_descriptor_no_receipt>
+
+    def test_pd4_without_final_text_no_staging_no_descriptor_no_receipt(
+            self) -> None:
+        """PD-4: `record` without `--native-result` registers the attempt
+        (one) and the envelope declares it, but stages nothing under
+        `.cdad-execution/inbox`, writes no descriptor and leaves no receipt (nothing
+        fabricates a delivery)."""
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": NATIVE_SESSION, "agent": "cdad-test-writer"}])
+        root = self.project["root"]
+        inbox_before = snapshot_under(root / ".cdad-execution" / "inbox")
+        self.assertFalse(
+            (root / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
+            msg="precondición (fixture): el descriptor existe antes del caso")
+        before = self.records()
+    
+        proc = self.record(attempt=ATTEMPT_PD4, session=NATIVE_SESSION)
+        out = self.envelope(proc, "PD-4")
+    
+        self.assertEqual(
+            out["attempt"], ATTEMPT_PD4,
+            msg="PD-4: el sobre no declara el intento registrado: %r"
+                % out.get("attempt"))
+        self.assertIn(
+            ATTEMPT_PD4, self.records(),
+            msg="PD-4: el intento no quedó registrado en el ledger (el intento "
+                "se registra aunque no haya entrega): %r"
+                % sorted(set(self.records()) - set(before)))
+        self.assertFalse(
+            (root / ".cdad-execution" / "inbox" / "RESULT.json").is_file(),
+            msg="PD-4/INV-1: sin texto final se escribió un descriptor "
+                "RESULT.json (no hay entrega que declarar)")
+        self.assertEqual(
+            snapshot_diff(inbox_before, snapshot_under(root / ".cdad-execution" / "inbox")),
+            [],
+            msg="PD-4: sin texto final se escenificó algo bajo `.cdad-execution/inbox` "
+                "(nunca se fabrica una entrega)")
+        receipt = self.receipt_dir() / "receipt.json"
+        self.assertFalse(
+            receipt.is_file(),
+            msg="PD-4/INV-1: sin texto final hay un recibo (%s): `record` no "
+                "invoca receive y nada fabrica la entrega"
+                % receipt.relative_to(root).as_posix())
+        self.assertNotEqual(
+            out["termination"], "completed",
+            msg="PD-4: sin texto final la terminación no puede declarar "
+                "entrega: %r" % out["termination"])
+        self.assertTrue(
+            out.get("diagnosis"),
+            msg="PD-4: el sobre no declara el hecho (diagnóstico vacío)")
+    
+        # PC-6 (native-record-without-external-config-2026-11-20): omitted
+        # native text never creates a delivery. With the observation surface
+        # UNAVAILABLE (no store, empty runtime map) the record fails closed:
+        # no durable registration, no staging. Without this check a user could
+        # get a registered delivery when no final text exists.
+        self.fresh_project("pc6-unavailable")
+        self.set_runtimes("empty-map")
+        before_unavailable = self.effects()
+        proc = self.record(attempt=ATTEMPT_PD4, session=NATIVE_SESSION)
+        self.assert_record_surface(proc, "PC-6 observación no disponible")
+        self.assertNotEqual(
+            proc.returncode, 0,
+            msg="PC-6: sin texto nativo y con observación no disponible, "
+                "`record` debe fallar (rc=0):\n%s" % tail(self.output(proc)))
+>       self.assertNotIn(
+            "no execution configuration", self.output(proc),
+            msg="PC-6: el fallo debe venir de la observación no disponible, "
+                "no de la falta de configuración externa:\n%s"
+                % tail(self.output(proc)))
+E       AssertionError: 'no execution configuration' unexpectedly found in 'cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-dvmw_6uw/tmp/cdad-u1b-entry-t5lsha_g/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`\n`runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:\n  `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json\n  `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section\n  `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)\n  (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json\n' : PC-6: el fallo debe venir de la observación no disponible, no de la falta de configuración externa:
+E       cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-dvmw_6uw/tmp/cdad-u1b-entry-t5lsha_g/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`
+E       `runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:
+E         `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json
+E         `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section
+E         `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)
+E         (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json
+
+tests/test_006_005_u1b_dispatch_entry.py:1190: AssertionError
+_ TestPd5NativeCorrelation.test_pd5_native_contradiction_is_a_rejection_naming_the_key _
+
+self = <test_006_005_u1b_dispatch_entry.TestPd5NativeCorrelation testMethod=test_pd5_native_contradiction_is_a_rejection_naming_the_key>
+
+    def test_pd5_native_contradiction_is_a_rejection_naming_the_key(self) -> None:
+        """PD-5 (verificada e incorrecta): an evaluable key that contradicts
+        (the row's `parent_id` is not the declared parent) is a REJECTION that
+        names the key — never `unknown`, never an accepted delivery."""
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "parent_id TEXT"],
+            [{"id": NATIVE_SESSION, "parent_id": "ses-otro-parent"}])
+        proc = self.record(attempt=ATTEMPT_PD5, session=NATIVE_SESSION,
+                           parent=NATIVE_PARENT)
+        text = self.output(proc)
+        self.assert_record_surface(proc, "PD-5 contradicción (padre)")
+        self.assertRegex(
+            text, r"(?i)parent|padre",
+            msg="PD-5 (rechazo): el rechazo no nombra la llave contradictoria "
+                "(parent):\n%s" % tail(text))
+        out = self.json_or_none(proc)
+        if out is not None:
+            self.assertNotEqual(
+                out.get("termination"), "unknown",
+                msg="PD-5: una contradicción evaluable es RECHAZO, nunca "
+                    "`unknown` (§2.3): %r" % out.get("termination"))
+            self.assertNotEqual(
+                out.get("termination"), "completed",
+                msg="PD-5: una contradicción evaluable nunca acepta la entrega: "
+                    "%r" % out.get("termination"))
+        else:
+            self.assertNotEqual(
+                proc.returncode, 0,
+                msg="PD-5: la contradicción evaluable no falló cerrado:\n%s"
+                    % tail(text))
+        for stem in self.records():
+            self.assertNotEqual(
+                self.record_doc(stem).get("session"), NATIVE_SESSION,
+                msg="PD-5: el rechazo acreditó igual la sesión contradictoria "
+                    "(%r) en el registro %r" % (NATIVE_SESSION, stem))
+    
+        # PC-5 (native-record-without-external-config-2026-11-20): the same
+        # contradiction WITH native bytes available — and with a default
+        # installation (no/empty runtime section) — is still `blocked + none +
+        # null` naming the key, with nothing registered or staged: available
+        # bytes never override a contradiction. Without this check a
+        # contradicting session could be accredited just because bytes exist.
+        for kind in ("full", "absent", "empty-map"):
+            with self.subTest(pc5_config=kind):
+                self.fresh_project("pc5-%s" % kind)
+                self.set_runtimes(kind)
+                self.write_store(
+                    ["id TEXT PRIMARY KEY", "parent_id TEXT"],
+                    [{"id": NATIVE_SESSION, "parent_id": "ses-otro-parent"}])
+                effects_before = self.effects()
+                proc = self.record(
+                    attempt=ATTEMPT_PD5, session=NATIVE_SESSION,
+                    parent=NATIVE_PARENT,
+                    native_result=self.native_result_file())
+                text = self.output(proc)
+                self.assert_record_surface(proc, "PC-5 %s" % kind)
+>               self.assertRegex(
+                    text, r"(?i)parent|padre",
+                    msg="PC-5: el rechazo no nombra la llave (parent):\n%s"
+                        % tail(text))
+E               AssertionError: Regex didn't match: '(?i)parent|padre' not found in 'cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-01r9ueyw/tmp/cdad-u1b-entry-sy4i20y4/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`\n`runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:\n  `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json\n  `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section\n  `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)\n  (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json\n' : PC-5: el rechazo no nombra la llave (parent):
+E               cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-01r9ueyw/tmp/cdad-u1b-entry-sy4i20y4/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`
+E               `runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:
+E                 `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json
+E                 `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section
+E                 `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)
+E                 (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json
+
+tests/test_006_005_u1b_dispatch_entry.py:1396: AssertionError
+_ TestPd5NativeCorrelation.test_pd5_native_only_agent_evaluable_is_unknown_o3 __
+
+self = <test_006_005_u1b_dispatch_entry.TestPd5NativeCorrelation testMethod=test_pd5_native_only_agent_evaluable_is_unknown_o3>
+
+    def test_pd5_native_only_agent_evaluable_is_unknown_o3(self) -> None:
+        """PD-5/O-3: with a store version that exposes only `agent` (the
+        version observed today) two concurrent native dispatches of the same
+        role cannot be told apart: neither session is accredited — the result
+        is `unknown`, never «verificada», and the diagnosis names the missing
+        discriminating key."""
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": "ses-conc-a", "agent": "cdad-test-writer"},
+             {"id": "ses-conc-b", "agent": "cdad-test-writer"}])
+        before = self.records()
+        proc = self.record(attempt=ATTEMPT_PD5, session="ses-conc-a",
+                           parent=NATIVE_PARENT)
+        out = self.envelope(proc, "PD-5 O-3")
+        record = self.single_record(before)
+        self.assertIn(
+            record["session"], (None, "unknown"),
+            msg="PD-5/O-3: con sólo «agente» evaluable el resultado es "
+                "`unknown` (nunca «verificada»): se persiste %r"
+                % record.get("session"))
+        self.assertNotIn(
+            record["session"], ("ses-conc-a", "ses-conc-b"),
+            msg="PD-5/O-3: dos despachos nativos concurrentes del mismo rol "
+                "comparten agente: NINGUNA de las dos sesiones se acredita "
+                "como la del intento, pero se acreditó %r"
+                % record.get("session"))
+        self.assertRegex(
+            self.output(proc),
+            r"(?i)parent|padre|momento|moment|proyect|proyecto|directory|directorio",
+            msg="PD-5/O-3: el diagnóstico no nombra la llave discriminante que "
+                "falta:\n%s" % tail(self.output(proc)))
+    
+        # PC-3 (native-record-without-external-config-2026-11-20): a motivated
+        # observation (declared session/parent) always reaches the runtime
+        # module ONCE with the available section — even an empty `{}` with no
+        # `sessions_db` — also when native bytes are available. Without this
+        # check observation could be skipped on a default installation and a
+        # contradictory identity would go unseen.
+        self.fresh_project("pc3-empty-section")
+        self.set_runtimes("empty-map")
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": "ses-conc-a", "agent": "cdad-test-writer"},
+             {"id": "ses-conc-b", "agent": "cdad-test-writer"}])
+        before_empty = self.records()
+        proc = self.record(attempt=ATTEMPT_PD5, session="ses-conc-a",
+                           parent=NATIVE_PARENT,
+                           native_result=self.native_result_file())
+>       out = self.envelope(proc, "PC-3 sección vacía")
+
+tests/test_006_005_u1b_dispatch_entry.py:1314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_006_005_u1b_dispatch_entry.py:780: in envelope
+    self.assertEqual(
+E   AssertionError: 1 != 0 : PC-3 sección vacía: la entrada no completó (rc=1):
+E   cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-im4ml8b0/tmp/cdad-u1b-entry-7m4wypu5/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`
+E   `runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:
+E     `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json
+E     `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section
+E     `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)
+E     (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json
+_ TestPd6UnverifiableIdentityKeepsNoSession.test_pd6_byte_exact_result_with_unverifiable_identity_keeps_no_session _
+
+self = <test_006_005_u1b_dispatch_entry.TestPd6UnverifiableIdentityKeepsNoSession testMethod=test_pd6_byte_exact_result_with_unverifiable_identity_keeps_no_session>
+
+    def test_pd6_byte_exact_result_with_unverifiable_identity_keeps_no_session(
+            self) -> None:
+        """PD-6/INV-2: the store exposes only `agent` (no discriminating key
+        ⇒ `unknown`), the native result is byte-exact: the delivery exists but
+        the attempt carries `session: null` with the declared provenance, and
+        the observed session id never appears as an accredited value."""
+        self.write_store(
+            ["id TEXT PRIMARY KEY", "agent TEXT"],
+            [{"id": NATIVE_SESSION, "agent": "cdad-test-writer"}])
+        before = self.records()
+        proc = self.record(attempt=ATTEMPT_PD6, session=NATIVE_SESSION,
+                           native_result=self.native_result_file())
+        self.envelope(proc, "PD-6")
+        record = self.single_record(before)
+    
+        self.assertIsNone(
+            record.get("session"),
+            msg="PD-6: la identidad no verificable se persiste con "
+                "`session: null` (nunca un valor de sesión inventado): %r"
+                % record.get("session"))
+        provenance = record.get("provenance")
+        self.assertIsInstance(
+            provenance, dict,
+            msg="PD-6/INV-8: el `provenance` del intento no es un objeto: %r"
+                % (provenance,))
+        source = provenance.get("session")
+        self.assertIsInstance(
+            source, str,
+            msg="PD-6: el `provenance` no declara la procedencia de `session` "
+                "(que la identidad no se pudo verificar): %r" % (source,))
+        self.assertTrue(
+            source.strip(),
+            msg="PD-6: la procedencia declarada de `session` está vacía")
+    
+        root = self.project["root"]
+        staged = [path for path in sorted((root / ".cdad-execution" / "inbox").rglob("*"))
+                  if path.is_file() and path.read_bytes() == NATIVE_PAYLOAD]
+        self.assertTrue(
+            staged,
+            msg="PD-6: la garantía menor exige la entrega byte-exacta del "
+                "resultado nativo (no se escenificó ninguna parte)")
+    
+        # PC-1..PC-4 (native-record-without-external-config-2026-11-20):
+        # recording genuine native delivery needs no external launch settings.
+        # Each partition starts from a fresh project, NO store (the module's
+        # observation surface is unavailable) and a different configuration
+        # availability. Without this check a user on a default installation
+        # completes native delegation and still cannot record or receive it.
+        partitions = (
+            ("absent", "absent", {"session": NATIVE_SESSION}, True),
+            ("no-key", "no-key", {"session": NATIVE_SESSION}, True),
+            ("no-section", "no-section", {"parent": NATIVE_PARENT}, True),
+            ("empty-map", "empty-map", {"session": NATIVE_SESSION}, True),
+            ("empty-section", "empty-section", {"session": NATIVE_SESSION},
+             True),
+            # PC-3: `--since` alone is NOT an observation motive.
+            ("no-motive", "absent", {"since": "2026-01-01T00:00:00Z"}, False),
+        )
+        for name, kind, motive, observed in partitions:
+            with self.subTest(pc1_partition=name):
+                self.fresh_project("pc1-%s" % name)
+                self.set_runtimes(kind)
+                before = self.records()
+                proc = self.record(attempt=ATTEMPT_PD6,
+                                   native_result=self.native_result_file(),
+                                   **motive)
+>               out = self.envelope(proc, "PC-1/PC-2 %s" % name)
+
+tests/test_006_005_u1b_dispatch_entry.py:1814: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_006_005_u1b_dispatch_entry.py:780: in envelope
+    self.assertEqual(
+E   AssertionError: 1 != 0 : PC-1/PC-2 absent: la entrada no completó (rc=1):
+E   cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-uw_bah4l/tmp/cdad-u1b-entry-0spikabp/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`
+E   `runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:
+E     `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json
+E     `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section
+E     `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)
+E     (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json
+_ TestPd9NewVerbsRejectTheRetiredToken.test_pd9_exec_config_token_is_rejected_on_dispatch_record_capabilities _
+
+self = <test_006_005_u1b_dispatch_entry.TestPd9NewVerbsRejectTheRetiredToken testMethod=test_pd9_exec_config_token_is_rejected_on_dispatch_record_capabilities>
+
+    def test_pd9_exec_config_token_is_rejected_on_dispatch_record_capabilities(
+            self) -> None:
+        """PD-9/O-10: on the explicit `dispatch`, on `record` and on
+        `capabilities`, both token forms ⇒ rc≠0 with the single migration
+        diagnostic naming `runtimes.json`, before any write."""
+        legacy = self.base / "legacy-exec-config-u1b.json"
+        legacy.write_text(
+            json.dumps({"binary": "/fixture/legacy-u1b"}, indent=2) + "\n",
+            encoding="utf-8")
+        legacy_bytes = legacy.read_bytes()
+        for verb in ("dispatch", "record", "capabilities"):
+            for form in (["--exec-config", str(legacy)],
+                         ["--exec-config=%s" % legacy]):
+                with self.subTest(verb=verb, form=form[0]):
+                    args = [verb]
+                    if verb in ("dispatch", "record"):
+                        args += ["--project-root", str(self.project["root"]),
+                                 "--packet", self.project["packet_id"],
+                                 "--runtime", RUNTIME]
+                    else:
+                        args += ["--runtime", RUNTIME]
+                    if verb == "record":
+                        args += ["--attempt-id", ATTEMPT_PD9]
+                    before = snapshot_under(self.base)
+                    proc = self.run_entry(*args, *form)
+                    text = self.output(proc)
+                    self.assertNotEqual(
+                        proc.returncode, 0,
+                        msg="PD-9/D-11: `%s` en `%s` debe ser error de uso "
+                            "(rc=%s):\n%s"
+                            % (form[0], verb, proc.returncode, tail(text)))
+                    self.assertIn(
+                        "runtimes.json", text,
+                        msg="PD-9/D-11: el rechazo de `%s` en `%s` no trae el "
+                            "diagnóstico de migración que nombra "
+                            "`runtimes.json`:\n%s" % (form[0], verb, tail(text)))
+                    self.assertEqual(
+                        snapshot_diff(before, snapshot_under(self.base)), [],
+                        msg="PD-9/D-11: el rechazo de `%s` en `%s` escribió "
+                            "antes de fallar" % (form[0], verb))
+                    self.assertEqual(
+                        legacy.read_bytes(), legacy_bytes,
+                        msg="PD-9/D-11: el rechazo de `%s` en `%s` tocó el "
+                            "documento heredado" % (form[0], verb))
+    
+        # PC-7/PC-8 (native-record-without-external-config-2026-11-20): the
+        # native record tolerates ABSENCE of configuration, not configuration
+        # ERRORS, and never succeeds with an invalid runtime merely because
+        # native text exists. Each case: rc≠0, nothing registered or staged.
+        # Without this check a broken configuration would be silently ignored
+        # or an invalid runtime would succeed.
+        runtimes = self.runtimes_path()
+        runtimes.parent.mkdir(parents=True, exist_ok=True)
+    
+        def native_rejection(label: str, needle: str | None = None,
+                             runtime: str = RUNTIME) -> None:
+            with self.subTest(native_case=label):
+                before = self.effects()
+                args = ["record", "--project-root", str(self.project["root"]),
+                        "--packet", self.project["packet_id"],
+                        "--attempt-id", ATTEMPT_PD9, "--runtime", runtime,
+                        "--native-result", str(self.native_result_file()),
+                        "--json"]
+                proc = self.run_entry(*args)
+                text = self.output(proc)
+                self.assert_record_surface(proc, label)
+                self.assertNotEqual(
+                    proc.returncode, 0,
+                    msg="PC-7/PC-8: %s debe fallar con texto nativo "
+                        "presente (rc=0):\n%s" % (label, tail(text)))
+                if label.startswith("runtime"):
+                    self.assertNotIn(
+                        "no execution configuration", text,
+                        msg="PC-8: el rechazo debe ser por el runtime, no "
+                            "por falta de configuración externa:\n%s"
+                            % tail(text))
+                if needle:
+                    self.assertIn(
+                        needle, text,
+                        msg="PC-7: %s no trae el diagnóstico `%s`:\n%s"
+                            % (label, needle, tail(text)))
+                self.assert_no_effects(before, label)
+    
+        # PC-7: unreadable / invalid JSON.
+        runtimes.write_text("{not json", encoding="utf-8")
+        native_rejection("JSON inválido")
+        runtimes.unlink()
+        runtimes.mkdir()
+>       native_rejection("runtimes.json ilegible (directorio)")
+
+tests/test_006_005_u1b_dispatch_entry.py:1946: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_006_005_u1b_dispatch_entry.py:1929: in native_rejection
+    self.assertNotIn(
+E   AssertionError: 'no execution configuration' unexpectedly found in 'cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-yzvtocai/tmp/cdad-u1b-entry-j5eh0xb_/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`\n`runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:\n  `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json\n  `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section\n  `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)\n  (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json\n' : PC-8: el rechazo debe ser por el runtime, no por falta de configuración externa:
+E   cdad_dispatch: no execution configuration for runtime `u1bfix`: runtimes.json (/tmp/cdad-test-home-yzvtocai/tmp/cdad-u1b-entry-j5eh0xb_/config-home/cdad/runtimes.json) has no `u1bfix` section under `runtimes`
+E   `runtimes.json` is the single source for the external path (one section per runtime id); the retired exec-config keys live there now, key by key:
+E     `runtime`    -> the --runtime flag and, with it, the id of the `runtimes` section in runtimes.json
+E     `binary`, `binary_version`, `mode`, `server`, `service`, `auto`, `sessions_db`, `wait` -> the same keys, inside the runtime section
+E     `model`      -> delegation.json (ADR-033 D3: the model is chosen in a single place, never in runtimes.json)
+E     (credential) -> delegation.json.credential_env_file, or the default cdad/opencode-server.env — never in runtimes.json
+=========================== short test summary info ============================
+FAILED tests/test_006_005_u1b_dispatch_entry.py::TestPd4WithoutFinalTextThereIsNoDelivery::test_pd4_without_final_text_no_staging_no_descriptor_no_receipt
+FAILED tests/test_006_005_u1b_dispatch_entry.py::TestPd5NativeCorrelation::test_pd5_native_contradiction_is_a_rejection_naming_the_key
+FAILED tests/test_006_005_u1b_dispatch_entry.py::TestPd5NativeCorrelation::test_pd5_native_only_agent_evaluable_is_unknown_o3
+FAILED tests/test_006_005_u1b_dispatch_entry.py::TestPd6UnverifiableIdentityKeepsNoSession::test_pd6_byte_exact_result_with_unverifiable_identity_keeps_no_session
+FAILED tests/test_006_005_u1b_dispatch_entry.py::TestPd9NewVerbsRejectTheRetiredToken::test_pd9_exec_config_token_is_rejected_on_dispatch_record_capabilities
+5 failed, 1 passed, 11 deselected in 19.80s

@@ -82,7 +82,7 @@
     "test_opencode_read_map_and_steps"
    ],
    "kind": "helper",
-   "path": "tests/pd10_permission_semantics.py",
+    "path": "tests/pd10_permission_semantics.py",
    "product_surfaces": [
     "skills/cdad-cycle/SKILL.md"
    ],
@@ -90,19 +90,55 @@
    "static_test_nodeids": 0,
    "targets": []
   },
-  {
-   "assignments": [
-    {
-     "capability": "suite-isolation",
-     "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
-     "scope": "module"
-    }
-   ],
-   "confidence": "media",
-   "decision": "mantener",
-   "helper_dependencies": [],
-   "kind": "helper",
-   "path": "tests/product_staging.py",
+   {
+    "assignments": [
+     {
+      "capability": "generation-install-permissions",
+      "contract": "VERIFY",
+      "scope": "module"
+     }
+    ],
+    "confidence": "baja",
+    "decision": "mantener",
+    "helper_dependencies": [],
+    "kind": "helper",
+    "path": "tests/install_backup_oracle.py",
+    "product_surfaces": [],
+    "rationale": "Materialized isolated test-writer metadata: installer backup oracle helper, zero nodeids. Capability assignment proposed from docstring and consumers; recoverable documentary contract not yet accredited. VERIFY is explicit uncertainty, not semantic protection evidence.",
+    "static_test_nodeids": 0,
+    "targets": []
+   },
+   {
+    "assignments": [
+     {
+      "capability": "generation-install-permissions",
+      "contract": "VERIFY",
+      "scope": "module"
+     }
+    ],
+    "confidence": "baja",
+    "decision": "mantener",
+    "helper_dependencies": [],
+    "kind": "helper",
+    "path": "tests/install_harness.py",
+    "product_surfaces": [],
+    "rationale": "Materialized isolated test-writer metadata: minimal installer fixture helper, zero nodeids. Capability assignment proposed from docstring and consumers; recoverable documentary contract not yet accredited. VERIFY is explicit uncertainty, not semantic protection evidence.",
+    "static_test_nodeids": 0,
+    "targets": []
+   },
+   {
+    "assignments": [
+     {
+      "capability": "suite-isolation",
+      "contract": "docs/specs/004-001-canonical-runtime-artifacts/spec.md",
+      "scope": "module"
+     }
+    ],
+    "confidence": "media",
+    "decision": "mantener",
+    "helper_dependencies": [],
+    "kind": "helper",
+    "path": "tests/product_staging.py",
    "product_surfaces": [
     "build/staging",
     "build/staging/manifest.json"
@@ -3768,7 +3804,7 @@
    "product_surfaces": [
     "skills/cdad-cycle/scripts/"
    ],
-   "rationale": "prefijo de feature + docstring. Docstring: 006-005 U1b RED — single entry (`cdad_dispatch.py`: dispatch/record/",
+    "rationale": "prefijo de feature + docstring. Docstring: 006-005 U1b RED — single entry (`cdad_dispatch.py`: dispatch/record/. Five existing cases extended for native recording without external configuration, PC-1..PC-8 of docs/specs/native-record-without-external-config-2026-11-20/spec.md; original controls retained, 17 nodeids unchanged. Source: isolated test-writer RED reports; semantic protection awaits independent review.",
    "static_test_nodeids": 17,
    "targets": []
   },

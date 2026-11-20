@@ -159,3 +159,13 @@ respalda la copia divergente en `<install root>/.cdad-install-backups/`) y
 árbol completo que la publicación anterior; `make validate` con el conjunto
 local de patrones sensibles rc=0. Detalle local:
 `.cdad-execution/publication/publish-2026-11-19.md`.
+
+## Publicación 2026-11-20 — registro nativo sin transporte
+
+Presentación saneada del árbol completo: los identificadores personales, rutas y
+sesiones de las capturas históricas son marcadores, no transcripciones literales.
+Los originales privados de evidencia y recibos no se modifican. Se conservan las
+notas de publicaciones anteriores; se excluyen los cinco borradores operativos
+históricos bajo `docs/.cdad/memory-drafts/` ya excluidos del remoto.
+Verificación de esta publicación: focal nativo 36 passed y cuatro módulos con
+sustituciones de identidad en fixtures 28 passed; no es una suite completa nueva.
