@@ -2060,7 +2060,7 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
         if role == "architect":
             epic_id = execution.get("epic_id")
             accepted_pairs = (
-                (EPIC_PLAN_KIND, f"docs/epics/{epic_id}/plan.md"),
+                (EPIC_PLAN_KIND, _methodology_relpath(project_root, "epics", epic_id, "plan.md")),
                 (UNIT_CONTRACT_KIND,
                  _operational_relpath(
                     project_root, PACKETS_DIRNAME, document["packet_id"], UNIT_PROJECTION_NAME)),
@@ -2069,7 +2069,8 @@ def validate_request(document: dict[str, Any], execution_document: dict[str, Any
                 raise PolicyError("contract kind/path does not match role and execution")
         else:
             expected_kind = "approved-feature-spec"
-            expected_path = f"docs/specs/{execution['feature_id']}/spec.md"
+            expected_path = _methodology_relpath(
+                project_root, "specs", execution["feature_id"], "spec.md")
             if contract["kind"] != expected_kind or contract.get("path") != expected_path:
                 raise PolicyError("contract kind/path does not match role and execution")
     else:
@@ -2422,20 +2423,22 @@ DEFAULT_EVIDENCE = ["modified files", "exact commands", "command output", "commi
 FLAT_NAME = re.compile(r"[A-Za-z0-9._-]+")
 
 
-def _contract_for(role: str, execution: dict[str, Any]) -> tuple[str, str]:
+def _contract_for(role: str, execution: dict[str, Any],
+                  project_root: Path) -> tuple[str, str]:
     if role == "architect":
         epic_id = execution.get("epic_id")
         if not isinstance(epic_id, str) or not epic_id:
             # OPT-4 (PD-12): the standalone architecture intake follows the
             # legacy path; without an active epic there is no plan contract.
-            # Diagnose it explicitly instead of fabricating docs/epics/None/.
+            # Diagnose it explicitly instead of fabricating an epics/None/ path.
             raise PolicyError(
                 "architect requires an active epic: the execution has no active_epic "
-                "bound, so there is no docs/epics/<epic>/plan.md contract; the "
-                "standalone architecture intake follows the legacy path (PD-12)"
+                f"bound, so there is no {_methodology_base(project_root)}/epics/<epic>/plan.md "
+                "contract; the standalone architecture intake follows the legacy path (PD-12)"
             )
-        return EPIC_PLAN_KIND, f"docs/epics/{epic_id}/plan.md"
-    return "approved-feature-spec", f"docs/specs/{execution['feature_id']}/spec.md"
+        return EPIC_PLAN_KIND, _methodology_relpath(project_root, "epics", epic_id, "plan.md")
+    return "approved-feature-spec", _methodology_relpath(
+        project_root, "specs", execution["feature_id"], "spec.md")
 
 
 def _declared_object_form(form: Any, label: str) -> str:
@@ -2608,6 +2611,12 @@ def _methodology_base(project_root: Path) -> str:
         return methodology_base(project_root)
     except LayoutError as exc:
         raise PolicyError(str(exc)) from exc
+
+
+def _methodology_relpath(project_root: Path, *parts: str) -> str:
+    """Repository-relative identity of a methodology path under the selected base
+    (`docs/` for a historical project, the declared base otherwise)."""
+    return "/".join((_methodology_base(project_root), *parts))
 
 
 def _operational_dir(project_root: Path) -> str:
@@ -2845,7 +2854,7 @@ def _ensure_policy_reconciled(project_root: Path, execution_document: dict[str, 
     _, current = _current_policy_bytes_and_sha(project_root)
     if current != expected:
         raise PolicyError(
-            f"docs/cdad-policy.json changed since the execution snapshot "
+            f"{_policy_relpath(project_root)} changed since the execution snapshot "
             f"({expected} -> {current}): the policy revision must be reconciled before "
             f"preparing, resuming or registering a dispatch "
             f"(prepare --reconcile-policy {current} --decision-ref <ruta>)"
@@ -3286,7 +3295,8 @@ def _bootstrap_v2_execution(args: argparse.Namespace, project_root: Path,
     if epic_id is not None and (not isinstance(epic_id, str) or not epic_id):
         raise PolicyError("active_epic must be a non-empty string or null")
     path_policy, policy_sha256, policy_snapshot = _load_policy(project_root)
-    _, contract_path = _contract_for(args.role, {"feature_id": feature_id, "epic_id": epic_id})
+    _, contract_path = _contract_for(
+        args.role, {"feature_id": feature_id, "epic_id": epic_id}, project_root)
     # The authority reference is derived here; the single vigency validation that
     # checks it lives in _validate_v2_state, shared by every consumer (B1).
     authority_ref = contract_path
@@ -3932,11 +3942,11 @@ def _recovery_eligibility(*, project_root: Path, state: dict[str, Any],
             f"was never received is resolved by a disposition (007-002 §2.3.8)"
         )
     signal, causes = disposition_selection(
-        state, execution_id=execution_id, feature_id=feature_id,
-        packet_id=packet_id)
+        state, project_root=project_root, execution_id=execution_id,
+        feature_id=feature_id, packet_id=packet_id)
     if signal is None:
         detail = "; ".join(causes) if causes else (
-            f"no entry of {DISPOSITION_RECORD_PATH}:stage_history registers a "
+            f"no entry of {_state_relpath(project_root)}:stage_history registers a "
             f"disposition of this packet")
         raise PolicyError(
             f"evidence missing: packet {packet_id!r} is `failed` and is NOT "
@@ -4074,7 +4084,7 @@ def _replace_packet(args: argparse.Namespace, project_root: Path) -> bytes:
             contract_object, contract_bytes = _draft_contract_of_the_day(
                 contract, project_root)
         else:
-            approved_kind, approved_path = _contract_for(role, execution)
+            approved_kind, approved_path = _contract_for(role, execution, project_root)
             contract_bytes = _read_bytes(
                 _project_path(project_root, approved_path, "contract.path"), "contract")
             contract_object = {"kind": approved_kind, "path": approved_path,
@@ -5823,7 +5833,7 @@ def _check_plan_validation_plan(
 # and the applicable contract references, by reference. Without the field the
 # render is byte-identical (INV-4: the closed request field set is extended with
 # one declared optional property, never relaxed).
-PLAN_RELPATH_TEMPLATE = "docs/specs/{feature_id}/plan.md"
+PLAN_RELPATH_TEMPLATE = "specs/{feature_id}/plan.md"  # under the methodology base
 PLAN_TASK_HEADING = re.compile(r"(?m)^(#{1,6})[ \t]+(\S+)")
 PLAN_TASK_FICHA = re.compile(
     r"Resultado observable\s*/\s*PD cubiertas:\*{0,2}[ \t]*(?P<ids>.+)")
@@ -5892,7 +5902,8 @@ def _plan_task_sections(request: dict[str, Any], project_root: Path | None) -> l
         raise PolicyError(
             f"rendering a packet that declares plan task {task_id!r} requires the "
             "project root to read the approved plan")
-    plan_rel = PLAN_RELPATH_TEMPLATE.format(feature_id=request["feature_id"])
+    plan_rel = _methodology_relpath(
+        project_root, PLAN_RELPATH_TEMPLATE.format(feature_id=request["feature_id"]))
     plan_bytes = _read_bytes(_project_path(project_root, plan_rel, "plan.path"), "plan")
     plan_sha = hashlib.sha256(plan_bytes).hexdigest()
     tasks, strategy = _plan_tasks_from_contract(plan_bytes)
@@ -6258,7 +6269,7 @@ def _resolve_live_unit_projection(state: dict[str, Any], project_root: Path
     if not isinstance(epic_id, str) or not epic_id:
         result["reason"] = "no active epic: the architect contract is the legacy path"
         return result
-    plan_rel = f"docs/epics/{epic_id}/plan.md"
+    plan_rel = _methodology_relpath(project_root, "epics", epic_id, "plan.md")
     plan_path = project_root / plan_rel
     if not plan_path.is_file():
         result["reason"] = f"plan not found: {plan_rel}"
@@ -6984,7 +6995,7 @@ def prepare(args: argparse.Namespace, project_root: Path) -> bytes:
         if FLAT_NAME.fullmatch(execution["feature_id"]) is None or ".." in execution["feature_id"]:
             raise PolicyError("execution.feature_id must be a flat name ([A-Za-z0-9._-], no '..')")
 
-        contract_kind, contract_path = _contract_for(role, execution)
+        contract_kind, contract_path = _contract_for(role, execution, project_root)
         contract_object: dict[str, Any] = {
             "kind": contract_kind, "path": contract_path, "sha256": None, "commit": None,
         }
@@ -7294,7 +7305,7 @@ def _read_existing_epic_plans(project_root: Path, closed: list[str]
     epic simply claims nothing; an unreadable one blocks as well (its rows are
     needed for the attribution and cannot be guessed).
     """
-    epics_dir = project_root / "docs" / "epics"
+    epics_dir = project_root / _methodology_base(project_root) / "epics"
     plans: dict[str, str] = {}
     wanted: set[str] = set(closed)
     if epics_dir.is_dir():
@@ -7308,7 +7319,7 @@ def _read_existing_epic_plans(project_root: Path, closed: list[str]
                 f"listed ({exc})") from exc
         wanted.update(found)
     for epic_id in sorted(wanted):
-        plan_rel = f"docs/epics/{epic_id}/plan.md"
+        plan_rel = _methodology_relpath(project_root, "epics", epic_id, "plan.md")
         try:
             plan_path = _project_path(project_root, plan_rel, "epic plan")
         except PolicyError as exc:
@@ -7357,7 +7368,7 @@ def _attribute_closed_units(project_root: Path, state: dict[str, Any],
                     raise PolicyError(
                         f"cannot decide eligibility: the membership of "
                         f"{unit_id!r} in epic {epic_id!r} is ambiguous "
-                        f"({reason} in docs/epics/{epic_id}/plan.md): "
+                        f"({reason} in {_methodology_base(project_root)}/epics/{epic_id}/plan.md): "
                         f"open-unit never reopens silently — disambiguate "
                         f"the plan rows")
                 continue
@@ -7367,7 +7378,8 @@ def _attribute_closed_units(project_root: Path, state: dict[str, Any],
         if len(claims) > 1:
             owners = sorted(claims)
             sources = ", ".join(
-                f"{epic} (docs/epics/{epic}/plan.md)" for epic in owners)
+                f"{epic} ({_methodology_base(project_root)}/epics/{epic}/plan.md)"
+                for epic in owners)
             raise PolicyError(
                 f"cannot decide eligibility: {unit_id!r} is claimed by "
                 f"several epics (ambiguous) ({sources}): open-unit never "
@@ -7670,7 +7682,6 @@ def _transition_key(payload: dict[str, Any]) -> str:
 # (cdad_continuity.py) and by the recovery route of `prepare --replace-packet`,
 # so both consumers read one decision, never two.
 DISPOSITION_TRANSITION = "disposition"
-DISPOSITION_RECORD_PATH = "docs/.cdad-state.json"
 # §2.1.4: the COMPLETE payload the producer emits for a disposition. A subset is
 # NOT canonical even when its digest is recomputed; `exemption` is the only
 # additive block the producer may append (006-006 PD-9) and a disposition never
@@ -7804,8 +7815,8 @@ def _canonical_disposition_cause(entry: dict[str, Any], *, execution_id: str,
     return None
 
 
-def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
-                          packet_id: str,
+def disposition_selection(state: Any, *, project_root: Path, execution_id: str,
+                          feature_id: str, packet_id: str,
                           ) -> tuple[dict[str, Any] | None, list[str]]:
     """007-002 §2.1/§2.2: the canonical disposition that resolves the dispatch
     of `packet_id`, or `None` plus the causes that prevented selecting one.
@@ -7814,12 +7825,13 @@ def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
     the §2.2 form (`resolution`, `replaced_by`, `record{path,index,key}`); with
     identical occurrences of ONE decision the FIRST index is referenced (§2.2),
     and two vigente decisions that differ make the selection impossible (§2.1.9)."""
+    record_path = _state_relpath(project_root)
     if not isinstance(state, dict):
-        return None, [f"{DISPOSITION_RECORD_PATH}: the project state is not a "
+        return None, [f"{record_path}: the project state is not a "
                       f"JSON object, so no disposition can be read"]
     history = state.get("stage_history")
     if not isinstance(history, list):
-        return None, [f"{DISPOSITION_RECORD_PATH}: `stage_history` is not a "
+        return None, [f"{record_path}: `stage_history` is not a "
                       f"list, so the state is not readable as history and no "
                       f"disposition can be verified"]
     # §2.1.8: the criterion the state already uses — an entry named by another
@@ -7845,7 +7857,7 @@ def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
             packet_id=packet_id)
         if cause is not None:
             causes.append(
-                f"{DISPOSITION_RECORD_PATH}: stage_history[{index}] is not a "
+                f"{record_path}: stage_history[{index}] is not a "
                 f"canonical disposition of packet {packet_id!r}: {cause}")
             continue
         selected.append((index, entry))
@@ -7857,7 +7869,7 @@ def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
         described = sorted(f"{resolution}/{successor}" for resolution, successor
                            in decisions)
         causes.append(
-            f"{DISPOSITION_RECORD_PATH}: the vigente dispositions of packet "
+            f"{record_path}: the vigente dispositions of packet "
             f"{packet_id!r} contradict each other ({described}); one of them "
             f"cannot be selected arbitrarily (007-002 §2.1.9)")
         return None, causes
@@ -7866,7 +7878,7 @@ def disposition_selection(state: Any, *, execution_id: str, feature_id: str,
         "resolution": entry.get("resolution"),
         "replaced_by": entry.get("replaced_by"),
         "record": {
-            "path": DISPOSITION_RECORD_PATH,
+            "path": record_path,
             "index": index,
             "transition_key": entry.get("transition_key"),
         },
@@ -9081,7 +9093,7 @@ def register_transition(args: argparse.Namespace, project_root: Path) -> str:
             # feature's contract with its DERIVED digest (§2.5). The pin
             # convention is the one `validate_request`/`_contract_for` already
             # declare for a feature's contract (consumed, never re-declared).
-            contract_rel = f"docs/specs/{feature_id}/spec.md"
+            contract_rel = _methodology_relpath(project_root, "specs", feature_id, "spec.md")
             contract_file = project_root / contract_rel
             if not contract_file.is_file():
                 raise PolicyError(
@@ -9661,12 +9673,16 @@ def _entry_selection(*, state: dict[str, Any], project_root: Path,
     return ENTRY_NEXT_UNIT
 
 
-def _next_route(entry: str, packet: dict[str, Any] | None) -> dict[str, str]:
-    """The next operational route, each with its declared source (§2.1)."""
+def _next_route(entry: str, packet: dict[str, Any] | None, *,
+                state_rel: str, policy_rel: str) -> dict[str, str]:
+    """The next operational route, each with its declared source (§2.1).
+
+    `state_rel` / `policy_rel` are the resolved methodology paths of the project
+    (the caller derives them once; a diagnostic never re-resolves the layout)."""
     if entry == ENTRY_CONTINUITY_RECONCILE:
         if isinstance(packet, dict) and packet.get("status") == "dispatched":
             return {"route": "reconcile the dispatched packet before repeating (resume)",
-                    "source": "docs/.cdad-state.json:active_packet.status"}
+                    "source": f"{state_rel}:active_packet.status"}
         if isinstance(packet, dict) and packet.get("status") == "prepared":
             # PD-5 (005-011): a `prepared` packet is ready to be dispatched, so
             # the route NAMES the natural action; `--replace-packet` is only the
@@ -9674,17 +9690,17 @@ def _next_route(entry: str, packet: dict[str, Any] | None) -> dict[str, str]:
             return {"route": "dispatch the prepared packet: validate it, then "
                              "`begin` and `--record-dispatch` (--replace-packet "
                              "only if the contract changed)",
-                    "source": "docs/.cdad-state.json:active_packet.status"}
+                    "source": f"{state_rel}:active_packet.status"}
         return {"route": "resume the active execution (continuity)",
-                "source": "docs/.cdad-state.json:execution"}
+                "source": f"{state_rel}:execution"}
     if entry == ENTRY_DIAGNOSIS:
         return {"route": "diagnosis: complete the configuration (project-start.md §8)",
-                "source": "docs/cdad-policy.json / authority pin"}
+                "source": f"{policy_rel} / authority pin"}
     # PD-7 (005-007 T3): the next-unit route NAMES the operation that opens the
     # unit (`cdad_packet.py open-unit`); it is an operation of the CLI, not a
     # hand-edited state. The procedure it points to documents it by reference.
     return {"route": "next unit: run `cdad_packet.py open-unit` (project-start.md §6)",
-            "source": "docs/.cdad-state.json:current_stage"}
+            "source": f"{state_rel}:current_stage"}
 
 
 def _safe_packet_component(packet_id: Any) -> bool:
@@ -10183,26 +10199,26 @@ def _situation_projection(
         situation = (SITUATION_PACKET_DISPATCHED
                      if resolution["status"] == "dispatched"
                      else SITUATION_PACKET_PREPARED)
-        source = "docs/.cdad-state.json:active_packet.status"
+        source = f"{_state_relpath(project_root)}:active_packet.status"
     elif resolution["cause"]:
         situation = SITUATION_PENDING_UNRESOLVED
-        source = ("docs/.cdad-state.json:active_packet / "
+        source = (f"{_state_relpath(project_root)}:active_packet / "
                   + _operational_relpath(project_root, "packets"))
         causes.append(resolution["cause"])
     elif pending_work:
         situation = SITUATION_PENDING_UNRESOLVED
-        source = ("docs/.cdad-state.json:active_packet / "
+        source = (f"{_state_relpath(project_root)}:active_packet / "
                   + _operational_relpath(project_root, "packets"))
         causes.append(_unresolved_pending_cause(state, project_root))
     elif _active_execution(state) is not None:
         situation = SITUATION_EXECUTION_ACTIVE
-        source = "docs/.cdad-state.json:execution"
+        source = f"{_state_relpath(project_root)}:execution"
     elif _validate_suspended_registry(state):
         situation = SITUATION_UNITS_SUSPENDED
-        source = "docs/.cdad-state.json:suspended_units"
+        source = f"{_state_relpath(project_root)}:suspended_units"
     else:
         situation = SITUATION_AT_REST
-        source = "docs/.cdad-state.json:active_feature"
+        source = f"{_state_relpath(project_root)}:active_feature"
     verb, script, procedure = OPERATION_BY_SITUATION[situation]
     operation = {"verb": verb, "script": script, "procedure": procedure,
                  "source": source}
@@ -10321,7 +10337,8 @@ def status_view(args: argparse.Namespace, project_root: Path) -> bytes:
     entry = _entry_selection(
         state=state, project_root=project_root, packet=packet,
         policy_present=policy_present)
-    next_block = _next_route(entry, packet)
+    next_block = _next_route(entry, packet, state_rel=_state_relpath(project_root),
+                             policy_rel=_policy_relpath(project_root))
     if entry == ENTRY_NEXT_UNIT and not state_error:
         # 019-002 PC-5: apply the same resting-coherence criterion as
         # `open-unit` before recommending it; an incoherent state gets an

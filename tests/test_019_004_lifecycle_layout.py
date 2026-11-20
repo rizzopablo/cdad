@@ -155,6 +155,20 @@ def relocate(fx, rel: str = CUSTOM, *, decoy: bool = False,
             shutil.copy2(src, dest / name)
             if not decoy:
                 src.unlink()
+    if not decoy:
+        # el contrato y su pin de aprobación viven bajo la metodología
+        # declarada (<methodology_dir>/specs/<f>/spec.md); otros documentos
+        # citados por ruta explícita (p. ej. closure.md) no se mueven.
+        moved = False
+        for spec in sorted((root / "docs" / "specs").glob("*/spec.md")):
+            target = dest / "specs" / spec.parent.name / "spec.md"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(spec), str(target))
+            moved = True
+        state_file = dest / ".cdad-state.json"
+        if moved and state_file.exists():
+            state_file.write_text(state_file.read_text(encoding="utf-8").replace(
+                "docs/specs/", f"{rel}/specs/"), encoding="utf-8")
     if register:
         loc = root / LOCATOR_REL
         loc.parent.mkdir(parents=True, exist_ok=True)
@@ -293,28 +307,85 @@ def test_registered_layout_receives_lifecycle_writes_and_reaches_rest(
     assert not (rest.root / LEGACY_POLICY).exists()
 
 
+def _adopt_cdad_methodology(fx) -> None:
+    """Proyecto cuya metodología declarada es `cdad` (default de proyectos
+    nuevos): estado, política, specs y épicas viven bajo `cdad/`."""
+    relocate(fx, "cdad")
+    root = fx.root
+    policy_path = root / "cdad" / "cdad-policy.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    policy["path_policy"]["documentation_roots"] = ["cdad"]
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    shutil.move(str(root / "docs" / "epics"), str(root / "cdad" / "epics"))
+    state_path = root / "cdad" / ".cdad-state.json"
+    doc = json.loads(state_path.read_text(encoding="utf-8").replace(
+        "docs/epics/", "cdad/epics/"))
+    epic = doc["active_epic"]
+    doc["epic_history"] = [
+        {"epic": epic, "stage": "epic-plan", "approved_by": "<owner>"}]
+    state_path.write_text(json.dumps(doc), encoding="utf-8")
+    plan = root / "cdad" / "epics" / epic / "plan.md"
+    plan.parent.mkdir(parents=True, exist_ok=True)
+    plan.write_text(
+        "# Epic plan fixture\n\n| Unit | Title |\n|---|---|\n"
+        f"| {doc['active_feature']} | fixture unit |\n", encoding="utf-8")
+
+
+def text_state(fx) -> str:
+    return (fx.root / "cdad" / ".cdad-state.json").read_text(encoding="utf-8")
+
+
 def test_prepare_binds_state_and_policy_path_in_selected_directory(
         tmp_path: Path) -> None:
     """PC-05: prepare registra binding y paquete en el estado del layout y
-    liga el contexto a la política del layout."""
+    liga el contexto a la política del layout; con metodología `cdad` el
+    contrato aprobado y el plan de épica se derivan de `cdad/`, no de docs/."""
     fx = _Bare(tmp_path)
-    relocate(fx)
+    _adopt_cdad_methodology(fx)
     proc = fx.run_packet(*prepare_args(
         fx.root, role="test-writer", substage="red",
         objective="prepare en layout registrado"))
     assert proc.returncode == 0, (
-        f"prepare debe operar sobre {CUSTOM}: {proc.stdout!r} {proc.stderr!r}")
-    st = custom_state(fx)
+        f"prepare debe operar sobre cdad/ y derivar el contrato de la "
+        f"metodología declarada: {proc.stdout!r} {proc.stderr!r}")
+    st = json.loads(
+        (fx.root / "cdad" / ".cdad-state.json").read_text(encoding="utf-8"))
     assert st["execution"] and st["active_packet"], (
         "prepare debe escribir execution y active_packet en el estado del "
         "layout")
     ctxs = list((fx.root / OPERATIONAL_DIR / "executions").glob("*/execution.json"))
     assert ctxs, "prepare debe publicar el contexto de ejecución"
     recorded = json.loads(ctxs[-1].read_text(encoding="utf-8"))["policy"]["path"]
-    assert recorded == f"{CUSTOM}/cdad-policy.json", (
+    assert recorded == "cdad/cdad-policy.json", (
         f"el contexto debe registrar la política del layout, no {recorded!r}")
+    request = json.loads(next(
+        (fx.root / OPERATIONAL_DIR / "packets").glob("*/REQUEST.json")
+    ).read_text(encoding="utf-8"))
+    assert request["contract"]["path"] == f"cdad/specs/{FEATURE_ID}/spec.md", (
+        f"el contrato debe derivarse de la metodología declarada: "
+        f"{request['contract']!r}")
+    assert {"class": "contract", "root": f"cdad/specs/{FEATURE_ID}"} in (
+        request["read_scope"]), request["read_scope"]
+    other = _Bare(tmp_path / "architect")
+    _adopt_cdad_methodology(other)
+    arch = other.run_packet(*prepare_args(
+        other.root, role="architect", substage="draft",
+        objective="plan de épica en layout registrado"))
+    assert arch.returncode == 0, (
+        f"prepare del architect debe derivar el plan de cdad/epics: "
+        f"{arch.stdout!r} {arch.stderr!r}")
+    packet = next((other.root / OPERATIONAL_DIR / "packets").glob("*/REQUEST.json"))
+    plan_request = json.loads(packet.read_text(encoding="utf-8"))
+    epic = json.loads(text_state(other))["active_epic"]
+    projection = (packet.parent / "UNIT-CONTRACT.md").read_text(encoding="utf-8")
+    assert plan_request["contract"]["kind"] == "approved-unit-contract", (
+        plan_request["contract"])
+    assert f"cdad/epics/{epic}/plan.md" in projection, (
+        "la proyección debe derivarse del plan bajo la metodología declarada")
+    assert "docs/epics" not in projection
     assert not (fx.root / LEGACY_STATE).exists()
     assert not (fx.root / LEGACY_POLICY).exists()
+    assert not list((fx.root / "docs" / "specs").glob("*/spec.md"))
 
 
 # ------------------------------------------------------- PC-05 materialización

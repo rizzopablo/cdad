@@ -2638,8 +2638,8 @@ def _disposition_signal(root: Path, exec_context: dict[str, Any],
     if feature_id is None:
         return None, causes
     signal, selection_causes = cdad_packet.disposition_selection(
-        state, execution_id=execution_id, feature_id=feature_id,
-        packet_id=packet_id)
+        state, project_root=root, execution_id=execution_id,
+        feature_id=feature_id, packet_id=packet_id)
     return signal, causes + selection_causes
 
 
